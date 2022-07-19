@@ -16,6 +16,7 @@
 # under the License.
 
 import pyarrow as pa
+import pyarrow.dataset as ds
 
 
 def test_register_record_batches(ctx):
@@ -72,3 +73,19 @@ def test_deregister_table(ctx, database):
 
     ctx.deregister_table("csv")
     assert public.names() == {"csv1", "csv2"}
+
+def test_register_dataset(ctx):
+    # create a RecordBatch and register it as a pyarrow.dataset.Dataset
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    dataset = ds.dataset([batch])
+    ctx.register_dataset("t", dataset)
+
+    assert ctx.tables() == {"t"}
+
+    result = ctx.sql("SELECT a+b, a-b FROM t").collect()
+
+    assert result[0].column(0) == pa.array([5, 7, 9])
+    assert result[0].column(1) == pa.array([-3, -3, -3])
