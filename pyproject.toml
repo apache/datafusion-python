@@ -16,7 +16,7 @@
 # under the License.
 
 [build-system]
-requires = ["maturin>=0.11,<0.12"]
+requires = ["maturin>=0.11,<0.13"]
 build-backend = "maturin"
 
 [project]
@@ -35,7 +35,6 @@ classifier = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
@@ -53,3 +52,6 @@ repository = "https://github.com/apache/arrow-datafusion"
 
 [tool.isort]
 profile = "black"
+
+[tool.maturin]
+sdist-include = ["Cargo.lock"]

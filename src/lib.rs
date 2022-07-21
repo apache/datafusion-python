@@ -15,17 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
+#[cfg(feature = "mimalloc")]
+use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
-mod catalog;
+pub mod catalog;
 mod context;
 mod dataframe;
-mod errors;
+pub mod errors;
 mod expression;
 mod functions;
 mod udaf;
 mod udf;
-mod utils;
+pub mod utils;
+
+#[cfg(feature = "mimalloc")]
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 /// Low-level DataFusion internal package.
 ///
@@ -37,7 +43,7 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<catalog::PyCatalog>()?;
     m.add_class::<catalog::PyDatabase>()?;
     m.add_class::<catalog::PyTable>()?;
-    m.add_class::<context::PyExecutionContext>()?;
+    m.add_class::<context::PySessionContext>()?;
     m.add_class::<dataframe::PyDataFrame>()?;
     m.add_class::<expression::PyExpr>()?;
     m.add_class::<udf::PyScalarUDF>()?;

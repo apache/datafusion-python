@@ -19,14 +19,9 @@ import numpy as np
 import pyarrow as pa
 import pytest
 
-from datafusion import ExecutionContext, udf
+from datafusion import udf
 
 from . import generic as helpers
-
-
-@pytest.fixture
-def ctx():
-    return ExecutionContext()
 
 
 def test_no_table(ctx):
@@ -92,6 +87,41 @@ def test_register_parquet(ctx, tmp_path):
     assert result.to_pydict() == {"cnt": [100]}
 
 
+def test_register_parquet_partitioned(ctx, tmp_path):
+    dir_root = tmp_path / "dataset_parquet_partitioned"
+    dir_root.mkdir(exist_ok=False)
+    (dir_root / "grp=a").mkdir(exist_ok=False)
+    (dir_root / "grp=b").mkdir(exist_ok=False)
+
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4],
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    pa.parquet.write_table(table.slice(0, 3), dir_root / "grp=a/file.parquet")
+    pa.parquet.write_table(table.slice(3, 4), dir_root / "grp=b/file.parquet")
+
+    ctx.register_parquet(
+        "datapp",
+        str(dir_root),
+        table_partition_cols=["grp"],
+        parquet_pruning=True,
+        file_extension=".parquet",
+    )
+    assert ctx.tables() == {"datapp"}
+
+    result = ctx.sql(
+        "SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp"
+    ).collect()
+    result = pa.Table.from_batches(result)
+
+    rd = result.to_pydict()
+    assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
+
+
 def test_execute(ctx, tmp_path):
     data = [1, 1, 2, 2, 3, 11, 12]
 
@@ -104,12 +134,12 @@ def test_execute(ctx, tmp_path):
     # count
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
 
-    expected = pa.array([7], pa.uint64())
+    expected = pa.array([7], pa.int64())
     expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
     assert result == expected
 
     # where
-    expected = pa.array([2], pa.uint64())
+    expected = pa.array([2], pa.int64())
     expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a > 10").collect()
     assert result == expected
