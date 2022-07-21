@@ -48,13 +48,14 @@ impl Dataset {
         // Ensure that we were passed an instance of pyarrow.dataset.Dataset
         let ds = PyModule::import(py, "pyarrow.dataset")?;
         let ds_type: &PyType = ds.getattr("Dataset")?.downcast()?;
-        match dataset.is_instance(ds_type)? {
-            true => Ok(Dataset {
+        if dataset.is_instance(ds_type)? {
+            Ok(Dataset {
                 dataset: dataset.into(),
-            }),
-            false => Err(PyValueError::new_err(
+            })
+        } else {
+            Err(PyValueError::new_err(
                 "dataset argument must be a pyarrow.dataset.Dataset object",
-            )),
+            ))
         }
     }
 }

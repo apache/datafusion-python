@@ -157,16 +157,13 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     let le = op_module.getattr("le")?;
                     let invert = op_module.getattr("invert")?;
 
-                    // You can't do scalar <= field() <= scalar in PyArrow, no idea why
+                    // scalar <= field() returns a boolean expression so we need to use and to combine these
                     let ret = and.call1((
                         le.call1((low, expr.clone_ref(py)))?,
                         le.call1((expr, high))?,
                     ))?;
 
-                    Ok(match negated {
-                        true => invert.call1((ret,))?,
-                        false => ret,
-                    })
+                    Ok(if *negated { invert.call1((ret,))? } else { ret })
                 }
                 Expr::InList {
                     expr,
@@ -180,10 +177,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     let ret = expr.call_method1("isin", (scalars,))?;
                     let invert = op_module.getattr("invert")?;
 
-                    Ok(match negated {
-                        true => invert.call1((ret,))?,
-                        false => ret,
-                    })
+                    Ok(if *negated { invert.call1((ret,))? } else { ret })
                 }
                 _ => Err(DataFusionError::Common(format!(
                     "Unsupported Datafusion expression {:?}",
