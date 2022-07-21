@@ -28,7 +28,7 @@ edition = "2021"
 rust-version = "1.57"
 
 [dependencies]
-tokio = { version = "1.0", features = ["macros", "rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.13", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.7"
 pyo3 = { version = "0.14", features = ["extension-module", "abi3", "abi3-py36"] }
 datafusion = { version = "6.0.0", features = ["pyarrow"] }
