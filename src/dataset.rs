@@ -88,6 +88,7 @@ impl TableProvider for Dataset {
     /// parallelized or distributed.
     async fn scan(
         &self,
+        _ctx: &SessionState,
         projection: &Option<Vec<usize>>,
         filters: &[Expr],
         // limit can be used to reduce the amount scanned
