@@ -18,23 +18,38 @@
 import pyarrow as pa
 import pytest
 
+from datafusion import SessionContext
 
-def test_basic(ctx, database):
-    with pytest.raises(KeyError):
-        ctx.catalog("non-existent")
 
-    default = ctx.catalog()
-    assert default.names() == ["public"]
+@pytest.fixture
+def df():
+    ctx = SessionContext()
 
-    for database in [default.database("public"), default.database()]:
-        assert database.names() == {"csv1", "csv", "csv2"}
+    # create a RecordBatch and a new DataFrame from it
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 4, 6])],
+        names=["a", "b"],
+    )
+    return ctx.create_dataframe([[batch]])
 
-    table = database.table("csv")
-    assert table.kind == "physical"
-    assert table.schema == pa.schema(
-        [
-            pa.field("int", pa.int64(), nullable=False),
-            pa.field("str", pa.string(), nullable=False),
-            pa.field("float", pa.float64(), nullable=False),
-        ]
+
+def test_indexing(df):
+    assert df["a"] is not None
+    assert df["a", "b"] is not None
+    assert df[("a", "b")] is not None
+    assert df[["a"]] is not None
+
+
+def test_err(df):
+    with pytest.raises(Exception) as e_info:
+        df["c"]
+
+    assert "Schema error: No field named 'c'" in e_info.value.args[0]
+
+    with pytest.raises(Exception) as e_info:
+        df[1]
+
+    assert (
+        "DataFrame can only be indexed by string index or indices"
+        in e_info.value.args[0]
     )

@@ -17,7 +17,10 @@
   under the License.
 -->
 
-## DataFusion in Python
+# DataFusion in Python
+
+[![Python test](https://github.com/datafusion-contrib/datafusion-python/actions/workflows/test.yaml/badge.svg)](https://github.com/datafusion-contrib/datafusion-python/actions/workflows/test.yaml)
+[![Python Release Build](https://github.com/datafusion-contrib/datafusion-python/actions/workflows/build.yml/badge.svg)](https://github.com/datafusion-contrib/datafusion-python/actions/workflows/build.yml)
 
 This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/arrow-datafusion).
 
@@ -37,13 +40,12 @@ Simple usage:
 
 ```python
 import datafusion
+from datafusion import functions as f
+from datafusion import col
 import pyarrow
 
-# an alias
-f = datafusion.functions
-
 # create a context
-ctx = datafusion.ExecutionContext()
+ctx = datafusion.SessionContext()
 
 # create a RecordBatch and a new DataFrame from it
 batch = pyarrow.RecordBatch.from_arrays(
@@ -54,8 +56,8 @@ df = ctx.create_dataframe([[batch]])
 
 # create a new statement
 df = df.select(
-    f.col("a") + f.col("b"),
-    f.col("a") - f.col("b"),
+    col("a") + col("b"),
+    col("a") - col("b"),
 )
 
 # execute and collect the first (and only) batch
@@ -68,12 +70,18 @@ assert result.column(1) == pyarrow.array([-3, -3, -3])
 ### UDFs
 
 ```python
+from datafusion import udf
+
 def is_null(array: pyarrow.Array) -> pyarrow.Array:
     return array.is_null()
 
-udf = f.udf(is_null, [pyarrow.int64()], pyarrow.bool_())
+is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
 
-df = df.select(udf(f.col("a")))
+df = df.select(is_null_arr(col("a")))
+
+result = df.collect()
+
+assert result.column(0) == pyarrow.array([False] * 3)
 ```
 
 ### UDAF
@@ -81,17 +89,15 @@ df = df.select(udf(f.col("a")))
 ```python
 import pyarrow
 import pyarrow.compute
+from datafusion import udaf, Accumulator
 
 
-class Accumulator:
+class MyAccumulator(Accumulator):
     """
     Interface of a user-defined accumulation.
     """
     def __init__(self):
         self._sum = pyarrow.scalar(0.0)
-
-    def to_scalars(self) -> [pyarrow.Scalar]:
-        return [self._sum]
 
     def update(self, values: pyarrow.Array) -> None:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
@@ -101,18 +107,25 @@ class Accumulator:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
         self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
 
+    def state(self) -> pyarrow.Array:
+        return pyarrow.array([self._sum.as_py()])
+
     def evaluate(self) -> pyarrow.Scalar:
         return self._sum
 
 
-df = ...
+df = ctx.create_dataframe([[batch]])
 
-udaf = f.udaf(Accumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()])
+my_udaf = udaf(MyAccumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()], 'stable')
 
 df = df.aggregate(
     [],
-    [udaf(f.col("a"))]
+    [my_udaf(col("a"))]
 )
+
+result = df.collect()[0]
+
+assert result.column(0) == pyarrow.array([6.0])
 ```
 
 ## How to install (from pip)
@@ -123,6 +136,14 @@ pip install datafusion
 python -m pip install datafusion
 ```
 
+You can verify the installation by running:
+
+```python
+>>> import datafusion
+>>> datafusion.__version__
+'0.6.0'
+```
+
 ## How to develop
 
 This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin).
@@ -131,19 +152,15 @@ Bootstrap:
 
 ```bash
 # fetch this repo
-git clone git@github.com:apache/arrow-datafusion.git
-# change to python directory
-cd arrow-datafusion/python
+git clone git@github.com:datafusion-contrib/datafusion-python.git
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv venv
 # activate the venv
 source venv/bin/activate
 # update pip itself if necessary
 python -m pip install -U pip
-# if python -V gives python 3.7
-python -m pip install -r requirements-37.txt
-# if python -V gives python 3.8/3.9/3.10
-python -m pip install -r requirements.txt
+# install dependencies (for Python 3.8+)
+python -m pip install -r requirements-310.txt
 ```
 
 Whenever rust code changes (your changes or via `git pull`):
@@ -161,11 +178,7 @@ To change test dependencies, change the `requirements.in` and run
 ```bash
 # install pip-tools (this can be done only once), also consider running in venv
 python -m pip install pip-tools
-
-# change requirements.in and then run
-python -m piptools compile --generate-hashes -o requirements-37.txt
-# or run this is you are on python 3.8/3.9/3.10
-python -m piptools compile --generate-hashes -o requirements.txt
+python -m piptools compile --generate-hashes -o requirements-310.txt
 ```
 
 To update dependencies, run with `-U`
