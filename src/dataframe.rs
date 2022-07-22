@@ -87,6 +87,11 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    fn with_column(&self, name: &str, expr: PyExpr) -> PyResult<Self> {
+        let df = self.df.with_column(name, expr.into())?;
+        Ok(Self::new(df))
+    }
+
     fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();
