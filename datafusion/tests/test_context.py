@@ -18,6 +18,8 @@
 import pyarrow as pa
 import pyarrow.dataset as ds
 
+from datafusion import column, literal
+
 
 def test_register_record_batches(ctx):
     # create a RecordBatch and register it as memtable
@@ -90,7 +92,7 @@ def test_register_dataset(ctx):
     assert result[0].column(0) == pa.array([5, 7, 9])
     assert result[0].column(1) == pa.array([-3, -3, -3])
 
-def test_dataset_filter(ctx):
+def test_dataset_filter(ctx, capfd):
     # create a RecordBatch and register it as a pyarrow.dataset.Dataset
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
@@ -100,8 +102,43 @@ def test_dataset_filter(ctx):
     ctx.register_dataset("t", dataset)
 
     assert ctx.tables() == {"t"}
+    df = ctx.sql("SELECT a+b, a-b FROM t WHERE a BETWEEN 2 and 3 AND b > 5")
 
-    result = ctx.sql("SELECT a+b, a-b FROM t WHERE a BETWEEN 2 and 3 AND b > 5").collect()
+    # Make sure the filter was pushed down in Physical Plan
+    df.explain()
+    captured = capfd.readouterr()
+    assert "filter_expr=(((2 <= a) and (a <= 3)) and (b > 5))" in captured.out
+
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array([9])
+    assert result[0].column(1) == pa.array([-3])
+
+
+def test_dataset_filter_nested_data(ctx):
+    # create Arrow StructArrays to test nested data types
+    data = pa.StructArray.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    batch = pa.RecordBatch.from_arrays(
+        [data],
+        names=["nested_data"],
+    )
+    dataset = ds.dataset([batch])
+    ctx.register_dataset("t", dataset)
+
+    assert ctx.tables() == {"t"}
+
+    df = ctx.table("t")
+
+    # This filter will not be pushed down to DatasetExec since it isn't supported
+    df = df.select(
+        column("nested_data")["a"] + column("nested_data")["b"],
+        column("nested_data")["a"] - column("nested_data")["b"],
+    ).filter(column("nested_data")["b"] > literal(5))
+
+    result = df.collect()
 
     assert result[0].column(0) == pa.array([9])
     assert result[0].column(1) == pa.array([-3])
