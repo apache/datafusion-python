@@ -30,6 +30,7 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::datasource::datasource::TableProviderFilterPushDown;
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::error::{DataFusionError, Result as DFResult};
+use datafusion::execution::context::SessionState;
 use datafusion::logical_plan::*;
 use datafusion::physical_plan::ExecutionPlan;
 

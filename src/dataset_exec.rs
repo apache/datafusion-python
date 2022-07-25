@@ -180,7 +180,7 @@ impl ExecutionPlan for DatasetExec {
         partition: usize,
         context: Arc<TaskContext>,
     ) -> DFResult<SendableRecordBatchStream> {
-        let batch_size = context.session_config().batch_size;
+        let batch_size = context.session_config().batch_size();
         Python::with_gil(|py| {
             let dataset = self.dataset.as_ref(py);
             let fragments = self.fragments.as_ref(py);
