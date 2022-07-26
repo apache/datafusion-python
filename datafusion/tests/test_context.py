@@ -76,6 +76,7 @@ def test_deregister_table(ctx, database):
     ctx.deregister_table("csv")
     assert public.names() == {"csv1", "csv2"}
 
+
 def test_register_dataset(ctx):
     # create a RecordBatch and register it as a pyarrow.dataset.Dataset
     batch = pa.RecordBatch.from_arrays(
@@ -91,6 +92,7 @@ def test_register_dataset(ctx):
 
     assert result[0].column(0) == pa.array([5, 7, 9])
     assert result[0].column(1) == pa.array([-3, -3, -3])
+
 
 def test_dataset_filter(ctx, capfd):
     # create a RecordBatch and register it as a pyarrow.dataset.Dataset
