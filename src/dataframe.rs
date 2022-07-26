@@ -65,7 +65,7 @@ impl PyDataFrame {
     }
 
     /// Returns the schema from the logical plan
-    //fn schema(&self) -> Schema {
+    fn schema(&self) -> Schema {
         self.df.schema().into()
     }
 
