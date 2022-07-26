@@ -105,7 +105,7 @@ jobs:
           export RUSTFLAGS='-C target-cpu=skylake'
           docker run --rm -v $(pwd):/io \
             --workdir /io \
-            konstin2/maturin:v0.12.10 \
+            ghcr.io/pyo3/maturin:v0.13.1 \
             build --release --manylinux 2010 --cargo-extra-args="--locked"
       - name: Archive wheels
         uses: actions/upload-artifact@v2
