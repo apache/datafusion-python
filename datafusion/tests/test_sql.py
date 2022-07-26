@@ -122,6 +122,7 @@ def test_register_parquet_partitioned(ctx, tmp_path):
     rd = result.to_pydict()
     assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
 
+
 def test_register_dataset(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     dataset = ds.dataset(path, format="parquet")
