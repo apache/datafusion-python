@@ -25,12 +25,14 @@ use pyo3::prelude::*;
 
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
+use crate::dataset::Dataset;
 use crate::errors::DataFusionError;
 use crate::udf::PyScalarUDF;
 use crate::utils::wait_for_future;
@@ -169,6 +171,17 @@ impl PySessionContext {
 
         let result = self.ctx.register_csv(name, path, options);
         wait_for_future(py, result).map_err(DataFusionError::from)?;
+
+        Ok(())
+    }
+
+    // Registers a PyArrow.Dataset
+    fn register_dataset(&self, name: &str, dataset: &PyAny, py: Python) -> PyResult<()> {
+        let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
+
+        self.ctx
+            .register_table(name, table)
+            .map_err(DataFusionError::from)?;
 
         Ok(())
     }

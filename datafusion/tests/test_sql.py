@@ -17,6 +17,7 @@
 
 import numpy as np
 import pyarrow as pa
+import pyarrow.dataset as ds
 import pytest
 
 from datafusion import udf
@@ -120,6 +121,17 @@ def test_register_parquet_partitioned(ctx, tmp_path):
 
     rd = result.to_pydict()
     assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
+
+def test_register_dataset(ctx, tmp_path):
+    path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
+    dataset = ds.dataset(path, format="parquet")
+
+    ctx.register_dataset("t", dataset)
+    assert ctx.tables() == {"t"}
+
+    result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
+    result = pa.Table.from_batches(result)
+    assert result.to_pydict() == {"cnt": [100]}
 
 
 def test_execute(ctx, tmp_path):
