@@ -71,7 +71,7 @@ jobs:
           path: .
 
       - name: Build Python package
-        run: maturin build --release --strip --cargo-extra-args="--locked"
+        run: maturin build --release --strip --locked
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
