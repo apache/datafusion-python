@@ -27,7 +27,7 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
-use datafusion::execution::context::{SessionContext,SessionConfig};
+use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -44,7 +44,6 @@ use crate::utils::wait_for_future;
 pub(crate) struct PySessionContext {
     ctx: SessionContext,
 }
-
 
 #[pymethods]
 impl PySessionContext {
@@ -72,7 +71,7 @@ impl PySessionContext {
         parquet_pruning: bool,
         target_partitions: Option<usize>,
         // TODO: config_options
-        ) -> Self {
+    ) -> Self {
         let cfg = SessionConfig::new()
             .create_default_catalog_and_schema(create_default_catalog_and_schema)
             .with_default_catalog_and_schema(default_catalog, default_schema)
@@ -250,6 +249,4 @@ impl PySessionContext {
     fn empty_table(&self) -> PyResult<PyDataFrame> {
         Ok(PyDataFrame::new(self.ctx.read_empty()?))
     }
-
 }
-
