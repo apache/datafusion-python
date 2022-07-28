@@ -102,5 +102,5 @@ jobs:
       - name: Run tests
         run: |
           source venv/bin/activate
-          maturin develop --cargo-extra-args='--locked'
+          maturin develop --locked
           RUST_BACKTRACE=1 pytest -v .
