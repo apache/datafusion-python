@@ -18,7 +18,31 @@
 import pyarrow as pa
 import pyarrow.dataset as ds
 
-from datafusion import column, literal
+from datafusion import column, literal, SessionContext
+import pytest
+
+
+def test_create_context_no_args():
+    SessionContext()
+
+
+def test_create_context_with_all_valid_args():
+    ctx = SessionContext(
+        target_partitions=1,
+        default_catalog="foo",
+        default_schema="bar",
+        create_default_catalog_and_schema=True,
+        information_schema=True,
+        repartition_joins=False,
+        repartition_aggregations=False,
+        repartition_windows=False,
+        parquet_pruning=False,
+    )
+
+    # verify that at least some of the arguments worked
+    ctx.catalog("foo").database("bar")
+    with pytest.raises(KeyError):
+        ctx.catalog("datafusion")
 
 
 def test_register_record_batches(ctx):

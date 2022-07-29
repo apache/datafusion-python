@@ -27,7 +27,7 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
-use datafusion::execution::context::SessionContext;
+use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -47,11 +47,47 @@ pub(crate) struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    // TODO(kszucs): should expose the configuration options as keyword arguments
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        default_catalog = "\"datafusion\"",
+        default_schema = "\"public\"",
+        create_default_catalog_and_schema = "true",
+        information_schema = "false",
+        repartition_joins = "true",
+        repartition_aggregations = "true",
+        repartition_windows = "true",
+        parquet_pruning = "true",
+        target_partitions = "None"
+    )]
     #[new]
-    fn new() -> Self {
+    fn new(
+        default_catalog: &str,
+        default_schema: &str,
+        create_default_catalog_and_schema: bool,
+        information_schema: bool,
+        repartition_joins: bool,
+        repartition_aggregations: bool,
+        repartition_windows: bool,
+        parquet_pruning: bool,
+        target_partitions: Option<usize>,
+        // TODO: config_options
+    ) -> Self {
+        let cfg = SessionConfig::new()
+            .create_default_catalog_and_schema(create_default_catalog_and_schema)
+            .with_default_catalog_and_schema(default_catalog, default_schema)
+            .with_information_schema(information_schema)
+            .with_repartition_joins(repartition_joins)
+            .with_repartition_aggregations(repartition_aggregations)
+            .with_repartition_windows(repartition_windows)
+            .with_parquet_pruning(parquet_pruning);
+
+        let cfg_full = match target_partitions {
+            None => cfg,
+            Some(x) => cfg.with_target_partitions(x),
+        };
+
         PySessionContext {
-            ctx: SessionContext::new(),
+            ctx: SessionContext::with_config(cfg_full),
         }
     }
 
