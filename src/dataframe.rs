@@ -129,6 +129,12 @@ impl PyDataFrame {
         Ok(pretty::print_batches(&batches)?)
     }
 
+    /// Filter out duplicate rows
+    fn distinct(&self) -> PyResult<Self> {
+        let df = self.df.distinct()?;
+        Ok(Self::new(df))
+    }
+
     fn join(
         &self,
         right: PyDataFrame,
@@ -147,7 +153,7 @@ impl PyDataFrame {
                     "The join type {} does not exist or is not implemented",
                     how
                 ))
-                .into())
+                    .into());
             }
         };
 
