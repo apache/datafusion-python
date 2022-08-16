@@ -22,6 +22,7 @@ use datafusion::arrow::pyarrow::PyArrowConvert;
 use datafusion::arrow::util::pretty;
 use datafusion::dataframe::DataFrame;
 use datafusion::logical_plan::JoinType;
+use datafusion::prelude::*;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
@@ -147,7 +148,7 @@ impl PyDataFrame {
                     "The join type {} does not exist or is not implemented",
                     how
                 ))
-                .into())
+                .into());
             }
         };
 
@@ -163,5 +164,19 @@ impl PyDataFrame {
         let df = self.df.explain(verbose, analyze)?;
         let batches = wait_for_future(py, df.collect())?;
         Ok(pretty::print_batches(&batches)?)
+    }
+
+    /// Repartition a `DataFrame` based on a logical partitioning scheme.
+    fn repartition(&self, num: usize) -> PyResult<Self> {
+        let new_df = self.df.repartition(Partitioning::RoundRobinBatch(num))?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Repartition a `DataFrame` based on a logical partitioning scheme.
+    #[args(args = "*", num)]
+    fn repartition_by_hash(&self, args: Vec<PyExpr>, num: usize) -> PyResult<Self> {
+        let expr = args.into_iter().map(|py_expr| py_expr.into()).collect();
+        let new_df = self.df.repartition(Partitioning::Hash(expr, num))?;
+        Ok(Self::new(new_df))
     }
 }

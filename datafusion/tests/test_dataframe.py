@@ -212,3 +212,11 @@ def test_explain(df):
         column("a") - column("b"),
     )
     df.explain()
+
+
+def test_repartition(df):
+    df.repartition(2)
+
+
+def test_repartition_by_hash(df):
+    df.repartition_by_hash(column("a"), num=2)
