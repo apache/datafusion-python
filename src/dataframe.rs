@@ -153,7 +153,7 @@ impl PyDataFrame {
                     "The join type {} does not exist or is not implemented",
                     how
                 ))
-                    .into());
+                .into());
             }
         };
 
