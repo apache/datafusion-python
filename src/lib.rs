@@ -19,16 +19,23 @@
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
+#[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+#[allow(clippy::borrow_deref_ref)]
 mod context;
+#[allow(clippy::borrow_deref_ref)]
 mod dataframe;
 mod dataset;
 mod dataset_exec;
 pub mod errors;
+#[allow(clippy::borrow_deref_ref)]
 mod expression;
+#[allow(clippy::borrow_deref_ref)]
 mod functions;
 mod pyarrow_filter_expression;
+#[allow(clippy::borrow_deref_ref)]
 mod udaf;
+#[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
 
