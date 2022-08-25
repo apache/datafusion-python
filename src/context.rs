@@ -239,6 +239,7 @@ impl PySessionContext {
     }
 
     fn tables(&self) -> HashSet<String> {
+        #[allow(deprecated)]
         self.ctx.tables().unwrap()
     }
 
