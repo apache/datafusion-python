@@ -152,7 +152,7 @@ Bootstrap:
 
 ```bash
 # fetch this repo
-git clone git@github.com:datafusion-contrib/datafusion-python.git
+git clone git@github.com:apache/arrow-datafusion-python.git
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv venv
 # activate the venv
