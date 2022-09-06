@@ -347,9 +347,14 @@ def test_union(ctx):
         [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
-    assert df_c.collect() == df_a.union(df_b).sort(column("a").sort(ascending=True)).collect()
+    assert (
+        df_c.collect()
+        == df_a.union(df_b).sort(column("a").sort(ascending=True)).collect()
+    )
 
 
 def test_union_distinct(ctx):
@@ -369,7 +374,19 @@ def test_union_distinct(ctx):
         [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
-    assert df_c.collect() == df_a.union(df_b, True).sort(column("a").sort(ascending=True)).collect()
-    assert df_c.collect() == df_a.union_distinct(df_b).sort(column("a").sort(ascending=True)).collect()
+    assert (
+        df_c.collect()
+        == df_a.union(df_b, True)
+        .sort(column("a").sort(ascending=True))
+        .collect()
+    )
+    assert (
+        df_c.collect()
+        == df_a.union_distinct(df_b)
+        .sort(column("a").sort(ascending=True))
+        .collect()
+    )
