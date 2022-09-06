@@ -163,15 +163,19 @@ def test_distinct():
         [pa.array([1, 2, 3, 1, 2, 3]), pa.array([4, 5, 6, 4, 5, 6])],
         names=["a", "b"],
     )
-    df_a = ctx.create_dataframe([[batch]]) \
-        .distinct().sort(column("a").sort(ascending=True))
+    df_a = (
+        ctx.create_dataframe([[batch]])
+        .distinct()
+        .sort(column("a").sort(ascending=True))
+    )
 
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df_b = ctx.create_dataframe([[batch]]) \
-        .sort(column("a").sort(ascending=True))
+    df_b = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     assert df_a.collect() == df_b.collect()
 
