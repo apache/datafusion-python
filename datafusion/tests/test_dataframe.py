@@ -277,12 +277,19 @@ def test_intersect():
         [pa.array([3]), pa.array([6])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     df_c.show()
     df_a.intersect(df_b).sort(column("a").sort(ascending=True)).show()
 
-    assert df_c.collect() == df_a.intersect(df_b).sort(column("a").sort(ascending=True)).collect()
+    assert (
+        df_c.collect()
+        == df_a.intersect(df_b)
+        .sort(column("a").sort(ascending=True))
+        .collect()
+    )
 
 
 def test_except_all():
@@ -304,6 +311,13 @@ def test_except_all():
         [pa.array([1, 2]), pa.array([4, 5])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
-    assert df_c.collect() == df_a.except_all(df_b).sort(column("a").sort(ascending=True)).collect()
+    assert (
+        df_c.collect()
+        == df_a.except_all(df_b)
+        .sort(column("a").sort(ascending=True))
+        .collect()
+    )
