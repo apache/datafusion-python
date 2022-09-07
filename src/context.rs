@@ -250,4 +250,8 @@ impl PySessionContext {
     fn empty_table(&self) -> PyResult<PyDataFrame> {
         Ok(PyDataFrame::new(self.ctx.read_empty()?))
     }
+
+    fn session_id(&self) -> PyResult<String> {
+        Ok(self.ctx.session_id())
+    }
 }
