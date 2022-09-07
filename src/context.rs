@@ -253,6 +253,10 @@ impl PySessionContext {
         Ok(PyDataFrame::new(self.ctx.table(name)?))
     }
 
+    fn table_exist(&self, name: &str) -> PyResult<bool> {
+        Ok(self.ctx.table_exist(name)?)
+    }
+
     fn empty_table(&self) -> PyResult<PyDataFrame> {
         Ok(PyDataFrame::new(self.ctx.read_empty()?))
     }

@@ -168,3 +168,14 @@ def test_dataset_filter_nested_data(ctx):
 
     assert result[0].column(0) == pa.array([9])
     assert result[0].column(1) == pa.array([-3])
+
+
+def test_table_exist(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    dataset = ds.dataset([batch])
+    ctx.register_dataset("t", dataset)
+
+    assert ctx.table_exist("t") == True
