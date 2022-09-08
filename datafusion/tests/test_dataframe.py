@@ -281,15 +281,9 @@ def test_intersect():
         column("a").sort(ascending=True)
     )
 
-    df_c.show()
-    df_a.intersect(df_b).sort(column("a").sort(ascending=True)).show()
+    df_a_i_b = df_a.intersect(df_b).sort(column("a").sort(ascending=True))
 
-    assert (
-        df_c.collect()
-        == df_a.intersect(df_b)
-        .sort(column("a").sort(ascending=True))
-        .collect()
-    )
+    assert df_c.collect() == df_a_i_b.collect()
 
 
 def test_except_all():
@@ -315,9 +309,6 @@ def test_except_all():
         column("a").sort(ascending=True)
     )
 
-    assert (
-        df_c.collect()
-        == df_a.except_all(df_b)
-        .sort(column("a").sort(ascending=True))
-        .collect()
-    )
+    df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
+
+    assert df_c.collect() == df_a_e_b.collect()
