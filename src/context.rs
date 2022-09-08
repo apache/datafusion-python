@@ -73,7 +73,7 @@ impl PySessionContext {
         target_partitions: Option<usize>,
         // TODO: config_options
     ) -> Self {
-        let cfg = SessionConfig::new()
+        let cfg = SessionConfig::from_env()
             .create_default_catalog_and_schema(create_default_catalog_and_schema)
             .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)

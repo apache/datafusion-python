@@ -67,6 +67,17 @@ assert result.column(0) == pyarrow.array([5, 7, 9])
 assert result.column(1) == pyarrow.array([-3, -3, -3])
 ```
 
+### Setting Configuration Options
+
+DataFusion configuration options can be controlled with environment variables, as documented in the 
+[user guide](https://arrow.apache.org/datafusion/user-guide/configs.html).
+
+For example, the configuration option `datafusion.optimizer.skip_failed_rules` can be set with:
+
+```bash
+export DATAFUSION_OPTIMIZER_SKIP_FAILED_RULES=true
+```
+
 ### UDFs
 
 ```python
