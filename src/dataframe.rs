@@ -192,4 +192,16 @@ impl PyDataFrame {
         let new_df = self.df.repartition(Partitioning::Hash(expr, num))?;
         Ok(Self::new(new_df))
     }
+
+    /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
+    fn intersect(&self, py_df: PyDataFrame) -> PyResult<Self> {
+        let new_df = self.df.intersect(py_df.df)?;
+        Ok(Self::new(new_df))
+    }
+
+    /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
+    fn except_all(&self, py_df: PyDataFrame) -> PyResult<Self> {
+        let new_df = self.df.except(py_df.df)?;
+        Ok(Self::new(new_df))
+    }
 }

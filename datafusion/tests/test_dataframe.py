@@ -256,3 +256,54 @@ def test_repartition(df):
 
 def test_repartition_by_hash(df):
     df.repartition_by_hash(column("a"), num=2)
+
+
+def test_intersect():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3]), pa.array([6])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+
+    df_c.show()
+    df_a.intersect(df_b).sort(column("a").sort(ascending=True)).show()
+
+    assert df_c.collect() == df_a.intersect(df_b).sort(column("a").sort(ascending=True)).collect()
+
+
+def test_except_all():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+
+    assert df_c.collect() == df_a.except_all(df_b).sort(column("a").sort(ascending=True)).collect()
