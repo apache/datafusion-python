@@ -351,10 +351,7 @@ def test_union(ctx):
         column("a").sort(ascending=True)
     )
 
-    assert (
-        df_c.collect()
-        == df_a.union(df_b).sort(column("a").sort(ascending=True)).collect()
-    )
+    assert df_c == df_a.union(df_b).sort(column("a").sort(ascending=True))
 
 
 def test_union_distinct(ctx):
@@ -378,15 +375,9 @@ def test_union_distinct(ctx):
         column("a").sort(ascending=True)
     )
 
-    assert (
-        df_c.collect()
-        == df_a.union(df_b, True)
-        .sort(column("a").sort(ascending=True))
-        .collect()
+    assert df_c == df_a.union(df_b, True).sort(
+        column("a").sort(ascending=True)
     )
-    assert (
-        df_c.collect()
-        == df_a.union_distinct(df_b)
-        .sort(column("a").sort(ascending=True))
-        .collect()
+    assert df_c == df_a.union_distinct(df_b).sort(
+        column("a").sort(ascending=True)
     )
