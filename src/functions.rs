@@ -17,9 +17,8 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
-use datafusion::logical_plan;
 use datafusion::physical_plan::aggregates::AggregateFunction;
-use datafusion_expr::BuiltinScalarFunction;
+use datafusion_expr::{BuiltinScalarFunction, Expr};
 
 use crate::errors;
 use crate::expression::PyExpr;
@@ -27,13 +26,13 @@ use crate::expression::PyExpr;
 #[pyfunction]
 fn array(value: Vec<PyExpr>) -> PyExpr {
     PyExpr {
-        expr: logical_plan::array(value.into_iter().map(|x| x.expr).collect::<Vec<_>>()),
+        expr: datafusion_expr::array(value.into_iter().map(|x| x.expr).collect::<Vec<_>>()),
     }
 }
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
-    logical_plan::in_list(
+    datafusion_expr::in_list(
         expr.expr,
         value.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
         negated,
@@ -45,8 +44,7 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 #[pyfunction]
 fn now() -> PyExpr {
     PyExpr {
-        // here lit(0) is a stub for conform to arity
-        expr: logical_plan::now(logical_plan::lit(0)),
+        expr: datafusion_expr::expr_fn::now(),
     }
 }
 
@@ -54,7 +52,7 @@ fn now() -> PyExpr {
 #[pyfunction]
 fn random() -> PyExpr {
     PyExpr {
-        expr: logical_plan::random(),
+        expr: datafusion_expr::random(),
     }
 }
 
@@ -63,7 +61,7 @@ fn random() -> PyExpr {
 #[pyfunction(value, method)]
 fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
     PyExpr {
-        expr: logical_plan::digest(value.expr, method.expr),
+        expr: datafusion_expr::digest(value.expr, method.expr),
     }
 }
 
@@ -72,7 +70,7 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 #[pyfunction(args = "*")]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(logical_plan::concat(&args).into())
+    Ok(datafusion_expr::concat(&args).into())
 }
 
 /// Concatenates all but the first argument, with separators.
@@ -81,14 +79,14 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 #[pyfunction(sep, args = "*")]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(logical_plan::concat_ws(sep, &args).into())
+    Ok(datafusion_expr::concat_ws(sep, &args).into())
 }
 
 /// Creates a new Sort expression
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion::logical_plan::Expr::Sort {
+        expr: Expr::Sort {
             expr: Box::new(expr.expr),
             asc: asc.unwrap_or(true),
             nulls_first: nulls_first.unwrap_or(true),
@@ -100,7 +98,7 @@ fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyRes
 #[pyfunction]
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion::logical_plan::Expr::Alias(Box::new(expr.expr), String::from(name)),
+        expr: Expr::Alias(Box::new(expr.expr), String::from(name)),
     })
 }
 
@@ -116,7 +114,7 @@ fn window(
     let fun = datafusion_expr::window_function::WindowFunction::from_str(name)
         .map_err(|e| -> errors::DataFusionError { e.into() })?;
     Ok(PyExpr {
-        expr: datafusion::logical_plan::Expr::WindowFunction {
+        expr: Expr::WindowFunction {
             fun,
             args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
             partition_by: partition_by
@@ -142,7 +140,7 @@ macro_rules! scalar_function {
         #[doc = $DOC]
         #[pyfunction(args = "*")]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
-            let expr = logical_plan::Expr::ScalarFunction {
+            let expr = datafusion_expr::Expr::ScalarFunction {
                 fun: BuiltinScalarFunction::$FUNC,
                 args: args.into_iter().map(|e| e.into()).collect(),
             };
@@ -159,7 +157,7 @@ macro_rules! aggregate_function {
         #[doc = $DOC]
         #[pyfunction(args = "*", distinct = "false")]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
-            let expr = logical_plan::Expr::AggregateFunction {
+            let expr = datafusion_expr::Expr::AggregateFunction {
                 fun: AggregateFunction::$FUNC,
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,

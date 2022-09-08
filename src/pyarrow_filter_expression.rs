@@ -21,8 +21,8 @@ use pyo3::prelude::*;
 use std::convert::TryFrom;
 use std::result::Result;
 
-use datafusion::logical_plan::*;
-use datafusion_common::ScalarValue;
+use datafusion_common::{Column, ScalarValue};
+use datafusion_expr::{Expr, Operator};
 
 use crate::errors::DataFusionError;
 
