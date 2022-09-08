@@ -93,6 +93,13 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    /// Rename one column by applying a new projection. This is a no-op if the column to be
+    /// renamed does not exist.
+    fn with_column_renamed(&self, old_name: &str, new_name: &str) -> PyResult<Self> {
+        let df = self.df.with_column_renamed(old_name, new_name)?;
+        Ok(Self::new(df))
+    }
+
     fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();

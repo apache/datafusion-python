@@ -118,6 +118,18 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
+def test_with_column_renamed(df):
+    df = df.with_column("c", column("a") + column("b")).with_column_renamed(
+        "c", "sum"
+    )
+
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "sum"
+
+
 def test_udf(df):
     # is_null is a pa function over arrays
     is_null = udf(
