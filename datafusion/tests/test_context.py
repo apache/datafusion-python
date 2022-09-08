@@ -178,4 +178,4 @@ def test_table_exist(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.table_exist("t") == True
+    assert ctx.table_exist("t") is True
