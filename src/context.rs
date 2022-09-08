@@ -34,6 +34,7 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::DataFusionError;
+use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::wait_for_future;
 
@@ -224,6 +225,11 @@ impl PySessionContext {
 
     fn register_udf(&mut self, udf: PyScalarUDF) -> PyResult<()> {
         self.ctx.register_udf(udf.function);
+        Ok(())
+    }
+
+    fn register_udaf(&mut self, udaf: PyAggregateUDF) -> PyResult<()> {
+        self.ctx.register_udaf(udaf.function);
         Ok(())
     }
 
