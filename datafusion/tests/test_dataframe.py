@@ -23,6 +23,11 @@ from datafusion import DataFrame, SessionContext, column, literal, udf
 
 
 @pytest.fixture
+def ctx():
+    return SessionContext()
+
+
+@pytest.fixture
 def df():
     ctx = SessionContext()
 
@@ -323,3 +328,48 @@ def test_collect_partitioned():
     )
 
     assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
+
+
+def test_union(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+
+    assert df_c.collect() == df_a.union(df_b).sort(column("a").sort(ascending=True)).collect()
+
+
+def test_union_distinct(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+
+    assert df_c.collect() == df_a.union(df_b, True).sort(column("a").sort(ascending=True)).collect()
+    assert df_c.collect() == df_a.union_distinct(df_b).sort(column("a").sort(ascending=True)).collect()

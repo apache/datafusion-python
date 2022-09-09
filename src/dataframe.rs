@@ -204,6 +204,26 @@ impl PyDataFrame {
         Ok(Self::new(new_df))
     }
 
+    /// Calculate the union of two `DataFrame`s, preserving duplicate rows.The
+    /// two `DataFrame`s must have exactly the same schema
+    #[args(distinct = false)]
+    fn union(&self, py_df: PyDataFrame, distinct: bool) -> PyResult<Self> {
+        let new_df = if distinct {
+            self.df.union_distinct(py_df.df)?
+        } else {
+            self.df.union(py_df.df)?
+        };
+
+        Ok(Self::new(new_df))
+    }
+
+    /// Calculate the distinct union of two `DataFrame`s.  The
+    /// two `DataFrame`s must have exactly the same schema
+    fn union_distinct(&self, py_df: PyDataFrame) -> PyResult<Self> {
+        let new_df = self.df.union_distinct(py_df.df)?;
+        Ok(Self::new(new_df))
+    }
+
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn intersect(&self, py_df: PyDataFrame) -> PyResult<Self> {
         let new_df = self.df.intersect(py_df.df)?;
