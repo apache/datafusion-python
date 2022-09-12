@@ -21,7 +21,7 @@ version = "0.6.0"
 homepage = "https://github.com/apache/arrow"
 repository = "https://github.com/apache/arrow"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
-description = "Build and run queries against data"
+description = "Python bindings for Apache Arrow DataFusion query engine"
 readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
@@ -34,9 +34,9 @@ default = ["mimalloc"]
 tokio = { version = "1.0", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.7"
 pyo3 = { version = "~0.17.1", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { git = "https://github.com/apache/arrow-datafusion", rev = "42587518f2899dbca102c97ad93873d25d906aad", features = ["pyarrow"] }
-datafusion-expr = { git = "https://github.com/apache/arrow-datafusion", rev = "42587518f2899dbca102c97ad93873d25d906aad" }
-datafusion-common = { git = "https://github.com/apache/arrow-datafusion", rev = "42587518f2899dbca102c97ad93873d25d906aad", features = ["pyarrow"] }
+datafusion = { git = "https://github.com/apache/arrow-datafusion", rev = "12.0.0-rc1", features = ["pyarrow"] }
+datafusion-expr = { git = "https://github.com/apache/arrow-datafusion", rev = "12.0.0-rc1" }
+datafusion-common = { git = "https://github.com/apache/arrow-datafusion", rev = "12.0.0-rc1", features = ["pyarrow"] }
 uuid = { version = "0.8", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
