@@ -312,3 +312,14 @@ def test_except_all():
     df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
 
     assert df_c.collect() == df_a_e_b.collect()
+
+
+def test_collect_partitioned():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()

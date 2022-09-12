@@ -129,6 +129,17 @@ impl PyDataFrame {
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
     }
 
+    /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
+    /// maintaining the input partitioning.
+    fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
+        let batches = wait_for_future(py, self.df.collect_partitioned())?;
+
+        batches
+            .into_iter()
+            .map(|rbs| rbs.into_iter().map(|rb| rb.to_pyarrow(py)).collect())
+            .collect()
+    }
+
     /// Print the result, 20 lines by default
     #[args(num = "20")]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
