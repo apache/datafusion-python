@@ -21,7 +21,6 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::PyArrowConvert;
 use datafusion::arrow::util::pretty;
 use datafusion::dataframe::DataFrame;
-use datafusion::logical_plan::JoinType;
 use datafusion::prelude::*;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
@@ -115,7 +114,7 @@ impl PyDataFrame {
     }
 
     fn limit(&self, count: usize) -> PyResult<Self> {
-        let df = self.df.limit(None, Some(count))?;
+        let df = self.df.limit(0, Some(count))?;
         Ok(Self::new(df))
     }
 
@@ -143,7 +142,7 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[args(num = "20")]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
-        let df = self.df.limit(None, Some(num))?;
+        let df = self.df.limit(0, Some(num))?;
         let batches = wait_for_future(py, df.collect())?;
         Ok(pretty::print_batches(&batches)?)
     }
