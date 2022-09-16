@@ -23,9 +23,9 @@ use datafusion::arrow::array::ArrayRef;
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowConvert;
 use datafusion::error::DataFusionError;
-use datafusion::logical_plan;
 use datafusion::physical_plan::functions::make_scalar_function;
 use datafusion::physical_plan::udf::ScalarUDF;
+use datafusion_expr::create_udf;
 use datafusion_expr::function::ScalarFunctionImplementation;
 
 use crate::expression::PyExpr;
@@ -77,7 +77,7 @@ impl PyScalarUDF {
         return_type: DataType,
         volatility: &str,
     ) -> PyResult<Self> {
-        let function = logical_plan::create_udf(
+        let function = create_udf(
             name,
             input_types,
             Arc::new(return_type),

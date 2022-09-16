@@ -133,7 +133,7 @@ def test_dataset_filter(ctx, capfd):
     # Make sure the filter was pushed down in Physical Plan
     df.explain()
     captured = capfd.readouterr()
-    assert "filter_expr=(((2 <= a) and (a <= 3)) and (b > 5))" in captured.out
+    assert "filter_expr=(((a >= 2) and (a <= 3)) and (b > 5))" in captured.out
 
     result = df.collect()
 
