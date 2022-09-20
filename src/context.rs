@@ -24,6 +24,7 @@ use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
 use datafusion::arrow::datatypes::Schema;
+use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
@@ -99,9 +100,16 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    fn create_dataframe(&mut self, partitions: Vec<Vec<RecordBatch>>) -> PyResult<PyDataFrame> {
-        let table = MemTable::try_new(partitions[0][0].schema(), partitions)
-            .map_err(DataFusionError::from)?;
+    fn create_dataframe(
+        &mut self,
+        partitions: Vec<Vec<PyArrowType<RecordBatch>>>,
+    ) -> PyResult<PyDataFrame> {
+        let schema = partitions[0][0].0.schema();
+        let partitions = partitions
+            .into_iter()
+            .map(|x| x.into_iter().map(|x| x.0).collect())
+            .collect();
+        let table = MemTable::try_new(schema, partitions).map_err(DataFusionError::from)?;
 
         // generate a random (unique) name for this table
         // table name cannot start with numeric digit
@@ -136,9 +144,13 @@ impl PySessionContext {
     fn register_record_batches(
         &mut self,
         name: &str,
-        partitions: Vec<Vec<RecordBatch>>,
+        partitions: Vec<Vec<PyArrowType<RecordBatch>>>,
     ) -> PyResult<()> {
-        let schema = partitions[0][0].schema();
+        let schema = partitions[0][0].0.schema();
+        let partitions = partitions
+            .into_iter()
+            .map(|x| x.into_iter().map(|x| x.0).collect())
+            .collect();
         let table = MemTable::try_new(schema, partitions)?;
         self.ctx
             .register_table(name, Arc::new(table))
@@ -182,7 +194,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: PathBuf,
-        schema: Option<Schema>,
+        schema: Option<PyArrowType<Schema>>,
         has_header: bool,
         delimiter: &str,
         schema_infer_max_records: usize,
@@ -204,7 +216,7 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension);
-        options.schema = schema.as_ref();
+        options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_csv(name, path, options);
         wait_for_future(py, result).map_err(DataFusionError::from)?;

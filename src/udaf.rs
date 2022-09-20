@@ -21,7 +21,7 @@ use pyo3::{prelude::*, types::PyTuple};
 
 use datafusion::arrow::array::ArrayRef;
 use datafusion::arrow::datatypes::DataType;
-use datafusion::arrow::pyarrow::PyArrowConvert;
+use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion_expr::{
@@ -120,18 +120,18 @@ impl PyAggregateUDF {
     fn new(
         name: &str,
         accumulator: PyObject,
-        input_type: DataType,
-        return_type: DataType,
-        state_type: Vec<DataType>,
+        input_type: PyArrowType<DataType>,
+        return_type: PyArrowType<DataType>,
+        state_type: Vec<PyArrowType<DataType>>,
         volatility: &str,
     ) -> PyResult<Self> {
         let function = create_udaf(
             name,
-            input_type,
-            Arc::new(return_type),
+            input_type.0,
+            Arc::new(return_type.0),
             parse_volatility(volatility)?,
             to_rust_accumulator(accumulator),
-            Arc::new(state_type),
+            Arc::new(state_type.into_iter().map(|x| x.0).collect()),
         );
         Ok(Self { function })
     }
