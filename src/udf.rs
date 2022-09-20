@@ -73,13 +73,13 @@ impl PyScalarUDF {
     fn new(
         name: &str,
         func: PyObject,
-        input_types: Vec<PyArrowType<DataType>>,
+        input_types: PyArrowType<Vec<DataType>>,
         return_type: PyArrowType<DataType>,
         volatility: &str,
     ) -> PyResult<Self> {
         let function = create_udf(
             name,
-            input_types.into_iter().map(|x| x.0).collect(),
+            input_types.0,
             Arc::new(return_type.0),
             parse_volatility(volatility)?,
             to_rust_function(func),

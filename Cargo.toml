@@ -55,10 +55,10 @@ codegen-units = 1
 
 
 [patch.crates-io]
-arrow = { git = "https://github.com/tustvold/arrow-rs.git", rev = "6f62bb62f630cbd910ae5b1b04f97688af7c1b42" }
-parquet = { git = "https://github.com/tustvold/arrow-rs.git", rev = "6f62bb62f630cbd910ae5b1b04f97688af7c1b42" }
-arrow-buffer = { git = "https://github.com/tustvold/arrow-rs.git", rev = "6f62bb62f630cbd910ae5b1b04f97688af7c1b42" }
-arrow-schema = { git = "https://github.com/tustvold/arrow-rs.git", rev = "6f62bb62f630cbd910ae5b1b04f97688af7c1b42" }
+arrow = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
+parquet = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
+arrow-buffer = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
+arrow-schema = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
 
 datafusion = { git = "https://github.com/tustvold/arrow-datafusion.git", rev = "9de354bf45c0cc4121af04ea8138df7fddab76ed" }
 datafusion-expr = { git = "https://github.com/tustvold/arrow-datafusion.git", rev = "9de354bf45c0cc4121af04ea8138df7fddab76ed" }

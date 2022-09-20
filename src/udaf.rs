@@ -122,7 +122,7 @@ impl PyAggregateUDF {
         accumulator: PyObject,
         input_type: PyArrowType<DataType>,
         return_type: PyArrowType<DataType>,
-        state_type: Vec<PyArrowType<DataType>>,
+        state_type: PyArrowType<Vec<DataType>>,
         volatility: &str,
     ) -> PyResult<Self> {
         let function = create_udaf(
@@ -131,7 +131,7 @@ impl PyAggregateUDF {
             Arc::new(return_type.0),
             parse_volatility(volatility)?,
             to_rust_accumulator(accumulator),
-            Arc::new(state_type.into_iter().map(|x| x.0).collect()),
+            Arc::new(state_type.0),
         );
         Ok(Self { function })
     }

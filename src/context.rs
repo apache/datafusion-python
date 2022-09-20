@@ -102,14 +102,10 @@ impl PySessionContext {
 
     fn create_dataframe(
         &mut self,
-        partitions: Vec<Vec<PyArrowType<RecordBatch>>>,
+        partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
     ) -> PyResult<PyDataFrame> {
-        let schema = partitions[0][0].0.schema();
-        let partitions = partitions
-            .into_iter()
-            .map(|x| x.into_iter().map(|x| x.0).collect())
-            .collect();
-        let table = MemTable::try_new(schema, partitions).map_err(DataFusionError::from)?;
+        let schema = partitions.0[0][0].schema();
+        let table = MemTable::try_new(schema, partitions.0).map_err(DataFusionError::from)?;
 
         // generate a random (unique) name for this table
         // table name cannot start with numeric digit
@@ -144,14 +140,10 @@ impl PySessionContext {
     fn register_record_batches(
         &mut self,
         name: &str,
-        partitions: Vec<Vec<PyArrowType<RecordBatch>>>,
+        partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
     ) -> PyResult<()> {
-        let schema = partitions[0][0].0.schema();
-        let partitions = partitions
-            .into_iter()
-            .map(|x| x.into_iter().map(|x| x.0).collect())
-            .collect();
-        let table = MemTable::try_new(schema, partitions)?;
+        let schema = partitions.0[0][0].schema();
+        let table = MemTable::try_new(schema, partitions.0)?;
         self.ctx
             .register_table(name, Arc::new(table))
             .map_err(DataFusionError::from)?;
