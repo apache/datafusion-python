@@ -18,6 +18,7 @@
 use std::path::PathBuf;
 use std::{collections::HashSet, sync::Arc};
 
+use url::Url;
 use uuid::Uuid;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -25,10 +26,15 @@ use pyo3::prelude::*;
 
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::common::Result;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
+
+use object_store::aws::{AmazonS3, AmazonS3Builder};
+use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
+use object_store::{ObjectMeta, ObjectStore};
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
@@ -90,6 +96,45 @@ impl PySessionContext {
         PySessionContext {
             ctx: SessionContext::with_config(cfg_full),
         }
+    }
+
+    /// Register an object store the datafusion runtime environment
+    /// 
+    /// Returns the scheme of the registered object store (e.g. "s3" or "gs")
+    fn register_object_store(&mut self, object_store_url: String) -> PyResult<String> {
+        let uri = Url::parse(&object_store_url)
+            .map_err(|_| DataFusionError::Common("failed to parse uri".to_string()))?;
+        let bucket_name = uri
+            .host_str()
+            .ok_or_else(|| DataFusionError::Common("failed to get bucket name".to_string()))?;
+        let scheme = uri.scheme();
+
+        let store: Arc<dyn ObjectStore> = match scheme {
+            "s3" => Arc::new(
+                tokio::runtime::Runtime::new()
+                    .unwrap()
+                    .block_on(async move {
+                        AmazonS3Builder::from_env()
+                            .build()
+                            .expect("failed to build s3 client from env")
+                    }),
+            ),
+            "gcs" => Arc::new(
+                GoogleCloudStorageBuilder::new()
+                    .with_bucket_name(bucket_name)
+                    .build()
+                    .map_err(|_| {
+                        DataFusionError::Common("failed to build gcs client".to_string())
+                    })?,
+            ),
+            _ => unimplemented!(),
+        };
+
+        self.ctx
+            .runtime_env()
+            .register_object_store(scheme, &bucket_name, store);
+
+        Ok(scheme.to_string())
     }
 
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
@@ -264,4 +309,33 @@ impl PySessionContext {
     fn session_id(&self) -> PyResult<String> {
         Ok(self.ctx.session_id())
     }
+}
+
+async fn build_s3_from_sdk_config(bucket_name: &str, sdk_config: &SdkConfig) -> Result<AmazonS3> {
+    let credentials_providder = sdk_config
+        .credentials_provider()
+        .expect("could not find credentials provider");
+    let credentials = credentials_providder
+        .provide_credentials()
+        .await
+        .expect("could not load credentials");
+
+    let s3_builder = AmazonS3Builder::from_env()
+        .with_bucket_name(bucket_name)
+        .with_region(
+            sdk_config
+                .region()
+                .expect("could not find region")
+                .to_string(),
+        )
+        .with_access_key_id(credentials.access_key_id())
+        .with_secret_access_key(credentials.secret_access_key());
+
+    let s3 = match credentials.session_token() {
+        Some(session_token) => s3_builder.with_token(session_token),
+        None => s3_builder,
+    }
+    .build()?;
+
+    Ok(s3)
 }
