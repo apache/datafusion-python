@@ -25,6 +25,7 @@ use object_store::aws::{AmazonS3, AmazonS3Builder};
 #[derive(Debug)]
 pub(crate) struct PyAmazonS3Context {
     pub store: Arc<AmazonS3>,
+    pub bucket_name: String,
 }
 
 #[pymethods]
@@ -73,7 +74,7 @@ impl PyAmazonS3Context {
         };
 
         let store = builder
-            .with_bucket_name(bucket_name)
+            .with_bucket_name(bucket_name.clone())
             //.with_retry_config(retry_config) #TODO: add later
             .with_allow_http(allow_http)
             .build()
@@ -81,6 +82,7 @@ impl PyAmazonS3Context {
 
         Self {
             store: Arc::new(store),
+            bucket_name,
         }
     }
 }

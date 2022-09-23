@@ -95,8 +95,14 @@ impl PySessionContext {
     }
 
     /// Register a an object store with the given name
-    fn register_object_store(&mut self, scheme: &str, bucket_name: &str, store: &PyAmazonS3Context) -> PyResult<()> {
-        self.ctx.runtime_env().register_object_store(scheme, bucket_name, store.store.clone());
+    fn register_object_store(&mut self, scheme: &str, store: &PyAmazonS3Context, host: Option<&str>) -> PyResult<()> {
+        let derived_host = match host {
+            Some(b) => b,
+            None => {
+                &store.bucket_name
+            }
+        };
+        self.ctx.runtime_env().register_object_store(scheme, derived_host, store.store.clone());
         Ok(())
     }
 
