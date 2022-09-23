@@ -16,8 +16,8 @@
 # under the License.
 
 
-from ._internal import store
+from ._internal import object_store
 
 
 def __getattr__(name):
-    return getattr(store, name)
+    return getattr(object_store, name)

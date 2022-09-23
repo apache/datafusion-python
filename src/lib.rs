@@ -66,7 +66,7 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     functions::init_module(funcs)?;
     m.add_submodule(funcs)?;
 
-    let store = PyModule::new(py, "store")?;
+    let store = PyModule::new(py, "object_store")?;
     store::init_module(store)?;
     m.add_submodule(store)?;
 
