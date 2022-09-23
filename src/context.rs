@@ -98,7 +98,7 @@ impl PySessionContext {
         }
     }
 
-    /// Register an object store the datafusion runtime environment
+    /// Register an object store w/ the datafusion runtime environment
     /// 
     /// Returns the scheme of the registered object store (e.g. "s3" or "gs")
     fn register_object_store(&mut self, object_store_url: String) -> PyResult<String> {
@@ -309,33 +309,4 @@ impl PySessionContext {
     fn session_id(&self) -> PyResult<String> {
         Ok(self.ctx.session_id())
     }
-}
-
-async fn build_s3_from_sdk_config(bucket_name: &str, sdk_config: &SdkConfig) -> Result<AmazonS3> {
-    let credentials_providder = sdk_config
-        .credentials_provider()
-        .expect("could not find credentials provider");
-    let credentials = credentials_providder
-        .provide_credentials()
-        .await
-        .expect("could not load credentials");
-
-    let s3_builder = AmazonS3Builder::from_env()
-        .with_bucket_name(bucket_name)
-        .with_region(
-            sdk_config
-                .region()
-                .expect("could not find region")
-                .to_string(),
-        )
-        .with_access_key_id(credentials.access_key_id())
-        .with_secret_access_key(credentials.secret_access_key());
-
-    let s3 = match credentials.session_token() {
-        Some(session_token) => s3_builder.with_token(session_token),
-        None => s3_builder,
-    }
-    .build()?;
-
-    Ok(s3)
 }
