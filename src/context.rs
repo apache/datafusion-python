@@ -18,7 +18,6 @@
 use std::path::PathBuf;
 use std::{collections::HashSet, sync::Arc};
 
-use url::Url;
 use uuid::Uuid;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -31,10 +30,6 @@ use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
 
-use object_store::aws::AmazonS3Builder;
-use object_store::gcp::GoogleCloudStorageBuilder;
-use object_store::ObjectStore;
-
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
@@ -42,6 +37,8 @@ use crate::errors::DataFusionError;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::wait_for_future;
+use crate::store::PyAmazonS3Context;
+
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -97,45 +94,10 @@ impl PySessionContext {
         }
     }
 
-    /// Register an object store w/ the datafusion runtime environment
-    /// 
-    /// Returns the scheme of the registered object store (e.g. "s3" or "gcs")
-    fn register_object_store(&mut self, object_store_url: String) -> PyResult<String> {
-        let uri = Url::parse(&object_store_url)
-            .map_err(|_| DataFusionError::Common("failed to parse uri".to_string()))?;
-        let bucket_name = uri
-            .host_str()
-            .ok_or_else(|| DataFusionError::Common("failed to get bucket name".to_string()))?;
-        let scheme = uri.scheme();
-
-        let store: Arc<dyn ObjectStore> = match scheme {
-            "s3" => Arc::new(
-                tokio::runtime::Runtime::new()
-                    .unwrap()
-                    .block_on(async {
-                        AmazonS3Builder::from_env()
-                            .with_bucket_name(bucket_name)
-                            .with_region(std::env::var("AWS_DEFAULT_REGION").unwrap_or_else(|_| "us-east-1".to_string()))
-                            .build()
-                            .expect("failed to build s3 client from env")
-                    }),
-            ),
-            "gcs" => Arc::new(
-                GoogleCloudStorageBuilder::new()
-                    .with_bucket_name(bucket_name)
-                    .build()
-                    .map_err(|_| {
-                        DataFusionError::Common("failed to build gcs client".to_string())
-                    })?,
-            ),
-            _ => unimplemented!(),
-        };
-
-        self.ctx
-            .runtime_env()
-            .register_object_store(scheme, &bucket_name, store);
-
-        Ok(scheme.to_string())
+    /// Register a an object store with the given name
+    fn register_object_store(&mut self, scheme: &str, bucket_name: &str, store: &PyAmazonS3Context) -> PyResult<()> {
+        self.ctx.runtime_env().register_object_store(scheme, bucket_name, store.store.clone());
+        Ok(())
     }
 
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.

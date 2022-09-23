@@ -38,6 +38,8 @@ mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
+pub mod store;
+
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
@@ -63,6 +65,10 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     let funcs = PyModule::new(py, "functions")?;
     functions::init_module(funcs)?;
     m.add_submodule(funcs)?;
+
+    let store = PyModule::new(py, "store")?;
+    store::init_module(store)?;
+    m.add_submodule(store)?;
 
     Ok(())
 }
