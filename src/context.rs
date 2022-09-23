@@ -26,15 +26,14 @@ use pyo3::prelude::*;
 
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::common::Result;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
 
-use object_store::aws::{AmazonS3, AmazonS3Builder};
-use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
-use object_store::{ObjectMeta, ObjectStore};
+use object_store::aws::AmazonS3Builder;
+use object_store::gcp::GoogleCloudStorageBuilder;
+use object_store::ObjectStore;
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
@@ -100,7 +99,7 @@ impl PySessionContext {
 
     /// Register an object store w/ the datafusion runtime environment
     /// 
-    /// Returns the scheme of the registered object store (e.g. "s3" or "gs")
+    /// Returns the scheme of the registered object store (e.g. "s3" or "gcs")
     fn register_object_store(&mut self, object_store_url: String) -> PyResult<String> {
         let uri = Url::parse(&object_store_url)
             .map_err(|_| DataFusionError::Common("failed to parse uri".to_string()))?;
