@@ -112,7 +112,7 @@ impl PySessionContext {
             "s3" => Arc::new(
                 tokio::runtime::Runtime::new()
                     .unwrap()
-                    .block_on(async move {
+                    .block_on(async {
                         AmazonS3Builder::from_env()
                             .build()
                             .expect("failed to build s3 client from env")
