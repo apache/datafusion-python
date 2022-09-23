@@ -114,6 +114,8 @@ impl PySessionContext {
                     .unwrap()
                     .block_on(async {
                         AmazonS3Builder::from_env()
+                            .with_bucket_name(bucket_name)
+                            .with_region(std::env::var("AWS_DEFAULT_REGION").unwrap_or_else(|_| "us-east-1".to_string()))
                             .build()
                             .expect("failed to build s3 client from env")
                     }),
