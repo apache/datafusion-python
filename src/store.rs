@@ -110,7 +110,7 @@ impl PyMicrosoftAzureContext {
             inner: Arc::new(
                 builder
                     .build()
-                    .expect("Could not create Google Cloud Storage"),
+                    .expect("Could not create Azure Storage context"), //TODO: change these to PyErr
             ),
             container_name,
         }
