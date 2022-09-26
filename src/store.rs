@@ -20,11 +20,53 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 
 use object_store::aws::{AmazonS3, AmazonS3Builder};
+use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
+
+#[derive(FromPyObject)]
+pub enum StorageContexts {
+    AmazonS3(PyAmazonS3Context),
+    GoogleCloudStorage(PyGoogleCloudContext),
+}
+
+#[pyclass(
+    name = "GoogleCloud",
+    module = "datafusion.store",
+    subclass,
+    unsendable
+)]
+#[derive(Debug, Clone)]
+pub struct PyGoogleCloudContext {
+    pub inner: Arc<GoogleCloudStorage>,
+    pub bucket_name: String,
+}
+
+#[pymethods]
+impl PyGoogleCloudContext {
+    #[allow(clippy::too_many_arguments)]
+    #[args(service_account_path = "None")]
+    #[new]
+    fn new(bucket_name: String, service_account_path: Option<String>) -> Self {
+        let mut builder = GoogleCloudStorageBuilder::new().with_bucket_name(&bucket_name);
+
+        if let Some(credential_path) = service_account_path {
+            builder = builder.with_service_account_path(credential_path);
+        }
+
+        Self {
+            inner: Arc::new(
+                builder
+                    .build()
+                    .expect("Could not create Google Cloud Storage"),
+            ),
+            bucket_name,
+        }
+    }
+}
 
 #[pyclass(name = "AmazonS3", module = "datafusion.store", subclass, unsendable)]
-#[derive(Debug)]
-pub(crate) struct PyAmazonS3Context {
-    pub store: Arc<AmazonS3>,
+#[derive(Debug, Clone)]
+pub struct PyAmazonS3Context {
+    pub inner: Arc<AmazonS3>,
     pub bucket_name: String,
 }
 
@@ -81,12 +123,11 @@ impl PyAmazonS3Context {
             .expect("failed to build AmazonS3");
 
         Self {
-            store: Arc::new(store),
+            inner: Arc::new(store),
             bucket_name,
         }
     }
 }
-
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyAmazonS3Context>()?;

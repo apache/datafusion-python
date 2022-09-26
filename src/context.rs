@@ -15,9 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashSet;
 use std::path::PathBuf;
-use std::{collections::HashSet, sync::Arc};
+use std::sync::Arc;
 
+use object_store::ObjectStore;
 use uuid::Uuid;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -34,11 +36,10 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::DataFusionError;
+use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::wait_for_future;
-use crate::store::PyAmazonS3Context;
-
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -95,14 +96,33 @@ impl PySessionContext {
     }
 
     /// Register a an object store with the given name
-    fn register_object_store(&mut self, scheme: &str, store: &PyAmazonS3Context, host: Option<&str>) -> PyResult<()> {
-        let derived_host = match host {
-            Some(b) => b,
-            None => {
-                &store.bucket_name
-            }
+    fn register_object_store(
+        &mut self,
+        scheme: &str,
+        store: &PyAny,
+        host: Option<&str>,
+    ) -> PyResult<()> {
+        let res: Result<(Arc<dyn ObjectStore>, String), PyErr> =
+            match StorageContexts::extract(store) {
+                Ok(store) => match store {
+                    StorageContexts::AmazonS3(s3) => Ok((s3.inner, s3.bucket_name)),
+                    StorageContexts::GoogleCloudStorage(gcs) => Ok((gcs.inner, gcs.bucket_name)),
+                },
+                Err(_e) => Err(PyValueError::new_err("Invalid object store")),
+            };
+
+        // for most stores the "host" is the bucket name
+        let (store, upstream_host) = res?;
+
+        let derived_host = if let Some(host) = host {
+            host
+        } else {
+            &upstream_host
         };
-        self.ctx.runtime_env().register_object_store(scheme, derived_host, store.store.clone());
+
+        self.ctx
+            .runtime_env()
+            .register_object_store(scheme, derived_host, store);
         Ok(())
     }
 
