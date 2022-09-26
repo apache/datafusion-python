@@ -20,12 +20,101 @@ use std::sync::Arc;
 use pyo3::prelude::*;
 
 use object_store::aws::{AmazonS3, AmazonS3Builder};
+use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
 
 #[derive(FromPyObject)]
 pub enum StorageContexts {
     AmazonS3(PyAmazonS3Context),
     GoogleCloudStorage(PyGoogleCloudContext),
+    MicrosoftAzure(PyMicrosoftAzureContext),
+}
+
+#[pyclass(
+    name = "MicrosoftAzure",
+    module = "datafusion.store",
+    subclass,
+    unsendable
+)]
+#[derive(Debug, Clone)]
+pub struct PyMicrosoftAzureContext {
+    pub inner: Arc<MicrosoftAzure>,
+    pub container_name: String,
+}
+
+#[pymethods]
+impl PyMicrosoftAzureContext {
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        account = "None",
+        access_key = "None",
+        bearer_token = "None",
+        client_id = "None",
+        client_secret = "None",
+        tenant_id = "None",
+        sas_query_pairs = "None",
+        use_emulator = "None",
+        allow_http = "None"
+    )]
+    #[new]
+    fn new(
+        container_name: String,
+        account: Option<String>,
+        access_key: Option<String>,
+        bearer_token: Option<String>,
+        client_id: Option<String>,
+        client_secret: Option<String>,
+        tenant_id: Option<String>,
+        sas_query_pairs: Option<Vec<(String, String)>>,
+        use_emulator: Option<bool>,
+        allow_http: Option<bool>,
+    ) -> Self {
+        let mut builder = MicrosoftAzureBuilder::from_env().with_container_name(&container_name);
+
+        if let Some(account) = account {
+            builder = builder.with_account(account);
+        }
+
+        if let Some(access_key) = access_key {
+            builder = builder.with_access_key(access_key);
+        }
+
+        if let Some(bearer_token) = bearer_token {
+            builder = builder.with_bearer_token_authorization(bearer_token);
+        }
+
+        match (client_id, client_secret, tenant_id) {
+            (Some(client_id), Some(client_secret), Some(tenant_id)) => {
+                builder =
+                    builder.with_client_secret_authorization(client_id, client_secret, tenant_id);
+            }
+            (None, None, None) => {}
+            _ => {
+                panic!("client_id, client_secret, tenat_id must be all set or all None");
+            }
+        }
+
+        if let Some(sas_query_pairs) = sas_query_pairs {
+            builder = builder.with_sas_authorization(sas_query_pairs);
+        }
+
+        if let Some(use_emulator) = use_emulator {
+            builder = builder.with_use_emulator(use_emulator);
+        }
+
+        if let Some(allow_http) = allow_http {
+            builder = builder.with_allow_http(allow_http);
+        }
+
+        Self {
+            inner: Arc::new(
+                builder
+                    .build()
+                    .expect("Could not create Google Cloud Storage"),
+            ),
+            container_name,
+        }
+    }
 }
 
 #[pyclass(
