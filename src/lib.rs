@@ -22,6 +22,8 @@ use pyo3::prelude::*;
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
 #[allow(clippy::borrow_deref_ref)]
+mod config;
+#[allow(clippy::borrow_deref_ref)]
 mod context;
 #[allow(clippy::borrow_deref_ref)]
 mod dataframe;
@@ -58,6 +60,7 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<expression::PyExpr>()?;
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
+    m.add_class::<config::PyConfig>()?;
 
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;

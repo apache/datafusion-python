@@ -19,7 +19,7 @@ use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
-use datafusion::logical_plan::{col, lit, Expr};
+use datafusion_expr::{col, lit, Expr};
 
 use datafusion::scalar::ScalarValue;
 

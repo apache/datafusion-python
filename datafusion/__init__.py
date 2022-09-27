@@ -23,22 +23,21 @@ try:
 except ImportError:
     import importlib_metadata
 
-
 import pyarrow as pa
 
 from ._internal import (
     AggregateUDF,
+    Config,
     DataFrame,
     SessionContext,
     Expression,
     ScalarUDF,
 )
 
-
 __version__ = importlib_metadata.version(__name__)
 
-
 __all__ = [
+    "Config",
     "DataFrame",
     "SessionContext",
     "Expression",
