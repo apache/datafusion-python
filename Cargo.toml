@@ -38,7 +38,6 @@ datafusion = { version = "^12.0.0", features = ["pyarrow"] }
 datafusion-expr = { version = "^12.0.0" }
 datafusion-common = { version = "^12.0.0", features = ["pyarrow"] }
 uuid = { version = "0.8", features = ["v4"] }
-url = "2.3"
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
