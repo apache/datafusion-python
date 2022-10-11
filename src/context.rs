@@ -28,7 +28,7 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
-use datafusion::prelude::{CsvReadOptions, ParquetReadOptions};
+use datafusion::prelude::{CsvReadOptions, ParquetReadOptions, NdJsonReadOptions};
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
@@ -263,5 +263,39 @@ impl PySessionContext {
 
     fn session_id(&self) -> PyResult<String> {
         Ok(self.ctx.session_id())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        schema = "None",
+        schema_infer_max_records = "1000",
+        file_extension = "\".json\"",
+        table_partition_cols = "vec![]",
+    )]
+    fn read_json(
+        &mut self,
+        path: PathBuf,
+        schema: Option<Schema>,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<String>,
+        py: Python
+    ) -> PyResult<PyDataFrame> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = NdJsonReadOptions::default()
+            .table_partition_cols(table_partition_cols);
+        options.schema = match schema {
+            Some(x) => Some(Arc::new(x)),
+            None    => None
+        };
+        options.schema_infer_max_records = schema_infer_max_records;
+        options.file_extension = file_extension;
+            
+        let result = self.ctx.read_json(path, options);
+        let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
+        Ok(PyDataFrame::new(df))
     }
 }

@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import os
+
 import pyarrow as pa
 import pyarrow.dataset as ds
 
@@ -179,3 +181,14 @@ def test_table_exist(ctx):
     ctx.register_dataset("t", dataset)
 
     assert ctx.table_exist("t") is True
+
+
+def test_read_json(ctx):
+    path = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(path, "data_test_context", "data.jsonl")
+    df = ctx.read_json(data_path, file_extension=".jsonl")
+    
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array(["a", "b", "c"])
+    assert result[0].column(1) == pa.array([1, 2, 3])
