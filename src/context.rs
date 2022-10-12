@@ -287,10 +287,7 @@ impl PySessionContext {
 
         let mut options = NdJsonReadOptions::default()
             .table_partition_cols(table_partition_cols);
-        options.schema = match schema {
-            Some(x) => Some(Arc::new(x)),
-            None    => None
-        };
+        options.schema = schema.map(Arc::new);
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
             
