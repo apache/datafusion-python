@@ -1,0 +1,6 @@
+[submodule "testing"]
+	path = testing
+	url = https://github.com/apache/arrow-testing.git
+[submodule "parquet"]
+	path = parquet
+	url = https://github.com/apache/parquet-testing.git

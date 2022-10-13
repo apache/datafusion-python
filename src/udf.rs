@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use pyo3::{prelude::*, types::PyTuple};
 
-use datafusion::arrow::array::ArrayRef;
+use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
 use datafusion::error::DataFusionError;
@@ -46,15 +46,14 @@ fn to_rust_function(func: PyObject) -> ScalarFunctionImplementation {
                 let py_args = PyTuple::new(py, py_args);
 
                 // 2. call function
-                let value = func.as_ref(py).call(py_args, None);
-                let value = match value {
-                    Ok(n) => Ok(n),
-                    Err(error) => Err(DataFusionError::Execution(format!("{:?}", error))),
-                }?;
+                let value = func
+                    .as_ref(py)
+                    .call(py_args, None)
+                    .map_err(|e| DataFusionError::Execution(format!("{:?}", e)))?;
 
                 // 3. cast to arrow::array::Array
-                let array = ArrayRef::from_pyarrow(value).unwrap();
-                Ok(array)
+                let array_data = ArrayData::from_pyarrow(value).unwrap();
+                Ok(make_array(array_data))
             })
         },
     )
