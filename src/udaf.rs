@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 use pyo3::{prelude::*, types::PyTuple};
 
-use datafusion::arrow::array::ArrayRef;
+use datafusion::arrow::array::{Array, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
 use datafusion::common::ScalarValue;
@@ -82,6 +82,7 @@ impl Accumulator for RustAccumulator {
 
             // 1. cast states to Pyarrow array
             let state = state
+                .data()
                 .to_pyarrow(py)
                 .map_err(|e| DataFusionError::Execution(format!("{}", e)))?;
 

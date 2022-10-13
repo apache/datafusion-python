@@ -234,4 +234,22 @@ impl PyDataFrame {
         let new_df = self.df.except(py_df.df)?;
         Ok(Self::new(new_df))
     }
+
+    /// Write a `DataFrame` to a CSV file.
+    fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_csv(path))?;
+        Ok(())
+    }
+
+    /// Write a `DataFrame` to a Parquet file.
+    fn write_parquet(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_parquet(path, None))?;
+        Ok(())
+    }
+
+    /// Executes a query and writes the results to a partitioned JSON file.
+    fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_json(path))?;
+        Ok(())
+    }
 }
