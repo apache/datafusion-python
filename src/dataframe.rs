@@ -18,7 +18,7 @@
 use crate::utils::wait_for_future;
 use crate::{errors::DataFusionError, expression::PyExpr};
 use datafusion::arrow::datatypes::Schema;
-use datafusion::arrow::pyarrow::PyArrowConvert;
+use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowException, PyArrowType};
 use datafusion::arrow::util::pretty;
 use datafusion::dataframe::DataFrame;
 use datafusion::prelude::*;
@@ -65,8 +65,8 @@ impl PyDataFrame {
     }
 
     /// Returns the schema from the logical plan
-    fn schema(&self) -> Schema {
-        self.df.schema().into()
+    fn schema(&self) -> PyArrowType<Schema> {
+        PyArrowType(self.df.schema().into())
     }
 
     #[args(args = "*")]
@@ -144,7 +144,7 @@ impl PyDataFrame {
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
         let df = self.df.limit(0, Some(num))?;
         let batches = wait_for_future(py, df.collect())?;
-        Ok(pretty::print_batches(&batches)?)
+        pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
     }
 
     /// Filter out duplicate rows
@@ -186,7 +186,7 @@ impl PyDataFrame {
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyResult<()> {
         let df = self.df.explain(verbose, analyze)?;
         let batches = wait_for_future(py, df.collect())?;
-        Ok(pretty::print_batches(&batches)?)
+        pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
@@ -233,5 +233,23 @@ impl PyDataFrame {
     fn except_all(&self, py_df: PyDataFrame) -> PyResult<Self> {
         let new_df = self.df.except(py_df.df)?;
         Ok(Self::new(new_df))
+    }
+
+    /// Write a `DataFrame` to a CSV file.
+    fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_csv(path))?;
+        Ok(())
+    }
+
+    /// Write a `DataFrame` to a Parquet file.
+    fn write_parquet(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_parquet(path, None))?;
+        Ok(())
+    }
+
+    /// Executes a query and writes the results to a partitioned JSON file.
+    fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
+        wait_for_future(py, self.df.write_json(path))?;
+        Ok(())
     }
 }

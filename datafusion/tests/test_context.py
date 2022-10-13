@@ -213,3 +213,18 @@ def test_read_json(ctx):
 
     assert result[0].column(0) == pa.array(["a", "b", "c"])
     assert result[0].column(1) == pa.array([1, 2, 3])
+
+
+def test_read_csv(ctx):
+    csv_df = ctx.read_csv(path="testing/data/csv/aggregate_test_100.csv")
+    csv_df.select(column("c1")).show()
+
+
+def test_read_parquet(ctx):
+    csv_df = ctx.read_parquet(path="parquet/data/alltypes_plain.parquet")
+    csv_df.show()
+
+
+def test_read_avro(ctx):
+    csv_df = ctx.read_avro(path="testing/data/avro/alltypes_plain.avro")
+    csv_df.show()

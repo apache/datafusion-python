@@ -24,11 +24,12 @@ use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
 use datafusion::arrow::datatypes::Schema;
+use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
-use datafusion::prelude::{CsvReadOptions, ParquetReadOptions, NdJsonReadOptions};
+use datafusion::prelude::{AvroReadOptions, CsvReadOptions, ParquetReadOptions, NdJsonReadOptions};
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
@@ -99,9 +100,12 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    fn create_dataframe(&mut self, partitions: Vec<Vec<RecordBatch>>) -> PyResult<PyDataFrame> {
-        let table = MemTable::try_new(partitions[0][0].schema(), partitions)
-            .map_err(DataFusionError::from)?;
+    fn create_dataframe(
+        &mut self,
+        partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
+    ) -> PyResult<PyDataFrame> {
+        let schema = partitions.0[0][0].schema();
+        let table = MemTable::try_new(schema, partitions.0).map_err(DataFusionError::from)?;
 
         // generate a random (unique) name for this table
         // table name cannot start with numeric digit
@@ -136,10 +140,10 @@ impl PySessionContext {
     fn register_record_batches(
         &mut self,
         name: &str,
-        partitions: Vec<Vec<RecordBatch>>,
+        partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
     ) -> PyResult<()> {
-        let schema = partitions[0][0].schema();
-        let table = MemTable::try_new(schema, partitions)?;
+        let schema = partitions.0[0][0].schema();
+        let table = MemTable::try_new(schema, partitions.0)?;
         self.ctx
             .register_table(name, Arc::new(table))
             .map_err(DataFusionError::from)?;
@@ -182,7 +186,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: PathBuf,
-        schema: Option<Schema>,
+        schema: Option<PyArrowType<Schema>>,
         has_header: bool,
         delimiter: &str,
         schema_infer_max_records: usize,
@@ -204,7 +208,7 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension);
-        options.schema = schema.as_ref();
+        options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_csv(name, path, options);
         wait_for_future(py, result).map_err(DataFusionError::from)?;
@@ -275,7 +279,7 @@ impl PySessionContext {
     fn read_json(
         &mut self,
         path: PathBuf,
-        schema: Option<Schema>,
+        schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
         table_partition_cols: Vec<String>,
@@ -287,12 +291,112 @@ impl PySessionContext {
 
         let mut options = NdJsonReadOptions::default()
             .table_partition_cols(table_partition_cols);
-        options.schema = schema.map(Arc::new);
+        options.schema = schema.map(|s| Arc::new(s.0));
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
             
         let result = self.ctx.read_json(path, options);
         let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
         Ok(PyDataFrame::new(df))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        schema = "None",
+        has_header = "true",
+        delimiter = "\",\"",
+        schema_infer_max_records = "1000",
+        file_extension = "\".csv\"",
+        table_partition_cols = "vec![]"
+    )]
+    fn read_csv(
+        &self,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        has_header: bool,
+        delimiter: &str,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<String>,
+        py: Python,
+    ) -> PyResult<PyDataFrame> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let delimiter = delimiter.as_bytes();
+        if delimiter.len() != 1 {
+            return Err(PyValueError::new_err(
+                "Delimiter must be a single character",
+            ));
+        };
+
+        let mut options = CsvReadOptions::new()
+            .has_header(has_header)
+            .delimiter(delimiter[0])
+            .schema_infer_max_records(schema_infer_max_records)
+            .file_extension(file_extension)
+            .table_partition_cols(table_partition_cols);
+
+        if let Some(py_schema) = schema {
+            options.schema = Some(&py_schema.0);
+            let result = self.ctx.read_csv(path, options);
+            let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
+            Ok(df)
+        } else {
+            let result = self.ctx.read_csv(path, options);
+            let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
+            Ok(df)
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        parquet_pruning = "true",
+        file_extension = "\".parquet\"",
+        table_partition_cols = "vec![]",
+        skip_metadata = "true"
+    )]
+    fn read_parquet(
+        &self,
+        path: &str,
+        table_partition_cols: Vec<String>,
+        parquet_pruning: bool,
+        file_extension: &str,
+        skip_metadata: bool,
+        py: Python,
+    ) -> PyResult<PyDataFrame> {
+        let mut options = ParquetReadOptions::default()
+            .table_partition_cols(table_partition_cols)
+            .parquet_pruning(parquet_pruning)
+            .skip_metadata(skip_metadata);
+        options.file_extension = file_extension;
+
+        let result = self.ctx.read_parquet(path, options);
+        let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
+        Ok(df)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[args(
+        schema = "None",
+        file_extension = "\".avro\"",
+        table_partition_cols = "vec![]"
+    )]
+    fn read_avro(
+        &self,
+        path: &str,
+        schema: Option<PyArrowType<Schema>>,
+        table_partition_cols: Vec<String>,
+        file_extension: &str,
+        py: Python,
+    ) -> PyResult<PyDataFrame> {
+        let mut options = AvroReadOptions::default().table_partition_cols(table_partition_cols);
+        options.file_extension = file_extension;
+        options.schema = schema.map(|s| Arc::new(s.0));
+
+        let result = self.ctx.read_avro(path, options);
+        let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
+        Ok(df)
     }
 }

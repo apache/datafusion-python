@@ -19,6 +19,7 @@ use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion_expr::{col, lit, Expr};
 
 use datafusion::scalar::ScalarValue;
@@ -125,12 +126,12 @@ impl PyExpr {
         self.expr.clone().is_null().into()
     }
 
-    pub fn cast(&self, to: DataType) -> PyExpr {
+    pub fn cast(&self, to: PyArrowType<DataType>) -> PyExpr {
         // self.expr.cast_to() requires DFSchema to validate that the cast
         // is supported, omit that for now
         let expr = Expr::Cast {
             expr: Box::new(self.expr.clone()),
-            data_type: to,
+            data_type: to.0,
         };
         expr.into()
     }
