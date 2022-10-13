@@ -163,6 +163,13 @@ python -m pip install -U pip
 python -m pip install -r requirements-310.txt
 ```
 
+The tests rely on test data in git submodules.
+
+```bash
+git submodule init
+git submodule update
+```
+
 Whenever rust code changes (your changes or via `git pull`):
 
 ```bash
