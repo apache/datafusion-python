@@ -33,13 +33,12 @@ mod expression;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
 mod pyarrow_filter_expression;
+pub mod store;
 #[allow(clippy::borrow_deref_ref)]
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
-pub mod store;
-
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
