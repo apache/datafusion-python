@@ -41,7 +41,7 @@ uuid = { version = "0.8", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
-object_store = { version = "0.5.0", features = ["aws", "gcp", "azure"] }
+object_store = { version = "0.5.1", features = ["aws", "gcp", "azure"] }
 
 [lib]
 name = "datafusion_python"
