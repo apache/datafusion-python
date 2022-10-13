@@ -2213,38 +2213,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-
-[[patch.unused]]
-name = "arrow"
-version = "23.0.0"
-source = "git+https://github.com/tustvold/arrow-rs.git?rev=4ec95e8b50d52084153575d85921d70041738f20#4ec95e8b50d52084153575d85921d70041738f20"
-
-[[patch.unused]]
-name = "arrow-buffer"
-version = "23.0.0"
-source = "git+https://github.com/tustvold/arrow-rs.git?rev=4ec95e8b50d52084153575d85921d70041738f20#4ec95e8b50d52084153575d85921d70041738f20"
-
-[[patch.unused]]
-name = "arrow-schema"
-version = "23.0.0"
-source = "git+https://github.com/tustvold/arrow-rs.git?rev=4ec95e8b50d52084153575d85921d70041738f20#4ec95e8b50d52084153575d85921d70041738f20"
-
-[[patch.unused]]
-name = "datafusion"
-version = "12.0.0"
-source = "git+https://github.com/tustvold/arrow-datafusion.git?rev=9de354bf45c0cc4121af04ea8138df7fddab76ed#9de354bf45c0cc4121af04ea8138df7fddab76ed"
-
-[[patch.unused]]
-name = "datafusion-common"
-version = "12.0.0"
-source = "git+https://github.com/tustvold/arrow-datafusion.git?rev=9de354bf45c0cc4121af04ea8138df7fddab76ed#9de354bf45c0cc4121af04ea8138df7fddab76ed"
-
-[[patch.unused]]
-name = "datafusion-expr"
-version = "12.0.0"
-source = "git+https://github.com/tustvold/arrow-datafusion.git?rev=9de354bf45c0cc4121af04ea8138df7fddab76ed#9de354bf45c0cc4121af04ea8138df7fddab76ed"
-
-[[patch.unused]]
-name = "parquet"
-version = "23.0.0"
-source = "git+https://github.com/tustvold/arrow-rs.git?rev=4ec95e8b50d52084153575d85921d70041738f20#4ec95e8b50d52084153575d85921d70041738f20"

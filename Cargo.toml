@@ -52,14 +52,3 @@ name = "datafusion._internal"
 [profile.release]
 lto = true
 codegen-units = 1
-
-
-[patch.crates-io]
-arrow = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
-parquet = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
-arrow-buffer = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
-arrow-schema = { git = "https://github.com/tustvold/arrow-rs.git", rev = "4ec95e8b50d52084153575d85921d70041738f20" }
-
-datafusion = { git = "https://github.com/tustvold/arrow-datafusion.git", rev = "9de354bf45c0cc4121af04ea8138df7fddab76ed" }
-datafusion-expr = { git = "https://github.com/tustvold/arrow-datafusion.git", rev = "9de354bf45c0cc4121af04ea8138df7fddab76ed" }
-datafusion-common = { git = "https://github.com/tustvold/arrow-datafusion.git", rev = "9de354bf45c0cc4121af04ea8138df7fddab76ed"}
