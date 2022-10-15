@@ -381,3 +381,7 @@ def test_union_distinct(ctx):
 
     assert df_c.collect() == df_a_u_b.collect()
     assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_select(df):
+    assert df.cache().collect() == df.collect()

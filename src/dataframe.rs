@@ -128,6 +128,12 @@ impl PyDataFrame {
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
     }
 
+    /// Cache DataFrame.
+    fn cache(&self, py: Python) -> PyResult<Self> {
+        let df = wait_for_future(py, self.df.cache())?;
+        Ok(Self::new(df))
+    }
+
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
