@@ -1,3 +1,5 @@
+#!/bin/bash
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,37 +16,28 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-import pytest
-from datafusion import SessionContext
-import pyarrow as pa
+RAT_VERSION=0.13
 
+# download apache rat
+if [ ! -f apache-rat-${RAT_VERSION}.jar ]; then
+  curl -s https://repo1.maven.org/maven2/org/apache/rat/apache-rat/${RAT_VERSION}/apache-rat-${RAT_VERSION}.jar > apache-rat-${RAT_VERSION}.jar
+fi
 
-@pytest.fixture
-def ctx():
-    return SessionContext()
+RAT="java -jar apache-rat-${RAT_VERSION}.jar -x "
 
+RELEASE_DIR=$(cd "$(dirname "$BASH_SOURCE")"; pwd)
 
-@pytest.fixture
-def database(ctx, tmp_path):
-    path = tmp_path / "test.csv"
+# generate the rat report
+$RAT $1 > rat.txt
+python $RELEASE_DIR/check-rat-report.py $RELEASE_DIR/rat_exclude_files.txt rat.txt > filtered_rat.txt
+cat filtered_rat.txt
+UNAPPROVED=`cat filtered_rat.txt  | grep "NOT APPROVED" | wc -l`
 
-    table = pa.Table.from_arrays(
-        [
-            [1, 2, 3, 4],
-            ["a", "b", "c", "d"],
-            [1.1, 2.2, 3.3, 4.4],
-        ],
-        names=["int", "str", "float"],
-    )
-    pa.csv.write_csv(table, path)
-
-    ctx.register_csv("csv", path)
-    ctx.register_csv("csv1", str(path))
-    ctx.register_csv(
-        "csv2",
-        path,
-        has_header=True,
-        delimiter=",",
-        schema_infer_max_records=10,
-    )
+if [ "0" -eq "${UNAPPROVED}" ]; then
+  echo "No unapproved licenses"
+else
+  echo "${UNAPPROVED} unapproved licences. Check rat report: rat.txt"
+  exit 1
+fi

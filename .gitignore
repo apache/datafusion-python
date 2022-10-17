@@ -16,3 +16,6 @@ __pycache__/
 #   intended to run in multiple environments; otherwise, check them in:
 .python-version
 venv
+
+apache-rat-*.jar
+*rat.txt
