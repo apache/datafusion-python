@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,36 +17,15 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest
-from datafusion import SessionContext
-import pyarrow as pa
+# This script runs all the Rust lints locally the same way the
+# DataFusion CI does
 
+set -e
+if ! command -v cargo-tomlfmt &> /dev/null; then
+    echo "Installing cargo-tomlfmt using cargo"
+    cargo install cargo-tomlfmt
+fi
 
-@pytest.fixture
-def ctx():
-    return SessionContext()
-
-
-@pytest.fixture
-def database(ctx, tmp_path):
-    path = tmp_path / "test.csv"
-
-    table = pa.Table.from_arrays(
-        [
-            [1, 2, 3, 4],
-            ["a", "b", "c", "d"],
-            [1.1, 2.2, 3.3, 4.4],
-        ],
-        names=["int", "str", "float"],
-    )
-    pa.csv.write_csv(table, path)
-
-    ctx.register_csv("csv", path)
-    ctx.register_csv("csv1", str(path))
-    ctx.register_csv(
-        "csv2",
-        path,
-        has_header=True,
-        delimiter=",",
-        schema_infer_max_records=10,
-    )
+ci/scripts/rust_fmt.sh
+ci/scripts/rust_clippy.sh
+ci/scripts/rust_toml_fmt.sh
