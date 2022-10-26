@@ -22,12 +22,45 @@ use pyo3::prelude::*;
 use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
+use object_store::local::LocalFileSystem;
 
 #[derive(FromPyObject)]
 pub enum StorageContexts {
     AmazonS3(PyAmazonS3Context),
     GoogleCloudStorage(PyGoogleCloudContext),
     MicrosoftAzure(PyMicrosoftAzureContext),
+    LocalFileSystem(PyLocalFileSystemContext),
+}
+
+#[pyclass(
+    name = "LocalFileSystem",
+    module = "datafusion.store",
+    subclass,
+    unsendable
+)]
+#[derive(Debug, Clone)]
+pub struct PyLocalFileSystemContext {
+    pub inner: Arc<LocalFileSystem>,
+}
+
+#[pymethods]
+impl PyLocalFileSystemContext {
+    #[args(prefix = "None")]
+    #[new]
+    fn new(prefix: Option<String>) -> Self {
+        if let Some(prefix) = prefix {
+            Self {
+                inner: Arc::new(
+                    LocalFileSystem::new_with_prefix(prefix)
+                        .expect("Could not create local LocalFileSystem"),
+                ),
+            }
+        } else {
+            Self {
+                inner: Arc::new(LocalFileSystem::new()),
+            }
+        }
+    }
 }
 
 #[pyclass(
@@ -220,5 +253,8 @@ impl PyAmazonS3Context {
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyAmazonS3Context>()?;
+    m.add_class::<PyMicrosoftAzureContext>()?;
+    m.add_class::<PyGoogleCloudContext>()?;
+    m.add_class::<PyLocalFileSystemContext>()?;
     Ok(())
 }

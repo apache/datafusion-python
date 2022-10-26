@@ -111,6 +111,7 @@ impl PySessionContext {
                     StorageContexts::MicrosoftAzure(azure) => {
                         Ok((azure.inner, azure.container_name))
                     }
+                    StorageContexts::LocalFileSystem(local) => Ok((local.inner, "".to_string())),
                 },
                 Err(_e) => Err(PyValueError::new_err("Invalid object store")),
             };
