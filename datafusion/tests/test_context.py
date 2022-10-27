@@ -207,8 +207,8 @@ def test_read_json(ctx):
     assert result[0].schema == schema
 
     # File extension
-    test_data_path = os.path.join(path, "data_test_context", "data.jsonl")
-    df = ctx.read_json(test_data_path, file_extension=".jsonl")
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    df = ctx.read_json(test_data_path, file_extension=".json")
     result = df.collect()
 
     assert result[0].column(0) == pa.array(["a", "b", "c"])
