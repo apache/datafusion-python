@@ -83,7 +83,7 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements-310.txt
+          pip install -r requirements-311.txt
 
       - name: Create Virtualenv (3.7)
         if: ${{ matrix.python-version == '3.7' }}
