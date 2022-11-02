@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import os
+
 import pyarrow as pa
 import pyarrow.dataset as ds
 
@@ -179,6 +181,38 @@ def test_table_exist(ctx):
     ctx.register_dataset("t", dataset)
 
     assert ctx.table_exist("t") is True
+
+
+def test_read_json(ctx):
+    path = os.path.dirname(os.path.abspath(__file__))
+
+    # Default
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    df = ctx.read_json(test_data_path)
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array(["a", "b", "c"])
+    assert result[0].column(1) == pa.array([1, 2, 3])
+
+    # Schema
+    schema = pa.schema(
+        [
+            pa.field("A", pa.string(), nullable=True),
+        ]
+    )
+    df = ctx.read_json(test_data_path, schema=schema)
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array(["a", "b", "c"])
+    assert result[0].schema == schema
+
+    # File extension
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    df = ctx.read_json(test_data_path, file_extension=".json")
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array(["a", "b", "c"])
+    assert result[0].column(1) == pa.array([1, 2, 3])
 
 
 def test_read_csv(ctx):
