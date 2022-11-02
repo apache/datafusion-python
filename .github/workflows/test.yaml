@@ -33,7 +33,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.10"
+          - "3.11"
         toolchain:
           - "stable"
           - "beta"
@@ -66,20 +66,20 @@ jobs:
 
       - name: Check Formatting
         uses: actions-rs/cargo@v1
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
+        if: ${{ matrix.python-version == '3.11' && matrix.toolchain == 'stable' }}
         with:
           command: fmt
           args: -- --check
 
       - name: Run Clippy
         uses: actions-rs/cargo@v1
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
+        if: ${{ matrix.python-version == '3.11' && matrix.toolchain == 'stable' }}
         with:
           command: clippy
           args: --all-targets --all-features -- -D clippy::all
 
-      - name: Create Virtualenv (3.10)
-        if: ${{ matrix.python-version == '3.10' }}
+      - name: Create Virtualenv (3.11)
+        if: ${{ matrix.python-version == '3.11' }}
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -93,7 +93,7 @@ jobs:
           pip install -r requirements-37.txt
 
       - name: Run Python Linters
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
+        if: ${{ matrix.python-version == '3.11' && matrix.toolchain == 'stable' }}
         run: |
           source venv/bin/activate
           flake8 --exclude venv --ignore=E501

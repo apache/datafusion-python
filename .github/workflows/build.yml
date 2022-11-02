@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.11"]
         os: [macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v2
@@ -61,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install maturin==0.13.1
+          pip install maturin==0.13.7
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -105,7 +105,7 @@ jobs:
           export RUSTFLAGS='-C target-cpu=skylake'
           docker run --rm -v $(pwd):/io \
             --workdir /io \
-            ghcr.io/pyo3/maturin:v0.13.1 \
+            ghcr.io/pyo3/maturin:v0.13.7 \
             build --release --manylinux 2010 --locked
       - name: Archive wheels
         uses: actions/upload-artifact@v2
