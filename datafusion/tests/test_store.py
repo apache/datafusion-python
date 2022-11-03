@@ -15,7 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest, os
+import os
+import pytest
 
 from datafusion import SessionContext
 from datafusion.object_store import LocalFileSystem
