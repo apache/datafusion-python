@@ -18,7 +18,7 @@
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use datafusion::physical_plan::aggregates::AggregateFunction;
-use datafusion_expr::{BuiltinScalarFunction, lit};
+use datafusion_expr::{lit, BuiltinScalarFunction};
 
 use crate::errors;
 use crate::expression::PyExpr;

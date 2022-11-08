@@ -22,7 +22,7 @@ use std::convert::TryFrom;
 use std::result::Result;
 
 use datafusion_common::{Column, ScalarValue};
-use datafusion_expr::{Expr, Operator, BinaryExpr, Between};
+use datafusion_expr::{Between, BinaryExpr, Expr, Operator};
 
 use crate::errors::DataFusionError;
 

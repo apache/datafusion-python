@@ -20,7 +20,7 @@ use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion_expr::{col, lit, Expr, GetIndexedField, Cast};
+use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
 use datafusion::scalar::ScalarValue;
 
@@ -129,10 +129,7 @@ impl PyExpr {
     pub fn cast(&self, to: PyArrowType<DataType>) -> PyExpr {
         // self.expr.cast_to() requires DFSchema to validate that the cast
         // is supported, omit that for now
-        let expr = Expr::Cast(Cast::new(
-            Box::new(self.expr.clone()),
-            to.0,
-        ));
+        let expr = Expr::Cast(Cast::new(Box::new(self.expr.clone()), to.0));
         expr.into()
     }
 }
