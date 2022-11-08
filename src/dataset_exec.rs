@@ -37,7 +37,8 @@ use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
     DisplayFormatType, ExecutionPlan, Partitioning, SendableRecordBatchStream, Statistics,
 };
-use datafusion_expr::{combine_filters, Expr};
+use datafusion_expr::Expr;
+use datafusion_optimizer::utils::conjunction;
 
 use crate::errors::DataFusionError;
 use crate::pyarrow_filter_expression::PyArrowFilterExpression;
@@ -93,7 +94,7 @@ impl DatasetExec {
                 .collect()
         });
         let columns: Option<Vec<String>> = columns.transpose()?;
-        let filter_expr: Option<PyObject> = combine_filters(filters)
+        let filter_expr: Option<PyObject> = conjunction(filters.to_owned())
             .map(|filters| {
                 PyArrowFilterExpression::try_from(&filters)
                     .map(|filter_expr| filter_expr.inner().clone_ref(py))
