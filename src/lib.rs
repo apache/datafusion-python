@@ -35,6 +35,7 @@ mod expression;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
 mod pyarrow_filter_expression;
+pub mod store;
 #[allow(clippy::borrow_deref_ref)]
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
@@ -66,6 +67,10 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     let funcs = PyModule::new(py, "functions")?;
     functions::init_module(funcs)?;
     m.add_submodule(funcs)?;
+
+    let store = PyModule::new(py, "object_store")?;
+    store::init_module(store)?;
+    m.add_submodule(store)?;
 
     Ok(())
 }

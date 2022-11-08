@@ -36,6 +36,7 @@ datafusion.SessionContext
       ~SessionContext.deregister_table
       ~SessionContext.empty_table
       ~SessionContext.register_csv
+      ~SessionContext.register_object_store
       ~SessionContext.register_parquet
       ~SessionContext.register_record_batches
       ~SessionContext.register_table

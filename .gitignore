@@ -19,3 +19,4 @@ venv
 
 apache-rat-*.jar
 *rat.txt
+.env
