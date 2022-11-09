@@ -77,9 +77,19 @@ def is_null(array: pyarrow.Array) -> pyarrow.Array:
 
 is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
 
+# create a context
+ctx = datafusion.SessionContext()
+
+# create a RecordBatch and a new DataFrame from it
+batch = pyarrow.RecordBatch.from_arrays(
+    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+    names=["a", "b"],
+)
+df = ctx.create_dataframe([[batch]])
+
 df = df.select(is_null_arr(col("a")))
 
-result = df.collect()
+result = df.collect()[0]
 
 assert result.column(0) == pyarrow.array([False] * 3)
 ```
@@ -89,7 +99,9 @@ assert result.column(0) == pyarrow.array([False] * 3)
 ```python
 import pyarrow
 import pyarrow.compute
+import datafusion
 from datafusion import udaf, Accumulator
+from datafusion import col
 
 
 class MyAccumulator(Accumulator):
@@ -113,7 +125,14 @@ class MyAccumulator(Accumulator):
     def evaluate(self) -> pyarrow.Scalar:
         return self._sum
 
+# create a context
+ctx = datafusion.SessionContext()
 
+# create a RecordBatch and a new DataFrame from it
+batch = pyarrow.RecordBatch.from_arrays(
+    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+    names=["a", "b"],
+)
 df = ctx.create_dataframe([[batch]])
 
 my_udaf = udaf(MyAccumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()], 'stable')
