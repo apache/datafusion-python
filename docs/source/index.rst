@@ -39,7 +39,6 @@ Simple usage:
 .. code-block:: python
 
     import datafusion
-    from datafusion import functions as f
     from datafusion import col
     import pyarrow
 
@@ -76,7 +75,6 @@ We can also execute a query against data stored in CSV
 .. code-block:: python
 
     import datafusion
-    from datafusion import functions as f
     from datafusion import col
     import pyarrow
 
@@ -105,7 +103,6 @@ And how to execute a query against a CSV using SQL:
 .. code-block:: python
 
     import datafusion
-    from datafusion import functions as f
     from datafusion import col
     import pyarrow
 
@@ -131,6 +128,7 @@ UDFs
 
 .. code-block:: python
 
+    import pyarrow
     from datafusion import udf
 
     def is_null(array: pyarrow.Array) -> pyarrow.Array:

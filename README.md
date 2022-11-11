@@ -40,7 +40,6 @@ Simple usage:
 
 ```python
 import datafusion
-from datafusion import functions as f
 from datafusion import col
 import pyarrow
 
@@ -70,6 +69,7 @@ assert result.column(1) == pyarrow.array([-3, -3, -3])
 ### UDFs
 
 ```python
+import pyarrow
 from datafusion import udf
 
 def is_null(array: pyarrow.Array) -> pyarrow.Array:
