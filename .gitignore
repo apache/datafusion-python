@@ -4,6 +4,7 @@ Cargo.lock
 .idea
 /docs/temp
 /docs/build
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
