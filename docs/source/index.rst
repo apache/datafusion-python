@@ -38,32 +38,31 @@ Simple usage:
 
 .. code-block:: python
 
-   import datafusion
-   from datafusion import functions as f
-   from datafusion import col
-   import pyarrow
+    import datafusion
+    from datafusion import col
+    import pyarrow
 
-   # create a context
-   ctx = datafusion.SessionContext()
+    # create a context
+    ctx = datafusion.SessionContext()
 
-   # create a RecordBatch and a new DataFrame from it
-   batch = pyarrow.RecordBatch.from_arrays(
-       [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-       names=["a", "b"],
-   )
-   df = ctx.create_dataframe([[batch]])
+    # create a RecordBatch and a new DataFrame from it
+    batch = pyarrow.RecordBatch.from_arrays(
+        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]])
 
-   # create a new statement
-   df = df.select(
-       col("a") + col("b"),
-       col("a") - col("b"),
-   )
+    # create a new statement
+    df = df.select(
+        col("a") + col("b"),
+        col("a") - col("b"),
+    )
 
-   # execute and collect the first (and only) batch
-   result = df.collect()[0]
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
 
-   assert result.column(0) == pyarrow.array([5, 7, 9])
-   assert result.column(1) == pyarrow.array([-3, -3, -3])
+    assert result.column(0) == pyarrow.array([5, 7, 9])
+    assert result.column(1) == pyarrow.array([-3, -3, -3])
 
 
 We can also execute a query against data stored in CSV 
@@ -76,7 +75,6 @@ We can also execute a query against data stored in CSV
 .. code-block:: python
 
     import datafusion
-    from datafusion import functions as f
     from datafusion import col
     import pyarrow
 
@@ -105,7 +103,6 @@ And how to execute a query against a CSV using SQL:
 .. code-block:: python
 
     import datafusion
-    from datafusion import functions as f
     from datafusion import col
     import pyarrow
 
@@ -131,12 +128,29 @@ UDFs
 
 .. code-block:: python
 
-   def is_null(array: pyarrow.Array) -> pyarrow.Array:
-       return array.is_null()
+    import pyarrow
+    from datafusion import udf
 
-   udf = f.udf(is_null, [pyarrow.int64()], pyarrow.bool_())
+    def is_null(array: pyarrow.Array) -> pyarrow.Array:
+        return array.is_null()
 
-   df = df.select(udf(col("a")))
+    is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
+
+    # create a context
+    ctx = datafusion.SessionContext()
+
+    # create a RecordBatch and a new DataFrame from it
+    batch = pyarrow.RecordBatch.from_arrays(
+        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    df = df.select(is_null_arr(col("a")))
+
+    result = df.collect()[0]
+
+    assert result.column(0) == pyarrow.array([False] * 3)
 
 
 UDAF
@@ -144,41 +158,54 @@ UDAF
 
 .. code-block:: python
 
-   import pyarrow
-   import pyarrow.compute
+    import pyarrow
+    import pyarrow.compute
+    import datafusion
+    from datafusion import udaf, Accumulator
+    from datafusion import col
 
 
-   class Accumulator:
-       """
-       Interface of a user-defined accumulation.
-       """
-       def __init__(self):
-           self._sum = pyarrow.scalar(0.0)
+    class MyAccumulator(Accumulator):
+        """
+        Interface of a user-defined accumulation.
+        """
+        def __init__(self):
+            self._sum = pyarrow.scalar(0.0)
 
-       def to_scalars(self) -> [pyarrow.Scalar]:
-           return [self._sum]
+        def update(self, values: pyarrow.Array) -> None:
+            # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
+            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(values).as_py())
 
-       def update(self, values: pyarrow.Array) -> None:
-           # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-           self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(values).as_py())
+        def merge(self, states: pyarrow.Array) -> None:
+            # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
+            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
 
-       def merge(self, states: pyarrow.Array) -> None:
-           # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-           self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
+        def state(self) -> pyarrow.Array:
+            return pyarrow.array([self._sum.as_py()])
 
-       def evaluate(self) -> pyarrow.Scalar:
-           return self._sum
+        def evaluate(self) -> pyarrow.Scalar:
+            return self._sum
 
+    # create a context
+    ctx = datafusion.SessionContext()
 
-   df = ...
+    # create a RecordBatch and a new DataFrame from it
+    batch = pyarrow.RecordBatch.from_arrays(
+        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]])
 
-   udaf = f.udaf(Accumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()])
+    my_udaf = udaf(MyAccumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()], 'stable')
 
-   df = df.aggregate(
-       [],
-       [udaf(col("a"))]
-   )
+    df = df.aggregate(
+        [],
+        [my_udaf(col("a"))]
+    )
 
+    result = df.collect()[0]
+
+    assert result.column(0) == pyarrow.array([6.0])
 
 How to install (from pip)
 =========================
@@ -186,6 +213,14 @@ How to install (from pip)
 .. code-block:: shell
 
    pip install datafusion
+
+You can verify the installation by running:
+
+.. code-block:: python
+
+    >>> import datafusion
+    >>> datafusion.__version__
+    '0.6.0'
 
 
 How to develop
@@ -197,16 +232,23 @@ Bootstrap:
 
 .. code-block:: shell
 
-   # fetch this repo
-   git clone git@github.com:apache/arrow-datafusion.git
+    # fetch this repo
+    git clone git@github.com:apache/arrow-datafusion-python.git
+    # prepare development environment (used to build wheel / install in development)
+    python3 -m venv venv
+    # activate the venv
+    source venv/bin/activate
+    # update pip itself if necessary
+    python -m pip install -U pip
+    # install dependencies (for Python 3.8+)
+    python -m pip install -r requirements-310.txt
 
-   cd arrow-datafusion/python
+The tests rely on test data in git submodules.
 
-   # prepare development environment (used to build wheel / install in development)
-   python3 -m venv venv
-   # activate the venv
-   source venv/bin/activate
-   pip install -r requirements.txt
+.. code-block:: shell
+
+    git submodule init
+    git submodule update
 
 
 Whenever rust code changes (your changes or via `git pull`):
@@ -225,18 +267,16 @@ To change test dependencies, change the `requirements.in` and run
 
 .. code-block:: shell
 
-   # install pip-tools (this can be done only once), also consider running in venv
-   pip install pip-tools
-
-   # change requirements.in and then run
-   pip-compile --generate-hashes
+    # install pip-tools (this can be done only once), also consider running in venv
+    python -m pip install pip-tools
+    python -m piptools compile --generate-hashes -o requirements-310.txt
 
 
-To update dependencies, run
+To update dependencies, run with `-U`
 
 .. code-block:: shell
 
-   pip-compile update
+   python -m piptools compile -U --generate-hashes -o requirements-310.txt
 
 
 More details about pip-tools `here <https://github.com/jazzband/pip-tools>`_

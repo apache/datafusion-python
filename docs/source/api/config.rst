@@ -15,13 +15,13 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api.functions:
+.. _api.config:
 .. currentmodule:: datafusion
 
-Functions
+Config
 =========
 
 .. autosummary::
    :toctree: ../generated/
 
-   functions
+   Config

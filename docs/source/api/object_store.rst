@@ -1,4 +1,4 @@
-﻿.. Licensed to the Apache Software Foundation (ASF) under one
+.. Licensed to the Apache Software Foundation (ASF) under one
 .. or more contributor license agreements.  See the NOTICE file
 .. distributed with this work for additional information
 .. regarding copyright ownership.  The ASF licenses this file
@@ -15,26 +15,13 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-datafusion.functions
-====================
+.. _api.object_store:
+.. currentmodule:: datafusion.object_store
 
-.. automodule:: datafusion.functions
+ObjectStore
+=========
 
-   
-   
-   
+.. autosummary::
+   :toctree: ../generated/
 
-   
-   
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
+   object_store
