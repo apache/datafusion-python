@@ -15,31 +15,18 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-datafusion.Expression
-=====================
+.. _api:
 
-.. currentmodule:: datafusion
+*************
+API Reference
+*************
 
-.. autoclass:: Expression
+.. toctree::
+   :maxdepth: 2
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~Expression.__init__
-      ~Expression.alias
-      ~Expression.cast
-      ~Expression.column
-      ~Expression.is_null
-      ~Expression.literal
-      ~Expression.sort
-   
-   
-
-   
-   
-   
+   api/config
+   api/dataframe
+   api/execution_context
+   api/expression
+   api/functions
+   api/object_store

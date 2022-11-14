@@ -15,38 +15,13 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-datafusion.SessionContext
-=========================
-
+.. _api.functions:
 .. currentmodule:: datafusion
 
-.. autoclass:: SessionContext
+Functions
+=========
 
-   
-   .. automethod:: __init__
+.. autosummary::
+   :toctree: ../generated/
 
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~SessionContext.__init__
-      ~SessionContext.catalog
-      ~SessionContext.create_dataframe
-      ~SessionContext.deregister_table
-      ~SessionContext.empty_table
-      ~SessionContext.register_csv
-      ~SessionContext.register_object_store
-      ~SessionContext.register_parquet
-      ~SessionContext.register_record_batches
-      ~SessionContext.register_table
-      ~SessionContext.register_udf
-      ~SessionContext.sql
-      ~SessionContext.table
-      ~SessionContext.tables
-   
-   
-
-   
-   
-   
+   functions.functions
