@@ -17,11 +17,11 @@
 
 [package]
 name = "datafusion-python"
-version = "0.6.0"
-homepage = "https://github.com/apache/arrow"
-repository = "https://github.com/apache/arrow"
+version = "0.7.0"
+homepage = "https://github.com/apache/arrow-datafusion-python"
+repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
-description = "Build and run queries against data"
+description = "Apache Arrow DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
