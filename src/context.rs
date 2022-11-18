@@ -95,8 +95,6 @@ impl PySessionContext {
         }
         let config_options = Arc::new(RwLock::new(options));
 
-        println!("config_options = {:?}", config_options);
-
         let mut cfg = SessionConfig::new()
             .create_default_catalog_and_schema(create_default_catalog_and_schema)
             .with_default_catalog_and_schema(default_catalog, default_schema)
