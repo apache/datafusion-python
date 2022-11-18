@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -25,13 +25,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use datafusion::arrow::datatypes::Schema;
-use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::datasource::datasource::TableProvider;
-use datafusion::datasource::MemTable;
-use datafusion::execution::context::{SessionConfig, SessionContext};
-use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
+use parking_lot::RwLock;
 
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
@@ -41,6 +35,14 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::wait_for_future;
+use datafusion::arrow::datatypes::Schema;
+use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::config::ConfigOptions;
+use datafusion::datasource::datasource::TableProvider;
+use datafusion::datasource::MemTable;
+use datafusion::execution::context::{SessionConfig, SessionContext};
+use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -62,7 +64,8 @@ impl PySessionContext {
         repartition_aggregations = "true",
         repartition_windows = "true",
         parquet_pruning = "true",
-        target_partitions = "None"
+        target_partitions = "None",
+        config_options = "None"
     )]
     #[new]
     fn new(
@@ -75,9 +78,23 @@ impl PySessionContext {
         repartition_windows: bool,
         parquet_pruning: bool,
         target_partitions: Option<usize>,
-        // TODO: config_options
+        config_options: Option<HashMap<String, String>>,
     ) -> Self {
-        let cfg = SessionConfig::new()
+        let mut options = ConfigOptions::from_env();
+        if let Some(hash_map) = config_options {
+            for (k, v) in &hash_map {
+                if let Ok(v) = v.parse::<bool>() {
+                    options.set_bool(k, v);
+                } else if let Ok(v) = v.parse::<u64>() {
+                    options.set_u64(k, v);
+                } else {
+                    options.set_string(k, v);
+                }
+            }
+        }
+        let config_options = Arc::new(RwLock::new(options));
+
+        let mut cfg = SessionConfig::new()
             .create_default_catalog_and_schema(create_default_catalog_and_schema)
             .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)
@@ -85,6 +102,9 @@ impl PySessionContext {
             .with_repartition_aggregations(repartition_aggregations)
             .with_repartition_windows(repartition_windows)
             .with_parquet_pruning(parquet_pruning);
+
+        // TODO we should add a `with_config_options` to `SessionConfig`
+        cfg.config_options = config_options;
 
         let cfg_full = match target_partitions {
             None => cfg,

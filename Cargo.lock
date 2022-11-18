@@ -664,6 +664,7 @@ dependencies = [
  "futures",
  "mimalloc",
  "object_store",
+ "parking_lot",
  "pyo3",
  "rand 0.7.3",
  "tokio",

@@ -39,6 +39,7 @@ def test_create_context_with_all_valid_args():
         repartition_aggregations=False,
         repartition_windows=False,
         parquet_pruning=False,
+        config_options=None,
     )
 
     # verify that at least some of the arguments worked
