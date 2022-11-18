@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::{HashSet, HashMap};
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -27,6 +27,14 @@ use pyo3::prelude::*;
 
 use parking_lot::RwLock;
 
+use crate::catalog::{PyCatalog, PyTable};
+use crate::dataframe::PyDataFrame;
+use crate::dataset::Dataset;
+use crate::errors::DataFusionError;
+use crate::store::StorageContexts;
+use crate::udaf::PyAggregateUDF;
+use crate::udf::PyScalarUDF;
+use crate::utils::wait_for_future;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -36,14 +44,6 @@ use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
 use datafusion_common::ScalarValue;
-use crate::catalog::{PyCatalog, PyTable};
-use crate::dataframe::PyDataFrame;
-use crate::dataset::Dataset;
-use crate::errors::DataFusionError;
-use crate::store::StorageContexts;
-use crate::udaf::PyAggregateUDF;
-use crate::udf::PyScalarUDF;
-use crate::utils::wait_for_future;
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -79,7 +79,7 @@ impl PySessionContext {
         repartition_windows: bool,
         parquet_pruning: bool,
         target_partitions: Option<usize>,
-        config_options: Option<HashMap<String, String>>
+        config_options: Option<HashMap<String, String>>,
     ) -> Self {
         let mut options = ConfigOptions::new();
         if let Some(hash_map) = config_options {
@@ -108,7 +108,6 @@ impl PySessionContext {
 
         // TODO we should add a `with_config_options` to `SessionConfig`
         cfg.config_options = config_options;
-
 
         let cfg_full = match target_partitions {
             None => cfg,
