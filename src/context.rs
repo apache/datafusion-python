@@ -81,7 +81,7 @@ impl PySessionContext {
         target_partitions: Option<usize>,
         config_options: Option<HashMap<String, String>>,
     ) -> Self {
-        let mut options = ConfigOptions::new();
+        let mut options = ConfigOptions::from_env();
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
                 if let Ok(v) = v.parse::<bool>() {
