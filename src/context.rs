@@ -43,7 +43,6 @@ use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
-use datafusion_common::ScalarValue;
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -85,11 +84,11 @@ impl PySessionContext {
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
                 if let Ok(v) = v.parse::<bool>() {
-                    options.set(k, ScalarValue::Boolean(Some(v)));
+                    options.set_bool(k, v);
                 } else if let Ok(v) = v.parse::<u64>() {
-                    options.set(k, ScalarValue::UInt64(Some(v)));
+                    options.set_u64(k, v);
                 } else {
-                    options.set(k, ScalarValue::Utf8(Some(v.to_owned())));
+                    options.set_string(k, v);
                 }
             }
         }
