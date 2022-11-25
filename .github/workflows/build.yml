@@ -18,7 +18,7 @@
 name: Python Release Build
 on:
   push:
-    tags: ["*"]
+    tags: ["*-rc*"]
     branches: ["master"]
 
 jobs:
