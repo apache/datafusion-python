@@ -108,6 +108,12 @@ python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
 
 Send the email to start the vote.
 
+## Verifying a Release
+
+```bash
+pip install --extra-index-url https://test.pypi.org/simple/ datafusion==0.7.0
+```
+
 ## Publishing a Release
 
 ### Publishing Apache Source Release
