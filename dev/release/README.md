@@ -129,3 +129,11 @@ Create the source release tarball:
 ### Publishing Python Artifacts
 
 Download the artifacts from testpypi and re-publish on PyPi using twine.
+
+### Push the Release Tag
+
+```bash
+git checkout 0.7.0-rc1
+git tag 0.7.0
+git push apache 0.7.0
+```
