@@ -128,7 +128,11 @@ Create the source release tarball:
 
 ### Publishing Python Artifacts
 
-Download the artifacts from testpypi and re-publish on PyPi using twine.
+Go to the Test PyPI page of Datafusion, and download  [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed uploading them using `twine`:
+
+```py
+twine upload --repository pypi dist-release/*
+```
 
 ### Push the Release Tag
 
