@@ -25,7 +25,7 @@ The version number in Cargo.toml should be increased, according to semver.
 
 ### Update CHANGELOG.md
 
-Define release branch (e.g. `master`), base version tag (e.g. `7.0.0`) and future version tag (e.g. `8.0.0`). Commits
+Define release branch (e.g. `master`), base version tag (e.g. `0.6.0`) and future version tag (e.g. `0.7.0`). Commits
 between the base version tag and the release branch will be used to populate the changelog content.
 
 You will need a GitHub Personal Access Token for the following steps. Follow
@@ -170,7 +170,9 @@ Create the source release tarball:
 
 ### Publishing Python Artifacts
 
-Go to the Test PyPI page of Datafusion, and download [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed uploading them using `twine`:
+Go to the Test PyPI page of Datafusion, and download
+[all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
+uploading them using `twine`:
 
 ```py
 twine upload --repository pypi dist-release/*
