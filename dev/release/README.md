@@ -23,7 +23,7 @@
 
 The version number in Cargo.toml should be increased, according to semver.
 
-### Update CHANGELOG.md
+## Update CHANGELOG.md
 
 Define release branch (e.g. `master`), base version tag (e.g. `0.6.0`) and future version tag (e.g. `0.7.0`). Commits
 between the base version tag and the release branch will be used to populate the changelog content.
@@ -105,7 +105,7 @@ Here is my vote:
 
 Create a draft email using this content, but do not send until after completing the next step.
 
-### Publish Python Wheels to testpypi
+### Publish Python Artifacts to testpypi
 
 To securely upload your project, you’ll need a PyPI API token. Create one at
 https://test.pypi.org/manage/account/#api-tokens, setting the “Scope” to “Entire account”.
@@ -114,6 +114,8 @@ You will also need access to the [datafusion](https://test.pypi.org/project/data
 
 This section assumes some familiary with publishing Python packages to PyPi. For more information, refer to \
 [this tutorial](https://packaging.python.org/en/latest/tutorials/packaging-projects/#uploading-the-distribution-archives).
+
+#### Publish Python Wheels to testpypi
 
 Pushing an `rc` tag to master will cause a GitHub Workflow to run that will build the Python wheels.
 
@@ -132,7 +134,7 @@ python3 -m twine upload --repository testpypi datafusion-0.7.0-cp37-abi3-*.whl
 
 When prompted for username, enter `__token__`. When prompted for a password, enter a valid GitHub Personal Access Token
 
-### Create Python Source Distribution to testpypi
+#### Publish Python Source Distribution to testpypi
 
 Download the source tarball created in the previous step, untar it, and run:
 
@@ -152,9 +154,14 @@ Send the email to start the vote.
 
 ## Verifying a Release
 
+Install the release from testpypi:
+
 ```bash
 pip install --extra-index-url https://test.pypi.org/simple/ datafusion==0.7.0
 ```
+
+Try running one of the examples from the top-level README, or write some custom Python code to query some available
+data files.
 
 ## Publishing a Release
 
