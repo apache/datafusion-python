@@ -181,7 +181,7 @@ Go to the Test PyPI page of Datafusion, and download
 [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
 uploading them using `twine`:
 
-```py
+```bash
 twine upload --repository pypi dist-release/*
 ```
 
