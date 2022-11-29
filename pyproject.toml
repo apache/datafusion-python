@@ -47,8 +47,8 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://arrow.apache.org/datafusion"
-documentation = "https://arrow.apache.org/datafusion"
+homepage = "https://arrow.apache.org/datafusion-python"
+documentation = "https://arrow.apache.org/datafusion-python"
 repository = "https://github.com/apache/arrow-datafusion-python"
 
 [tool.isort]
