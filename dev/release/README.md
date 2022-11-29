@@ -63,7 +63,7 @@ git push apache 0.7.0-rc1
 ### Create a source release
 
 ```bash
-./dev/create_tarball 0.7.0 1
+./dev/release/create_tarball 0.7.0 1
 ```
 
 This will also create the email template to send to the mailing list. Here is an example:
@@ -172,7 +172,7 @@ Once the vote passes, we can publish the release.
 Create the source release tarball:
 
 ```bash
-./dev/release-tarball.sh 0.7.0 1
+./dev/release/release-tarball.sh 0.7.0 1
 ```
 
 ### Publishing Python Artifacts

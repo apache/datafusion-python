@@ -23,3 +23,4 @@ venv
 apache-rat-*.jar
 *rat.txt
 .env
+CHANGELOG.md.bak

@@ -59,7 +59,7 @@ echo "Clone release dist repository"
 svn co https://dist.apache.org/repos/dist/release/arrow ${tmp_dir}/release
 
 echo "Copy ${version}-rc${rc} to release working copy"
-release_version=arrow-datafusion-${version}
+release_version=arrow-datafusion-python-${version}
 mkdir -p ${tmp_dir}/release/${release_version}
 cp -r ${tmp_dir}/dev/* ${tmp_dir}/release/${release_version}/
 svn add ${tmp_dir}/release/${release_version}
