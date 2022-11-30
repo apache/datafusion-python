@@ -1,0 +1,28 @@
+﻿datafusion.Expression
+=====================
+
+.. currentmodule:: datafusion
+
+.. autoclass:: Expression
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Expression.__init__
+      ~Expression.alias
+      ~Expression.cast
+      ~Expression.column
+      ~Expression.is_null
+      ~Expression.literal
+      ~Expression.sort
+   
+   
+
+   
+   
+   
