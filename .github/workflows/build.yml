@@ -17,6 +17,8 @@
 
 name: Python Release Build
 on:
+  pull_request:
+    branches: ["master"]
   push:
     tags: ["*-rc*"]
     branches: ["master"]
@@ -25,7 +27,7 @@ jobs:
   generate-license:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,7 +35,7 @@ jobs:
           override: true
       - name: Generate license file
         run: python ./dev/create_license.py
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: python-wheel-license
           path: LICENSE.txt
@@ -48,9 +50,9 @@ jobs:
         python-version: ["3.10"]
         os: [macos-latest, windows-latest]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -65,7 +67,7 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: python-wheel-license
           path: .
@@ -82,7 +84,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: target/wheels/*
@@ -92,10 +94,10 @@ jobs:
     name: Manylinux
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: python-wheel-license
           path: .
@@ -108,7 +110,7 @@ jobs:
             ghcr.io/pyo3/maturin:v0.14.2 \
             build --release --manylinux 2014 --locked
       - name: Archive wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: target/wheels/*
@@ -119,7 +121,7 @@ jobs:
   #   needs: [build-manylinux, build-python-mac-win]
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/download-artifact@v2
+  #     - uses: actions/download-artifact@v3
   #     - name: Publish to PyPI
   #       uses: pypa/gh-action-pypi-publish@master
   #       with:

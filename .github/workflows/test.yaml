@@ -44,7 +44,7 @@ jobs:
           - python-version: "3.7"
             toolchain: "stable"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
@@ -54,12 +54,12 @@ jobs:
           override: true
 
       - name: Setup Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Cache Cargo
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cargo
           key: cargo-cache-${{ steps.rust-toolchain.outputs.rustc_hash }}-${{ hashFiles('Cargo.lock') }}
