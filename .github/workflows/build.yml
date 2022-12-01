@@ -115,6 +115,32 @@ jobs:
           name: dist
           path: target/wheels/*
 
+  build-sdist:
+    needs: [generate-license]
+    name: Source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: rm LICENSE.txt
+      - name: Download LICENSE.txt
+        uses: actions/download-artifact@v2
+        with:
+          name: python-wheel-license
+          path: .
+      - run: cat LICENSE.txt
+      - name: Build sdist
+        run: |
+          docker run --rm -v $(pwd):/io \
+            --workdir /io \
+            ghcr.io/pyo3/maturin:v0.14.2 \
+            build --release --sdist --locked
+          find target/wheels/
+      - name: Archive wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: target/wheels/*
+
   # NOTE: PyPI publish needs to be done manually for now after release passed the vote
   # release:
   #   name: Publish in PyPI
