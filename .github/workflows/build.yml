@@ -17,6 +17,8 @@
 
 name: Python Release Build
 on:
+  pull_request:
+    branches: ["master"]
   push:
     tags: ["*-rc*"]
     branches: ["master"]
