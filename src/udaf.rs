@@ -97,7 +97,7 @@ impl Accumulator for RustAccumulator {
     }
 
     fn size(&self) -> usize {
-        todo!()
+        std::mem::size_of_val(self)
     }
 }
 
