@@ -20,7 +20,6 @@ notifications:
   issues_status: issues@arrow.apache.org
   issues_comment: github@arrow.apache.org
   pullrequests: github@arrow.apache.org
-  jira_options: link label worklog
 github:
   description: "Apache Arrow DataFusion Python Bindings"
   homepage: https://arrow.apache.org/datafusion-python/
