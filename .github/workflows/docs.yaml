@@ -2,11 +2,11 @@ on:
   push:
     branches:
       - docs-workflow
-    tags:
-      - "!**-rc**"
-    # paths:
-    #   - docs/**
-    #   - .github/workflows/docs.yml
+    tags-ignore:
+      - "**-rc**"
+    paths:
+      - docs/**
+      - .github/workflows/docs.yml
 
 
 name: Deploy Datafusion Python site
