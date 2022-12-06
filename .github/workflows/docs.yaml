@@ -62,7 +62,8 @@ jobs:
         run: |
           set -x
           cd docs-target
-          find ./ -not -name ".asf.yaml" | grep -v ".git" | xargs rm -rf
+          # delete anything but: 1) '.'; 2) '..'; 3) .asf.yaml; 4) .git/
+          find ./ -not -name ".asf.yaml" | grep -vE "^./$|^../$|^./.git" | xargs rm -rf
           cp -r ../docs/build/html/* .
           git status --porcelain
           if [ "$(git status --porcelain)" != "" ]; then
