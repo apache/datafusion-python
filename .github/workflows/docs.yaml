@@ -4,10 +4,6 @@ on:
       - docs-workflow
     tags-ignore:
       - "**-rc**"
-    paths:
-      - docs/**
-      - .github/workflows/docs.yml
-
 
 name: Deploy Datafusion Python site
 
