@@ -5,7 +5,7 @@ on:
     tags-ignore:
       - "**-rc**"
 
-name: Deploy Datafusion Python site
+name: Deploy DataFusion Python site
 
 jobs:
   build-docs:
