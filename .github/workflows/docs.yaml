@@ -44,7 +44,6 @@ jobs:
           source venv/bin/activate
           pip install -r requirements-310.txt
           pip install -r docs/requirements.txt
-      
       - name: Build Datafusion
         run: |
           set -x
