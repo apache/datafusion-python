@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - docs-workflow
+      - master
     tags-ignore:
       - "**-rc**"
 
@@ -16,7 +16,7 @@ jobs:
         id: target-branch
         run: |
           set -x
-          if test '${{ github.ref }}' = 'refs/heads/docs-workflow'; then
+          if test '${{ github.ref }}' = 'refs/heads/master'; then
             echo "value=asf-staging" >> $GITHUB_OUTPUT
           elif test '${{ github.ref_type }}' = 'tag'; then
             echo "value=asf-site" >> $GITHUB_OUTPUT
