@@ -1,0 +1,75 @@
+on:
+  push:
+    branches:
+      - master
+    tags-ignore:
+      - "**-rc**"
+
+name: Deploy DataFusion Python site
+
+jobs:
+  build-docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set target branch
+        id: target-branch
+        run: |
+          set -x
+          if test '${{ github.ref }}' = 'refs/heads/master'; then
+            echo "value=asf-staging" >> $GITHUB_OUTPUT
+          elif test '${{ github.ref_type }}' = 'tag'; then
+            echo "value=asf-site" >> $GITHUB_OUTPUT
+          else
+            echo "Unsupported input: ${{ github.ref }} / ${{ github.ref_type }}"
+            exit 1
+          fi
+      - name: Checkout docs sources
+        uses: actions/checkout@v3
+      - name: Checkout docs target branch
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.target-branch.outputs.value }}
+          path: docs-target
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          set -x
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements-310.txt
+          pip install -r docs/requirements.txt
+      - name: Build Datafusion
+        run: |
+          set -x
+          source venv/bin/activate
+          maturin develop
+
+      - name: Build docs
+        run: |
+          set -x
+          source venv/bin/activate
+          cd docs
+          make html
+
+      - name: Copy & push the generated HTML
+        run: |
+          set -x
+          cd docs-target
+          # delete anything but: 1) '.'; 2) '..'; 3) .git/
+          find ./ | grep -vE "^./$|^../$|^./.git" | xargs rm -rf
+          cp ../.asf.yaml .
+          cp -r ../docs/build/html/* .
+          git status --porcelain
+          if [ "$(git status --porcelain)" != "" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add --all
+            git commit -m 'Publish built docs triggered by ${{ github.sha }}'
+            git push || git push --force
+          fi
