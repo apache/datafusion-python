@@ -1,0 +1,1255 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>datafusion.functions.functions &#8212; Arrow DataFusion  documentation</title>
+    
+    <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css" />
+    
+    <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ObjectStore" href="../api/object_store.html" />
+    <link rel="prev" title="Functions" href="../api/functions.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/images/DataFusion-Logo-Background-White.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../api.html">
+   API Reference
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/config.html">
+     Config
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.Config.html">
+       datafusion.Config
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/dataframe.html">
+     DataFrame
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.DataFrame.html">
+       datafusion.DataFrame
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/execution_context.html">
+     SessionContext
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.SessionContext.html">
+       datafusion.SessionContext
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/expression.html">
+     Expression
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.Expression.html">
+       datafusion.Expression
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="../api/functions.html">
+     Functions
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
+       datafusion.functions.functions
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/object_store.html">
+     ObjectStore
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+    <label for="toctree-checkbox-7">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.object_store.object_store.html">
+       datafusion.object_store.object_store
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.abs">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     abs()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.acos">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     acos()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.alias">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     alias()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.approx_distinct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     approx_distinct()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.ascii">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ascii()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.asin">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     asin()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.atan">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     atan()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.avg">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     avg()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.bit_length">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     bit_length()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.btrim">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     btrim()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.ceil">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ceil()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.character_length">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     character_length()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.chr">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     chr()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.concat">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     concat()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.concat_ws">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     concat_ws()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.cos">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     cos()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.count">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     count()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.digest">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     digest()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.exp">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     exp()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.floor">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     floor()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.in_list">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     in_list()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.initcap">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     initcap()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.left">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     left()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.ln">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ln()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.log10">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     log10()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.log2">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     log2()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.lower">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     lower()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.lpad">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     lpad()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.ltrim">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     ltrim()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.max">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     max()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.md5">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     md5()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.min">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     min()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.now">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     now()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.octet_length">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     octet_length()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.order_by">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     order_by()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.random">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     random()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.regexp_match">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     regexp_match()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.regexp_replace">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     regexp_replace()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.repeat">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     repeat()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.replace">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     replace()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.reverse">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     reverse()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.right">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     right()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.round">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     round()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.rpad">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     rpad()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.rtrim">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     rtrim()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sha224">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sha224()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sha256">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sha256()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sha384">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sha384()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sha512">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sha512()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.signum">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     signum()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sin">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sin()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.split_part">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     split_part()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sqrt">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sqrt()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.starts_with">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     starts_with()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.strpos">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     strpos()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.substr">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     substr()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.sum">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     sum()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.tan">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     tan()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.to_hex">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     to_hex()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.to_timestamp">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     to_timestamp()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.translate">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     translate()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.trim">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     trim()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.trunc">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     trunc()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.upper">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     upper()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.window">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     window()
+    </span>
+   </code>
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+
+<div class="tocsection editthispage">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/master/docs/source/generated/datafusion.functions.functions.rst">
+        <i class="fas fa-pencil-alt"></i> Edit this page
+    </a>
+</div>
+
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="module-datafusion.functions.functions">
+<span id="datafusion-functions-functions"></span><h1>datafusion.functions.functions<a class="headerlink" href="#module-datafusion.functions.functions" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.abs">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.abs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.acos">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">acos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.acos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.alias">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.alias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Alias expression</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.approx_distinct">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_distinct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.ascii">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ascii</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ascii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.asin">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">asin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.asin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.atan">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">atan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.atan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.avg">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">avg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.avg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.bit_length">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">bit_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.bit_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of bits in the string (8 times the octet_length).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.btrim">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">btrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.btrim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the longest string containing only characters in characters (a space by default) from the start and end of string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.ceil">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ceil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ceil" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.character_length">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">character_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.character_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of characters in the string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.chr">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">chr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.chr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the character with the given code.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.concat">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates the text representations of all the arguments.
+NULL arguments are ignored.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.concat_ws">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat_ws</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat_ws" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenates all but the first argument, with separators.
+The first argument is used as the separator string, and should not be NULL.
+Other NULL arguments are ignored.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.cos">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">cos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.cos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.count">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.count" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.digest">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">digest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.digest" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes a binary hash of the given data. type is the algorithm to use.
+Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.exp">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.exp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.floor">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.floor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.in_list">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">in_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.in_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.initcap">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">initcap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.initcap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.left">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">left</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.left" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns first n characters in the string, or when n is negative, returns all but last <a href="#id1"><span class="problematic" id="id2">|n|</span></a> characters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.ln">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ln" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.log10">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log10</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log10" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.log2">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.lower">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the string to all lower case</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.lpad">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lpad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lpad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.ltrim">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ltrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ltrim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the longest string containing only characters in characters (a space by default) from the start of string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.max">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.max" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.md5">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">md5</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.md5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the MD5 hash of the argument, with the result written in hexadecimal.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.min">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.min" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.now">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">now</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.now" title="Permalink to this definition">¶</a></dt>
+<dd><p>Current date and time</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.octet_length">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.octet_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.order_by">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">order_by</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.order_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Sort expression</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.random">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.random" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a random value in the range 0.0 &lt;= x &lt; 1.0</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.regexp_match">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_match</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_match" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.regexp_replace">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_replace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces substring(s) matching a POSIX regular expression</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.repeat">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">repeat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.repeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repeats string the specified number of times.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.replace">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.replace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces all occurrences in string of substring from with substring to.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.reverse">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.reverse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the order of the characters in the string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.right">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">right</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.right" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns last n characters in the string, or when n is negative, returns all but first <a href="#id3"><span class="problematic" id="id4">|n|</span></a> characters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.round">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.round" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.rpad">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rpad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rpad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.rtrim">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rtrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rtrim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the longest string containing only characters in characters (a space by default) from the end of string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sha224">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha224</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha224" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sha256">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha256</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha256" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sha384">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha384</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha384" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sha512">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha512</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha512" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.signum">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">signum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.signum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sin">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.split_part">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">split_part</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.split_part" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits string at occurrences of delimiter and returns the n’th field (counting from one).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sqrt">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sqrt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sqrt" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.starts_with">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">starts_with</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.starts_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if string starts with prefix.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.strpos">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">strpos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.strpos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns starting index of specified substring within string, or zero if it’s not present. (Same as position(substring in string), but note the reversed argument order.)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.substr">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">substr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.substr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.sum">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sum" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.tan">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">tan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.tan" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.to_hex">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_hex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_hex" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the number to its equivalent hexadecimal representation.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.to_timestamp">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.translate">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.translate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.trim">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.trunc">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trunc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trunc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.upper">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">upper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.upper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the string to all upper case.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.window">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.window" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Window function expression</p>
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../api/functions.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Functions</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../api/object_store.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ObjectStore</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

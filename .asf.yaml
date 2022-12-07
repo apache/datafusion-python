@@ -33,7 +33,7 @@ github:
 staging:
   whoami: asf-staging
   subdir: datafusion-python
-
+  
 publish:
   whoami: asf-site
   subdir: datafusion-python

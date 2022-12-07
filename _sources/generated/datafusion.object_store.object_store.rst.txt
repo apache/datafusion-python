@@ -1,0 +1,23 @@
+﻿datafusion.object\_store.object\_store
+======================================
+
+.. automodule:: datafusion.object_store.object_store
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

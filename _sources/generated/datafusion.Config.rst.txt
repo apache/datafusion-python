@@ -1,0 +1,26 @@
+﻿datafusion.Config
+=================
+
+.. currentmodule:: datafusion
+
+.. autoclass:: Config
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Config.__init__
+      ~Config.from_env
+      ~Config.get
+      ~Config.get_all
+      ~Config.set
+   
+   
+
+   
+   
+   

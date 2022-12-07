@@ -1,0 +1,47 @@
+﻿datafusion.DataFrame
+====================
+
+.. currentmodule:: datafusion
+
+.. autoclass:: DataFrame
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~DataFrame.__init__
+      ~DataFrame.aggregate
+      ~DataFrame.cache
+      ~DataFrame.collect
+      ~DataFrame.collect_partitioned
+      ~DataFrame.distinct
+      ~DataFrame.except_all
+      ~DataFrame.explain
+      ~DataFrame.filter
+      ~DataFrame.intersect
+      ~DataFrame.join
+      ~DataFrame.limit
+      ~DataFrame.repartition
+      ~DataFrame.repartition_by_hash
+      ~DataFrame.schema
+      ~DataFrame.select
+      ~DataFrame.select_columns
+      ~DataFrame.show
+      ~DataFrame.sort
+      ~DataFrame.union
+      ~DataFrame.union_distinct
+      ~DataFrame.with_column
+      ~DataFrame.with_column_renamed
+      ~DataFrame.write_csv
+      ~DataFrame.write_json
+      ~DataFrame.write_parquet
+   
+   
+
+   
+   
+   

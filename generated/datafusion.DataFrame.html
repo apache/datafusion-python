@@ -1,0 +1,783 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>datafusion.DataFrame &#8212; Arrow DataFusion  documentation</title>
+    
+    <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css" />
+    
+    <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SessionContext" href="../api/execution_context.html" />
+    <link rel="prev" title="DataFrame" href="../api/dataframe.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/images/DataFusion-Logo-Background-White.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../api.html">
+   API Reference
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/config.html">
+     Config
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.Config.html">
+       datafusion.Config
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="../api/dataframe.html">
+     DataFrame
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
+       datafusion.DataFrame
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/execution_context.html">
+     SessionContext
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.SessionContext.html">
+       datafusion.SessionContext
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/expression.html">
+     Expression
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.Expression.html">
+       datafusion.Expression
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/functions.html">
+     Functions
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.functions.functions.html">
+       datafusion.functions.functions
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../api/object_store.html">
+     ObjectStore
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+    <label for="toctree-checkbox-7">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="datafusion.object_store.object_store.html">
+       datafusion.object_store.object_store
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.DataFrame">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     DataFrame
+    </span>
+   </code>
+  </a>
+  <ul class="nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.__init__">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.__init__()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.aggregate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.aggregate()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.cache">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.cache()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.collect">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.collect()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.collect_partitioned">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.collect_partitioned()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.distinct">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.distinct()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.except_all">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.except_all()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.explain">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.explain()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.filter">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.filter()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.intersect">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.intersect()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.join">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.join()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.limit">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.limit()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.repartition">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.repartition()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.repartition_by_hash">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.repartition_by_hash()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.schema">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.schema()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.select">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.select()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.select_columns">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.select_columns()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.show">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.show()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.sort">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.sort()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.union">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.union()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.union_distinct">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.union_distinct()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.with_column">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.with_column()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.with_column_renamed">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.with_column_renamed()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.write_csv">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.write_csv()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.write_json">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.write_json()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.write_parquet">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.write_parquet()
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+
+<div class="tocsection editthispage">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/master/docs/source/generated/datafusion.DataFrame.rst">
+        <i class="fas fa-pencil-alt"></i> Edit this page
+    </a>
+</div>
+
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="datafusion-dataframe">
+<h1>datafusion.DataFrame<a class="headerlink" href="#datafusion-dataframe" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.DataFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DataFrame</span></span><a class="headerlink" href="#datafusion.DataFrame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A PyDataFrame is a representation of a logical plan and an API to compose statements.
+Use it to build a plan and <cite>.collect()</cite> to execute the plan and collect the result.
+The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.__init__" title="datafusion.DataFrame.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.aggregate" title="datafusion.DataFrame.aggregate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aggregate</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.cache" title="datafusion.DataFrame.cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache</span></code></a></p></td>
+<td><p>Cache DataFrame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect" title="datafusion.DataFrame.collect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect</span></code></a></p></td>
+<td><p>Executes the plan, returning a list of <a href="#id1"><span class="problematic" id="id2">`</span></a>RecordBatch`es. Unless some order is specified in the plan, there is no guarantee of the order of the result.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect_partitioned" title="datafusion.DataFrame.collect_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_partitioned</span></code></a></p></td>
+<td><p>Executes this DataFrame and collects all results into a vector of vector of RecordBatch maintaining the input partitioning.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.distinct" title="datafusion.DataFrame.distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distinct</span></code></a></p></td>
+<td><p>Filter out duplicate rows</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.except_all" title="datafusion.DataFrame.except_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">except_all</span></code></a></p></td>
+<td><p>Calculate the exception of two <a href="#id3"><span class="problematic" id="id4">`</span></a>DataFrame`s. The two <a href="#id5"><span class="problematic" id="id6">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.explain" title="datafusion.DataFrame.explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explain</span></code></a></p></td>
+<td><p>Print the query plan</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.filter" title="datafusion.DataFrame.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.intersect" title="datafusion.DataFrame.intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersect</span></code></a></p></td>
+<td><p>Calculate the intersection of two <a href="#id7"><span class="problematic" id="id8">`</span></a>DataFrame`s. The two <a href="#id9"><span class="problematic" id="id10">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.join" title="datafusion.DataFrame.join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.limit" title="datafusion.DataFrame.limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limit</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition" title="datafusion.DataFrame.repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition</span></code></a></p></td>
+<td><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition_by_hash" title="datafusion.DataFrame.repartition_by_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition_by_hash</span></code></a></p></td>
+<td><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.schema" title="datafusion.DataFrame.schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></a></p></td>
+<td><p>Returns the schema from the logical plan</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.select" title="datafusion.DataFrame.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.select_columns" title="datafusion.DataFrame.select_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_columns</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.show" title="datafusion.DataFrame.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a></p></td>
+<td><p>Print the result, 20 lines by default</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.sort" title="datafusion.DataFrame.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.union" title="datafusion.DataFrame.union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union</span></code></a></p></td>
+<td><p>Calculate the union of two <a href="#id11"><span class="problematic" id="id12">`</span></a>DataFrame`s, preserving duplicate rows.The two <a href="#id13"><span class="problematic" id="id14">`</span></a>DataFrame`s must have exactly the same schema</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.union_distinct" title="datafusion.DataFrame.union_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union_distinct</span></code></a></p></td>
+<td><p>Calculate the distinct union of two <a href="#id15"><span class="problematic" id="id16">`</span></a>DataFrame`s. The two <a href="#id17"><span class="problematic" id="id18">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column" title="datafusion.DataFrame.with_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column_renamed" title="datafusion.DataFrame.with_column_renamed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column_renamed</span></code></a></p></td>
+<td><p>Rename one column by applying a new projection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_csv" title="datafusion.DataFrame.write_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_csv</span></code></a></p></td>
+<td><p>Write a <cite>DataFrame</cite> to a CSV file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_json" title="datafusion.DataFrame.write_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_json</span></code></a></p></td>
+<td><p>Executes a query and writes the results to a partitioned JSON file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a></p></td>
+<td><p>Write a <cite>DataFrame</cite> to a Parquet file.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.aggregate">
+<span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.aggregate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.cache">
+<span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cache DataFrame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes the plan, returning a list of <a href="#id19"><span class="problematic" id="id20">`</span></a>RecordBatch`es.
+Unless some order is specified in the plan, there is no
+guarantee of the order of the result.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.collect_partitioned">
+<span class="sig-name descname"><span class="pre">collect_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.collect_partitioned" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes this DataFrame and collects all results into a vector of vector of RecordBatch
+maintaining the input partitioning.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.distinct">
+<span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.distinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Filter out duplicate rows</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.except_all">
+<span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.except_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the exception of two <a href="#id21"><span class="problematic" id="id22">`</span></a>DataFrame`s.  The two <a href="#id23"><span class="problematic" id="id24">`</span></a>DataFrame`s must have exactly the same schema</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.explain">
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.explain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the query plan</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.intersect">
+<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the intersection of two <a href="#id25"><span class="problematic" id="id26">`</span></a>DataFrame`s.  The two <a href="#id27"><span class="problematic" id="id28">`</span></a>DataFrame`s must have exactly the same schema</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.join">
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.join" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.limit">
+<span class="sig-name descname"><span class="pre">limit</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.repartition">
+<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.repartition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.repartition_by_hash">
+<span class="sig-name descname"><span class="pre">repartition_by_hash</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.repartition_by_hash" title="Permalink to this definition">¶</a></dt>
+<dd><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.schema" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the schema from the logical plan</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.select">
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.select" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.select_columns">
+<span class="sig-name descname"><span class="pre">select_columns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.select_columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.show">
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print the result, 20 lines by default</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.sort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.union">
+<span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the union of two <a href="#id29"><span class="problematic" id="id30">`</span></a>DataFrame`s, preserving duplicate rows.The
+two <a href="#id31"><span class="problematic" id="id32">`</span></a>DataFrame`s must have exactly the same schema</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.union_distinct">
+<span class="sig-name descname"><span class="pre">union_distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union_distinct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the distinct union of two <a href="#id33"><span class="problematic" id="id34">`</span></a>DataFrame`s.  The
+two <a href="#id35"><span class="problematic" id="id36">`</span></a>DataFrame`s must have exactly the same schema</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.with_column">
+<span class="sig-name descname"><span class="pre">with_column</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.with_column" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.with_column_renamed">
+<span class="sig-name descname"><span class="pre">with_column_renamed</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.with_column_renamed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rename one column by applying a new projection. This is a no-op if the column to be
+renamed does not exist.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.write_csv">
+<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_csv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a <cite>DataFrame</cite> to a CSV file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.write_json">
+<span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes a query and writes the results to a partitioned JSON file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.write_parquet">
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_parquet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a <cite>DataFrame</cite> to a Parquet file.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../api/dataframe.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">DataFrame</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../api/execution_context.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">SessionContext</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>
