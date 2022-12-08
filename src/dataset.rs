@@ -108,13 +108,8 @@ impl TableProvider for Dataset {
     ) -> DFResult<Arc<dyn ExecutionPlan>> {
         Python::with_gil(|py| {
             let plan: Arc<dyn ExecutionPlan> = Arc::new(
-                DatasetExec::new(
-                    py,
-                    self.dataset.as_ref(py),
-                    projection.cloned(),
-                    filters,
-                )
-                .map_err(|err| DataFusionError::External(Box::new(err)))?,
+                DatasetExec::new(py, self.dataset.as_ref(py), projection.cloned(), filters)
+                    .map_err(|err| DataFusionError::External(Box::new(err)))?,
             );
             Ok(plan)
         })
