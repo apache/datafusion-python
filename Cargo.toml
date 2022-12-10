@@ -36,7 +36,7 @@ rand = "0.7"
 pyo3 = { version = "~0.17.1", features = ["extension-module", "abi3", "abi3-py37"] }
 datafusion = { version = "^14.0.0", features = ["pyarrow", "avro"] }
 datafusion-expr = { version = "^14.0.0" }
-datafusion-optimizer = { version = "^14.0.0" }
+datafusion-optimizer = { version = "^15.0.0" }
 datafusion-common = { version = "^14.0.0", features = ["pyarrow"] }
 uuid = { version = "0.8", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
