@@ -224,7 +224,7 @@ impl PySessionContext {
         py: Python,
     ) -> PyResult<()> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols))
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
             .parquet_pruning(parquet_pruning);
         options.file_extension = file_extension;
         let result = self.ctx.register_parquet(name, path, options);
@@ -347,7 +347,7 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols));
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.schema = schema.map(|s| Arc::new(s.0));
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
@@ -393,7 +393,7 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols));
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
 
         if let Some(py_schema) = schema {
             options.schema = Some(&py_schema.0);
@@ -424,7 +424,7 @@ impl PySessionContext {
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols))
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
@@ -449,7 +449,7 @@ impl PySessionContext {
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols));
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
         options.schema = schema.map(|s| Arc::new(s.0));
 
@@ -461,16 +461,15 @@ impl PySessionContext {
 
 fn convert_table_partition_cols(
     table_partition_cols: Vec<(String, String)>,
-) -> Vec<(String, DataType)> {
+) -> Result<Vec<(String, DataType)>, DataFusionError> {
     table_partition_cols
         .into_iter()
-        .map(|(name, ty)| {
-            //TODO add other types
-            let ty = match ty.as_str() {
-                "string" => DataType::Utf8,
-                _ => DataType::Null,
-            };
-            (name, ty)
+        .map(|(name, ty)| match ty.as_str() {
+            "string" => Ok((name, DataType::Utf8)),
+            _ => Err(DataFusionError::Common(format!(
+                "Unsupported data type '{}' for partition column",
+                ty
+            ))),
         })
-        .collect()
+        .collect::<Result<Vec<_>, _>>()
 }
