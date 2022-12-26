@@ -30,7 +30,6 @@ use parking_lot::RwLock;
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::datatype::PyDataType;
 use crate::errors::DataFusionError;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
@@ -219,7 +218,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: &str,
-        table_partition_cols: Vec<(String, PyDataType)>,
+        table_partition_cols: Vec<(String, String)>,
         parquet_pruning: bool,
         file_extension: &str,
         py: Python,
@@ -341,7 +340,7 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, PyDataType)>,
+        table_partition_cols: Vec<(String, String)>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
@@ -375,7 +374,7 @@ impl PySessionContext {
         delimiter: &str,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, PyDataType)>,
+        table_partition_cols: Vec<(String, String)>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
@@ -418,7 +417,7 @@ impl PySessionContext {
     fn read_parquet(
         &self,
         path: &str,
-        table_partition_cols: Vec<(String, PyDataType)>,
+        table_partition_cols: Vec<(String, String)>,
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
@@ -445,7 +444,7 @@ impl PySessionContext {
         &self,
         path: &str,
         schema: Option<PyArrowType<Schema>>,
-        table_partition_cols: Vec<(String, PyDataType)>,
+        table_partition_cols: Vec<(String, String)>,
         file_extension: &str,
         py: Python,
     ) -> PyResult<PyDataFrame> {
@@ -461,10 +460,17 @@ impl PySessionContext {
 }
 
 fn convert_table_partition_cols(
-    table_partition_cols: Vec<(String, PyDataType)>,
+    table_partition_cols: Vec<(String, String)>,
 ) -> Vec<(String, DataType)> {
     table_partition_cols
-        .iter()
-        .map(|(name, t)| (name.clone(), t.data_type.clone()))
+        .into_iter()
+        .map(|(name, ty)| {
+            //TODO add other types
+            let ty = match ty.as_str() {
+                "string" => DataType::Utf8,
+                _ => DataType::Null,
+            };
+            (name, ty)
+        })
         .collect()
 }
