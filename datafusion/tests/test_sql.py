@@ -108,7 +108,7 @@ def test_register_parquet_partitioned(ctx, tmp_path):
     ctx.register_parquet(
         "datapp",
         str(dir_root),
-        table_partition_cols=["grp"],
+        table_partition_cols=[("grp", "string")],
         parquet_pruning=True,
         file_extension=".parquet",
     )
