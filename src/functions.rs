@@ -30,7 +30,7 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
         value.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
         negated,
     )
-        .into()
+    .into()
 }
 
 /// Computes a binary hash of the given data. type is the algorithm to use.
