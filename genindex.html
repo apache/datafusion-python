@@ -228,6 +228,7 @@
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -268,17 +269,21 @@
       </ul></li>
       <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.AmazonS3">AmazonS3 (class in datafusion.object_store.object_store)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.approx_distinct">approx_distinct() (in module datafusion.functions.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.array">array() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.arrow_typeof">arrow_typeof() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.ascii">ascii() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.asin">asin() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.atan">atan() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.atan2">atan2() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.avg">avg() (in module datafusion.functions.functions)</a>
 </li>
@@ -308,9 +313,13 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.ceil">ceil() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.char_length">char_length() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.character_length">character_length() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.chr">chr() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.coalesce">coalesce() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.collect">collect() (datafusion.DataFrame method)</a>
 </li>
@@ -331,6 +340,10 @@
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.count">count() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe">create_dataframe() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.current_date">current_date() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.current_time">current_time() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -354,8 +367,18 @@
         <li><a href="generated/datafusion.object_store.object_store.html#module-datafusion.object_store.object_store">module</a>
 </li>
       </ul></li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_bin">date_bin() (in module datafusion.functions.functions)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_part">date_part() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_trunc">date_trunc() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.datepart">datepart() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.datetrunc">datetrunc() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.deregister_table">deregister_table() (datafusion.SessionContext method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.digest">digest() (in module datafusion.functions.functions)</a>
@@ -388,11 +411,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.filter">filter() (datafusion.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.floor">floor() (in module datafusion.functions.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.Config.html#datafusion.Config.from_env">from_env() (datafusion.Config static method)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.from_unixtime">from_unixtime() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -440,6 +465,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.left">left() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.length">length() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.limit">limit() (datafusion.DataFrame method)</a>
 </li>
       <li><a href="generated/datafusion.Expression.html#datafusion.Expression.literal">literal() (datafusion.Expression static method)</a>
@@ -450,6 +477,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log">log() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log10">log10() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log2">log2() (in module datafusion.functions.functions)</a>
@@ -466,6 +495,8 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.make_array">make_array() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.max">max() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.md5">md5() (in module datafusion.functions.functions)</a>
@@ -494,6 +525,10 @@
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.now">now() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.nullif">nullif() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="O">O</h2>
@@ -504,6 +539,18 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.order_by">order_by() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.pow">pow() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.power">power() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -629,11 +676,17 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.tan">tan() (in module datafusion.functions.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_hex">to_hex() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp">to_timestamp() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_micros">to_timestamp_micros() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_millis">to_timestamp_millis() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_seconds">to_timestamp_seconds() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.translate">translate() (in module datafusion.functions.functions)</a>
 </li>
