@@ -92,10 +92,9 @@ impl PySessionContext {
                 }
             }
         }
-        let config_options = Arc::new(RwLock::new(options));
 
         let mut cfg = SessionConfig::new()
-            .create_default_catalog_and_schema(create_default_catalog_and_schema)
+            //.create_default_catalog_and_schema();
             .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)
             .with_repartition_joins(repartition_joins)
@@ -104,7 +103,8 @@ impl PySessionContext {
             .with_parquet_pruning(parquet_pruning);
 
         // TODO we should add a `with_config_options` to `SessionConfig`
-        cfg.config_options = config_options;
+        //let config_options = Arc::new(RwLock::new(options));
+        // cfg.config_options = config_options;
 
         let cfg_full = match target_partitions {
             None => cfg,
@@ -348,7 +348,10 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        options.schema = schema.map(|s| Arc::new(s.0));
+        //TODO
+        // if let Some(x) = schema {
+        //     options.schema = Some(&x.0);
+        // }
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
 
@@ -451,7 +454,8 @@ impl PySessionContext {
         let mut options = AvroReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
-        options.schema = schema.map(|s| Arc::new(s.0));
+        //TODO
+        // options.schema = schema.map(|s| &s.0);
 
         let result = self.ctx.read_avro(path, options);
         let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);

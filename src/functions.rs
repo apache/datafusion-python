@@ -17,7 +17,9 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
-use datafusion::physical_plan::aggregates::AggregateFunction;
+use datafusion_expr::expr::AggregateFunction;
+use datafusion_expr::expr::{Sort, WindowFunction};
+use datafusion_expr::window_function::find_df_window_func;
 use datafusion_expr::{lit, BuiltinScalarFunction};
 
 use crate::errors;
@@ -63,11 +65,11 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Sort {
+        expr: datafusion_expr::Expr::Sort(Sort {
             expr: Box::new(expr.expr),
             asc: asc.unwrap_or(true),
             nulls_first: nulls_first.unwrap_or(true),
-        },
+        }),
     })
 }
 
@@ -88,25 +90,27 @@ fn window(
     order_by: Option<Vec<PyExpr>>,
 ) -> PyResult<PyExpr> {
     use std::str::FromStr;
-    let fun = datafusion_expr::window_function::WindowFunction::from_str(name)
-        .map_err(|e| -> errors::DataFusionError { e.into() })?;
-    Ok(PyExpr {
-        expr: datafusion_expr::Expr::WindowFunction {
-            fun,
-            args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
-            partition_by: partition_by
-                .unwrap_or_default()
-                .into_iter()
-                .map(|x| x.expr)
-                .collect::<Vec<_>>(),
-            order_by: order_by
-                .unwrap_or_default()
-                .into_iter()
-                .map(|x| x.expr)
-                .collect::<Vec<_>>(),
-            window_frame: None,
-        },
-    })
+    // TODO
+    todo!()
+    // let fun = find_df_window_func(name).unwrap();
+    //     //.ok_or_else(errors::DataFusionError { e.into() })?;
+    // Ok(PyExpr {
+    //     expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
+    //         fun,
+    //         args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
+    //         partition_by: partition_by
+    //             .unwrap_or_default()
+    //             .into_iter()
+    //             .map(|x| x.expr)
+    //             .collect::<Vec<_>>(),
+    //         order_by: order_by
+    //             .unwrap_or_default()
+    //             .into_iter()
+    //             .map(|x| x.expr)
+    //             .collect::<Vec<_>>(),
+    //         window_frame: None,
+    //     }),
+    // })
 }
 
 macro_rules! scalar_function {
@@ -135,12 +139,12 @@ macro_rules! aggregate_function {
         #[doc = $DOC]
         #[pyfunction(args = "*", distinct = "false")]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
-            let expr = datafusion_expr::Expr::AggregateFunction {
-                fun: AggregateFunction::$FUNC,
+            let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
+                fun: datafusion_expr::aggregate_function::AggregateFunction::$FUNC,
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,
-            };
+            });
             expr.into()
         }
     };
@@ -281,7 +285,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(atan))?;
     m.add_wrapped(wrap_pyfunction!(atan2))?;
-    m.add_wrapped(wrap_pyfunction!(avg))?;
+    //TODO m.add_wrapped(wrap_pyfunction!(avg))?;
     m.add_wrapped(wrap_pyfunction!(bit_length))?;
     m.add_wrapped(wrap_pyfunction!(btrim))?;
     m.add_wrapped(wrap_pyfunction!(ceil))?;

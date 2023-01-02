@@ -25,7 +25,7 @@ description = "Apache Arrow DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.62"
 
 [features]
 default = ["mimalloc"]
@@ -34,16 +34,17 @@ default = ["mimalloc"]
 tokio = { version = "1.23", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "~0.17.3", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { version = "^15.0.0", features = ["pyarrow", "avro"] }
-datafusion-expr = { version = "^15.0.0" }
-datafusion-optimizer = { version = "^15.0.0" }
-datafusion-common = { version = "^15.0.0", features = ["pyarrow"] }
+datafusion = { git = "https://github.com/apache/arrow-datafusion", features = ["pyarrow", "avro"] }
+datafusion-expr = { git = "https://github.com/apache/arrow-datafusion" }
+datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion" }
+datafusion-common = { git = "https://github.com/apache/arrow-datafusion", features = ["pyarrow"] }
 uuid = { version = "0.8", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
 object_store = { version = "0.5.2", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
+regex-syntax = "0.6.28"
 
 [lib]
 name = "datafusion_python"
