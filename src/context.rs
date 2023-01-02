@@ -94,7 +94,7 @@ impl PySessionContext {
         }
 
         let mut cfg = SessionConfig::new()
-            //.create_default_catalog_and_schema();
+            //TODO .create_default_catalog_and_schema();
             .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)
             .with_repartition_joins(repartition_joins)
@@ -348,15 +348,16 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        //TODO
-        // if let Some(x) = schema {
-        //     options.schema = Some(&x.0);
-        // }
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
-
-        let result = self.ctx.read_json(path, options);
-        let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
+        let df = if let Some(schema) = schema {
+            options.schema = Some(&schema.0);
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?
+        } else {
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?
+        };
         Ok(PyDataFrame::new(df))
     }
 
@@ -454,12 +455,15 @@ impl PySessionContext {
         let mut options = AvroReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
-        //TODO
-        // options.schema = schema.map(|s| &s.0);
-
-        let result = self.ctx.read_avro(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
-        Ok(df)
+        let df = if let Some(schema) = schema {
+            options.schema = Some(&schema.0);
+            let read_future = self.ctx.read_avro(path, options);
+            wait_for_future(py, read_future).map_err(DataFusionError::from)?
+        } else {
+            let read_future = self.ctx.read_avro(path, options);
+            wait_for_future(py, read_future).map_err(DataFusionError::from)?
+        };
+        Ok(PyDataFrame::new(df))
     }
 }
 
