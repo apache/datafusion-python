@@ -22,7 +22,6 @@ use datafusion_expr::expr::{Sort, WindowFunction};
 use datafusion_expr::window_function::find_df_window_func;
 use datafusion_expr::{lit, BuiltinScalarFunction};
 
-use crate::errors;
 use crate::expression::PyExpr;
 
 #[pyfunction]
@@ -89,7 +88,6 @@ fn window(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
 ) -> PyResult<PyExpr> {
-    use std::str::FromStr;
     // TODO
     todo!()
     // let fun = find_df_window_func(name).unwrap();

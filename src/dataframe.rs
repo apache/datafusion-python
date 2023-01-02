@@ -186,7 +186,7 @@ impl PyDataFrame {
         };
 
         let df = self.df.as_ref().clone().join(
-            right.df.as_ref().clone().to_owned(),
+            right.df.as_ref().clone(),
             join_type,
             &join_keys.0,
             &join_keys.1,
