@@ -285,7 +285,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(atan))?;
     m.add_wrapped(wrap_pyfunction!(atan2))?;
-    //TODO m.add_wrapped(wrap_pyfunction!(avg))?;
+    m.add_wrapped(wrap_pyfunction!(avg))?;
     m.add_wrapped(wrap_pyfunction!(bit_length))?;
     m.add_wrapped(wrap_pyfunction!(btrim))?;
     m.add_wrapped(wrap_pyfunction!(ceil))?;

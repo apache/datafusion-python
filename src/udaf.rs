@@ -42,16 +42,8 @@ impl RustAccumulator {
 
 impl Accumulator for RustAccumulator {
     fn state(&self) -> Result<Vec<ScalarValue>> {
-        let py_result: PyResult<Vec<ScalarValue>> =
-            Python::with_gil(|py| self.accum.as_ref(py).call_method0("state")?.extract());
-        match py_result {
-            Ok(r) => {
-                todo!()
-                // AggregateState no longer exists?
-                //Ok(r.into_iter().map(AggregateState::Scalar).collect())
-            }
-            Err(e) => Err(DataFusionError::Execution(format!("{}", e))),
-        }
+        Python::with_gil(|py| self.accum.as_ref(py).call_method0("state")?.extract())
+            .map_err(|e| DataFusionError::Execution(format!("{}", e)))
     }
 
     fn evaluate(&self) -> Result<ScalarValue> {
