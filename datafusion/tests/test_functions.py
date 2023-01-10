@@ -91,6 +91,16 @@ def test_math_functions():
         f.log2(col_v + literal(pa.scalar(1))),
         f.log10(col_v + literal(pa.scalar(1))),
         f.random(),
+        f.atan(col_v),
+        f.atan2(col_v, literal(pa.scalar(1.1))),
+        f.ceil(col_v),
+        f.floor(col_v),
+        f.power(col_v, literal(pa.scalar(3))),
+        f.pow(col_v, literal(pa.scalar(4))),
+        f.round(col_v),
+        f.sqrt(col_v),
+        f.signum(col_v),
+        f.trunc(col_v),
     )
     batches = df.collect()
     assert len(batches) == 1
@@ -113,6 +123,16 @@ def test_math_functions():
         result.column(9), np.log10(values + 1.0)
     )
     np.testing.assert_array_less(result.column(10), np.ones_like(values))
+    np.testing.assert_array_almost_equal(result.column(11), np.arctan(values))
+    np.testing.assert_array_almost_equal(result.column(12), np.arctan2(values, 1.1))
+    np.testing.assert_array_almost_equal(result.column(13), np.ceil(values))
+    np.testing.assert_array_almost_equal(result.column(14), np.floor(values))
+    np.testing.assert_array_almost_equal(result.column(15), np.power(values, 3))
+    np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
+    np.testing.assert_array_almost_equal(result.column(17), np.round(values))
+    np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
+    np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
+    np.testing.assert_array_almost_equal(result.column(20), np.trunc(values))
 
 
 def test_string_functions(df):
