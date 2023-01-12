@@ -212,9 +212,15 @@ def test_string_functions(df):
 def test_hash_functions(df):
     exprs = [
         f.digest(column("a"), literal(m))
-        for m in ("md5", "sha256", "sha512", "blake2s", "blake3")
+        for m in ("md5", "sha224", "sha256", "sha384", "sha512", "blake2s", "blake3")
     ]
-    df = df.select(*exprs)
+    df = df.select(
+        *exprs,
+        f.sha224(column("a")),
+        f.sha256(column("a")),
+        f.sha384(column("a")),
+        f.sha512(column("a")),
+    )
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -227,6 +233,22 @@ def test_hash_functions(df):
         ]
     )
     assert result.column(1) == pa.array(
+        [
+            b(
+                "4149DA18AA8BFC2B1E382C6C2655"
+                "6D01A92C261B6436DAD5E3BE3FCC"
+            ),
+            b(
+                "12972632B6D3B6AA52BD6434552F"
+                "08C1303D56B817119406466E9236"
+            ),
+            b(
+                "6641A7E8278BCD49E476E7ACAE15"
+                "8F4105B2952D22AEB2E0B9A231A0"
+            ),
+        ]
+    )
+    assert result.column(2) == pa.array(
         [
             b(
                 "185F8DB32271FE25F561A6FC938B2E26"
@@ -242,7 +264,26 @@ def test_hash_functions(df):
             ),
         ]
     )
-    assert result.column(2) == pa.array(
+    assert result.column(3) == pa.array(
+        [
+            b(
+                "3519FE5AD2C596EFE3E276A6F351B8FC"
+                "0B03DB861782490D45F7598EBD0AB5FD"
+                "5520ED102F38C4A5EC834E98668035FC"
+            ),
+            b(
+                "ED7CED84875773603AF90402E42C65F3"
+                "B48A5E77F84ADC7A19E8F3E8D3101010"
+                "22F552AEC70E9E1087B225930C1D260A"
+            ),
+            b(
+                "1D0EC8C84EE9521E21F06774DE232367"
+                "B64DE628474CB5B2E372B699A1F55AE3"
+                "35CC37193EF823E33324DFD9A70738A6"
+            ),
+        ]
+    )
+    assert result.column(4) == pa.array(
         [
             b(
                 "3615F80C9D293ED7402687F94B22D58E"
@@ -264,7 +305,7 @@ def test_hash_functions(df):
             ),
         ]
     )
-    assert result.column(3) == pa.array(
+    assert result.column(5) == pa.array(
         [
             b(
                 "F73A5FBF881F89B814871F46E26AD3FA"
@@ -280,7 +321,7 @@ def test_hash_functions(df):
             ),
         ]
     )
-    assert result.column(4) == pa.array(
+    assert result.column(6) == pa.array(
         [
             b(
                 "FBC2B0516EE8744D293B980779178A35"
@@ -296,3 +337,7 @@ def test_hash_functions(df):
             ),
         ]
     )
+    assert result.column(7) == result.column(1)     # SHA-224
+    assert result.column(8) == result.column(2)     # SHA-256
+    assert result.column(9) == result.column(3)    # SHA-384
+    assert result.column(10) == result.column(4)    # SHA-512
