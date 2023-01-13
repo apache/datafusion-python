@@ -33,4 +33,9 @@ dependencies:
 - mamba
 - conda-build
 - anaconda-client
+# Packages for documentation building
+- sphinx
+- pydata-sphinx-theme==0.8.0
+- myst-parser
+- jinja2
 name: datafusion-dev
