@@ -42,7 +42,7 @@ uuid = { version = "0.8", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
-object_store = { version = "0.5.2", features = ["aws", "gcp", "azure"] }
+object_store = { version = "0.5.3", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 
 [lib]
