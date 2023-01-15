@@ -18,6 +18,7 @@
 import numpy as np
 import pyarrow as pa
 import pytest
+from datetime import datetime
 
 from datafusion import SessionContext, column
 from datafusion import functions as f
@@ -33,8 +34,9 @@ def df():
             pa.array(["Hello", "World", "!"]),
             pa.array([4, 5, 6]),
             pa.array(["hello ", " world ", " !"]),
+            pa.array([datetime(2022, 12, 31), datetime(2027, 6, 26), datetime(2020, 7, 2)])
         ],
-        names=["a", "b", "c"],
+        names=["a", "b", "c", "d"],
     )
     return ctx.create_dataframe([[batch]])
 
@@ -341,3 +343,30 @@ def test_hash_functions(df):
     assert result.column(8) == result.column(2)     # SHA-256
     assert result.column(9) == result.column(3)    # SHA-384
     assert result.column(10) == result.column(4)    # SHA-512
+
+
+def test_temporal_functions(df):
+    df = df.select(
+        f.date_part(literal("month"), column("d")),
+        f.datepart(literal("year"), column("d")),
+        f.date_trunc(literal("month"), column("d")),
+        f.date_trunc(literal("day"), column("d")),
+        f.from_unixtime(literal(1673383974)),
+        f.to_timestamp(literal("2023-09-07 05:06:14.523952")),
+        f.to_timestamp_seconds(literal("2023-09-07 05:06:14.523952")),
+        f.to_timestamp_millis(literal("2023-09-07 05:06:14.523952")),
+        f.to_timestamp_micros(literal("2023-09-07 05:06:14.523952")),
+        # f.now(),
+    )
+    result = df.collect()
+    assert len(result) == 1
+    result = result[0]
+    assert result.column(0) == pa.array([12, 6, 7], type=pa.int32())
+    assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.int32())
+    assert result.column(2) == pa.array([datetime(2022, 12, 1), datetime(2027, 6, 1), datetime(2020, 7, 1)], type=pa.timestamp("ns"))
+    assert result.column(3) == pa.array([datetime(2022, 12, 31), datetime(2027, 6, 26), datetime(2020, 7, 2)], type=pa.timestamp("ns"))
+    assert result.column(4) == pa.array([datetime(2023, 1, 10, 20, 52, 54)] * 3, type=pa.timestamp("s"))
+    assert result.column(5) == pa.array([datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns"))
+    assert result.column(6) == pa.array([datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s"))
+    assert result.column(7) == pa.array([datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms"))
+    assert result.column(8) == pa.array([datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us"))
