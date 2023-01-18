@@ -21,7 +21,7 @@ use std::sync::Arc;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 
-use crate::errors::DataFusionError;
+use crate::utils::wait_for_future;
 use datafusion::{
     arrow::pyarrow::PyArrowConvert,
     catalog::{catalog::CatalogProvider, schema::SchemaProvider},
@@ -83,25 +83,15 @@ impl PyCatalog {
     }
 }
 
-impl PyDatabase {
-    async fn _table(&self, name: &str) -> Option<Arc<dyn TableProvider>> {
-        self.database.table(name).await
-    }
-}
-
 #[pymethods]
 impl PyDatabase {
     fn names(&self) -> HashSet<String> {
         self.database.table_names().into_iter().collect()
     }
 
-    fn table(&self, name: &str) -> PyResult<PyTable> {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| DataFusionError::Common(format!("{}", e)))?;
-        let x = rt.block_on(self._table(name)).unwrap(); //TODO unwrap
-        Ok(PyTable::new(x))
+    fn table(&self, name: &str, py: Python) -> PyResult<PyTable> {
+        let x = wait_for_future(py, self.database.table(name));
+        Ok(PyTable::new(x.unwrap())) // TODO
     }
 
     // register_table

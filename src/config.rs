@@ -38,32 +38,39 @@ impl PyConfig {
 
     /// Get configurations from environment variables
     #[staticmethod]
-    pub fn from_env() -> Self {
-        Self {
-            config: ConfigOptions::from_env().unwrap(), // TODO
-        }
+    pub fn from_env() -> PyResult<Self> {
+        Ok(Self {
+            config: ConfigOptions::from_env()?,
+        })
     }
 
     /// Get a configuration option
     pub fn get(&mut self, key: &str, py: Python) -> PyResult<PyObject> {
-        //Ok(self.config.get(key).into_py(py))
-        todo!()
+        let options = self.config.to_owned();
+        for entry in options.entries() {
+            if entry.key == key {
+                return Ok(entry.value.into_py(py));
+            }
+        }
+        Ok(None::<String>.into_py(py))
     }
 
     /// Set a configuration option
-    pub fn set(&mut self, key: &str, value: PyObject, py: Python) {
-        //self.config.set(key, py_obj_to_scalar_value(py, value))
-        todo!()
+    pub fn set(&mut self, key: &str, value: PyObject, py: Python) -> PyResult<()> {
+        let scalar_value = py_obj_to_scalar_value(py, value);
+        self.config
+            .set(key, scalar_value.to_string().as_str())
+            .map_err(|e| e.into())
     }
 
     /// Get all configuration options
     pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
-        // let dict = PyDict::new(py);
-        // for (key, value) in self.config.options() {
-        //     dict.set_item(key, value.clone().into_py(py))?;
-        // }
-        // Ok(dict.into())
-        todo!()
+        let dict = PyDict::new(py);
+        let options = self.config.to_owned();
+        for entry in options.entries() {
+            dict.set_item(entry.key, entry.value.clone().into_py(py))?;
+        }
+        Ok(dict.into())
     }
 }
 

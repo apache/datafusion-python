@@ -25,8 +25,6 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use parking_lot::RwLock;
-
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
@@ -38,13 +36,13 @@ use crate::utils::wait_for_future;
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::config::ConfigOptions;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
+use datafusion_common::ScalarValue;
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -81,35 +79,32 @@ impl PySessionContext {
         parquet_pruning: bool,
         target_partitions: Option<usize>,
         config_options: Option<HashMap<String, String>>,
-    ) -> Self {
-        let mut options = ConfigOptions::from_env().unwrap(); // TODO
-        if let Some(hash_map) = config_options {
-            for (k, v) in &hash_map {
-                options.set(k, v.as_str()).unwrap(); // TODO
-            }
-        }
-
+    ) -> PyResult<Self> {
         let mut cfg = SessionConfig::new()
-            //TODO .create_default_catalog_and_schema();
-            .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)
             .with_repartition_joins(repartition_joins)
             .with_repartition_aggregations(repartition_aggregations)
             .with_repartition_windows(repartition_windows)
             .with_parquet_pruning(parquet_pruning);
 
-        // TODO we should add a `with_config_options` to `SessionConfig`
-        //let config_options = Arc::new(RwLock::new(options));
-        // cfg.config_options = config_options;
+        if create_default_catalog_and_schema {
+            cfg = cfg.with_default_catalog_and_schema(default_catalog, default_schema);
+        }
+
+        if let Some(hash_map) = config_options {
+            for (k, v) in &hash_map {
+                cfg = cfg.set(k, ScalarValue::Utf8(Some(v.clone())));
+            }
+        }
 
         let cfg_full = match target_partitions {
             None => cfg,
             Some(x) => cfg.with_target_partitions(x),
         };
 
-        PySessionContext {
+        Ok(PySessionContext {
             ctx: SessionContext::with_config(cfg_full),
-        }
+        })
     }
 
     /// Register a an object store with the given name
@@ -173,12 +168,7 @@ impl PySessionContext {
             .register_table(&*name, Arc::new(table))
             .map_err(DataFusionError::from)?;
 
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .map_err(|e| DataFusionError::Common(format!("{}", e)))?;
-
-        let table = wait_for_future(py, self._table(&*name)).map_err(DataFusionError::from)?;
+        let table = wait_for_future(py, self._table(&name)).map_err(DataFusionError::from)?;
 
         let df = PyDataFrame::new(table);
         Ok(df)
