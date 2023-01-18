@@ -149,10 +149,16 @@ assert result.column(0) == pyarrow.array([6.0])
 
 ## How to install (from pip)
 
+### Pip
 ```bash
 pip install datafusion
 # or
 python -m pip install datafusion
+```
+
+### Conda
+```bash
+conda install -c conda-forge datafusion
 ```
 
 You can verify the installation by running:
@@ -163,11 +169,25 @@ You can verify the installation by running:
 '0.6.0'
 ```
 
+
 ## How to develop
 
 This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin).
 
-Bootstrap:
+The Maturin tools used in this workflow can be installed either via Conda or Pip. Both approaches should offer the same experience. Multiple approaches are only offered to appease developer preference. Bootstrapping for both Conda and Pip are as follows.
+
+Bootstrap (Conda):
+
+```bash
+# fetch this repo
+git clone git@github.com:apache/arrow-datafusion-python.git
+# create the conda environment for dev
+conda env create -f ./conda/environments/datafusion-dev.yaml -n datafusion-dev
+# activate the conda environment
+conda activate datafusion-dev
+```
+
+Bootstrap (Pip):
 
 ```bash
 # fetch this repo
