@@ -21,6 +21,7 @@ use std::sync::Arc;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 
+use crate::errors::DataFusionError;
 use datafusion::{
     arrow::pyarrow::PyArrowConvert,
     catalog::{catalog::CatalogProvider, schema::SchemaProvider},
@@ -82,6 +83,12 @@ impl PyCatalog {
     }
 }
 
+impl PyDatabase {
+    async fn _table(&self, name: &str) -> Option<Arc<dyn TableProvider>> {
+        self.database.table(name).await
+    }
+}
+
 #[pymethods]
 impl PyDatabase {
     fn names(&self) -> HashSet<String> {
@@ -89,13 +96,12 @@ impl PyDatabase {
     }
 
     fn table(&self, name: &str) -> PyResult<PyTable> {
-        match self.database.table(name) {
-            Some(table) => Ok(PyTable::new(table)),
-            None => Err(PyKeyError::new_err(format!(
-                "Table with name {} doesn't exist.",
-                name
-            ))),
-        }
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| DataFusionError::Common(format!("{}", e)))?;
+        let x = rt.block_on(self._table(name)).unwrap(); //TODO unwrap
+        Ok(PyTable::new(x))
     }
 
     // register_table

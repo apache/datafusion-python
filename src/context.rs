@@ -42,7 +42,9 @@ use datafusion::config::ConfigOptions;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
-use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
+use datafusion::prelude::{
+    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+};
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -80,16 +82,10 @@ impl PySessionContext {
         target_partitions: Option<usize>,
         config_options: Option<HashMap<String, String>>,
     ) -> Self {
-        let mut options = ConfigOptions::from_env();
+        let mut options = ConfigOptions::from_env().unwrap(); // TODO
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
-                if let Ok(v) = v.parse::<bool>() {
-                    options.set_bool(k, v);
-                } else if let Ok(v) = v.parse::<u64>() {
-                    options.set_u64(k, v);
-                } else {
-                    options.set_string(k, v);
-                }
+                options.set(k, v.as_str()).unwrap(); // TODO
             }
         }
 
@@ -161,6 +157,7 @@ impl PySessionContext {
     fn create_dataframe(
         &mut self,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
+        py: Python,
     ) -> PyResult<PyDataFrame> {
         let schema = partitions.0[0][0].schema();
         let table = MemTable::try_new(schema, partitions.0).map_err(DataFusionError::from)?;
@@ -175,7 +172,13 @@ impl PySessionContext {
         self.ctx
             .register_table(&*name, Arc::new(table))
             .map_err(DataFusionError::from)?;
-        let table = self.ctx.table(&*name).map_err(DataFusionError::from)?;
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .map_err(|e| DataFusionError::Common(format!("{}", e)))?;
+
+        let table = wait_for_future(py, self._table(&*name)).map_err(DataFusionError::from)?;
 
         let df = PyDataFrame::new(table);
         Ok(df)
@@ -311,8 +314,9 @@ impl PySessionContext {
         self.ctx.tables().unwrap()
     }
 
-    fn table(&self, name: &str) -> PyResult<PyDataFrame> {
-        Ok(PyDataFrame::new(self.ctx.table(name)?))
+    fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
+        let x = wait_for_future(py, self.ctx.table(name)).map_err(DataFusionError::from)?;
+        Ok(PyDataFrame::new(x))
     }
 
     fn table_exist(&self, name: &str) -> PyResult<bool> {
@@ -464,6 +468,12 @@ impl PySessionContext {
             wait_for_future(py, read_future).map_err(DataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
+    }
+}
+
+impl PySessionContext {
+    async fn _table(&self, name: &str) -> datafusion_common::Result<DataFrame> {
+        self.ctx.table(name).await
     }
 }
 

@@ -20,7 +20,7 @@ use pyo3::{prelude::*, wrap_pyfunction};
 use datafusion_expr::expr::AggregateFunction;
 use datafusion_expr::expr::{Sort, WindowFunction};
 use datafusion_expr::window_function::find_df_window_func;
-use datafusion_expr::{lit, BuiltinScalarFunction};
+use datafusion_expr::{lit, BuiltinScalarFunction, WindowFrame};
 
 use crate::expression::PyExpr;
 
@@ -81,35 +81,34 @@ fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
 }
 
 /// Creates a new Window function expression
-#[pyfunction]
-fn window(
-    name: &str,
-    args: Vec<PyExpr>,
-    partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
-) -> PyResult<PyExpr> {
-    // TODO
-    todo!()
-    // let fun = find_df_window_func(name).unwrap();
-    //     //.ok_or_else(errors::DataFusionError { e.into() })?;
-    // Ok(PyExpr {
-    //     expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
-    //         fun,
-    //         args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
-    //         partition_by: partition_by
-    //             .unwrap_or_default()
-    //             .into_iter()
-    //             .map(|x| x.expr)
-    //             .collect::<Vec<_>>(),
-    //         order_by: order_by
-    //             .unwrap_or_default()
-    //             .into_iter()
-    //             .map(|x| x.expr)
-    //             .collect::<Vec<_>>(),
-    //         window_frame: None,
-    //     }),
-    // })
-}
+// #[pyfunction]
+// fn window(
+//     name: &str,
+//     args: Vec<PyExpr>,
+//     partition_by: Option<Vec<PyExpr>>,
+//     order_by: Option<Vec<PyExpr>>,
+//     window_frame: PyWindowFrame,
+// ) -> PyResult<PyExpr> {
+//     let fun = find_df_window_func(name).unwrap();
+//         //.ok_or_else(errors::DataFusionError { e.into() })?;
+//     Ok(PyExpr {
+//         expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
+//             fun,
+//             args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
+//             partition_by: partition_by
+//                 .unwrap_or_default()
+//                 .into_iter()
+//                 .map(|x| x.expr)
+//                 .collect::<Vec<_>>(),
+//             order_by: order_by
+//                 .unwrap_or_default()
+//                 .into_iter()
+//                 .map(|x| x.expr)
+//                 .collect::<Vec<_>>(),
+//             window_frame,
+//         }),
+//     })
+// }
 
 macro_rules! scalar_function {
     ($NAME: ident, $FUNC: ident) => {
@@ -361,6 +360,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
     //m.add_wrapped(wrap_pyfunction!(uuid))?;
-    m.add_wrapped(wrap_pyfunction!(window))?;
+    // m.add_wrapped(wrap_pyfunction!(window))?;
     Ok(())
 }

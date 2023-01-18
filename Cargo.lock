@@ -627,8 +627,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f166d67281ee90d0b35d93a9d13b3b32c26f35348da9e5101a12e9de6093bd06"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -649,6 +650,7 @@ dependencies = [
  "futures",
  "glob",
  "hashbrown 0.13.1",
+ "indexmap",
  "itertools",
  "lazy_static",
  "log",
@@ -675,12 +677,14 @@ dependencies = [
 
 [[package]]
 name = "datafusion-common"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5cb2144c73ca974b00bf735a6e8692efe22c65731097bc49018a0edfbd1d0120"
 dependencies = [
  "apache-avro",
  "arrow",
  "chrono",
+ "num_cpus",
  "object_store",
  "parquet",
  "pyo3",
@@ -689,8 +693,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-expr"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6b988765372fdee77d805dda00cb7ffb28dfda831cc0b79aff9e09527b70402"
 dependencies = [
  "ahash",
  "arrow",
@@ -701,8 +706,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-optimizer"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50b44aa5128e3e6f76d7ae8efc3a595133abd74aa60c3f50f39f93ea00ef302c"
 dependencies = [
  "arrow",
  "async-trait",
@@ -717,8 +723,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-physical-expr"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fd7e12ce4d61eb698a83fde3bf14417fe67a23d7131b1f00c28dc70183aeed7"
 dependencies = [
  "ahash",
  "arrow",
@@ -732,6 +739,7 @@ dependencies = [
  "datafusion-row",
  "half",
  "hashbrown 0.13.1",
+ "indexmap",
  "itertools",
  "lazy_static",
  "md-5",
@@ -766,8 +774,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-row"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e34f6c09f1458190bb90305d70c2075bf2dd4cf8c51a65d5635e5217a3bb8bff"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -777,8 +786,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-sql"
-version = "15.0.0"
-source = "git+https://github.com/apache/arrow-datafusion#00a22cb1bd83508cbf3231a996b1711308c64601"
+version = "16.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b42f29fd2c98e0e0030db4638f971c91145ef5e67ab139f0426b2891e14b9bf5"
 dependencies = [
  "arrow-schema",
  "datafusion-common",
@@ -1147,9 +1157,9 @@ dependencies = [
 
 [[package]]
 name = "indexmap"
-version = "1.9.1"
+version = "1.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10a35a97730320ffe8e2d410b5d3b69279b98d2c14bdb8b70ea89ecf7888d41e"
+checksum = "1885e79c1fc4b10f0e172c475f458b7f7b93061064d98c3293e98c5ba0c8b399"
 dependencies = [
  "autocfg",
  "hashbrown 0.12.3",
@@ -2112,11 +2122,23 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "sqlparser"
-version = "0.29.0"
+version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f484338c3e7772b9208d45f6e49aed0ea8439cdbe67c10ebf5505828143e113"
+checksum = "db67dc6ef36edb658196c3fef0464a80b53dbbc194a904e81f9bd4190f9ecc5b"
 dependencies = [
  "log",
+ "sqlparser_derive",
+]
+
+[[package]]
+name = "sqlparser_derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55fe75cb4a364c7f7ae06c7dbbc8d84bddd85d6cdf9975963c3935bc1991761e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

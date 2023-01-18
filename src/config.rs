@@ -40,27 +40,30 @@ impl PyConfig {
     #[staticmethod]
     pub fn from_env() -> Self {
         Self {
-            config: ConfigOptions::from_env(),
+            config: ConfigOptions::from_env().unwrap(), // TODO
         }
     }
 
     /// Get a configuration option
     pub fn get(&mut self, key: &str, py: Python) -> PyResult<PyObject> {
-        Ok(self.config.get(key).into_py(py))
+        //Ok(self.config.get(key).into_py(py))
+        todo!()
     }
 
     /// Set a configuration option
     pub fn set(&mut self, key: &str, value: PyObject, py: Python) {
-        self.config.set(key, py_obj_to_scalar_value(py, value))
+        //self.config.set(key, py_obj_to_scalar_value(py, value))
+        todo!()
     }
 
     /// Get all configuration options
     pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
-        let dict = PyDict::new(py);
-        for (key, value) in self.config.options() {
-            dict.set_item(key, value.clone().into_py(py))?;
-        }
-        Ok(dict.into())
+        // let dict = PyDict::new(py);
+        // for (key, value) in self.config.options() {
+        //     dict.set_item(key, value.clone().into_py(py))?;
+        // }
+        // Ok(dict.into())
+        todo!()
     }
 }
 
