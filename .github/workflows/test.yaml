@@ -115,5 +115,5 @@ jobs:
           git submodule update --init
           source venv/bin/activate
           export PATH=$PATH:$HOME/d/protoc/bin
-          maturin develop --locked
+          maturin develop
           RUST_BACKTRACE=1 pytest -v .

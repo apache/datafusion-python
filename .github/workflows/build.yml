@@ -73,7 +73,7 @@ jobs:
           path: .
 
       - name: Build Python package
-        run: maturin build --release --strip --locked
+        run: maturin build --release --strip
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -108,7 +108,7 @@ jobs:
           docker run --rm -v $(pwd):/io \
             --workdir /io \
             ghcr.io/pyo3/maturin:v0.14.2 \
-            build --release --manylinux 2014 --locked
+            build --release --manylinux 2014
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
