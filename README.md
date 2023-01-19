@@ -24,132 +24,71 @@
 
 This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/arrow-datafusion).
 
-Like pyspark, it allows you to build a plan through SQL or a DataFrame API against in-memory data, parquet or CSV files, run it in a multi-threaded environment, and obtain the result back in Python.
+Like pyspark, it allows you to build a plan through SQL or a DataFrame API against in-memory data, parquet or CSV
+files, run it in a multi-threaded environment, and obtain the result back in Python.
 
 It also allows you to use UDFs and UDAFs for complex operations.
 
-The major advantage of this library over other execution engines is that this library achieves zero-copy between Python and its execution engine: there is no cost in using UDFs, UDAFs, and collecting the results to Python apart from having to lock the GIL when running those operations.
+The major advantage of this library over other execution engines is that this library achieves zero-copy between
+Python and its execution engine: there is no cost in using UDFs, UDAFs, and collecting the results to Python apart
+from having to lock the GIL when running those operations.
 
-Its query engine, DataFusion, is written in [Rust](https://www.rust-lang.org/), which makes strong assumptions about thread safety and lack of memory leaks.
+Its query engine, DataFusion, is written in [Rust](https://www.rust-lang.org/), which makes strong assumptions
+about thread safety and lack of memory leaks.
 
 Technically, zero-copy is achieved via the [c data interface](https://arrow.apache.org/docs/format/CDataInterface.html).
 
-## How to use it
+## Example Usage
 
-Simple usage:
+The following example demonstrates running a SQL query against a Parquet file using DataFusion, storing the results
+in a Pandas DataFrame, and then plotting a chart.
 
-```python
-import datafusion
-from datafusion import col
-import pyarrow
+The Parquet file used in this example can be downloaded from the following page:
 
-# create a context
-ctx = datafusion.SessionContext()
+- https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
-# create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-    names=["a", "b"],
-)
-df = ctx.create_dataframe([[batch]])
-
-# create a new statement
-df = df.select(
-    col("a") + col("b"),
-    col("a") - col("b"),
-)
-
-# execute and collect the first (and only) batch
-result = df.collect()[0]
-
-assert result.column(0) == pyarrow.array([5, 7, 9])
-assert result.column(1) == pyarrow.array([-3, -3, -3])
-```
-
-### UDFs
+See the [examples](examples) directory for more examples.
 
 ```python
-import pyarrow
-from datafusion import udf
+from datafusion import SessionContext
+import pandas as pd
+import pyarrow as pa
 
-def is_null(array: pyarrow.Array) -> pyarrow.Array:
-    return array.is_null()
+# Create a DataFusion context
+ctx = SessionContext()
 
-is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
+# Register table with context
+ctx.register_parquet('taxi', 'yellow_tripdata_2021-01.parquet')
 
-# create a context
-ctx = datafusion.SessionContext()
+# Execute SQL
+df = ctx.sql("select passenger_count, count(*) "
+             "from taxi "
+             "where passenger_count is not null "
+             "group by passenger_count "
+             "order by passenger_count")
 
-# create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-    names=["a", "b"],
-)
-df = ctx.create_dataframe([[batch]])
+# collect as list of pyarrow.RecordBatch
+results = df.collect()
 
-df = df.select(is_null_arr(col("a")))
+# get first batch
+batch = results[0]
 
-result = df.collect()[0]
+# convert to Pandas
+df = batch.to_pandas()
 
-assert result.column(0) == pyarrow.array([False] * 3)
+# create a chart
+fig = df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
+fig.savefig('chart.png')
 ```
 
-### UDAF
+This produces the following chart:
 
-```python
-import pyarrow
-import pyarrow.compute
-import datafusion
-from datafusion import udaf, Accumulator
-from datafusion import col
-
-
-class MyAccumulator(Accumulator):
-    """
-    Interface of a user-defined accumulation.
-    """
-    def __init__(self):
-        self._sum = pyarrow.scalar(0.0)
-
-    def update(self, values: pyarrow.Array) -> None:
-        # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(values).as_py())
-
-    def merge(self, states: pyarrow.Array) -> None:
-        # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
-
-    def state(self) -> pyarrow.Array:
-        return pyarrow.array([self._sum.as_py()])
-
-    def evaluate(self) -> pyarrow.Scalar:
-        return self._sum
-
-# create a context
-ctx = datafusion.SessionContext()
-
-# create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-    names=["a", "b"],
-)
-df = ctx.create_dataframe([[batch]])
-
-my_udaf = udaf(MyAccumulator, pyarrow.float64(), pyarrow.float64(), [pyarrow.float64()], 'stable')
-
-df = df.aggregate(
-    [],
-    [my_udaf(col("a"))]
-)
-
-result = df.collect()[0]
-
-assert result.column(0) == pyarrow.array([6.0])
-```
+![Chart](examples/chart.png)
 
 ## How to install (from pip)
 
 ### Pip
+
 ```bash
 pip install datafusion
 # or
@@ -157,6 +96,7 @@ python -m pip install datafusion
 ```
 
 ### Conda
+
 ```bash
 conda install -c conda-forge datafusion
 ```
@@ -168,7 +108,6 @@ You can verify the installation by running:
 >>> datafusion.__version__
 '0.6.0'
 ```
-
 
 ## How to develop
 
