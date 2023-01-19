@@ -15,46 +15,32 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
-
 import pyarrow as pa
 import pyarrow.dataset as ds
 
 from datafusion import column, literal, SessionContext
+from datafusion import substrait as ss
 import pytest
 
 
 @pytest.fixture
-def config():
-    return Config()
-
-def test_create_context_no_args():
-    SessionContext()
+def ctx():
+    return SessionContext()
 
 
-def test_register_table(ctx, database):
-    default = ctx.catalog()
-    public = default.database("public")
-    assert public.names() == {"csv", "csv1", "csv2"}
-    table = public.table("csv")
-
-    ctx.register_table("csv3", table)
-    assert public.names() == {"csv", "csv1", "csv2", "csv3"}
-
-
-def test_register_dataset(ctx):
-    # create a RecordBatch and register it as a pyarrow.dataset.Dataset
+def test_substrait_serialization(ctx):
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    dataset = ds.dataset([batch])
-    ctx.register_dataset("t", dataset)
+
+    ctx.register_record_batches("t", [[batch]])
 
     assert ctx.tables() == {"t"}
 
-    result = ctx.sql("SELECT a+b, a-b FROM t").collect()
-
-    assert result[0].column(0) == pa.array([5, 7, 9])
-    assert result[0].column(1) == pa.array([-3, -3, -3])
-
+    # For now just make sure the method calls blow up
+    substrait_plan = ss.substrait.serde.serialize_to_plan("SELECT * FROM t", ctx)
+    substrait_bytes = ss.substrait.serde.serialize_bytes("SELECT * FROM t", ctx)
+    substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
+    df_logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)
+    substrait_plan = ss.substrait.producer.to_substrait_plan(df_logical_plan)
