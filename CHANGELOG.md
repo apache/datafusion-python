@@ -19,6 +19,60 @@
 
 # Changelog
 
+## [0.8.0](https://github.com/apache/arrow-datafusion-python/tree/0.8.0) (2023-01-19)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.7.0...0.8.0)
+
+**Implemented enhancements:**
+
+- Add script for Python linting [\#134](https://github.com/apache/arrow-datafusion-python/issues/134)
+- support creating arrow-datafusion-python conda environment [\#122](https://github.com/apache/arrow-datafusion-python/issues/122)
+- Build Python source distribution in GitHub workflow [\#81](https://github.com/apache/arrow-datafusion-python/issues/81)
+
+**Fixed bugs:**
+
+- Reading csv does not work [\#130](https://github.com/apache/arrow-datafusion-python/issues/130)
+- Github actions produce a lot of warnings [\#94](https://github.com/apache/arrow-datafusion-python/issues/94)
+- ASF source release tarball has wrong directory name [\#90](https://github.com/apache/arrow-datafusion-python/issues/90)
+- Python Release Build failing after upgrading to maturin 14.2 [\#87](https://github.com/apache/arrow-datafusion-python/issues/87)
+- Maturin build hangs on Linux ARM64 [\#84](https://github.com/apache/arrow-datafusion-python/issues/84)
+- Cannot install on Mac M1 from source tarball from testpypi [\#82](https://github.com/apache/arrow-datafusion-python/issues/82)
+- ImportPathMismatchError when running pytest locally [\#77](https://github.com/apache/arrow-datafusion-python/issues/77)
+
+**Closed issues:**
+
+- Publish documentation for Python bindings [\#39](https://github.com/apache/arrow-datafusion-python/issues/39)
+
+**Merged pull requests:**
+
+- Improve README and add more examples [\#137](https://github.com/apache/arrow-datafusion-python/pull/137) ([andygrove](https://github.com/andygrove))
+- build\(deps\): bump object\_store from 0.5.2 to 0.5.3 [\#126](https://github.com/apache/arrow-datafusion-python/pull/126) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump mimalloc from 0.1.32 to 0.1.34 [\#125](https://github.com/apache/arrow-datafusion-python/pull/125) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Introduce conda directory containing datafusion-dev.yaml conda enviro… [\#124](https://github.com/apache/arrow-datafusion-python/pull/124) ([jdye64](https://github.com/jdye64))
+- build\(deps\): bump bzip2 from 0.4.3 to 0.4.4 [\#121](https://github.com/apache/arrow-datafusion-python/pull/121) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump tokio from 1.23.0 to 1.24.1 [\#119](https://github.com/apache/arrow-datafusion-python/pull/119) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump async-trait from 0.1.60 to 0.1.61 [\#118](https://github.com/apache/arrow-datafusion-python/pull/118) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Upgrade to DataFusion 16.0.0 [\#115](https://github.com/apache/arrow-datafusion-python/pull/115) ([andygrove](https://github.com/andygrove))
+- Bump async-trait from 0.1.57 to 0.1.60 [\#114](https://github.com/apache/arrow-datafusion-python/pull/114) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump object\_store from 0.5.1 to 0.5.2 [\#112](https://github.com/apache/arrow-datafusion-python/pull/112) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump tokio from 1.21.2 to 1.23.0 [\#109](https://github.com/apache/arrow-datafusion-python/pull/109) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Add entries for publishing production \(asf-site\) and staging docs [\#107](https://github.com/apache/arrow-datafusion-python/pull/107) ([martin-g](https://github.com/martin-g))
+- Add a workflow that builds the docs and deploys them at staged or production [\#104](https://github.com/apache/arrow-datafusion-python/pull/104) ([martin-g](https://github.com/martin-g))
+- Upgrade to DataFusion 15.0.0 [\#103](https://github.com/apache/arrow-datafusion-python/pull/103) ([andygrove](https://github.com/andygrove))
+- build\(deps\): bump futures from 0.3.24 to 0.3.25 [\#102](https://github.com/apache/arrow-datafusion-python/pull/102) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump pyo3 from 0.17.2 to 0.17.3 [\#101](https://github.com/apache/arrow-datafusion-python/pull/101) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump mimalloc from 0.1.30 to 0.1.32 [\#98](https://github.com/apache/arrow-datafusion-python/pull/98) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump rand from 0.7.3 to 0.8.5 [\#97](https://github.com/apache/arrow-datafusion-python/pull/97) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Fix GitHub actions warnings [\#95](https://github.com/apache/arrow-datafusion-python/pull/95) ([martin-g](https://github.com/martin-g))
+- Fixes \#81 - Add CI workflow for source distribution [\#93](https://github.com/apache/arrow-datafusion-python/pull/93) ([martin-g](https://github.com/martin-g))
+- post-release updates [\#91](https://github.com/apache/arrow-datafusion-python/pull/91) ([andygrove](https://github.com/andygrove))
+- Build for manylinux 2014 [\#88](https://github.com/apache/arrow-datafusion-python/pull/88) ([martin-g](https://github.com/martin-g))
+- update release readme tag [\#86](https://github.com/apache/arrow-datafusion-python/pull/86) ([Jimexist](https://github.com/Jimexist))
+- Upgrade Maturin to 0.14.2 [\#85](https://github.com/apache/arrow-datafusion-python/pull/85) ([martin-g](https://github.com/martin-g))
+- Update release instructions [\#83](https://github.com/apache/arrow-datafusion-python/pull/83) ([andygrove](https://github.com/andygrove))
+- \[Functions\] - Add python function binding to `functions` [\#73](https://github.com/apache/arrow-datafusion-python/pull/73) ([francis-du](https://github.com/francis-du))
+
+
 ## [Unreleased](https://github.com/datafusion-contrib/datafusion-python/tree/HEAD)
 
 [Full Changelog](https://github.com/datafusion-contrib/datafusion-python/compare/0.5.1...HEAD)
@@ -84,3 +138,6 @@
 - Setup CI against multiple Python version [\#6](https://github.com/datafusion-contrib/datafusion-python/issues/6)
 
 \* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_
+
+
+\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
