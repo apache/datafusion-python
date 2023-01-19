@@ -132,8 +132,9 @@ jobs:
       - name: Build sdist
         run: |
           export PATH=$PATH:$HOME/d/protoc/bin
+          export PROTOC=$HOME/d/protoc/bin
           docker run --rm -v $(pwd):/io \
-            --workdir /io \
+            -e PROTOC='$(HOME)/d/protoc/bin' --workdir /io \
             ghcr.io/pyo3/maturin:v0.14.2 \
             build --release --sdist
           find target/wheels/

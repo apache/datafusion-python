@@ -62,6 +62,7 @@ jobs:
           curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.4/$PROTO_ZIP
           unzip $PROTO_ZIP
           export PATH=$PATH:$HOME/d/protoc/bin
+          export PROTOC=$HOME/d/protoc/bin
           protoc --version
 
       - name: Setup Python
@@ -115,5 +116,6 @@ jobs:
           git submodule update --init
           source venv/bin/activate
           export PATH=$PATH:$HOME/d/protoc/bin
+          export PROTOC=$HOME/d/protoc/bin
           maturin develop
           RUST_BACKTRACE=1 pytest -v .
