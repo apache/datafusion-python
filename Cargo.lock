@@ -83,7 +83,7 @@ dependencies = [
  "strum_macros",
  "thiserror",
  "typed-builder",
- "uuid 1.2.1",
+ "uuid",
  "zerocopy",
 ]
 
@@ -677,7 +677,7 @@ dependencies = [
  "tokio-stream",
  "tokio-util",
  "url",
- "uuid 1.2.1",
+ "uuid",
  "xz2",
 ]
 
@@ -755,7 +755,7 @@ dependencies = [
  "regex",
  "sha2",
  "unicode-segmentation",
- "uuid 1.2.1",
+ "uuid",
 ]
 
 [[package]]
@@ -775,7 +775,7 @@ dependencies = [
  "rand",
  "regex-syntax",
  "tokio",
- "uuid 0.8.2",
+ "uuid",
 ]
 
 [[package]]
@@ -2461,15 +2461,6 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
-]
-
-[[package]]
-name = "uuid"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
-dependencies = [
- "getrandom",
 ]
 
 [[package]]
