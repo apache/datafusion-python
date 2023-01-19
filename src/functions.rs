@@ -17,10 +17,11 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
+use datafusion_common::Column;
 use datafusion_expr::expr::AggregateFunction;
 use datafusion_expr::expr::{Sort, WindowFunction};
 use datafusion_expr::window_function::find_df_window_func;
-use datafusion_expr::{lit, BuiltinScalarFunction, WindowFrame};
+use datafusion_expr::{aggregate_function, lit, BuiltinScalarFunction, Expr, WindowFrame};
 
 use crate::errors::DataFusionError;
 use crate::expression::PyExpr;
@@ -78,6 +79,30 @@ fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyRes
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
         expr: datafusion_expr::Expr::Alias(Box::new(expr.expr), String::from(name)),
+    })
+}
+
+/// Create a column reference expression
+#[pyfunction]
+fn col(name: &str) -> PyResult<PyExpr> {
+    Ok(PyExpr {
+        expr: datafusion_expr::Expr::Column(Column {
+            relation: None,
+            name: name.to_string(),
+        }),
+    })
+}
+
+/// Create a COUNT(1) aggregate expression
+#[pyfunction]
+fn count_star() -> PyResult<PyExpr> {
+    Ok(PyExpr {
+        expr: Expr::AggregateFunction(AggregateFunction {
+            fun: aggregate_function::AggregateFunction::Count,
+            args: vec![lit(1)],
+            distinct: false,
+            filter: None,
+        }),
     })
 }
 
@@ -294,10 +319,12 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(chr))?;
     m.add_wrapped(wrap_pyfunction!(char_length))?;
     m.add_wrapped(wrap_pyfunction!(coalesce))?;
+    m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
     m.add_wrapped(wrap_pyfunction!(cos))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
+    m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
     m.add_wrapped(wrap_pyfunction!(current_time))?;
     m.add_wrapped(wrap_pyfunction!(date_bin))?;
