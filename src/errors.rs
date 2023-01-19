@@ -17,6 +17,7 @@
 
 use core::fmt;
 use std::error::Error;
+use std::fmt::Debug;
 
 use datafusion::arrow::error::ArrowError;
 use datafusion::error::DataFusionError as InnerDataFusionError;
@@ -69,3 +70,15 @@ impl From<DataFusionError> for PyErr {
 }
 
 impl Error for DataFusionError {}
+
+pub fn py_type_err(e: impl Debug) -> PyErr {
+    PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!("{:?}", e))
+}
+
+pub fn py_runtime_err(e: impl Debug) -> PyErr {
+    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+}
+
+pub fn py_datafusion_err(e: impl Debug) -> PyErr {
+    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+}
