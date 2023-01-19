@@ -105,6 +105,7 @@ jobs:
       - name: Build wheels
         run: |
           export RUSTFLAGS='-C target-cpu=skylake'
+          export PATH=$PATH:$HOME/d/protoc/bin
           docker run --rm -v $(pwd):/io \
             --workdir /io \
             ghcr.io/pyo3/maturin:v0.14.2 \
@@ -130,10 +131,11 @@ jobs:
       - run: cat LICENSE.txt
       - name: Build sdist
         run: |
+          export PATH=$PATH:$HOME/d/protoc/bin
           docker run --rm -v $(pwd):/io \
             --workdir /io \
             ghcr.io/pyo3/maturin:v0.14.2 \
-            build --release --sdist --locked
+            build --release --sdist
           find target/wheels/
       - name: Archive wheels
         uses: actions/upload-artifact@v2
