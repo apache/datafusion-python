@@ -45,35 +45,21 @@ impl From<Plan> for PyPlan {
 /// A PySubstraitSerializer is a representation of a Serializer that is capable of both serializing
 /// a `LogicalPlan` instance to Substrait Protobuf bytes and also deserialize Substrait Protobuf bytes
 /// to a valid `LogicalPlan` instance.
-#[pyclass(
-    name = "serde",
-    module = "datafusion.substrait",
-    subclass,
-    unsendable
-)]
+#[pyclass(name = "serde", module = "datafusion.substrait", subclass, unsendable)]
 #[derive(Debug, Clone)]
 pub(crate) struct PySubstraitSerializer;
 
 #[pymethods]
 impl PySubstraitSerializer {
     #[staticmethod]
-    pub fn serialize(
-        sql: &str,
-        ctx: PySessionContext,
-        path: &str,
-        py: Python,
-    ) -> PyResult<()> {
+    pub fn serialize(sql: &str, ctx: PySessionContext, path: &str, py: Python) -> PyResult<()> {
         wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))
             .map_err(DataFusionError::from)?;
         Ok(())
     }
 
     #[staticmethod]
-    pub fn serialize_to_plan(
-        sql: &str,
-        ctx: PySessionContext,
-        py: Python,
-    ) -> PyResult<PyPlan> {
+    pub fn serialize_to_plan(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyPlan> {
         match PySubstraitSerializer::serialize_bytes(sql, ctx, py) {
             Ok(proto_bytes) => PySubstraitSerializer::deserialize_bytes(proto_bytes, py),
             Err(e) => Err(py_datafusion_err(e)),
@@ -81,11 +67,7 @@ impl PySubstraitSerializer {
     }
 
     #[staticmethod]
-    pub fn serialize_bytes(
-        sql: &str,
-        ctx: PySessionContext,
-        py: Python,
-    ) -> PyResult<Vec<u8>> {
+    pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<Vec<u8>> {
         let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))
             .map_err(DataFusionError::from)?;
         Ok(proto_bytes)
@@ -106,7 +88,12 @@ impl PySubstraitSerializer {
     }
 }
 
-#[pyclass(name = "producer", module = "datafusion.substrait", subclass, unsendable)]
+#[pyclass(
+    name = "producer",
+    module = "datafusion.substrait",
+    subclass,
+    unsendable
+)]
 #[derive(Debug, Clone)]
 pub(crate) struct PySubstraitProducer;
 
@@ -145,7 +132,6 @@ impl PySubstraitConsumer {
         Ok(PyLogicalPlan::new(logical_plan))
     }
 }
-
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySubstraitConsumer>()?;
