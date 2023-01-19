@@ -61,6 +61,10 @@ impl PyExpr {
         Ok(format!("{}", self.expr))
     }
 
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}", self.expr))
+    }
+
     fn __add__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
         Ok((self.expr.clone() + rhs.expr).into())
     }
