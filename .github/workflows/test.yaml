@@ -46,10 +46,23 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-builder
+      - name: Setup Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        id: rust-toolchain
         with:
-          rust-version: ${{ matrix.toolchain }}
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+
+      - name: Install protobuf compiler
+        shell: bash
+        run: |
+          mkdir -p $HOME/d/protoc
+          cd $HOME/d/protoc
+          export PROTO_ZIP="protoc-21.4-linux-x86_64.zip"
+          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.4/$PROTO_ZIP
+          unzip $PROTO_ZIP
+          export PATH=$PATH:$HOME/d/protoc/bin
+          protoc --version
 
       - name: Setup Python
         uses: actions/setup-python@v4
