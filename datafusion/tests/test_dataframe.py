@@ -197,6 +197,7 @@ def test_distinct():
     assert df_a.collect() == df_b.collect()
 
 
+@pytest.mark.skip(reason="https://github.com/apache/arrow-datafusion-python/issues/135")
 def test_window_lead(df):
     df = df.select(
         column("a"),
