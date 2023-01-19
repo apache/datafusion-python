@@ -38,8 +38,8 @@ pub(crate) struct PyDataFrame {
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
-    pub fn new(df: Arc<DataFrame>) -> Self {
-        Self { df }
+    pub fn new(df: DataFrame) -> Self {
+        Self { df: Arc::new(df) }
     }
 }
 
@@ -71,50 +71,54 @@ impl PyDataFrame {
 
     #[args(args = "*")]
     fn select_columns(&self, args: Vec<&str>) -> PyResult<Self> {
-        let df = self.df.select_columns(&args)?;
+        let df = self.df.as_ref().clone().select_columns(&args)?;
         Ok(Self::new(df))
     }
 
     #[args(args = "*")]
     fn select(&self, args: Vec<PyExpr>) -> PyResult<Self> {
         let expr = args.into_iter().map(|e| e.into()).collect();
-        let df = self.df.select(expr)?;
+        let df = self.df.as_ref().clone().select(expr)?;
         Ok(Self::new(df))
     }
 
     fn filter(&self, predicate: PyExpr) -> PyResult<Self> {
-        let df = self.df.filter(predicate.into())?;
+        let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))
     }
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyResult<Self> {
-        let df = self.df.with_column(name, expr.into())?;
+        let df = self.df.as_ref().clone().with_column(name, expr.into())?;
         Ok(Self::new(df))
     }
 
     /// Rename one column by applying a new projection. This is a no-op if the column to be
     /// renamed does not exist.
     fn with_column_renamed(&self, old_name: &str, new_name: &str) -> PyResult<Self> {
-        let df = self.df.with_column_renamed(old_name, new_name)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .with_column_renamed(old_name, new_name)?;
         Ok(Self::new(df))
     }
 
     fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();
-        let df = self.df.aggregate(group_by, aggs)?;
+        let df = self.df.as_ref().clone().aggregate(group_by, aggs)?;
         Ok(Self::new(df))
     }
 
     #[args(exprs = "*")]
     fn sort(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
         let exprs = exprs.into_iter().map(|e| e.into()).collect();
-        let df = self.df.sort(exprs)?;
+        let df = self.df.as_ref().clone().sort(exprs)?;
         Ok(Self::new(df))
     }
 
     fn limit(&self, count: usize) -> PyResult<Self> {
-        let df = self.df.limit(0, Some(count))?;
+        let df = self.df.as_ref().clone().limit(0, Some(count))?;
         Ok(Self::new(df))
     }
 
@@ -122,7 +126,7 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.collect())?;
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
@@ -130,14 +134,14 @@ impl PyDataFrame {
 
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyResult<Self> {
-        let df = wait_for_future(py, self.df.cache())?;
+        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
         Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.collect_partitioned())?;
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?;
 
         batches
             .into_iter()
@@ -148,14 +152,14 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[args(num = "20")]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
-        let df = self.df.limit(0, Some(num))?;
+        let df = self.df.as_ref().clone().limit(0, Some(num))?;
         let batches = wait_for_future(py, df.collect())?;
         pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
     }
 
     /// Filter out duplicate rows
     fn distinct(&self) -> PyResult<Self> {
-        let df = self.df.distinct()?;
+        let df = self.df.as_ref().clone().distinct()?;
         Ok(Self::new(df))
     }
 
@@ -181,23 +185,31 @@ impl PyDataFrame {
             }
         };
 
-        let df = self
-            .df
-            .join(right.df, join_type, &join_keys.0, &join_keys.1, None)?;
+        let df = self.df.as_ref().clone().join(
+            right.df.as_ref().clone(),
+            join_type,
+            &join_keys.0,
+            &join_keys.1,
+            None,
+        )?;
         Ok(Self::new(df))
     }
 
     /// Print the query plan
     #[args(verbose = false, analyze = false)]
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyResult<()> {
-        let df = self.df.explain(verbose, analyze)?;
+        let df = self.df.as_ref().clone().explain(verbose, analyze)?;
         let batches = wait_for_future(py, df.collect())?;
         pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
     fn repartition(&self, num: usize) -> PyResult<Self> {
-        let new_df = self.df.repartition(Partitioning::RoundRobinBatch(num))?;
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .repartition(Partitioning::RoundRobinBatch(num))?;
         Ok(Self::new(new_df))
     }
 
@@ -205,7 +217,11 @@ impl PyDataFrame {
     #[args(args = "*", num)]
     fn repartition_by_hash(&self, args: Vec<PyExpr>, num: usize) -> PyResult<Self> {
         let expr = args.into_iter().map(|py_expr| py_expr.into()).collect();
-        let new_df = self.df.repartition(Partitioning::Hash(expr, num))?;
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .repartition(Partitioning::Hash(expr, num))?;
         Ok(Self::new(new_df))
     }
 
@@ -214,9 +230,12 @@ impl PyDataFrame {
     #[args(distinct = false)]
     fn union(&self, py_df: PyDataFrame, distinct: bool) -> PyResult<Self> {
         let new_df = if distinct {
-            self.df.union_distinct(py_df.df)?
+            self.df
+                .as_ref()
+                .clone()
+                .union_distinct(py_df.df.as_ref().clone())?
         } else {
-            self.df.union(py_df.df)?
+            self.df.as_ref().clone().union(py_df.df.as_ref().clone())?
         };
 
         Ok(Self::new(new_df))
@@ -225,37 +244,45 @@ impl PyDataFrame {
     /// Calculate the distinct union of two `DataFrame`s.  The
     /// two `DataFrame`s must have exactly the same schema
     fn union_distinct(&self, py_df: PyDataFrame) -> PyResult<Self> {
-        let new_df = self.df.union_distinct(py_df.df)?;
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .union_distinct(py_df.df.as_ref().clone())?;
         Ok(Self::new(new_df))
     }
 
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn intersect(&self, py_df: PyDataFrame) -> PyResult<Self> {
-        let new_df = self.df.intersect(py_df.df)?;
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .intersect(py_df.df.as_ref().clone())?;
         Ok(Self::new(new_df))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn except_all(&self, py_df: PyDataFrame) -> PyResult<Self> {
-        let new_df = self.df.except(py_df.df)?;
+        let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
         Ok(Self::new(new_df))
     }
 
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.write_csv(path))?;
+        wait_for_future(py, self.df.as_ref().clone().write_csv(path))?;
         Ok(())
     }
 
     /// Write a `DataFrame` to a Parquet file.
     fn write_parquet(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.write_parquet(path, None))?;
+        wait_for_future(py, self.df.as_ref().clone().write_parquet(path, None))?;
         Ok(())
     }
 
     /// Executes a query and writes the results to a partitioned JSON file.
     fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.write_json(path))?;
+        wait_for_future(py, self.df.as_ref().clone().write_json(path))?;
         Ok(())
     }
 }

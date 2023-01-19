@@ -25,8 +25,6 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use parking_lot::RwLock;
-
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
@@ -38,11 +36,13 @@ use crate::utils::wait_for_future;
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::config::ConfigOptions;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
-use datafusion::prelude::{AvroReadOptions, CsvReadOptions, NdJsonReadOptions, ParquetReadOptions};
+use datafusion::prelude::{
+    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+};
+use datafusion_common::ScalarValue;
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -79,41 +79,32 @@ impl PySessionContext {
         parquet_pruning: bool,
         target_partitions: Option<usize>,
         config_options: Option<HashMap<String, String>>,
-    ) -> Self {
-        let mut options = ConfigOptions::from_env();
-        if let Some(hash_map) = config_options {
-            for (k, v) in &hash_map {
-                if let Ok(v) = v.parse::<bool>() {
-                    options.set_bool(k, v);
-                } else if let Ok(v) = v.parse::<u64>() {
-                    options.set_u64(k, v);
-                } else {
-                    options.set_string(k, v);
-                }
-            }
-        }
-        let config_options = Arc::new(RwLock::new(options));
-
+    ) -> PyResult<Self> {
         let mut cfg = SessionConfig::new()
-            .create_default_catalog_and_schema(create_default_catalog_and_schema)
-            .with_default_catalog_and_schema(default_catalog, default_schema)
             .with_information_schema(information_schema)
             .with_repartition_joins(repartition_joins)
             .with_repartition_aggregations(repartition_aggregations)
             .with_repartition_windows(repartition_windows)
             .with_parquet_pruning(parquet_pruning);
 
-        // TODO we should add a `with_config_options` to `SessionConfig`
-        cfg.config_options = config_options;
+        if create_default_catalog_and_schema {
+            cfg = cfg.with_default_catalog_and_schema(default_catalog, default_schema);
+        }
+
+        if let Some(hash_map) = config_options {
+            for (k, v) in &hash_map {
+                cfg = cfg.set(k, ScalarValue::Utf8(Some(v.clone())));
+            }
+        }
 
         let cfg_full = match target_partitions {
             None => cfg,
             Some(x) => cfg.with_target_partitions(x),
         };
 
-        PySessionContext {
+        Ok(PySessionContext {
             ctx: SessionContext::with_config(cfg_full),
-        }
+        })
     }
 
     /// Register a an object store with the given name
@@ -161,6 +152,7 @@ impl PySessionContext {
     fn create_dataframe(
         &mut self,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
+        py: Python,
     ) -> PyResult<PyDataFrame> {
         let schema = partitions.0[0][0].schema();
         let table = MemTable::try_new(schema, partitions.0).map_err(DataFusionError::from)?;
@@ -175,7 +167,8 @@ impl PySessionContext {
         self.ctx
             .register_table(&*name, Arc::new(table))
             .map_err(DataFusionError::from)?;
-        let table = self.ctx.table(&*name).map_err(DataFusionError::from)?;
+
+        let table = wait_for_future(py, self._table(&name)).map_err(DataFusionError::from)?;
 
         let df = PyDataFrame::new(table);
         Ok(df)
@@ -311,8 +304,9 @@ impl PySessionContext {
         self.ctx.tables().unwrap()
     }
 
-    fn table(&self, name: &str) -> PyResult<PyDataFrame> {
-        Ok(PyDataFrame::new(self.ctx.table(name)?))
+    fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
+        let x = wait_for_future(py, self.ctx.table(name)).map_err(DataFusionError::from)?;
+        Ok(PyDataFrame::new(x))
     }
 
     fn table_exist(&self, name: &str) -> PyResult<bool> {
@@ -348,12 +342,16 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        options.schema = schema.map(|s| Arc::new(s.0));
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
-
-        let result = self.ctx.read_json(path, options);
-        let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
+        let df = if let Some(schema) = schema {
+            options.schema = Some(&schema.0);
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?
+        } else {
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?
+        };
         Ok(PyDataFrame::new(df))
     }
 
@@ -451,11 +449,21 @@ impl PySessionContext {
         let mut options = AvroReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
-        options.schema = schema.map(|s| Arc::new(s.0));
+        let df = if let Some(schema) = schema {
+            options.schema = Some(&schema.0);
+            let read_future = self.ctx.read_avro(path, options);
+            wait_for_future(py, read_future).map_err(DataFusionError::from)?
+        } else {
+            let read_future = self.ctx.read_avro(path, options);
+            wait_for_future(py, read_future).map_err(DataFusionError::from)?
+        };
+        Ok(PyDataFrame::new(df))
+    }
+}
 
-        let result = self.ctx.read_avro(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
-        Ok(df)
+impl PySessionContext {
+    async fn _table(&self, name: &str) -> datafusion_common::Result<DataFrame> {
+        self.ctx.table(name).await
     }
 }
 
