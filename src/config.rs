@@ -72,6 +72,14 @@ impl PyConfig {
         }
         Ok(dict.into())
     }
+
+    fn __repr__(&mut self, py: Python) -> PyResult<String> {
+        let dict = self.get_all(py);
+        match dict {
+            Ok(result) => Ok(format!("{}", result)),
+            Err(err) => Ok(format!("Error: {:?}", err.to_string())),
+        }
+    }
 }
 
 /// Convert a python object to a ScalarValue
