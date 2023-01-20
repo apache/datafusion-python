@@ -63,6 +63,7 @@ jobs:
           unzip $PROTO_ZIP
           export PATH=$PATH:$HOME/d/protoc/bin
           export PROTOC=$HOME/d/protoc/bin
+          sudo chown -R $(whoami) $HOME/d/protoc
           protoc --version
 
       - name: Setup Python
