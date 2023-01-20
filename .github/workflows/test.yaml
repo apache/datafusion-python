@@ -119,6 +119,6 @@ jobs:
           export PATH=$PATH:$HOME/d/protoc/bin
           export PROTOC=$HOME/d/protoc/bin
           sudo chown -R $(whoami) $HOME/d/protoc
-          sudo cargo clean
-          sudo maturin develop
+          cargo clean
+          maturin develop
           RUST_BACKTRACE=1 pytest -v .
