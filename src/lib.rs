@@ -34,8 +34,10 @@ pub mod errors;
 mod expression;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
+pub mod logical;
 mod pyarrow_filter_expression;
 pub mod store;
+pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
@@ -62,6 +64,7 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<config::PyConfig>()?;
+    m.add_class::<logical::PyLogicalPlan>()?;
 
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;
@@ -71,6 +74,11 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     let store = PyModule::new(py, "object_store")?;
     store::init_module(store)?;
     m.add_submodule(store)?;
+
+    // Register substrait as a submodule
+    let substrait = PyModule::new(py, "substrait")?;
+    substrait::init_module(substrait)?;
+    m.add_submodule(substrait)?;
 
     Ok(())
 }
