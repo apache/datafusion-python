@@ -103,13 +103,19 @@ jobs:
           path: .
       - run: cat LICENSE.txt
       - name: Build wheels
-        run: |
-          export RUSTFLAGS='-C target-cpu=skylake'
-          export PATH=$PATH:$HOME/d/protoc/bin
-          docker run --rm -v $(pwd):/io \
-            --workdir /io \
-            ghcr.io/pyo3/maturin:v0.14.2 \
-            build --release --manylinux 2014
+        uses: PyO3/maturin-action@v1
+        with:
+          rust-toolchain: nightly
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --manylinux 2014
+        # run: |
+        #   export RUSTFLAGS='-C target-cpu=skylake'
+        #   export PATH=$PATH:$HOME/d/protoc/bin
+        #   docker run --rm -v $(pwd):/io \
+        #     --workdir /io \
+        #     ghcr.io/pyo3/maturin:v0.14.2 \
+        #     build --release --manylinux 2014
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
@@ -130,14 +136,19 @@ jobs:
           path: .
       - run: cat LICENSE.txt
       - name: Build sdist
-        run: |
-          export PATH=$PATH:$HOME/d/protoc/bin
-          export PROTOC=$HOME/d/protoc/bin
-          docker run --rm -v $(pwd):/io \
-            -e PROTOC='$(HOME)/d/protoc/bin' --workdir /io \
-            ghcr.io/pyo3/maturin:v0.14.2 \
-            build --release --sdist
-          find target/wheels/
+        uses: PyO3/maturin-action@v1
+        with:
+          rust-toolchain: stable
+          manylinux: auto
+          args: --release --sdist --out dist
+        # run: |
+        #   export PATH=$PATH:$HOME/d/protoc/bin
+        #   export PROTOC=$HOME/d/protoc/bin
+        #   docker run --rm -v $(pwd):/io \
+        #     -e PROTOC='$(HOME)/d/protoc/bin' --workdir /io \
+        #     ghcr.io/pyo3/maturin:v0.14.2 \
+        #     build --release --sdist
+        #   find target/wheels/
       - name: Archive wheels
         uses: actions/upload-artifact@v2
         with:
