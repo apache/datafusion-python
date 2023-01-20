@@ -115,9 +115,7 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          rust-toolchain: stable
-          target: x86_64
-          manylinux: auto
+          command: build
           args: --release --out dist
 
       - name: Run tests
