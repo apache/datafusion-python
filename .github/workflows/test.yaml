@@ -112,15 +112,24 @@ jobs:
           flake8 --exclude venv --ignore=E501,W503
           black --line-length 79 --diff --check .
 
+      -name: Build wheels
+       uses: PyO3/maturin-action@v1
+       with:
+        rust-toolchain: stable
+        target: x86_64
+        manylinux: auto
+        args: --release --out dist
+
       - name: Run tests
         run: |
           git submodule update --init
-          source venv/bin/activate
           export PATH=$PATH:$HOME/d/protoc/bin
           export PROTOC=$HOME/d/protoc/bin
           sudo chown -R $(whoami) $HOME/d/protoc
           ls -l $HOME/d/protoc/
           ls -l $HOME/d/protoc/bin
+          pip install datafusion-python --no-index --find-links dist --force-reinstall
+          pip install pytest
           cargo clean
           maturin develop
           RUST_BACKTRACE=1 pytest -v .
