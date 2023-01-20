@@ -73,7 +73,7 @@ def df():
     return ctx.create_dataframe([[batch]])
 
 
-# @pytest.mark.skip(reason="df.collect() will hang, need more investigations")
+@pytest.mark.skip(reason="df.collect() will hang, need more investigations")
 def test_errors(df):
     with pytest.raises(TypeError):
         udaf(

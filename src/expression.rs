@@ -57,12 +57,8 @@ impl PyExpr {
         expr.into()
     }
 
-    fn __str__(&self) -> PyResult<String> {
-        Ok(format!("{}", self.expr))
-    }
-
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{}", self.expr))
+        Ok(format!("Expr({})", self.expr))
     }
 
     fn __add__(&self, rhs: PyExpr) -> PyResult<PyExpr> {

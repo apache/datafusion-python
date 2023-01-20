@@ -83,7 +83,7 @@ impl PyCatalog {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Catalog(names=[{}])", self.names().join(";")))
+        Ok(format!("Catalog(schema_names=[{}])", self.names().join(";")))
     }
 }
 
@@ -102,7 +102,7 @@ impl PyDatabase {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Database(names=[{}])", Vec::from_iter(self.names()).join(";")))
+        Ok(format!("Database(table_names=[{}])", Vec::from_iter(self.names()).join(";")))
     }
 
     // register_table

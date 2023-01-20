@@ -66,22 +66,12 @@ impl PyDataFrame {
         })
     }
 
-    fn __str__(&self, py: Python) -> PyResult<String> {
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
-        let batches_as_string = pretty::pretty_format_batches(&batches);
-        match batches_as_string {
-            Ok(batch) => Ok(format!("{}", batch)),
-            Err(err) => Ok(format!("Error: {:?}", err.to_string())),
-        }
-    }
-
     fn __repr__(&self, py: Python) -> PyResult<String> {
         let df = self.df.as_ref().clone().limit(0, Some(10))?;
         let batches = wait_for_future(py, df.collect())?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
-            Ok(batch) => Ok(format!("{}", batch)),
+            Ok(batch) => Ok(format!("DataFrame()\n{}", batch)),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
     }

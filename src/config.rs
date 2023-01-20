@@ -76,7 +76,7 @@ impl PyConfig {
     fn __repr__(&mut self, py: Python) -> PyResult<String> {
         let dict = self.get_all(py);
         match dict {
-            Ok(result) => Ok(format!("{}", result)),
+            Ok(result) => Ok(format!("Config({})", result)),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
     }
