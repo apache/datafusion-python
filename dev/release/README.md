@@ -25,7 +25,7 @@ The version number in Cargo.toml should be increased, according to semver.
 
 ## Update CHANGELOG.md
 
-Define release branch (e.g. `master`), base version tag (e.g. `0.6.0`) and future version tag (e.g. `0.7.0`). Commits
+Define release branch (e.g. `main`), base version tag (e.g. `0.6.0`) and future version tag (e.g. `0.7.0`). Commits
 between the base version tag and the release branch will be used to populate the changelog content.
 
 You will need a GitHub Personal Access Token for the following steps. Follow
@@ -34,7 +34,7 @@ to generate one if you do not already have one.
 
 ```bash
 # create the changelog
-CHANGELOG_GITHUB_TOKEN=<TOKEN> ./dev/release/update_change_log-datafusion-python.sh master 0.7.0 0.6.0
+CHANGELOG_GITHUB_TOKEN=<TOKEN> ./dev/release/update_change_log-datafusion-python.sh main 0.7.0 0.6.0
 # review change log / edit issues and labels if needed, rerun until you are happy with the result
 git commit -a -m 'Create changelog for release'
 ```
@@ -46,8 +46,8 @@ value of the `--cpus` argument in the `update_change_log.sh` script._
 You can add `invalid` or `development-process` label to exclude items from
 release notes.
 
-Send a PR to get these changes merged into `master` branch. If new commits that
-could change the change log content landed in the `master` branch before you
+Send a PR to get these changes merged into `main` branch. If new commits that
+could change the change log content landed in the `main` branch before you
 could merge the PR, you need to rerun the changelog update script to regenerate
 the changelog and update the PR accordingly.
 
@@ -87,7 +87,7 @@ on the release. The vote will be open for at least 72 hours.
 Only votes from PMC members are binding, but all members of the community are
 encouraged to test the release and vote with "(non-binding)".
 
-The standard verification procedure is documented at https://github.com/apache/arrow-datafusion-python/blob/master/dev/release/README.md#verifying-release-candidates.
+The standard verification procedure is documented at https://github.com/apache/arrow-datafusion-python/blob/main/dev/release/README.md#verifying-release-candidates.
 
 [ ] +1 Release this as Apache Arrow DataFusion Python 0.7.0
 [ ] +0
@@ -117,7 +117,7 @@ This section assumes some familiary with publishing Python packages to PyPi. For
 
 #### Publish Python Wheels to testpypi
 
-Pushing an `rc` tag to master will cause a GitHub Workflow to run that will build the Python wheels.
+Pushing an `rc` tag to main will cause a GitHub Workflow to run that will build the Python wheels.
 
 Go to https://github.com/apache/arrow-datafusion-python/actions and look for an action named "Python Release Build"
 that has run against the pushed tag.
