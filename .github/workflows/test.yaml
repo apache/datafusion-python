@@ -118,5 +118,7 @@ jobs:
           source venv/bin/activate
           export PATH=$PATH:$HOME/d/protoc/bin
           export PROTOC=$HOME/d/protoc/bin
-          maturin develop
+          sudo chown -R $(whoami) $HOME/d/protoc
+          sudo cargo clean
+          sudo maturin develop
           RUST_BACKTRACE=1 pytest -v .
