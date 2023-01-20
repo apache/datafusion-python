@@ -81,6 +81,10 @@ impl PyCatalog {
             ))),
         }
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("Catalog(names=[{}])", self.names().join(";")))
+    }
 }
 
 #[pymethods]
@@ -95,6 +99,10 @@ impl PyDatabase {
         } else {
             Err(DataFusionError::Common(format!("Table not found: {name}")).into())
         }
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("Database(names=[{}])", Vec::from_iter(self.names()).join(";")))
     }
 
     // register_table
@@ -117,6 +125,12 @@ impl PyTable {
             TableType::View => "view",
             TableType::Temporary => "temporary",
         }
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let kind = self.kind();
+        Ok(format!("Table(kind={})", kind))
+
     }
 
     // fn scan
