@@ -16,7 +16,7 @@ jobs:
         id: target-branch
         run: |
           set -x
-          if test '${{ github.ref }}' = 'refs/heads/master'; then
+          if test '${{ github.ref }}' = 'refs/heads/main'; then
             echo "value=asf-staging" >> $GITHUB_OUTPUT
           elif test '${{ github.ref_type }}' = 'tag'; then
             echo "value=asf-site" >> $GITHUB_OUTPUT

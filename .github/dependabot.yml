@@ -25,7 +25,7 @@ updates:
       interval: "weekly"
       day: "saturday"
     open-pull-requests-limit: 20
-    target-branch: master
+    target-branch: main
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -33,4 +33,4 @@ updates:
       interval: "weekly"
       day: "sunday"
     open-pull-requests-limit: 20
-    target-branch: master
+    target-branch: main
