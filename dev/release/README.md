@@ -19,6 +19,17 @@
 
 # DataFusion Python Release Process
 
+Development happens on the `main` branch, and most of the time, we depend on DataFusion using GitHub dependencies 
+rather than using an official release from crates.io. This allows us to pick up new features and bug fixes frequently 
+by creating PRs to move to a later revision of the code. It also means we can incrementally make updates that are 
+required due to changes in DataFusion rather than having a large amount of work to do when the next official release 
+is available.
+
+When there is a new official release of DataFusion, we update the `main` branch to point to that, update the version 
+number, and create a new release branch, such as `branch-0.8`. Once this branch is created, we switch the `main` branch 
+back to using GitHub dependencies. The release activity (such as generating the changelog) can then happen on the 
+release branch without blocking ongoing development in the `main` branch.
+
 ## Update Version
 
 The version number in Cargo.toml should be increased, according to semver.
