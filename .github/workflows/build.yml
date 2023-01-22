@@ -21,7 +21,7 @@ on:
     branches: ["main"]
   push:
     tags: ["*-rc*"]
-    branches: ["main"]
+    branches: ["branch-*"]
 
 jobs:
   generate-license:
