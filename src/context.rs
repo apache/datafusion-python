@@ -162,7 +162,7 @@ impl PySessionContext {
         // table name cannot start with numeric digit
         let name = "c".to_owned()
             + Uuid::new_v4()
-                .to_simple()
+                .simple()
                 .encode_lower(&mut Uuid::encode_buffer());
 
         self.ctx

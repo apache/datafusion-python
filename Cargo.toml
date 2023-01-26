@@ -39,7 +39,7 @@ datafusion-expr = { git = "https://github.com/apache/arrow-datafusion", rev = "5
 datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion", rev = "5238e8c97f998b4d2cb9fab85fb182f325a1a7fb" }
 datafusion-common = { git = "https://github.com/apache/arrow-datafusion", rev = "5238e8c97f998b4d2cb9fab85fb182f325a1a7fb", features = ["pyarrow"] }
 datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion", rev = "5238e8c97f998b4d2cb9fab85fb182f325a1a7fb" }
-uuid = { version = "0.8", features = ["v4"] }
+uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
