@@ -34,10 +34,10 @@ pub enum DataFusionError {
 impl fmt::Display for DataFusionError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            DataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {:?}", e),
-            DataFusionError::ArrowError(e) => write!(f, "Arrow error: {:?}", e),
-            DataFusionError::PythonError(e) => write!(f, "Python error {:?}", e),
-            DataFusionError::Common(e) => write!(f, "{}", e),
+            DataFusionError::ExecutionError(e) => write!(f, "DataFusion error: {e:?}"),
+            DataFusionError::ArrowError(e) => write!(f, "Arrow error: {e:?}"),
+            DataFusionError::PythonError(e) => write!(f, "Python error {e:?}"),
+            DataFusionError::Common(e) => write!(f, "{e}"),
         }
     }
 }
@@ -72,13 +72,13 @@ impl From<DataFusionError> for PyErr {
 impl Error for DataFusionError {}
 
 pub fn py_type_err(e: impl Debug) -> PyErr {
-    PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!("{:?}", e))
+    PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!("{e:?}"))
 }
 
 pub fn py_runtime_err(e: impl Debug) -> PyErr {
-    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{e:?}"))
 }
 
 pub fn py_datafusion_err(e: impl Debug) -> PyErr {
-    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{:?}", e))
+    PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{e:?}"))
 }
