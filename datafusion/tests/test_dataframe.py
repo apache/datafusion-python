@@ -318,7 +318,6 @@ def test_execution_plan(aggregate_df):
 
 
 
-
 def test_repartition(df):
     df.repartition(2)
 
