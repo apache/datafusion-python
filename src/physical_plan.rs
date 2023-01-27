@@ -15,36 +15,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::physical_plan::ExecutionPlan;
 use std::sync::Arc;
 
-use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
 
-#[pyclass(name = "LogicalPlan", module = "datafusion", subclass)]
+#[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
-pub struct PyLogicalPlan {
-    pub(crate) plan: Arc<LogicalPlan>,
+pub struct PyExecutionPlan {
+    pub(crate) plan: Arc<dyn ExecutionPlan>,
 }
 
-impl PyLogicalPlan {
-    /// creates a new PyLogicalPlan
-    pub fn new(plan: LogicalPlan) -> Self {
-        Self {
-            plan: Arc::new(plan),
-        }
+impl PyExecutionPlan {
+    /// creates a new PyPhysicalPlan
+    pub fn new(plan: Arc<dyn ExecutionPlan>) -> Self {
+        Self { plan }
     }
 }
 
-impl From<PyLogicalPlan> for LogicalPlan {
-    fn from(logical_plan: PyLogicalPlan) -> LogicalPlan {
-        logical_plan.plan.as_ref().clone()
+impl From<PyExecutionPlan> for Arc<dyn ExecutionPlan> {
+    fn from(plan: PyExecutionPlan) -> Arc<dyn ExecutionPlan> {
+        plan.plan.clone()
     }
 }
 
-impl From<LogicalPlan> for PyLogicalPlan {
-    fn from(logical_plan: LogicalPlan) -> PyLogicalPlan {
-        PyLogicalPlan {
-            plan: Arc::new(logical_plan),
-        }
+impl From<Arc<dyn ExecutionPlan>> for PyExecutionPlan {
+    fn from(plan: Arc<dyn ExecutionPlan>) -> PyExecutionPlan {
+        PyExecutionPlan { plan: plan.clone() }
     }
 }

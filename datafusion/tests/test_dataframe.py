@@ -258,6 +258,21 @@ def test_explain(df):
     df.explain()
 
 
+def test_logical_plan(df):
+    plan = df.logical_plan()
+    assert plan is not None
+
+
+def test_optimized_logical_plan(df):
+    plan = df.optimized_logical_plan()
+    assert plan is not None
+
+
+def test_execution_plan(df):
+    plan = df.execution_plan()
+    assert plan is not None
+
+
 def test_repartition(df):
     df.repartition(2)
 
