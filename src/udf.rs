@@ -49,7 +49,7 @@ fn to_rust_function(func: PyObject) -> ScalarFunctionImplementation {
                 let value = func
                     .as_ref(py)
                     .call(py_args, None)
-                    .map_err(|e| DataFusionError::Execution(format!("{:?}", e)))?;
+                    .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
 
                 // 3. cast to arrow::array::Array
                 let array_data = ArrayData::from_pyarrow(value).unwrap();

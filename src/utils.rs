@@ -38,9 +38,8 @@ pub(crate) fn parse_volatility(value: &str) -> Result<Volatility, DataFusionErro
         "volatile" => Volatility::Volatile,
         value => {
             return Err(DataFusionError::Common(format!(
-                "Unsupportad volatility type: `{}`, supported \
-                 values are: immutable, stable and volatile.",
-                value
+                "Unsupportad volatility type: `{value}`, supported \
+                 values are: immutable, stable and volatile."
             )))
         }
     })
