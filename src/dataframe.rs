@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::logical::PyLogicalPlan;
+use crate::physical_plan::PyExecutionPlan;
 use crate::utils::wait_for_future;
 use crate::{errors::DataFusionError, expression::PyExpr};
 use datafusion::arrow::datatypes::Schema;
@@ -201,6 +203,22 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone().explain(verbose, analyze)?;
         let batches = wait_for_future(py, df.collect())?;
         pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
+    }
+
+    /// Get the logical plan for this `DataFrame`
+    fn logical_plan(&self) -> PyResult<PyLogicalPlan> {
+        Ok(self.df.as_ref().clone().into_optimized_plan()?.into())
+    }
+
+    /// Get the optimized logical plan for this `DataFrame`
+    fn optimized_logical_plan(&self) -> PyResult<PyLogicalPlan> {
+        Ok(self.df.as_ref().clone().into_optimized_plan()?.into())
+    }
+
+    /// Get the execution plan for this `DataFrame`
+    fn execution_plan(&self, py: Python) -> PyResult<PyExecutionPlan> {
+        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
+        Ok(plan.into())
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
