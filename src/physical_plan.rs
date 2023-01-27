@@ -20,7 +20,7 @@ use std::sync::Arc;
 
 use pyo3::prelude::*;
 
-#[pyclass(name = "ExecutionPlan", module = "substrait", subclass)]
+#[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExecutionPlan {
     pub(crate) plan: Arc<dyn ExecutionPlan>,

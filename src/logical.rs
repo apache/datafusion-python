@@ -20,7 +20,7 @@ use std::sync::Arc;
 use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
 
-#[pyclass(name = "LogicalPlan", module = "substrait", subclass)]
+#[pyclass(name = "LogicalPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyLogicalPlan {
     pub(crate) plan: Arc<LogicalPlan>,
