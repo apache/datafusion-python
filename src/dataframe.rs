@@ -206,7 +206,7 @@ impl PyDataFrame {
 
     /// Get the logical plan for this `DataFrame`
     fn logical_plan(&self) -> PyResult<PyLogicalPlan> {
-        Ok(self.df.as_ref().clone().into_optimized_plan()?.into())
+        Ok(self.df.as_ref().clone().logical_plan().clone().into())
     }
 
     /// Get the optimized logical plan for this `DataFrame`

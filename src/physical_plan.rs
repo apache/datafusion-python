@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::physical_plan::ExecutionPlan;
+use datafusion::physical_plan::{displayable, ExecutionPlan};
 use std::sync::Arc;
 
 use pyo3::prelude::*;
@@ -30,6 +30,28 @@ impl PyExecutionPlan {
     /// creates a new PyPhysicalPlan
     pub fn new(plan: Arc<dyn ExecutionPlan>) -> Self {
         Self { plan }
+    }
+}
+
+#[pymethods]
+impl PyExecutionPlan {
+    /// Get the inputs to this plan
+    pub fn children(&self) -> Vec<PyExecutionPlan> {
+        self.plan
+            .children()
+            .iter()
+            .map(|p| p.to_owned().into())
+            .collect()
+    }
+
+    pub fn display(&self) -> String {
+        let d = displayable(self.plan.as_ref());
+        format!("{}", d.one_line())
+    }
+
+    pub fn display_indent(&self) -> String {
+        let d = displayable(self.plan.as_ref());
+        format!("{}", d.indent())
     }
 }
 

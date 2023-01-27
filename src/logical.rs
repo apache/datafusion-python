@@ -35,6 +35,34 @@ impl PyLogicalPlan {
     }
 }
 
+#[pymethods]
+impl PyLogicalPlan {
+    /// Get the inputs to this plan
+    pub fn inputs(&self) -> Vec<PyLogicalPlan> {
+        let mut inputs = vec![];
+        for input in self.plan.inputs() {
+            inputs.push(input.to_owned().into());
+        }
+        inputs
+    }
+
+    pub fn display(&self) -> String {
+        format!("{}", self.plan.display())
+    }
+
+    pub fn display_indent(&self) -> String {
+        format!("{}", self.plan.display_indent())
+    }
+
+    pub fn display_indent_schema(&self) -> String {
+        format!("{}", self.plan.display_indent_schema())
+    }
+
+    pub fn display_graphviz(&self) -> String {
+        format!("{}", self.plan.display_indent_schema())
+    }
+}
+
 impl From<PyLogicalPlan> for LogicalPlan {
     fn from(logical_plan: PyLogicalPlan) -> LogicalPlan {
         logical_plan.plan.as_ref().clone()
