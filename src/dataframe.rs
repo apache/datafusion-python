@@ -180,8 +180,7 @@ impl PyDataFrame {
             "anti" => JoinType::LeftAnti,
             how => {
                 return Err(DataFusionError::Common(format!(
-                    "The join type {} does not exist or is not implemented",
-                    how
+                    "The join type {how} does not exist or is not implemented"
                 ))
                 .into());
             }

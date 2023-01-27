@@ -45,8 +45,7 @@ fn operator_to_py<'py>(
         Operator::Or => op.getattr("or_")?,
         _ => {
             return Err(DataFusionError::Common(format!(
-                "Unsupported operator {:?}",
-                operator
+                "Unsupported operator {operator:?}"
             )))
         }
     };
@@ -71,13 +70,11 @@ fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, Data
                 ScalarValue::Float64(Some(f)) => Ok(f.into_py(py)),
                 ScalarValue::Utf8(Some(s)) => Ok(s.into_py(py)),
                 _ => Err(DataFusionError::Common(format!(
-                    "PyArrow can't handle ScalarValue: {:?}",
-                    v
+                    "PyArrow can't handle ScalarValue: {v:?}"
                 ))),
             },
             _ => Err(DataFusionError::Common(format!(
-                "Only a list of Literals are supported got {:?}",
-                expr
+                "Only a list of Literals are supported got {expr:?}"
             ))),
         })
         .collect();
@@ -117,8 +114,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     ScalarValue::Float64(Some(f)) => Ok(pc.getattr("scalar")?.call1((*f,))?),
                     ScalarValue::Utf8(Some(s)) => Ok(pc.getattr("scalar")?.call1((s,))?),
                     _ => Err(DataFusionError::Common(format!(
-                        "PyArrow can't handle ScalarValue: {:?}",
-                        v
+                        "PyArrow can't handle ScalarValue: {v:?}"
                     ))),
                 },
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {
@@ -180,8 +176,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     Ok(if *negated { invert.call1((ret,))? } else { ret })
                 }
                 _ => Err(DataFusionError::Common(format!(
-                    "Unsupported Datafusion expression {:?}",
-                    expr
+                    "Unsupported Datafusion expression {expr:?}"
                 ))),
             };
             Ok(PyArrowFilterExpression(pc_expr?.into()))
