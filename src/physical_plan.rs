@@ -23,7 +23,7 @@ use pyo3::prelude::*;
 #[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExecutionPlan {
-    pub(crate) plan: Arc<dyn ExecutionPlan>,
+    pub plan: Arc<dyn ExecutionPlan>,
 }
 
 impl PyExecutionPlan {
