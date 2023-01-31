@@ -112,10 +112,10 @@ jobs:
           flake8 --exclude venv --ignore=E501,W503
           black --line-length 79 --diff --check .
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
+      # - name: Install Protoc
+      #   uses: arduino/setup-protoc@v1
+      #   with:
+      #     version: '3.x'
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
