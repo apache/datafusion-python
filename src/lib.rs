@@ -43,6 +43,8 @@ mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
+pub mod sql;
+pub mod common;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
