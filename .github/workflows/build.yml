@@ -97,6 +97,10 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: '3.x'
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
