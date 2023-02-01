@@ -53,18 +53,10 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
 
-      - name: Install protobuf compiler
-        shell: bash
-        run: |
-          mkdir -p $HOME/d/protoc
-          cd $HOME/d/protoc
-          export PROTO_ZIP="protoc-21.4-linux-x86_64.zip"
-          curl -LO https://github.com/protocolbuffers/protobuf/releases/download/v21.4/$PROTO_ZIP
-          unzip $PROTO_ZIP
-          export PATH=$PATH:$HOME/d/protoc/bin
-          export PROTOC=$HOME/d/protoc/bin
-          sudo chown -R $(whoami) $HOME/d/protoc
-          protoc --version
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: '3.x'
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -111,11 +103,6 @@ jobs:
           source venv/bin/activate
           flake8 --exclude venv --ignore=E501,W503
           black --line-length 79 --diff --check .
-
-      # - name: Install Protoc
-      #   uses: arduino/setup-protoc@v1
-      #   with:
-      #     version: '3.x'
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
