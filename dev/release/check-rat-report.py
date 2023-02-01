@@ -23,7 +23,9 @@ import sys
 import xml.etree.ElementTree as ET
 
 if len(sys.argv) != 3:
-    sys.stderr.write("Usage: %s exclude_globs.lst rat_report.xml\n" % sys.argv[0])
+    sys.stderr.write(
+        "Usage: %s exclude_globs.lst rat_report.xml\n" % sys.argv[0]
+    )
     sys.exit(1)
 
 exclude_globs_filename = sys.argv[1]

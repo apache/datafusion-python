@@ -38,8 +38,14 @@ def test_substrait_serialization(ctx):
     assert ctx.tables() == {"t"}
 
     # For now just make sure the method calls blow up
-    substrait_plan = ss.substrait.serde.serialize_to_plan("SELECT * FROM t", ctx)
-    substrait_bytes = ss.substrait.serde.serialize_bytes("SELECT * FROM t", ctx)
+    substrait_plan = ss.substrait.serde.serialize_to_plan(
+        "SELECT * FROM t", ctx
+    )
+    substrait_bytes = ss.substrait.serde.serialize_bytes(
+        "SELECT * FROM t", ctx
+    )
     substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
-    df_logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)
+    df_logical_plan = ss.substrait.consumer.from_substrait_plan(
+        ctx, substrait_plan
+    )
     substrait_plan = ss.substrait.producer.to_substrait_plan(df_logical_plan)

@@ -131,7 +131,9 @@ def test_with_column(df):
 
 
 def test_with_column_renamed(df):
-    df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
+    df = df.with_column("c", column("a") + column("b")).with_column_renamed(
+        "c", "sum"
+    )
 
     result = df.collect()[0]
 
@@ -195,17 +197,23 @@ def test_distinct():
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df_b = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_b = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     assert df_a.collect() == df_b.collect()
 
 
-@pytest.mark.skip(reason="https://github.com/apache/arrow-datafusion-python/issues/135")
+@pytest.mark.skip(
+    reason="https://github.com/apache/arrow-datafusion-python/issues/135"
+)
 def test_window_lead(df):
     df = df.select(
         column("a"),
         f.alias(
-            f.window("lead", [column("b")], order_by=[f.order_by(column("b"))]),
+            f.window(
+                "lead", [column("b")], order_by=[f.order_by(column("b"))]
+            ),
             "a_next",
         ),
     )
@@ -292,7 +300,9 @@ def test_optimized_logical_plan(aggregate_df):
 def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
-    expected = "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+    )
 
     assert expected == plan.display()
 
@@ -340,7 +350,9 @@ def test_intersect():
         [pa.array([3]), pa.array([6])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     df_a_i_b = df_a.intersect(df_b).sort(column("a").sort(ascending=True))
 
@@ -366,7 +378,9 @@ def test_except_all():
         [pa.array([1, 2]), pa.array([4, 5])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
 
@@ -401,7 +415,9 @@ def test_union(ctx):
         [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     df_a_u_b = df_a.union(df_b).sort(column("a").sort(ascending=True))
 
@@ -425,7 +441,9 @@ def test_union_distinct(ctx):
         [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(
+        column("a").sort(ascending=True)
+    )
 
     df_a_u_b = df_a.union(df_b, True).sort(column("a").sort(ascending=True))
 
