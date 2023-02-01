@@ -71,9 +71,7 @@ def test_lit_arith(df):
     """
     Test literals with arithmetic operations
     """
-    df = df.select(
-        literal(1) + column("b"), f.concat(column("a"), literal("!"))
-    )
+    df = df.select(literal(1) + column("b"), f.concat(column("a"), literal("!")))
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -84,9 +82,7 @@ def test_lit_arith(df):
 def test_math_functions():
     ctx = SessionContext()
     # create a RecordBatch and a new DataFrame from it
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array([0.1, -0.7, 0.55])], names=["value"]
-    )
+    batch = pa.RecordBatch.from_arrays([pa.array([0.1, -0.7, 0.55])], names=["value"])
     df = ctx.create_dataframe([[batch]])
 
     values = np.array([0.1, -0.7, 0.55])
@@ -125,28 +121,16 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(4), np.arcsin(values))
     np.testing.assert_array_almost_equal(result.column(5), np.arccos(values))
     np.testing.assert_array_almost_equal(result.column(6), np.exp(values))
-    np.testing.assert_array_almost_equal(
-        result.column(7), np.log(values + 1.0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(8), np.log2(values + 1.0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(9), np.log10(values + 1.0)
-    )
+    np.testing.assert_array_almost_equal(result.column(7), np.log(values + 1.0))
+    np.testing.assert_array_almost_equal(result.column(8), np.log2(values + 1.0))
+    np.testing.assert_array_almost_equal(result.column(9), np.log10(values + 1.0))
     np.testing.assert_array_less(result.column(10), np.ones_like(values))
     np.testing.assert_array_almost_equal(result.column(11), np.arctan(values))
-    np.testing.assert_array_almost_equal(
-        result.column(12), np.arctan2(values, 1.1)
-    )
+    np.testing.assert_array_almost_equal(result.column(12), np.arctan2(values, 1.1))
     np.testing.assert_array_almost_equal(result.column(13), np.ceil(values))
     np.testing.assert_array_almost_equal(result.column(14), np.floor(values))
-    np.testing.assert_array_almost_equal(
-        result.column(15), np.power(values, 3)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(16), np.power(values, 4)
-    )
+    np.testing.assert_array_almost_equal(result.column(15), np.power(values, 3))
+    np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
     np.testing.assert_array_almost_equal(result.column(17), np.round(values))
     np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
     np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
@@ -265,18 +249,9 @@ def test_hash_functions(df):
     )
     assert result.column(2) == pa.array(
         [
-            b(
-                "185F8DB32271FE25F561A6FC938B2E26"
-                "4306EC304EDA518007D1764826381969"
-            ),
-            b(
-                "78AE647DC5544D227130A0682A51E30B"
-                "C7777FBB6D8A8F17007463A3ECD1D524"
-            ),
-            b(
-                "BB7208BC9B5D7C04F1236A82A0093A5E"
-                "33F40423D5BA8D4266F7092C3BA43B62"
-            ),
+            b("185F8DB32271FE25F561A6FC938B2E26" "4306EC304EDA518007D1764826381969"),
+            b("78AE647DC5544D227130A0682A51E30B" "C7777FBB6D8A8F17007463A3ECD1D524"),
+            b("BB7208BC9B5D7C04F1236A82A0093A5E" "33F40423D5BA8D4266F7092C3BA43B62"),
         ]
     )
     assert result.column(3) == pa.array(
@@ -322,34 +297,16 @@ def test_hash_functions(df):
     )
     assert result.column(5) == pa.array(
         [
-            b(
-                "F73A5FBF881F89B814871F46E26AD3FA"
-                "37CB2921C5E8561618639015B3CCBB71"
-            ),
-            b(
-                "B792A0383FB9E7A189EC150686579532"
-                "854E44B71AC394831DAED169BA85CCC5"
-            ),
-            b(
-                "27988A0E51812297C77A433F63523334"
-                "6AEE29A829DCF4F46E0F58F402C6CFCB"
-            ),
+            b("F73A5FBF881F89B814871F46E26AD3FA" "37CB2921C5E8561618639015B3CCBB71"),
+            b("B792A0383FB9E7A189EC150686579532" "854E44B71AC394831DAED169BA85CCC5"),
+            b("27988A0E51812297C77A433F63523334" "6AEE29A829DCF4F46E0F58F402C6CFCB"),
         ]
     )
     assert result.column(6) == pa.array(
         [
-            b(
-                "FBC2B0516EE8744D293B980779178A35"
-                "08850FDCFE965985782C39601B65794F"
-            ),
-            b(
-                "BF73D18575A736E4037D45F9E316085B"
-                "86C19BE6363DE6AA789E13DEAACC1C4E"
-            ),
-            b(
-                "C8D11B9F7237E4034ADBCD2005735F9B"
-                "C4C597C75AD89F4492BEC8F77D15F7EB"
-            ),
+            b("FBC2B0516EE8744D293B980779178A35" "08850FDCFE965985782C39601B65794F"),
+            b("BF73D18575A736E4037D45F9E316085B" "86C19BE6363DE6AA789E13DEAACC1C4E"),
+            b("C8D11B9F7237E4034ADBCD2005735F9B" "C4C597C75AD89F4492BEC8F77D15F7EB"),
         ]
     )
     assert result.column(7) == result.column(1)  # SHA-224

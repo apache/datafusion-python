@@ -43,7 +43,5 @@ batch = results[0]
 df = batch.to_pandas()
 
 # create a chart
-fig = df.plot(
-    kind="bar", title="Trip Count by Number of Passengers"
-).get_figure()
+fig = df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
 fig.savefig("chart.png")

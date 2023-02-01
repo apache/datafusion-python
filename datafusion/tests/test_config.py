@@ -35,10 +35,7 @@ def test_get_then_set(config):
 
 def test_get_all(config):
     config_dict = config.get_all()
-    assert (
-        config_dict["datafusion.catalog.create_default_catalog_and_schema"]
-        == "true"
-    )
+    assert config_dict["datafusion.catalog.create_default_catalog_and_schema"] == "true"
 
 
 def test_get_invalid_config(config):

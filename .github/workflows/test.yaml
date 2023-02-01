@@ -113,11 +113,6 @@ jobs:
       - name: Run tests
         run: |
           git submodule update --init
-          export PATH=$PATH:$HOME/d/protoc/bin
-          export PROTOC=$HOME/d/protoc/bin
-          sudo chown -R $(whoami) $HOME/d/protoc
-          ls -l $HOME/d/protoc/
-          ls -l $HOME/d/protoc/bin
           pip install datafusion-python --no-index --find-links dist --force-reinstall
           pip install pytest
           cargo clean
