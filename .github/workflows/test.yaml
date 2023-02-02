@@ -117,4 +117,4 @@ jobs:
           git submodule update --init
           source venv/bin/activate
           python -m pip install dist/datafusion*.whl
-          pytest -v .
+          python -m pytest -v .
