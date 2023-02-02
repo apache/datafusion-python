@@ -116,7 +116,5 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
-          python -m pip install dist/datafusion*.whl
-          unzip dist/datafusion*.whl
-          ls -l ./dist
-          python -m pytest -v .
+          pip install datafusion --no-index --find-links dist --force-reinstall
+          pytest -v .
