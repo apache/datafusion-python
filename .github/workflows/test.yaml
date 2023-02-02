@@ -114,6 +114,6 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
-          pip install dist
+          pip install dist/datafusion*.whl 
           pip install pytest
           RUST_BACKTRACE=1 pytest -v .
