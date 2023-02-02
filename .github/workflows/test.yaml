@@ -104,12 +104,6 @@ jobs:
           flake8 --exclude venv --ignore=E501,W503
           black --line-length 79 --diff --check .
 
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          command: build
-          args: --release --out dist
-
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
