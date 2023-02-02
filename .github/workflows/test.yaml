@@ -116,5 +116,5 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
-          pip install datafusion --no-index --find-links dist --force-reinstall
+          pip install .
           pytest -v .
