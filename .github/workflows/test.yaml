@@ -114,4 +114,6 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
+          pip install --no-index --find-links dist --force-install
+          pip install pytest
           RUST_BACKTRACE=1 pytest -v .
