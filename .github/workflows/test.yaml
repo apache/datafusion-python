@@ -111,9 +111,10 @@ jobs:
           args: --release --out dist
 
       - name: Run tests
+        env:
+          RUST_BACKTRACE: 1
         run: |
           git submodule update --init
           source venv/bin/activate
-          pip install dist/datafusion*.whl 
-          pip install pytest
-          RUST_BACKTRACE=1 pytest -v .
+          python -m pip install dist/datafusion*.whl
+          pytest -v .
