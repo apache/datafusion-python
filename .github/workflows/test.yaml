@@ -116,5 +116,5 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
-          pip install .
+          pip install -e . --vv
           pytest -v .
