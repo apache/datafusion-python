@@ -114,5 +114,4 @@ jobs:
         run: |
           git submodule update --init
           source venv/bin/activate
-          maturin develop --locked
           RUST_BACKTRACE=1 pytest -v .
