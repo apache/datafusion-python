@@ -464,7 +464,7 @@ impl PySessionContext {
     fn __repr__(&self) -> PyResult<String> {
         let id = self.session_id();
         match id {
-            Ok(value) => Ok(format!("SessionContext(session_id={})", value)),
+            Ok(value) => Ok(format!("SessionContext(session_id={value})")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
     }

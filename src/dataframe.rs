@@ -71,7 +71,7 @@ impl PyDataFrame {
         let batches = wait_for_future(py, df.collect())?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
-            Ok(batch) => Ok(format!("DataFrame()\n{}", batch)),
+            Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
     }

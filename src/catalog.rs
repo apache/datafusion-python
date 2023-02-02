@@ -135,7 +135,7 @@ impl PyTable {
 
     fn __repr__(&self) -> PyResult<String> {
         let kind = self.kind();
-        Ok(format!("Table(kind={})", kind))
+        Ok(format!("Table(kind={kind})"))
     }
 
     // fn scan
