@@ -113,8 +113,6 @@ jobs:
       - name: Run tests
         run: |
           git submodule update --init
-          pip install datafusion-python --no-index --find-links dist --force-reinstall
-          pip install pytest
-          cargo clean
-          maturin develop
+          source venv/bin/activate
+          maturin develop --locked
           RUST_BACKTRACE=1 pytest -v .
