@@ -18,10 +18,10 @@
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
-use crate::errors::py_datafusion_err;
-use crate::{logical::PyLogicalPlan, utils::wait_for_future};
+use crate::errors::{DataFusionError, py_datafusion_err};
+use crate::sql::logical::PyLogicalPlan;
+use crate::utils::wait_for_future;
 
-use crate::errors::DataFusionError;
 use datafusion_substrait::{consumer, producer, serializer, substrait::proto::Plan};
 
 #[pyclass(name = "plan", module = "datafusion.substrait", subclass, unsendable)]

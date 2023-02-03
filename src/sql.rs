@@ -16,4 +16,5 @@
 // under the License.
 
 pub mod exceptions;
+pub mod logical;
 pub mod types;

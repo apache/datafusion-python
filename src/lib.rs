@@ -34,7 +34,7 @@ pub mod errors;
 mod expression;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
-pub mod logical;
+pub mod physical_plan;
 mod pyarrow_filter_expression;
 pub mod store;
 pub mod substrait;
@@ -66,7 +66,8 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<config::PyConfig>()?;
-    m.add_class::<logical::PyLogicalPlan>()?;
+    m.add_class::<sql::logical::PyLogicalPlan>()?;
+    m.add_class::<physical_plan::PyExecutionPlan>()?;
 
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;

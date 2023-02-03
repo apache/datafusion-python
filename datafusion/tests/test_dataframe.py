@@ -53,6 +53,13 @@ def struct_df():
     return ctx.create_dataframe([[batch]])
 
 
+@pytest.fixture
+def aggregate_df():
+    ctx = SessionContext()
+    ctx.register_csv("test", "testing/data/csv/aggregate_test_100.csv")
+    return ctx.sql("select c1, sum(c2) from test group by c1")
+
+
 def test_select(df):
     df = df.select(
         column("a") + column("b"),
@@ -256,6 +263,64 @@ def test_explain(df):
         column("a") - column("b"),
     )
     df.explain()
+
+
+def test_logical_plan(aggregate_df):
+    plan = aggregate_df.logical_plan()
+
+    expected = "Projection: test.c1, SUM(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, SUM(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_optimized_logical_plan(aggregate_df):
+    plan = aggregate_df.optimized_logical_plan()
+
+    expected = "Projection: test.c1, SUM(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, SUM(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_execution_plan(aggregate_df):
+    plan = aggregate_df.execution_plan()
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+    )
+
+    assert expected == plan.display()
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    indent = plan.display_indent()
+
+    # indent plan will be different for everyone due to absolute path to filename, so
+    # we just check for some expected content
+    assert "ProjectionExec:" in indent
+    assert "AggregateExec:" in indent
+    assert "CoalesceBatchesExec:" in indent
+    assert "RepartitionExec:" in indent
+    assert "CsvExec:" in indent
 
 
 def test_repartition(df):

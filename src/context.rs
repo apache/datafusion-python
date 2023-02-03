@@ -476,8 +476,7 @@ fn convert_table_partition_cols(
         .map(|(name, ty)| match ty.as_str() {
             "string" => Ok((name, DataType::Utf8)),
             _ => Err(DataFusionError::Common(format!(
-                "Unsupported data type '{}' for partition column",
-                ty
+                "Unsupported data type '{ty}' for partition column"
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
