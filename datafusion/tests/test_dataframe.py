@@ -453,3 +453,8 @@ def test_union_distinct(ctx):
 
 def test_cache(df):
     assert df.cache().collect() == df.collect()
+
+
+def test_count(df):
+    # Get number of rows
+    assert df.count() == 3

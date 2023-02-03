@@ -312,4 +312,10 @@ impl PyDataFrame {
         wait_for_future(py, self.df.as_ref().clone().write_json(path))?;
         Ok(())
     }
+
+    // Executes this DataFrame to get the total number of rows.
+    fn count(&self, py: Python) -> PyResult<usize> {
+        let count = wait_for_future(py, self.df.as_ref().clone().count());
+        Ok(count.unwrap())
+    }
 }
