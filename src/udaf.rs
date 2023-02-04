@@ -141,4 +141,8 @@ impl PyAggregateUDF {
         let args = args.iter().map(|e| e.expr.clone()).collect();
         Ok(self.function.call(args).into())
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("AggregateUDF({})", self.function.name))
+    }
 }
