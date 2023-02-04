@@ -39,6 +39,9 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
+use datafusion::execution::disk_manager::DiskManagerConfig;
+use datafusion::execution::memory_pool::GreedyMemoryPool;
+use datafusion::execution::runtime_env::RuntimeEnv;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
@@ -66,7 +69,9 @@ impl PySessionContext {
         repartition_windows = "true",
         parquet_pruning = "true",
         target_partitions = "None",
-        config_options = "None"
+        config_options = "None",
+        memory_pool_size = "None",
+        spill_path = "None"
     )]
     #[new]
     fn new(
@@ -80,6 +85,8 @@ impl PySessionContext {
         parquet_pruning: bool,
         target_partitions: Option<usize>,
         config_options: Option<HashMap<String, String>>,
+        memory_pool_size: Option<usize>,
+        spill_path: Option<&str>,
     ) -> PyResult<Self> {
         let mut cfg = SessionConfig::new()
             .with_information_schema(information_schema)
@@ -103,9 +110,20 @@ impl PySessionContext {
             Some(x) => cfg.with_target_partitions(x),
         };
 
-        Ok(PySessionContext {
-            ctx: SessionContext::with_config(cfg_full),
-        })
+        let mut runtime_config = datafusion::execution::runtime_env::RuntimeConfig::new();
+
+        if let Some(size) = memory_pool_size {
+            runtime_config = runtime_config.with_memory_pool(Arc::new(GreedyMemoryPool::new(size)));
+        }
+        if let Some(path) = spill_path {
+            runtime_config = runtime_config
+                .with_disk_manager(DiskManagerConfig::new_specified(vec![path.into()]));
+        }
+
+        let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
+        let ctx = SessionContext::with_config_rt(cfg_full, runtime);
+
+        Ok(PySessionContext { ctx })
     }
 
     /// Register a an object store with the given name

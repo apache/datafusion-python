@@ -19,7 +19,7 @@ from datafusion import SessionContext
 
 
 # Create a DataFusion context
-ctx = SessionContext()
+ctx = SessionContext(memory_pool_size=1073741824, spill_path="/tmp")
 
 # Register table with context
 ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")

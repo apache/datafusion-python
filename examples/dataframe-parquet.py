@@ -18,7 +18,7 @@
 from datafusion import SessionContext
 from datafusion import functions as f
 
-ctx = SessionContext()
+ctx = SessionContext(memory_pool_size=1073741824, spill_path="/tmp")
 df = ctx.read_parquet(
     "/mnt/bigdata/nyctaxi/yellow/2021/yellow_tripdata_2021-01.parquet"
 ).aggregate([f.col("passenger_count")], [f.count_star()])

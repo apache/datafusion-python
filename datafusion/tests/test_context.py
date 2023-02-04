@@ -40,6 +40,8 @@ def test_create_context_with_all_valid_args():
         repartition_windows=False,
         parquet_pruning=False,
         config_options=None,
+        memory_pool_size=1073741824,
+        spill_path="."
     )
 
     # verify that at least some of the arguments worked

@@ -17,7 +17,7 @@
 
 from datafusion import SessionContext
 
-ctx = SessionContext()
+ctx = SessionContext(memory_pool_size=1073741824, spill_path="/tmp")
 ctx.register_parquet(
     "taxi", "/mnt/bigdata/nyctaxi/yellow/2021/yellow_tripdata_2021-01.parquet"
 )
