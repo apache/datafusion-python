@@ -18,13 +18,13 @@
 use datafusion::arrow::datatypes::Field;
 use pyo3::prelude::*;
 
-use crate::sql::types::DataTypeMap;
+use crate::common::data_type::DataTypeMap;
 
 /// PyDFField wraps an arrow-datafusion `DFField` struct type
 /// and also supplies convenience methods for interacting
 /// with the `DFField` instance in the context of Python
 #[pyclass(name = "DFField", module = "datafusion", subclass)]
-#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Debug, Clone)]
 pub struct PyDFField {
     /// Optional qualifier (usually a table or relation name)
     qualifier: Option<String>,
