@@ -31,7 +31,7 @@ rust-version = "1.62"
 default = ["mimalloc"]
 
 [dependencies]
-tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.25", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "~0.17.3", features = ["extension-module", "abi3", "abi3-py37"] }
 datafusion = { version = "17.0.0", features = ["pyarrow", "avro"] }
