@@ -287,8 +287,8 @@ scalar_function!(upper, Upper, "Converts the string to all upper case.");
 scalar_function!(make_array, MakeArray);
 scalar_function!(array, MakeArray);
 scalar_function!(nullif, NullIf);
-//scalar_function!(uuid, Uuid);
-//scalar_function!(struct, Struct);
+scalar_function!(uuid, Uuid);
+scalar_function!(r#struct, Struct);
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
@@ -377,7 +377,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(sqrt))?;
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
-    //m.add_wrapped(wrap_pyfunction!(struct))?;
+    m.add_wrapped(wrap_pyfunction!(r#struct))?;
     m.add_wrapped(wrap_pyfunction!(substr))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
@@ -390,7 +390,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
-    //m.add_wrapped(wrap_pyfunction!(uuid))?;
+    m.add_wrapped(wrap_pyfunction!(self::uuid))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
     Ok(())
 }
