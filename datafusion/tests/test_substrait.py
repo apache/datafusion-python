@@ -45,7 +45,10 @@ def test_substrait_serialization(ctx):
         "SELECT * FROM t", ctx
     )
     substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
-    df_logical_plan = ss.substrait.consumer.from_substrait_plan(
+    logical_plan = ss.substrait.consumer.from_substrait_plan(
         ctx, substrait_plan
     )
-    substrait_plan = ss.substrait.producer.to_substrait_plan(df_logical_plan)
+
+    df = ctx.create_dataframe_from_logical_plan(logical_plan)
+
+    substrait_plan = ss.substrait.producer.to_substrait_plan(logical_plan)
