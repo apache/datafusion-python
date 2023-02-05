@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import numpy as np
 import pyarrow as pa
 import pytest
 
@@ -43,7 +44,7 @@ def test_built_in_aggregation(df):
     col_b = column("b")
     col_c = column("c")
 
-    df = df.aggregate(
+    agg_df = df.aggregate(
         [],
         [
             f.approx_distinct(col_b),
@@ -71,26 +72,55 @@ def test_built_in_aggregation(df):
             f.var_samp(col_c),
         ],
     )
-    result = df.collect()[0]
+    result = agg_df.collect()[0]
+    values_a, values_b, values_c = df.collect()[0]
+
     assert result.column(0) == pa.array([2], type=pa.uint64())
     assert result.column(1) == pa.array([4])
     assert result.column(2) == pa.array([4])
     assert result.column(3) == pa.array([6])
     assert result.column(4) == pa.array([[4, 4, 6]])
-    assert result.column(5) == pa.array([2.0])
-    assert result.column(6) == pa.array([0.8660254037844385])
-    assert result.column(7) == pa.array([3])
-    assert result.column(8) == pa.array([0.9999999999999998])
-    assert result.column(9) == pa.array([-1.3333333333333333])
-    assert result.column(10) == pa.array([-2.333333333333333])
-    assert result.column(11) == pa.array([3])
-    assert result.column(12) == pa.array([4.666666666666667])
-    assert result.column(13) == pa.array([4])
-    assert result.column(14) == pa.array([1])
-    assert result.column(15) == pa.array([14])
-    assert result.column(16) == pa.array([1.0])
-    assert result.column(17) == pa.array([0.9428090415820632])
-    assert result.column(18) == pa.array([2.0816659994661326])
-    assert result.column(19) == pa.array([1.0])
-    assert result.column(20) == pa.array([0.8888888888888887])
-    assert result.column(21) == pa.array([4.333333333333333])
+    np.testing.assert_array_almost_equal(
+        result.column(5), np.average(values_a)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(6), np.corrcoef(values_a, values_b)[0][1]
+    )
+    assert result.column(7) == pa.array([len(values_a)])
+    # ddof=1 uses formula for sample covariance, ddof=0 for population covariance
+    np.testing.assert_array_almost_equal(
+        result.column(8), np.cov(values_a, values_b, ddof=1)[0][1]
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(9), np.cov(values_a, values_c, ddof=0)[0][1]
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(10), np.cov(values_b, values_c, ddof=1)[0][1]
+    )
+    np.testing.assert_array_almost_equal(result.column(11), np.max(values_a))
+    np.testing.assert_array_almost_equal(result.column(12), np.mean(values_b))
+    np.testing.assert_array_almost_equal(
+        result.column(13), np.median(values_b)
+    )
+    np.testing.assert_array_almost_equal(result.column(14), np.min(values_a))
+    np.testing.assert_array_almost_equal(
+        result.column(15), np.sum(values_b.to_pylist())
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(16), np.std(values_a, ddof=1)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(17), np.std(values_b, ddof=0)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(18), np.std(values_c, ddof=1)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(19), np.var(values_a, ddof=1)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(20), np.var(values_b, ddof=0)
+    )
+    np.testing.assert_array_almost_equal(
+        result.column(21), np.var(values_c, ddof=1)
+    )
