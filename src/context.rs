@@ -29,6 +29,7 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::DataFusionError;
+use crate::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
@@ -43,7 +44,6 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_common::ScalarValue;
-use crate::logical::PyLogicalPlan;
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -177,10 +177,7 @@ impl PySessionContext {
     }
 
     /// Create a DataFrame from an existing logical plan
-    fn create_dataframe_from_logical_plan(
-        &mut self,
-        plan: PyLogicalPlan,
-    ) -> PyDataFrame {
+    fn create_dataframe_from_logical_plan(&mut self, plan: PyLogicalPlan) -> PyDataFrame {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
     }
 

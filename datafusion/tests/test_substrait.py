@@ -49,6 +49,7 @@ def test_substrait_serialization(ctx):
         ctx, substrait_plan
     )
 
+    # demonstrate how to create a DataFrame from a deserialized logical plan
     df = ctx.create_dataframe_from_logical_plan(logical_plan)
 
-    substrait_plan = ss.substrait.producer.to_substrait_plan(logical_plan)
+    substrait_plan = ss.substrait.producer.to_substrait_plan(df.logical_plan())
