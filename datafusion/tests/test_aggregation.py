@@ -18,7 +18,7 @@
 import pyarrow as pa
 import pytest
 
-from datafusion import SessionContext, column
+from datafusion import SessionContext, column, lit
 from datafusion import functions as f
 
 
@@ -28,8 +28,12 @@ def df():
 
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2, 3]), pa.array([4, 4, 6])],
-        names=["a", "b"],
+        [
+            pa.array([1, 2, 3]),
+            pa.array([4, 4, 6]),
+            pa.array([9, 8, 5]),
+        ],
+        names=["a", "b", "c"],
     )
     return ctx.create_dataframe([[batch]])
 
@@ -37,12 +41,56 @@ def df():
 def test_built_in_aggregation(df):
     col_a = column("a")
     col_b = column("b")
+    col_c = column("c")
+
     df = df.aggregate(
         [],
-        [f.max(col_a), f.min(col_a), f.count(col_a), f.approx_distinct(col_b)],
+        [
+            f.approx_distinct(col_b),
+            f.approx_median(col_b),
+            f.approx_percentile_cont(col_b, lit(0.5)),
+            f.approx_percentile_cont_with_weight(col_b, lit(0.6), lit(0.5)),
+            f.array_agg(col_b),
+            f.avg(col_a),
+            f.corr(col_a, col_b),
+            f.count(col_a),
+            f.covar(col_a, col_b),
+            f.covar_pop(col_a, col_c),
+            f.covar_samp(col_b, col_c),
+            # f.grouping(col_a),  # No physical plan implemented yet
+            f.max(col_a),
+            f.mean(col_b),
+            f.median(col_b),
+            f.min(col_a),
+            f.sum(col_b),
+            f.stddev(col_a),
+            f.stddev_pop(col_b),
+            f.stddev_samp(col_c),
+            f.var(col_a),
+            f.var_pop(col_b),
+            f.var_samp(col_c),
+        ],
     )
     result = df.collect()[0]
-    assert result.column(0) == pa.array([3])
-    assert result.column(1) == pa.array([1])
-    assert result.column(2) == pa.array([3], type=pa.int64())
-    assert result.column(3) == pa.array([2], type=pa.uint64())
+    assert result.column(0) == pa.array([2], type=pa.uint64())
+    assert result.column(1) == pa.array([4])
+    assert result.column(2) == pa.array([4])
+    assert result.column(3) == pa.array([6])
+    assert result.column(4) == pa.array([[4, 4, 6]])
+    assert result.column(5) == pa.array([2.0])
+    assert result.column(6) == pa.array([0.8660254037844385])
+    assert result.column(7) == pa.array([3])
+    assert result.column(8) == pa.array([0.9999999999999998])
+    assert result.column(9) == pa.array([-1.3333333333333333])
+    assert result.column(10) == pa.array([-2.333333333333333])
+    assert result.column(11) == pa.array([3])
+    assert result.column(12) == pa.array([4.666666666666667])
+    assert result.column(13) == pa.array([4])
+    assert result.column(14) == pa.array([1])
+    assert result.column(15) == pa.array([14])
+    assert result.column(16) == pa.array([1.0])
+    assert result.column(17) == pa.array([0.9428090415820632])
+    assert result.column(18) == pa.array([2.0816659994661326])
+    assert result.column(19) == pa.array([1.0])
+    assert result.column(20) == pa.array([0.8888888888888887])
+    assert result.column(21) == pa.array([4.333333333333333])
