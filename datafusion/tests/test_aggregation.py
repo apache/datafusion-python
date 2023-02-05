@@ -87,7 +87,8 @@ def test_built_in_aggregation(df):
         result.column(6), np.corrcoef(values_a, values_b)[0][1]
     )
     assert result.column(7) == pa.array([len(values_a)])
-    # ddof=1 uses formula for sample covariance, ddof=0 for population covariance
+    # Sample (co)variance -> ddof=1
+    # Population (co)variance -> ddof=0
     np.testing.assert_array_almost_equal(
         result.column(8), np.cov(values_a, values_b, ddof=1)[0][1]
     )

@@ -288,7 +288,7 @@ scalar_function!(make_array, MakeArray);
 scalar_function!(array, MakeArray);
 scalar_function!(nullif, NullIf);
 scalar_function!(uuid, Uuid);
-scalar_function!(r#struct, Struct);  // Use raw identifier since struct is a keyword
+scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyword
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
@@ -296,7 +296,10 @@ scalar_function!(random, Random);
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
 aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
-aggregate_function!(approx_percentile_cont_with_weight, ApproxPercentileContWithWeight);
+aggregate_function!(
+    approx_percentile_cont_with_weight,
+    ApproxPercentileContWithWeight
+);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
@@ -408,7 +411,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
     m.add_wrapped(wrap_pyfunction!(stddev_samp))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
-    m.add_wrapped(wrap_pyfunction!(r#struct))?;  // Use raw identifier since struct is a keyword
+    m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
@@ -421,7 +424,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
-    m.add_wrapped(wrap_pyfunction!(self::uuid))?;  // Use self to avoid name collision
+    m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var))?;
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
