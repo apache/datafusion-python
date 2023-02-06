@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::sql::logical::PyLogicalPlan;
 use crate::physical_plan::PyExecutionPlan;
+use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 use crate::{errors::DataFusionError, expression::PyExpr};
 use datafusion::arrow::datatypes::Schema;

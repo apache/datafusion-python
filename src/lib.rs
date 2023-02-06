@@ -21,6 +21,7 @@ use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+pub mod common;
 #[allow(clippy::borrow_deref_ref)]
 mod config;
 #[allow(clippy::borrow_deref_ref)]
@@ -36,6 +37,7 @@ mod expression;
 mod functions;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
+pub mod sql;
 pub mod store;
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
@@ -43,8 +45,6 @@ mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
-pub mod sql;
-pub mod common;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]

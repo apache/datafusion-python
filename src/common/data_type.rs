@@ -15,10 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-
 use datafusion::arrow::datatypes::DataType;
 use pyo3::prelude::*;
-
 
 /// These bindings are tying together several disparate systems.
 /// You have SQL types for the SQL strings and RDBMS systems itself.
@@ -40,39 +38,67 @@ pub struct DataTypeMap {
 impl DataTypeMap {
     fn new(arrow_type: DataType, python_type: PythonType, sql_type: SqlType) -> Self {
         DataTypeMap {
-            arrow_type: PyDataType { data_type: arrow_type},
+            arrow_type: PyDataType {
+                data_type: arrow_type,
+            },
             python_type,
-            sql_type
+            sql_type,
         }
     }
 
     pub fn map_from_arrow_type(arrow_type: &DataType) -> DataTypeMap {
         match arrow_type {
             DataType::Null => DataTypeMap::new(DataType::Null, PythonType::None, SqlType::NULL),
-            DataType::Boolean => DataTypeMap::new(DataType::Boolean, PythonType::Bool, SqlType::BOOLEAN),
+            DataType::Boolean => {
+                DataTypeMap::new(DataType::Boolean, PythonType::Bool, SqlType::BOOLEAN)
+            }
             DataType::Int8 => DataTypeMap::new(DataType::Int8, PythonType::Int, SqlType::TINYINT),
-            DataType::Int16 => DataTypeMap::new(DataType::Int16, PythonType::Int, SqlType::SMALLINT),
+            DataType::Int16 => {
+                DataTypeMap::new(DataType::Int16, PythonType::Int, SqlType::SMALLINT)
+            }
             DataType::Int32 => DataTypeMap::new(DataType::Int32, PythonType::Int, SqlType::INTEGER),
             DataType::Int64 => DataTypeMap::new(DataType::Int64, PythonType::Int, SqlType::BIGINT),
             DataType::UInt8 => DataTypeMap::new(DataType::UInt8, PythonType::Int, SqlType::TINYINT),
-            DataType::UInt16 => DataTypeMap::new(DataType::UInt16, PythonType::Int, SqlType::SMALLINT),
-            DataType::UInt32 => DataTypeMap::new(DataType::UInt32, PythonType::Int, SqlType::INTEGER),
-            DataType::UInt64 => DataTypeMap::new(DataType::UInt64, PythonType::Int, SqlType::BIGINT),
-            DataType::Float16 => DataTypeMap::new(DataType::Float16, PythonType::Float, SqlType::FLOAT),
-            DataType::Float32 => DataTypeMap::new(DataType::Float32, PythonType::Float, SqlType::FLOAT),
-            DataType::Float64 => DataTypeMap::new(DataType::Float64, PythonType::Float, SqlType::FLOAT),
+            DataType::UInt16 => {
+                DataTypeMap::new(DataType::UInt16, PythonType::Int, SqlType::SMALLINT)
+            }
+            DataType::UInt32 => {
+                DataTypeMap::new(DataType::UInt32, PythonType::Int, SqlType::INTEGER)
+            }
+            DataType::UInt64 => {
+                DataTypeMap::new(DataType::UInt64, PythonType::Int, SqlType::BIGINT)
+            }
+            DataType::Float16 => {
+                DataTypeMap::new(DataType::Float16, PythonType::Float, SqlType::FLOAT)
+            }
+            DataType::Float32 => {
+                DataTypeMap::new(DataType::Float32, PythonType::Float, SqlType::FLOAT)
+            }
+            DataType::Float64 => {
+                DataTypeMap::new(DataType::Float64, PythonType::Float, SqlType::FLOAT)
+            }
             DataType::Timestamp(_, _) => todo!(),
-            DataType::Date32 => DataTypeMap::new(DataType::Date32, PythonType::Datetime, SqlType::DATE),
-            DataType::Date64 => DataTypeMap::new(DataType::Date64, PythonType::Datetime, SqlType::DATE),
+            DataType::Date32 => {
+                DataTypeMap::new(DataType::Date32, PythonType::Datetime, SqlType::DATE)
+            }
+            DataType::Date64 => {
+                DataTypeMap::new(DataType::Date64, PythonType::Datetime, SqlType::DATE)
+            }
             DataType::Time32(_) => todo!(),
             DataType::Time64(_) => todo!(),
             DataType::Duration(_) => todo!(),
             DataType::Interval(_) => todo!(),
-            DataType::Binary => DataTypeMap::new(DataType::Binary, PythonType::Bytes, SqlType::BINARY),
+            DataType::Binary => {
+                DataTypeMap::new(DataType::Binary, PythonType::Bytes, SqlType::BINARY)
+            }
             DataType::FixedSizeBinary(_) => todo!(),
-            DataType::LargeBinary => DataTypeMap::new(DataType::LargeBinary, PythonType::Bytes, SqlType::BINARY),
+            DataType::LargeBinary => {
+                DataTypeMap::new(DataType::LargeBinary, PythonType::Bytes, SqlType::BINARY)
+            }
             DataType::Utf8 => DataTypeMap::new(DataType::Utf8, PythonType::Str, SqlType::VARCHAR),
-            DataType::LargeUtf8 => DataTypeMap::new(DataType::LargeUtf8, PythonType::Str, SqlType::VARCHAR),
+            DataType::LargeUtf8 => {
+                DataTypeMap::new(DataType::LargeUtf8, PythonType::Str, SqlType::VARCHAR)
+            }
             DataType::List(_) => todo!(),
             DataType::FixedSizeList(_, _) => todo!(),
             DataType::LargeList(_) => todo!(),
@@ -88,16 +114,15 @@ impl DataTypeMap {
 
 #[pymethods]
 impl DataTypeMap {
-
     #[new]
     pub fn py_new(arrow_type: PyDataType, python_type: PythonType, sql_type: SqlType) -> Self {
         DataTypeMap {
             arrow_type: arrow_type,
             python_type,
-            sql_type
+            sql_type,
         }
     }
-    
+
     #[staticmethod]
     #[pyo3(name = "arrow")]
     pub fn py_map_from_arrow_type(arrow_type: &PyDataType) -> PyResult<DataTypeMap> {
@@ -110,18 +135,38 @@ impl DataTypeMap {
         Ok(match sql_type {
             SqlType::ANY => unimplemented!(),
             SqlType::ARRAY => todo!(), // unsure which type to use for DataType in this situation?
-            SqlType::BIGINT => DataTypeMap::new(DataType::Int64, PythonType::Float, SqlType::BIGINT),
-            SqlType::BINARY => DataTypeMap::new(DataType::Binary, PythonType::Bytes, SqlType::BINARY),
-            SqlType::BOOLEAN => DataTypeMap::new(DataType::Boolean, PythonType::Bool, SqlType::BOOLEAN),
+            SqlType::BIGINT => {
+                DataTypeMap::new(DataType::Int64, PythonType::Float, SqlType::BIGINT)
+            }
+            SqlType::BINARY => {
+                DataTypeMap::new(DataType::Binary, PythonType::Bytes, SqlType::BINARY)
+            }
+            SqlType::BOOLEAN => {
+                DataTypeMap::new(DataType::Boolean, PythonType::Bool, SqlType::BOOLEAN)
+            }
             SqlType::CHAR => DataTypeMap::new(DataType::UInt8, PythonType::Int, SqlType::CHAR),
             SqlType::COLUMN_LIST => unimplemented!(),
             SqlType::CURSOR => unimplemented!(),
-            SqlType::DATE => DataTypeMap::new(DataType::Date64, PythonType::Datetime, SqlType::DATE),
-            SqlType::DECIMAL => DataTypeMap::new(DataType::Decimal128(1, 1), PythonType::Float, SqlType::DECIMAL),
+            SqlType::DATE => {
+                DataTypeMap::new(DataType::Date64, PythonType::Datetime, SqlType::DATE)
+            }
+            SqlType::DECIMAL => DataTypeMap::new(
+                DataType::Decimal128(1, 1),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            ),
             SqlType::DISTINCT => unimplemented!(),
-            SqlType::DOUBLE => DataTypeMap::new(DataType::Decimal256(1, 1), PythonType::Float, SqlType::DOUBLE),
+            SqlType::DOUBLE => DataTypeMap::new(
+                DataType::Decimal256(1, 1),
+                PythonType::Float,
+                SqlType::DOUBLE,
+            ),
             SqlType::DYNAMIC_STAR => unimplemented!(),
-            SqlType::FLOAT => DataTypeMap::new(DataType::Decimal128(1, 1), PythonType::Float, SqlType::FLOAT),
+            SqlType::FLOAT => DataTypeMap::new(
+                DataType::Decimal128(1, 1),
+                PythonType::Float,
+                SqlType::FLOAT,
+            ),
             SqlType::GEOMETRY => unimplemented!(),
             SqlType::INTEGER => DataTypeMap::new(DataType::Int8, PythonType::Int, SqlType::INTEGER),
             SqlType::INTERVAL => todo!(),
@@ -145,7 +190,9 @@ impl DataTypeMap {
             SqlType::REAL => todo!(),
             SqlType::ROW => todo!(),
             SqlType::SARG => unimplemented!(),
-            SqlType::SMALLINT => DataTypeMap::new(DataType::Int16, PythonType::Int, SqlType::SMALLINT),
+            SqlType::SMALLINT => {
+                DataTypeMap::new(DataType::Int16, PythonType::Int, SqlType::SMALLINT)
+            }
             SqlType::STRUCTURED => unimplemented!(),
             SqlType::SYMBOL => unimplemented!(),
             SqlType::TIME => todo!(),
@@ -154,15 +201,16 @@ impl DataTypeMap {
             SqlType::TIMESTAMP_WITH_LOCAL_TIME_ZONE => todo!(),
             SqlType::TINYINT => DataTypeMap::new(DataType::Int8, PythonType::Int, SqlType::TINYINT),
             SqlType::UNKNOWN => unimplemented!(),
-            SqlType::VARBINARY => DataTypeMap::new(DataType::LargeBinary, PythonType::Bytes, SqlType::VARBINARY),
+            SqlType::VARBINARY => {
+                DataTypeMap::new(DataType::LargeBinary, PythonType::Bytes, SqlType::VARBINARY)
+            }
             SqlType::VARCHAR => DataTypeMap::new(DataType::Utf8, PythonType::Str, SqlType::VARCHAR),
         })
     }
 }
 
-
 /// PyO3 requires that objects passed between Rust and Python implement the trait `PyClass`
-/// Since `DataType` exists in another package we cannot make that happen here so we wrap 
+/// Since `DataType` exists in another package we cannot make that happen here so we wrap
 /// `DataType` as `PyDataType` This exists solely to satisfy those constraints.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(name = "DataType", module = "datafusion")]
@@ -199,7 +247,7 @@ pub enum PythonType {
 }
 
 /// Represents the types that are possible for DataFusion to parse
-/// from a SQL query. Aka "SqlType" and are valid values for 
+/// from a SQL query. Aka "SqlType" and are valid values for
 /// ANSI SQL
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
