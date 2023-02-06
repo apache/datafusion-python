@@ -285,13 +285,13 @@ impl PySessionContext {
         Ok(())
     }
 
-    #[pyo3(signature = (name="\"datafusion\""))]
+    #[pyo3(signature = (name="datafusion"))]
     fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
         match self.ctx.catalog(name) {
             Some(catalog) => Ok(PyCatalog::new(catalog)),
             None => Err(PyKeyError::new_err(format!(
                 "Catalog with name {} doesn't exist.",
-                &name
+                &name,
             ))),
         }
     }
