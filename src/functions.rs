@@ -287,25 +287,49 @@ scalar_function!(upper, Upper, "Converts the string to all upper case.");
 scalar_function!(make_array, MakeArray);
 scalar_function!(array, MakeArray);
 scalar_function!(nullif, NullIf);
-//scalar_function!(uuid, Uuid);
-//scalar_function!(struct, Struct);
+scalar_function!(uuid, Uuid);
+scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyword
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
 
+aggregate_function!(approx_distinct, ApproxDistinct);
+aggregate_function!(approx_median, ApproxMedian);
+aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
+aggregate_function!(
+    approx_percentile_cont_with_weight,
+    ApproxPercentileContWithWeight
+);
+aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
+aggregate_function!(corr, Correlation);
 aggregate_function!(count, Count);
+aggregate_function!(covar, Covariance);
+aggregate_function!(covar_pop, CovariancePop);
+aggregate_function!(covar_samp, Covariance);
+aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
+aggregate_function!(mean, Avg);
+aggregate_function!(median, Median);
 aggregate_function!(min, Min);
 aggregate_function!(sum, Sum);
-aggregate_function!(approx_distinct, ApproxDistinct);
+aggregate_function!(stddev, Stddev);
+aggregate_function!(stddev_pop, StddevPop);
+aggregate_function!(stddev_samp, Stddev);
+aggregate_function!(var, Variance);
+aggregate_function!(var_pop, VariancePop);
+aggregate_function!(var_samp, Variance);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
     m.add_wrapped(wrap_pyfunction!(approx_distinct))?;
     m.add_wrapped(wrap_pyfunction!(alias))?;
+    m.add_wrapped(wrap_pyfunction!(approx_median))?;
+    m.add_wrapped(wrap_pyfunction!(approx_percentile_cont))?;
+    m.add_wrapped(wrap_pyfunction!(approx_percentile_cont_with_weight))?;
     m.add_wrapped(wrap_pyfunction!(array))?;
+    m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
@@ -322,9 +346,13 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
+    m.add_wrapped(wrap_pyfunction!(corr))?;
     m.add_wrapped(wrap_pyfunction!(cos))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
     m.add_wrapped(wrap_pyfunction!(count_star))?;
+    m.add_wrapped(wrap_pyfunction!(covar))?;
+    m.add_wrapped(wrap_pyfunction!(covar_pop))?;
+    m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
     m.add_wrapped(wrap_pyfunction!(current_time))?;
     m.add_wrapped(wrap_pyfunction!(date_bin))?;
@@ -336,6 +364,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(exp))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
+    m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
@@ -350,6 +379,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(max))?;
     m.add_wrapped(wrap_pyfunction!(make_array))?;
     m.add_wrapped(wrap_pyfunction!(md5))?;
+    m.add_wrapped(wrap_pyfunction!(mean))?;
+    m.add_wrapped(wrap_pyfunction!(median))?;
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;
@@ -376,8 +407,11 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(split_part))?;
     m.add_wrapped(wrap_pyfunction!(sqrt))?;
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
+    m.add_wrapped(wrap_pyfunction!(stddev))?;
+    m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
+    m.add_wrapped(wrap_pyfunction!(stddev_samp))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
-    //m.add_wrapped(wrap_pyfunction!(struct))?;
+    m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
@@ -390,7 +424,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
-    //m.add_wrapped(wrap_pyfunction!(uuid))?;
+    m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
+    m.add_wrapped(wrap_pyfunction!(var))?;
+    m.add_wrapped(wrap_pyfunction!(var_pop))?;
+    m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
     Ok(())
 }
