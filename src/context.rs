@@ -56,18 +56,16 @@ pub(crate) struct PySessionContext {
 #[pymethods]
 impl PySessionContext {
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        default_catalog = "\"datafusion\"",
-        default_schema = "\"public\"",
-        create_default_catalog_and_schema = "true",
-        information_schema = "false",
-        repartition_joins = "true",
-        repartition_aggregations = "true",
-        repartition_windows = "true",
-        parquet_pruning = "true",
-        target_partitions = "None",
-        config_options = "None"
-    )]
+    #[pyo3(signature = (default_catalog="datafusion",
+                        default_schema="public",
+                        create_default_catalog_and_schema=true,
+                        information_schema=false,
+                        repartition_joins=true,
+                        repartition_aggregations=true,
+                        repartition_windows=true,
+                        parquet_pruning=true,
+                        target_partitions=None,
+                        config_options=None))]
     #[new]
     fn new(
         default_catalog: &str,
@@ -203,11 +201,9 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        table_partition_cols = "vec![]",
-        parquet_pruning = "true",
-        file_extension = "\".parquet\""
-    )]
+    #[pyo3(signature = (name, path, table_partition_cols=vec![],
+                        parquet_pruning=true,
+                        file_extension=".parquet"))]
     fn register_parquet(
         &mut self,
         name: &str,
@@ -227,13 +223,13 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        schema = "None",
-        has_header = "true",
-        delimiter = "\",\"",
-        schema_infer_max_records = "1000",
-        file_extension = "\".csv\""
-    )]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        has_header=true,
+                        delimiter=",",
+                        schema_infer_max_records=1000,
+                        file_extension=".csv"))]
     fn register_csv(
         &mut self,
         name: &str,
@@ -289,7 +285,7 @@ impl PySessionContext {
         Ok(())
     }
 
-    #[args(name = "\"datafusion\"")]
+    #[pyo3(signature = (name="\"datafusion\""))]
     fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
         match self.ctx.catalog(name) {
             Some(catalog) => Ok(PyCatalog::new(catalog)),
@@ -323,12 +319,7 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        schema = "None",
-        schema_infer_max_records = "1000",
-        file_extension = "\".json\"",
-        table_partition_cols = "vec![]"
-    )]
+    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![]))]
     fn read_json(
         &mut self,
         path: PathBuf,
@@ -357,14 +348,14 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        schema = "None",
-        has_header = "true",
-        delimiter = "\",\"",
-        schema_infer_max_records = "1000",
-        file_extension = "\".csv\"",
-        table_partition_cols = "vec![]"
-    )]
+    #[pyo3(signature = (
+        path,
+        schema=None,
+        has_header=true,
+        delimiter=",",
+        schema_infer_max_records=1000,
+        file_extension=".csv",
+        table_partition_cols=vec![]))]
     fn read_csv(
         &self,
         path: PathBuf,
@@ -407,12 +398,12 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        parquet_pruning = "true",
-        file_extension = "\".parquet\"",
-        table_partition_cols = "vec![]",
-        skip_metadata = "true"
-    )]
+    #[pyo3(signature = (
+        path,
+        table_partition_cols=vec![],
+        parquet_pruning=true,
+        file_extension=".parquet",
+        skip_metadata=true))]
     fn read_parquet(
         &self,
         path: &str,
@@ -434,11 +425,7 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        schema = "None",
-        file_extension = "\".avro\"",
-        table_partition_cols = "vec![]"
-    )]
+    #[pyo3(signature = (path, schema=None, table_partition_cols=vec![], file_extension=".avro"))]
     fn read_avro(
         &self,
         path: &str,

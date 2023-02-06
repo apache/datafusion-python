@@ -71,13 +71,13 @@ impl PyDataFrame {
         PyArrowType(self.df.schema().into())
     }
 
-    #[args(args = "*")]
+    #[pyo3(signature = (*args))]
     fn select_columns(&self, args: Vec<&str>) -> PyResult<Self> {
         let df = self.df.as_ref().clone().select_columns(&args)?;
         Ok(Self::new(df))
     }
 
-    #[args(args = "*")]
+    #[pyo3(signature = (*args))]
     fn select(&self, args: Vec<PyExpr>) -> PyResult<Self> {
         let expr = args.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().select(expr)?;
@@ -112,7 +112,7 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    #[args(exprs = "*")]
+    #[pyo3(signature = (*exprs))]
     fn sort(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
         let exprs = exprs.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().sort(exprs)?;
@@ -152,7 +152,7 @@ impl PyDataFrame {
     }
 
     /// Print the result, 20 lines by default
-    #[args(num = "20")]
+    #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
         let df = self.df.as_ref().clone().limit(0, Some(num))?;
         let batches = wait_for_future(py, df.collect())?;
@@ -197,7 +197,7 @@ impl PyDataFrame {
     }
 
     /// Print the query plan
-    #[args(verbose = false, analyze = false)]
+    #[pyo3(signature = (verbose=false, analyze=false))]
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyResult<()> {
         let df = self.df.as_ref().clone().explain(verbose, analyze)?;
         let batches = wait_for_future(py, df.collect())?;
@@ -231,7 +231,7 @@ impl PyDataFrame {
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
-    #[args(args = "*", num)]
+    #[pyo3(signature = (*args, num))]
     fn repartition_by_hash(&self, args: Vec<PyExpr>, num: usize) -> PyResult<Self> {
         let expr = args.into_iter().map(|py_expr| py_expr.into()).collect();
         let new_df = self
@@ -244,7 +244,7 @@ impl PyDataFrame {
 
     /// Calculate the union of two `DataFrame`s, preserving duplicate rows.The
     /// two `DataFrame`s must have exactly the same schema
-    #[args(distinct = false)]
+    #[pyo3(signature = (py_df, distinct=false))]
     fn union(&self, py_df: PyDataFrame, distinct: bool) -> PyResult<Self> {
         let new_df = if distinct {
             self.df

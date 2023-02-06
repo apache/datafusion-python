@@ -136,7 +136,7 @@ impl PyAggregateUDF {
     }
 
     /// creates a new PyExpr with the call of the udf
-    #[args(args = "*")]
+    #[pyo3(signature = (*args))]
     fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyExpr> {
         let args = args.iter().map(|e| e.expr.clone()).collect();
         Ok(self.function.call(args).into())
