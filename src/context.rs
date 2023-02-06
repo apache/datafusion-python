@@ -29,6 +29,7 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::DataFusionError;
+use crate::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
@@ -173,6 +174,11 @@ impl PySessionContext {
 
         let df = PyDataFrame::new(table);
         Ok(df)
+    }
+
+    /// Create a DataFrame from an existing logical plan
+    fn create_dataframe_from_logical_plan(&mut self, plan: PyLogicalPlan) -> PyDataFrame {
+        PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
     }
 
     fn register_table(&mut self, name: &str, table: &PyTable) -> PyResult<()> {
@@ -459,6 +465,14 @@ impl PySessionContext {
             wait_for_future(py, read_future).map_err(DataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let id = self.session_id();
+        match id {
+            Ok(value) => Ok(format!("SessionContext(session_id={value})")),
+            Err(err) => Ok(format!("Error: {:?}", err.to_string())),
+        }
     }
 }
 

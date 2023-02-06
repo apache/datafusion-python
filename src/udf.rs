@@ -92,4 +92,8 @@ impl PyScalarUDF {
         let args = args.iter().map(|e| e.expr.clone()).collect();
         Ok(self.function.call(args).into())
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("ScalarUDF({})", self.function.name))
+    }
 }
