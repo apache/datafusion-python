@@ -45,24 +45,9 @@ impl DataTypeMap {
             sql_type
         }
     }
-}
 
-#[pymethods]
-impl DataTypeMap {
-
-    #[new]
-    pub fn py_new(arrow_type: PyDataType, python_type: PythonType, sql_type: SqlType) -> Self {
-        DataTypeMap {
-            arrow_type: arrow_type,
-            python_type,
-            sql_type
-        }
-    }
-    
-    #[staticmethod]
-    #[pyo3(name = "arrow")]
-    pub fn map_from_arrow_type(arrow_type: &PyDataType) -> PyResult<DataTypeMap> {
-        Ok(match arrow_type.data_type {
+    pub fn map_from_arrow_type(arrow_type: &DataType) -> DataTypeMap {
+        match arrow_type {
             DataType::Null => DataTypeMap::new(DataType::Null, PythonType::None, SqlType::NULL),
             DataType::Boolean => DataTypeMap::new(DataType::Boolean, PythonType::Bool, SqlType::BOOLEAN),
             DataType::Int8 => DataTypeMap::new(DataType::Int8, PythonType::Int, SqlType::TINYINT),
@@ -97,7 +82,26 @@ impl DataTypeMap {
             DataType::Decimal128(_, _) => todo!(),
             DataType::Decimal256(_, _) => todo!(),
             DataType::Map(_, _) => todo!(),
-        })
+        }
+    }
+}
+
+#[pymethods]
+impl DataTypeMap {
+
+    #[new]
+    pub fn py_new(arrow_type: PyDataType, python_type: PythonType, sql_type: SqlType) -> Self {
+        DataTypeMap {
+            arrow_type: arrow_type,
+            python_type,
+            sql_type
+        }
+    }
+    
+    #[staticmethod]
+    #[pyo3(name = "arrow")]
+    pub fn py_map_from_arrow_type(arrow_type: &PyDataType) -> PyResult<DataTypeMap> {
+        Ok(DataTypeMap::map_from_arrow_type(&arrow_type.data_type))
     }
 
     #[staticmethod]
