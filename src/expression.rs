@@ -117,7 +117,7 @@ impl PyExpr {
     }
 
     /// Create a sort PyExpr from an existing PyExpr.
-    #[args(ascending = true, nulls_first = true)]
+    #[pyo3(signature = (ascending=true, nulls_first=true))]
     pub fn sort(&self, ascending: bool, nulls_first: bool) -> PyExpr {
         self.expr.clone().sort(ascending, nulls_first).into()
     }

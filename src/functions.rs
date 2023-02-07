@@ -38,7 +38,9 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
-#[pyfunction(value, method)]
+// #[pyfunction(value, method)]
+#[pyfunction]
+#[pyo3(signature = (value, method))]
 fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
     PyExpr {
         expr: datafusion_expr::digest(value.expr, method.expr),
@@ -47,7 +49,8 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 
 /// Concatenates the text representations of all the arguments.
 /// NULL arguments are ignored.
-#[pyfunction(args = "*")]
+#[pyfunction]
+#[pyo3(signature = (*args))]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(datafusion_expr::concat(&args).into())
@@ -56,7 +59,8 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 /// Concatenates all but the first argument, with separators.
 /// The first argument is used as the separator string, and should not be NULL.
 /// Other NULL arguments are ignored.
-#[pyfunction(sep, args = "*")]
+#[pyfunction]
+#[pyo3(signature = (sep, *args))]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(datafusion_expr::concat_ws(lit(sep), args).into())
@@ -146,7 +150,8 @@ macro_rules! scalar_function {
 
     ($NAME: ident, $FUNC: ident, $DOC: expr) => {
         #[doc = $DOC]
-        #[pyfunction(args = "*")]
+        #[pyfunction]
+        #[pyo3(signature = (*args))]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
             let expr = datafusion_expr::Expr::ScalarFunction {
                 fun: BuiltinScalarFunction::$FUNC,
@@ -163,7 +168,8 @@ macro_rules! aggregate_function {
     };
     ($NAME: ident, $FUNC: ident, $DOC: expr) => {
         #[doc = $DOC]
-        #[pyfunction(args = "*", distinct = "false")]
+        #[pyfunction]
+        #[pyo3(signature = (*args, distinct=false))]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
             let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
                 fun: datafusion_expr::aggregate_function::AggregateFunction::$FUNC,

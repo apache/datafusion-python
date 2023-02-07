@@ -72,7 +72,7 @@ impl PyCatalog {
         self.catalog.schema_names()
     }
 
-    #[args(name = "\"public\"")]
+    #[pyo3(signature = (name="public"))]
     fn database(&self, name: &str) -> PyResult<PyDatabase> {
         match self.catalog.schema(name) {
             Some(database) => Ok(PyDatabase::new(database)),

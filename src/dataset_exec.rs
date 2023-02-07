@@ -23,7 +23,7 @@ use pyo3::types::{PyDict, PyIterator, PyList};
 use std::any::Any;
 use std::sync::Arc;
 
-use futures::stream;
+use futures::{stream, TryStreamExt};
 
 use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::arrow::error::ArrowError;
@@ -228,8 +228,9 @@ impl ExecutionPlan for DatasetExec {
             };
 
             let record_batch_stream = stream::iter(record_batches);
-            let record_batch_stream: SendableRecordBatchStream =
-                Box::pin(RecordBatchStreamAdapter::new(schema, record_batch_stream));
+            let record_batch_stream: SendableRecordBatchStream = Box::pin(
+                RecordBatchStreamAdapter::new(schema, record_batch_stream.map_err(|e| e.into())),
+            );
             Ok(record_batch_stream)
         })
     }
