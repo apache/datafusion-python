@@ -30,8 +30,11 @@ use pyo3::prelude::*;
 #[derive(Debug, Clone)]
 #[pyclass(name = "DataTypeMap", module = "datafusion", subclass)]
 pub struct DataTypeMap {
+    #[allow(dead_code)]
     arrow_type: PyDataType,
+    #[allow(dead_code)]
     python_type: PythonType,
+    #[allow(dead_code)]
     sql_type: SqlType,
 }
 
@@ -117,7 +120,7 @@ impl DataTypeMap {
     #[new]
     pub fn py_new(arrow_type: PyDataType, python_type: PythonType, sql_type: SqlType) -> Self {
         DataTypeMap {
-            arrow_type: arrow_type,
+            arrow_type,
             python_type,
             sql_type,
         }

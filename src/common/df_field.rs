@@ -27,10 +27,15 @@ use crate::common::data_type::DataTypeMap;
 #[derive(Debug, Clone)]
 pub struct PyDFField {
     /// Optional qualifier (usually a table or relation name)
+    #[allow(dead_code)]
     qualifier: Option<String>,
+    #[allow(dead_code)]
     name: String,
+    #[allow(dead_code)]
     data_type: DataTypeMap,
     /// Arrow field definition
+    #[allow(dead_code)]
     field: Field,
+    #[allow(dead_code)]
     index: usize,
 }
