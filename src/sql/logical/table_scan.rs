@@ -27,7 +27,7 @@ use crate::{
 };
 
 #[pyclass(name = "TableScan", module = "dask_planner", subclass)]
-#[derive(Clone)]
+#[derive(Clone, FromPyObject)]
 pub struct PyTableScan {
     pub(crate) table_scan: TableScan,
     input: Arc<LogicalPlan>,
@@ -62,26 +62,26 @@ impl PyTableScan {
     }
 }
 
-impl TryFrom<LogicalPlan> for PyTableScan {
-    type Error = PyErr;
+// impl TryFrom<LogicalPlan> for PyTableScan {
+//     type Error = PyErr;
 
-    fn try_from(logical_plan: LogicalPlan) -> Result<Self, Self::Error> {
-        match logical_plan {
-            LogicalPlan::TableScan(table_scan) => {
-                // Create an input logical plan that's identical to the table scan with schema from the table source
-                let mut input = table_scan.clone();
-                input.projected_schema = DFSchema::try_from_qualified_schema(
-                    &table_scan.table_name,
-                    &table_scan.source.schema(),
-                )
-                .map_or(input.projected_schema, Arc::new);
+//     fn try_from(logical_plan: LogicalPlan) -> Result<Self, Self::Error> {
+//         match logical_plan {
+//             LogicalPlan::TableScan(table_scan) => {
+//                 // Create an input logical plan that's identical to the table scan with schema from the table source
+//                 let mut input = table_scan.clone();
+//                 input.projected_schema = DFSchema::try_from_qualified_schema(
+//                     &table_scan.table_name,
+//                     &table_scan.source.schema(),
+//                 )
+//                 .map_or(input.projected_schema, Arc::new);
 
-                Ok(PyTableScan {
-                    table_scan,
-                    input: Arc::new(LogicalPlan::TableScan(input)),
-                })
-            }
-            _ => Err(py_type_err("unexpected plan")),
-        }
-    }
-}
+//                 Ok(PyTableScan {
+//                     table_scan,
+//                     input: Arc::new(LogicalPlan::TableScan(input)),
+//                 })
+//             }
+//             _ => Err(py_type_err("unexpected plan")),
+//         }
+//     }
+// }
