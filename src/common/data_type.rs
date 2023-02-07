@@ -111,6 +111,7 @@ impl DataTypeMap {
             DataType::Decimal128(_, _) => todo!(),
             DataType::Decimal256(_, _) => todo!(),
             DataType::Map(_, _) => todo!(),
+            DataType::RunEndEncoded(_, _) => todo!(),
         }
     }
 }
