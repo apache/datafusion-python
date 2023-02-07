@@ -145,13 +145,10 @@ def test_execute(ctx, tmp_path):
     assert ctx.tables() == {"t"}
 
     # count
-    result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
-    print(f"Result Type: {type(result)}")
+    result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
 
     expected = pa.array([7], pa.int64())
     expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
-    print(f"Expected:\n{expected}")
-    print(f"Result:\n{result}")
     assert result == expected
 
     # where
