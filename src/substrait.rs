@@ -22,9 +22,9 @@ use crate::errors::py_datafusion_err;
 use crate::errors::DataFusionError;
 use crate::{logical::PyLogicalPlan, utils::wait_for_future};
 
+use datafusion_substrait::logical_plan::{consumer, producer};
 use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
-use datafusion_substrait::logical_plan::{consumer, producer};
 
 #[pyclass(name = "plan", module = "datafusion.substrait", subclass, unsendable)]
 #[derive(Debug, Clone)]
