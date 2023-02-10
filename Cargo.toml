@@ -34,11 +34,11 @@ default = ["mimalloc"]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.0", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { git="https://github.com/apache/arrow-datafusion.git", rev="a265509b272084e758b9ec21f2133856f56e617d", features = ["pyarrow", "avro"] }
-datafusion-expr = { git="https://github.com/apache/arrow-datafusion.git", rev="a265509b272084e758b9ec21f2133856f56e617d" }
-datafusion-optimizer = { git="https://github.com/apache/arrow-datafusion.git", rev="a265509b272084e758b9ec21f2133856f56e617d" }
-datafusion-common = { git="https://github.com/apache/arrow-datafusion.git", rev="a265509b272084e758b9ec21f2133856f56e617d", features = ["pyarrow"] }
-datafusion-substrait = { git="https://github.com/apache/arrow-datafusion.git", rev="a265509b272084e758b9ec21f2133856f56e617d" }
+datafusion = { git="https://github.com/apache/arrow-datafusion.git", rev="8a262c3ec0a100607ae97641d7a374c847a71f20", features = ["pyarrow", "avro"] }
+datafusion-expr = { git="https://github.com/apache/arrow-datafusion.git", rev="8a262c3ec0a100607ae97641d7a374c847a71f20" }
+datafusion-optimizer = { git="https://github.com/apache/arrow-datafusion.git", rev="8a262c3ec0a100607ae97641d7a374c847a71f20" }
+datafusion-common = { git="https://github.com/apache/arrow-datafusion.git", rev="8a262c3ec0a100607ae97641d7a374c847a71f20", features = ["pyarrow"] }
+datafusion-substrait = { git="https://github.com/apache/arrow-datafusion.git", rev="8a262c3ec0a100607ae97641d7a374c847a71f20" }
 uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
 async-trait = "0.1"
