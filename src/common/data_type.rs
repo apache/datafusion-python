@@ -221,7 +221,7 @@ impl DataTypeMap {
 
     #[staticmethod]
     #[pyo3(name = "sql")]
-    pub fn map_from_sql_type(sql_type: &SqlType) -> PyResult<DataTypeMap> {
+    pub fn py_map_from_sql_type(sql_type: &SqlType) -> PyResult<DataTypeMap> {
         match sql_type {
             SqlType::ANY => Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
                 "{:?}",

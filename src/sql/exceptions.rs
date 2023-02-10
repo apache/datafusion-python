@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 
 use pyo3::{create_exception, PyErr};
 
@@ -25,18 +25,18 @@ create_exception!(rust, ParsingException, pyo3::exceptions::PyException);
 // Identifies exceptions that occur during attempts to optimization an existing `LogicalPlan`
 create_exception!(rust, OptimizationException, pyo3::exceptions::PyException);
 
-pub fn py_type_err(e: impl Debug + std::fmt::Display) -> PyErr {
+pub fn py_type_err(e: impl Debug + Display) -> PyErr {
     PyErr::new::<pyo3::exceptions::PyTypeError, _>(format!("{e}"))
 }
 
-pub fn py_runtime_err(e: impl Debug + std::fmt::Display) -> PyErr {
+pub fn py_runtime_err(e: impl Debug + Display) -> PyErr {
     PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{e}"))
 }
 
-pub fn py_parsing_exp(e: impl Debug + std::fmt::Display) -> PyErr {
+pub fn py_parsing_exp(e: impl Debug + Display) -> PyErr {
     PyErr::new::<ParsingException, _>(format!("{e}"))
 }
 
-pub fn py_optimization_exp(e: impl Debug + std::fmt::Display) -> PyErr {
+pub fn py_optimization_exp(e: impl Debug + Display) -> PyErr {
     PyErr::new::<OptimizationException, _>(format!("{e}"))
 }
