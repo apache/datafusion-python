@@ -33,8 +33,8 @@ def df():
 
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
-        names=["a", "b"],
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
+        names=["a", "b", "c"],
     )
 
     return ctx.create_dataframe([[batch]])
@@ -100,7 +100,7 @@ def test_sort(df):
     df = df.sort(column("b").sort(ascending=False))
 
     table = pa.Table.from_batches(df.collect())
-    expected = {"a": [3, 2, 1], "b": [6, 5, 4]}
+    expected = {"a": [3, 2, 1], "b": [6, 5, 4], "c": [8, 5, 8]}
 
     assert table.to_pydict() == expected
 
@@ -204,24 +204,90 @@ def test_distinct():
     assert df_a.collect() == df_b.collect()
 
 
-@pytest.mark.skip(
-    reason="https://github.com/apache/arrow-datafusion-python/issues/135"
-)
-def test_window_lead(df):
+def test_window_functions(df):
     df = df.select(
         column("a"),
+        column("b"),
+        column("c"),
+        f.alias(
+            f.window("row_number", [], order_by=[f.order_by(column("c"))]),
+            "row",
+        ),
+        f.alias(
+            f.window("rank", [], order_by=[f.order_by(column("c"))]),
+            "rank",
+        ),
+        f.alias(
+            f.window("dense_rank", [], order_by=[f.order_by(column("c"))]),
+            "dense_rank",
+        ),
+        f.alias(
+            f.window("percent_rank", [], order_by=[f.order_by(column("c"))]),
+            "percent_rank",
+        ),
+        f.alias(
+            f.window("cume_dist", [], order_by=[f.order_by(column("b"))]),
+            "cume_dist",
+        ),
+        f.alias(
+            f.window(
+                "ntile", [literal(2)], order_by=[f.order_by(column("c"))]
+            ),
+            "ntile",
+        ),
+        f.alias(
+            f.window("lag", [column("b")], order_by=[f.order_by(column("b"))]),
+            "previous",
+        ),
         f.alias(
             f.window(
                 "lead", [column("b")], order_by=[f.order_by(column("b"))]
             ),
-            "a_next",
+            "next",
+        ),
+        f.alias(
+            f.window(
+                "first_value",
+                [column("a")],
+                order_by=[f.order_by(column("b"))],
+            ),
+            "first_value",
+        ),
+        f.alias(
+            f.window(
+                "last_value", [column("b")], order_by=[f.order_by(column("b"))]
+            ),
+            "last_value",
+        ),
+        f.alias(
+            f.window(
+                "nth_value",
+                [column("b"), literal(2)],
+                order_by=[f.order_by(column("b"))],
+            ),
+            "2nd_value",
         ),
     )
 
     table = pa.Table.from_batches(df.collect())
 
-    expected = {"a": [1, 2, 3], "a_next": [5, 6, None]}
-    assert table.to_pydict() == expected
+    expected = {
+        "a": [1, 2, 3],
+        "b": [4, 5, 6],
+        "c": [8, 5, 8],
+        "row": [2, 1, 3],
+        "rank": [2, 1, 2],
+        "dense_rank": [2, 1, 2],
+        "percent_rank": [0.5, 0, 0.5],
+        "cume_dist": [0.3333333333333333, 0.6666666666666666, 1.0],
+        "ntile": [1, 1, 2],
+        "next": [5, 6, None],
+        "previous": [None, 4, 5],
+        "first_value": [1, 1, 1],
+        "last_value": [4, 5, 6],
+        "2nd_value": [None, 5, 5],
+    }
+    assert table.sort_by("a").to_pydict() == expected
 
 
 def test_get_dataframe(tmp_path):
