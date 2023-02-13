@@ -21,6 +21,7 @@ use pyo3::prelude::*;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
+pub mod common;
 #[allow(clippy::borrow_deref_ref)]
 mod config;
 #[allow(clippy::borrow_deref_ref)]
@@ -34,9 +35,9 @@ pub mod errors;
 mod expression;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
-pub mod logical;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
+pub mod sql;
 pub mod store;
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
@@ -65,7 +66,7 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<config::PyConfig>()?;
-    m.add_class::<logical::PyLogicalPlan>()?;
+    m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
 
     // Register the functions as a submodule
