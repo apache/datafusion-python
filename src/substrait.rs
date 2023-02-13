@@ -18,7 +18,7 @@
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
-use crate::errors::{DataFusionError, py_datafusion_err};
+use crate::errors::{py_datafusion_err, DataFusionError};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
