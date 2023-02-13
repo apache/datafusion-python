@@ -233,7 +233,7 @@ impl DataTypeMap {
             )))),
             SqlType::BIGINT => Ok(DataTypeMap::new(
                 DataType::Int64,
-                PythonType::Float,
+                PythonType::Int,
                 SqlType::BIGINT,
             )),
             SqlType::BINARY => Ok(DataTypeMap::new(
