@@ -18,9 +18,9 @@
 use pyo3::prelude::*;
 
 use crate::context::PySessionContext;
-use crate::errors::py_datafusion_err;
-use crate::errors::DataFusionError;
-use crate::{logical::PyLogicalPlan, utils::wait_for_future};
+use crate::errors::{py_datafusion_err, DataFusionError};
+use crate::sql::logical::PyLogicalPlan;
+use crate::utils::wait_for_future;
 
 use datafusion_substrait::logical_plan::{consumer, producer};
 use datafusion_substrait::serializer;
