@@ -30,6 +30,8 @@ from ._internal import (
     Config,
     DataFrame,
     SessionContext,
+    SessionConfig,
+    RuntimeConfig,
     Expression,
     ScalarUDF,
 )
@@ -40,6 +42,8 @@ __all__ = [
     "Config",
     "DataFrame",
     "SessionContext",
+    "SessionConfig",
+    "RuntimeConfig",
     "Expression",
     "AggregateUDF",
     "ScalarUDF",
