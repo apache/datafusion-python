@@ -18,7 +18,7 @@
 use crate::physical_plan::PyExecutionPlan;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
-use crate::{errors::DataFusionError, expression::PyExpr};
+use crate::{errors::DataFusionError, expr::PyExpr};
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowException, PyArrowType};
 use datafusion::arrow::util::pretty;

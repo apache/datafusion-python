@@ -32,7 +32,7 @@ mod dataset;
 mod dataset_exec;
 pub mod errors;
 #[allow(clippy::borrow_deref_ref)]
-mod expression;
+mod expr;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
 pub mod physical_plan;
@@ -64,12 +64,16 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<context::PySessionConfig>()?;
     m.add_class::<context::PySessionContext>()?;
     m.add_class::<dataframe::PyDataFrame>()?;
-    m.add_class::<expression::PyExpr>()?;
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
+
+    // Register `expr` as a submodule. Matching `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
+    let expr = PyModule::new(py, "expr")?;
+    expr::init_module(expr)?;
+    m.add_submodule(expr)?;
 
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;

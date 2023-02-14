@@ -24,7 +24,7 @@ use datafusion_expr::window_function::find_df_window_func;
 use datafusion_expr::{aggregate_function, lit, BuiltinScalarFunction, Expr, WindowFrame};
 
 use crate::errors::DataFusionError;
-use crate::expression::PyExpr;
+use crate::expr::PyExpr;
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {

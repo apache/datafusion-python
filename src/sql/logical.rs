@@ -20,8 +20,6 @@ use std::sync::Arc;
 use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
 
-pub mod table_scan;
-
 #[pyclass(name = "LogicalPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyLogicalPlan {

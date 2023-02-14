@@ -19,11 +19,11 @@ use std::fmt::{self, Display, Formatter};
 use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 
-use crate::expression::PyExpr;
+use crate::expr::PyExpr;
 
 
 
-#[pyclass(name = "TableScan", module = "dask_planner", subclass)]
+#[pyclass(name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTableScan {
     table_scan: TableScan,

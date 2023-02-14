@@ -216,7 +216,7 @@ impl DataTypeMap {
     #[staticmethod]
     #[pyo3(name = "arrow")]
     pub fn py_map_from_arrow_type(arrow_type: &PyDataType) -> PyResult<DataTypeMap> {
-        Ok(DataTypeMap::map_from_arrow_type(&arrow_type.data_type))
+        DataTypeMap::map_from_arrow_type(&arrow_type.data_type)
     }
 
     #[staticmethod]

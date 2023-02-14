@@ -26,7 +26,7 @@ use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
 use datafusion_expr::{create_udaf, Accumulator, AccumulatorFunctionImplementation, AggregateUDF};
 
-use crate::expression::PyExpr;
+use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
 #[derive(Debug)]
