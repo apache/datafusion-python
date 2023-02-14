@@ -15,13 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::fmt::{self, Display, Formatter};
 use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
+use std::fmt::{self, Display, Formatter};
 
 use crate::expr::PyExpr;
-
-
 
 #[pyclass(name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -43,7 +41,9 @@ impl From<TableScan> for PyTableScan {
 
 impl Display for PyTableScan {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "TableScan\nTable Name: {}
+        write!(
+            f,
+            "TableScan\nTable Name: {}
             \nProjections: {:?}
             \nProjected Schema: {:?}
             \nFilters: {:?}",
@@ -57,7 +57,6 @@ impl Display for PyTableScan {
 
 #[pymethods]
 impl PyTableScan {
-
     /// Retrieves the name of the table represented by this `TableScan` instance
     #[pyo3(name = "table_name")]
     fn py_table_name(&self) -> PyResult<&str> {
@@ -71,7 +70,7 @@ impl PyTableScan {
     //     Ok(self.table_scan.source)
     // }
 
-    /// The column indexes that should be. Note if this is empty then 
+    /// The column indexes that should be. Note if this is empty then
     /// all columns should be read by the `TableProvider`. This function
     /// provides a Tuple of the (index, column_name) to make things simplier
     /// for the calling code since often times the name is preferred to
@@ -102,12 +101,12 @@ impl PyTableScan {
     /// are read at read time. These `filters` are contained here.
     #[pyo3(name = "filters")]
     fn py_filters(&self) -> PyResult<Vec<PyExpr>> {
-        Ok(
-            self.table_scan.filters
-                .iter()
-                .map(|expr| PyExpr::from(expr.clone()))
-                .collect()
-        )
+        Ok(self
+            .table_scan
+            .filters
+            .iter()
+            .map(|expr| PyExpr::from(expr.clone()))
+            .collect())
     }
 
     /// Optional number of rows that should be read at read time by the `TableProvider`
@@ -119,5 +118,4 @@ impl PyTableScan {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("TableScan({})", self))
     }
-
 }

@@ -136,7 +136,6 @@ impl PyExpr {
     }
 }
 
-
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyExpr>()?;
