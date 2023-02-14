@@ -187,6 +187,12 @@ impl PyRuntimeConfig {
         let config = config.with_memory_pool(Arc::new(GreedyMemoryPool::new(size)));
         Self { config }
     }
+
+    fn with_temp_file_path(&self, path: &str) -> Self {
+        let config = self.config.clone();
+        let config = config.with_temp_file_path(path);
+        Self { config }
+    }
 }
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
