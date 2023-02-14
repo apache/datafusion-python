@@ -49,6 +49,9 @@ def test_class_module_is_datafusion():
     ]:
         assert klass.__module__ == "datafusion"
 
+    for klass in [Expr, TableScan]:
+        assert klass.__module__ == "datafusion.expr"
+
 
 def test_import_from_functions_submodule():
     from datafusion.functions import abs, sin  # noqa

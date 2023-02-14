@@ -314,8 +314,8 @@ def test_execution_plan(aggregate_df):
 
     indent = plan.display_indent()
 
-    # indent plan will be different for everyone due to absolute path to filename, so
-    # we just check for some expected content
+    # indent plan will be different for everyone due to absolute path
+    # to filename, so we just check for some expected content
     assert "ProjectionExec:" in indent
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent

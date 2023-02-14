@@ -53,6 +53,7 @@ __all__ = [
     "ScalarUDF",
     "column",
     "literal",
+    "TableScan",
 ]
 
 
