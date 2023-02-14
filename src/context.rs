@@ -49,17 +49,9 @@ use datafusion::prelude::{
 use datafusion_common::ScalarValue;
 
 #[pyclass(name = "SessionConfig", module = "datafusion", subclass, unsendable)]
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub(crate) struct PySessionConfig {
     pub(crate) config: SessionConfig,
-}
-
-impl Default for PySessionConfig {
-    fn default() -> Self {
-        Self {
-            config: SessionConfig::default(),
-        }
-    }
 }
 
 impl From<SessionConfig> for PySessionConfig {
