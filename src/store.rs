@@ -45,7 +45,7 @@ pub struct PyLocalFileSystemContext {
 
 #[pymethods]
 impl PyLocalFileSystemContext {
-    #[args(prefix = "None")]
+    #[pyo3(signature = (prefix=None))]
     #[new]
     fn new(prefix: Option<String>) -> Self {
         if let Some(prefix) = prefix {
@@ -78,17 +78,7 @@ pub struct PyMicrosoftAzureContext {
 #[pymethods]
 impl PyMicrosoftAzureContext {
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        account = "None",
-        access_key = "None",
-        bearer_token = "None",
-        client_id = "None",
-        client_secret = "None",
-        tenant_id = "None",
-        sas_query_pairs = "None",
-        use_emulator = "None",
-        allow_http = "None"
-    )]
+    #[pyo3(signature = (container_name, account=None, access_key=None, bearer_token=None, client_id=None, client_secret=None, tenant_id=None, sas_query_pairs=None, use_emulator=None, allow_http=None))]
     #[new]
     fn new(
         container_name: String,
@@ -165,7 +155,7 @@ pub struct PyGoogleCloudContext {
 #[pymethods]
 impl PyGoogleCloudContext {
     #[allow(clippy::too_many_arguments)]
-    #[args(service_account_path = "None")]
+    #[pyo3(signature = (bucket_name, service_account_path=None))]
     #[new]
     fn new(bucket_name: String, service_account_path: Option<String>) -> Self {
         let mut builder = GoogleCloudStorageBuilder::new().with_bucket_name(&bucket_name);
@@ -195,14 +185,7 @@ pub struct PyAmazonS3Context {
 #[pymethods]
 impl PyAmazonS3Context {
     #[allow(clippy::too_many_arguments)]
-    #[args(
-        region = "None",
-        access_key_id = "None",
-        secret_access_key = "None",
-        endpoint = "None",
-        imdsv1_fallback = "false",
-        allow_http = "false"
-    )]
+    #[pyo3(signature = (bucket_name, region=None, access_key_id=None, secret_access_key=None, endpoint=None, allow_http=false, imdsv1_fallback=false))]
     #[new]
     fn new(
         bucket_name: String,

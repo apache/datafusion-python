@@ -15,73 +15,109 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-
-use datafusion_common::DFSchema;
-use datafusion_expr::{logical_plan::TableScan, LogicalPlan};
+use std::fmt::{self, Display, Formatter};
+use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 
-use crate::{
-    expression::{py_expr_list, PyExpr},
-    sql::exceptions::py_type_err,
-};
+use crate::expression::PyExpr;
+
+
 
 #[pyclass(name = "TableScan", module = "dask_planner", subclass)]
-#[derive(Clone, FromPyObject)]
+#[derive(Clone)]
 pub struct PyTableScan {
-    pub(crate) table_scan: TableScan,
-    input: Arc<LogicalPlan>,
+    table_scan: TableScan,
+}
+
+impl From<PyTableScan> for TableScan {
+    fn from(tbl_scan: PyTableScan) -> TableScan {
+        tbl_scan.table_scan
+    }
+}
+
+impl From<TableScan> for PyTableScan {
+    fn from(table_scan: TableScan) -> PyTableScan {
+        PyTableScan { table_scan }
+    }
+}
+
+impl Display for PyTableScan {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "TableScan\nTable Name: {}
+            \nProjections: {:?}
+            \nProjected Schema: {:?}
+            \nFilters: {:?}",
+            &self.table_scan.table_name,
+            &self.py_projections(),
+            self.table_scan.projected_schema,
+            self.py_filters(),
+        )
+    }
 }
 
 #[pymethods]
 impl PyTableScan {
-    #[pyo3(name = "getTableScanProjects")]
-    fn scan_projects(&mut self) -> PyResult<Vec<String>> {
+
+    /// Retrieves the name of the table represented by this `TableScan` instance
+    #[pyo3(name = "table_name")]
+    fn py_table_name(&self) -> PyResult<&str> {
+        Ok(&self.table_scan.table_name)
+    }
+
+    /// TODO: Bindings for `TableSource` need to exist first. Left as a
+    /// placeholder to display intention to add when able to.
+    // #[pyo3(name = "source")]
+    // fn py_source(&self) -> PyResult<Arc<dyn TableSource>> {
+    //     Ok(self.table_scan.source)
+    // }
+
+    /// The column indexes that should be. Note if this is empty then 
+    /// all columns should be read by the `TableProvider`. This function
+    /// provides a Tuple of the (index, column_name) to make things simplier
+    /// for the calling code since often times the name is preferred to
+    /// the index which is a lower level abstraction.
+    #[pyo3(name = "projection")]
+    fn py_projections(&self) -> PyResult<Vec<(usize, String)>> {
         match &self.table_scan.projection {
             Some(indices) => {
                 let schema = self.table_scan.source.schema();
                 Ok(indices
                     .iter()
-                    .map(|i| schema.field(*i).name().to_string())
+                    .map(|i| (*i, schema.field(*i).name().to_string()))
                     .collect())
             }
             None => Ok(vec![]),
         }
     }
 
-    /// If the 'TableScan' contains columns that should be projected during the
-    /// read return True, otherwise return False
-    #[pyo3(name = "containsProjections")]
-    fn contains_projections(&self) -> bool {
-        self.table_scan.projection.is_some()
+    /// TODO: Bindings for `DFSchema` need to exist first. Left as a
+    /// placeholder to display intention to add when able to.
+    // /// Resulting schema from the `TableScan` operation
+    // #[pyo3(name = "projectedSchema")]
+    // fn py_projected_schema(&self) -> PyResult<DFSchemaRef> {
+    //     Ok(self.table_scan.projected_schema)
+    // }
+
+    /// Certain `TableProvider` physical readers offer the capability to filter rows that
+    /// are read at read time. These `filters` are contained here.
+    #[pyo3(name = "filters")]
+    fn py_filters(&self) -> PyResult<Vec<PyExpr>> {
+        Ok(
+            self.table_scan.filters
+                .iter()
+                .map(|expr| PyExpr::from(expr.clone()))
+                .collect()
+        )
     }
 
-    #[pyo3(name = "getFilters")]
-    fn scan_filters(&self) -> PyResult<Vec<PyExpr>> {
-        py_expr_list(&self.input, &self.table_scan.filters)
+    /// Optional number of rows that should be read at read time by the `TableProvider`
+    #[pyo3(name = "fetch")]
+    fn py_fetch(&self) -> PyResult<Option<usize>> {
+        Ok(self.table_scan.fetch)
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("TableScan({})", self))
+    }
+
 }
-
-// impl TryFrom<LogicalPlan> for PyTableScan {
-//     type Error = PyErr;
-
-//     fn try_from(logical_plan: LogicalPlan) -> Result<Self, Self::Error> {
-//         match logical_plan {
-//             LogicalPlan::TableScan(table_scan) => {
-//                 // Create an input logical plan that's identical to the table scan with schema from the table source
-//                 let mut input = table_scan.clone();
-//                 input.projected_schema = DFSchema::try_from_qualified_schema(
-//                     &table_scan.table_name,
-//                     &table_scan.source.schema(),
-//                 )
-//                 .map_or(input.projected_schema, Arc::new);
-
-//                 Ok(PyTableScan {
-//                     table_scan,
-//                     input: Arc::new(LogicalPlan::TableScan(input)),
-//                 })
-//             }
-//             _ => Err(py_type_err("unexpected plan")),
-//         }
-//     }
-// }
