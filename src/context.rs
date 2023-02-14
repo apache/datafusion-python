@@ -40,10 +40,160 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
 use datafusion::execution::context::{SessionConfig, SessionContext};
+use datafusion::execution::disk_manager::DiskManagerConfig;
+use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
+use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_common::ScalarValue;
+
+#[pyclass(name = "SessionConfig", module = "datafusion", subclass, unsendable)]
+#[derive(Clone, Default)]
+pub(crate) struct PySessionConfig {
+    pub(crate) config: SessionConfig,
+}
+
+impl From<SessionConfig> for PySessionConfig {
+    fn from(config: SessionConfig) -> Self {
+        Self { config }
+    }
+}
+
+#[pymethods]
+impl PySessionConfig {
+    #[pyo3(signature = (config_options=None))]
+    #[new]
+    fn new(config_options: Option<HashMap<String, String>>) -> Self {
+        let mut config = SessionConfig::new();
+        if let Some(hash_map) = config_options {
+            for (k, v) in &hash_map {
+                config = config.set(k, ScalarValue::Utf8(Some(v.clone())));
+            }
+        }
+
+        Self { config }
+    }
+
+    fn with_create_default_catalog_and_schema(&self, enabled: bool) -> Self {
+        Self::from(
+            self.config
+                .clone()
+                .with_create_default_catalog_and_schema(enabled),
+        )
+    }
+
+    fn with_default_catalog_and_schema(&self, catalog: &str, schema: &str) -> Self {
+        Self::from(
+            self.config
+                .clone()
+                .with_default_catalog_and_schema(catalog, schema),
+        )
+    }
+
+    fn with_information_schema(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_information_schema(enabled))
+    }
+
+    fn with_batch_size(&self, batch_size: usize) -> Self {
+        Self::from(self.config.clone().with_batch_size(batch_size))
+    }
+
+    fn with_target_partitions(&self, target_partitions: usize) -> Self {
+        Self::from(
+            self.config
+                .clone()
+                .with_target_partitions(target_partitions),
+        )
+    }
+
+    fn with_repartition_aggregations(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_repartition_aggregations(enabled))
+    }
+
+    fn with_repartition_joins(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_repartition_joins(enabled))
+    }
+
+    fn with_repartition_windows(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_repartition_windows(enabled))
+    }
+
+    fn with_repartition_sorts(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_repartition_sorts(enabled))
+    }
+
+    fn with_repartition_file_scans(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_repartition_file_scans(enabled))
+    }
+
+    fn with_repartition_file_min_size(&self, size: usize) -> Self {
+        Self::from(self.config.clone().with_repartition_file_min_size(size))
+    }
+
+    fn with_parquet_pruning(&self, enabled: bool) -> Self {
+        Self::from(self.config.clone().with_parquet_pruning(enabled))
+    }
+}
+
+#[pyclass(name = "RuntimeConfig", module = "datafusion", subclass, unsendable)]
+#[derive(Clone)]
+pub(crate) struct PyRuntimeConfig {
+    pub(crate) config: RuntimeConfig,
+}
+
+#[pymethods]
+impl PyRuntimeConfig {
+    #[new]
+    fn new() -> Self {
+        Self {
+            config: RuntimeConfig::default(),
+        }
+    }
+
+    fn with_disk_manager_disabled(&self) -> Self {
+        let config = self.config.clone();
+        let config = config.with_disk_manager(DiskManagerConfig::Disabled);
+        Self { config }
+    }
+
+    fn with_disk_manager_os(&self) -> Self {
+        let config = self.config.clone();
+        let config = config.with_disk_manager(DiskManagerConfig::NewOs);
+        Self { config }
+    }
+
+    fn with_disk_manager_specified(&self, paths: Vec<String>) -> Self {
+        let config = self.config.clone();
+        let paths = paths.iter().map(|s| s.into()).collect();
+        let config = config.with_disk_manager(DiskManagerConfig::NewSpecified(paths));
+        Self { config }
+    }
+
+    fn with_unbounded_memory_pool(&self) -> Self {
+        let config = self.config.clone();
+        let config = config.with_memory_pool(Arc::new(UnboundedMemoryPool::default()));
+        Self { config }
+    }
+
+    fn with_fair_spill_pool(&self, size: usize) -> Self {
+        let config = self.config.clone();
+        let config = config.with_memory_pool(Arc::new(FairSpillPool::new(size)));
+        Self { config }
+    }
+
+    fn with_greedy_memory_pool(&self, size: usize) -> Self {
+        let config = self.config.clone();
+        let config = config.with_memory_pool(Arc::new(GreedyMemoryPool::new(size)));
+        Self { config }
+    }
+
+    fn with_temp_file_path(&self, path: &str) -> Self {
+        let config = self.config.clone();
+        let config = config.with_temp_file_path(path);
+        Self { config }
+    }
+}
 
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
@@ -56,54 +206,22 @@ pub(crate) struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (default_catalog="datafusion",
-                        default_schema="public",
-                        create_default_catalog_and_schema=true,
-                        information_schema=false,
-                        repartition_joins=true,
-                        repartition_aggregations=true,
-                        repartition_windows=true,
-                        parquet_pruning=true,
-                        target_partitions=None,
-                        config_options=None))]
+    #[pyo3(signature = (config=None, runtime=None))]
     #[new]
-    fn new(
-        default_catalog: &str,
-        default_schema: &str,
-        create_default_catalog_and_schema: bool,
-        information_schema: bool,
-        repartition_joins: bool,
-        repartition_aggregations: bool,
-        repartition_windows: bool,
-        parquet_pruning: bool,
-        target_partitions: Option<usize>,
-        config_options: Option<HashMap<String, String>>,
-    ) -> PyResult<Self> {
-        let mut cfg = SessionConfig::new()
-            .with_information_schema(information_schema)
-            .with_repartition_joins(repartition_joins)
-            .with_repartition_aggregations(repartition_aggregations)
-            .with_repartition_windows(repartition_windows)
-            .with_parquet_pruning(parquet_pruning);
-
-        if create_default_catalog_and_schema {
-            cfg = cfg.with_default_catalog_and_schema(default_catalog, default_schema);
-        }
-
-        if let Some(hash_map) = config_options {
-            for (k, v) in &hash_map {
-                cfg = cfg.set(k, ScalarValue::Utf8(Some(v.clone())));
-            }
-        }
-
-        let cfg_full = match target_partitions {
-            None => cfg,
-            Some(x) => cfg.with_target_partitions(x),
+    fn new(config: Option<PySessionConfig>, runtime: Option<PyRuntimeConfig>) -> PyResult<Self> {
+        let config = if let Some(c) = config {
+            c.config
+        } else {
+            SessionConfig::default()
         };
-
+        let runtime_config = if let Some(c) = runtime {
+            c.config
+        } else {
+            RuntimeConfig::default()
+        };
+        let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
         Ok(PySessionContext {
-            ctx: SessionContext::with_config(cfg_full),
+            ctx: SessionContext::with_config_rt(config, runtime),
         })
     }
 
