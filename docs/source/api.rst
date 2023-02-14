@@ -27,6 +27,6 @@ API Reference
    api/config
    api/dataframe
    api/execution_context
-   api/expression
+   api/expr
    api/functions
    api/object_store

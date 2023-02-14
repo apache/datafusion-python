@@ -32,8 +32,12 @@ from ._internal import (
     SessionContext,
     SessionConfig,
     RuntimeConfig,
-    Expression,
     ScalarUDF,
+)
+
+from .expr import (
+    Expr,
+    TableScan,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -44,7 +48,7 @@ __all__ = [
     "SessionContext",
     "SessionConfig",
     "RuntimeConfig",
-    "Expression",
+    "Expr",
     "AggregateUDF",
     "ScalarUDF",
     "column",
@@ -71,7 +75,7 @@ class Accumulator(metaclass=ABCMeta):
 
 
 def column(value):
-    return Expression.column(value)
+    return Expr.column(value)
 
 
 col = column
@@ -80,7 +84,7 @@ col = column
 def literal(value):
     if not isinstance(value, pa.Scalar):
         value = pa.scalar(value)
-    return Expression.literal(value)
+    return Expr.literal(value)
 
 
 lit = literal

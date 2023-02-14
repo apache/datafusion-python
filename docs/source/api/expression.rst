@@ -18,10 +18,10 @@
 .. _api.expression:
 .. currentmodule:: datafusion
 
-Expression
+Expr
 ==========
 
 .. autosummary::
    :toctree: ../generated/
 
-   Expression
+   Expr

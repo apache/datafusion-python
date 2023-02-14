@@ -66,7 +66,7 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     Ok(datafusion_expr::concat_ws(lit(sep), args).into())
 }
 
-/// Creates a new Sort expression
+/// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
     Ok(PyExpr {
@@ -78,7 +78,7 @@ fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyRes
     })
 }
 
-/// Creates a new Alias expression
+/// Creates a new Alias Expr
 #[pyfunction]
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
@@ -86,7 +86,7 @@ fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     })
 }
 
-/// Create a column reference expression
+/// Create a column reference Expr
 #[pyfunction]
 fn col(name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
