@@ -26,6 +26,10 @@ from datafusion import (
     functions,
 )
 
+from datafusion.common import (
+    DFSchema,
+)
+
 from datafusion.expr import (
     Expr,
     TableScan,
@@ -48,6 +52,9 @@ def test_class_module_is_datafusion():
         AggregateUDF,
     ]:
         assert klass.__module__ == "datafusion"
+
+    for klass in [DFSchema]:
+        assert klass.__module__ == "datafusion.common"
 
     for klass in [Expr, TableScan]:
         assert klass.__module__ == "datafusion.expr"
