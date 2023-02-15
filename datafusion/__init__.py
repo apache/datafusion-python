@@ -37,6 +37,7 @@ from ._internal import (
 
 from .expr import (
     Expr,
+    Projection,
     TableScan,
 )
 
@@ -54,6 +55,7 @@ __all__ = [
     "column",
     "literal",
     "TableScan",
+    "Projection",
 ]
 
 

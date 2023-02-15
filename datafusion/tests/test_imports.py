@@ -28,6 +28,7 @@ from datafusion import (
 
 from datafusion.expr import (
     Expr,
+    Projection,
     TableScan,
 )
 
@@ -49,7 +50,7 @@ def test_class_module_is_datafusion():
     ]:
         assert klass.__module__ == "datafusion"
 
-    for klass in [Expr, TableScan]:
+    for klass in [Expr, Projection, TableScan]:
         assert klass.__module__ == "datafusion.expr"
 
 
