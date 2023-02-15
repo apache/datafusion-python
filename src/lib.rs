@@ -70,6 +70,11 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
 
+    // Register `common` as a submodule. Matching `datafusion-common` https://docs.rs/datafusion-common/latest/datafusion_common/
+    let common = PyModule::new(py, "common")?;
+    common::init_module(common)?;
+    m.add_submodule(common)?;
+
     // Register `expr` as a submodule. Matching `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
     let expr = PyModule::new(py, "expr")?;
     expr::init_module(expr)?;

@@ -35,6 +35,10 @@ from ._internal import (
     ScalarUDF,
 )
 
+from .common import (
+    DFSchema,
+)
+
 from .expr import (
     Expr,
     TableScan,
@@ -54,6 +58,7 @@ __all__ = [
     "column",
     "literal",
     "TableScan",
+    "DFSchema",
 ]
 
 
