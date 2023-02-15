@@ -364,6 +364,11 @@ def test_temporal_functions(df):
         f.datepart(literal("year"), column("d")),
         f.date_trunc(literal("month"), column("d")),
         f.datetrunc(literal("day"), column("d")),
+        f.date_bin(
+            literal("15 minutes"),
+            column("d"),
+            literal("2001-01-01 00:02:30"),
+        ),
         f.from_unixtime(literal(1673383974)),
         f.to_timestamp(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_seconds(literal("2023-09-07 05:06:14.523952")),
@@ -384,17 +389,25 @@ def test_temporal_functions(df):
         type=pa.timestamp("ns"),
     )
     assert result.column(4) == pa.array(
-        [datetime(2023, 1, 10, 20, 52, 54)] * 3, type=pa.timestamp("s")
+        [
+            datetime(2022, 12, 30, 23, 47, 30),
+            datetime(2027, 6, 25, 23, 47, 30),
+            datetime(2020, 7, 1, 23, 47, 30),
+        ],
+        type=pa.timestamp("ns"),
     )
     assert result.column(5) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+        [datetime(2023, 1, 10, 20, 52, 54)] * 3, type=pa.timestamp("s")
     )
     assert result.column(6) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
     )
     assert result.column(7) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms")
+        [datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s")
     )
     assert result.column(8) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms")
+    )
+    assert result.column(9) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
