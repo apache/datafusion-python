@@ -28,7 +28,7 @@ use datafusion::physical_plan::udf::ScalarUDF;
 use datafusion_expr::create_udf;
 use datafusion_expr::function::ScalarFunctionImplementation;
 
-use crate::expression::PyExpr;
+use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
 /// Create a DataFusion's UDF implementation from a python function

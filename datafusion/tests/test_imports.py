@@ -22,9 +22,13 @@ from datafusion import (
     AggregateUDF,
     DataFrame,
     SessionContext,
-    Expression,
     ScalarUDF,
     functions,
+)
+
+from datafusion.expr import (
+    Expr,
+    TableScan,
 )
 
 
@@ -39,12 +43,14 @@ def test_datafusion_python_version():
 def test_class_module_is_datafusion():
     for klass in [
         SessionContext,
-        Expression,
         DataFrame,
         ScalarUDF,
         AggregateUDF,
     ]:
         assert klass.__module__ == "datafusion"
+
+    for klass in [Expr, TableScan]:
+        assert klass.__module__ == "datafusion.expr"
 
 
 def test_import_from_functions_submodule():
@@ -62,7 +68,7 @@ def test_classes_are_inheritable():
     class MyExecContext(SessionContext):
         pass
 
-    class MyExpression(Expression):
+    class MyExpression(Expr):
         pass
 
     class MyDataFrame(DataFrame):

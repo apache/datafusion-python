@@ -172,7 +172,8 @@ def test_dataset_filter_nested_data(ctx):
 
     df = ctx.table("t")
 
-    # This filter will not be pushed down to DatasetExec since it isn't supported
+    # This filter will not be pushed down to DatasetExec since it
+    # isn't supported
     df = df.select(
         column("nested_data")["a"] + column("nested_data")["b"],
         column("nested_data")["a"] - column("nested_data")["b"],
