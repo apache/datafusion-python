@@ -20,6 +20,7 @@ use datafusion_expr::logical_plan::Projection;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use crate::common::df_schema::PyDFSchema;
 use crate::errors::py_runtime_err;
 use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
@@ -81,7 +82,7 @@ impl PyProjection {
         // DataFusion make a loose guarantee that each Projection should have an input, however
         // we check for that hear since we are performing explicit index retrieval
         let inputs = LogicalNode::input(self);
-        if inputs.len() > 0 {
+        if !inputs.is_empty() {
             return Ok(inputs[0].clone());
         }
 
@@ -91,12 +92,11 @@ impl PyProjection {
         )))
     }
 
-    // TODO: Need to uncomment once bindings for `DFSchemaRef` are done.
-    // // Resulting Schema for this `Projection` node instance
-    // #[pyo3(name = "schema")]
-    // fn py_schema(&self) -> PyResult<DFSchemaRef> {
-    //     Ok(self.projection.schema)
-    // }
+    // Resulting Schema for this `Projection` node instance
+    #[pyo3(name = "schema")]
+    fn py_schema(&self) -> PyResult<PyDFSchema> {
+        Ok((*self.projection.schema).clone().into())
+    }
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("Projection({})", self))
