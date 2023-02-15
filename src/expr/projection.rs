@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_common::DataFusionError;
 use datafusion_expr::logical_plan::Projection;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use crate::errors::py_runtime_err;
 use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
@@ -29,20 +31,21 @@ pub struct PyProjection {
     projection: Projection,
 }
 
-impl From<PyProjection> for Projection {
-    fn from(py_proj: PyProjection) -> Projection {
+impl From<Projection> for PyProjection {
+    fn from(projection: Projection) -> PyProjection {
+        PyProjection { projection }
+    }
+}
+
+impl TryFrom<PyProjection> for Projection {
+    type Error = DataFusionError;
+
+    fn try_from(py_proj: PyProjection) -> Result<Self, Self::Error> {
         Projection::try_new_with_schema(
             py_proj.projection.expr,
             py_proj.projection.input.clone(),
             py_proj.projection.schema,
         )
-        .unwrap()
-    }
-}
-
-impl From<Projection> for PyProjection {
-    fn from(projection: Projection) -> PyProjection {
-        PyProjection { projection }
     }
 }
 
@@ -61,6 +64,7 @@ impl Display for PyProjection {
 
 #[pymethods]
 impl PyProjection {
+
     /// Retrieves the expressions for this `Projection`
     #[pyo3(name = "projections")]
     fn py_projections(&self) -> PyResult<Vec<PyExpr>> {
@@ -75,7 +79,16 @@ impl PyProjection {
     // Retrieves the input `LogicalPlan` to this `Projection` node
     #[pyo3(name = "input")]
     fn py_input(&self) -> PyResult<PyLogicalPlan> {
-        Ok(LogicalNode::input(self))
+        // DataFusion make a loose guarantee that each Projection should have an input, however
+        // we check for that hear since we are performing explicit index retrieval
+        let inputs = LogicalNode::input(self);
+        if inputs.len() > 0 {
+            return Ok(inputs[0].clone());
+        }
+
+        Err(py_runtime_err(format!(
+            "Expected `input` field for Projection node: {}", self
+        )))
     }
 
     // TODO: Need to uncomment once bindings for `DFSchemaRef` are done.
@@ -91,7 +104,7 @@ impl PyProjection {
 }
 
 impl LogicalNode for PyProjection {
-    fn input(&self) -> PyLogicalPlan {
-        todo!()
+    fn input(&self) -> Vec<PyLogicalPlan> {
+        vec![PyLogicalPlan::from((*self.projection.input).clone())]
     }
 }
