@@ -64,7 +64,6 @@ impl Display for PyProjection {
 
 #[pymethods]
 impl PyProjection {
-
     /// Retrieves the expressions for this `Projection`
     #[pyo3(name = "projections")]
     fn py_projections(&self) -> PyResult<Vec<PyExpr>> {
@@ -87,7 +86,8 @@ impl PyProjection {
         }
 
         Err(py_runtime_err(format!(
-            "Expected `input` field for Projection node: {}", self
+            "Expected `input` field for Projection node: {}",
+            self
         )))
     }
 
