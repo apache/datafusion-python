@@ -601,8 +601,6 @@ impl PySessionContext {
             Arc::new(RuntimeEnv::default()),
         ));
         // create a Tokio runtime to run the async code
-        //TODO can we use an existing runtime from the SessionContext ? If not, we at least
-        // need to configure the runtime here
         let rt = Runtime::new().unwrap();
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
