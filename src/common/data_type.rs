@@ -31,7 +31,7 @@ use crate::errors::py_datafusion_err;
 /// to map those types and provide a simple place for developers
 /// to map types from one system to another.
 #[derive(Debug, Clone)]
-#[pyclass(name = "DataTypeMap", module = "datafusion", subclass)]
+#[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
 pub struct DataTypeMap {
     #[allow(dead_code)]
     arrow_type: PyDataType,
@@ -419,7 +419,7 @@ impl DataTypeMap {
 /// Since `DataType` exists in another package we cannot make that happen here so we wrap
 /// `DataType` as `PyDataType` This exists solely to satisfy those constraints.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(name = "DataType", module = "datafusion")]
+#[pyclass(name = "DataType", module = "datafusion.common")]
 pub struct PyDataType {
     data_type: DataType,
 }
@@ -438,7 +438,7 @@ impl From<DataType> for PyDataType {
 
 /// Represents the possible Python types that can be mapped to the SQL types
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(name = "PythonType", module = "datafusion")]
+#[pyclass(name = "PythonType", module = "datafusion.common")]
 pub enum PythonType {
     Array,
     Bool,
@@ -458,7 +458,7 @@ pub enum PythonType {
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(name = "SqlType", module = "datafusion")]
+#[pyclass(name = "SqlType", module = "datafusion.common")]
 pub enum SqlType {
     ANY,
     ARRAY,
