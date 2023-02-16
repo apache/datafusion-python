@@ -36,7 +36,6 @@ from ._internal import (
 )
 
 from .common import (
-    DFField,
     DFSchema,
 )
 
@@ -62,7 +61,6 @@ __all__ = [
     "TableScan",
     "Projection",
     "DFSchema",
-    "DFField",
 ]
 
 
