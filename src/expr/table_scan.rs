@@ -19,7 +19,7 @@ use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use crate::expr::PyExpr;
+use crate::{common::df_schema::PyDFSchema, expr::PyExpr};
 
 #[pyclass(name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -49,8 +49,8 @@ impl Display for PyTableScan {
             \nFilters: {:?}",
             &self.table_scan.table_name,
             &self.py_projections(),
-            self.table_scan.projected_schema,
-            self.py_filters(),
+            &self.py_schema(),
+            &self.py_filters(),
         )
     }
 }
@@ -89,13 +89,11 @@ impl PyTableScan {
         }
     }
 
-    /// TODO: Bindings for `DFSchema` need to exist first. Left as a
-    /// placeholder to display intention to add when able to.
-    // /// Resulting schema from the `TableScan` operation
-    // #[pyo3(name = "projectedSchema")]
-    // fn py_projected_schema(&self) -> PyResult<DFSchemaRef> {
-    //     Ok(self.table_scan.projected_schema)
-    // }
+    /// Resulting schema from the `TableScan` operation
+    #[pyo3(name = "schema")]
+    fn py_schema(&self) -> PyResult<PyDFSchema> {
+        Ok((*self.table_scan.projected_schema).clone().into())
+    }
 
     /// Certain `TableProvider` physical readers offer the capability to filter rows that
     /// are read at read time. These `filters` are contained here.
