@@ -37,6 +37,7 @@ mod expr;
 mod functions;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
+mod record_batch;
 pub mod sql;
 pub mod store;
 pub mod substrait;

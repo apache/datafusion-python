@@ -388,6 +388,15 @@ def test_execution_plan(aggregate_df):
     assert "RepartitionExec:" in indent
     assert "CsvExec:" in indent
 
+    ctx = SessionContext()
+    stream = ctx.execute(plan, 0)
+    # get the one and only batch
+    batch = stream.next()
+    assert batch is not None
+    # there should be no more batches
+    batch = stream.next()
+    assert batch is None
+
 
 def test_repartition(df):
     df.repartition(2)

@@ -28,7 +28,9 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::DataFusionError;
+use crate::errors::{py_datafusion_err, DataFusionError};
+use crate::physical_plan::PyExecutionPlan;
+use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
@@ -39,14 +41,17 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::datasource::TableProvider;
 use datafusion::datasource::MemTable;
-use datafusion::execution::context::{SessionConfig, SessionContext};
+use datafusion::execution::context::{SessionConfig, SessionContext, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
+use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_common::ScalarValue;
+use tokio::runtime::Runtime;
+use tokio::task::JoinHandle;
 
 #[pyclass(name = "SessionConfig", module = "datafusion", subclass, unsendable)]
 #[derive(Clone, Default)]
@@ -578,6 +583,30 @@ impl PySessionContext {
             Ok(value) => Ok(format!("SessionContext(session_id={value})")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
+    }
+
+    /// Execute a partition of an execution plan and return a stream of record batches
+    pub fn execute(
+        &self,
+        plan: PyExecutionPlan,
+        part: usize,
+        py: Python,
+    ) -> PyResult<PyRecordBatchStream> {
+        let ctx = Arc::new(TaskContext::new(
+            "task_id".to_string(),
+            "session_id".to_string(),
+            HashMap::new(),
+            HashMap::new(),
+            HashMap::new(),
+            Arc::new(RuntimeEnv::default()),
+        ));
+        // create a Tokio runtime to run the async code
+        let rt = Runtime::new().unwrap();
+        let plan = plan.plan.clone();
+        let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
+            rt.spawn(async move { plan.execute(part, ctx) });
+        let stream = wait_for_future(py, fut).map_err(|e| py_datafusion_err(e))?;
+        Ok(PyRecordBatchStream::new(stream?))
     }
 }
 
