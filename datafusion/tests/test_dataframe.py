@@ -390,8 +390,12 @@ def test_execution_plan(aggregate_df):
 
     ctx = SessionContext()
     stream = ctx.execute(plan, 0)
+    # get the one and only batch
     batch = stream.next()
-    print(batch)
+    assert batch is not None
+    # there should be no more batches
+    batch = stream.next()
+    assert batch is None
 
 
 def test_repartition(df):
