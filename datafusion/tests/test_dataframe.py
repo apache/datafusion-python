@@ -388,6 +388,10 @@ def test_execution_plan(aggregate_df):
     assert "RepartitionExec:" in indent
     assert "CsvExec:" in indent
 
+    stream = plan.execute(0)
+    batch = stream.next()
+    print(batch)
+
 
 def test_repartition(df):
     df.repartition(2)
