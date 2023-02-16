@@ -15,8 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::utils::wait_for_future;
 use datafusion::arrow::pyarrow::PyArrowConvert;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::physical_plan::SendableRecordBatchStream;
+use futures::StreamExt;
 use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
 
 #[pyclass(name = "RecordBatch", module = "datafusion", subclass)]
@@ -34,5 +37,28 @@ impl PyRecordBatch {
 impl From<RecordBatch> for PyRecordBatch {
     fn from(batch: RecordBatch) -> Self {
         Self { batch }
+    }
+}
+
+#[pyclass(name = "RecordBatchStream", module = "datafusion", subclass)]
+pub struct PyRecordBatchStream {
+    stream: SendableRecordBatchStream,
+}
+
+impl PyRecordBatchStream {
+    pub fn new(stream: SendableRecordBatchStream) -> Self {
+        Self { stream }
+    }
+}
+
+#[pymethods]
+impl PyRecordBatchStream {
+    fn next(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
+        let result = self.stream.next();
+        match wait_for_future(py, result) {
+            None => Ok(None),
+            Some(Ok(b)) => Ok(Some(b.into())),
+            Some(Err(e)) => Err(e.into()),
+        }
     }
 }
