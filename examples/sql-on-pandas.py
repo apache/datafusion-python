@@ -20,16 +20,15 @@ from datafusion import SessionContext
 from datafusion.expr import Projection, TableScan, Expr
 import re
 
+
 class SqlOnPandasContext:
     def __init__(self):
         self.datafusion_ctx = SessionContext()
         self.parquet_tables = {}
 
-
     def register_parquet(self, name, path):
         self.parquet_tables[name] = path
         self.datafusion_ctx.register_parquet(name, path)
-
 
     def to_pandas_expr(self, expr):
         # TODO: need python wrappers for each type of expression - assume column for now
@@ -37,7 +36,6 @@ class SqlOnPandasContext:
             str = "{}".format(expr)
             x = re.findall(r"Expr\([_a-z]+\.([_a-z]+)\)", str)
             return x[0]
-
 
     def to_pandas_df(self, plan):
         # recurse down first to translate inputs into pandas data frames
@@ -52,7 +50,9 @@ class SqlOnPandasContext:
         elif isinstance(node, TableScan):
             return pd.read_parquet(self.parquet_tables[node.table_name()])
         else:
-            raise Exception("unsupported logical operator: {}".format(type(node)))
+            raise Exception(
+                "unsupported logical operator: {}".format(type(node))
+            )
 
     def sql(self, sql):
         datafusion_df = self.datafusion_ctx.sql(sql)
@@ -62,6 +62,8 @@ class SqlOnPandasContext:
 
 if __name__ == "__main__":
     ctx = SqlOnPandasContext()
-    ctx.register_parquet("taxi", "/mnt/bigdata/nyctaxi/yellow_tripdata_2021-01.parquet")
+    ctx.register_parquet(
+        "taxi", "/mnt/bigdata/nyctaxi/yellow_tripdata_2021-01.parquet"
+    )
     df = ctx.sql("select passenger_count from taxi")
     print(df)
