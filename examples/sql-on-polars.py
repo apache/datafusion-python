@@ -36,21 +36,18 @@ class SqlOnPolarsContext:
         if isinstance(expr, Expr):
             str = "{}".format(expr)
             x = re.findall("Expr\([_a-z]+\.([_a-z]+)\)", str)
-            print(x)
             return polars.col(x[0])
 
 
     def to_polars_df(self, plan):
-        print("to_polars_df", plan)
-
         # recurse down first to translate inputs into Polars data frames
         inputs = [self.to_polars_df(x) for x in plan.inputs()]
 
+        # get Python wrapper for logical operator node
         node = plan.to_logical_node()
 
         if isinstance(node, Projection):
             args = [self.to_polars_expr(expr) for expr in node.projections()]
-            print(args)
             return inputs[0].select(*args)
         elif isinstance(node, TableScan):
             return polars.read_parquet(self.parquet_tables[node.table_name()])
