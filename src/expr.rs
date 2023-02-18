@@ -27,6 +27,7 @@ use datafusion::scalar::ScalarValue;
 pub mod logical_node;
 pub mod projection;
 pub mod table_scan;
+pub mod filter;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -143,5 +144,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyExpr>()?;
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
+    m.add_class::<filter::PyFilter>()?;
     Ok(())
 }
