@@ -15,61 +15,68 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::DataFusionError;
-use datafusion_expr::logical_plan::Filter;
+use datafusion_expr::logical_plan::Limit;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
 use crate::errors::py_runtime_err;
 use crate::expr::logical_node::LogicalNode;
-use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Filter", module = "datafusion.expr", subclass)]
+#[pyclass(name = "Limit", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyFilter {
-    filter: Filter,
+pub struct PyLimit {
+    limit: Limit,
 }
 
-impl From<Filter> for PyFilter {
-    fn from(filter: Filter) -> PyFilter {
-        PyFilter { filter }
+impl From<Limit> for PyLimit {
+    fn from(limit: Limit) -> PyLimit {
+        PyLimit { limit }
     }
 }
 
-impl TryFrom<PyFilter> for Filter {
-    type Error = DataFusionError;
-
-    fn try_from(py_proj: PyFilter) -> Result<Self, Self::Error> {
-        Filter::try_new(py_proj.filter.predicate, py_proj.filter.input.clone())
+impl From<PyLimit> for Limit {
+    fn from(py_proj: PyLimit) -> Self {
+        Limit {
+            skip: py_proj.limit.skip,
+            fetch: py_proj.limit.fetch,
+            input: py_proj.limit.input.clone(),
+        }
     }
 }
 
-impl Display for PyFilter {
+impl Display for PyLimit {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Filter
-            \nExpr(s): {:?}
+            "Limit
+            \nSkip: {}
+            \nFetch: {:?}
             \nPredicate: {:?}",
-            &self.filter.predicate, &self.filter.input
+            &self.limit.skip, &self.limit.fetch, &self.limit.input
         )
     }
 }
 
 #[pymethods]
-impl PyFilter {
-    /// Retrieves the predicate expression for this `Filter`
-    #[pyo3(name = "predicate")]
-    fn py_predicate(&self) -> PyResult<PyExpr> {
-        Ok(PyExpr::from(self.filter.predicate.clone()))
+impl PyLimit {
+    /// Retrieves the skip value for this `Limit`
+    #[pyo3(name = "skip")]
+    fn py_skip(&self) -> usize {
+        self.limit.skip
     }
 
-    // Retrieves the input `LogicalPlan` to this `Filter` node
+    /// Retrieves the fetch value for this `Limit`
+    #[pyo3(name = "fetch")]
+    fn py_fetch(&self) -> Option<usize> {
+        self.limit.fetch
+    }
+
+    // Retrieves the input `LogicalPlan` to this `Limit` node
     #[pyo3(name = "input")]
     fn py_input(&self) -> PyResult<PyLogicalPlan> {
-        // DataFusion make a loose guarantee that each Filter should have an input, however
+        // DataFusion make a loose guarantee that each Limit should have an input, however
         // we check for that hear since we are performing explicit index retrieval
         let inputs = LogicalNode::input(self);
         if !inputs.is_empty() {
@@ -77,24 +84,24 @@ impl PyFilter {
         }
 
         Err(py_runtime_err(format!(
-            "Expected `input` field for Filter node: {}",
+            "Expected `input` field for Limit node: {}",
             self
         )))
     }
 
-    // Resulting Schema for this `Filter` node instance
+    // Resulting Schema for this `Limit` node instance
     #[pyo3(name = "schema")]
     fn py_schema(&self) -> PyResult<PyDFSchema> {
-        Ok(self.filter.input.schema().as_ref().clone().into())
+        Ok(self.limit.input.schema().as_ref().clone().into())
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Filter({})", self))
+        Ok(format!("Limit({})", self))
     }
 }
 
-impl LogicalNode for PyFilter {
+impl LogicalNode for PyLimit {
     fn input(&self) -> Vec<PyLogicalPlan> {
-        vec![PyLogicalPlan::from((*self.filter.input).clone())]
+        vec![PyLogicalPlan::from((*self.limit.input).clone())]
     }
 }
