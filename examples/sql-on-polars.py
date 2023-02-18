@@ -40,7 +40,6 @@ class SqlOnPolarsContext:
             return polars.col(x[0])
 
 
-
     def to_polars_df(self, plan):
         print("to_polars_df", plan)
 
