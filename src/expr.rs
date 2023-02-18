@@ -22,8 +22,15 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
+use crate::errors::py_runtime_err;
+use crate::expr::binary_expr::PyBinaryExpr;
+use crate::expr::column::PyColumn;
+use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+pub mod binary_expr;
+pub mod column;
+pub mod literal;
 pub mod logical_node;
 pub mod projection;
 pub mod table_scan;
@@ -49,6 +56,19 @@ impl From<Expr> for PyExpr {
 
 #[pymethods]
 impl PyExpr {
+    /// Return a Python object representation of this logical expression
+    fn to_logical_expr(&self, py: Python) -> PyResult<PyObject> {
+        Python::with_gil(|_| match &self.expr {
+            Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
+            Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
+            Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
+            other => Err(py_runtime_err(format!(
+                "Cannot convert this Expr to a Python object: {:?}",
+                other
+            ))),
+        })
+    }
+
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
         let expr = match op {
             CompareOp::Lt => self.expr.clone().lt(other.expr),
@@ -143,5 +163,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyExpr>()?;
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
+    m.add_class::<column::PyColumn>()?;
+    m.add_class::<literal::PyLiteral>()?;
+    m.add_class::<binary_expr::PyBinaryExpr>()?;
+    m.add_class::<literal::PyLiteral>()?;
     Ok(())
 }
