@@ -32,10 +32,10 @@ class SqlOnPandasContext:
 
 
     def to_pandas_expr(self, expr):
-        # TODO: need python wrappers for each type of expression
+        # TODO: need python wrappers for each type of expression - assume column for now
         if isinstance(expr, Expr):
             str = "{}".format(expr)
-            x = re.findall("Expr\([_a-z]+\.([_a-z]+)\)", str)
+            x = re.findall(r"Expr\([_a-z]+\.([_a-z]+)\)", str)
             return x[0]
 
 
