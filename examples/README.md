@@ -36,3 +36,4 @@ Here is a direct link to the file used in the examples:
 - [Register a Python UDF with DataFusion](./python-udf.py)
 - [Register a Python UDAF with DataFusion](./python-udaf.py)
 - [Executing SQL on Polars](./sql-on-polars.py)
+- [Executing SQL on Pandas](./sql-on-pandas.py)
