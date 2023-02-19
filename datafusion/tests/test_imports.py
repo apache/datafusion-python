@@ -35,7 +35,6 @@ from datafusion.expr import (
     Expr,
     Projection,
     TableScan,
-    Filter,
     Limit,
 )
 

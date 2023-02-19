@@ -62,20 +62,17 @@ impl Display for PyLimit {
 #[pymethods]
 impl PyLimit {
     /// Retrieves the skip value for this `Limit`
-    #[pyo3(name = "skip")]
-    fn py_skip(&self) -> usize {
+    fn skip(&self) -> usize {
         self.limit.skip
     }
 
     /// Retrieves the fetch value for this `Limit`
-    #[pyo3(name = "fetch")]
-    fn py_fetch(&self) -> Option<usize> {
+    fn fetch(&self) -> Option<usize> {
         self.limit.fetch
     }
 
     // Retrieves the input `LogicalPlan` to this `Limit` node
-    #[pyo3(name = "input")]
-    fn py_input(&self) -> PyResult<PyLogicalPlan> {
+    fn input(&self) -> PyResult<PyLogicalPlan> {
         // DataFusion make a loose guarantee that each Limit should have an input, however
         // we check for that hear since we are performing explicit index retrieval
         let inputs = LogicalNode::input(self);
@@ -89,9 +86,8 @@ impl PyLimit {
         )))
     }
 
-    // Resulting Schema for this `Limit` node instance
-    #[pyo3(name = "schema")]
-    fn py_schema(&self) -> PyResult<PyDFSchema> {
+    /// Resulting Schema for this `Limit` node instance
+    fn schema(&self) -> PyResult<PyDFSchema> {
         Ok(self.limit.input.schema().as_ref().clone().into())
     }
 
