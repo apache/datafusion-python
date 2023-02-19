@@ -24,6 +24,7 @@ use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
 use datafusion::scalar::ScalarValue;
 
+pub mod aggregate;
 pub mod logical_node;
 pub mod projection;
 pub mod sort;
@@ -144,6 +145,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyExpr>()?;
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
+    m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
     Ok(())
 }
