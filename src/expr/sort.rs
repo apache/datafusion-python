@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::logical_plan::Filter;
+use datafusion_common::DataFusionError;
+use datafusion_expr::logical_plan::Sort;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
@@ -24,60 +25,70 @@ use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Filter", module = "datafusion.expr", subclass)]
+#[pyclass(name = "Sort", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyFilter {
-    filter: Filter,
+pub struct PySort {
+    sort: Sort,
 }
 
-impl From<Filter> for PyFilter {
-    fn from(filter: Filter) -> PyFilter {
-        PyFilter { filter }
+impl From<Sort> for PySort {
+    fn from(sort: Sort) -> PySort {
+        PySort { sort }
     }
 }
 
-impl From<PyFilter> for Filter {
-    fn from(filter: PyFilter) -> Self {
-        filter.filter
+impl TryFrom<PySort> for Sort {
+    type Error = DataFusionError;
+
+    fn try_from(agg: PySort) -> Result<Self, Self::Error> {
+        Ok(agg.sort)
     }
 }
 
-impl Display for PyFilter {
+impl Display for PySort {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Filter
+            "Sort
             \nExpr(s): {:?}
-            \nPredicate: {:?}",
-            &self.filter.predicate, &self.filter.input
+            \nInput: {:?}
+            \nSchema: {:?}",
+            &self.sort.expr,
+            self.sort.input,
+            self.sort.input.schema()
         )
     }
 }
 
 #[pymethods]
-impl PyFilter {
-    /// Retrieves the predicate expression for this `Filter`
-    fn predicate(&self) -> PyResult<PyExpr> {
-        Ok(PyExpr::from(self.filter.predicate.clone()))
+impl PySort {
+    /// Retrieves the sort expressions for this `Sort`
+    fn sort_exprs(&self) -> PyResult<Vec<PyExpr>> {
+        Ok(self
+            .sort
+            .expr
+            .iter()
+            .map(|e| PyExpr::from(e.clone()))
+            .collect())
     }
 
-    /// Retrieves the input `LogicalPlan` to this `Filter` node
+    /// Retrieves the input `LogicalPlan` to this `Sort` node
     fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.filter.input).clone())
+        PyLogicalPlan::from((*self.sort.input).clone())
     }
 
-    /// Resulting Schema for this `Filter` node instance
-    fn schema(&self) -> PyResult<PyDFSchema> {
-        Ok(self.filter.input.schema().as_ref().clone().into())
+    /// Resulting Schema for this `Sort` node instance
+    fn schema(&self) -> PyDFSchema {
+        self.sort.input.schema().as_ref().clone().into()
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Filter({})", self))
+        Ok(format!("Sort({})", self))
     }
 }
 
-impl LogicalNode for PyFilter {
+impl LogicalNode for PySort {
     fn input(&self) -> Vec<PyLogicalPlan> {
-        vec![PyLogicalPlan::from((*self.filter.input).clone())]
+        vec![PyLogicalPlan::from((*self.sort.input).clone())]
     }
 }

@@ -24,9 +24,11 @@ use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
 use datafusion::scalar::ScalarValue;
 
+pub mod aggregate;
 pub mod filter;
 pub mod logical_node;
 pub mod projection;
+pub mod sort;
 pub mod table_scan;
 
 /// A PyExpr that can be used on a DataFrame
@@ -145,5 +147,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
     m.add_class::<filter::PyFilter>()?;
+    m.add_class::<aggregate::PyAggregate>()?;
+    m.add_class::<sort::PySort>()?;
     Ok(())
 }
