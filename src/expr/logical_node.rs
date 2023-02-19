@@ -20,8 +20,6 @@ use crate::sql::logical::PyLogicalPlan;
 /// Representation of a `LogicalNode` in the in overall `LogicalPlan`
 /// any "node" shares these common traits in common.
 pub trait LogicalNode {
-    /// Get the name of this logical node, such as "Projection", or "TableScan".
-    fn name(&self) -> &str;
     /// The input plan to the current logical node instance.
     fn input(&self) -> Vec<PyLogicalPlan>;
 }

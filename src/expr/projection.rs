@@ -110,10 +110,6 @@ impl PyProjection {
 }
 
 impl LogicalNode for PyProjection {
-    fn name(&self) -> &str {
-        "Projection"
-    }
-
     fn input(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.projection.input).clone())]
     }

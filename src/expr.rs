@@ -28,11 +28,13 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+pub mod aggregate;
 pub mod binary_expr;
 pub mod column;
 pub mod literal;
 pub mod logical_node;
 pub mod projection;
+pub mod sort;
 pub mod table_scan;
 
 /// A PyExpr that can be used on a DataFrame
@@ -167,5 +169,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<literal::PyLiteral>()?;
     m.add_class::<binary_expr::PyBinaryExpr>()?;
     m.add_class::<literal::PyLiteral>()?;
+    m.add_class::<aggregate::PyAggregate>()?;
+    m.add_class::<sort::PySort>()?;
     Ok(())
 }
