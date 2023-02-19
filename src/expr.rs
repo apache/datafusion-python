@@ -56,8 +56,8 @@ impl From<Expr> for PyExpr {
 
 #[pymethods]
 impl PyExpr {
-    /// Return a Python object representation of this logical expression
-    fn to_logical_expr(&self, py: Python) -> PyResult<PyObject> {
+    /// Return the specific expression
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match &self.expr {
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
