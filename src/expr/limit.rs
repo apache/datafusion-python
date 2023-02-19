@@ -70,7 +70,7 @@ impl PyLimit {
     // Retrieves the input `LogicalPlan` to this `Limit` node
     fn input(&self) -> PyResult<PyLogicalPlan> {
         // DataFusion make a loose guarantee that each Limit should have an input, however
-        // we check for that hear since we are performing explicit index retrieval
+        // we check for that here since we are performing explicit index retrieval
         let inputs = LogicalNode::input(self);
         if !inputs.is_empty() {
             return Ok(inputs[0].clone());
