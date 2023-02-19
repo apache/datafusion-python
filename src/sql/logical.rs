@@ -40,8 +40,8 @@ impl PyLogicalPlan {
 
 #[pymethods]
 impl PyLogicalPlan {
-    /// Return a Python object representation of this logical operator
-    fn to_logical_node(&self, py: Python) -> PyResult<PyObject> {
+    /// Return the specific logical operator
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match self.plan.as_ref() {
             LogicalPlan::Projection(plan) => Ok(PyProjection::from(plan.clone()).into_py(py)),
             LogicalPlan::TableScan(plan) => Ok(PyTableScan::from(plan.clone()).into_py(py)),

@@ -31,23 +31,23 @@ def test_logical_plan(test_ctx):
     df = test_ctx.sql("select c1, 123, c1 < 123 from test")
     plan = df.logical_plan()
 
-    projection = plan.to_logical_node()
+    projection = plan.to_variant()
     assert isinstance(projection, Projection)
 
     expr = projection.projections()
 
-    col1 = expr[0].to_logical_expr()
+    col1 = expr[0].to_variant()
     assert isinstance(col1, Column)
     assert col1.name() == "c1"
     assert col1.qualified_name() == "test.c1"
 
-    col2 = expr[1].to_logical_expr()
+    col2 = expr[1].to_variant()
     assert isinstance(col2, Literal)
     assert col2.data_type() == "Int64"
     assert col2.value_i64() == 123
 
-    col3 = expr[2].to_logical_expr()
+    col3 = expr[2].to_variant()
     assert isinstance(col3, BinaryExpr)
-    assert isinstance(col3.left().to_logical_expr(), Column)
+    assert isinstance(col3.left().to_variant(), Column)
     assert col3.op() == "<"
-    assert isinstance(col3.right().to_logical_expr(), Literal)
+    assert isinstance(col3.right().to_variant(), Literal)

@@ -50,7 +50,7 @@ impl PyColumn {
 
     /// Get the fully-qualified column name
     fn qualified_name(&self) -> String {
-        self.col.flat_name().clone()
+        self.col.flat_name()
     }
 
     /// Get a String representation of this column
