@@ -41,7 +41,7 @@ impl From<PyLimit> for Limit {
         Limit {
             skip: py_proj.limit.skip,
             fetch: py_proj.limit.fetch,
-            input: py_proj.limit.input.clone(),
+            input: py_proj.limit.input,
         }
     }
 }
