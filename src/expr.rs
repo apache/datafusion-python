@@ -24,10 +24,10 @@ use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
 use datafusion::scalar::ScalarValue;
 
+pub mod filter;
 pub mod logical_node;
 pub mod projection;
 pub mod table_scan;
-pub mod filter;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]

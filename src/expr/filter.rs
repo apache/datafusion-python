@@ -42,10 +42,7 @@ impl TryFrom<PyFilter> for Filter {
     type Error = DataFusionError;
 
     fn try_from(py_proj: PyFilter) -> Result<Self, Self::Error> {
-        Filter::try_new(
-            py_proj.filter.predicate,
-            py_proj.filter.input.clone(),
-        )
+        Filter::try_new(py_proj.filter.predicate, py_proj.filter.input.clone())
     }
 }
 
