@@ -15,7 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::logical_plan::Projection;
+use datafusion_common::DataFusionError;
+use datafusion_expr::logical_plan::Sort;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
@@ -24,66 +25,70 @@ use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Projection", module = "datafusion.expr", subclass)]
+#[pyclass(name = "Sort", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyProjection {
-    projection: Projection,
+pub struct PySort {
+    sort: Sort,
 }
 
-impl From<Projection> for PyProjection {
-    fn from(projection: Projection) -> PyProjection {
-        PyProjection { projection }
+impl From<Sort> for PySort {
+    fn from(sort: Sort) -> PySort {
+        PySort { sort }
     }
 }
 
-impl From<PyProjection> for Projection {
-    fn from(proj: PyProjection) -> Self {
-        proj.projection
+impl TryFrom<PySort> for Sort {
+    type Error = DataFusionError;
+
+    fn try_from(agg: PySort) -> Result<Self, Self::Error> {
+        Ok(agg.sort)
     }
 }
 
-impl Display for PyProjection {
+impl Display for PySort {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Projection
+            "Sort
             \nExpr(s): {:?}
             \nInput: {:?}
-            \nProjected Schema: {:?}",
-            &self.projection.expr, &self.projection.input, &self.projection.schema,
+            \nSchema: {:?}",
+            &self.sort.expr,
+            self.sort.input,
+            self.sort.input.schema()
         )
     }
 }
 
 #[pymethods]
-impl PyProjection {
-    /// Retrieves the expressions for this `Projection`
-    fn projections(&self) -> PyResult<Vec<PyExpr>> {
+impl PySort {
+    /// Retrieves the sort expressions for this `Sort`
+    fn sort_exprs(&self) -> PyResult<Vec<PyExpr>> {
         Ok(self
-            .projection
+            .sort
             .expr
             .iter()
             .map(|e| PyExpr::from(e.clone()))
             .collect())
     }
 
-    /// Retrieves the input `LogicalPlan` to this `Projection` node
+    /// Retrieves the input `LogicalPlan` to this `Sort` node
     fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.projection.input).clone())
+        PyLogicalPlan::from((*self.sort.input).clone())
     }
 
-    /// Resulting Schema for this `Projection` node instance
-    fn schema(&self) -> PyResult<PyDFSchema> {
-        Ok((*self.projection.schema).clone().into())
+    /// Resulting Schema for this `Sort` node instance
+    fn schema(&self) -> PyDFSchema {
+        self.sort.input.schema().as_ref().clone().into()
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Projection({})", self))
+        Ok(format!("Sort({})", self))
     }
 }
 
-impl LogicalNode for PyProjection {
+impl LogicalNode for PySort {
     fn input(&self) -> Vec<PyLogicalPlan> {
-        vec![PyLogicalPlan::from((*self.projection.input).clone())]
+        vec![PyLogicalPlan::from((*self.sort.input).clone())]
     }
 }

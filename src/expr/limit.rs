@@ -15,75 +15,74 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::logical_plan::Projection;
+use datafusion_expr::logical_plan::Limit;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
 use crate::expr::logical_node::LogicalNode;
-use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Projection", module = "datafusion.expr", subclass)]
+#[pyclass(name = "Limit", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyProjection {
-    projection: Projection,
+pub struct PyLimit {
+    limit: Limit,
 }
 
-impl From<Projection> for PyProjection {
-    fn from(projection: Projection) -> PyProjection {
-        PyProjection { projection }
+impl From<Limit> for PyLimit {
+    fn from(limit: Limit) -> PyLimit {
+        PyLimit { limit }
     }
 }
 
-impl From<PyProjection> for Projection {
-    fn from(proj: PyProjection) -> Self {
-        proj.projection
+impl From<PyLimit> for Limit {
+    fn from(limit: PyLimit) -> Self {
+        limit.limit
     }
 }
 
-impl Display for PyProjection {
+impl Display for PyLimit {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Projection
-            \nExpr(s): {:?}
-            \nInput: {:?}
-            \nProjected Schema: {:?}",
-            &self.projection.expr, &self.projection.input, &self.projection.schema,
+            "Limit
+            \nSkip: {}
+            \nFetch: {:?}
+            \nInput: {:?}",
+            &self.limit.skip, &self.limit.fetch, &self.limit.input
         )
     }
 }
 
 #[pymethods]
-impl PyProjection {
-    /// Retrieves the expressions for this `Projection`
-    fn projections(&self) -> PyResult<Vec<PyExpr>> {
-        Ok(self
-            .projection
-            .expr
-            .iter()
-            .map(|e| PyExpr::from(e.clone()))
-            .collect())
+impl PyLimit {
+    /// Retrieves the skip value for this `Limit`
+    fn skip(&self) -> usize {
+        self.limit.skip
     }
 
-    /// Retrieves the input `LogicalPlan` to this `Projection` node
+    /// Retrieves the fetch value for this `Limit`
+    fn fetch(&self) -> Option<usize> {
+        self.limit.fetch
+    }
+
+    /// Retrieves the input `LogicalPlan` to this `Limit` node
     fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.projection.input).clone())
+        PyLogicalPlan::from((*self.limit.input).clone())
     }
 
-    /// Resulting Schema for this `Projection` node instance
+    /// Resulting Schema for this `Limit` node instance
     fn schema(&self) -> PyResult<PyDFSchema> {
-        Ok((*self.projection.schema).clone().into())
+        Ok(self.limit.input.schema().as_ref().clone().into())
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Projection({})", self))
+        Ok(format!("Limit({})", self))
     }
 }
 
-impl LogicalNode for PyProjection {
+impl LogicalNode for PyLimit {
     fn input(&self) -> Vec<PyLogicalPlan> {
-        vec![PyLogicalPlan::from((*self.projection.input).clone())]
+        vec![PyLogicalPlan::from((*self.limit.input).clone())]
     }
 }
