@@ -20,7 +20,6 @@ use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
-use crate::errors::py_runtime_err;
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -67,19 +66,9 @@ impl PyLimit {
         self.limit.fetch
     }
 
-    // Retrieves the input `LogicalPlan` to this `Limit` node
-    fn input(&self) -> PyResult<PyLogicalPlan> {
-        // DataFusion make a loose guarantee that each Limit should have an input, however
-        // we check for that hear since we are performing explicit index retrieval
-        let inputs = LogicalNode::input(self);
-        if !inputs.is_empty() {
-            return Ok(inputs[0].clone());
-        }
-
-        Err(py_runtime_err(format!(
-            "Expected `input` field for Limit node: {}",
-            self
-        )))
+    /// Retrieves the input `LogicalPlan` to this `Limit` node
+    fn input(&self) -> PyLogicalPlan {
+        PyLogicalPlan::from((*self.limit.input).clone())
     }
 
     /// Resulting Schema for this `Limit` node instance
