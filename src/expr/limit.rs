@@ -49,7 +49,7 @@ impl Display for PyLimit {
             "Limit
             \nSkip: {}
             \nFetch: {:?}
-            \nPredicate: {:?}",
+            \nInput: {:?}",
             &self.limit.skip, &self.limit.fetch, &self.limit.input
         )
     }
