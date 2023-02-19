@@ -17,8 +17,7 @@
 
 import pandas as pd
 from datafusion import SessionContext
-from datafusion.expr import Projection, TableScan, Expr
-import re
+from datafusion.expr import Projection, TableScan, Column
 
 
 class SqlOnPandasContext:
@@ -31,11 +30,14 @@ class SqlOnPandasContext:
         self.datafusion_ctx.register_parquet(name, path)
 
     def to_pandas_expr(self, expr):
-        # TODO: need python wrappers for each type of expression - assume column for now
-        if isinstance(expr, Expr):
-            str = "{}".format(expr)
-            x = re.findall(r"Expr\([_a-z]+\.([_a-z]+)\)", str)
-            return x[0]
+
+        # get Python wrapper for logical expression
+        expr = expr.to_logical_expr()
+
+        if isinstance(expr, Column):
+            return expr.name()
+        else:
+            raise Exception("unsupported expression: {}".format(expr))
 
     def to_pandas_df(self, plan):
         # recurse down first to translate inputs into pandas data frames
