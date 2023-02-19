@@ -48,7 +48,7 @@ impl Display for PyFilter {
             f,
             "Filter
             \nPredicate: {:?}
-            \Input: {:?}",
+            \nInput: {:?}",
             &self.filter.predicate, &self.filter.input
         )
     }
@@ -57,8 +57,8 @@ impl Display for PyFilter {
 #[pymethods]
 impl PyFilter {
     /// Retrieves the predicate expression for this `Filter`
-    fn predicate(&self) -> PyResult<PyExpr> {
-        Ok(PyExpr::from(self.filter.predicate.clone()))
+    fn predicate(&self) -> PyExpr {
+        PyExpr::from(self.filter.predicate.clone())
     }
 
     /// Retrieves the input `LogicalPlan` to this `Filter` node
@@ -67,12 +67,12 @@ impl PyFilter {
     }
 
     /// Resulting Schema for this `Filter` node instance
-    fn schema(&self) -> PyResult<PyDFSchema> {
-        Ok(self.filter.input.schema().as_ref().clone().into())
+    fn schema(&self) -> PyDFSchema {
+        self.filter.input.schema().as_ref().clone().into()
     }
 
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Filter({})", self))
+    fn __repr__(&self) -> String {
+        format!("Filter({})", self)
     }
 }
 
