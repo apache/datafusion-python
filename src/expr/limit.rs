@@ -37,12 +37,8 @@ impl From<Limit> for PyLimit {
 }
 
 impl From<PyLimit> for Limit {
-    fn from(py_proj: PyLimit) -> Self {
-        Limit {
-            skip: py_proj.limit.skip,
-            fetch: py_proj.limit.fetch,
-            input: py_proj.limit.input,
-        }
+    fn from(limit: PyLimit) -> Self {
+        limit.limit
     }
 }
 
