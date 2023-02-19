@@ -68,3 +68,11 @@ def test_aggregate(test_ctx):
     assert isinstance(plan, Aggregate)
 
 
+def test_sort(test_ctx):
+    df = test_ctx.sql("select c1 from test order by c1")
+    plan = df.logical_plan()
+
+    plan = plan.to_variant()
+    assert isinstance(plan, Sort)
+
+
