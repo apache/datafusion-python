@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::expr::PyExpr;
 use datafusion_expr::BinaryExpr;
 use pyo3::prelude::*;
 
@@ -38,6 +39,18 @@ impl From<BinaryExpr> for PyBinaryExpr {
 
 #[pymethods]
 impl PyBinaryExpr {
+    fn left(&self) -> PyExpr {
+        self.expr.left.as_ref().clone().into()
+    }
+
+    fn right(&self) -> PyExpr {
+        self.expr.right.as_ref().clone().into()
+    }
+
+    fn op(&self) -> String {
+        format!("{}", self.expr.op)
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{}", self.expr))
     }

@@ -38,7 +38,23 @@ impl From<Column> for PyColumn {
 
 #[pymethods]
 impl PyColumn {
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("{}", self.col))
+    /// Get the column name
+    fn name(&self) -> String {
+        self.col.name.clone()
+    }
+
+    /// Get the column relation
+    fn relation(&self) -> Option<String> {
+        self.col.relation.clone()
+    }
+
+    /// Get the fully-qualified column name
+    fn qualified_name(&self) -> String {
+        self.col.flat_name().clone()
+    }
+
+    /// Get a String representation of this column
+    fn __repr__(&self) -> String {
+        self.qualified_name()
     }
 }

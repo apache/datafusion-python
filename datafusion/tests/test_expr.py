@@ -35,6 +35,19 @@ def test_logical_plan(test_ctx):
     assert isinstance(projection, Projection)
 
     expr = projection.projections()
-    assert isinstance(expr[0].to_logical_expr(), Column)
-    assert isinstance(expr[1].to_logical_expr(), Literal)
-    assert isinstance(expr[2].to_logical_expr(), BinaryExpr)
+
+    col1 = expr[0].to_logical_expr()
+    assert isinstance(col1, Column)
+    assert col1.name() == "c1"
+    assert col1.qualified_name() == "test.c1"
+
+    col2 = expr[1].to_logical_expr()
+    assert isinstance(col2, Literal)
+    assert col2.data_type() == "Int64"
+    assert col2.value_i64() == 123
+
+    col3 = expr[2].to_logical_expr()
+    assert isinstance(col3, BinaryExpr)
+    assert isinstance(col3.left().to_logical_expr(), Column)
+    assert col3.op() == "<"
+    assert isinstance(col3.right().to_logical_expr(), Literal)
