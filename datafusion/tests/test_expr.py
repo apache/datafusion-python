@@ -16,7 +16,8 @@
 # under the License.
 
 from datafusion import SessionContext
-from datafusion.expr import Column, Literal, BinaryExpr, Projection
+from datafusion.expr import Column, Literal, BinaryExpr, AggregateFunction
+from datafusion.expr import Projection, Aggregate
 import pytest
 
 
@@ -51,3 +52,23 @@ def test_logical_plan(test_ctx):
     assert isinstance(col3.left().to_variant(), Column)
     assert col3.op() == "<"
     assert isinstance(col3.right().to_variant(), Literal)
+
+
+def test_aggregate_query(test_ctx):
+    df = test_ctx.sql("select c1, count(*) from test group by c1")
+    plan = df.logical_plan()
+
+    projection = plan.to_variant()
+    assert isinstance(projection, Projection)
+
+    aggregate = projection.input().to_variant()
+    assert isinstance(aggregate, Aggregate)
+
+    col1 = aggregate.group_by_exprs()[0].to_variant()
+    assert isinstance(col1, Column)
+    assert col1.name() == "c1"
+    assert col1.qualified_name() == "test.c1"
+
+    col2 = aggregate.aggregate_exprs()[0].to_variant()
+    assert isinstance(col2, AggregateFunction)
+

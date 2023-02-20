@@ -23,14 +23,17 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
 use crate::errors::py_runtime_err;
+use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
 pub mod aggregate;
+pub mod aggregate_expr;
 pub mod binary_expr;
 pub mod column;
+pub mod limit;
 pub mod literal;
 pub mod logical_node;
 pub mod projection;
@@ -64,6 +67,9 @@ impl PyExpr {
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
+            Expr::AggregateFunction(expr) => {
+                Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
+            }
             other => Err(py_runtime_err(format!(
                 "Cannot convert this Expr to a Python object: {:?}",
                 other
@@ -162,13 +168,17 @@ impl PyExpr {
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
+    // expressions
     m.add_class::<PyExpr>()?;
+    m.add_class::<PyColumn>()?;
+    m.add_class::<PyLiteral>()?;
+    m.add_class::<PyBinaryExpr>()?;
+    m.add_class::<PyLiteral>()?;
+    m.add_class::<PyAggregateFunction>()?;
+    // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
-    m.add_class::<column::PyColumn>()?;
-    m.add_class::<literal::PyLiteral>()?;
-    m.add_class::<binary_expr::PyBinaryExpr>()?;
-    m.add_class::<literal::PyLiteral>()?;
+    m.add_class::<limit::PyLimit>()?;
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
     Ok(())
