@@ -71,7 +71,6 @@ class SessionContext:
                         "Unsupported aggregate function {}".format(expr)
                     )
             df = inputs[0].groupby(groupby_expr).agg(aggs)
-            print(df)
             return df
         elif isinstance(node, TableScan):
             return polars.read_parquet(self.parquet_tables[node.table_name()])
