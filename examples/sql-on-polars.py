@@ -15,57 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import polars
-from datafusion import SessionContext
-from datafusion.expr import Projection, TableScan, Column
+from datafusion.polars import SessionContext
 
 
-class SqlOnPolarsContext:
-    def __init__(self):
-        self.datafusion_ctx = SessionContext()
-        self.parquet_tables = {}
-
-    def register_parquet(self, name, path):
-        self.parquet_tables[name] = path
-        self.datafusion_ctx.register_parquet(name, path)
-
-    def to_polars_expr(self, expr):
-
-        # get Python wrapper for logical expression
-        expr = expr.to_logical_expr()
-
-        if isinstance(expr, Column):
-            return polars.col(expr.name())
-        else:
-            raise Exception("unsupported expression: {}".format(expr))
-
-    def to_polars_df(self, plan):
-        # recurse down first to translate inputs into Polars data frames
-        inputs = [self.to_polars_df(x) for x in plan.inputs()]
-
-        # get Python wrapper for logical operator node
-        node = plan.to_logical_node()
-
-        if isinstance(node, Projection):
-            args = [self.to_polars_expr(expr) for expr in node.projections()]
-            return inputs[0].select(*args)
-        elif isinstance(node, TableScan):
-            return polars.read_parquet(self.parquet_tables[node.table_name()])
-        else:
-            raise Exception(
-                "unsupported logical operator: {}".format(type(node))
-            )
-
-    def sql(self, sql):
-        datafusion_df = self.datafusion_ctx.sql(sql)
-        plan = datafusion_df.logical_plan()
-        return self.to_polars_df(plan)
-
-
-if __name__ == "__main__":
-    ctx = SqlOnPolarsContext()
-    ctx.register_parquet(
-        "taxi", "/mnt/bigdata/nyctaxi/yellow_tripdata_2021-01.parquet"
-    )
-    df = ctx.sql("select passenger_count from taxi")
-    print(df)
+ctx = SessionContext()
+ctx.register_parquet(
+    "taxi", "/mnt/bigdata/nyctaxi/yellow_tripdata_2021-01.parquet"
+)
+df = ctx.sql("select passenger_count from taxi")
+print(df)

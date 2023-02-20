@@ -36,6 +36,9 @@ from having to lock the GIL when running those operations.
 Its query engine, DataFusion, is written in [Rust](https://www.rust-lang.org/), which makes strong assumptions
 about thread safety and lack of memory leaks.
 
+There is also experimental support for executing SQL against other DataFrame libraries, such as Polars, Pandas, and any 
+drop-in replacements for Pandas.
+
 Technically, zero-copy is achieved via the [c data interface](https://arrow.apache.org/docs/format/CDataInterface.html).
 
 ## Example Usage
