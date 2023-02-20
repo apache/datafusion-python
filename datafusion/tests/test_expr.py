@@ -17,7 +17,14 @@
 
 from datafusion import SessionContext
 from datafusion.expr import Column, Literal, BinaryExpr, AggregateFunction
-from datafusion.expr import Projection, Aggregate
+from datafusion.expr import (
+    Projection,
+    Filter,
+    Aggregate,
+    Limit,
+    Sort,
+    TableScan,
+)
 import pytest
 
 
@@ -28,14 +35,14 @@ def test_ctx():
     return ctx
 
 
-def test_logical_plan(test_ctx):
+def test_projection(test_ctx):
     df = test_ctx.sql("select c1, 123, c1 < 123 from test")
     plan = df.logical_plan()
 
-    projection = plan.to_variant()
-    assert isinstance(projection, Projection)
+    plan = plan.to_variant()
+    assert isinstance(plan, Projection)
 
-    expr = projection.projections()
+    expr = plan.projections()
 
     col1 = expr[0].to_variant()
     assert isinstance(col1, Column)
@@ -52,6 +59,28 @@ def test_logical_plan(test_ctx):
     assert isinstance(col3.left().to_variant(), Column)
     assert col3.op() == "<"
     assert isinstance(col3.right().to_variant(), Literal)
+
+    plan = plan.input().to_variant()
+    assert isinstance(plan, TableScan)
+
+
+def test_filter(test_ctx):
+    df = test_ctx.sql("select c1 from test WHERE c1 > 5")
+    plan = df.logical_plan()
+
+    plan = plan.to_variant()
+    assert isinstance(plan, Projection)
+
+    plan = plan.input().to_variant()
+    assert isinstance(plan, Filter)
+
+
+def test_limit(test_ctx):
+    df = test_ctx.sql("select c1 from test LIMIT 10")
+    plan = df.logical_plan()
+
+    plan = plan.to_variant()
+    assert isinstance(plan, Limit)
 
 
 def test_aggregate_query(test_ctx):
@@ -71,3 +100,11 @@ def test_aggregate_query(test_ctx):
 
     col2 = aggregate.aggregate_exprs()[0].to_variant()
     assert isinstance(col2, AggregateFunction)
+
+
+def test_sort(test_ctx):
+    df = test_ctx.sql("select c1 from test order by c1")
+    plan = df.logical_plan()
+
+    plan = plan.to_variant()
+    assert isinstance(plan, Sort)

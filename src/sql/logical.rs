@@ -19,6 +19,7 @@ use std::sync::Arc;
 
 use crate::errors::py_runtime_err;
 use crate::expr::aggregate::PyAggregate;
+use crate::expr::filter::PyFilter;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
 use crate::expr::sort::PySort;
@@ -51,6 +52,7 @@ impl PyLogicalPlan {
             LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
             LogicalPlan::Limit(plan) => Ok(PyLimit::from(plan.clone()).into_py(py)),
             LogicalPlan::Sort(plan) => Ok(PySort::from(plan.clone()).into_py(py)),
+            LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
             other => Err(py_runtime_err(format!(
                 "Cannot convert this plan to a LogicalNode: {:?}",
                 other
