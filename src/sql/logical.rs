@@ -49,10 +49,10 @@ impl PyLogicalPlan {
         Python::with_gil(|_| match self.plan.as_ref() {
             LogicalPlan::Projection(plan) => Ok(PyProjection::from(plan.clone()).into_py(py)),
             LogicalPlan::TableScan(plan) => Ok(PyTableScan::from(plan.clone()).into_py(py)),
-            LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
+            LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
             LogicalPlan::Limit(plan) => Ok(PyLimit::from(plan.clone()).into_py(py)),
             LogicalPlan::Sort(plan) => Ok(PySort::from(plan.clone()).into_py(py)),
-            LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
+            LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
             other => Err(py_runtime_err(format!(
                 "Cannot convert this plan to a LogicalNode: {:?}",
                 other
@@ -67,6 +67,10 @@ impl PyLogicalPlan {
             inputs.push(input.to_owned().into());
         }
         inputs
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self.plan))
     }
 
     pub fn display(&self) -> String {

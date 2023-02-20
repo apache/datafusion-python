@@ -19,9 +19,21 @@
 
 # DataFusion Python Examples
 
+Some of the examples rely on data which can be downloaded from the following site:
+
+- https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+
+Here is a direct link to the file used in the examples:
+
+- https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+
+## Examples
+
 - [Query a Parquet file using SQL](./sql-parquet.py)
 - [Query a Parquet file using the DataFrame API](./dataframe-parquet.py)
 - [Run a SQL query and store the results in a Pandas DataFrame](./sql-to-pandas.py)
 - [Query PyArrow Data](./query-pyarrow-data.py)
 - [Register a Python UDF with DataFusion](./python-udf.py)
 - [Register a Python UDAF with DataFusion](./python-udaf.py)
+- [Executing SQL on Polars](./sql-on-polars.py)
+- [Executing SQL on Pandas](./sql-on-pandas.py)

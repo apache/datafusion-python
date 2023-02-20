@@ -30,6 +30,12 @@ pub struct PyProjection {
     projection: Projection,
 }
 
+impl PyProjection {
+    pub fn new(projection: Projection) -> Self {
+        Self { projection }
+    }
+}
+
 impl From<Projection> for PyProjection {
     fn from(projection: Projection) -> PyProjection {
         PyProjection { projection }
