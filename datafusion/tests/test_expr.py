@@ -16,7 +16,14 @@
 # under the License.
 
 from datafusion import SessionContext
-from datafusion.expr import Projection, Filter, Aggregate, Limit, Sort, TableScan
+from datafusion.expr import (
+    Projection,
+    Filter,
+    Aggregate,
+    Limit,
+    Sort,
+    TableScan,
+)
 import pytest
 
 
@@ -74,5 +81,3 @@ def test_sort(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Sort)
-
-
