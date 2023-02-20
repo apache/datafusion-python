@@ -32,7 +32,7 @@ class SessionContext:
     def to_pandas_expr(self, expr):
 
         # get Python wrapper for logical expression
-        expr = expr.to_logical_expr()
+        expr = expr.to_variant()
 
         if isinstance(expr, Column):
             return expr.name()
@@ -44,7 +44,7 @@ class SessionContext:
         inputs = [self.to_pandas_df(x) for x in plan.inputs()]
 
         # get Python wrapper for logical operator node
-        node = plan.to_logical_node()
+        node = plan.to_variant()
 
         if isinstance(node, Projection):
             args = [self.to_pandas_expr(expr) for expr in node.projections()]

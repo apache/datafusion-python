@@ -17,7 +17,8 @@
 
 import polars
 import datafusion
-from datafusion.expr import Projection, TableScan, Column
+from datafusion.expr import Projection, TableScan, Aggregate
+from datafusion.expr import Column, AggregateFunction
 
 
 class SessionContext:
@@ -49,6 +50,29 @@ class SessionContext:
         if isinstance(node, Projection):
             args = [self.to_polars_expr(expr) for expr in node.projections()]
             return inputs[0].select(*args)
+        elif isinstance(node, Aggregate):
+            groupby_expr = [
+                self.to_polars_expr(expr) for expr in node.group_by_exprs()
+            ]
+            aggs = []
+            for expr in node.aggregate_exprs():
+                expr = expr.to_variant()
+                if isinstance(expr, AggregateFunction):
+                    if expr.aggregate_type() == "COUNT":
+                        aggs.append(polars.count().alias("{}".format(expr)))
+                    else:
+                        raise Exception(
+                            "Unsupported aggregate function {}".format(
+                                expr.aggregate_type()
+                            )
+                        )
+                else:
+                    raise Exception(
+                        "Unsupported aggregate function {}".format(expr)
+                    )
+            df = inputs[0].groupby(groupby_expr).agg(aggs)
+            print(df)
+            return df
         elif isinstance(node, TableScan):
             return polars.read_parquet(self.parquet_tables[node.table_name()])
         else:

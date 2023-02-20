@@ -68,6 +68,6 @@ impl PyAggregateFunction {
 
     /// Get a String representation of this column
     fn __repr__(&self) -> String {
-        format!("AggregateFunction({})", self)
+        format!("{}", self)
     }
 }

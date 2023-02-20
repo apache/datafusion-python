@@ -22,5 +22,7 @@ ctx = SessionContext()
 ctx.register_parquet(
     "taxi", "/mnt/bigdata/nyctaxi/yellow_tripdata_2021-01.parquet"
 )
-df = ctx.sql("select passenger_count from taxi")
+df = ctx.sql(
+    "select passenger_count, count(*) from taxi group by passenger_count"
+)
 print(df)
