@@ -71,4 +71,3 @@ def test_aggregate_query(test_ctx):
 
     col2 = aggregate.aggregate_exprs()[0].to_variant()
     assert isinstance(col2, AggregateFunction)
-

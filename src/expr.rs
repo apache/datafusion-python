@@ -33,6 +33,7 @@ pub mod aggregate;
 pub mod aggregate_expr;
 pub mod binary_expr;
 pub mod column;
+pub mod filter;
 pub mod limit;
 pub mod literal;
 pub mod logical_node;
@@ -178,6 +179,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
+    m.add_class::<filter::PyFilter>()?;
     m.add_class::<limit::PyLimit>()?;
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;

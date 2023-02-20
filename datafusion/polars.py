@@ -17,7 +17,7 @@
 
 import polars
 import datafusion
-from datafusion.expr import Projection, TableScan, Aggregate, Column, AggregateFunction
+from datafusion.expr import Projection, TableScan, Column
 
 
 class SessionContext:
@@ -60,4 +60,3 @@ class SessionContext:
         datafusion_df = self.datafusion_ctx.sql(sql)
         plan = datafusion_df.logical_plan()
         return self.to_polars_df(plan)
-
