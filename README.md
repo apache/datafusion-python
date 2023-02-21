@@ -36,7 +36,7 @@ from having to lock the GIL when running those operations.
 Its query engine, DataFusion, is written in [Rust](https://www.rust-lang.org/), which makes strong assumptions
 about thread safety and lack of memory leaks.
 
-There is also experimental support for executing SQL against other DataFrame libraries, such as Polars, Pandas, and any 
+There is also experimental support for executing SQL against other DataFrame libraries, such as Polars, Pandas, and any
 drop-in replacements for Pandas.
 
 Technically, zero-copy is achieved via the [c data interface](https://arrow.apache.org/docs/format/CDataInterface.html).
@@ -70,17 +70,11 @@ df = ctx.sql("select passenger_count, count(*) "
              "group by passenger_count "
              "order by passenger_count")
 
-# collect as list of pyarrow.RecordBatch
-results = df.collect()
-
-# get first batch
-batch = results[0]
-
 # convert to Pandas
-df = batch.to_pandas()
+pandas_df = df.to_pandas()
 
 # create a chart
-fig = df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
+fig = pandas_df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
 fig.savefig('chart.png')
 ```
 

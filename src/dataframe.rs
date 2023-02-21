@@ -313,8 +313,8 @@ impl PyDataFrame {
         Ok(())
     }
 
-    // Convert to pandas dataframe with pyarrow
-    // Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
+    /// Convert to pandas dataframe with pyarrow
+    /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
     fn to_pandas(&self, py: Python) -> PyResult<PyObject> {
         let batches = self.collect(py);
 
