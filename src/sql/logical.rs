@@ -19,12 +19,12 @@ use std::sync::Arc;
 
 use crate::errors::py_runtime_err;
 use crate::expr::aggregate::PyAggregate;
+use crate::expr::analyze::PyAnalyze;
 use crate::expr::filter::PyFilter;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
 use crate::expr::sort::PySort;
 use crate::expr::table_scan::PyTableScan;
-use crate::expr::analyze::PyAnalyze;
 use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
 

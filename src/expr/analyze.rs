@@ -49,16 +49,12 @@ impl From<PyAnalyze> for Analyze {
 
 impl Display for PyAnalyze {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Analyze Table"
-        )
+        write!(f, "Analyze Table")
     }
 }
 
 #[pymethods]
 impl PyAnalyze {
-
     fn verbose(&self) -> PyResult<bool> {
         Ok(self.analyze.verbose)
     }
