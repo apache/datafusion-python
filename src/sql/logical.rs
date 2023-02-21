@@ -17,6 +17,13 @@
 
 use std::sync::Arc;
 
+use crate::errors::py_runtime_err;
+use crate::expr::aggregate::PyAggregate;
+use crate::expr::filter::PyFilter;
+use crate::expr::limit::PyLimit;
+use crate::expr::projection::PyProjection;
+use crate::expr::sort::PySort;
+use crate::expr::table_scan::PyTableScan;
 use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
 
@@ -37,6 +44,22 @@ impl PyLogicalPlan {
 
 #[pymethods]
 impl PyLogicalPlan {
+    /// Return the specific logical operator
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Python::with_gil(|_| match self.plan.as_ref() {
+            LogicalPlan::Projection(plan) => Ok(PyProjection::from(plan.clone()).into_py(py)),
+            LogicalPlan::TableScan(plan) => Ok(PyTableScan::from(plan.clone()).into_py(py)),
+            LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
+            LogicalPlan::Limit(plan) => Ok(PyLimit::from(plan.clone()).into_py(py)),
+            LogicalPlan::Sort(plan) => Ok(PySort::from(plan.clone()).into_py(py)),
+            LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
+            other => Err(py_runtime_err(format!(
+                "Cannot convert this plan to a LogicalNode: {:?}",
+                other
+            ))),
+        })
+    }
+
     /// Get the inputs to this plan
     pub fn inputs(&self) -> Vec<PyLogicalPlan> {
         let mut inputs = vec![];
@@ -44,6 +67,10 @@ impl PyLogicalPlan {
             inputs.push(input.to_owned().into());
         }
         inputs
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{:?}", self.plan))
     }
 
     pub fn display(&self) -> String {
