@@ -41,8 +41,12 @@ from .common import (
 )
 
 from .expr import (
+    Analyze,
     Expr,
+    Filter,
+    Limit,
     Projection,
+    Sort,
     TableScan,
 )
 
@@ -63,6 +67,10 @@ __all__ = [
     "Projection",
     "DFSchema",
     "DFField",
+    "Analyze",
+    "Sort",
+    "Limit",
+    "Filter"
 ]
 
 

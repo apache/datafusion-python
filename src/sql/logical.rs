@@ -65,7 +65,7 @@ impl PyLogicalPlan {
     }
 
     /// Get the inputs to this plan
-    pub fn inputs(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         let mut inputs = vec![];
         for input in self.plan.inputs() {
             inputs.push(input.to_owned().into());
@@ -73,28 +73,23 @@ impl PyLogicalPlan {
         inputs
     }
 
-    /// Explain plan for the full and original LogicalPlan
-    pub fn explain_original(&self) -> PyResult<String> {
-        Ok(format!("{}", self.plan.display_indent()))
-    }
-
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{:?}", self.plan))
     }
 
-    pub fn display(&self) -> String {
+    fn display(&self) -> String {
         format!("{}", self.plan.display())
     }
 
-    pub fn display_indent(&self) -> String {
+    fn display_indent(&self) -> String {
         format!("{}", self.plan.display_indent())
     }
 
-    pub fn display_indent_schema(&self) -> String {
+    fn display_indent_schema(&self) -> String {
         format!("{}", self.plan.display_indent_schema())
     }
 
-    pub fn display_graphviz(&self) -> String {
+    fn display_graphviz(&self) -> String {
         format!("{}", self.plan.display_indent_schema())
     }
 }
