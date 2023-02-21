@@ -125,8 +125,12 @@ test_source_distribution() {
   git clone https://github.com/apache/arrow-testing.git testing
   git clone https://github.com/apache/parquet-testing.git parquet-testing
 
+  python3 -m venv venv
+  source venv/bin/activate
+  python -m pip install -U pip
+  python -m pip install -r requirements-310.txt
   maturin develop
-  pytest
+  python3 -m pytest
 
   if ( find -iname 'Cargo.toml' | xargs grep SNAPSHOT ); then
     echo "Cargo.toml version should not contain SNAPSHOT for releases"
