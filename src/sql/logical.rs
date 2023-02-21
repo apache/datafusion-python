@@ -40,6 +40,10 @@ impl PyLogicalPlan {
             plan: Arc::new(plan),
         }
     }
+
+    pub fn plan(&self) -> Arc<LogicalPlan> {
+        self.plan.clone()
+    }
 }
 
 #[pymethods]
