@@ -73,6 +73,11 @@ impl PyLogicalPlan {
         inputs
     }
 
+    /// Explain plan for the full and original LogicalPlan
+    pub fn explain_original(&self) -> PyResult<String> {
+        Ok(format!("{}", self.plan.display_indent()))
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{:?}", self.plan))
     }
