@@ -319,7 +319,7 @@ impl PyDataFrame {
         let batches = self.collect(py);
 
         Python::with_gil(|py| {
-            // Instantiate pyarrow Table class and use its from_batches method
+            // Instantiate pyarrow Table object and use its from_batches method
             let table_class = py.import("pyarrow")?.getattr("Table")?;
             let args = PyTuple::new(py, batches);
             let table: PyObject = table_class.call_method1("from_batches", args)?.into();
