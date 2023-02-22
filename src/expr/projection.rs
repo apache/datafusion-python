@@ -73,11 +73,6 @@ impl PyProjection {
             .collect())
     }
 
-    /// Retrieves the input `LogicalPlan` to this `Projection` node
-    fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.projection.input).clone())
-    }
-
     /// Resulting Schema for this `Projection` node instance
     fn schema(&self) -> PyResult<PyDFSchema> {
         Ok((*self.projection.schema).clone().into())
