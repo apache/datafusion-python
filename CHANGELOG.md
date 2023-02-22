@@ -19,50 +19,36 @@
 
 # Changelog
 
-## [0.8.0](https://github.com/apache/arrow-datafusion-python/tree/0.8.0) (2023-02-17)
+## [0.8.0](https://github.com/apache/arrow-datafusion-python/tree/0.8.0) (2023-02-22)
 
-[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.7.0...0.8.0)
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.8.0-rc1...0.8.0)
 
 **Implemented enhancements:**
 
-- Add bindings for datafusion\_common::DFField [\#184](https://github.com/apache/arrow-datafusion-python/issues/184)
-- Add bindings for DFSchema/DFSchemaRef [\#181](https://github.com/apache/arrow-datafusion-python/issues/181)
-- Add bindings for datafusion\_expr Projection [\#179](https://github.com/apache/arrow-datafusion-python/issues/179)
-- Add bindings for `TableScan` struct from `datafusion_expr::TableScan` [\#177](https://github.com/apache/arrow-datafusion-python/issues/177)
-- Add a "mapping" struct for types [\#172](https://github.com/apache/arrow-datafusion-python/issues/172)
-- Improve string representation of datafusion classes \(dataframe, context, expression, ...\) [\#158](https://github.com/apache/arrow-datafusion-python/issues/158)
-- Add DataFrame count method [\#151](https://github.com/apache/arrow-datafusion-python/issues/151)
-- \[REQUEST\] Github Actions Improvements [\#146](https://github.com/apache/arrow-datafusion-python/issues/146)
-- Change default branch name from master to main [\#144](https://github.com/apache/arrow-datafusion-python/issues/144)
-- Bump pyo3 to 0.18.0 [\#140](https://github.com/apache/arrow-datafusion-python/issues/140)
-- Add script for Python linting [\#134](https://github.com/apache/arrow-datafusion-python/issues/134)
-- Add Python bindings for substrait module [\#132](https://github.com/apache/arrow-datafusion-python/issues/132)
-- Expand unit tests for built-in functions [\#128](https://github.com/apache/arrow-datafusion-python/issues/128)
-- support creating arrow-datafusion-python conda environment [\#122](https://github.com/apache/arrow-datafusion-python/issues/122)
-- Build Python source distribution in GitHub workflow [\#81](https://github.com/apache/arrow-datafusion-python/issues/81)
-- EPIC: Add all functions to python binding `functions` [\#72](https://github.com/apache/arrow-datafusion-python/issues/72)
+- Add support for cuDF physical execution engine [\#202](https://github.com/apache/arrow-datafusion-python/issues/202)
+- Make it easier to create a Pandas dataframe from DataFusion query results [\#139](https://github.com/apache/arrow-datafusion-python/issues/139)
 
 **Fixed bugs:**
 
-- Build is broken [\#161](https://github.com/apache/arrow-datafusion-python/issues/161)
-- Out of memory when sorting [\#157](https://github.com/apache/arrow-datafusion-python/issues/157)
-- window\_lead test appears to be non-deterministic [\#135](https://github.com/apache/arrow-datafusion-python/issues/135)
-- Reading csv does not work [\#130](https://github.com/apache/arrow-datafusion-python/issues/130)
-- Github actions produce a lot of warnings [\#94](https://github.com/apache/arrow-datafusion-python/issues/94)
-- ASF source release tarball has wrong directory name [\#90](https://github.com/apache/arrow-datafusion-python/issues/90)
-- Python Release Build failing after upgrading to maturin 14.2 [\#87](https://github.com/apache/arrow-datafusion-python/issues/87)
-- Maturin build hangs on Linux ARM64 [\#84](https://github.com/apache/arrow-datafusion-python/issues/84)
-- Cannot install on Mac M1 from source tarball from testpypi [\#82](https://github.com/apache/arrow-datafusion-python/issues/82)
-- ImportPathMismatchError when running pytest locally [\#77](https://github.com/apache/arrow-datafusion-python/issues/77)
+- Build error: could not compile `thiserror` due to 2 previous errors [\#69](https://github.com/apache/arrow-datafusion-python/issues/69)
 
 **Closed issues:**
 
-- Publish documentation for Python bindings [\#39](https://github.com/apache/arrow-datafusion-python/issues/39)
-- Add Python binding for `approx_median` [\#32](https://github.com/apache/arrow-datafusion-python/issues/32)
-- Release version 0.7.0 [\#7](https://github.com/apache/arrow-datafusion-python/issues/7)
+- Integrate with the new `object_store` crate [\#22](https://github.com/apache/arrow-datafusion-python/issues/22)
 
 **Merged pull requests:**
 
+- Update README in preparation for 0.8 release [\#206](https://github.com/apache/arrow-datafusion-python/pull/206) ([andygrove](https://github.com/andygrove))
+- Add support for cudf as a physical execution engine [\#205](https://github.com/apache/arrow-datafusion-python/pull/205) ([jdye64](https://github.com/jdye64))
+- Run `maturin develop` instead of `cargo build` in verification script [\#200](https://github.com/apache/arrow-datafusion-python/pull/200) ([andygrove](https://github.com/andygrove))
+- Add tests for recently added functionality [\#199](https://github.com/apache/arrow-datafusion-python/pull/199) ([andygrove](https://github.com/andygrove))
+- Implement `to_pandas()` [\#197](https://github.com/apache/arrow-datafusion-python/pull/197) ([simicd](https://github.com/simicd))
+- Add Python wrapper for LogicalPlan::Sort [\#196](https://github.com/apache/arrow-datafusion-python/pull/196) ([andygrove](https://github.com/andygrove))
+- Add Python wrapper for LogicalPlan::Aggregate [\#195](https://github.com/apache/arrow-datafusion-python/pull/195) ([andygrove](https://github.com/andygrove))
+- Add Python wrapper for LogicalPlan::Limit [\#193](https://github.com/apache/arrow-datafusion-python/pull/193) ([andygrove](https://github.com/andygrove))
+- Add Python wrapper for LogicalPlan::Filter [\#192](https://github.com/apache/arrow-datafusion-python/pull/192) ([andygrove](https://github.com/andygrove))
+- Add experimental support for executing SQL with Polars and Pandas [\#190](https://github.com/apache/arrow-datafusion-python/pull/190) ([andygrove](https://github.com/andygrove))
+- Update changelog for 0.8 release [\#188](https://github.com/apache/arrow-datafusion-python/pull/188) ([andygrove](https://github.com/andygrove))
 - Add ability to execute ExecutionPlan and get a stream of RecordBatch [\#186](https://github.com/apache/arrow-datafusion-python/pull/186) ([andygrove](https://github.com/andygrove))
 - Dffield bindings [\#185](https://github.com/apache/arrow-datafusion-python/pull/185) ([jdye64](https://github.com/jdye64))
 - Add bindings for DFSchema [\#183](https://github.com/apache/arrow-datafusion-python/pull/183) ([jdye64](https://github.com/jdye64))
@@ -117,6 +103,52 @@
 - Upgrade Maturin to 0.14.2 [\#85](https://github.com/apache/arrow-datafusion-python/pull/85) ([martin-g](https://github.com/martin-g))
 - Update release instructions [\#83](https://github.com/apache/arrow-datafusion-python/pull/83) ([andygrove](https://github.com/andygrove))
 - \[Functions\] - Add python function binding to `functions` [\#73](https://github.com/apache/arrow-datafusion-python/pull/73) ([francis-du](https://github.com/francis-du))
+
+## [0.8.0-rc1](https://github.com/apache/arrow-datafusion-python/tree/0.8.0-rc1) (2023-02-17)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.7.0-rc2...0.8.0-rc1)
+
+**Implemented enhancements:**
+
+- Add bindings for datafusion\_common::DFField [\#184](https://github.com/apache/arrow-datafusion-python/issues/184)
+- Add bindings for DFSchema/DFSchemaRef [\#181](https://github.com/apache/arrow-datafusion-python/issues/181)
+- Add bindings for datafusion\_expr Projection [\#179](https://github.com/apache/arrow-datafusion-python/issues/179)
+- Add bindings for `TableScan` struct from `datafusion_expr::TableScan` [\#177](https://github.com/apache/arrow-datafusion-python/issues/177)
+- Add a "mapping" struct for types [\#172](https://github.com/apache/arrow-datafusion-python/issues/172)
+- Improve string representation of datafusion classes \(dataframe, context, expression, ...\) [\#158](https://github.com/apache/arrow-datafusion-python/issues/158)
+- Add DataFrame count method [\#151](https://github.com/apache/arrow-datafusion-python/issues/151)
+- \[REQUEST\] Github Actions Improvements [\#146](https://github.com/apache/arrow-datafusion-python/issues/146)
+- Change default branch name from master to main [\#144](https://github.com/apache/arrow-datafusion-python/issues/144)
+- Bump pyo3 to 0.18.0 [\#140](https://github.com/apache/arrow-datafusion-python/issues/140)
+- Add script for Python linting [\#134](https://github.com/apache/arrow-datafusion-python/issues/134)
+- Add Python bindings for substrait module [\#132](https://github.com/apache/arrow-datafusion-python/issues/132)
+- Expand unit tests for built-in functions [\#128](https://github.com/apache/arrow-datafusion-python/issues/128)
+- support creating arrow-datafusion-python conda environment [\#122](https://github.com/apache/arrow-datafusion-python/issues/122)
+- Build Python source distribution in GitHub workflow [\#81](https://github.com/apache/arrow-datafusion-python/issues/81)
+- EPIC: Add all functions to python binding `functions` [\#72](https://github.com/apache/arrow-datafusion-python/issues/72)
+
+**Fixed bugs:**
+
+- Build is broken [\#161](https://github.com/apache/arrow-datafusion-python/issues/161)
+- Out of memory when sorting [\#157](https://github.com/apache/arrow-datafusion-python/issues/157)
+- window\_lead test appears to be non-deterministic [\#135](https://github.com/apache/arrow-datafusion-python/issues/135)
+- Reading csv does not work [\#130](https://github.com/apache/arrow-datafusion-python/issues/130)
+- Github actions produce a lot of warnings [\#94](https://github.com/apache/arrow-datafusion-python/issues/94)
+- ASF source release tarball has wrong directory name [\#90](https://github.com/apache/arrow-datafusion-python/issues/90)
+- Python Release Build failing after upgrading to maturin 14.2 [\#87](https://github.com/apache/arrow-datafusion-python/issues/87)
+- Maturin build hangs on Linux ARM64 [\#84](https://github.com/apache/arrow-datafusion-python/issues/84)
+- Cannot install on Mac M1 from source tarball from testpypi [\#82](https://github.com/apache/arrow-datafusion-python/issues/82)
+- ImportPathMismatchError when running pytest locally [\#77](https://github.com/apache/arrow-datafusion-python/issues/77)
+
+**Closed issues:**
+
+- Publish documentation for Python bindings [\#39](https://github.com/apache/arrow-datafusion-python/issues/39)
+- Add Python binding for `approx_median` [\#32](https://github.com/apache/arrow-datafusion-python/issues/32)
+- Release version 0.7.0 [\#7](https://github.com/apache/arrow-datafusion-python/issues/7)
+
+## [0.7.0-rc2](https://github.com/apache/arrow-datafusion-python/tree/0.7.0-rc2) (2022-11-26)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.7.0...0.7.0-rc2)
 
 
 ## [Unreleased](https://github.com/datafusion-contrib/datafusion-python/tree/HEAD)
