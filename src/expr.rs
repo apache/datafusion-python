@@ -34,6 +34,7 @@ pub mod aggregate_expr;
 pub mod analyze;
 pub mod binary_expr;
 pub mod column;
+pub mod empty_relation;
 pub mod filter;
 pub mod limit;
 pub mod literal;
@@ -185,5 +186,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
     m.add_class::<analyze::PyAnalyze>()?;
+    m.add_class::<empty_relation::PyEmptyRelation>()?;
     Ok(())
 }
