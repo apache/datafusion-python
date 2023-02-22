@@ -59,7 +59,7 @@ impl PyAnalyze {
         Ok(self.analyze.verbose)
     }
 
-    /// Resulting Schema for this `Projection` node instance
+    /// Resulting Schema for this `Analyze` node instance
     fn schema(&self) -> PyResult<PyDFSchema> {
         Ok((*self.analyze.schema).clone().into())
     }

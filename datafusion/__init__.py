@@ -70,7 +70,7 @@ __all__ = [
     "Analyze",
     "Sort",
     "Limit",
-    "Filter"
+    "Filter",
 ]
 
 

@@ -69,7 +69,15 @@ def test_class_module_is_datafusion():
         assert klass.__module__ == "datafusion.expr"
 
     # operators
-    for klass in [Projection, TableScan, Aggregate, Sort, Limit, Filter, Analyze]:
+    for klass in [
+        Projection,
+        TableScan,
+        Aggregate,
+        Sort,
+        Limit,
+        Filter,
+        Analyze,
+    ]:
         assert klass.__module__ == "datafusion.expr"
 
     # schema

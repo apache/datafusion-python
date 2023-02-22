@@ -30,7 +30,6 @@ class SessionContext:
         self.datafusion_ctx.register_parquet(name, path)
 
     def to_pandas_expr(self, expr):
-
         # get Python wrapper for logical expression
         expr = expr.to_variant()
 
