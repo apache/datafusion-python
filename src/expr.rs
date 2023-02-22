@@ -80,6 +80,17 @@ impl PyExpr {
         })
     }
 
+    /// Returns the name of this expression as it should appear in a schema. This name
+    /// will not include any CAST expressions.
+    fn display_name(&self) -> PyResult<String> {
+        Ok(self.expr.display_name()?)
+    }
+
+    /// Returns a full and complete string representation of this expression.
+    fn canonical_name(&self) -> PyResult<String> {
+        Ok(self.expr.canonical_name())
+    }
+
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
         let expr = match op {
             CompareOp::Lt => self.expr.clone().lt(other.expr),
