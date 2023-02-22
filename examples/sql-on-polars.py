@@ -15,11 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import SessionContext
-from datafusion import functions as f
+from datafusion.polars import SessionContext
+
 
 ctx = SessionContext()
-df = ctx.read_parquet("yellow_tripdata_2021-01.parquet").aggregate(
-    [f.col("passenger_count")], [f.count_star()]
+ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")
+df = ctx.sql(
+    "select passenger_count, count(*) from taxi group by passenger_count"
 )
-df.show()
+print(df)

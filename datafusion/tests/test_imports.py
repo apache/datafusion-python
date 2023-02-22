@@ -33,8 +33,17 @@ from datafusion.common import (
 
 from datafusion.expr import (
     Expr,
+    Column,
+    Literal,
+    BinaryExpr,
+    AggregateFunction,
     Projection,
     TableScan,
+    Filter,
+    Limit,
+    Aggregate,
+    Sort,
+    Analyze,
 )
 
 
@@ -55,9 +64,23 @@ def test_class_module_is_datafusion():
     ]:
         assert klass.__module__ == "datafusion"
 
-    for klass in [Expr, Projection, TableScan]:
+    # expressions
+    for klass in [Expr, Column, Literal, BinaryExpr, AggregateFunction]:
         assert klass.__module__ == "datafusion.expr"
 
+    # operators
+    for klass in [
+        Projection,
+        TableScan,
+        Aggregate,
+        Sort,
+        Limit,
+        Filter,
+        Analyze,
+    ]:
+        assert klass.__module__ == "datafusion.expr"
+
+    # schema
     for klass in [DFField, DFSchema]:
         assert klass.__module__ == "datafusion.common"
 

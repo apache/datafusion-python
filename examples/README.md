@@ -19,9 +19,31 @@
 
 # DataFusion Python Examples
 
-- [Query a Parquet file using SQL](./sql-parquet.py)
-- [Query a Parquet file using the DataFrame API](./dataframe-parquet.py)
-- [Run a SQL query and store the results in a Pandas DataFrame](./sql-to-pandas.py)
-- [Query PyArrow Data](./query-pyarrow-data.py)
-- [Register a Python UDF with DataFusion](./python-udf.py)
-- [Register a Python UDAF with DataFusion](./python-udaf.py)
+Some examples rely on data which can be downloaded from the following site:
+
+- https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+
+Here is a direct link to the file used in the examples:
+
+- https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+
+### Executing Queries with DataFusion
+
+- [Query a Parquet file using SQL](./examples/sql-parquet.py)
+- [Query a Parquet file using the DataFrame API](./examples/dataframe-parquet.py)
+- [Run a SQL query and store the results in a Pandas DataFrame](./examples/sql-to-pandas.py)
+- [Query PyArrow Data](./examples/query-pyarrow-data.py)
+
+### Running User-Defined Python Code
+
+- [Register a Python UDF with DataFusion](./examples/python-udf.py)
+- [Register a Python UDAF with DataFusion](./examples/python-udaf.py)
+
+### Substrait Support
+
+- [Serialize query plans using Substrait](./examples/substrait.py)
+
+### Executing SQL against DataFrame Libraries (Experimental)
+
+- [Executing SQL on Polars](./examples/sql-on-polars.py)
+- [Executing SQL on Pandas](./examples/sql-on-pandas.py)

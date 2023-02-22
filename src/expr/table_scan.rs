@@ -19,12 +19,20 @@ use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use crate::expr::logical_node::LogicalNode;
+use crate::sql::logical::PyLogicalPlan;
 use crate::{common::df_schema::PyDFSchema, expr::PyExpr};
 
 #[pyclass(name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTableScan {
     table_scan: TableScan,
+}
+
+impl PyTableScan {
+    pub fn new(table_scan: TableScan) -> Self {
+        Self { table_scan }
+    }
 }
 
 impl From<PyTableScan> for TableScan {
@@ -115,5 +123,12 @@ impl PyTableScan {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("TableScan({})", self))
+    }
+}
+
+impl LogicalNode for PyTableScan {
+    fn input(&self) -> Vec<PyLogicalPlan> {
+        // table scans are leaf nodes and do not have inputs
+        vec![]
     }
 }
