@@ -49,4 +49,9 @@ impl PyDFSchema {
             schema: Arc::new(DFSchema::empty()),
         })
     }
+
+    #[pyo3(name = "field_names")]
+    fn py_field_names(&self) -> PyResult<Vec<String>> {
+        Ok(self.schema.field_names())
+    }
 }

@@ -127,7 +127,7 @@ impl PyTableScan {
 }
 
 impl LogicalNode for PyTableScan {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         // table scans are leaf nodes and do not have inputs
         vec![]
     }
