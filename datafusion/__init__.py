@@ -72,6 +72,7 @@ __all__ = [
     "Sort",
     "Limit",
     "Filter",
+    "ScalarVariable",
 ]
 
 
