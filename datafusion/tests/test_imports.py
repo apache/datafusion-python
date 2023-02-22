@@ -44,6 +44,9 @@ from datafusion.expr import (
     Aggregate,
     Sort,
     Analyze,
+    Like,
+    ILike,
+    SimilarTo,
 )
 
 
@@ -77,6 +80,9 @@ def test_class_module_is_datafusion():
         Limit,
         Filter,
         Analyze,
+        Like,
+        ILike,
+        SimilarTo,
     ]:
         assert klass.__module__ == "datafusion.expr"
 

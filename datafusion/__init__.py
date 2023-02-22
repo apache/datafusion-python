@@ -45,7 +45,10 @@ from .expr import (
     Expr,
     Filter,
     Limit,
+    Like,
+    ILike,
     Projection,
+    SimilarTo,
     Sort,
     TableScan,
 )
@@ -71,6 +74,9 @@ __all__ = [
     "Sort",
     "Limit",
     "Filter",
+    "Like",
+    "ILike",
+    "SimilarTo",
 ]
 
 

@@ -29,12 +29,15 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+use self::like::{PyILike, PyLike, PySimilarTo};
+
 pub mod aggregate;
 pub mod aggregate_expr;
 pub mod analyze;
 pub mod binary_expr;
 pub mod column;
 pub mod filter;
+pub mod like;
 pub mod limit;
 pub mod literal;
 pub mod logical_node;
@@ -45,7 +48,7 @@ pub mod table_scan;
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PyExpr {
+pub struct PyExpr {
     pub(crate) expr: Expr,
 }
 
@@ -177,6 +180,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+    m.add_class::<PyLike>()?;
+    m.add_class::<PyILike>()?;
+    m.add_class::<PySimilarTo>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
