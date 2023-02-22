@@ -85,8 +85,8 @@ impl PyAggregate {
     }
 
     // Retrieves the input `LogicalPlan` to this `Aggregate` node
-    fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.aggregate.input).clone())
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(&self))
     }
 
     // Resulting Schema for this `Aggregate` node instance
@@ -100,7 +100,7 @@ impl PyAggregate {
 }
 
 impl LogicalNode for PyAggregate {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.aggregate.input).clone())]
     }
 }

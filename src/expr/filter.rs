@@ -62,8 +62,8 @@ impl PyFilter {
     }
 
     /// Retrieves the input `LogicalPlan` to this `Filter` node
-    fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.filter.input).clone())
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(&self))
     }
 
     /// Resulting Schema for this `Filter` node instance
@@ -77,7 +77,7 @@ impl PyFilter {
 }
 
 impl LogicalNode for PyFilter {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.filter.input).clone())]
     }
 }
