@@ -41,6 +41,7 @@ from .common import (
 )
 
 from .expr import (
+    Alias,
     Analyze,
     Expr,
     Filter,
@@ -71,6 +72,7 @@ __all__ = [
     "Sort",
     "Limit",
     "Filter",
+    "Alias",
 ]
 
 

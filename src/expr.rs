@@ -29,6 +29,7 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+pub mod alias;
 pub mod aggregate;
 pub mod aggregate_expr;
 pub mod analyze;
@@ -177,6 +178,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+    m.add_class::<alias::PyAlias>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
