@@ -41,11 +41,10 @@ impl Display for PyAlias {
 }
 
 impl PyAlias {
-    pub fn new(expr: &Box<Expr>, alias_name: &String) -> Self {
-        let py_expr = *(*expr).clone();
+    pub fn new(expr: &Expr, alias_name: &String) -> Self {
         Self {
-            expr: py_expr.into(),
-            alias_name: alias_name.clone(),
+            expr: expr.clone().into(),
+            alias_name: alias_name.to_owned(),
         }
     }
 }
