@@ -35,7 +35,6 @@ def test_create_context_no_args():
 
 
 def test_create_context_with_all_valid_args():
-
     runtime = (
         RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
     )
