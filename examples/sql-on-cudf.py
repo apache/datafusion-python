@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,30 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-channels:
-- conda-forge
-dependencies:
-- black
-- flake8
-- isort
-- maturin
-- mypy
-- numpy
-- pyarrow
-- pytest
-- toml
-- importlib_metadata
-- python>=3.10
-# Packages useful for building distributions and releasing
-- mamba
-- conda-build
-- anaconda-client
-# Packages for documentation building
-- sphinx
-- pydata-sphinx-theme==0.8.0
-- myst-parser
-- jinja2
-# GPU packages
-- cudf
-- cudatoolkit=11.8
-name: datafusion-dev
+from datafusion.cudf import SessionContext
+
+
+ctx = SessionContext()
+ctx.register_parquet(
+    "taxi", "/home/jeremy/Downloads/yellow_tripdata_2021-01.parquet"
+)
+df = ctx.sql("select passenger_count from taxi")
+print(df)
