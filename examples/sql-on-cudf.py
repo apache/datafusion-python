@@ -15,29 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import SessionContext
+from datafusion.cudf import SessionContext
 
 
-# Create a DataFusion context
 ctx = SessionContext()
-
-# Register table with context
-ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")
-
-# Execute SQL
-df = ctx.sql(
-    "select passenger_count, count(*) "
-    "from taxi "
-    "where passenger_count is not null "
-    "group by passenger_count "
-    "order by passenger_count"
+ctx.register_parquet(
+    "taxi", "/home/jeremy/Downloads/yellow_tripdata_2021-01.parquet"
 )
-
-# convert to Pandas
-pandas_df = df.to_pandas()
-
-# create a chart
-fig = pandas_df.plot(
-    kind="bar", title="Trip Count by Number of Passengers"
-).get_figure()
-fig.savefig("chart.png")
+df = ctx.sql("select passenger_count from taxi")
+print(df)

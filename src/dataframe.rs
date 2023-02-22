@@ -313,6 +313,24 @@ impl PyDataFrame {
         Ok(())
     }
 
+    /// Convert to pandas dataframe with pyarrow
+    /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
+    fn to_pandas(&self, py: Python) -> PyResult<PyObject> {
+        let batches = self.collect(py);
+
+        Python::with_gil(|py| {
+            // Instantiate pyarrow Table object and use its from_batches method
+            let table_class = py.import("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new(py, batches);
+            let table: PyObject = table_class.call_method1("from_batches", args)?.into();
+
+            // Use Table.to_pandas() method to convert batches to pandas dataframe
+            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
+            let result = table.call_method0(py, "to_pandas")?;
+            Ok(result)
+        })
+    }
+
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
