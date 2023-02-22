@@ -75,7 +75,7 @@ impl PyProjection {
 
     /// Retrieves the input `LogicalPlan` to this `Projection` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
-        Ok(Self::inputs(&self))
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Projection` node instance

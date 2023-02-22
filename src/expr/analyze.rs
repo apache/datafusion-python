@@ -60,7 +60,7 @@ impl PyAnalyze {
     }
 
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
-        Ok(Self::inputs(&self))
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Analyze` node instance

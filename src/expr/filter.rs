@@ -63,7 +63,7 @@ impl PyFilter {
 
     /// Retrieves the input `LogicalPlan` to this `Filter` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
-        Ok(Self::inputs(&self))
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Filter` node instance

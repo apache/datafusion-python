@@ -68,7 +68,7 @@ impl PyLimit {
 
     /// Retrieves the input `LogicalPlan` to this `Limit` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
-        Ok(Self::inputs(&self))
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Limit` node instance

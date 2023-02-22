@@ -74,7 +74,7 @@ impl PySort {
 
     /// Retrieves the input `LogicalPlan` to this `Sort` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
-        Ok(Self::inputs(&self))
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Sort` node instance
