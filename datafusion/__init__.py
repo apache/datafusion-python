@@ -46,6 +46,7 @@ from .expr import (
     Filter,
     Limit,
     Projection,
+    ScalarVariable,
     Sort,
     TableScan,
 )

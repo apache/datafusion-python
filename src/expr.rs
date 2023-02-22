@@ -29,6 +29,8 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+use self::scalar_variable::PyScalarVariable;
+
 pub mod aggregate;
 pub mod aggregate_expr;
 pub mod analyze;
@@ -39,6 +41,7 @@ pub mod limit;
 pub mod literal;
 pub mod logical_node;
 pub mod projection;
+pub mod scalar_variable;
 pub mod sort;
 pub mod table_scan;
 
@@ -67,6 +70,9 @@ impl PyExpr {
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match &self.expr {
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
+            Expr::ScalarVariable(data_type, variables) => {
+                Ok(PyScalarVariable::new(data_type, variables).into_py(py))
+            }
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
             Expr::AggregateFunction(expr) => {
@@ -177,6 +183,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+    m.add_class::<PyScalarVariable>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
