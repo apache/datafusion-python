@@ -65,4 +65,8 @@ impl PyEmptyRelation {
     fn __repr__(&self) -> String {
         format!("{}", self)
     }
+
+    fn __name__(&self) -> PyResult<String> {
+        Ok("EmptyRelation".to_string())
+    }
 }

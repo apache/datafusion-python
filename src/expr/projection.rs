@@ -86,6 +86,10 @@ impl PyProjection {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("Projection({})", self))
     }
+
+    fn __name__(&self) -> PyResult<String> {
+        Ok("Projection".to_string())
+    }
 }
 
 impl LogicalNode for PyProjection {
