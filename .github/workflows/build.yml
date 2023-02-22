@@ -104,9 +104,9 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUST_BACKTRACE: 1
         with:
-          env:
-            RUST_BACKTRACE: 1
           rust-toolchain: nightly
           target: x86_64
           manylinux: auto
