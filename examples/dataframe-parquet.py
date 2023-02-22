@@ -20,6 +20,6 @@ from datafusion import functions as f
 
 ctx = SessionContext()
 df = ctx.read_parquet(
-    "/mnt/bigdata/nyctaxi/yellow/2021/yellow_tripdata_2021-01.parquet"
+    "yellow_tripdata_2021-01.parquet"
 ).aggregate([f.col("passenger_count")], [f.count_star()])
 df.show()

@@ -19,7 +19,7 @@ from datafusion import SessionContext
 
 ctx = SessionContext()
 ctx.register_parquet(
-    "taxi", "/mnt/bigdata/nyctaxi/yellow/2021/yellow_tripdata_2021-01.parquet"
+    "taxi", "yellow_tripdata_2021-01.parquet"
 )
 df = ctx.sql(
     "select passenger_count, count(*) from taxi where passenger_count is not null group by passenger_count order by passenger_count"
