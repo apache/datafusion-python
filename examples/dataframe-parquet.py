@@ -19,7 +19,7 @@ from datafusion import SessionContext
 from datafusion import functions as f
 
 ctx = SessionContext()
-df = ctx.read_parquet(
-    "yellow_tripdata_2021-01.parquet"
-).aggregate([f.col("passenger_count")], [f.count_star()])
+df = ctx.read_parquet("yellow_tripdata_2021-01.parquet").aggregate(
+    [f.col("passenger_count")], [f.count_star()]
+)
 df.show()
