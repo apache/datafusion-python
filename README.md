@@ -28,26 +28,26 @@ DataFusion's Python bindings can be used as an end-user tool as well as providin
 
 ## Features
 
-- Execute queries using SQL or DataFrames against CSV, Parquet, and JSON data sources
-- Queries are optimized using DataFusion's query optimizer
-- Execute user-defined Python code from SQL
-- Exchange data with Pandas and other DataFrame libraries that support PyArrow
-- Serialize and deserialize query plans in Substrait format
-- Experimental support for executing SQL queries against Polars, Pandas and cuDF
+- Execute queries using SQL or DataFrames against CSV, Parquet, and JSON data sources.
+- Queries are optimized using DataFusion's query optimizer.
+- Execute user-defined Python code from SQL.
+- Exchange data with Pandas and other DataFrame libraries that support PyArrow.
+- Serialize and deserialize query plans in Substrait format.
+- Experimental support for transpiling SQL queries to DataFrame calls with Polars, Pandas, and cuDF.
 
 ## Comparison with other projects
 
-Here is a comparison with similar projects that may help understand when DataFusion might be suitable and unsuitable 
+Here is a comparison with similar projects that may help understand when DataFusion might be suitable and unsuitable
 for your needs:
 
-- [DuckDB](http://www.duckdb.org/) is an open source, in-process analytic database. Like DataFusion, it supports 
- very fast execution, both from its custom file format and directly from Parquet files. Unlike DataFusion, it is 
- written in C/C++ and it is primarily used directly by users as a serverless database and query system rather than 
- as a library for building such database systems.
+- [DuckDB](http://www.duckdb.org/) is an open source, in-process analytic database. Like DataFusion, it supports
+  very fast execution, both from its custom file format and directly from Parquet files. Unlike DataFusion, it is
+  written in C/C++ and it is primarily used directly by users as a serverless database and query system rather than
+  as a library for building such database systems.
 
-- [Polars](http://pola.rs/) is one of the fastest DataFrame libraries at the time of writing. Like DataFusion, it 
- is also written in Rust and uses the Apache Arrow memory model, but unlike DataFusion it does not provide full SQL 
- support, nor as many extension points.
+- [Polars](http://pola.rs/) is one of the fastest DataFrame libraries at the time of writing. Like DataFusion, it
+  is also written in Rust and uses the Apache Arrow memory model, but unlike DataFusion it does not provide full SQL
+  support, nor as many extension points.
 
 ## Example Usage
 
@@ -110,6 +110,7 @@ See [examples](examples/README.md) for more information.
 
 - [Executing SQL on Polars](./examples/sql-on-polars.py)
 - [Executing SQL on Pandas](./examples/sql-on-pandas.py)
+- [Executing SQL on cuDF](./examples/sql-on-cudf.py)
 
 ## How to install (from pip)
 
