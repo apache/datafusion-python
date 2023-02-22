@@ -15,10 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import polars
+import cudf
 import datafusion
-from datafusion.expr import Projection, TableScan, Aggregate
-from datafusion.expr import Column, AggregateFunction
+from datafusion.expr import Projection, TableScan, Column
 
 
 class SessionContext:
@@ -30,49 +29,28 @@ class SessionContext:
         self.parquet_tables[name] = path
         self.datafusion_ctx.register_parquet(name, path)
 
-    def to_polars_expr(self, expr):
+    def to_cudf_expr(self, expr):
+
         # get Python wrapper for logical expression
         expr = expr.to_variant()
 
         if isinstance(expr, Column):
-            return polars.col(expr.name())
+            return expr.name()
         else:
             raise Exception("unsupported expression: {}".format(expr))
 
-    def to_polars_df(self, plan):
-        # recurse down first to translate inputs into Polars data frames
-        inputs = [self.to_polars_df(x) for x in plan.inputs()]
+    def to_cudf_df(self, plan):
+        # recurse down first to translate inputs into pandas data frames
+        inputs = [self.to_cudf_df(x) for x in plan.inputs()]
 
         # get Python wrapper for logical operator node
         node = plan.to_variant()
 
         if isinstance(node, Projection):
-            args = [self.to_polars_expr(expr) for expr in node.projections()]
-            return inputs[0].select(*args)
-        elif isinstance(node, Aggregate):
-            groupby_expr = [
-                self.to_polars_expr(expr) for expr in node.group_by_exprs()
-            ]
-            aggs = []
-            for expr in node.aggregate_exprs():
-                expr = expr.to_variant()
-                if isinstance(expr, AggregateFunction):
-                    if expr.aggregate_type() == "COUNT":
-                        aggs.append(polars.count().alias("{}".format(expr)))
-                    else:
-                        raise Exception(
-                            "Unsupported aggregate function {}".format(
-                                expr.aggregate_type()
-                            )
-                        )
-                else:
-                    raise Exception(
-                        "Unsupported aggregate function {}".format(expr)
-                    )
-            df = inputs[0].groupby(groupby_expr).agg(aggs)
-            return df
+            args = [self.to_cudf_expr(expr) for expr in node.projections()]
+            return inputs[0][args]
         elif isinstance(node, TableScan):
-            return polars.read_parquet(self.parquet_tables[node.table_name()])
+            return cudf.read_parquet(self.parquet_tables[node.table_name()])
         else:
             raise Exception(
                 "unsupported logical operator: {}".format(type(node))
@@ -81,4 +59,4 @@ class SessionContext:
     def sql(self, sql):
         datafusion_df = self.datafusion_ctx.sql(sql)
         plan = datafusion_df.logical_plan()
-        return self.to_polars_df(plan)
+        return self.to_cudf_df(plan)

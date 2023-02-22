@@ -24,22 +24,30 @@
 
 This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/arrow-datafusion).
 
-Like pyspark, it allows you to build a plan through SQL or a DataFrame API against in-memory data, parquet or CSV
-files, run it in a multi-threaded environment, and obtain the result back in Python.
+DataFusion's Python bindings can be used as an end-user tool as well as providing a foundation for building new systems.
 
-It also allows you to use UDFs and UDAFs for complex operations.
+## Features
 
-The major advantage of this library over other execution engines is that this library achieves zero-copy between
-Python and its execution engine: there is no cost in using UDFs, UDAFs, and collecting the results to Python apart
-from having to lock the GIL when running those operations.
+- Execute queries using SQL or DataFrames against CSV, Parquet, and JSON data sources
+- Queries are optimized using DataFusion's query optimizer
+- Execute user-defined Python code from SQL
+- Exchange data with Pandas and other DataFrame libraries that support PyArrow
+- Serialize and deserialize query plans in Substrait format
+- Experimental support for executing SQL queries against Polars, Pandas and cuDF
 
-Its query engine, DataFusion, is written in [Rust](https://www.rust-lang.org/), which makes strong assumptions
-about thread safety and lack of memory leaks.
+## Comparison with other projects
 
-There is also experimental support for executing SQL against other DataFrame libraries, such as Polars, Pandas, and any 
-drop-in replacements for Pandas.
+Here is a comparison with similar projects that may help understand when DataFusion might be suitable and unsuitable 
+for your needs:
 
-Technically, zero-copy is achieved via the [c data interface](https://arrow.apache.org/docs/format/CDataInterface.html).
+- [DuckDB](http://www.duckdb.org/) is an open source, in-process analytic database. Like DataFusion, it supports 
+ very fast execution, both from its custom file format and directly from Parquet files. Unlike DataFusion, it is 
+ written in C/C++ and it is primarily used directly by users as a serverless database and query system rather than 
+ as a library for building such database systems.
+
+- [Polars](http://pola.rs/) is one of the fastest DataFrame libraries at the time of writing. Like DataFusion, it 
+ is also written in Rust and uses the Apache Arrow memory model, but unlike DataFusion it does not provide full SQL 
+ support, nor as many extension points.
 
 ## Example Usage
 
@@ -50,12 +58,8 @@ The Parquet file used in this example can be downloaded from the following page:
 
 - https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
 
-See the [examples](examples) directory for more examples.
-
 ```python
 from datafusion import SessionContext
-import pandas as pd
-import pyarrow as pa
 
 # Create a DataFusion context
 ctx = SessionContext()
@@ -70,17 +74,11 @@ df = ctx.sql("select passenger_count, count(*) "
              "group by passenger_count "
              "order by passenger_count")
 
-# collect as list of pyarrow.RecordBatch
-results = df.collect()
-
-# get first batch
-batch = results[0]
-
 # convert to Pandas
-df = batch.to_pandas()
+pandas_df = df.to_pandas()
 
 # create a chart
-fig = df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
+fig = pandas_df.plot(kind="bar", title="Trip Count by Number of Passengers").get_figure()
 fig.savefig('chart.png')
 ```
 
@@ -88,42 +86,30 @@ This produces the following chart:
 
 ![Chart](examples/chart.png)
 
-## Substrait Support
+## More Examples
 
-`arrow-datafusion-python` has bindings which allow for serializing a SQL query to substrait protobuf format and deserializing substrait protobuf bytes to a DataFusion `LogicalPlan`, `PyLogicalPlan` in a Python context, which can then be executed.
+See [examples](examples/README.md) for more information.
 
-### Example of Serializing/Deserializing Substrait Plans
+### Executing Queries with DataFusion
 
-```python
-from datafusion import SessionContext
-from datafusion import substrait as ss
+- [Query a Parquet file using SQL](./examples/sql-parquet.py)
+- [Query a Parquet file using the DataFrame API](./examples/dataframe-parquet.py)
+- [Run a SQL query and store the results in a Pandas DataFrame](./examples/sql-to-pandas.py)
+- [Query PyArrow Data](./examples/query-pyarrow-data.py)
 
-# Create a DataFusion context
-ctx = SessionContext()
+### Running User-Defined Python Code
 
-# Register table with context
-ctx.register_parquet('aggregate_test_data', './testing/data/csv/aggregate_test_100.csv')
+- [Register a Python UDF with DataFusion](./examples/python-udf.py)
+- [Register a Python UDAF with DataFusion](./examples/python-udaf.py)
 
-substrait_plan = ss.substrait.serde.serialize_to_plan("SELECT * FROM aggregate_test_data", ctx)
-# type(substrait_plan) -> <class 'datafusion.substrait.plan'>
+### Substrait Support
 
-# Alternative serialization approaches
-# type(substrait_bytes) -> <class 'list'>, at this point the bytes can be distributed to file, network, etc safely
-# where they could subsequently be deserialized on the receiving end.
-substrait_bytes = ss.substrait.serde.serialize_bytes("SELECT * FROM aggregate_test_data", ctx)
+- [Serialize query plans using Substrait](./examples/substrait.py)
 
-# Imagine here bytes would be read from network, file, etc ... for example brevity this is omitted and variable is simply reused
-# type(substrait_plan) -> <class 'datafusion.substrait.plan'>
-substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
+### Executing SQL against DataFrame Libraries (Experimental)
 
-# type(df_logical_plan) -> <class 'substrait.LogicalPlan'>
-df_logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)
-
-# Back to Substrait Plan just for demonstration purposes
-# type(substrait_plan) -> <class 'datafusion.substrait.plan'>
-substrait_plan = ss.substrait.producer.to_substrait_plan(df_logical_plan)
-
-```
+- [Executing SQL on Polars](./examples/sql-on-polars.py)
+- [Executing SQL on Pandas](./examples/sql-on-pandas.py)
 
 ## How to install (from pip)
 

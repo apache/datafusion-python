@@ -31,6 +31,7 @@ use datafusion::scalar::ScalarValue;
 
 pub mod aggregate;
 pub mod aggregate_expr;
+pub mod analyze;
 pub mod binary_expr;
 pub mod column;
 pub mod filter;
@@ -183,5 +184,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<limit::PyLimit>()?;
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
+    m.add_class::<analyze::PyAnalyze>()?;
     Ok(())
 }

@@ -28,7 +28,7 @@ dependencies:
 - pytest
 - toml
 - importlib_metadata
-- python>=3.7,<3.11
+- python>=3.10
 # Packages useful for building distributions and releasing
 - mamba
 - conda-build
@@ -38,4 +38,7 @@ dependencies:
 - pydata-sphinx-theme==0.8.0
 - myst-parser
 - jinja2
+# GPU packages
+- cudf
+- cudatoolkit=11.8
 name: datafusion-dev

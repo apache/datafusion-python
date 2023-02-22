@@ -15,10 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion.pandas import SessionContext
+from datafusion.cudf import SessionContext
 
 
 ctx = SessionContext()
-ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")
+ctx.register_parquet(
+    "taxi", "/home/jeremy/Downloads/yellow_tripdata_2021-01.parquet"
+)
 df = ctx.sql("select passenger_count from taxi")
 print(df)

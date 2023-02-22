@@ -33,17 +33,11 @@ df = ctx.sql(
     "order by passenger_count"
 )
 
-# collect as list of pyarrow.RecordBatch
-results = df.collect()
-
-# get first batch
-batch = results[0]
-
 # convert to Pandas
-df = batch.to_pandas()
+pandas_df = df.to_pandas()
 
 # create a chart
-fig = df.plot(
+fig = pandas_df.plot(
     kind="bar", title="Trip Count by Number of Passengers"
 ).get_figure()
 fig.savefig("chart.png")
