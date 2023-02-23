@@ -60,6 +60,11 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install maturin==0.14.2
+
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
         uses: actions/download-artifact@v3
