@@ -43,8 +43,8 @@ impl Display for PyEmptyRelation {
         write!(
             f,
             "Empty Relation
-            \nProduce One Row: {:?}
-            \nSchema: {:?}",
+            Produce One Row: {:?}
+            Schema: {:?}",
             &self.empty.produce_one_row, &self.empty.schema
         )
     }

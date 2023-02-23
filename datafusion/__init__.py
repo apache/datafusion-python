@@ -53,6 +53,7 @@ from .expr import (
     ScalarVariable,
     Sort,
     TableScan,
+    GetIndexedField,
     Not,
     IsNotNull,
     IsTrue,
@@ -71,6 +72,10 @@ from .expr import (
     ScalarSubquery,
     GroupingSet,
     Placeholder,
+    Case,
+    Cast,
+    TryCast,
+    Between,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -99,6 +104,7 @@ __all__ = [
     "SimilarTo",
     "ScalarVariable",
     "Alias",
+    "GetIndexedField",
     "Not",
     "IsNotNull",
     "IsTrue",
@@ -117,6 +123,10 @@ __all__ = [
     "ScalarSubquery",
     "GroupingSet",
     "Placeholder",
+    "Case",
+    "Cast",
+    "TryCast",
+    "Between",
 ]
 
 
