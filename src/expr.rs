@@ -30,11 +30,8 @@ use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
 use self::alias::PyAlias;
-<<<<<<< HEAD
 use self::like::{PyILike, PyLike, PySimilarTo};
-=======
 use self::scalar_variable::PyScalarVariable;
->>>>>>> upstream/main
 
 pub mod aggregate;
 pub mod aggregate_expr;
