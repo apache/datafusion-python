@@ -49,9 +49,7 @@ from datafusion.expr import (
     SimilarTo,
     ScalarVariable,
     Alias,
-<<<<<<< HEAD
     GetIndexedField,
-=======
     Not,
     IsNotNull,
     IsTrue,
@@ -61,7 +59,6 @@ from datafusion.expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
->>>>>>> upstream/main
 )
 
 
