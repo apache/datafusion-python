@@ -41,6 +41,7 @@ pub mod aggregate;
 pub mod aggregate_expr;
 pub mod alias;
 pub mod analyze;
+pub mod between;
 pub mod binary_expr;
 pub mod bool_expr;
 pub mod column;
@@ -230,6 +231,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
+    m.add_class::<between::PyBetween>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
