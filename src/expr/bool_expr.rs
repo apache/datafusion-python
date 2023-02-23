@@ -19,6 +19,7 @@ use datafusion_expr::Expr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use super::PyExpr;
 
 #[pyclass(name = "Not", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
@@ -29,6 +30,24 @@ pub struct PyNot {
 impl PyNot {
     pub fn new(expr: Expr) -> Self {
         Self { expr }
+    }
+}
+
+impl Display for PyNot {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Not
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyNot {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
     }
 }
 
@@ -44,6 +63,24 @@ impl PyIsNotNull {
     }
 }
 
+impl Display for PyIsNotNull {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsNotNull
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsNotNull {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
+    }
+}
+
 #[pyclass(name = "IsNull", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
 pub struct PyIsNull {
@@ -53,6 +90,24 @@ pub struct PyIsNull {
 impl PyIsNull {
     pub fn new(expr: Expr) -> Self {
         Self { expr }
+    }
+}
+
+impl Display for PyIsNull {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsNull
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsNull {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
     }
 }
 
@@ -68,6 +123,24 @@ impl PyIsTrue {
     }
 }
 
+impl Display for PyIsTrue {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsTrue
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsTrue {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
+    }
+}
+
 #[pyclass(name = "IsFalse", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
 pub struct PyIsFalse {
@@ -77,6 +150,24 @@ pub struct PyIsFalse {
 impl PyIsFalse {
     pub fn new(expr: Expr) -> Self {
         Self { expr }
+    }
+}
+
+impl Display for PyIsFalse {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsFalse
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsFalse {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
     }
 }
 
@@ -92,6 +183,24 @@ impl PyIsUnknown {
     }
 }
 
+impl Display for PyIsUnknown {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsUnknown
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsUnknown {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
+    }
+}
+
 #[pyclass(name = "IsNotTrue", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
 pub struct PyIsNotTrue {
@@ -101,6 +210,24 @@ pub struct PyIsNotTrue {
 impl PyIsNotTrue {
     pub fn new(expr: Expr) -> Self {
         Self { expr }
+    }
+}
+
+impl Display for PyIsNotTrue {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsNotTrue
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsNotTrue {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
     }
 }
 
@@ -116,6 +243,23 @@ impl PyIsNotFalse {
     }
 }
 
+impl Display for PyIsNotFalse {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsNotFalse
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsNotFalse {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
+    }
+}
 
 #[pyclass(name = "IsNotUnknown", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
@@ -126,6 +270,24 @@ pub struct PyIsNotUnknown {
 impl PyIsNotUnknown {
     pub fn new(expr: Expr) -> Self {
         Self { expr }
+    }
+}
+
+impl Display for PyIsNotUnknown {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "IsNotUnknown
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
+
+#[pymethods]
+impl PyIsNotUnknown {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
     }
 }
 
@@ -141,160 +303,20 @@ impl PyNegative {
     }
 }
 
+impl Display for PyNegative {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Negative
+            Expr: {}",
+            &self.expr
+        )
+    }
+}
 
-
-// impl Display for PyLike {
-//     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-//         write!(
-//             f,
-//             "Like
-//             Negated: {:?}
-//             Expr: {:?}
-//             Pattern: {:?}
-//             Escape_Char: {:?}",
-//             &self.negated(),
-//             &self.expr(),
-//             &self.pattern(),
-//             &self.escape_char()
-//         )
-//     }
-// }
-
-// #[pymethods]
-// impl PyLike {
-//     fn negated(&self) -> PyResult<bool> {
-//         Ok(self.like.negated)
-//     }
-
-//     fn expr(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.expr).clone().into())
-//     }
-
-//     fn pattern(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.pattern).clone().into())
-//     }
-
-//     fn escape_char(&self) -> PyResult<Option<char>> {
-//         Ok(self.like.escape_char)
-//     }
-
-//     fn __repr__(&self) -> String {
-//         format!("Like({})", self)
-//     }
-// }
-
-// #[pyclass(name = "ILike", module = "datafusion.expr", subclass)]
-// #[derive(Clone)]
-// pub struct PyILike {
-//     like: Like,
-// }
-
-// impl From<Like> for PyILike {
-//     fn from(like: Like) -> PyILike {
-//         PyILike { like }
-//     }
-// }
-
-// impl From<PyILike> for Like {
-//     fn from(like: PyILike) -> Self {
-//         like.like
-//     }
-// }
-
-// impl Display for PyILike {
-//     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-//         write!(
-//             f,
-//             "ILike
-//             Negated: {:?}
-//             Expr: {:?}
-//             Pattern: {:?}
-//             Escape_Char: {:?}",
-//             &self.negated(),
-//             &self.expr(),
-//             &self.pattern(),
-//             &self.escape_char()
-//         )
-//     }
-// }
-
-// #[pymethods]
-// impl PyILike {
-//     fn negated(&self) -> PyResult<bool> {
-//         Ok(self.like.negated)
-//     }
-
-//     fn expr(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.expr).clone().into())
-//     }
-
-//     fn pattern(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.pattern).clone().into())
-//     }
-
-//     fn escape_char(&self) -> PyResult<Option<char>> {
-//         Ok(self.like.escape_char)
-//     }
-
-//     fn __repr__(&self) -> String {
-//         format!("Like({})", self)
-//     }
-// }
-
-// #[pyclass(name = "SimilarTo", module = "datafusion.expr", subclass)]
-// #[derive(Clone)]
-// pub struct PySimilarTo {
-//     like: Like,
-// }
-
-// impl From<Like> for PySimilarTo {
-//     fn from(like: Like) -> PySimilarTo {
-//         PySimilarTo { like }
-//     }
-// }
-
-// impl From<PySimilarTo> for Like {
-//     fn from(like: PySimilarTo) -> Self {
-//         like.like
-//     }
-// }
-
-// impl Display for PySimilarTo {
-//     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-//         write!(
-//             f,
-//             "SimilarTo
-//             Negated: {:?}
-//             Expr: {:?}
-//             Pattern: {:?}
-//             Escape_Char: {:?}",
-//             &self.negated(),
-//             &self.expr(),
-//             &self.pattern(),
-//             &self.escape_char()
-//         )
-//     }
-// }
-
-// #[pymethods]
-// impl PySimilarTo {
-//     fn negated(&self) -> PyResult<bool> {
-//         Ok(self.like.negated)
-//     }
-
-//     fn expr(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.expr).clone().into())
-//     }
-
-//     fn pattern(&self) -> PyResult<PyExpr> {
-//         Ok((*self.like.pattern).clone().into())
-//     }
-
-//     fn escape_char(&self) -> PyResult<Option<char>> {
-//         Ok(self.like.escape_char)
-//     }
-
-//     fn __repr__(&self) -> String {
-//         format!("Like({})", self)
-//     }
-// }
+#[pymethods]
+impl PyNegative {
+    fn expr(&self) -> PyResult<PyExpr> {
+        Ok(self.expr.clone().into())
+    }
+}

@@ -29,7 +29,10 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
-use self::bool_expr::{PyNot, PyIsNotNull, PyIsNull, PyIsTrue, PyIsFalse, PyIsUnknown, PyIsNotTrue, PyIsNotFalse, PyIsNotUnknown, PyNegative};
+use self::bool_expr::{
+    PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
+    PyIsUnknown, PyNegative, PyNot,
+};
 
 pub mod aggregate;
 pub mod aggregate_expr;
@@ -72,6 +75,16 @@ impl PyExpr {
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
+            Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_py(py)),
+            Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_py(py)),
+            Expr::IsNull(expr) => Ok(PyIsNull::new(*expr.clone()).into_py(py)),
+            Expr::IsTrue(expr) => Ok(PyIsTrue::new(*expr.clone()).into_py(py)),
+            Expr::IsFalse(expr) => Ok(PyIsFalse::new(*expr.clone()).into_py(py)),
+            Expr::IsUnknown(expr) => Ok(PyIsUnknown::new(*expr.clone()).into_py(py)),
+            Expr::IsNotTrue(expr) => Ok(PyIsNotTrue::new(*expr.clone()).into_py(py)),
+            Expr::IsNotFalse(expr) => Ok(PyIsNotFalse::new(*expr.clone()).into_py(py)),
+            Expr::IsNotUnknown(expr) => Ok(PyIsNotUnknown::new(*expr.clone()).into_py(py)),
+            Expr::Negative(expr) => Ok(PyNegative::new(*expr.clone()).into_py(py)),
             Expr::AggregateFunction(expr) => {
                 Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
             }
