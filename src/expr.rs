@@ -54,6 +54,8 @@ pub mod projection;
 pub mod scalar_variable;
 pub mod sort;
 pub mod table_scan;
+pub mod case;
+pub mod cast;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -230,6 +232,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
+    m.add_class::<case::PyCase>()?;
+    m.add_class::<cast::PyCast>()?;
+    m.add_class::<cast::PyTryCast>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
