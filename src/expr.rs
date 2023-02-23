@@ -213,7 +213,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
-<<<<<<< HEAD
     m.add_class::<PyNot>()?;
     m.add_class::<PyIsNotNull>()?;
     m.add_class::<PyIsNull>()?;
@@ -224,10 +223,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyIsNotFalse>()?;
     m.add_class::<PyIsNotUnknown>()?;
     m.add_class::<PyNegative>()?;
-=======
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
->>>>>>> upstream/main
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
