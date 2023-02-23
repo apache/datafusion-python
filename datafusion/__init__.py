@@ -62,6 +62,15 @@ from .expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
+    ScalarFunction,
+    BuiltinScalarFunction,
+    InList,
+    Exists,
+    Subquery,
+    InSubquery,
+    ScalarSubquery,
+    GroupingSet,
+    Placeholder,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -99,6 +108,15 @@ __all__ = [
     "IsNotFalse",
     "IsNotUnknown",
     "Negative",
+    "ScalarFunction",
+    "BuiltinScalarFunction",
+    "InList",
+    "Exists",
+    "Subquery",
+    "InSubquery",
+    "ScalarSubquery",
+    "GroupingSet",
+    "Placeholder",
 ]
 
 

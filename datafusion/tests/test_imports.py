@@ -58,6 +58,15 @@ from datafusion.expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
+    ScalarFunction,
+    BuiltinScalarFunction,
+    InList,
+    Exists,
+    Subquery,
+    InSubquery,
+    ScalarSubquery,
+    GroupingSet,
+    Placeholder,
 )
 
 
@@ -105,6 +114,15 @@ def test_class_module_is_datafusion():
         IsNotFalse,
         IsNotUnknown,
         Negative,
+        ScalarFunction,
+        BuiltinScalarFunction,
+        InList,
+        Exists,
+        Subquery,
+        InSubquery,
+        ScalarSubquery,
+        GroupingSet,
+        Placeholder,
     ]:
         assert klass.__module__ == "datafusion.expr"
 

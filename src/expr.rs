@@ -54,6 +54,15 @@ pub mod projection;
 pub mod scalar_variable;
 pub mod sort;
 pub mod table_scan;
+pub mod scalar_function;
+pub mod signature;
+pub mod in_list;
+pub mod exists;
+pub mod in_subquery;
+pub mod subquery;
+pub mod scalar_subquery;
+pub mod grouping_set;
+pub mod placeholder;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -230,6 +239,15 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
+    m.add_class::<scalar_function::PyScalarFunction>()?;
+    m.add_class::<scalar_function::PyBuiltinScalarFunction>()?;
+    m.add_class::<in_list::PyInList>()?;
+    m.add_class::<exists::PyExists>()?;
+    m.add_class::<subquery::PySubquery>()?;
+    m.add_class::<in_subquery::PyInSubquery>()?;
+    m.add_class::<scalar_subquery::PyScalarSubquery>()?;
+    m.add_class::<placeholder::PyPlaceholder>()?;
+    m.add_class::<grouping_set::PyGroupingSet>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
