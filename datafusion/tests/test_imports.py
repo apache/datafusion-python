@@ -49,7 +49,19 @@ from datafusion.expr import (
     SimilarTo,
     ScalarVariable,
     Alias,
+<<<<<<< HEAD
     GetIndexedField,
+=======
+    Not,
+    IsNotNull,
+    IsTrue,
+    IsFalse,
+    IsUnknown,
+    IsNotTrue,
+    IsNotFalse,
+    IsNotUnknown,
+    Negative,
+>>>>>>> upstream/main
 )
 
 
@@ -89,6 +101,15 @@ def test_class_module_is_datafusion():
         ScalarVariable,
         Alias,
         GetIndexedField,
+        Not,
+        IsNotNull,
+        IsTrue,
+        IsFalse,
+        IsUnknown,
+        IsNotTrue,
+        IsNotFalse,
+        IsNotUnknown,
+        Negative,
     ]:
         assert klass.__module__ == "datafusion.expr"
 
