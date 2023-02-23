@@ -63,6 +63,9 @@ from .expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
+    Case,
+    Cast,
+    TryCast,
     Between,
 )
 
@@ -102,6 +105,9 @@ __all__ = [
     "IsNotFalse",
     "IsNotUnknown",
     "Negative",
+    "Case",
+    "Cast",
+    "TryCast",
     "Between",
 ]
 

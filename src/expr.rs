@@ -44,6 +44,8 @@ pub mod analyze;
 pub mod between;
 pub mod binary_expr;
 pub mod bool_expr;
+pub mod case;
+pub mod cast;
 pub mod column;
 pub mod empty_relation;
 pub mod filter;
@@ -232,6 +234,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
+    m.add_class::<case::PyCase>()?;
+    m.add_class::<cast::PyCast>()?;
+    m.add_class::<cast::PyTryCast>()?;
     m.add_class::<between::PyBetween>()?;
     m.add_class::<indexed_field::PyGetIndexedField>()?;
     // operators
