@@ -29,8 +29,8 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
-use self::scalar_variable::PyScalarVariable;
 use self::alias::PyAlias;
+use self::scalar_variable::PyScalarVariable;
 
 pub mod aggregate;
 pub mod aggregate_expr;
