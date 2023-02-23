@@ -40,10 +40,7 @@ impl From<Case> for PyCase {
 #[pymethods]
 impl PyCase {
     fn expr(&self) -> Option<PyExpr> {
-        match &self.case.expr {
-            Some(e) => Some((**e).clone().into()),
-            None => None,
-        }
+        self.case.expr.as_ref().map(|e| (**e).clone().into())
     }
 
     fn when_then_expr(&self) -> Vec<(PyExpr, PyExpr)> {
@@ -55,9 +52,6 @@ impl PyCase {
     }
 
     fn else_expr(&self) -> Option<PyExpr> {
-        match &self.case.else_expr {
-            Some(e) => Some((**e).clone().into()),
-            None => None,
-        }
+        self.case.else_expr.as_ref().map(|e| (**e).clone().into())
     }
 }
