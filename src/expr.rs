@@ -233,6 +233,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
     m.add_class::<between::PyBetween>()?;
+    m.add_class::<indexed_field::PyGetIndexedField>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
