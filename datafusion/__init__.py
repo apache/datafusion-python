@@ -50,6 +50,7 @@ from .expr import (
     ILike,
     Projection,
     SimilarTo,
+    ScalarVariable,
     Sort,
     TableScan,
 )
@@ -78,6 +79,7 @@ __all__ = [
     "Like",
     "ILike",
     "SimilarTo",
+    "ScalarVariable",
     "Alias",
 ]
 
