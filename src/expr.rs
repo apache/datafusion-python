@@ -41,6 +41,7 @@ pub mod binary_expr;
 pub mod column;
 pub mod empty_relation;
 pub mod filter;
+pub mod indexed_field;
 pub mod like;
 pub mod limit;
 pub mod literal;

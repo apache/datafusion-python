@@ -53,6 +53,7 @@ from .expr import (
     ScalarVariable,
     Sort,
     TableScan,
+    GetIndexedField,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -81,6 +82,7 @@ __all__ = [
     "SimilarTo",
     "ScalarVariable",
     "Alias",
+    "GetIndexedField",
 ]
 
 

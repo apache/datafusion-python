@@ -844,9 +844,9 @@ dependencies = [
  "datafusion",
  "itertools",
  "object_store",
- "prost 0.11.6",
+ "prost 0.11.7",
  "prost-build 0.9.0",
- "prost-types 0.11.6",
+ "prost-types 0.11.7",
  "substrait",
  "tokio",
 ]
@@ -1813,12 +1813,12 @@ dependencies = [
 
 [[package]]
 name = "prost"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "21dc42e00223fc37204bd4aa177e69420c604ca4a183209a8f9de30c6d934698"
+checksum = "3933d3ac2717077b3d5f42b40f59edfb1fb6a8c14e1c7de0f38075c4bac8e314"
 dependencies = [
  "bytes",
- "prost-derive 0.11.6",
+ "prost-derive 0.11.7",
 ]
 
 [[package]]
@@ -1843,9 +1843,9 @@ dependencies = [
 
 [[package]]
 name = "prost-build"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3f8ad728fb08fe212df3c05169e940fbb6d9d16a877ddde14644a983ba2012e"
+checksum = "a24be1d23b4552a012093e1b93697b73d644ae9590e3253d878d0e77d411b614"
 dependencies = [
  "bytes",
  "heck 0.4.1",
@@ -1854,8 +1854,8 @@ dependencies = [
  "log",
  "multimap",
  "petgraph",
- "prost 0.11.6",
- "prost-types 0.11.6",
+ "prost 0.11.7",
+ "prost-types 0.11.7",
  "regex",
  "tempfile",
  "which",
@@ -1876,9 +1876,9 @@ dependencies = [
 
 [[package]]
 name = "prost-derive"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8bda8c0881ea9f722eb9629376db3d0b903b462477c1aafcb0566610ac28ac5d"
+checksum = "8e9935362e8369bc3acd874caeeae814295c504c2bdbcde5c024089cf8b4dc12"
 dependencies = [
  "anyhow",
  "itertools",
@@ -1899,12 +1899,11 @@ dependencies = [
 
 [[package]]
 name = "prost-types"
-version = "0.11.6"
+version = "0.11.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a5e0526209433e96d83d750dd81a99118edbc55739e7e61a46764fd2ad537788"
+checksum = "7de56acd5cc9642cac2a9518d4c8c53818905398fe42d33235859e0d542a7695"
 dependencies = [
- "bytes",
- "prost 0.11.6",
+ "prost 0.11.7",
 ]
 
 [[package]]
@@ -2469,9 +2468,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e2feb96a6a106e21161551af32dc4e0fdab3aceb926b940d7e92a086b640fc7c"
 dependencies = [
  "heck 0.4.1",
- "prost 0.11.6",
- "prost-build 0.11.6",
- "prost-types 0.11.6",
+ "prost 0.11.7",
+ "prost-build 0.11.7",
+ "prost-types 0.11.7",
  "schemars",
  "serde",
  "serde_json",
@@ -2488,9 +2487,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.107"
+version = "1.0.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f4064b5b16e03ae50984a5a8ed5d4f8803e6bc1fd170a3cda91a1be4b18e3f5"
+checksum = "d56e159d99e6c2b93995d171050271edb50ecc5288fbc7cc17de8fdce4e58c14"
 dependencies = [
  "proc-macro2",
  "quote",
