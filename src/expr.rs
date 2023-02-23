@@ -29,8 +29,8 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
-use self::like::{PyILike, PyLike, PySimilarTo};
 use self::alias::PyAlias;
+use self::like::{PyILike, PyLike, PySimilarTo};
 
 pub mod aggregate;
 pub mod aggregate_expr;
