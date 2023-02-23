@@ -29,10 +29,13 @@ use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
+use self::bool_expr::{PyNot, PyIsNotNull, PyIsNull, PyIsTrue, PyIsFalse, PyIsUnknown, PyIsNotTrue, PyIsNotFalse, PyIsNotUnknown, PyNegative};
+
 pub mod aggregate;
 pub mod aggregate_expr;
 pub mod analyze;
 pub mod binary_expr;
+pub mod bool_expr;
 pub mod column;
 pub mod filter;
 pub mod limit;
@@ -177,6 +180,16 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+    m.add_class::<PyNot>()?;
+    m.add_class::<PyIsNotNull>()?;
+    m.add_class::<PyIsNull>()?;
+    m.add_class::<PyIsTrue>()?;
+    m.add_class::<PyIsFalse>()?;
+    m.add_class::<PyIsUnknown>()?;
+    m.add_class::<PyIsNotTrue>()?;
+    m.add_class::<PyIsNotFalse>()?;
+    m.add_class::<PyIsNotUnknown>()?;
+    m.add_class::<PyNegative>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
