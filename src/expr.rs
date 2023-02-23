@@ -41,8 +41,11 @@ pub mod aggregate;
 pub mod aggregate_expr;
 pub mod alias;
 pub mod analyze;
+pub mod between;
 pub mod binary_expr;
 pub mod bool_expr;
+pub mod case;
+pub mod cast;
 pub mod column;
 pub mod empty_relation;
 pub mod filter;
@@ -54,8 +57,6 @@ pub mod projection;
 pub mod scalar_variable;
 pub mod sort;
 pub mod table_scan;
-pub mod case;
-pub mod cast;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -235,6 +236,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<case::PyCase>()?;
     m.add_class::<cast::PyCast>()?;
     m.add_class::<cast::PyTryCast>()?;
+    m.add_class::<between::PyBetween>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;

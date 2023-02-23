@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::{expr::PyExpr, common::data_type::PyDataType};
+use crate::{common::data_type::PyDataType, expr::PyExpr};
 use datafusion_expr::{Cast, TryCast};
 use pyo3::prelude::*;
 
@@ -47,7 +47,6 @@ impl PyCast {
         Ok(self.cast.data_type.clone().into())
     }
 }
-
 
 #[pyclass(name = "TryCast", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

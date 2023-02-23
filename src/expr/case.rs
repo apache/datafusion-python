@@ -47,7 +47,8 @@ impl PyCase {
     }
 
     fn when_then_expr(&self) -> Vec<(PyExpr, PyExpr)> {
-        self.case.when_then_expr
+        self.case
+            .when_then_expr
             .iter()
             .map(|e| ((*e.0).clone().into(), (*e.1).clone().into()))
             .collect()
