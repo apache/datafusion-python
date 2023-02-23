@@ -77,7 +77,7 @@ __all__ = [
     "SessionConfig",
     "RuntimeConfig",
     "Expr",
-    "AggregateUDF",Subquery
+    "AggregateUDF",
     "ScalarUDF",
     "column",
     "literal",
@@ -103,13 +103,10 @@ __all__ = [
     "IsNotFalse",
     "IsNotUnknown",
     "Negative",
-<<<<<<< HEAD
     "Case",
     "Cast",
     "TryCast",
-=======
     "Between",
->>>>>>> upstream/main
 ]
 
 
