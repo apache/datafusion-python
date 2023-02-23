@@ -59,6 +59,10 @@ impl PyAnalyze {
         Ok(self.analyze.verbose)
     }
 
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(self))
+    }
+
     /// Resulting Schema for this `Analyze` node instance
     fn schema(&self) -> PyResult<PyDFSchema> {
         Ok((*self.analyze.schema).clone().into())
@@ -70,7 +74,7 @@ impl PyAnalyze {
 }
 
 impl LogicalNode for PyAnalyze {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.analyze.input).clone())]
     }
 }

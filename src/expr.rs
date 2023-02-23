@@ -30,12 +30,15 @@ use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
 use self::like::{PyILike, PyLike, PySimilarTo};
+use self::alias::PyAlias;
 
 pub mod aggregate;
 pub mod aggregate_expr;
+pub mod alias;
 pub mod analyze;
 pub mod binary_expr;
 pub mod column;
+pub mod empty_relation;
 pub mod filter;
 pub mod like;
 pub mod limit;
@@ -69,6 +72,7 @@ impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match &self.expr {
+            Expr::Alias(alias, name) => Ok(PyAlias::new(alias, name).into_py(py)),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
@@ -80,6 +84,17 @@ impl PyExpr {
                 other
             ))),
         })
+    }
+
+    /// Returns the name of this expression as it should appear in a schema. This name
+    /// will not include any CAST expressions.
+    fn display_name(&self) -> PyResult<String> {
+        Ok(self.expr.display_name()?)
+    }
+
+    /// Returns a full and complete string representation of this expression.
+    fn canonical_name(&self) -> PyResult<String> {
+        Ok(self.expr.canonical_name())
     }
 
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
@@ -183,6 +198,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyLike>()?;
     m.add_class::<PyILike>()?;
     m.add_class::<PySimilarTo>()?;
+    m.add_class::<alias::PyAlias>()?;
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
@@ -191,5 +207,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
     m.add_class::<analyze::PyAnalyze>()?;
+    m.add_class::<empty_relation::PyEmptyRelation>()?;
     Ok(())
 }

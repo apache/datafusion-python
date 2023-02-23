@@ -41,6 +41,7 @@ from .common import (
 )
 
 from .expr import (
+    Alias,
     Analyze,
     Expr,
     Filter,
@@ -77,6 +78,7 @@ __all__ = [
     "Like",
     "ILike",
     "SimilarTo",
+    "Alias",
 ]
 
 

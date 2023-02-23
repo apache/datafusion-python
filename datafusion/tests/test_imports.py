@@ -47,6 +47,7 @@ from datafusion.expr import (
     Like,
     ILike,
     SimilarTo,
+    Alias,
 )
 
 
@@ -83,6 +84,7 @@ def test_class_module_is_datafusion():
         Like,
         ILike,
         SimilarTo,
+        Alias,
     ]:
         assert klass.__module__ == "datafusion.expr"
 
