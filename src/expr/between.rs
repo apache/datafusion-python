@@ -54,7 +54,6 @@ impl Display for PyBetween {
 
 #[pymethods]
 impl PyBetween {
-    
     fn expr(&self) -> PyResult<PyExpr> {
         Ok((*self.between.expr).clone().into())
     }
