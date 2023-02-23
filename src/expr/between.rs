@@ -18,7 +18,7 @@
 use crate::expr::PyExpr;
 use datafusion_expr::expr::Between;
 use pyo3::prelude::*;
-use std::fmt::{Display, Formatter, self};
+use std::fmt::{self, Display, Formatter};
 
 #[pyclass(name = "Between", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
