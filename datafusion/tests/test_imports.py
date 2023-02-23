@@ -58,6 +58,7 @@ from datafusion.expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
+    Between,
 )
 
 
@@ -105,6 +106,7 @@ def test_class_module_is_datafusion():
         IsNotFalse,
         IsNotUnknown,
         Negative,
+        Between,
     ]:
         assert klass.__module__ == "datafusion.expr"
 

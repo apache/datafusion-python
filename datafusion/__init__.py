@@ -62,6 +62,7 @@ from .expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
+    Between,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -99,6 +100,7 @@ __all__ = [
     "IsNotFalse",
     "IsNotUnknown",
     "Negative",
+    "Between",
 ]
 
 
