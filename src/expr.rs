@@ -34,6 +34,7 @@ use self::bool_expr::{
     PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
     PyIsUnknown, PyNegative, PyNot,
 };
+use self::like::{PyILike, PyLike, PySimilarTo};
 use self::scalar_variable::PyScalarVariable;
 
 pub mod aggregate;
@@ -45,6 +46,7 @@ pub mod bool_expr;
 pub mod column;
 pub mod empty_relation;
 pub mod filter;
+pub mod like;
 pub mod limit;
 pub mod literal;
 pub mod logical_node;
@@ -56,7 +58,7 @@ pub mod table_scan;
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PyExpr {
+pub struct PyExpr {
     pub(crate) expr: Expr,
 }
 
@@ -223,6 +225,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyIsNotFalse>()?;
     m.add_class::<PyIsNotUnknown>()?;
     m.add_class::<PyNegative>()?;
+    m.add_class::<PyLike>()?;
+    m.add_class::<PyILike>()?;
+    m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
     // operators
