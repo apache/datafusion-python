@@ -29,10 +29,7 @@ pub struct PyExists {
 
 impl PyExists {
     pub fn new(subquery: Subquery, negated: bool) -> Self {
-        Self {
-            subquery,
-            negated
-        }
+        Self { subquery, negated }
     }
 }
 

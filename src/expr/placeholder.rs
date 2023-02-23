@@ -20,7 +20,6 @@ use pyo3::prelude::*;
 
 use crate::common::data_type::PyDataType;
 
-
 #[pyclass(name = "Placeholder", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyPlaceholder {
@@ -32,7 +31,7 @@ impl PyPlaceholder {
     pub fn new(id: String, data_type: DataType) -> Self {
         Self {
             id,
-            data_type: Some(data_type)
+            data_type: Some(data_type),
         }
     }
 }
@@ -46,7 +45,7 @@ impl PyPlaceholder {
     fn data_type(&self) -> Option<PyDataType> {
         match &self.data_type {
             Some(e) => Some(e.clone().into()),
-            None => None
+            None => None,
         }
     }
 }

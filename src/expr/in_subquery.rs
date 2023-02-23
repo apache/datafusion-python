@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::{Subquery, Expr};
+use datafusion_expr::{Expr, Subquery};
 use pyo3::prelude::*;
 
 use super::{subquery::PySubquery, PyExpr};
@@ -33,7 +33,7 @@ impl PyInSubquery {
         Self {
             expr,
             subquery,
-            negated
+            negated,
         }
     }
 }

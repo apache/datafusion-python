@@ -48,25 +48,25 @@ pub mod case;
 pub mod cast;
 pub mod column;
 pub mod empty_relation;
+pub mod exists;
 pub mod filter;
+pub mod grouping_set;
+pub mod in_list;
+pub mod in_subquery;
 pub mod indexed_field;
 pub mod like;
 pub mod limit;
 pub mod literal;
 pub mod logical_node;
-pub mod projection;
-pub mod scalar_variable;
-pub mod sort;
-pub mod table_scan;
-pub mod scalar_function;
-pub mod signature;
-pub mod in_list;
-pub mod exists;
-pub mod in_subquery;
-pub mod subquery;
-pub mod scalar_subquery;
-pub mod grouping_set;
 pub mod placeholder;
+pub mod projection;
+pub mod scalar_function;
+pub mod scalar_subquery;
+pub mod scalar_variable;
+pub mod signature;
+pub mod sort;
+pub mod subquery;
+pub mod table_scan;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]

@@ -18,7 +18,6 @@
 use datafusion_expr::Subquery;
 use pyo3::prelude::*;
 
-
 #[pyclass(name = "Subquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySubquery {

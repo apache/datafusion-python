@@ -35,11 +35,10 @@ impl PyScalarFunction {
     }
 }
 
-
 #[pyclass(name = "BuiltinScalarFunction", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyBuiltinScalarFunction {
-    scalar_function: BuiltinScalarFunction
+    scalar_function: BuiltinScalarFunction,
 }
 
 impl From<BuiltinScalarFunction> for PyBuiltinScalarFunction {
@@ -54,7 +53,6 @@ impl From<PyBuiltinScalarFunction> for BuiltinScalarFunction {
     }
 }
 
-
 #[pymethods]
 impl PyScalarFunction {
     fn fun(&self) -> PyResult<PyBuiltinScalarFunction> {
@@ -62,9 +60,6 @@ impl PyScalarFunction {
     }
 
     fn args(&self) -> PyResult<Vec<PyExpr>> {
-        Ok(self.args
-            .iter()
-            .map(|e| e.clone().into())
-            .collect())
+        Ok(self.args.iter().map(|e| e.clone().into()).collect())
     }
 }

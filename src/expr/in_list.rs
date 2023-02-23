@@ -32,7 +32,7 @@ impl PyInList {
         Self {
             expr,
             list,
-            negated
+            negated,
         }
     }
 }
@@ -44,10 +44,7 @@ impl PyInList {
     }
 
     fn list(&self) -> Vec<PyExpr> {
-        self.list
-            .iter()
-            .map(|e| e.clone().into())
-            .collect()
+        self.list.iter().map(|e| e.clone().into()).collect()
     }
 
     fn negated(&self) -> bool {

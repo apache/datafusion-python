@@ -35,6 +35,4 @@ impl PySignature {
 }
 
 #[pymethods]
-impl PySignature {
-    
-}
+impl PySignature {}
