@@ -74,8 +74,8 @@ impl PyProjection {
     }
 
     /// Retrieves the input `LogicalPlan` to this `Projection` node
-    fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.projection.input).clone())
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Projection` node instance
@@ -86,10 +86,14 @@ impl PyProjection {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("Projection({})", self))
     }
+
+    fn __name__(&self) -> PyResult<String> {
+        Ok("Projection".to_string())
+    }
 }
 
 impl LogicalNode for PyProjection {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.projection.input).clone())]
     }
 }

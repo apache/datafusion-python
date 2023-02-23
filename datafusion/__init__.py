@@ -41,6 +41,7 @@ from .common import (
 )
 
 from .expr import (
+    Alias,
     Analyze,
     Expr,
     Filter,
@@ -73,6 +74,7 @@ __all__ = [
     "Limit",
     "Filter",
     "ScalarVariable",
+    "Alias",
 ]
 
 

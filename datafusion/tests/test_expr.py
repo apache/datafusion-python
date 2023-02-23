@@ -60,7 +60,7 @@ def test_projection(test_ctx):
     assert col3.op() == "<"
     assert isinstance(col3.right().to_variant(), Literal)
 
-    plan = plan.input().to_variant()
+    plan = plan.input()[0].to_variant()
     assert isinstance(plan, TableScan)
 
 
@@ -71,7 +71,7 @@ def test_filter(test_ctx):
     plan = plan.to_variant()
     assert isinstance(plan, Projection)
 
-    plan = plan.input().to_variant()
+    plan = plan.input()[0].to_variant()
     assert isinstance(plan, Filter)
 
 
@@ -90,7 +90,7 @@ def test_aggregate_query(test_ctx):
     projection = plan.to_variant()
     assert isinstance(projection, Projection)
 
-    aggregate = projection.input().to_variant()
+    aggregate = projection.input()[0].to_variant()
     assert isinstance(aggregate, Aggregate)
 
     col1 = aggregate.group_by_exprs()[0].to_variant()

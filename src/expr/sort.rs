@@ -73,8 +73,8 @@ impl PySort {
     }
 
     /// Retrieves the input `LogicalPlan` to this `Sort` node
-    fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan::from((*self.sort.input).clone())
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(self))
     }
 
     /// Resulting Schema for this `Sort` node instance
@@ -88,7 +88,7 @@ impl PySort {
 }
 
 impl LogicalNode for PySort {
-    fn input(&self) -> Vec<PyLogicalPlan> {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.sort.input).clone())]
     }
 }
