@@ -54,6 +54,15 @@ from .expr import (
     Sort,
     TableScan,
     GetIndexedField,
+    Not,
+    IsNotNull,
+    IsTrue,
+    IsFalse,
+    IsUnknown,
+    IsNotTrue,
+    IsNotFalse,
+    IsNotUnknown,
+    Negative,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -83,6 +92,15 @@ __all__ = [
     "ScalarVariable",
     "Alias",
     "GetIndexedField",
+    "Not",
+    "IsNotNull",
+    "IsTrue",
+    "IsFalse",
+    "IsUnknown",
+    "IsNotTrue",
+    "IsNotFalse",
+    "IsNotUnknown",
+    "Negative",
 ]
 
 

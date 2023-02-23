@@ -30,6 +30,10 @@ use crate::expr::literal::PyLiteral;
 use datafusion::scalar::ScalarValue;
 
 use self::alias::PyAlias;
+use self::bool_expr::{
+    PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
+    PyIsUnknown, PyNegative, PyNot,
+};
 use self::like::{PyILike, PyLike, PySimilarTo};
 use self::scalar_variable::PyScalarVariable;
 
@@ -38,6 +42,7 @@ pub mod aggregate_expr;
 pub mod alias;
 pub mod analyze;
 pub mod binary_expr;
+pub mod bool_expr;
 pub mod column;
 pub mod empty_relation;
 pub mod filter;
@@ -82,6 +87,16 @@ impl PyExpr {
             }
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
+            Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_py(py)),
+            Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_py(py)),
+            Expr::IsNull(expr) => Ok(PyIsNull::new(*expr.clone()).into_py(py)),
+            Expr::IsTrue(expr) => Ok(PyIsTrue::new(*expr.clone()).into_py(py)),
+            Expr::IsFalse(expr) => Ok(PyIsFalse::new(*expr.clone()).into_py(py)),
+            Expr::IsUnknown(expr) => Ok(PyIsUnknown::new(*expr.clone()).into_py(py)),
+            Expr::IsNotTrue(expr) => Ok(PyIsNotTrue::new(*expr.clone()).into_py(py)),
+            Expr::IsNotFalse(expr) => Ok(PyIsNotFalse::new(*expr.clone()).into_py(py)),
+            Expr::IsNotUnknown(expr) => Ok(PyIsNotUnknown::new(*expr.clone()).into_py(py)),
+            Expr::Negative(expr) => Ok(PyNegative::new(*expr.clone()).into_py(py)),
             Expr::AggregateFunction(expr) => {
                 Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
             }
@@ -201,6 +216,16 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+    m.add_class::<PyNot>()?;
+    m.add_class::<PyIsNotNull>()?;
+    m.add_class::<PyIsNull>()?;
+    m.add_class::<PyIsTrue>()?;
+    m.add_class::<PyIsFalse>()?;
+    m.add_class::<PyIsUnknown>()?;
+    m.add_class::<PyIsNotTrue>()?;
+    m.add_class::<PyIsNotFalse>()?;
+    m.add_class::<PyIsNotUnknown>()?;
+    m.add_class::<PyNegative>()?;
     m.add_class::<PyLike>()?;
     m.add_class::<PyILike>()?;
     m.add_class::<PySimilarTo>()?;
