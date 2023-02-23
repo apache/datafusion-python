@@ -47,6 +47,7 @@ from .expr import (
     Filter,
     Limit,
     Projection,
+    ScalarVariable,
     Sort,
     TableScan,
 )
@@ -72,6 +73,7 @@ __all__ = [
     "Sort",
     "Limit",
     "Filter",
+    "ScalarVariable",
     "Alias",
 ]
 
