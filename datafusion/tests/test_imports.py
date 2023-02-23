@@ -44,6 +44,8 @@ from datafusion.expr import (
     Aggregate,
     Sort,
     Analyze,
+    ScalarVariable,
+    Alias,
 )
 
 
@@ -77,6 +79,8 @@ def test_class_module_is_datafusion():
         Limit,
         Filter,
         Analyze,
+        ScalarVariable,
+        Alias,
     ]:
         assert klass.__module__ == "datafusion.expr"
 

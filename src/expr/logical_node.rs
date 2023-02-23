@@ -21,5 +21,5 @@ use crate::sql::logical::PyLogicalPlan;
 /// any "node" shares these common traits in common.
 pub trait LogicalNode {
     /// The input plan to the current logical node instance.
-    fn input(&self) -> Vec<PyLogicalPlan>;
+    fn inputs(&self) -> Vec<PyLogicalPlan>;
 }

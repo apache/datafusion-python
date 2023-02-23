@@ -15,43 +15,39 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-
-use datafusion_common::DFSchema;
+use datafusion::arrow::datatypes::DataType;
 use pyo3::prelude::*;
 
-#[derive(Debug, Clone)]
-#[pyclass(name = "DFSchema", module = "datafusion.common", subclass)]
-pub struct PyDFSchema {
-    schema: Arc<DFSchema>,
+use crate::common::data_type::PyDataType;
+
+#[pyclass(name = "ScalarVariable", module = "datafusion.expr", subclass)]
+#[derive(Clone)]
+pub struct PyScalarVariable {
+    data_type: DataType,
+    variables: Vec<String>,
 }
 
-impl From<PyDFSchema> for DFSchema {
-    fn from(schema: PyDFSchema) -> DFSchema {
-        (*schema.schema).clone()
-    }
-}
-
-impl From<DFSchema> for PyDFSchema {
-    fn from(schema: DFSchema) -> PyDFSchema {
-        PyDFSchema {
-            schema: Arc::new(schema),
+impl PyScalarVariable {
+    pub fn new(data_type: &DataType, variables: &[String]) -> Self {
+        Self {
+            data_type: data_type.to_owned(),
+            variables: variables.to_vec(),
         }
     }
 }
 
 #[pymethods]
-impl PyDFSchema {
-    #[pyo3(name = "empty")]
-    #[staticmethod]
-    fn py_empty() -> PyResult<Self> {
-        Ok(Self {
-            schema: Arc::new(DFSchema::empty()),
-        })
+impl PyScalarVariable {
+    /// Get the data type
+    fn data_type(&self) -> PyResult<PyDataType> {
+        Ok(self.data_type.clone().into())
     }
 
-    #[pyo3(name = "field_names")]
-    fn py_field_names(&self) -> PyResult<Vec<String>> {
-        Ok(self.schema.field_names())
+    fn variables(&self) -> PyResult<Vec<String>> {
+        Ok(self.variables.clone())
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}{:?}", self.data_type, self.variables))
     }
 }

@@ -20,6 +20,7 @@ use std::sync::Arc;
 use crate::errors::py_runtime_err;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
+use crate::expr::empty_relation::PyEmptyRelation;
 use crate::expr::filter::PyFilter;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
@@ -54,6 +55,7 @@ impl PyLogicalPlan {
         Python::with_gil(|_| match self.plan.as_ref() {
             LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
             LogicalPlan::Analyze(plan) => Ok(PyAnalyze::from(plan.clone()).into_py(py)),
+            LogicalPlan::EmptyRelation(plan) => Ok(PyEmptyRelation::from(plan.clone()).into_py(py)),
             LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
             LogicalPlan::Limit(plan) => Ok(PyLimit::from(plan.clone()).into_py(py)),
             LogicalPlan::Projection(plan) => Ok(PyProjection::from(plan.clone()).into_py(py)),

@@ -33,18 +33,23 @@ use self::bool_expr::{
     PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
     PyIsUnknown, PyNegative, PyNot,
 };
+use self::alias::PyAlias;
+use self::scalar_variable::PyScalarVariable;
 
 pub mod aggregate;
 pub mod aggregate_expr;
+pub mod alias;
 pub mod analyze;
 pub mod binary_expr;
 pub mod bool_expr;
 pub mod column;
+pub mod empty_relation;
 pub mod filter;
 pub mod limit;
 pub mod literal;
 pub mod logical_node;
 pub mod projection;
+pub mod scalar_variable;
 pub mod sort;
 pub mod table_scan;
 
@@ -72,7 +77,11 @@ impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match &self.expr {
+            Expr::Alias(alias, name) => Ok(PyAlias::new(alias, name).into_py(py)),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
+            Expr::ScalarVariable(data_type, variables) => {
+                Ok(PyScalarVariable::new(data_type, variables).into_py(py))
+            }
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
             Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_py(py)),
@@ -93,6 +102,17 @@ impl PyExpr {
                 other
             ))),
         })
+    }
+
+    /// Returns the name of this expression as it should appear in a schema. This name
+    /// will not include any CAST expressions.
+    fn display_name(&self) -> PyResult<String> {
+        Ok(self.expr.display_name()?)
+    }
+
+    /// Returns a full and complete string representation of this expression.
+    fn canonical_name(&self) -> PyResult<String> {
+        Ok(self.expr.canonical_name())
     }
 
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
@@ -193,6 +213,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyBinaryExpr>()?;
     m.add_class::<PyLiteral>()?;
     m.add_class::<PyAggregateFunction>()?;
+<<<<<<< HEAD
     m.add_class::<PyNot>()?;
     m.add_class::<PyIsNotNull>()?;
     m.add_class::<PyIsNull>()?;
@@ -203,6 +224,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyIsNotFalse>()?;
     m.add_class::<PyIsNotUnknown>()?;
     m.add_class::<PyNegative>()?;
+=======
+    m.add_class::<PyScalarVariable>()?;
+    m.add_class::<alias::PyAlias>()?;
+>>>>>>> upstream/main
     // operators
     m.add_class::<table_scan::PyTableScan>()?;
     m.add_class::<projection::PyProjection>()?;
@@ -211,5 +236,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;
     m.add_class::<analyze::PyAnalyze>()?;
+    m.add_class::<empty_relation::PyEmptyRelation>()?;
     Ok(())
 }

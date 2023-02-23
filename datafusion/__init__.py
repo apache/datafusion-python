@@ -41,11 +41,13 @@ from .common import (
 )
 
 from .expr import (
+    Alias,
     Analyze,
     Expr,
     Filter,
     Limit,
     Projection,
+    ScalarVariable,
     Sort,
     TableScan,
 )
@@ -71,6 +73,8 @@ __all__ = [
     "Sort",
     "Limit",
     "Filter",
+    "ScalarVariable",
+    "Alias",
 ]
 
 
