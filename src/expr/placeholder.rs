@@ -43,9 +43,6 @@ impl PyPlaceholder {
     }
 
     fn data_type(&self) -> Option<PyDataType> {
-        match &self.data_type {
-            Some(e) => Some(e.clone().into()),
-            None => None,
-        }
+        self.data_type.as_ref().map(|e| e.clone().into())
     }
 }
