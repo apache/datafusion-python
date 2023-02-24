@@ -1,0 +1,52 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+repos:
+      - repo: https://github.com/psf/black
+        rev: 22.3.0
+        hooks:
+              - id: black
+                files: datafusion/.*
+                # Explicitly specify the pyproject.toml at the repo root, not per-project.
+                args: ["--config", "pyproject.toml", "--line-length", "79", "--diff", "--check", "."]
+      - repo: https://github.com/PyCQA/flake8
+        rev: 5.0.4
+        hooks:
+              - id: flake8
+                files: datafusion/.*$
+                types: [file]
+                types_or: [python]
+                additional_dependencies: ["flake8-force"]
+      - repo: local
+        hooks:
+          - id: rust-fmt
+            name: Rust fmt
+            description: Run cargo fmt on files included in the commit. rustfmt should be installed before-hand.
+            entry: cargo fmt --all --
+            pass_filenames: true
+            types: [file, rust]
+            language: system
+          - id: rust-clippy
+            name: Rust clippy
+            description: Run cargo clippy on files included in the commit. clippy should be installed before-hand.
+            entry: cargo clippy --all-targets --all-features -- -Dclippy::all -Aclippy::redundant_closure
+            pass_filenames: false
+            types: [file, rust]
+            language: system
+
+default_language_version:
+      python: python3
