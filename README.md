@@ -183,6 +183,14 @@ maturin develop
 python -m pytest
 ```
 
+### Running & Installing pre-commit hooks
+
+arrow-datafusion-python takes advantage of (pre-commit)[https://pre-commit.com/] to assist developers in with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keep PRs clean and concise.
+
+Our pre-commit hooks can be installed by running `pre-commit install` which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit failing to perform the commit if an offending lint is found giving you the opportunity to make changes locally before pushing.
+
+The pre-commit hooks can also be ran ad-hoc without installing them by simply running `pre-commit run --all-files`
+
 ## How to update dependencies
 
 To change test dependencies, change the `requirements.in` and run
