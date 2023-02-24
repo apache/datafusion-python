@@ -544,3 +544,29 @@ def test_to_pandas(df):
     assert type(pandas_df) == pd.DataFrame
     assert pandas_df.shape == (3, 3)
     assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_to_arrow_table(df):
+    # Convert datafusion dataframe to pyarrow Table
+    pyarrow_table = df.to_arrow_table()
+    assert type(pyarrow_table) == pa.Table
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_to_pylist(df):
+    # Convert datafusion dataframe to Python list
+    pylist = df.to_pylist()
+    assert type(pylist) == list
+    assert pylist == [
+        {"a": 1, "b": 4, "c": 8},
+        {"a": 2, "b": 5, "c": 5},
+        {"a": 3, "b": 6, "c": 8},
+    ]
+
+
+def test_to_pydict(df):
+    # Convert datafusion dataframe to Python dictionary
+    pydict = df.to_pydict()
+    assert type(pydict) == dict
+    assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
