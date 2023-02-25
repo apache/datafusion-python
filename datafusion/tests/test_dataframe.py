@@ -131,9 +131,7 @@ def test_with_column(df):
 
 
 def test_with_column_renamed(df):
-    df = df.with_column("c", column("a") + column("b")).with_column_renamed(
-        "c", "sum"
-    )
+    df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
 
     result = df.collect()[0]
 
@@ -197,9 +195,7 @@ def test_distinct():
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df_b = ctx.create_dataframe([[batch]]).sort(
-        column("a").sort(ascending=True)
-    )
+    df_b = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
 
     assert df_a.collect() == df_b.collect()
 
@@ -230,9 +226,7 @@ def test_window_functions(df):
             "cume_dist",
         ),
         f.alias(
-            f.window(
-                "ntile", [literal(2)], order_by=[f.order_by(column("c"))]
-            ),
+            f.window("ntile", [literal(2)], order_by=[f.order_by(column("c"))]),
             "ntile",
         ),
         f.alias(
@@ -240,9 +234,7 @@ def test_window_functions(df):
             "previous",
         ),
         f.alias(
-            f.window(
-                "lead", [column("b")], order_by=[f.order_by(column("b"))]
-            ),
+            f.window("lead", [column("b")], order_by=[f.order_by(column("b"))]),
             "next",
         ),
         f.alias(
@@ -254,9 +246,7 @@ def test_window_functions(df):
             "first_value",
         ),
         f.alias(
-            f.window(
-                "last_value", [column("b")], order_by=[f.order_by(column("b"))]
-            ),
+            f.window("last_value", [column("b")], order_by=[f.order_by(column("b"))]),
             "last_value",
         ),
         f.alias(
@@ -366,9 +356,7 @@ def test_optimized_logical_plan(aggregate_df):
 def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
-    expected = (
-        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
-    )
+    expected = "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
 
     assert expected == plan.display()
 
@@ -425,9 +413,7 @@ def test_intersect():
         [pa.array([3]), pa.array([6])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(
-        column("a").sort(ascending=True)
-    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
 
     df_a_i_b = df_a.intersect(df_b).sort(column("a").sort(ascending=True))
 
@@ -453,9 +439,7 @@ def test_except_all():
         [pa.array([1, 2]), pa.array([4, 5])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(
-        column("a").sort(ascending=True)
-    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
 
     df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
 
@@ -490,9 +474,7 @@ def test_union(ctx):
         [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(
-        column("a").sort(ascending=True)
-    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
 
     df_a_u_b = df_a.union(df_b).sort(column("a").sort(ascending=True))
 
@@ -516,9 +498,7 @@ def test_union_distinct(ctx):
         [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(
-        column("a").sort(ascending=True)
-    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
 
     df_a_u_b = df_a.union(df_b, True).sort(column("a").sort(ascending=True))
 
@@ -546,11 +526,30 @@ def test_to_pandas(df):
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
 
+def test_empty_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert empty datafusion dataframe to pandas dataframe
+    pandas_df = df.limit(0).to_pandas()
+    assert type(pandas_df) == pd.DataFrame
+    assert pandas_df.shape == (0, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
 def test_to_arrow_table(df):
     # Convert datafusion dataframe to pyarrow Table
     pyarrow_table = df.to_arrow_table()
     assert type(pyarrow_table) == pa.Table
     assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_empty_to_arrow_table(df):
+    # Convert empty datafusion dataframe to pyarrow Table
+    pyarrow_table = df.limit(0).to_arrow_table()
+    assert type(pyarrow_table) == pa.Table
+    assert pyarrow_table.shape == (0, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 

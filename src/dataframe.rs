@@ -334,7 +334,6 @@ impl PyDataFrame {
         let table = self.to_arrow_table(py)?;
 
         Python::with_gil(|py| {
-            // Use Table.to_pandas() method to convert batches to pandas dataframe
             // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
             let result = table.call_method0(py, "to_pandas")?;
             Ok(result)
@@ -347,7 +346,6 @@ impl PyDataFrame {
         let table = self.to_arrow_table(py)?;
 
         Python::with_gil(|py| {
-            // Use Table.to_pylist() method to convert batches to pandas dataframe
             // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
             let result = table.call_method0(py, "to_pylist")?;
             Ok(result)
@@ -360,7 +358,6 @@ impl PyDataFrame {
         let table = self.to_arrow_table(py)?;
 
         Python::with_gil(|py| {
-            // Use Table.to_pydict() method to convert batches to pandas dataframe
             // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
             let result = table.call_method0(py, "to_pydict")?;
             Ok(result)
