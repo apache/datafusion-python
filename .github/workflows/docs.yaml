@@ -17,9 +17,9 @@ jobs:
         run: |
           set -x
           if test '${{ github.ref }}' = 'refs/heads/main'; then
-            echo "value=asf-staging" >> $GITHUB_OUTPUT
+            echo "value=asf-staging" >> "$GITHUB_OUTPUT"
           elif test '${{ github.ref_type }}' = 'tag'; then
-            echo "value=asf-site" >> $GITHUB_OUTPUT
+            echo "value=asf-site" >> "$GITHUB_OUTPUT"
           else
             echo "Unsupported input: ${{ github.ref }} / ${{ github.ref_type }}"
             exit 1

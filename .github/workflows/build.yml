@@ -73,6 +73,9 @@ jobs:
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
         run: dir target\wheels\
+        # since the runner is dynamic shellcheck (from actionlint) can't infer this is powershell
+        # so we specify it explicitly
+        shell: powershell
 
       - name: List Mac wheels
         if: matrix.os != 'windows-latest'
