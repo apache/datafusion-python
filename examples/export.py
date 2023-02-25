@@ -17,7 +17,6 @@
 
 import datafusion
 import pyarrow
-import polars as pl
 
 
 # create a context
