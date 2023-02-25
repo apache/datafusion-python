@@ -16,7 +16,6 @@
 # under the License.
 
 import datafusion
-from datafusion import col
 import pyarrow
 import polars as pl
 
