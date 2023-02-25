@@ -47,7 +47,7 @@ arrow_table = df.to_arrow_table()
 assert arrow_table.shape == (3, 2)
 
 # export to Polars dataframe
-polars_df = pl.DataFrame(df.to_arrow_table())
+polars_df = df.to_polars()
 assert polars_df.shape == (3, 2)
 
 # export to Python list of rows

@@ -557,6 +557,28 @@ def test_empty_to_pandas(df):
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
 
+def test_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert datafusion dataframe to polars dataframe
+    polars_df = df.to_polars()
+    assert type(polars_df) == pl.DataFrame
+    assert polars_df.shape == (3, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert empty datafusion dataframe to polars dataframe
+    polars_df = df.limit(0).to_polars()
+    assert type(polars_df) == pl.DataFrame
+    assert polars_df.shape == (0, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
 def test_to_arrow_table(df):
     # Convert datafusion dataframe to pyarrow Table
     pyarrow_table = df.to_arrow_table()

@@ -364,6 +364,19 @@ impl PyDataFrame {
         })
     }
 
+    /// Convert to polars dataframe with pyarrow
+    /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
+    fn to_polars(&self, py: Python) -> PyResult<PyObject> {
+        let table = self.to_arrow_table(py)?;
+
+        Python::with_gil(|py| {
+            let dataframe = py.import("polars")?.getattr("DataFrame")?;
+            let args = PyTuple::new(py, &[table]);
+            let result: PyObject = dataframe.call1(args)?.into();
+            Ok(result)
+        })
+    }
+
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
