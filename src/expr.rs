@@ -67,6 +67,7 @@ pub mod signature;
 pub mod sort;
 pub mod subquery;
 pub mod table_scan;
+pub mod union;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -266,5 +267,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<sort::PySort>()?;
     m.add_class::<analyze::PyAnalyze>()?;
     m.add_class::<empty_relation::PyEmptyRelation>()?;
+    m.add_class::<union::PyUnion>()?;
     Ok(())
 }
