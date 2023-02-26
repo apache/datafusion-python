@@ -26,6 +26,7 @@ from datafusion import (
     SessionContext,
     SessionConfig,
     RuntimeConfig,
+    DataFrame,
 )
 import pytest
 
@@ -106,6 +107,7 @@ def test_from_arrow_table(ctx):
 
     assert df
     assert len(tables) == 1
+    assert type(df) == DataFrame
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -123,6 +125,7 @@ def test_from_pylist(ctx):
 
     assert df
     assert len(tables) == 1
+    assert type(df) == DataFrame
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -136,6 +139,39 @@ def test_from_pydict(ctx):
 
     assert df
     assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pandas(ctx):
+    # create a dataframe from pandas dataframe
+    pd = pytest.importorskip("pandas")
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    pandas_df = pd.DataFrame(data)
+
+    df = ctx.from_pandas(pandas_df)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_polars(ctx):
+    # create a dataframe from Polars dataframe
+    pd = pytest.importorskip("polars")
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    polars_df = pd.DataFrame(data)
+
+    df = ctx.from_polars(polars_df)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 

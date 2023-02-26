@@ -303,6 +303,7 @@ impl PySessionContext {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
     }
 
+    /// Construct datafusion dataframe from Python list
     fn from_pylist(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
@@ -310,11 +311,13 @@ impl PySessionContext {
             let args = PyTuple::new(py, &[data]);
             let table = table_class.call_method1("from_pylist", args)?.into();
 
+            // Convert Arrow Table to datafusion DataFrame
             let df = self.from_arrow_table(table, py)?;
             Ok(df)
         })
     }
 
+    /// Construct datafusion dataframe from Python dictionary
     fn from_pydict(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
@@ -322,11 +325,13 @@ impl PySessionContext {
             let args = PyTuple::new(py, &[data]);
             let table = table_class.call_method1("from_pydict", args)?.into();
 
+            // Convert Arrow Table to datafusion DataFrame
             let df = self.from_arrow_table(table, py)?;
             Ok(df)
         })
     }
 
+    /// Construct datafusion dataframe from Arrow Table
     fn from_arrow_table(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to batches
@@ -338,6 +343,32 @@ impl PySessionContext {
             let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>(py)?;
             let list_of_batches = PyArrowType::try_from(vec![batches.0])?;
             self.create_dataframe(list_of_batches, py)
+        })
+    }
+
+    /// Construct datafusion dataframe from pandas
+    fn from_pandas(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
+        Python::with_gil(|py| {
+            // Instantiate pyarrow Table object & convert to Arrow Table
+            let table_class = py.import("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new(py, &[data]);
+            let table = table_class.call_method1("from_pandas", args)?.into();
+
+            // Convert Arrow Table to datafusion DataFrame
+            let df = self.from_arrow_table(table, py)?;
+            Ok(df)
+        })
+    }
+
+    /// Construct datafusion dataframe from polars
+    fn from_polars(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
+        Python::with_gil(|py| {
+            // Convert Polars dataframe to Arrow Table
+            let table = data.call_method0(py, "to_arrow")?.into();
+
+            // Convert Arrow Table to datafusion DataFrame
+            let df = self.from_arrow_table(table, py)?;
+            Ok(df)
         })
     }
 
