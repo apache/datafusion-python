@@ -95,6 +95,51 @@ def test_create_dataframe_registers_unique_table_name(ctx):
         assert c in "0123456789abcdef"
 
 
+def test_from_arrow_table(ctx):
+    # create a PyArrow table
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    table = pa.Table.from_pydict(data)
+
+    # convert to DataFrame
+    df = ctx.from_arrow_table(table)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pylist(ctx):
+    # create a dataframe from Python list
+    data = [
+        {"a": 1, "b": 4},
+        {"a": 2, "b": 5},
+        {"a": 3, "b": 6},
+    ]
+
+    df = ctx.from_pylist(data)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pydict(ctx):
+    # create a dataframe from Python dictionary
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+
+    df = ctx.from_pydict(data)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
 def test_register_table(ctx, database):
     default = ctx.catalog()
     public = default.database("public")
