@@ -125,7 +125,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: python-wheel-license
           path: .
