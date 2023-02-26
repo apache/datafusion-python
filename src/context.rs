@@ -304,6 +304,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python list
+    #[allow(clippy::wrong_self_convention)]
     fn from_pylist(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
@@ -318,6 +319,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python dictionary
+    #[allow(clippy::wrong_self_convention)]
     fn from_pydict(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
@@ -332,6 +334,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Arrow Table
+    #[allow(clippy::wrong_self_convention)]
     fn from_arrow_table(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to batches
@@ -347,6 +350,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from pandas
+    #[allow(clippy::wrong_self_convention)]
     fn from_pandas(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
@@ -361,10 +365,11 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from polars
+    #[allow(clippy::wrong_self_convention)]
     fn from_polars(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Convert Polars dataframe to Arrow Table
-            let table = data.call_method0(py, "to_arrow")?.into();
+            let table = data.call_method0(py, "to_arrow")?;
 
             // Convert Arrow Table to datafusion DataFrame
             let df = self.from_arrow_table(table, py)?;
