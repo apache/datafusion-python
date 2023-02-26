@@ -125,6 +125,11 @@ jobs:
           rust-toolchain: nightly
           target: x86_64
           manylinux: auto
+          rustup-components: |
+            cargo
+            rust-std
+            rustc
+            rustfmt
           args: --release --manylinux 2014
       - name: Archive wheels
         uses: actions/upload-artifact@v3
@@ -150,6 +155,11 @@ jobs:
         with:
           rust-toolchain: stable
           manylinux: auto
+          rustup-components: |
+            cargo
+            rust-std
+            rustc
+            rustfmt
           args: --release --sdist --out dist
       - name: Archive wheels
         uses: actions/upload-artifact@v2
