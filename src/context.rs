@@ -303,50 +303,38 @@ impl PySessionContext {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
     }
 
-    fn from_pylist(&mut self, data: PyObject, py: Python) -> PyResult<PyDataFrame> {
+    fn from_pylist(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to batches
+            // Instantiate pyarrow Table object & convert to Arrow Table
             let table_class = py.import("pyarrow")?.getattr("Table")?;
             let args = PyTuple::new(py, &[data]);
-            let table = table_class
-                .call_method1("from_pylist", args)?
-                .call_method0("to_batches")?;
+            let table = table_class.call_method1("from_pylist", args)?.into();
 
-            // Cast PyObject to Recordbatch type
-            // Because create_dataframe() expects a vector of vectors of record batches
-            // we need to wrap the record batches in an additional vector
-            let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>()?;
-            let list_of_batches = PyArrowType::try_from(vec![batches.0])?;
-            self.create_dataframe(list_of_batches, py)
+            let df = self.from_arrow_table(table, py)?;
+            Ok(df)
         })
     }
 
-    fn from_pydict(&mut self, data: PyObject, py: Python) -> PyResult<PyDataFrame> {
+    fn from_pydict(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to batches
+            // Instantiate pyarrow Table object & convert to Arrow Table
             let table_class = py.import("pyarrow")?.getattr("Table")?;
             let args = PyTuple::new(py, &[data]);
-            let table = table_class
-                .call_method1("from_pydict", args)?
-                .call_method0("to_batches")?;
+            let table = table_class.call_method1("from_pydict", args)?.into();
 
-            // Cast PyObject to Recordbatch type
-            // Because create_dataframe() expects a vector of vectors of record batches
-            // we need to wrap the record batches in an additional vector
-            let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>()?;
-            let list_of_batches = PyArrowType::try_from(vec![batches.0])?;
-            self.create_dataframe(list_of_batches, py)
+            let df = self.from_arrow_table(table, py)?;
+            Ok(df)
         })
     }
 
-    fn from_arrow_table(&mut self, data: PyObject, py: Python) -> PyResult<PyDataFrame> {
+    fn from_arrow_table(&mut self, data: PyObject, _py: Python) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to batches
             let table = data.call_method0(py, "to_batches")?;
 
-            // Cast PyObject to Recordbatch type
+            // Cast PyObject to RecordBatch type
             // Because create_dataframe() expects a vector of vectors of record batches
-            // we need to wrap the record batches in an additional vector
+            // here we need to wrap the vector of record batches in an additional vector
             let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>(py)?;
             let list_of_batches = PyArrowType::try_from(vec![batches.0])?;
             self.create_dataframe(list_of_batches, py)
