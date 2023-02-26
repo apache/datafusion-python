@@ -76,8 +76,7 @@ impl PyUnion {
 
 impl LogicalNode for PyUnion {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
-        (*self)
-            .union_
+        self.union_
             .inputs
             .iter()
             .map(|x| x.as_ref().clone().into())
