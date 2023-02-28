@@ -69,6 +69,7 @@ pub mod signature;
 pub mod sort;
 pub mod subquery;
 pub mod table_scan;
+pub mod union;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -272,5 +273,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<join::PyJoinType>()?;
     m.add_class::<join::PyJoinConstraint>()?;
     m.add_class::<cross_join::PyCrossJoin>()?;
+    m.add_class::<union::PyUnion>()?;
     Ok(())
 }

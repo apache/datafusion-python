@@ -171,29 +171,6 @@ This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to tes
 python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
 ```
 
-### Publish Python Artifacts to Anaconda
-
-Publishing artifacts to Anaconda is similar to PyPi. First, Download the source tarball created in the previous step and untar it.
-
-```bash
-# Assuming you have an existing conda environment named `datafusion-dev` if not see root README for instructions
-conda activate datafusion-dev
-conda build .
-```
-
-This will setup a virtual conda environment and build the artifacts inside of that virtual env. This step can take a few minutes as the entire build, host, and runtime environments are setup. Once complete a local filesystem path will be emitted for the location of the resulting package. Observe that path and copy to your clipboard.
-
-Ex: `/home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2`
-
-Now you are ready to publish this resulting package to anaconda.org. This can be accomplished in a few simple steps.
-
-```bash
-# First login to Anaconda with the datafusion credentials
-anaconda login
-# Upload the package
-anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2
-```
-
 ### Send the Email
 
 Send the email to start the vote.
@@ -221,7 +198,7 @@ Create the source release tarball:
 ./dev/release/release-tarball.sh 0.8.0 1
 ```
 
-### Publishing Python Artifacts
+### Publishing Python Artifacts to PyPi
 
 Go to the Test PyPI page of Datafusion, and download
 [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
@@ -229,6 +206,29 @@ uploading them using `twine`:
 
 ```bash
 twine upload --repository pypi dist-release/*
+```
+
+### Publish Python Artifacts to Anaconda
+
+Publishing artifacts to Anaconda is similar to PyPi. First, Download the source tarball created in the previous step and untar it.
+
+```bash
+# Assuming you have an existing conda environment named `datafusion-dev` if not see root README for instructions
+conda activate datafusion-dev
+conda build .
+```
+
+This will setup a virtual conda environment and build the artifacts inside of that virtual env. This step can take a few minutes as the entire build, host, and runtime environments are setup. Once complete a local filesystem path will be emitted for the location of the resulting package. Observe that path and copy to your clipboard.
+
+Ex: `/home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2`
+
+Now you are ready to publish this resulting package to anaconda.org. This can be accomplished in a few simple steps.
+
+```bash
+# First login to Anaconda with the datafusion credentials
+anaconda login
+# Upload the package
+anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2
 ```
 
 ### Push the Release Tag
