@@ -605,7 +605,7 @@ impl PySessionContext {
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, ctx) });
-        let stream = wait_for_future(py, fut).map_err(|e| py_datafusion_err(e))?;
+        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
     }
 }
