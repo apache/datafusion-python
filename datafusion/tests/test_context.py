@@ -26,6 +26,7 @@ from datafusion import (
     SessionContext,
     SessionConfig,
     RuntimeConfig,
+    DataFrame,
 )
 import pytest
 
@@ -93,6 +94,86 @@ def test_create_dataframe_registers_unique_table_name(ctx):
     # only hexadecimal numbers
     for c in tables[0][1:]:
         assert c in "0123456789abcdef"
+
+
+def test_from_arrow_table(ctx):
+    # create a PyArrow table
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    table = pa.Table.from_pydict(data)
+
+    # convert to DataFrame
+    df = ctx.from_arrow_table(table)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pylist(ctx):
+    # create a dataframe from Python list
+    data = [
+        {"a": 1, "b": 4},
+        {"a": 2, "b": 5},
+        {"a": 3, "b": 6},
+    ]
+
+    df = ctx.from_pylist(data)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pydict(ctx):
+    # create a dataframe from Python dictionary
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+
+    df = ctx.from_pydict(data)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_pandas(ctx):
+    # create a dataframe from pandas dataframe
+    pd = pytest.importorskip("pandas")
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    pandas_df = pd.DataFrame(data)
+
+    df = ctx.from_pandas(pandas_df)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
+
+
+def test_from_polars(ctx):
+    # create a dataframe from Polars dataframe
+    pd = pytest.importorskip("polars")
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    polars_df = pd.DataFrame(data)
+
+    df = ctx.from_polars(polars_df)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert type(df) == DataFrame
+    assert set(df.schema().names) == {"a", "b"}
+    assert df.collect()[0].num_rows == 3
 
 
 def test_register_table(ctx, database):

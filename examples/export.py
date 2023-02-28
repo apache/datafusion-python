@@ -16,18 +16,13 @@
 # under the License.
 
 import datafusion
-import pyarrow
 
 
 # create a context
 ctx = datafusion.SessionContext()
 
-# create a RecordBatch and a new datafusion DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-    names=["a", "b"],
-)
-df = ctx.create_dataframe([[batch]])
+# create a new datafusion DataFrame
+df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
 # Dataframe:
 # +---+---+
 # | a | b |
