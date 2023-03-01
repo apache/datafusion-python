@@ -313,20 +313,66 @@ impl PyDataFrame {
         Ok(())
     }
 
-    /// Convert to pandas dataframe with pyarrow
-    /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
-    fn to_pandas(&self, py: Python) -> PyResult<PyObject> {
-        let batches = self.collect(py);
+    /// Convert to Arrow Table
+    /// Collect the batches and pass to Arrow Table
+    fn to_arrow_table(&self, py: Python) -> PyResult<PyObject> {
+        let batches = self.collect(py)?.to_object(py);
+        let schema: PyObject = self.schema().into_py(py);
 
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object and use its from_batches method
             let table_class = py.import("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new(py, batches);
+            let args = PyTuple::new(py, &[batches, schema]);
             let table: PyObject = table_class.call_method1("from_batches", args)?.into();
+            Ok(table)
+        })
+    }
 
-            // Use Table.to_pandas() method to convert batches to pandas dataframe
+    /// Convert to pandas dataframe with pyarrow
+    /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
+    fn to_pandas(&self, py: Python) -> PyResult<PyObject> {
+        let table = self.to_arrow_table(py)?;
+
+        Python::with_gil(|py| {
             // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
             let result = table.call_method0(py, "to_pandas")?;
+            Ok(result)
+        })
+    }
+
+    /// Convert to Python list using pyarrow
+    /// Each list item represents one row encoded as dictionary
+    fn to_pylist(&self, py: Python) -> PyResult<PyObject> {
+        let table = self.to_arrow_table(py)?;
+
+        Python::with_gil(|py| {
+            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
+            let result = table.call_method0(py, "to_pylist")?;
+            Ok(result)
+        })
+    }
+
+    /// Convert to Python dictionary using pyarrow
+    /// Each dictionary key is a column and the dictionary value represents the column values
+    fn to_pydict(&self, py: Python) -> PyResult<PyObject> {
+        let table = self.to_arrow_table(py)?;
+
+        Python::with_gil(|py| {
+            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
+            let result = table.call_method0(py, "to_pydict")?;
+            Ok(result)
+        })
+    }
+
+    /// Convert to polars dataframe with pyarrow
+    /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
+    fn to_polars(&self, py: Python) -> PyResult<PyObject> {
+        let table = self.to_arrow_table(py)?;
+
+        Python::with_gil(|py| {
+            let dataframe = py.import("polars")?.getattr("DataFrame")?;
+            let args = PyTuple::new(py, &[table]);
+            let result: PyObject = dataframe.call1(args)?.into();
             Ok(result)
         })
     }
