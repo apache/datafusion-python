@@ -47,6 +47,7 @@ pub mod bool_expr;
 pub mod case;
 pub mod cast;
 pub mod column;
+pub mod cross_join;
 pub mod empty_relation;
 pub mod exists;
 pub mod filter;
@@ -54,6 +55,7 @@ pub mod grouping_set;
 pub mod in_list;
 pub mod in_subquery;
 pub mod indexed_field;
+pub mod join;
 pub mod like;
 pub mod limit;
 pub mod literal;
@@ -267,6 +269,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<sort::PySort>()?;
     m.add_class::<analyze::PyAnalyze>()?;
     m.add_class::<empty_relation::PyEmptyRelation>()?;
+    m.add_class::<join::PyJoin>()?;
+    m.add_class::<join::PyJoinType>()?;
+    m.add_class::<join::PyJoinConstraint>()?;
+    m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
     Ok(())
 }
