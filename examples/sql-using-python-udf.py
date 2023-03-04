@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import udf, SessionContext, functions as f
+from datafusion import udf, SessionContext
 import pyarrow as pa
 
 
