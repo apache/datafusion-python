@@ -55,7 +55,7 @@ my_udaf = udaf(
     "stable",
     # This will be the name of the UDAF in SQL
     # If not specified it will by default the same as accumulator class name
-    # name="my_accumulator",
+    name="my_accumulator",
 )
 
 # Create a context
