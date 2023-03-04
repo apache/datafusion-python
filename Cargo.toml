@@ -38,7 +38,7 @@ datafusion = { version = "18.0.0", features = ["pyarrow", "avro"] }
 datafusion-expr = "18.0.0"
 datafusion-optimizer = "18.0.0"
 datafusion-common = { version = "18.0.0", features = ["pyarrow"] }
-datafusion-sql = "18.0.0"
+datafusion-sql = "19.0.0"
 datafusion-substrait = "18.0.0"
 uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "*", optional = true, default-features = false }
