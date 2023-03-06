@@ -95,7 +95,11 @@ See [examples](examples/README.md) for more information.
 - [Query a Parquet file using SQL](./examples/sql-parquet.py)
 - [Query a Parquet file using the DataFrame API](./examples/dataframe-parquet.py)
 - [Run a SQL query and store the results in a Pandas DataFrame](./examples/sql-to-pandas.py)
+- [Run a SQL query with a Python user-defined function (UDF)](./examples/sql-using-python-udf.py)
+- [Run a SQL query with a Python user-defined aggregation function (UDAF)](./examples/sql-using-python-udaf.py)
 - [Query PyArrow Data](./examples/query-pyarrow-data.py)
+- [Create dataframe](./examples/import.py)
+- [Export dataframe](./examples/export.py)
 
 ### Running User-Defined Python Code
 
