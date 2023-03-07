@@ -77,7 +77,7 @@ ctx.register_udaf(my_udaf)
 
 # Query the DataFrame using SQL
 result_df = ctx.sql(
-    f"select a, my_accumulator(b) as b_aggregated from t group by a order by a"
+    "select a, my_accumulator(b) as b_aggregated from t group by a order by a"
 )
 # Dataframe:
 # +---+--------------+

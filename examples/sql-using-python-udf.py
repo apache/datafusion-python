@@ -52,7 +52,7 @@ ctx.from_pydict({"a": [1, 2, 3], "b": [4, None, 6]}, name="t")
 ctx.register_udf(is_null_arr)
 
 # Query the DataFrame using SQL
-result_df = ctx.sql(f"select a, is_null(b) as b_is_null from t")
+result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
 # Dataframe:
 # +---+-----------+
 # | a | b_is_null |
