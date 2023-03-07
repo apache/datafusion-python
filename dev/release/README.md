@@ -19,22 +19,51 @@
 
 # DataFusion Python Release Process
 
-## Update Version
+Development happens on the `main` branch, and most of the time, we depend on DataFusion using GitHub dependencies
+rather than using an official release from crates.io. This allows us to pick up new features and bug fixes frequently
+by creating PRs to move to a later revision of the code. It also means we can incrementally make updates that are
+required due to changes in DataFusion rather than having a large amount of work to do when the next official release
+is available.
 
-The version number in Cargo.toml should be increased, according to semver.
+When there is a new official release of DataFusion, we update the `main` branch to point to that, update the version
+number, and create a new release branch, such as `branch-0.8`. Once this branch is created, we switch the `main` branch
+back to using GitHub dependencies. The release activity (such as generating the changelog) can then happen on the
+release branch without blocking ongoing development in the `main` branch.
 
-## Update CHANGELOG.md
+We can cherry-pick commits from the `main` branch into `branch-0.8` as needed and then create new patch releases
+from that branch.
 
-Define release branch (e.g. `main`), base version tag (e.g. `0.6.0`) and future version tag (e.g. `0.7.0`). Commits
-between the base version tag and the release branch will be used to populate the changelog content.
+## Detailed Guide
 
-You will need a GitHub Personal Access Token for the following steps. Follow
+### Pre-requisites
+
+Releases can currently only be created by PMC members due to the permissions needed.
+
+You will need a GitHub Personal Access Token. Follow
 [these instructions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 to generate one if you do not already have one.
 
+You will need a PyPI API token. Create one at https://test.pypi.org/manage/account/#api-tokens, setting the “Scope” to
+“Entire account”.
+
+You will also need access to the [datafusion](https://test.pypi.org/project/datafusion/) project on testpypi.
+
+### Preparing the `main` Branch
+
+Before creating a new release:
+
+- We need to ensure that the main branch does not have any GitHub dependencies
+- a PR should be created and merged to update the major version number of the project
+- A new release branch should be created, such as `branch-0.8`
+
+### Update CHANGELOG.md
+
+Define release branch (e.g. `branch-0.8`), base version tag (e.g. `0.7.0`) and future version tag (e.g. `0.9.0`). Commits
+between the base version tag and the release branch will be used to populate the changelog content.
+
 ```bash
 # create the changelog
-CHANGELOG_GITHUB_TOKEN=<TOKEN> ./dev/release/update_change_log-datafusion-python.sh main 0.7.0 0.6.0
+CHANGELOG_GITHUB_TOKEN=<TOKEN> ./dev/release/update_change_log-datafusion-python.sh main 0.8.0 0.7.0
 # review change log / edit issues and labels if needed, rerun until you are happy with the result
 git commit -a -m 'Create changelog for release'
 ```
@@ -46,24 +75,23 @@ value of the `--cpus` argument in the `update_change_log.sh` script._
 You can add `invalid` or `development-process` label to exclude items from
 release notes.
 
-Send a PR to get these changes merged into `main` branch. If new commits that
-could change the change log content landed in the `main` branch before you
-could merge the PR, you need to rerun the changelog update script to regenerate
-the changelog and update the PR accordingly.
+Send a PR to get these changes merged into the release branch (e.g. `branch-0.8`). If new commits that could change the
+change log content landed in the release branch before you could merge the PR, you need to rerun the changelog update
+script to regenerate the changelog and update the PR accordingly.
 
-## Preparing a Release Candidate
+### Preparing a Release Candidate
 
 ### Tag the Repository
 
 ```bash
-git tag 0.7.0-rc1
-git push apache 0.7.0-rc1
+git tag 0.8.0-rc1
+git push apache 0.8.0-rc1
 ```
 
 ### Create a source release
 
 ```bash
-./dev/release/create_tarball 0.7.0 1
+./dev/release/create_tarball 0.8.0 1
 ```
 
 This will also create the email template to send to the mailing list. Here is an example:
@@ -107,17 +135,12 @@ Create a draft email using this content, but do not send until after completing 
 
 ### Publish Python Artifacts to testpypi
 
-To securely upload your project, you’ll need a PyPI API token. Create one at
-https://test.pypi.org/manage/account/#api-tokens, setting the “Scope” to “Entire account”.
-
-You will also need access to the [datafusion](https://test.pypi.org/project/datafusion/) project on testpypi.
-
-This section assumes some familiary with publishing Python packages to PyPi. For more information, refer to \
+This section assumes some familiarity with publishing Python packages to PyPi. For more information, refer to \
 [this tutorial](https://packaging.python.org/en/latest/tutorials/packaging-projects/#uploading-the-distribution-archives).
 
 #### Publish Python Wheels to testpypi
 
-Pushing an `rc` tag to main will cause a GitHub Workflow to run that will build the Python wheels.
+Pushing an `rc` tag to the release branch will cause a GitHub Workflow to run that will build the Python wheels.
 
 Go to https://github.com/apache/arrow-datafusion-python/actions and look for an action named "Python Release Build"
 that has run against the pushed tag.
@@ -148,29 +171,6 @@ This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to tes
 python3 -m twine upload --repository testpypi dist/datafusion-0.7.0.tar.gz
 ```
 
-### Publish Python Artifacts to Anaconda
-
-Publishing artifacts to Anaconda is similar to PyPi. First, Download the source tarball created in the previous step and untar it.
-
-```bash
-# Assuming you have an existing conda environment named `datafusion-dev` if not see root README for instructions
-conda activate datafusion-dev
-conda build .
-```
-
-This will setup a virtual conda environment and build the artifacts inside of that virtual env. This step can take a few minutes as the entire build, host, and runtime environments are setup. Once complete a local filesystem path will be emitted for the location of the resulting package. Observe that path and copy to your clipboard.
-
-Ex: `/home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2`
-
-Now you are ready to publish this resulting package to anaconda.org. This can be accomplished in a few simple steps.
-
-```bash
-# First login to Anaconda with the datafusion credentials
-anaconda login
-# Upload the package
-anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2
-```
-
 ### Send the Email
 
 Send the email to start the vote.
@@ -195,10 +195,10 @@ Once the vote passes, we can publish the release.
 Create the source release tarball:
 
 ```bash
-./dev/release/release-tarball.sh 0.7.0 1
+./dev/release/release-tarball.sh 0.8.0 1
 ```
 
-### Publishing Python Artifacts
+### Publishing Python Artifacts to PyPi
 
 Go to the Test PyPI page of Datafusion, and download
 [all published artifacts](https://test.pypi.org/project/datafusion/#files) under `dist-release/` directory. Then proceed
@@ -208,10 +208,33 @@ uploading them using `twine`:
 twine upload --repository pypi dist-release/*
 ```
 
+### Publish Python Artifacts to Anaconda
+
+Publishing artifacts to Anaconda is similar to PyPi. First, Download the source tarball created in the previous step and untar it.
+
+```bash
+# Assuming you have an existing conda environment named `datafusion-dev` if not see root README for instructions
+conda activate datafusion-dev
+conda build .
+```
+
+This will setup a virtual conda environment and build the artifacts inside of that virtual env. This step can take a few minutes as the entire build, host, and runtime environments are setup. Once complete a local filesystem path will be emitted for the location of the resulting package. Observe that path and copy to your clipboard.
+
+Ex: `/home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2`
+
+Now you are ready to publish this resulting package to anaconda.org. This can be accomplished in a few simple steps.
+
+```bash
+# First login to Anaconda with the datafusion credentials
+anaconda login
+# Upload the package
+anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2
+```
+
 ### Push the Release Tag
 
 ```bash
-git checkout 0.7.0-rc1
-git tag 0.7.0
-git push apache 0.7.0
+git checkout 0.8.0-rc1
+git tag 0.8.0
+git push apache 0.8.0
 ```
