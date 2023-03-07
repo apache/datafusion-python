@@ -96,6 +96,21 @@ def test_create_dataframe_registers_unique_table_name(ctx):
         assert c in "0123456789abcdef"
 
 
+def test_create_dataframe_registers_with_defined_table_name(ctx):
+    # create a RecordBatch and register it as memtable
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    df = ctx.create_dataframe([[batch]], name="tbl")
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert tables[0] == "tbl"
+
+
 def test_from_arrow_table(ctx):
     # create a PyArrow table
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
@@ -110,6 +125,19 @@ def test_from_arrow_table(ctx):
     assert type(df) == DataFrame
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
+
+
+def test_from_arrow_table_with_name(ctx):
+    # create a PyArrow table
+    data = {"a": [1, 2, 3], "b": [4, 5, 6]}
+    table = pa.Table.from_pydict(data)
+
+    # convert to DataFrame with optional name
+    df = ctx.from_arrow_table(table, name="tbl")
+    tables = list(ctx.tables())
+
+    assert df
+    assert tables[0] == "tbl"
 
 
 def test_from_pylist(ctx):

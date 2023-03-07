@@ -38,7 +38,7 @@ is_null_arr = udf(
 ctx = SessionContext()
 
 # Create a datafusion DataFrame from a Python dictionary
-source_df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, None, 6]})
+ctx.from_pydict({"a": [1, 2, 3], "b": [4, None, 6]}, name="t")
 # Dataframe:
 # +---+---+
 # | a | b |
@@ -52,8 +52,7 @@ source_df = ctx.from_pydict({"a": [1, 2, 3], "b": [4, None, 6]})
 ctx.register_udf(is_null_arr)
 
 # Query the DataFrame using SQL
-table_name = ctx.catalog().database().names().pop()
-result_df = ctx.sql(f"select a, is_null(b) as b_is_null from {table_name}")
+result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
 # Dataframe:
 # +---+-----------+
 # | a | b_is_null |
