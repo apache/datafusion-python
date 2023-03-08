@@ -171,7 +171,7 @@ def udf(func, input_types, return_type, volatility, name=None):
     if not callable(func):
         raise TypeError("`func` argument must be callable")
     if name is None:
-        name = func.__qualname__
+        name = func.__qualname__.lower()
     return ScalarUDF(
         name=name,
         func=func,
@@ -190,7 +190,7 @@ def udaf(accum, input_type, return_type, state_type, volatility, name=None):
             "`accum` must implement the abstract base class Accumulator"
         )
     if name is None:
-        name = accum.__qualname__
+        name = accum.__qualname__.lower()
     return AggregateUDF(
         name=name,
         accumulator=accum,
