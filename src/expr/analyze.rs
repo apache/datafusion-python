@@ -19,8 +19,8 @@ use datafusion_expr::logical_plan::Analyze;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
-use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(name = "Analyze", module = "datafusion.expr", subclass)]
@@ -76,5 +76,9 @@ impl PyAnalyze {
 impl LogicalNode for PyAnalyze {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.analyze.input).clone())]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }
