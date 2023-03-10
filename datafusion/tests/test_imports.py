@@ -77,6 +77,8 @@ from datafusion.expr import (
     Cast,
     TryCast,
     Between,
+    Explain,
+    Extension,
 )
 
 
@@ -143,6 +145,8 @@ def test_class_module_is_datafusion():
         Cast,
         TryCast,
         Between,
+        Explain,
+        Extension,
     ]:
         assert klass.__module__ == "datafusion.expr"
 
