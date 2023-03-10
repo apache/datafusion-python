@@ -274,5 +274,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
     m.add_class::<extension::PyExtension>()?;
+    m.add_class::<filter::PyFilter>()?;
+    m.add_class::<projection::PyProjection>()?;
+    m.add_class::<table_scan::PyTableScan>()?;
     Ok(())
 }
