@@ -95,14 +95,14 @@ impl Display for PyJoin {
         write!(
             f,
             "Join
-            \nLeft: {:?}
-            \nRight: {:?}
-            \nOn: {:?}
-            \nFilter: {:?}
-            \nJoinType: {:?}
-            \nJoinConstraint: {:?}
-            \nSchema: {:?}
-            \nNullEqualsNull: {:?}",
+            Left: {:?}
+            Right: {:?}
+            On: {:?}
+            Filter: {:?}
+            JoinType: {:?}
+            JoinConstraint: {:?}
+            Schema: {:?}
+            NullEqualsNull: {:?}",
             &self.join.left,
             &self.join.right,
             &self.join.on,
@@ -177,5 +177,9 @@ impl LogicalNode for PyJoin {
             PyLogicalPlan::from((*self.join.left).clone()),
             PyLogicalPlan::from((*self.join.right).clone()),
         ]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }

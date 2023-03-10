@@ -47,8 +47,8 @@ impl Display for PyFilter {
         write!(
             f,
             "Filter
-            \nPredicate: {:?}
-            \nInput: {:?}",
+            Predicate: {:?}
+            Input: {:?}",
             &self.filter.predicate, &self.filter.input
         )
     }
@@ -79,5 +79,9 @@ impl PyFilter {
 impl LogicalNode for PyFilter {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.filter.input).clone())]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }

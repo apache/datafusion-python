@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::common::df_schema::PyDFSchema;
+use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 use datafusion_expr::EmptyRelation;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
+
+use super::logical_node::LogicalNode;
 
 #[pyclass(name = "EmptyRelation", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -68,5 +70,16 @@ impl PyEmptyRelation {
 
     fn __name__(&self) -> PyResult<String> {
         Ok("EmptyRelation".to_string())
+    }
+}
+
+impl LogicalNode for PyEmptyRelation {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
+        // table scans are leaf nodes and do not have inputs
+        vec![]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }

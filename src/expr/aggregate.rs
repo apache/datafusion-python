@@ -21,7 +21,7 @@ use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
-use crate::expr::logical_node::LogicalNode;
+use super::logical_node::LogicalNode;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -102,5 +102,9 @@ impl PyAggregate {
 impl LogicalNode for PyAggregate {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.aggregate.input).clone())]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }

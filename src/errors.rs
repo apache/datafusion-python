@@ -82,3 +82,7 @@ pub fn py_runtime_err(e: impl Debug) -> PyErr {
 pub fn py_datafusion_err(e: impl Debug) -> PyErr {
     PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!("{e:?}"))
 }
+
+pub fn py_unsupported_variant_err(e: impl Debug) -> PyErr {
+    PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("{e:?}"))
+}

@@ -50,6 +50,7 @@ pub mod column;
 pub mod cross_join;
 pub mod empty_relation;
 pub mod exists;
+pub mod explain;
 pub mod filter;
 pub mod grouping_set;
 pub mod in_list;
@@ -260,10 +261,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<cast::PyTryCast>()?;
     m.add_class::<between::PyBetween>()?;
     m.add_class::<indexed_field::PyGetIndexedField>()?;
-    // operators
-    m.add_class::<table_scan::PyTableScan>()?;
-    m.add_class::<projection::PyProjection>()?;
-    m.add_class::<filter::PyFilter>()?;
+    m.add_class::<explain::PyExplain>()?;
     m.add_class::<limit::PyLimit>()?;
     m.add_class::<aggregate::PyAggregate>()?;
     m.add_class::<sort::PySort>()?;

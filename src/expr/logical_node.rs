@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use pyo3::{PyResult, Python, PyObject};
+
 use crate::sql::logical::PyLogicalPlan;
 
 /// Representation of a `LogicalNode` in the in overall `LogicalPlan`
@@ -22,4 +24,6 @@ use crate::sql::logical::PyLogicalPlan;
 pub trait LogicalNode {
     /// The input plan to the current logical node instance.
     fn inputs(&self) -> Vec<PyLogicalPlan>;
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject>;
 }
