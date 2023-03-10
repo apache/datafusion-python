@@ -62,7 +62,7 @@ my_udaf = udaf(
 ctx = SessionContext()
 
 # Create a datafusion DataFrame from a Python dictionary
-source_df = ctx.from_pydict({"a": [1, 1, 3], "b": [4, 5, 6]})
+source_df = ctx.from_pydict({"a": [1, 1, 3], "b": [4, 5, 6]}, name="t")
 # Dataframe:
 # +---+---+
 # | a | b |
@@ -76,9 +76,8 @@ source_df = ctx.from_pydict({"a": [1, 1, 3], "b": [4, 5, 6]})
 ctx.register_udaf(my_udaf)
 
 # Query the DataFrame using SQL
-table_name = ctx.catalog().database().names().pop()
 result_df = ctx.sql(
-    f"select a, my_accumulator(b) as b_aggregated from {table_name} group by a order by a"
+    "select a, my_accumulator(b) as b_aggregated from t group by a order by a"
 )
 # Dataframe:
 # +---+--------------+
