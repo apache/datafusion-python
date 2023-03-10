@@ -20,8 +20,8 @@ use datafusion_expr::logical_plan::Aggregate;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use crate::common::df_schema::PyDFSchema;
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
