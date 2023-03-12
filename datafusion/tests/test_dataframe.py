@@ -352,6 +352,7 @@ def test_optimized_logical_plan(aggregate_df):
 
     expected = "Projection: test.c1, SUM(test.c2)"
 
+    breakpoint()
     assert expected == plan.display()
 
     expected = (
