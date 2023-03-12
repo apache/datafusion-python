@@ -52,9 +52,9 @@ impl Display for PyTableScan {
         write!(
             f,
             "TableScan\nTable Name: {}
-            \nProjections: {:?}
-            \nProjected Schema: {:?}
-            \nFilters: {:?}",
+            Projections: {:?}
+            Projected Schema: {:?}
+            Filters: {:?}",
             &self.table_scan.table_name,
             &self.py_projections(),
             &self.py_schema(),
@@ -130,5 +130,9 @@ impl LogicalNode for PyTableScan {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         // table scans are leaf nodes and do not have inputs
         vec![]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }

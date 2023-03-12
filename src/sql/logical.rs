@@ -17,10 +17,11 @@
 
 use std::sync::Arc;
 
-use crate::errors::py_runtime_err;
+use crate::errors::py_unsupported_variant_err;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
 use crate::expr::empty_relation::PyEmptyRelation;
+use crate::expr::explain::PyExplain;
 use crate::expr::filter::PyFilter;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
@@ -28,6 +29,8 @@ use crate::expr::sort::PySort;
 use crate::expr::table_scan::PyTableScan;
 use datafusion_expr::LogicalPlan;
 use pyo3::prelude::*;
+
+use crate::expr::logical_node::LogicalNode;
 
 #[pyclass(name = "LogicalPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -53,15 +56,16 @@ impl PyLogicalPlan {
     /// Return the specific logical operator
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match self.plan.as_ref() {
-            LogicalPlan::Aggregate(plan) => Ok(PyAggregate::from(plan.clone()).into_py(py)),
-            LogicalPlan::Analyze(plan) => Ok(PyAnalyze::from(plan.clone()).into_py(py)),
-            LogicalPlan::EmptyRelation(plan) => Ok(PyEmptyRelation::from(plan.clone()).into_py(py)),
-            LogicalPlan::Filter(plan) => Ok(PyFilter::from(plan.clone()).into_py(py)),
-            LogicalPlan::Limit(plan) => Ok(PyLimit::from(plan.clone()).into_py(py)),
-            LogicalPlan::Projection(plan) => Ok(PyProjection::from(plan.clone()).into_py(py)),
-            LogicalPlan::Sort(plan) => Ok(PySort::from(plan.clone()).into_py(py)),
-            LogicalPlan::TableScan(plan) => Ok(PyTableScan::from(plan.clone()).into_py(py)),
-            other => Err(py_runtime_err(format!(
+            LogicalPlan::Aggregate(plan) => PyAggregate::from(plan.clone()).to_variant(py),
+            LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
+            LogicalPlan::EmptyRelation(plan) => PyEmptyRelation::from(plan.clone()).to_variant(py),
+            LogicalPlan::Explain(plan) => PyExplain::from(plan.clone()).to_variant(py),
+            LogicalPlan::Filter(plan) => PyFilter::from(plan.clone()).to_variant(py),
+            LogicalPlan::Limit(plan) => PyLimit::from(plan.clone()).to_variant(py),
+            LogicalPlan::Projection(plan) => PyProjection::from(plan.clone()).to_variant(py),
+            LogicalPlan::Sort(plan) => PySort::from(plan.clone()).to_variant(py),
+            LogicalPlan::TableScan(plan) => PyTableScan::from(plan.clone()).to_variant(py),
+            other => Err(py_unsupported_variant_err(format!(
                 "Cannot convert this plan to a LogicalNode: {:?}",
                 other
             ))),
