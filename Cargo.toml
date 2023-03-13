@@ -33,11 +33,11 @@ default = ["mimalloc"]
 [dependencies]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
-pyo3 = { version = "0.18.0", features = ["extension-module", "abi3", "abi3-py37"] }
+pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
 datafusion = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab", features = ["pyarrow", "avro"]}
+datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab", features = ["pyarrow"]}
 datafusion-expr = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab" }
 datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab" }
-datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab", features = ["pyarrow"]}
 datafusion-sql = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab" }
 datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "dd98aab" }
 uuid = { version = "1.2", features = ["v4"] }
