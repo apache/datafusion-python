@@ -80,7 +80,6 @@ from .expr import (
     CreateMemoryTable,
     SubqueryAlias,
     Extension,
-    CreateMemoryTable,
     CreateView,
     Distinct,
 )
