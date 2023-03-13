@@ -78,6 +78,7 @@ from .expr import (
     Between,
     Explain,
     SubqueryAlias,
+    Extension,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -131,6 +132,7 @@ __all__ = [
     "Between",
     "Explain",
     "SubqueryAlias",
+    "Extension",
 ]
 
 

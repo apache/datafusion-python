@@ -47,9 +47,9 @@ impl Display for PySubqueryAlias {
         write!(
             f,
             "SubqueryAlias
-            \nInputs(s): {:?}
-            \nAlias: {:?}
-            \nSchema: {:?}",
+            Inputs(s): {:?}
+            Alias: {:?}
+            Schema: {:?}",
             self.subquery_alias.input, self.subquery_alias.alias, self.subquery_alias.schema,
         )
     }
@@ -72,11 +72,11 @@ impl PySubqueryAlias {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Projection({})", self))
+        Ok(format!("SubqueryAlias({})", self))
     }
 
     fn __name__(&self) -> PyResult<String> {
-        Ok("Projection".to_string())
+        Ok("SubqueryAlias".to_string())
     }
 }
 

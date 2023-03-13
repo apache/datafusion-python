@@ -49,6 +49,7 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
+use datafusion_common::config::Extensions;
 use datafusion_common::ScalarValue;
 use pyo3::types::PyTuple;
 use tokio::runtime::Runtime;
@@ -698,19 +699,20 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyResult<PyRecordBatchStream> {
-        let ctx = Arc::new(TaskContext::new(
+        let ctx = TaskContext::try_new(
             "task_id".to_string(),
             "session_id".to_string(),
             HashMap::new(),
             HashMap::new(),
             HashMap::new(),
             Arc::new(RuntimeEnv::default()),
-        ));
+            Extensions::default(),
+        );
         // create a Tokio runtime to run the async code
         let rt = Runtime::new().unwrap();
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { plan.execute(part, ctx) });
+            rt.spawn(async move { plan.execute(part, Arc::new(ctx?)) });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
     }
