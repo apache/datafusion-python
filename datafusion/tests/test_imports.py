@@ -80,6 +80,7 @@ from datafusion.expr import (
     Explain,
     Extension,
     CreateMemoryTable,
+    CreateView,
 )
 
 
@@ -149,6 +150,7 @@ def test_class_module_is_datafusion():
         Explain,
         Extension,
         CreateMemoryTable,
+        CreateView,
     ]:
         assert klass.__module__ == "datafusion.expr"
 
