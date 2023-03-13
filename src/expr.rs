@@ -51,6 +51,7 @@ pub mod cross_join;
 pub mod empty_relation;
 pub mod exists;
 pub mod explain;
+pub mod extension;
 pub mod filter;
 pub mod grouping_set;
 pub mod in_list;
@@ -272,6 +273,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<join::PyJoinConstraint>()?;
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
+    m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
     m.add_class::<table_scan::PyTableScan>()?;

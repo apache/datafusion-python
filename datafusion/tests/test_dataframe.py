@@ -350,14 +350,13 @@ def test_logical_plan(aggregate_df):
 def test_optimized_logical_plan(aggregate_df):
     plan = aggregate_df.optimized_logical_plan()
 
-    expected = "Projection: test.c1, SUM(test.c2)"
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]"
 
     assert expected == plan.display()
 
     expected = (
-        "Projection: test.c1, SUM(test.c2)\n"
-        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
-        "    TableScan: test projection=[c1, c2]"
+        "Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "  TableScan: test projection=[c1, c2]"
     )
 
     assert expected == plan.display_indent()
@@ -366,9 +365,7 @@ def test_optimized_logical_plan(aggregate_df):
 def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
-    expected = (
-        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
-    )
+    expected = "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[SUM(test.c2)]\n"  # noqa: E501
 
     assert expected == plan.display()
 
@@ -382,7 +379,6 @@ def test_execution_plan(aggregate_df):
 
     # indent plan will be different for everyone due to absolute path
     # to filename, so we just check for some expected content
-    assert "ProjectionExec:" in indent
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
