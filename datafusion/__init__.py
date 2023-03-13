@@ -77,7 +77,6 @@ from .expr import (
     TryCast,
     Between,
     Explain,
-    Extension,
     CreateMemoryTable,
 )
 
