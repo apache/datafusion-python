@@ -47,6 +47,7 @@ pub mod bool_expr;
 pub mod case;
 pub mod cast;
 pub mod column;
+pub mod create_memory_table;
 pub mod cross_join;
 pub mod empty_relation;
 pub mod exists;
@@ -278,6 +279,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
     m.add_class::<table_scan::PyTableScan>()?;
+    m.add_class::<create_memory_table::PyCreateMemoryTable>()?;
     m.add_class::<subquery_alias::PySubqueryAlias>()?;
     Ok(())
 }
