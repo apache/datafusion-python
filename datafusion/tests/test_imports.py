@@ -76,6 +76,7 @@ from datafusion.expr import (
     Case,
     Cast,
     TryCast,
+    SubqueryAlias,
     Between,
     Explain,
     Extension,
@@ -145,6 +146,7 @@ def test_class_module_is_datafusion():
         Cast,
         TryCast,
         Between,
+        SubqueryAlias,
         Explain,
         Extension,
     ]:

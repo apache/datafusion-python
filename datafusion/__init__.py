@@ -77,6 +77,7 @@ from .expr import (
     TryCast,
     Between,
     Explain,
+    SubqueryAlias,
     Extension,
 )
 
@@ -130,6 +131,7 @@ __all__ = [
     "TryCast",
     "Between",
     "Explain",
+    "SubqueryAlias",
     "Extension",
 ]
 

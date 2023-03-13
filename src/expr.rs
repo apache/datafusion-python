@@ -70,6 +70,7 @@ pub mod scalar_variable;
 pub mod signature;
 pub mod sort;
 pub mod subquery;
+pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
 
@@ -277,5 +278,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
     m.add_class::<table_scan::PyTableScan>()?;
+    m.add_class::<subquery_alias::PySubqueryAlias>()?;
     Ok(())
 }
