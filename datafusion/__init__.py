@@ -80,6 +80,7 @@ from .expr import (
     Extension,
     CreateMemoryTable,
     CreateView,
+    Distinct,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -135,6 +136,7 @@ __all__ = [
     "Extension",
     "CreateMemoryTable",
     "CreateView",
+    "Distinct",
 ]
 
 
