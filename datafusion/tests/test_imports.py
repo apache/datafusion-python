@@ -76,8 +76,8 @@ from datafusion.expr import (
     Case,
     Cast,
     TryCast,
-    Between,
     SubqueryAlias,
+    Between,
 )
 
 
