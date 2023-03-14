@@ -44,7 +44,7 @@ jobs:
           mamba list
       - name: Build conda package
         env:
-            RUSTFMT: /usr/local/cargo/bin/rustfmt
+            RUSTFMT: /home/runner/.cargo/bin/rustfmt
         run: |
           # suffix for nightly package versions
           export VERSION_SUFFIX=a`date +%y%m%d`
