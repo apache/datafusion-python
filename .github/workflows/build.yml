@@ -122,10 +122,10 @@ jobs:
     name: Source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: python-wheel-license
           path: .
@@ -137,7 +137,7 @@ jobs:
           manylinux: auto
           args: --release --sdist --out dist
       - name: Archive wheels
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dist
           path: target/wheels/*
