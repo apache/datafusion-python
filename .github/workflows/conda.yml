@@ -34,7 +34,7 @@ jobs:
           pip list
           mamba list
       - name: Build conda package
-        uses: actions-rs/toolchain@v1
+        - uses: actions-rs/toolchain@v1
           with:
             profile: complete
             toolchain: stable
