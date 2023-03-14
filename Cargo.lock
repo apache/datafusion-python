@@ -2519,7 +2519,7 @@ dependencies = [
 [[package]]
 name = "substrait"
 version = "0.4.2"
-source = "git+https://github.com/jdye64/substrait-rs.git?branch=typify_build_issues#6075fa39eae577a532aaf96f9841149814c6b92c"
+source = "git+https://github.com/jdye64/substrait-rs.git?branch=typify_build_issues#22146fc9af2cc66b45dde3ee2f2b9b866b2f4b3c"
 dependencies = [
  "heck 0.4.1",
  "prost 0.11.8",
