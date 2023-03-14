@@ -25,6 +25,9 @@ jobs:
           toolchain: stable
           override: true
           commands: clippy, rustfmt, rustc
+      - Rust Env Details:
+        run: |
+          echo "rustfmt: $(which rustfmt)"
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v2.2.0
         with:
@@ -40,9 +43,13 @@ jobs:
           pip list
           mamba list
       - name: Build conda package
+        env:
+            RUSTFMT: /usr/local/cargo/bin/rustfmt
         run: |
           # suffix for nightly package versions
           export VERSION_SUFFIX=a`date +%y%m%d`
+
+          echo "rustfmt: $(which rustfmt)"
 
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
