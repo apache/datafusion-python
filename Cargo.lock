@@ -667,7 +667,8 @@ dependencies = [
 [[package]]
 name = "datafusion"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c467c5802cb75ecb0acffa2121d8361a8903fef05b21fd1ca12a55797df8a75"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -717,7 +718,8 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5c60e0a92bae06c6a55c4618947ae0837f833929b8d52ade1d50cf8b5f3b381"
 dependencies = [
  "apache-avro",
  "arrow",
@@ -732,7 +734,8 @@ dependencies = [
 [[package]]
 name = "datafusion-execution"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "96eab4ef369c3972a4f99418ba8673aa0cf818aa4b892d44c35b473edce8e021"
 dependencies = [
  "dashmap",
  "datafusion-common",
@@ -749,7 +752,8 @@ dependencies = [
 [[package]]
 name = "datafusion-expr"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d0533db37a619a045a4fd37dabc2d99a85f10127d7f100d75914c194e9e36ed7"
 dependencies = [
  "ahash",
  "arrow",
@@ -761,7 +765,8 @@ dependencies = [
 [[package]]
 name = "datafusion-optimizer"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3dbb8f467d31c3efebd372854e35cf1ca1572f163d0f031e2c6f8d78b317a43b"
 dependencies = [
  "arrow",
  "async-trait",
@@ -778,7 +783,8 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ceb003f6c0cdc25d2e9e92f8ee0322faca2a8f94f03d070b5ca15224c5503a3c"
 dependencies = [
  "ahash",
  "arrow",
@@ -831,7 +837,8 @@ dependencies = [
 [[package]]
 name = "datafusion-row"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba0b4478a205b767f6d98e26730a604562155a8b3cf64fe3600367e741b0f129"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -842,7 +849,8 @@ dependencies = [
 [[package]]
 name = "datafusion-sql"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a07af4200a9353ebe7bf0d6024894275cdebb303bb534b3a38eb0f532583083d"
 dependencies = [
  "arrow-schema",
  "datafusion-common",
@@ -854,7 +862,8 @@ dependencies = [
 [[package]]
 name = "datafusion-substrait"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "71a9cc3e51c77ada10990e996c15c5bda293b3e4a508f55c2f3993ea6c6a39a7"
 dependencies = [
  "async-recursion",
  "chrono",
@@ -2328,18 +2337,18 @@ checksum = "e6b44e8fc93a14e66336d230954dda83d18b4605ccace8fe09bc7514a71ad0bc"
 
 [[package]]
 name = "serde"
-version = "1.0.155"
+version = "1.0.156"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71f2b4817415c6d4210bfe1c7bfcf4801b2d904cb4d0e1a8fdb651013c9e86b8"
+checksum = "314b5b092c0ade17c00142951e50ced110ec27cea304b1037c6969246c2469a4"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.155"
+version = "1.0.156"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d071a94a3fac4aff69d023a7f411e33f40f3483f8c5190b1953822b6b76d7630"
+checksum = "d7e29c4601e36bcec74a223228dce795f4cd3616341a4af93520ca1a837c087d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2522,9 +2531,9 @@ dependencies = [
 
 [[package]]
 name = "substrait"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3108bf99c703e39728847cce9becff451f8a94cbc72fb5918b4e7f0543d7b06a"
+checksum = "3e977fc98d1e03cf99220bb6bb96f8838ffa5c1306a8c83c1b25aa20817eb6d0"
 dependencies = [
  "heck 0.4.1",
  "prost 0.11.8",
