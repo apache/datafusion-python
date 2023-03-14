@@ -25,7 +25,7 @@ jobs:
           toolchain: stable
           override: true
           commands: clippy, rustfmt, rustc
-      - Rust Env Details:
+      - name: Rust Env Details
         run: |
           echo "rustfmt: $(which rustfmt)"
       - name: Set up Python
