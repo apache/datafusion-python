@@ -19,6 +19,45 @@
 
 # Changelog
 
+## [20.0.0](https://github.com/apache/arrow-datafusion-python/tree/20.0.0) (2023-03-17)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.8.0...20.0.0)
+
+**Merged pull requests:**
+
+- Minor docs updates [#210](https://github.com/apache/arrow-datafusion-python/pull/210) (andygrove)
+- Empty relation bindings [#208](https://github.com/apache/arrow-datafusion-python/pull/208) (jdye64)
+- wrap display_name and canonical_name functions [#214](https://github.com/apache/arrow-datafusion-python/pull/214) (jdye64)
+- Add PyAlias bindings [#216](https://github.com/apache/arrow-datafusion-python/pull/216) (jdye64)
+- Add bindings for scalar_variable [#218](https://github.com/apache/arrow-datafusion-python/pull/218) (jdye64)
+- Bindings for LIKE type expressions [#220](https://github.com/apache/arrow-datafusion-python/pull/220) (jdye64)
+- Bool expr bindings [#223](https://github.com/apache/arrow-datafusion-python/pull/223) (jdye64)
+- Between bindings [#229](https://github.com/apache/arrow-datafusion-python/pull/229) (jdye64)
+- Add bindings for GetIndexedField [#227](https://github.com/apache/arrow-datafusion-python/pull/227) (jdye64)
+- Add bindings for case, cast, and trycast [#232](https://github.com/apache/arrow-datafusion-python/pull/232) (jdye64)
+- add remaining expr bindings [#233](https://github.com/apache/arrow-datafusion-python/pull/233) (jdye64)
+- Pre-commit hooks [#228](https://github.com/apache/arrow-datafusion-python/pull/228) (jdye64)
+- Implement new release process [#149](https://github.com/apache/arrow-datafusion-python/pull/149) (andygrove)
+- feature: Additional export methods [#236](https://github.com/apache/arrow-datafusion-python/pull/236) (simicd)
+- Add Python wrapper for LogicalPlan::Union [#240](https://github.com/apache/arrow-datafusion-python/pull/240) (iajoiner)
+- feature: Create dataframe from pandas, polars, dictionary, list or pyarrow Table [#242](https://github.com/apache/arrow-datafusion-python/pull/242) (simicd)
+- Fix release instructions [#238](https://github.com/apache/arrow-datafusion-python/pull/238) (andygrove)
+- Add Python wrappers for `LogicalPlan::Join` and `LogicalPlan::CrossJoin` [#246](https://github.com/apache/arrow-datafusion-python/pull/246) (iajoiner)
+- docs: Example of calling Python UDF & UDAF in SQL [#258](https://github.com/apache/arrow-datafusion-python/pull/258) (simicd)
+- feature: Set table name from ctx functions [#260](https://github.com/apache/arrow-datafusion-python/pull/260) (simicd)
+- Upgrade to DataFusion 19 [#262](https://github.com/apache/arrow-datafusion-python/pull/262) (andygrove)
+- Explain bindings [#264](https://github.com/apache/arrow-datafusion-python/pull/264) (jdye64)
+- Extension bindings [#266](https://github.com/apache/arrow-datafusion-python/pull/266) (jdye64)
+- Subquery alias bindings [#269](https://github.com/apache/arrow-datafusion-python/pull/269) (jdye64)
+- Create memory table [#271](https://github.com/apache/arrow-datafusion-python/pull/271) (jdye64)
+- Create view bindings [#273](https://github.com/apache/arrow-datafusion-python/pull/273) (jdye64)
+- Re-export Datafusion dependencies [#277](https://github.com/apache/arrow-datafusion-python/pull/277) (jdye64)
+- Distinct bindings [#275](https://github.com/apache/arrow-datafusion-python/pull/275) (jdye64)
+- build(deps): bump actions/checkout from 2 to 3 [#244](https://github.com/apache/arrow-datafusion-python/pull/244) (dependabot[bot])
+- build(deps): bump actions/upload-artifact from 2 to 3 [#245](https://github.com/apache/arrow-datafusion-python/pull/245) (dependabot[bot])
+- build(deps): bump actions/download-artifact from 2 to 3 [#243](https://github.com/apache/arrow-datafusion-python/pull/243) (dependabot[bot])
+- Use DataFusion 20 [#278](https://github.com/apache/arrow-datafusion-python/pull/278) (andygrove)
+
 ## [0.8.0](https://github.com/apache/arrow-datafusion-python/tree/0.8.0) (2023-02-22)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.8.0-rc1...0.8.0)
