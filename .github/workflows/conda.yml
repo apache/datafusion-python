@@ -44,18 +44,18 @@ jobs:
           # suffix for nightly package versions
           export VERSION_SUFFIX=a`date +%y%m%d`
 
-          conda mambabuild continuous_integration/recipe \
+          conda mambabuild conda/recipes \
                            --no-anaconda-upload \
                            --output-folder .
-      - name: Upload conda package
-        if: |
-          github.event_name == 'push'
-          && github.repository == 'dask-contrib/dask-sql'
-        env:
-          ANACONDA_API_TOKEN: ${{ secrets.DASK_CONDA_TOKEN }}
-          LABEL: ${{ github.ref == 'refs/heads/datafusion-sql-planner' && 'dev_datafusion' || 'dev' }}
-        run: |
-          # install anaconda for upload
-          mamba install anaconda-client
+      # - name: Upload conda package
+      #   if: |
+      #     github.event_name == 'push'
+      #     && github.repository == 'apache/arrow-datafusion-python'
+      #   env:
+      #     ANACONDA_API_TOKEN: ${{ secrets.DASK_CONDA_TOKEN }}
+      #     LABEL: ${{ github.ref == 'refs/heads/datafusion-sql-planner' && 'dev_datafusion' || 'dev' }}
+      #   run: |
+      #     # install anaconda for upload
+      #     mamba install anaconda-client
 
-          anaconda upload --label $LABEL linux-64/*.tar.bz2
+      #     anaconda upload --label $LABEL linux-64/*.tar.bz2
