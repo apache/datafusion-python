@@ -34,12 +34,12 @@ jobs:
           pip list
           mamba list
       - name: Build conda package
-        - uses: actions-rs/toolchain@v1
-          with:
-            profile: complete
-            toolchain: stable
-            override: true
-            components: clippy, rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: complete
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
         env:
             RUSTFMT: /home/runner/.cargo/bin/rustfmt
         run: |
