@@ -49,7 +49,10 @@ jobs:
           export VERSION_SUFFIX=a`date +%y%m%d`
 
           echo "rustfmt: $(which rustfmt)"
+
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           /home/runner/.cargo/bin/rustfmt
+          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
