@@ -23,6 +23,30 @@
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.8.0...20.0.0)
 
+**Implemented enhancements:**
+
+- Empty relation bindings [#208](https://github.com/apache/arrow-datafusion-python/pull/208) (jdye64)
+- wrap display_name and canonical_name functions [#214](https://github.com/apache/arrow-datafusion-python/pull/214) (jdye64)
+- Add PyAlias bindings [#216](https://github.com/apache/arrow-datafusion-python/pull/216) (jdye64)
+- Add bindings for scalar_variable [#218](https://github.com/apache/arrow-datafusion-python/pull/218) (jdye64)
+- Bindings for LIKE type expressions [#220](https://github.com/apache/arrow-datafusion-python/pull/220) (jdye64)
+- Bool expr bindings [#223](https://github.com/apache/arrow-datafusion-python/pull/223) (jdye64)
+- Between bindings [#229](https://github.com/apache/arrow-datafusion-python/pull/229) (jdye64)
+- Add bindings for GetIndexedField [#227](https://github.com/apache/arrow-datafusion-python/pull/227) (jdye64)
+- Add bindings for case, cast, and trycast [#232](https://github.com/apache/arrow-datafusion-python/pull/232) (jdye64)
+- add remaining expr bindings [#233](https://github.com/apache/arrow-datafusion-python/pull/233) (jdye64)
+- Explain bindings [#264](https://github.com/apache/arrow-datafusion-python/pull/264) (jdye64)
+- Extension bindings [#266](https://github.com/apache/arrow-datafusion-python/pull/266) (jdye64)
+- Subquery alias bindings [#269](https://github.com/apache/arrow-datafusion-python/pull/269) (jdye64)
+- Create memory table [#271](https://github.com/apache/arrow-datafusion-python/pull/271) (jdye64)
+- Create view bindings [#273](https://github.com/apache/arrow-datafusion-python/pull/273) (jdye64)
+- Re-export Datafusion dependencies [#277](https://github.com/apache/arrow-datafusion-python/pull/277) (jdye64)
+- Distinct bindings [#275](https://github.com/apache/arrow-datafusion-python/pull/275) (jdye64)
+
+**Documentation updates:**
+
+- docs: Example of calling Python UDF & UDAF in SQL [#258](https://github.com/apache/arrow-datafusion-python/pull/258) (simicd)
+
 **Merged pull requests:**
 
 - Minor docs updates [#210](https://github.com/apache/arrow-datafusion-python/pull/210) (andygrove)
