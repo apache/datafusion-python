@@ -37,7 +37,7 @@ jobs:
           mamba list
       - uses: actions-rs/toolchain@v1
         with:
-          profile: complete
+          profile: minimal
           toolchain: stable
           override: true
           components: clippy, rustfmt
