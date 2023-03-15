@@ -51,6 +51,7 @@ pub mod create_memory_table;
 pub mod create_view;
 pub mod cross_join;
 pub mod distinct;
+pub mod drop_table;
 pub mod empty_relation;
 pub mod exists;
 pub mod explain;
@@ -285,5 +286,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<create_view::PyCreateView>()?;
     m.add_class::<distinct::PyDistinct>()?;
     m.add_class::<subquery_alias::PySubqueryAlias>()?;
+    m.add_class::<drop_table::PyDropTable>()?;
     Ok(())
 }
