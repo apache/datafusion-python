@@ -35,12 +35,16 @@ jobs:
           which python
           pip list
           mamba list
-      - uses: actions-rs/toolchain@v1
+      # - uses: actions-rs/toolchain@v1
+      #   with:
+      #     profile: minimal
+      #     toolchain: stable
+      #     override: true
+      #     components: clippy, rustfmt
+      - name: Setup Rust toolchain
+        uses: ./.github/actions/setup-builder
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: clippy, rustfmt
+          rust-version: stable
       - name: Build conda package
         env:
             RUSTFMT: /home/runner/.cargo/bin/rustfmt
