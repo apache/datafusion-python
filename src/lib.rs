@@ -19,6 +19,14 @@
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
 
+// Re-export Apache Arrow DataFusion dependencies
+pub use datafusion;
+pub use datafusion_common;
+pub use datafusion_expr;
+pub use datafusion_optimizer;
+pub use datafusion_sql;
+pub use datafusion_substrait;
+
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
 pub mod common;

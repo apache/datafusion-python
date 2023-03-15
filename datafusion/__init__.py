@@ -77,6 +77,11 @@ from .expr import (
     TryCast,
     Between,
     Explain,
+    CreateMemoryTable,
+    SubqueryAlias,
+    Extension,
+    CreateView,
+    Distinct,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -129,6 +134,11 @@ __all__ = [
     "TryCast",
     "Between",
     "Explain",
+    "SubqueryAlias",
+    "Extension",
+    "CreateMemoryTable",
+    "CreateView",
+    "Distinct",
 ]
 
 

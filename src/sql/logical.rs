@@ -22,6 +22,7 @@ use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
 use crate::expr::empty_relation::PyEmptyRelation;
 use crate::expr::explain::PyExplain;
+use crate::expr::extension::PyExtension;
 use crate::expr::filter::PyFilter;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
@@ -60,6 +61,7 @@ impl PyLogicalPlan {
             LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
             LogicalPlan::EmptyRelation(plan) => PyEmptyRelation::from(plan.clone()).to_variant(py),
             LogicalPlan::Explain(plan) => PyExplain::from(plan.clone()).to_variant(py),
+            LogicalPlan::Extension(plan) => PyExtension::from(plan.clone()).to_variant(py),
             LogicalPlan::Filter(plan) => PyFilter::from(plan.clone()).to_variant(py),
             LogicalPlan::Limit(plan) => PyLimit::from(plan.clone()).to_variant(py),
             LogicalPlan::Projection(plan) => PyProjection::from(plan.clone()).to_variant(py),

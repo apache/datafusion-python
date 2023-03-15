@@ -76,7 +76,13 @@ from datafusion.expr import (
     Case,
     Cast,
     TryCast,
+    SubqueryAlias,
     Between,
+    Explain,
+    Extension,
+    CreateMemoryTable,
+    CreateView,
+    Distinct,
 )
 
 
@@ -143,6 +149,12 @@ def test_class_module_is_datafusion():
         Cast,
         TryCast,
         Between,
+        SubqueryAlias,
+        Explain,
+        Extension,
+        CreateMemoryTable,
+        CreateView,
+        Distinct,
     ]:
         assert klass.__module__ == "datafusion.expr"
 

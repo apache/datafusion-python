@@ -47,10 +47,14 @@ pub mod bool_expr;
 pub mod case;
 pub mod cast;
 pub mod column;
+pub mod create_memory_table;
+pub mod create_view;
 pub mod cross_join;
+pub mod distinct;
 pub mod empty_relation;
 pub mod exists;
 pub mod explain;
+pub mod extension;
 pub mod filter;
 pub mod grouping_set;
 pub mod in_list;
@@ -69,6 +73,7 @@ pub mod scalar_variable;
 pub mod signature;
 pub mod sort;
 pub mod subquery;
+pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
 
@@ -272,8 +277,13 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<join::PyJoinConstraint>()?;
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
+    m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
     m.add_class::<table_scan::PyTableScan>()?;
+    m.add_class::<create_memory_table::PyCreateMemoryTable>()?;
+    m.add_class::<create_view::PyCreateView>()?;
+    m.add_class::<distinct::PyDistinct>()?;
+    m.add_class::<subquery_alias::PySubqueryAlias>()?;
     Ok(())
 }
