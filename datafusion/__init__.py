@@ -83,6 +83,8 @@ from .expr import (
     CreateView,
     Distinct,
     DropTable,
+    Repartition,
+    Partitioning,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -141,6 +143,8 @@ __all__ = [
     "CreateView",
     "Distinct",
     "DropTable",
+    "Repartition",
+    "Partitioning",
 ]
 
 

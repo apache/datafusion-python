@@ -68,6 +68,7 @@ pub mod literal;
 pub mod logical_node;
 pub mod placeholder;
 pub mod projection;
+pub mod repartition;
 pub mod scalar_function;
 pub mod scalar_subquery;
 pub mod scalar_variable;
@@ -287,5 +288,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<distinct::PyDistinct>()?;
     m.add_class::<subquery_alias::PySubqueryAlias>()?;
     m.add_class::<drop_table::PyDropTable>()?;
+    m.add_class::<repartition::PyPartitioning>()?;
+    m.add_class::<repartition::PyRepartition>()?;
     Ok(())
 }
