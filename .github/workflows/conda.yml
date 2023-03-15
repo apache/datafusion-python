@@ -51,7 +51,7 @@ jobs:
           echo "rustfmt: $(which rustfmt)"
 
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          /home/runner/.cargo/bin/rustfmt
+          ~/.cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           conda mambabuild conda/recipes \
