@@ -55,6 +55,8 @@ jobs:
 
           echo "rustfmt: $(which rustfmt)"
 
+          echo "Ouput more"
+
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
           eval /usr/local/cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
