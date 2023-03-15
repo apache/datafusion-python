@@ -15,8 +15,6 @@ jobs:
   conda:
     name: Build (and optionally upload) the conda nightly
     runs-on: ubuntu-latest
-    container:
-      image: amd64/rust
     steps:
       - uses: actions/checkout@v3
         with:
@@ -58,7 +56,7 @@ jobs:
           echo "rustfmt: $(which rustfmt)"
 
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          /usr/local/cargo/bin/rustfmt
+          eval /usr/local/cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           rustup default stable
