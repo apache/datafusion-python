@@ -23,6 +23,8 @@ use datafusion::arrow::error::ArrowError;
 use datafusion::error::DataFusionError as InnerDataFusionError;
 use pyo3::{exceptions::PyException, PyErr};
 
+pub type Result<T> = std::result::Result<T, DataFusionError>;
+
 #[derive(Debug)]
 pub enum DataFusionError {
     ExecutionError(InnerDataFusionError),
