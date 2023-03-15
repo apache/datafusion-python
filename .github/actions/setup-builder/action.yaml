@@ -38,6 +38,9 @@ runs:
         rustup toolchain install ${{ inputs.rust-version }}
         rustup default ${{ inputs.rust-version }}
         rustup component add rustfmt
+        echo "rustup: $(which rustup)"
+        echo "rustfmt: $(which rustfmt)"
+        echo "rustc: $(which rustc)"
     - name: Disable debuginfo generation
       # Disable full debug symbol generation to speed up CI build and keep memory down
       # "1" means line tables only, which is useful for panic tracebacks.
