@@ -63,7 +63,7 @@ jobs:
           eval /usr/local/cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
-          rustup default stable
+          /usr/local/cargo/bin/rustup default stable
 
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
