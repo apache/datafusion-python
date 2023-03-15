@@ -61,6 +61,8 @@ jobs:
           /usr/local/cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
+          rustup default stable
+
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
                            --output-folder .
