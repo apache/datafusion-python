@@ -45,9 +45,12 @@ jobs:
         uses: ./.github/actions/setup-builder
         with:
           rust-version: stable
+      - name: Rust Enviroment
+        run: |
+
       - name: Build conda package
         env:
-            RUSTFMT: /home/runner/.cargo/bin/rustfmt
+            RUSTFMT: /usr/local/cargo/bin/rustfmt
         run: |
           # suffix for nightly package versions
           export VERSION_SUFFIX=a`date +%y%m%d`
@@ -55,7 +58,7 @@ jobs:
           echo "rustfmt: $(which rustfmt)"
 
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          ~/.cargo/bin/rustfmt
+          /usr/local/cargo/bin/rustfmt
           echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
           conda mambabuild conda/recipes \
