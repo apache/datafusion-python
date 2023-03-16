@@ -47,8 +47,9 @@ impl PyDFField {
     #[new]
     #[pyo3(signature = (qualifier=None, name="", data_type=DataType::Int64.into(), nullable=false))]
     fn new(qualifier: Option<&str>, name: &str, data_type: PyDataType, nullable: bool) -> Self {
+        let owned_qualifier = qualifier.to_owned().unwrap().to_string();
         PyDFField {
-            field: DFField::new(qualifier, name, data_type.into(), nullable),
+            field: DFField::new(Some(owned_qualifier), name, data_type.into(), nullable),
         }
     }
 
@@ -91,8 +92,9 @@ impl PyDFField {
     // fn py_unqualified_column(&self) -> PyResult<PyColumn> {}
 
     #[pyo3(name = "qualifier")]
-    fn py_qualifier(&self) -> PyResult<Option<&String>> {
-        Ok(self.field.qualifier())
+    fn py_qualifier(&self) -> PyResult<Option<String>> {
+        let val = self.field.qualifier().unwrap().table().to_string();
+        Ok(Some(val))
     }
 
     // TODO: Need bindings for Arrow `Field` first
