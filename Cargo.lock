@@ -667,7 +667,7 @@ dependencies = [
 [[package]]
 name = "datafusion"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -698,7 +698,6 @@ dependencies = [
  "object_store",
  "parking_lot",
  "parquet",
- "paste",
  "percent-encoding",
  "pin-project-lite",
  "rand",
@@ -717,7 +716,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "apache-avro",
  "arrow",
@@ -732,7 +731,7 @@ dependencies = [
 [[package]]
 name = "datafusion-execution"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "dashmap",
  "datafusion-common",
@@ -749,19 +748,18 @@ dependencies = [
 [[package]]
 name = "datafusion-expr"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "ahash",
  "arrow",
  "datafusion-common",
- "log",
  "sqlparser",
 ]
 
 [[package]]
 name = "datafusion-optimizer"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "arrow",
  "async-trait",
@@ -778,7 +776,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "ahash",
  "arrow",
@@ -796,7 +794,6 @@ dependencies = [
  "itertools",
  "lazy_static",
  "md-5",
- "num-traits",
  "paste",
  "petgraph",
  "rand",
@@ -831,7 +828,7 @@ dependencies = [
 [[package]]
 name = "datafusion-row"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -842,7 +839,7 @@ dependencies = [
 [[package]]
 name = "datafusion-sql"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "arrow-schema",
  "datafusion-common",
@@ -854,7 +851,7 @@ dependencies = [
 [[package]]
 name = "datafusion-substrait"
 version = "20.0.0"
-source = "git+https://github.com/apache/arrow-datafusion.git?rev=dd98aab#dd98aabdaebcfc30ec4c370be93f6663de50e02f"
+source = "git+https://github.com/jdye64/arrow-datafusion.git?branch=substrait_proto_build_updates#7b8d8062c84d0b264c1abc362c29f9e87dcbe9dd"
 dependencies = [
  "async-recursion",
  "chrono",
@@ -863,7 +860,6 @@ dependencies = [
  "object_store",
  "prost 0.11.8",
  "prost-build 0.9.0",
- "prost-types 0.11.8",
  "substrait",
  "tokio",
 ]
@@ -1159,15 +1155,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee512640fe35acbfb4bb779db6f0d80704c2cacfa2e39b601ef3e3f47d1ae4c7"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "home"
-version = "0.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "747309b4b440c06d57b0b25f2aee03ee9b5e5397d288c60e21fc709bb98a7408"
-dependencies = [
- "winapi",
 ]
 
 [[package]]
@@ -1797,16 +1784,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
 
 [[package]]
-name = "pest"
-version = "2.5.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8cbd939b234e95d72bc393d51788aec68aeeb5d51e748ca08ff3aad58cb722f7"
-dependencies = [
- "thiserror",
- "ucd-trie",
-]
-
-[[package]]
 name = "petgraph"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2103,10 +2080,11 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
 name = "regress"
-version = "0.4.1"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a92ff21fe8026ce3f2627faaf43606f0b67b014dbc9ccf027181a804f75d92e"
+checksum = "d995d590bd8ec096d1893f414bf3f5e8b0ee4c9eed9a5642b9766ef2c8e2e8e9"
 dependencies = [
+ "hashbrown 0.13.2",
  "memchr",
 ]
 
@@ -2178,20 +2156,7 @@ version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
 dependencies = [
- "semver 1.0.17",
-]
-
-[[package]]
-name = "rustfmt-wrapper"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed729e3bee08ec2befd593c27e90ca9fdd25efdc83c94c3b82eaef16e4f7406e"
-dependencies = [
- "serde",
- "tempfile",
- "thiserror",
- "toml",
- "toolchain_find",
+ "semver",
 ]
 
 [[package]]
@@ -2298,27 +2263,9 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f301af10236f6df4160f7c3f04eec6dbc70ace82d23326abad5edee88801c6b6"
-dependencies = [
- "semver-parser",
-]
-
-[[package]]
-name = "semver"
 version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bebd363326d05ec3e2f532ab7660680f3b02130d780c299bca73469d521bc0ed"
-
-[[package]]
-name = "semver-parser"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00b0bef5b7f9e0df16536d3961cfb6e84331c065b4066afb39768d0e319411f7"
-dependencies = [
- "pest",
-]
 
 [[package]]
 name = "seq-macro"
@@ -2523,8 +2470,7 @@ dependencies = [
 [[package]]
 name = "substrait"
 version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e977fc98d1e03cf99220bb6bb96f8838ffa5c1306a8c83c1b25aa20817eb6d0"
+source = "git+https://github.com/jdye64/substrait-rs.git?branch=typify_build_issues#d2180748c6da206768a8179dfb50fdf23629dfb2"
 dependencies = [
  "heck 0.4.1",
  "prost 0.11.8",
@@ -2716,28 +2662,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "toml"
-version = "0.5.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4f7f0dd8d50a853a531c426359045b1998f04219d88799810762cd4ad314234"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "toolchain_find"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e85654a10e7a07a47c6f19d93818f3f343e22927f2fa280c84f7c8042743413"
-dependencies = [
- "home",
- "lazy_static",
- "regex",
- "semver 0.11.0",
- "walkdir",
-]
-
-[[package]]
 name = "tower-service"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2810,9 +2734,8 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 
 [[package]]
 name = "typify"
-version = "0.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2e8486352f3c946e69f983558cfc09b295250b01e01b381ec67a05a812d01d63"
+version = "0.0.11-dev"
+source = "git+https://github.com/jdye64/typify.git?branch=typify_rustfmt#cced30119c1b4da39f5c62d0d0b9712d539affe8"
 dependencies = [
  "typify-impl",
  "typify-macro",
@@ -2820,16 +2743,14 @@ dependencies = [
 
 [[package]]
 name = "typify-impl"
-version = "0.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7624d0b911df6e2bbf34a236f76281f93b294cdde1d4df1dbdb748e5a7fefa5"
+version = "0.0.11-dev"
+source = "git+https://github.com/jdye64/typify.git?branch=typify_rustfmt#cced30119c1b4da39f5c62d0d0b9712d539affe8"
 dependencies = [
  "heck 0.4.1",
  "log",
  "proc-macro2",
  "quote",
  "regress",
- "rustfmt-wrapper",
  "schemars",
  "serde_json",
  "syn",
@@ -2839,9 +2760,8 @@ dependencies = [
 
 [[package]]
 name = "typify-macro"
-version = "0.0.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c42802aa033cee7650a4e1509ba7d5848a56f84be7c4b31e4385ee12445e942"
+version = "0.0.11-dev"
+source = "git+https://github.com/jdye64/typify.git?branch=typify_rustfmt#cced30119c1b4da39f5c62d0d0b9712d539affe8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2852,12 +2772,6 @@ dependencies = [
  "syn",
  "typify-impl",
 ]
-
-[[package]]
-name = "ucd-trie"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e79c4d996edb816c91e4308506774452e55e95c3c9de07b6729e17e15a5ef81"
 
 [[package]]
 name = "unicode-bidi"
