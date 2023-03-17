@@ -83,6 +83,9 @@ from datafusion.expr import (
     CreateMemoryTable,
     CreateView,
     Distinct,
+    DropTable,
+    Repartition,
+    Partitioning,
 )
 
 
@@ -155,6 +158,9 @@ def test_class_module_is_datafusion():
         CreateMemoryTable,
         CreateView,
         Distinct,
+        DropTable,
+        Repartition,
+        Partitioning,
     ]:
         assert klass.__module__ == "datafusion.expr"
 
