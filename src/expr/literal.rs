@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::errors::{py_runtime_err, DataFusionError};
+use crate::errors::DataFusionError;
 use datafusion_common::ScalarValue;
 use pyo3::prelude::*;
 
