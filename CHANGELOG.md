@@ -47,6 +47,9 @@
 - Create view bindings [#273](https://github.com/apache/arrow-datafusion-python/pull/273) (jdye64)
 - Re-export Datafusion dependencies [#277](https://github.com/apache/arrow-datafusion-python/pull/277) (jdye64)
 - Distinct bindings [#275](https://github.com/apache/arrow-datafusion-python/pull/275) (jdye64)
+- Drop table bindings [#283](https://github.com/apache/arrow-datafusion-python/pull/283) (jdye64)
+- Bindings for LogicalPlan::Repartition [#285](https://github.com/apache/arrow-datafusion-python/pull/285) (jdye64)
+- Expand Rust return type support for Arrow DataTypes in ScalarValue [#287](https://github.com/apache/arrow-datafusion-python/pull/287) (jdye64)
 
 **Documentation updates:**
 
@@ -86,6 +89,9 @@
 - build(deps): bump actions/upload-artifact from 2 to 3 [#245](https://github.com/apache/arrow-datafusion-python/pull/245) (dependabot[bot])
 - build(deps): bump actions/download-artifact from 2 to 3 [#243](https://github.com/apache/arrow-datafusion-python/pull/243) (dependabot[bot])
 - Use DataFusion 20 [#278](https://github.com/apache/arrow-datafusion-python/pull/278) (andygrove)
+- Drop table bindings [#283](https://github.com/apache/arrow-datafusion-python/pull/283) (jdye64)
+- Bindings for LogicalPlan::Repartition [#285](https://github.com/apache/arrow-datafusion-python/pull/285) (jdye64)
+- Expand Rust return type support for Arrow DataTypes in ScalarValue [#287](https://github.com/apache/arrow-datafusion-python/pull/287) (jdye64)
 
 ## [0.8.0](https://github.com/apache/arrow-datafusion-python/tree/0.8.0) (2023-02-22)
 
