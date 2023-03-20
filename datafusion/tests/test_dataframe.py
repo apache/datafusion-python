@@ -607,3 +607,27 @@ def test_to_pydict(df):
     pydict = df.to_pydict()
     assert type(pydict) == dict
     assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 3.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 3.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 3.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
