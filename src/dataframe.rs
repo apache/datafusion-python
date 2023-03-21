@@ -76,6 +76,13 @@ impl PyDataFrame {
         }
     }
 
+    /// Calculate summary statistics for a DataFrame
+    fn describe(&self, py: Python) -> PyResult<Self> {
+        let df = self.df.as_ref().clone();
+        let stat_df = wait_for_future(py, df.describe())?;
+        Ok(Self::new(stat_df))
+    }
+
     /// Returns the schema from the logical plan
     fn schema(&self) -> PyArrowType<Schema> {
         PyArrowType(self.df.schema().into())
