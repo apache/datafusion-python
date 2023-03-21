@@ -66,14 +66,20 @@ impl PyDataFrame {
         })
     }
 
-    fn __repr__(&self, py: Python) -> PyResult<String> {
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
+    /// Print the result, 20 lines by default
+    #[pyo3(signature = (num=20))]
+    fn __to_string(&self, py: Python, num: usize) -> PyResult<String> {
+        let df = self.df.as_ref().clone().limit(0, Some(num))?;
         let batches = wait_for_future(py, df.collect())?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
+    }
+
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        self.__to_string(py, 10)
     }
 
     /// Calculate summary statistics for a DataFrame
@@ -171,9 +177,15 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
-        let df = self.df.as_ref().clone().limit(0, Some(num))?;
-        let batches = wait_for_future(py, df.collect())?;
-        pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
+
+        // Import the Python 'builtins' module to access the print function
+        let print = py.import("builtins")?.getattr("print")?;
+
+        // Get string representation of the dataframe
+        let result = self.__to_string(py, num);
+
+        print.call1((result?,))?;
+        Ok(())
     }
 
     /// Filter out duplicate rows
