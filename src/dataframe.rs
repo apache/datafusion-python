@@ -66,20 +66,14 @@ impl PyDataFrame {
         })
     }
 
-    /// Print the result, 20 lines by default
-    #[pyo3(signature = (num=20))]
-    fn __to_string(&self, py: Python, num: usize) -> PyResult<String> {
-        let df = self.df.as_ref().clone().limit(0, Some(num))?;
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        let df = self.df.as_ref().clone().limit(0, Some(10))?;
         let batches = wait_for_future(py, df.collect())?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
-    }
-
-    fn __repr__(&self, py: Python) -> PyResult<String> {
-        self.__to_string(py, 10)
     }
 
     /// Calculate summary statistics for a DataFrame
@@ -177,15 +171,8 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
-
-        // Import the Python 'builtins' module to access the print function
-        let print = py.import("builtins")?.getattr("print")?;
-
-        // Get string representation of the dataframe
-        let result = self.__to_string(py, num);
-
-        print.call1((result?,))?;
-        Ok(())
+        let df = self.df.as_ref().clone().limit(0, Some(num))?;
+        print_dataframe(py, df)
     }
 
     /// Filter out duplicate rows
@@ -229,8 +216,7 @@ impl PyDataFrame {
     #[pyo3(signature = (verbose=false, analyze=false))]
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyResult<()> {
         let df = self.df.as_ref().clone().explain(verbose, analyze)?;
-        let batches = wait_for_future(py, df.collect())?;
-        pretty::print_batches(&batches).map_err(|err| PyArrowException::new_err(err.to_string()))
+        print_dataframe(py, df)
     }
 
     /// Get the logical plan for this `DataFrame`
@@ -400,4 +386,21 @@ impl PyDataFrame {
     fn count(&self, py: Python) -> PyResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
     }
+}
+
+/// Print DataFrame
+fn print_dataframe(py: Python, df: DataFrame) -> PyResult<()> {
+    // Get string representation of record batches
+    let batches = wait_for_future(py, df.collect())?;
+    let batches_as_string = pretty::pretty_format_batches(&batches);
+    let result = match batches_as_string {
+        Ok(batch) => format!("DataFrame()\n{batch}"),
+        Err(err) => format!("Error: {:?}", err.to_string()),
+    };
+
+    // Import the Python 'builtins' module to access the print function
+    // Note that println! does not print to the Python debug console and is not visible in notebooks for instance
+    let print = py.import("builtins")?.getattr("print")?;
+    print.call1((result,))?;
+    Ok(())
 }
