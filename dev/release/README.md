@@ -198,6 +198,14 @@ Create the source release tarball:
 ./dev/release/release-tarball.sh 0.8.0 1
 ```
 
+### Publishing Rust Crate to crates.io
+
+Some projects depend on the Rust crate directly, so we publish this to crates.io
+
+```shell
+cargo publish
+```
+
 ### Publishing Python Artifacts to PyPi
 
 Go to the Test PyPI page of Datafusion, and download
