@@ -34,7 +34,7 @@ default = ["mimalloc"]
 [dependencies]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
-pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
+pyo3 = { version = "0.18.2", features = ["extension-module", "abi3", "abi3-py37"] }
 datafusion = { version = "20.0.0", features = ["pyarrow", "avro"]}
 datafusion-common = { version = "20.0.0", features = ["pyarrow"]}
 datafusion-expr = { version = "20.0.0" }
