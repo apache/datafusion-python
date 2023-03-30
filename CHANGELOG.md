@@ -19,7 +19,7 @@
 
 # Changelog
 
-## [20.0.0](https://github.com/apache/arrow-datafusion-python/tree/21.0.0) (2023-03-30)
+## [21.0.0](https://github.com/apache/arrow-datafusion-python/tree/21.0.0) (2023-03-30)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/20.0.0...21.0.0)
 
