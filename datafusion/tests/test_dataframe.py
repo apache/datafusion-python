@@ -164,16 +164,17 @@ def test_join():
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df = ctx.create_dataframe([[batch]])
+    df = ctx.create_dataframe([[batch]], "l")
 
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2]), pa.array([8, 10])],
         names=["a", "c"],
     )
-    df1 = ctx.create_dataframe([[batch]])
+    df1 = ctx.create_dataframe([[batch]], "r")
 
     df = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
-    df = df.sort(column("a").sort(ascending=True))
+    df.show()
+    df = df.sort(column("l.a").sort(ascending=True))
     table = pa.Table.from_batches(df.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
