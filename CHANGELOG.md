@@ -19,6 +19,19 @@
 
 # Changelog
 
+## [20.0.0](https://github.com/apache/arrow-datafusion-python/tree/21.0.0) (2023-03-30)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/20.0.0...21.0.0)
+
+**Merged pull requests:**
+
+- minor: Fix minor warning on unused import [#289](https://github.com/apache/arrow-datafusion-python/pull/289) (viirya)
+- feature: Implement `describe()` method [#293](https://github.com/apache/arrow-datafusion-python/pull/293) (simicd)
+- fix: Printed results not visible in debugger & notebooks [#296](https://github.com/apache/arrow-datafusion-python/pull/296) (simicd)
+- add package.include and remove wildcard dependency [#295](https://github.com/apache/arrow-datafusion-python/pull/295) (andygrove)
+- Update main branch name in docs workflow [#303](https://github.com/apache/arrow-datafusion-python/pull/303) (andygrove)
+- Upgrade to DF 21 [#301](https://github.com/apache/arrow-datafusion-python/pull/301) (andygrove)
+
 ## [20.0.0](https://github.com/apache/arrow-datafusion-python/tree/20.0.0) (2023-03-17)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.8.0...20.0.0)
