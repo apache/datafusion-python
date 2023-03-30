@@ -20,6 +20,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use object_store::ObjectStore;
+use url::Url;
 use uuid::Uuid;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -49,7 +50,6 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use datafusion_common::config::Extensions;
 use datafusion_common::ScalarValue;
 use pyo3::types::PyTuple;
 use tokio::runtime::Runtime;
@@ -260,10 +260,9 @@ impl PySessionContext {
         } else {
             &upstream_host
         };
-
-        self.ctx
-            .runtime_env()
-            .register_object_store(scheme, derived_host, store);
+        let url_string = format!("{}{}", scheme, derived_host);
+        let url = Url::parse(&url_string).unwrap();
+        self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())
     }
 
@@ -699,20 +698,19 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyResult<PyRecordBatchStream> {
-        let ctx = TaskContext::try_new(
-            "task_id".to_string(),
+        let ctx = TaskContext::new(
+            None,
             "session_id".to_string(),
-            HashMap::new(),
+            SessionConfig::new(),
             HashMap::new(),
             HashMap::new(),
             Arc::new(RuntimeEnv::default()),
-            Extensions::default(),
         );
         // create a Tokio runtime to run the async code
         let rt = Runtime::new().unwrap();
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { plan.execute(part, Arc::new(ctx?)) });
+            rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
     }

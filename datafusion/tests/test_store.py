@@ -30,7 +30,7 @@ def local():
 @pytest.fixture
 def ctx(local):
     ctx = SessionContext()
-    ctx.register_object_store("local", local, None)
+    ctx.register_object_store("file://local", local, None)
     return ctx
 
 

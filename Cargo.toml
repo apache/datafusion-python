@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "20.0.0"
+version = "21.0.0"
 homepage = "https://github.com/apache/arrow-datafusion-python"
 repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
@@ -35,12 +35,12 @@ default = ["mimalloc"]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { version = "20.0.0", features = ["pyarrow", "avro"]}
-datafusion-common = { version = "20.0.0", features = ["pyarrow"]}
-datafusion-expr = { version = "20.0.0" }
-datafusion-optimizer = { version = "20.0.0" }
-datafusion-sql = { version = "20.0.0" }
-datafusion-substrait = { version = "20.0.0" }
+datafusion = { version = "21.0.0", features = ["pyarrow", "avro"]}
+datafusion-common = { version = "21.0.0", features = ["pyarrow"]}
+datafusion-expr = { version = "21.0.0" }
+datafusion-optimizer = { version = "21.0.0" }
+datafusion-sql = { version = "21.0.0" }
+datafusion-substrait = { version = "21.0.0" }
 uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false }
 async-trait = "0.1"
@@ -48,6 +48,7 @@ futures = "0.3"
 object_store = { version = "0.5.3", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 regex-syntax = "0.6.28"
+url = "2.2"
 
 [lib]
 name = "datafusion_python"
