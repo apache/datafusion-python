@@ -119,12 +119,12 @@ jobs:
           version: '3.x'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
-      - name: Confirm PROTOC is set
       - run: echo $PROTOC
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
           RUST_BACKTRACE: 1
+          # TODO should not hard-code this
           PROTOC: /opt/hostedtoolcache/protoc/3.20.3/x64/bin/protoc
         with:
           rust-toolchain: nightly
