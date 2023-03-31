@@ -113,19 +113,20 @@ jobs:
           path: .
       - run: cat LICENSE.txt
       - run: sudo apt-get install protobuf-compiler
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
-      - name: Confirm PROTOC is set
-      - run: echo $PROTOC
+      - name: Install protoc
+          run: |
+            PROTOC_VERSION=3.12.4
+            curl -LO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-${PROTOC_OS_ARCH}.zip"
+            unzip -d "${GITHUB_WORKSPACE}" "protoc-${PROTOC_VERSION}-${PROTOC_OS_ARCH}.zip" bin/protoc
+            chmod +x "${GITHUB_WORKSPACE}/bin/protoc"
+            ${GITHUB_WORKSPACE}/bin/protoc --version
+            export PATH=${GITHUB_WORKSPACE}/bin/:$PATH
+            which protoc
+            echo "::set-env name=PATH::$PATH"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
           RUST_BACKTRACE: 1
-          PROTOC: /opt/hostedtoolcache/protoc/3.20.3/x64/bin/protoc
         with:
           rust-toolchain: nightly
           target: x86_64
