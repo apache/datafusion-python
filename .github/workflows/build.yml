@@ -119,19 +119,20 @@ jobs:
           version: '3.x'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
-      - run: export PROTOC=$(which protoc)
+      - name: Confirm PROTOC is set
       - run: echo $PROTOC
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
           RUST_BACKTRACE: 1
-          PROTOC: ${{ env.PROTOC }}
+          PROTOC: /opt/hostedtoolcache/protoc/3.20.3/x64/bin/protoc
         with:
           rust-toolchain: nightly
           target: x86_64
           manylinux: auto
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --manylinux 2014
+          before-script-linux:
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
