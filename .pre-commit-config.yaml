@@ -16,6 +16,10 @@
 # under the License.
 
 repos:
+      - repo: https://github.com/rhysd/actionlint
+        rev: v1.6.23
+        hooks:
+              - id: actionlint-docker
       - repo: https://github.com/psf/black
         rev: 22.3.0
         hooks:
