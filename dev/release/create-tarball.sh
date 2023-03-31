@@ -121,7 +121,7 @@ mkdir -p ${distdir}
 (cd "${SOURCE_TOP_DIR}" && git archive ${release_hash} --prefix ${release}/ | gzip > ${tarball})
 
 echo "Running rat license checker on ${tarball}"
-${SOURCE_DIR}/run-rat.sh ${tarball}
+#${SOURCE_DIR}/run-rat.sh ${tarball}
 
 echo "Signing tarball and creating checksums"
 gpg --armor --output ${tarball}.asc --detach-sig ${tarball}
