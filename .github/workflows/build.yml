@@ -125,6 +125,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         env:
           RUST_BACKTRACE: 1
+          PROTOC: ${{ env.PROTOC }}
         with:
           rust-toolchain: nightly
           target: x86_64
