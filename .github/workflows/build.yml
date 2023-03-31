@@ -132,7 +132,6 @@ jobs:
           manylinux: auto
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --manylinux 2014
-          before-script-linux:
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
