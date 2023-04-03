@@ -75,7 +75,7 @@ jobs:
 
       - name: Install gcc MacOS
         if: matrix.os == 'macos-latest'
-        run: brew install gcc
+        run: brew install gcc-c++
 
       - name: Build Python package
         run: maturin build --release --strip
