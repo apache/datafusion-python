@@ -113,6 +113,7 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
+      - run: sudo apt-get install protobuf-compiler
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
