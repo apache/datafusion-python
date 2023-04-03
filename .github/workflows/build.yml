@@ -52,6 +52,17 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          compiler: gcc
+          vcvarsall: ${{ contains(matrix.os, 'windows') }}
+          cmake: true
+          ninja: true
+          vcpkg: true
+          cppcheck: true
+          clangtidy: true
+
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
@@ -72,12 +83,6 @@ jobs:
         with:
           name: python-wheel-license
           path: .
-
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
         run: maturin build --release --strip
@@ -112,17 +117,6 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
-      - run: sudo apt-get install protobuf-compiler
-      - name: Install protoc
-          run: |
-            PROTOC_VERSION=3.12.4
-            curl -LO "https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-${PROTOC_OS_ARCH}.zip"
-            unzip -d "${GITHUB_WORKSPACE}" "protoc-${PROTOC_VERSION}-${PROTOC_OS_ARCH}.zip" bin/protoc
-            chmod +x "${GITHUB_WORKSPACE}/bin/protoc"
-            ${GITHUB_WORKSPACE}/bin/protoc --version
-            export PATH=${GITHUB_WORKSPACE}/bin/:$PATH
-            which protoc
-            echo "::set-env name=PATH::$PATH"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -152,13 +146,6 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
-      - run: sudo apt-get install protobuf-compiler
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
