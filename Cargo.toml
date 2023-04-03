@@ -18,8 +18,8 @@
 [package]
 name = "datafusion-python"
 version = "21.0.0"
-homepage = "https://github.com/andygrove/arrow-datafusion-python"
-repository = "https://github.com/andygrove/arrow-datafusion-python"
+homepage = "https://github.com/apache/arrow-datafusion-python"
+repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
 description = "Apache Arrow DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
@@ -35,6 +35,7 @@ default = ["mimalloc"]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
+# point to my branch for testing, but will point to apache repo once the PR is merged
 datafusion = { git = "https://github.com/andygrove/arrow-datafusion.git", branch = "substrait-protoc", features = ["pyarrow", "avro"] }
 datafusion-common = { git = "https://github.com/andygrove/arrow-datafusion.git", branch = "substrait-protoc", features = ["pyarrow"] }
 datafusion-expr = { git = "https://github.com/andygrove/arrow-datafusion.git", branch = "substrait-protoc" }
