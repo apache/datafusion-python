@@ -739,7 +739,7 @@ dependencies = [
 [[package]]
 name = "datafusion"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -788,7 +788,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "apache-avro",
  "arrow",
@@ -804,7 +804,7 @@ dependencies = [
 [[package]]
 name = "datafusion-execution"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "dashmap",
  "datafusion-common",
@@ -821,7 +821,7 @@ dependencies = [
 [[package]]
 name = "datafusion-expr"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "ahash",
  "arrow",
@@ -832,7 +832,7 @@ dependencies = [
 [[package]]
 name = "datafusion-optimizer"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "arrow",
  "async-trait",
@@ -849,7 +849,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "ahash",
  "arrow",
@@ -904,7 +904,7 @@ dependencies = [
 [[package]]
 name = "datafusion-row"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -915,7 +915,7 @@ dependencies = [
 [[package]]
 name = "datafusion-sql"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "arrow-schema",
  "datafusion-common",
@@ -927,7 +927,7 @@ dependencies = [
 [[package]]
 name = "datafusion-substrait"
 version = "21.1.0"
-source = "git+https://github.com/andygrove/arrow-datafusion.git?branch=substrait-protoc#27aedc0ee525eaa5c9ffda350be85ab24ed895f2"
+source = "git+https://github.com/apache/arrow-datafusion.git?rev=2191a69#2191a69b2d48b0b7230c9da5a75f86a4e659361b"
 dependencies = [
  "async-recursion",
  "chrono",
