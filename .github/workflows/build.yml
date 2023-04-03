@@ -73,13 +73,6 @@ jobs:
           name: python-wheel-license
           path: .
 
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
-
       - name: Build Python package
         run: maturin build --release --strip
 
@@ -113,13 +106,6 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
-      - run: sudo apt-get install protobuf-compiler
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         env:
@@ -149,13 +135,6 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
-      - run: sudo apt-get install protobuf-compiler
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - run: echo "PROTOC=$(which protoc)" >> "$GITHUB_ENV"
       - name: Build sdist
         uses: PyO3/maturin-action@v1
         with:
