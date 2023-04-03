@@ -52,17 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: gcc
-          vcvarsall: ${{ contains(matrix.os, 'windows') }}
-          cmake: true
-          ninja: true
-          vcpkg: true
-          cppcheck: true
-          clangtidy: true
-
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
