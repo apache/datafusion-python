@@ -76,6 +76,10 @@ jobs:
       - name: Build Python package
         run: maturin build --release --strip
 
+      - name: Install gcc MacOS
+        if: matrix.os == 'macos-latest'
+        run: brew install gcc
+
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
         run: dir target\wheels\
