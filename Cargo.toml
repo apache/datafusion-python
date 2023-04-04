@@ -30,6 +30,7 @@ include = ["/src", "/LICENSE.txt"]
 
 [features]
 default = ["mimalloc"]
+protoc = [ "datafusion-substrait/protoc" ]
 
 [dependencies]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
@@ -40,7 +41,7 @@ datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", re
 datafusion-expr = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
 datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
 datafusion-sql = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
-datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69", features = ["protoc"] }
+datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
 uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false }
 async-trait = "0.1"

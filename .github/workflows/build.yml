@@ -52,17 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Cpp
-        uses: aminya/setup-cpp@v1
-        with:
-          compiler: gcc
-          vcvarsall: ${{ contains(matrix.os, 'windows') }}
-          cmake: true
-          ninja: true
-          vcpkg: true
-          cppcheck: true
-          clangtidy: true
-
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
@@ -83,6 +72,12 @@ jobs:
         with:
           name: python-wheel-license
           path: .
+
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: '3.x'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
         run: maturin build --release --strip
@@ -126,7 +121,7 @@ jobs:
           target: x86_64
           manylinux: auto
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
-          args: --release --manylinux 2014
+          args: --release --manylinux 2014 --features protoc
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
@@ -152,7 +147,7 @@ jobs:
           rust-toolchain: stable
           manylinux: auto
           rustup-components: rust-std rustfmt
-          args: --release --sdist --out dist
+          args: --release --sdist --out dist --features protoc
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
