@@ -30,6 +30,7 @@ include = ["/src", "/LICENSE.txt"]
 
 [features]
 default = ["mimalloc"]
+protoc = [ "datafusion-substrait/protoc" ]
 
 [dependencies]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
@@ -50,9 +51,6 @@ parking_lot = "0.12"
 regex-syntax = "0.6.28"
 syn = "2.0.11"
 url = "2.2"
-
-[features]
-protoc = [ "datafusion-substrait/protoc" ]
 
 [lib]
 name = "datafusion_python"
