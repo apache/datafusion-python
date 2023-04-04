@@ -147,7 +147,7 @@ jobs:
           rust-toolchain: stable
           manylinux: auto
           rustup-components: rust-std rustfmt
-          args: --release --sdist --out dist
+          args: --release --sdist --out dist --features protoc
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
