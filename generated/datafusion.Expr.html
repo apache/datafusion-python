@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>datafusion.Expression &#8212; Arrow DataFusion  documentation</title>
+    <title>datafusion.Expr &#8212; Arrow DataFusion  documentation</title>
     
     <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -38,7 +38,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Functions" href="../api/functions.html" />
-    <link rel="prev" title="Expression" href="../api/expression.html" />
+    <link rel="prev" title="Expr" href="../api/expression.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -136,7 +136,7 @@
    </li>
    <li class="toctree-l2 current active has-children">
     <a class="reference internal" href="../api/expression.html">
-     Expression
+     Expr
     </a>
     <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
     <label for="toctree-checkbox-5">
@@ -146,7 +146,7 @@
     <ul class="current">
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
-       datafusion.Expression
+       datafusion.Expr
       </a>
      </li>
     </ul>
@@ -212,73 +212,100 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#datafusion.Expression">
+  <a class="reference internal nav-link" href="#datafusion.Expr">
    <code class="docutils literal notranslate">
     <span class="pre">
-     Expression
+     Expr
     </span>
    </code>
   </a>
   <ul class="nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.__init__">
+    <a class="reference internal nav-link" href="#datafusion.Expr.__init__">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.__init__()
+       Expr.__init__()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.alias">
+    <a class="reference internal nav-link" href="#datafusion.Expr.alias">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.alias()
+       Expr.alias()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.cast">
+    <a class="reference internal nav-link" href="#datafusion.Expr.canonical_name">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.cast()
+       Expr.canonical_name()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.column">
+    <a class="reference internal nav-link" href="#datafusion.Expr.cast">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.column()
+       Expr.cast()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.is_null">
+    <a class="reference internal nav-link" href="#datafusion.Expr.column">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.is_null()
+       Expr.column()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.literal">
+    <a class="reference internal nav-link" href="#datafusion.Expr.display_name">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.literal()
+       Expr.display_name()
       </span>
      </code>
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.Expression.sort">
+    <a class="reference internal nav-link" href="#datafusion.Expr.is_null">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Expression.sort()
+       Expr.is_null()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.literal">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.literal()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.sort">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.sort()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.to_variant">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.to_variant()
       </span>
      </code>
     </a>
@@ -294,7 +321,7 @@
                 
 
 <div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/master/docs/source/generated/datafusion.Expression.rst">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/generated/datafusion.Expr.rst">
         <i class="fas fa-pencil-alt"></i> Edit this page
     </a>
 </div>
@@ -313,74 +340,102 @@
               
               <div>
                 
-  <section id="datafusion-expression">
-<h1>datafusion.Expression<a class="headerlink" href="#datafusion-expression" title="Permalink to this heading">¶</a></h1>
+  <section id="datafusion-expr">
+<h1>datafusion.Expr<a class="headerlink" href="#datafusion-expr" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
-<dt class="sig sig-object py" id="datafusion.Expression">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expression</span></span><a class="headerlink" href="#datafusion.Expression" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><a class="headerlink" href="#datafusion.Expr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>An PyExpr that can be used on a DataFrame</p>
+<p>A PyExpr that can be used on a DataFrame</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.__init__" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.__init__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expression.__init__" title="datafusion.Expression.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.__init__" title="datafusion.Expr.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expression.alias" title="datafusion.Expression.alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alias</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.alias" title="datafusion.Expr.alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alias</span></code></a>(name)</p></td>
 <td><p>assign a name to the PyExpr</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expression.cast" title="datafusion.Expression.cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.canonical_name" title="datafusion.Expr.canonical_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">canonical_name</span></code></a>()</p></td>
+<td><p>Returns a full and complete string representation of this expression.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.cast" title="datafusion.Expr.cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast</span></code></a>(to)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expression.column" title="datafusion.Expression.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.column" title="datafusion.Expr.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expression.is_null" title="datafusion.Expression.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.display_name" title="datafusion.Expr.display_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_name</span></code></a>()</p></td>
+<td><p>Returns the name of this expression as it should appear in a schema.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.is_null" title="datafusion.Expr.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expression.literal" title="datafusion.Expression.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expression.sort" title="datafusion.Expression.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.sort" title="datafusion.Expr.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>([ascending, nulls_first])</p></td>
 <td><p>Create a sort PyExpr from an existing PyExpr.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
+<td><p>Return the specific expression</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.alias">
-<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.alias" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.alias">
+<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.alias" title="Permalink to this definition">¶</a></dt>
 <dd><p>assign a name to the PyExpr</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.cast" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.canonical_name">
+<span class="sig-name descname"><span class="pre">canonical_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.canonical_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a full and complete string representation of this expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.cast">
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.cast" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.column">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.column" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.column">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.column" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.is_null">
-<span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.is_null" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.display_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of this expression as it should appear in a schema. This name
+will not include any CAST expressions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.is_null">
+<span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.is_null" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.literal">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.literal" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.literal">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.literal" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Expression.sort">
-<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expression.sort" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.Expr.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.sort" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a sort PyExpr from an existing PyExpr.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.to_variant">
+<span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.to_variant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the specific expression</p>
 </dd></dl>
 
 </dd></dl>
@@ -397,7 +452,7 @@
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Expression</p>
+            <p class="prev-next-title">Expr</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="../api/functions.html" title="next page">

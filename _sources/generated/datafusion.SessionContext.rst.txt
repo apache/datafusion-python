@@ -16,8 +16,15 @@
       ~SessionContext.__init__
       ~SessionContext.catalog
       ~SessionContext.create_dataframe
+      ~SessionContext.create_dataframe_from_logical_plan
       ~SessionContext.deregister_table
       ~SessionContext.empty_table
+      ~SessionContext.execute
+      ~SessionContext.from_arrow_table
+      ~SessionContext.from_pandas
+      ~SessionContext.from_polars
+      ~SessionContext.from_pydict
+      ~SessionContext.from_pylist
       ~SessionContext.read_avro
       ~SessionContext.read_csv
       ~SessionContext.read_json

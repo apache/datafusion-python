@@ -136,7 +136,7 @@
    </li>
    <li class="toctree-l2 has-children">
     <a class="reference internal" href="../api/expression.html">
-     Expression
+     Expr
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
     <label for="toctree-checkbox-5">
@@ -145,8 +145,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="datafusion.Expression.html">
-       datafusion.Expression
+      <a class="reference internal" href="datafusion.Expr.html">
+       datafusion.Expr
       </a>
      </li>
     </ul>
@@ -248,10 +248,46 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.approx_median">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     approx_median()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.approx_percentile_cont">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     approx_percentile_cont()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.approx_percentile_cont_with_weight">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     approx_percentile_cont_with_weight()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.array">
    <code class="docutils literal notranslate">
     <span class="pre">
      array()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_agg">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_agg()
     </span>
    </code>
   </a>
@@ -401,6 +437,15 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.corr">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     corr()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.cos">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -423,6 +468,33 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      count_star()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.covar">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     covar()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.covar_pop">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     covar_pop()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.covar_samp">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     covar_samp()
     </span>
    </code>
   </a>
@@ -522,6 +594,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      from_unixtime()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.grouping">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     grouping()
     </span>
    </code>
   </a>
@@ -648,6 +729,24 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      md5()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.mean">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     mean()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.median">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     median()
     </span>
    </code>
   </a>
@@ -887,10 +986,46 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.stddev">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     stddev()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.stddev_pop">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     stddev_pop()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.stddev_samp">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     stddev_samp()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.strpos">
    <code class="docutils literal notranslate">
     <span class="pre">
      strpos()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.struct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     struct()
     </span>
    </code>
   </a>
@@ -1004,6 +1139,42 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.uuid">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     uuid()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.var">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     var()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.var_pop">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     var_pop()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.var_samp">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     var_samp()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.window">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1021,7 +1192,7 @@
                 
 
 <div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/master/docs/source/generated/datafusion.functions.functions.rst">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/generated/datafusion.functions.functions.rst">
         <i class="fas fa-pencil-alt"></i> Edit this page
     </a>
 </div>
@@ -1044,129 +1215,154 @@
 <span id="datafusion-functions-functions"></span><h1>datafusion.functions.functions<a class="headerlink" href="#module-datafusion.functions.functions" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.abs">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.abs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.abs" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.acos">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">acos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.acos" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">acos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.acos" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.alias">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.alias" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new Alias expression</p>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.alias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Alias Expr</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.approx_distinct">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_distinct" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_distinct" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.approx_median">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_median" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.approx_percentile_cont">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_percentile_cont</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_percentile_cont" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.approx_percentile_cont_with_weight">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">approx_percentile_cont_with_weight</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.approx_percentile_cont_with_weight" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_agg">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_agg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_agg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.arrow_typeof">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">arrow_typeof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.arrow_typeof" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">arrow_typeof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.arrow_typeof" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.ascii">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ascii</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ascii" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.asin">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">asin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.asin" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">asin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.asin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.atan">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">atan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.atan" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">atan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.atan" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.atan2">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">atan2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.atan2" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">atan2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.atan2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.avg">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">avg</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.avg" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">avg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.avg" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.bit_length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">bit_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.bit_length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">bit_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.bit_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns number of bits in the string (8 times the octet_length).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.btrim">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">btrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.btrim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">btrim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.btrim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the longest string containing only characters in characters (a space by default) from the start and end of string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.ceil">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ceil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ceil" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ceil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ceil" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.char_length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">char_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.char_length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">char_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.char_length" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.character_length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">character_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.character_length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">character_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.character_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns number of characters in the string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.chr">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">chr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.chr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">chr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.chr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the character with the given code.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.coalesce">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">coalesce</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.coalesce" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">coalesce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.coalesce" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.col">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.col" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a column reference expression</p>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a column reference Expr</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.concat">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Concatenates the text representations of all the arguments.
 NULL arguments are ignored.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.concat_ws">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat_ws</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat_ws" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">concat_ws</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sep</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.concat_ws" title="Permalink to this definition">¶</a></dt>
 <dd><p>Concatenates all but the first argument, with separators.
 The first argument is used as the separator string, and should not be NULL.
 Other NULL arguments are ignored.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.corr">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">corr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.corr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.cos">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">cos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.cos" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">cos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.cos" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.count">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.count" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.count" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -1176,352 +1372,423 @@ Other NULL arguments are ignored.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.covar">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.covar_pop">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.covar_samp">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_samp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.current_date">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">current_date</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.current_date" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">current_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.current_date" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.current_time">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">current_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.current_time" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">current_time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.current_time" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.date_bin">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_bin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_bin" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_bin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.date_part">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_part</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_part" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_part" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.date_trunc">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_trunc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_trunc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">date_trunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.date_trunc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.datepart">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">datepart</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.datepart" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">datepart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.datepart" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.datetrunc">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">datetrunc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.datetrunc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">datetrunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.datetrunc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.digest">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">digest</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.digest" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">digest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.digest" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes a binary hash of the given data. type is the algorithm to use.
 Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.exp">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.exp" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.exp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.floor">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.floor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.floor" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.from_unixtime">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">from_unixtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.from_unixtime" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">from_unixtime</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.from_unixtime" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.grouping">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">grouping</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.grouping" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.in_list">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">in_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.in_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">in_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">negated</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.in_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.initcap">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">initcap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.initcap" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">initcap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.initcap" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.left">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">left</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.left" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">left</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.left" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns first n characters in the string, or when n is negative, returns all but last <a href="#id1"><span class="problematic" id="id2">|n|</span></a> characters.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.length" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.ln">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ln" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ln" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.log">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.log10">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log10</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log10" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log10</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log10" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.log2">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log2" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">log2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.log2" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.lower">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lower" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lower</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lower" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the string to all lower case</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.lpad">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lpad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lpad" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">lpad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.lpad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.ltrim">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ltrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ltrim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">ltrim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.ltrim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the longest string containing only characters in characters (a space by default) from the start of string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.make_array">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">make_array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.make_array" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">make_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.make_array" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.max">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.max" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.max" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.md5">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">md5</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.md5" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">md5</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.md5" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the MD5 hash of the argument, with the result written in hexadecimal.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.mean">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">mean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.mean" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.median">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.median" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.min">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.min" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">min</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.min" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.now">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">now</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.now" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">now</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.now" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.nullif">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">nullif</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.nullif" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">nullif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.nullif" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.octet_length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.octet_length" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.octet_length" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.order_by">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">order_by</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.order_by" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates a new Sort expression</p>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">order_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">asc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.order_by" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new Sort Expr</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.pow">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">pow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.pow" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.pow" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.power">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">power</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.power" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.power" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.random">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.random" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.random" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.regexp_match">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_match</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_match" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_match" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.regexp_replace">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_replace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_replace" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replaces substring(s) matching a POSIX regular expression</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.repeat">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">repeat</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.repeat" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">repeat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.repeat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Repeats string the specified number of times.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.replace">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.replace" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.replace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replaces all occurrences in string of substring from with substring to.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.reverse">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.reverse" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.reverse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reverses the order of the characters in the string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.right">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">right</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.right" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">right</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.right" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns last n characters in the string, or when n is negative, returns all but first <a href="#id3"><span class="problematic" id="id4">|n|</span></a> characters.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.round">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.round" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">round</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.round" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.rpad">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rpad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rpad" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rpad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rpad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.rtrim">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rtrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rtrim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">rtrim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.rtrim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the longest string containing only characters in characters (a space by default) from the end of string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sha224">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha224</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha224" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha224</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha224" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sha256">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha256</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha256" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha256</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha256" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sha384">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha384</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha384" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha384</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha384" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sha512">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha512</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha512" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sha512</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sha512" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.signum">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">signum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.signum" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">signum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.signum" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sin">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sin" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.split_part">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">split_part</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.split_part" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">split_part</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.split_part" title="Permalink to this definition">¶</a></dt>
 <dd><p>Splits string at occurrences of delimiter and returns the n’th field (counting from one).</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sqrt">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sqrt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sqrt" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sqrt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sqrt" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.starts_with">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">starts_with</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.starts_with" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">starts_with</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.starts_with" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if string starts with prefix.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.stddev">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">stddev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.stddev" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.stddev_pop">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">stddev_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.stddev_pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.stddev_samp">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">stddev_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.stddev_samp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.strpos">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">strpos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.strpos" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">strpos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.strpos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns starting index of specified substring within string, or zero if it’s not present. (Same as position(substring in string), but note the reversed argument order.)</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.struct">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.struct" title="Permalink to this definition">¶</a></dt>
+<dd><p>r#struct</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.substr">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">substr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.substr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">substr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.substr" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sum">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sum" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sum" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.tan">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">tan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.tan" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">tan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.tan" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.to_hex">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_hex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_hex" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_hex</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_hex" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the number to its equivalent hexadecimal representation.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.to_timestamp">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.to_timestamp_micros">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_micros</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_micros" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_micros</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_micros" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.to_timestamp_millis">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_millis</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_millis" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_millis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_millis" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.to_timestamp_seconds">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_seconds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_seconds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_seconds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.to_timestamp_seconds" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.translate">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.translate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">translate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.translate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.trim">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trim" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.trunc">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trunc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trunc" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">trunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.trunc" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.upper">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">upper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.upper" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">upper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.upper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the string to all upper case.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.uuid">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">uuid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.uuid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.var">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.var_pop">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var_pop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.var_samp">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var_samp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.window">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.window" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.window" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a new Window function expression</p>
 </dd></dl>
 

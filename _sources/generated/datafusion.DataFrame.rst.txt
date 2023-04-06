@@ -18,13 +18,18 @@
       ~DataFrame.cache
       ~DataFrame.collect
       ~DataFrame.collect_partitioned
+      ~DataFrame.count
+      ~DataFrame.describe
       ~DataFrame.distinct
       ~DataFrame.except_all
+      ~DataFrame.execution_plan
       ~DataFrame.explain
       ~DataFrame.filter
       ~DataFrame.intersect
       ~DataFrame.join
       ~DataFrame.limit
+      ~DataFrame.logical_plan
+      ~DataFrame.optimized_logical_plan
       ~DataFrame.repartition
       ~DataFrame.repartition_by_hash
       ~DataFrame.schema
@@ -32,6 +37,11 @@
       ~DataFrame.select_columns
       ~DataFrame.show
       ~DataFrame.sort
+      ~DataFrame.to_arrow_table
+      ~DataFrame.to_pandas
+      ~DataFrame.to_polars
+      ~DataFrame.to_pydict
+      ~DataFrame.to_pylist
       ~DataFrame.union
       ~DataFrame.union_distinct
       ~DataFrame.with_column

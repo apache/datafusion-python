@@ -1,0 +1,31 @@
+﻿datafusion.Expr
+===============
+
+.. currentmodule:: datafusion
+
+.. autoclass:: Expr
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Expr.__init__
+      ~Expr.alias
+      ~Expr.canonical_name
+      ~Expr.cast
+      ~Expr.column
+      ~Expr.display_name
+      ~Expr.is_null
+      ~Expr.literal
+      ~Expr.sort
+      ~Expr.to_variant
+   
+   
+
+   
+   
+   
