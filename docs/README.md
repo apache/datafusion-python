@@ -20,8 +20,8 @@
 # DataFusion Documentation
 
 This folder contains the source content of the [python api](./source/api).
-These are both published to https://arrow.apache.org/datafusion/ 
-as part of the release process.
+This is published to https://arrow.apache.org/datafusion-python/ by a GitHub action 
+when changes are merged to the main branch.
 
 ## Dependencies
 
@@ -29,7 +29,7 @@ It's recommended to install build dependencies and build the documentation
 inside a Python virtualenv.
 
 - Python
-- `pip install -r requirements.txt`
+- `pip3 install -r requirements.txt`
 
 ## Build & Preview
 
