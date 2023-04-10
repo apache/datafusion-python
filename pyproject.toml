@@ -55,10 +55,9 @@ repository = "https://github.com/apache/arrow-datafusion-python"
 profile = "black"
 
 [tool.maturin]
-#include = [
-#    { path = "Cargo.lock", format = "sdist" },
-#    { path = "Cargo.toml", format = "sdist" },
-#]
+include = [
+    { path = "Cargo.lock", format = "sdist" }
+]
 exclude = [".github/**", "ci/**", ".asf.yaml"]
 # Require Cargo.lock is up to date
-#locked = true
+locked = true
