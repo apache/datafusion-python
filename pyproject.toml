@@ -16,7 +16,7 @@
 # under the License.
 
 [build-system]
-requires = ["maturin>=0.11,<0.15"]
+requires = ["maturin>=0.14,<0.15"]
 build-backend = "maturin"
 
 [project]
@@ -55,10 +55,10 @@ repository = "https://github.com/apache/arrow-datafusion-python"
 profile = "black"
 
 [tool.maturin]
-include = [
-    { path = "Cargo.lock", format = "sdist" },
-    { path = "Cargo.toml", format = "sdist" },
-]
+#include = [
+#    { path = "Cargo.lock", format = "sdist" },
+#    { path = "Cargo.toml", format = "sdist" },
+#]
 exclude = [".github/**", "ci/**", ".asf.yaml"]
 # Require Cargo.lock is up to date
-locked = true
+#locked = true
