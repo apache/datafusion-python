@@ -19,6 +19,21 @@
 
 # Changelog
 
+## [22.0.0](https://github.com/apache/arrow-datafusion-python/tree/22.0.0) (2023-04-10)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/21.0.0...22.0.0)
+
+**Merged pull requests:**
+
+- Fix invalid build yaml [#308](https://github.com/apache/arrow-datafusion-python/pull/308) (andygrove)
+- Try fix release build [#309](https://github.com/apache/arrow-datafusion-python/pull/309) (andygrove)
+- Fix release build [#310](https://github.com/apache/arrow-datafusion-python/pull/310) (andygrove)
+- Enable datafusion-substrait protoc feature, to remove compile-time dependency on protoc [#312](https://github.com/apache/arrow-datafusion-python/pull/312) (andygrove)
+- Fix Mac/Win release builds in CI [#313](https://github.com/apache/arrow-datafusion-python/pull/313) (andygrove)
+- install protoc in docs workflow [#314](https://github.com/apache/arrow-datafusion-python/pull/314) (andygrove)
+- Fix documentation generation in CI [#315](https://github.com/apache/arrow-datafusion-python/pull/315) (andygrove)
+- Source wheel fix [#319](https://github.com/apache/arrow-datafusion-python/pull/319) (andygrove)
+
 ## [21.0.0](https://github.com/apache/arrow-datafusion-python/tree/21.0.0) (2023-03-30)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/20.0.0...21.0.0)

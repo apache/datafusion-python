@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "21.0.0"
+version = "22.0.0"
 homepage = "https://github.com/apache/arrow-datafusion-python"
 repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
@@ -36,12 +36,12 @@ protoc = [ "datafusion-substrait/protoc" ]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69", features = ["pyarrow", "avro"] }
-datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69", features = ["pyarrow"] }
-datafusion-expr = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
-datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
-datafusion-sql = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
-datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "2191a69" }
+datafusion = { version = "22.0.0", features = ["pyarrow", "avro"] }
+datafusion-common = { version = "22.0.0", features = ["pyarrow"] }
+datafusion-expr = { version = "22.0.0" }
+datafusion-optimizer = { version = "22.0.0" }
+datafusion-sql = { version = "22.0.0" }
+datafusion-substrait = { version = "22.0.0" }
 uuid = { version = "1.2", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false }
 async-trait = "0.1"
