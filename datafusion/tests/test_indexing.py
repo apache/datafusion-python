@@ -44,7 +44,7 @@ def test_err(df):
     with pytest.raises(Exception) as e_info:
         df["c"]
 
-    assert 'Schema error: No field named c.' in e_info.value.args[0]
+    assert "Schema error: No field named c." in e_info.value.args[0]
 
     with pytest.raises(Exception) as e_info:
         df[1]

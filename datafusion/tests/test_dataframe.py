@@ -84,8 +84,7 @@ def test_select_columns(df):
 
 
 def test_filter(df):
-    df = df.filter(column("a") > literal(2))\
-    .select(
+    df = df.filter(column("a") > literal(2)).select(
         column("a") + column("b"),
         column("a") - column("b"),
     )

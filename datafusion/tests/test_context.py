@@ -282,8 +282,7 @@ def test_dataset_filter_nested_data(ctx):
 
     # This filter will not be pushed down to DatasetExec since it
     # isn't supported
-    df = df.filter(column("nested_data")["b"] > literal(5))\
-    .select(
+    df = df.filter(column("nested_data")["b"] > literal(5)).select(
         column("nested_data")["a"] + column("nested_data")["b"],
         column("nested_data")["a"] - column("nested_data")["b"],
     )
