@@ -22,9 +22,7 @@ ctx = SessionContext()
 print(ctx)
 
 # create a session context with explicit runtime and config settings
-runtime = (
-    RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
-)
+runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
 config = (
     SessionConfig()
     .with_create_default_catalog_and_schema(True)
