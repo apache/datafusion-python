@@ -88,11 +88,13 @@ This produces the following chart:
 
 ## Configuration
 
-It is possible to configure runtime (memory and disk settings) and configuration settins when creating a context.
+It is possible to configure runtime (memory and disk settings) and configuration settings when creating a context.
 
 ```python
 runtime = (
-    RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
+    RuntimeConfig()
+    .with_disk_manager_os()
+    .with_fair_spill_pool(10000000)
 )
 config = (
     SessionConfig()
@@ -108,6 +110,8 @@ config = (
 )
 ctx = SessionContext(config, runtime)
 ```
+
+Refer to the [API documentation](https://arrow.apache.org/datafusion-python/#api-reference) for more information.
 
 Printing the context will show the current configuration settings.
 
