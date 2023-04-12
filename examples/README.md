@@ -27,6 +27,10 @@ Here is a direct link to the file used in the examples:
 
 - https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
 
+### Creating a SessionContext
+
+- [Creating a SessionContext](./create-context.py)
+
 ### Executing Queries with DataFusion
 
 - [Query a Parquet file using SQL](./sql-parquet.py)
