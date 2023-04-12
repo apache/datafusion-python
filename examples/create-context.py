@@ -1,0 +1,24 @@
+from datafusion import RuntimeConfig, SessionConfig, SessionContext
+
+# create a session context with default settings
+ctx = SessionContext()
+print(ctx)
+
+# create a session context with explicit runtime and config settings
+runtime = (
+    RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
+)
+config = (
+    SessionConfig()
+    .with_create_default_catalog_and_schema(True)
+    .with_default_catalog_and_schema("foo", "bar")
+    .with_target_partitions(8)
+    .with_information_schema(True)
+    .with_repartition_joins(False)
+    .with_repartition_aggregations(False)
+    .with_repartition_windows(False)
+    .with_parquet_pruning(False)
+    .set("datafusion.execution.parquet.pushdown_filters", "true")
+)
+ctx = SessionContext(config, runtime)
+print(ctx)

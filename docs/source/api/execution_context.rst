@@ -19,9 +19,11 @@
 .. currentmodule:: datafusion
 
 SessionContext
-================
+==============
 
 .. autosummary::
    :toctree: ../generated/
 
+   SessionConfig
+   RuntimeConfig
    SessionContext
