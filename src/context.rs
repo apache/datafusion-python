@@ -696,13 +696,7 @@ impl PySessionContext {
             .entries()
             .iter()
             .filter(|e| e.value.is_some())
-            .map(|e| {
-                format!(
-                    "{} = {}",
-                    e.key,
-                    e.value.as_ref().unwrap()
-                )
-            })
+            .map(|e| format!("{} = {}", e.key, e.value.as_ref().unwrap()))
             .collect::<Vec<_>>();
         config_entries.sort();
         Ok(format!(
