@@ -33,6 +33,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -132,7 +133,7 @@
    </li>
    <li class="toctree-l2 has-children">
     <a class="reference internal" href="api/expression.html">
-     Expression
+     Expr
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
     <label for="toctree-checkbox-5">
@@ -141,8 +142,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.Expression.html">
-       datafusion.Expression
+      <a class="reference internal" href="generated/datafusion.Expr.html">
+       datafusion.Expr
       </a>
      </li>
     </ul>
@@ -227,10 +228,12 @@
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
+ | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
+ | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
 </div>
@@ -242,7 +245,7 @@
       <ul>
         <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.__init__">(datafusion.DataFrame method)</a>
 </li>
-        <li><a href="generated/datafusion.Expression.html#datafusion.Expression.__init__">(datafusion.Expression method)</a>
+        <li><a href="generated/datafusion.Expr.html#datafusion.Expr.__init__">(datafusion.Expr method)</a>
 </li>
         <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.__init__">(datafusion.SessionContext method)</a>
 </li>
@@ -259,7 +262,7 @@
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.aggregate">aggregate() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression.alias">alias() (datafusion.Expression method)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.alias">alias() (datafusion.Expr method)</a>
 
       <ul>
         <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.alias">(in module datafusion.functions.functions)</a>
@@ -267,17 +270,29 @@
       </ul></li>
       <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.AmazonS3">AmazonS3 (class in datafusion.object_store.object_store)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.approx_distinct">approx_distinct() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.approx_median">approx_median() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.approx_percentile_cont">approx_percentile_cont() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.approx_percentile_cont_with_weight">approx_percentile_cont_with_weight() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.array">array() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.array_agg">array_agg() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.arrow_typeof">arrow_typeof() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.ascii">ascii() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.asin">asin() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.atan">atan() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.atan2">atan2() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.avg">avg() (in module datafusion.functions.functions)</a>
 </li>
@@ -301,35 +316,63 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.cache">cache() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression.cast">cast() (datafusion.Expression method)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.canonical_name">canonical_name() (datafusion.Expr method)</a>
+</li>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.cast">cast() (datafusion.Expr method)</a>
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.catalog">catalog() (datafusion.SessionContext method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.ceil">ceil() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.char_length">char_length() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.character_length">character_length() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.chr">chr() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.coalesce">coalesce() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.col">col() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.collect">collect() (datafusion.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.collect_partitioned">collect_partitioned() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression.column">column() (datafusion.Expression static method)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.column">column() (datafusion.Expr static method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat">concat() (in module datafusion.functions.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat_ws">concat_ws() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.Config.html#datafusion.Config">Config (class in datafusion)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.corr">corr() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.cos">cos() (in module datafusion.functions.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.count">count() (in module datafusion.functions.functions)</a>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.count">count() (datafusion.DataFrame method)</a>
+
+      <ul>
+        <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.count">(in module datafusion.functions.functions)</a>
+</li>
+      </ul></li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.count_star">count_star() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.covar">covar() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.covar_pop">covar_pop() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.covar_samp">covar_samp() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe">create_dataframe() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe_from_logical_plan">create_dataframe_from_logical_plan() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.current_date">current_date() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.current_time">current_time() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -353,11 +396,25 @@
         <li><a href="generated/datafusion.object_store.object_store.html#module-datafusion.object_store.object_store">module</a>
 </li>
       </ul></li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_bin">date_bin() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_part">date_part() (in module datafusion.functions.functions)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.date_trunc">date_trunc() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.datepart">datepart() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.datetrunc">datetrunc() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.deregister_table">deregister_table() (datafusion.SessionContext method)</a>
 </li>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.describe">describe() (datafusion.DataFrame method)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.digest">digest() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.display_name">display_name() (datafusion.Expr method)</a>
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.distinct">distinct() (datafusion.DataFrame method)</a>
 </li>
@@ -371,13 +428,17 @@
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.except_all">except_all() (datafusion.DataFrame method)</a>
 </li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.execute">execute() (datafusion.SessionContext method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.execution_plan">execution_plan() (datafusion.DataFrame method)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.exp">exp() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.explain">explain() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression">Expression (class in datafusion)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr">Expr (class in datafusion)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -387,11 +448,23 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.filter">filter() (datafusion.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.floor">floor() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_arrow_table">from_arrow_table() (datafusion.SessionContext method)</a>
+</li>
       <li><a href="generated/datafusion.Config.html#datafusion.Config.from_env">from_env() (datafusion.Config static method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pandas">from_pandas() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_polars">from_polars() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pydict">from_pydict() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pylist">from_pylist() (datafusion.SessionContext method)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.from_unixtime">from_unixtime() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -401,11 +474,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.Config.html#datafusion.Config.get">get() (datafusion.Config method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.Config.html#datafusion.Config.get_all">get_all() (datafusion.Config method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.GoogleCloud">GoogleCloud (class in datafusion.object_store.object_store)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.grouping">grouping() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -421,7 +496,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.intersect">intersect() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression.is_null">is_null() (datafusion.Expression method)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.is_null">is_null() (datafusion.Expr method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -439,9 +514,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.left">left() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.length">length() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.limit">limit() (datafusion.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expression.html#datafusion.Expression.literal">literal() (datafusion.Expression static method)</a>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.literal">literal() (datafusion.Expr static method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.ln">ln() (in module datafusion.functions.functions)</a>
 </li>
@@ -449,9 +526,13 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log">log() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log10">log10() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.log2">log2() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.logical_plan">logical_plan() (datafusion.DataFrame method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.lower">lower() (in module datafusion.functions.functions)</a>
 </li>
@@ -465,14 +546,20 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.make_array">make_array() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.max">max() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.md5">md5() (in module datafusion.functions.functions)</a>
 </li>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.MicrosoftAzure">MicrosoftAzure (class in datafusion.object_store.object_store)</a>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.mean">mean() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.median">median() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.MicrosoftAzure">MicrosoftAzure (class in datafusion.object_store.object_store)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.min">min() (in module datafusion.functions.functions)</a>
 </li>
       <li>
@@ -493,6 +580,10 @@
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.now">now() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.nullif">nullif() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="O">O</h2>
@@ -502,7 +593,21 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.optimized_logical_plan">optimized_logical_plan() (datafusion.DataFrame method)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.order_by">order_by() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="P">P</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.pow">pow() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.power">power() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -588,16 +693,16 @@
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.show">show() (datafusion.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.signum">signum() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.sin">sin() (in module datafusion.functions.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.sort">sort() (datafusion.DataFrame method)</a>
 
       <ul>
-        <li><a href="generated/datafusion.Expression.html#datafusion.Expression.sort">(datafusion.Expression method)</a>
+        <li><a href="generated/datafusion.Expr.html#datafusion.Expr.sort">(datafusion.Expr method)</a>
 </li>
       </ul></li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.split_part">split_part() (in module datafusion.functions.functions)</a>
@@ -608,7 +713,15 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.starts_with">starts_with() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.stddev">stddev() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.stddev_pop">stddev_pop() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.stddev_samp">stddev_samp() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.strpos">strpos() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.struct">struct() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.substr">substr() (in module datafusion.functions.functions)</a>
 </li>
@@ -628,11 +741,29 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.tan">tan() (in module datafusion.functions.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_arrow_table">to_arrow_table() (datafusion.DataFrame method)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_hex">to_hex() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pandas">to_pandas() (datafusion.DataFrame method)</a>
+</li>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_polars">to_polars() (datafusion.DataFrame method)</a>
+</li>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pydict">to_pydict() (datafusion.DataFrame method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pylist">to_pylist() (datafusion.DataFrame method)</a>
+</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp">to_timestamp() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_micros">to_timestamp_micros() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_millis">to_timestamp_millis() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.to_timestamp_seconds">to_timestamp_seconds() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.to_variant">to_variant() (datafusion.Expr method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.translate">translate() (in module datafusion.functions.functions)</a>
 </li>
@@ -648,11 +779,27 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.union">union() (datafusion.DataFrame method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.union_distinct">union_distinct() (datafusion.DataFrame method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.upper">upper() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.uuid">uuid() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="V">V</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.var">var() (in module datafusion.functions.functions)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.var_pop">var_pop() (in module datafusion.functions.functions)</a>
+</li>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.var_samp">var_samp() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -704,7 +851,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.1.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
     </div>
     

@@ -17,18 +17,23 @@
 
 notifications:
   commits:      commits@arrow.apache.org
-  issues_status: issues@arrow.apache.org
-  issues_comment: github@arrow.apache.org
+  issues:       github@arrow.apache.org
   pullrequests: github@arrow.apache.org
+  jira_options: link label worklog
 github:
   description: "Apache Arrow DataFusion Python Bindings"
-  homepage: https://arrow.apache.org/datafusion-python/
+  homepage: https://arrow.apache.org/datafusion
   enabled_merge_buttons:
     squash: true
     merge: false
     rebase: false
   features:
     issues: true
+
+staging:
+  whoami: asf-staging
+  subdir: datafusion-python
+  
 publish:
   whoami: asf-site
   subdir: datafusion-python

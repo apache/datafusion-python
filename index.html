@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>DataFusion in Python &#8212; Arrow DataFusion  documentation</title>
     
@@ -34,6 +34,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api.html" />
@@ -134,7 +135,7 @@
    </li>
    <li class="toctree-l2 has-children">
     <a class="reference internal" href="api/expression.html">
-     Expression
+     Expr
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
     <label for="toctree-checkbox-5">
@@ -143,8 +144,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.Expression.html">
-       datafusion.Expression
+      <a class="reference internal" href="generated/datafusion.Expr.html">
+       datafusion.Expr
       </a>
      </li>
     </ul>
@@ -255,7 +256,7 @@
                 
 
 <div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/master/docs/source/index.rst">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/index.rst">
         <i class="fas fa-pencil-alt"></i> Edit this page
     </a>
 </div>
@@ -313,7 +314,7 @@
 </pre></div>
 </div>
 <p>We can also execute a query against data stored in CSV</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span> <span class="s2">&quot;a,b\n1,4\n2,5\n3,6&quot;</span> &gt; example.csv
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;a,b\n1,4\n2,5\n3,6&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>example.csv
 </pre></div>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datafusion</span>
@@ -398,7 +399,7 @@
 
 
 <span class="k">class</span> <span class="nc">MyAccumulator</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interface of a user-defined accumulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -444,7 +445,7 @@
 </section>
 <section id="how-to-install-from-pip">
 <h2>How to install (from pip)<a class="headerlink" href="#how-to-install-from-pip" title="Permalink to this heading">¶</a></h2>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip install datafusion
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>datafusion
 </pre></div>
 </div>
 <p>You can verify the installation by running:</p>
@@ -459,26 +460,26 @@
 <p>This assumes that you have rust and cargo installed. We use the workflow recommended by <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>.</p>
 <p>Bootstrap:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch this repo</span>
-git clone git@github.com:apache/arrow-datafusion-python.git
+git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/arrow-datafusion-python.git
 <span class="c1"># prepare development environment (used to build wheel / install in development)</span>
-python3 -m venv venv
+python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
 <span class="c1"># activate the venv</span>
-<span class="nb">source</span> venv/bin/activate
+<span class="nb">source</span><span class="w"> </span>venv/bin/activate
 <span class="c1"># update pip itself if necessary</span>
-python -m pip install -U pip
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip
 <span class="c1"># install dependencies (for Python 3.8+)</span>
-python -m pip install -r requirements-310.txt
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-310.txt
 </pre></div>
 </div>
 <p>The tests rely on test data in git submodules.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git submodule init
-git submodule update
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>submodule<span class="w"> </span>init
+git<span class="w"> </span>submodule<span class="w"> </span>update
 </pre></div>
 </div>
 <p>Whenever rust code changes (your changes or via <cite>git pull</cite>):</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source venv/bin/activate&quot; first</span>
-maturin develop
-python -m pytest
+maturin<span class="w"> </span>develop
+python<span class="w"> </span>-m<span class="w"> </span>pytest
 </pre></div>
 </div>
 </section>
@@ -486,12 +487,12 @@ python -m pytest
 <h2>How to update dependencies<a class="headerlink" href="#how-to-update-dependencies" title="Permalink to this heading">¶</a></h2>
 <p>To change test dependencies, change the <cite>requirements.in</cite> and run</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pip-tools (this can be done only once), also consider running in venv</span>
-python -m pip install pip-tools
-python -m piptools compile --generate-hashes -o requirements-310.txt
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pip-tools
+python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
 </pre></div>
 </div>
 <p>To update dependencies, run with <cite>-U</cite></p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python -m piptools compile -U --generate-hashes -o requirements-310.txt
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>-U<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
 </pre></div>
 </div>
 <p>More details about pip-tools <a class="reference external" href="https://github.com/jazzband/pip-tools">here</a></p>
@@ -504,7 +505,7 @@ python -m piptools compile --generate-hashes -o requirements-310.txt
 <li class="toctree-l2"><a class="reference internal" href="api/config.html">Config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/dataframe.html">DataFrame</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/execution_context.html">SessionContext</a></li>
-<li class="toctree-l2"><a class="reference internal" href="api/expression.html">Expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/expression.html">Expr</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/functions.html">Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/object_store.html">ObjectStore</a></li>
 </ul>
@@ -547,7 +548,7 @@ python -m piptools compile --generate-hashes -o requirements-310.txt
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.1.1.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
 </p>
     </div>
     
