@@ -20,7 +20,7 @@
 # DataFusion Documentation
 
 This folder contains the source content of the [python api](./source/api).
-This is published to https://arrow.apache.org/datafusion-python/ by a GitHub action 
+This is published to https://arrow.apache.org/datafusion-python/ by a GitHub action
 when changes are merged to the main branch.
 
 ## Dependencies
