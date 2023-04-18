@@ -42,3 +42,4 @@ Cargo.lock
 .history
 *rat.txt
 */.git
+.github/*

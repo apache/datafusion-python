@@ -20,6 +20,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use object_store::ObjectStore;
+use url::Url;
 use uuid::Uuid;
 
 use pyo3::exceptions::{PyKeyError, PyValueError};
@@ -49,12 +50,12 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use datafusion_common::config::Extensions;
 use datafusion_common::ScalarValue;
 use pyo3::types::PyTuple;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 
+/// Configuration options for a SessionContext
 #[pyclass(name = "SessionConfig", module = "datafusion", subclass, unsendable)]
 #[derive(Clone, Default)]
 pub(crate) struct PySessionConfig {
@@ -141,8 +142,13 @@ impl PySessionConfig {
     fn with_parquet_pruning(&self, enabled: bool) -> Self {
         Self::from(self.config.clone().with_parquet_pruning(enabled))
     }
+
+    fn set(&self, key: &str, value: &str) -> Self {
+        Self::from(self.config.clone().set_str(key, value))
+    }
 }
 
+/// Runtime options for a SessionContext
 #[pyclass(name = "RuntimeConfig", module = "datafusion", subclass, unsendable)]
 #[derive(Clone)]
 pub(crate) struct PyRuntimeConfig {
@@ -260,10 +266,9 @@ impl PySessionContext {
         } else {
             &upstream_host
         };
-
-        self.ctx
-            .runtime_env()
-            .register_object_store(scheme, derived_host, store);
+        let url_string = format!("{}{}", scheme, derived_host);
+        let url = Url::parse(&url_string).unwrap();
+        self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())
     }
 
@@ -550,8 +555,8 @@ impl PySessionContext {
         Ok(PyDataFrame::new(self.ctx.read_empty()?))
     }
 
-    fn session_id(&self) -> PyResult<String> {
-        Ok(self.ctx.session_id())
+    fn session_id(&self) -> String {
+        self.ctx.session_id()
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -685,11 +690,20 @@ impl PySessionContext {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        let id = self.session_id();
-        match id {
-            Ok(value) => Ok(format!("SessionContext(session_id={value})")),
-            Err(err) => Ok(format!("Error: {:?}", err.to_string())),
-        }
+        let config = self.ctx.copied_config();
+        let mut config_entries = config
+            .options()
+            .entries()
+            .iter()
+            .filter(|e| e.value.is_some())
+            .map(|e| format!("{} = {}", e.key, e.value.as_ref().unwrap()))
+            .collect::<Vec<_>>();
+        config_entries.sort();
+        Ok(format!(
+            "SessionContext: id={}; configs=[\n\t{}]",
+            self.session_id(),
+            config_entries.join("\n\t")
+        ))
     }
 
     /// Execute a partition of an execution plan and return a stream of record batches
@@ -699,20 +713,19 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyResult<PyRecordBatchStream> {
-        let ctx = TaskContext::try_new(
-            "task_id".to_string(),
+        let ctx = TaskContext::new(
+            None,
             "session_id".to_string(),
-            HashMap::new(),
+            SessionConfig::new(),
             HashMap::new(),
             HashMap::new(),
             Arc::new(RuntimeEnv::default()),
-            Extensions::default(),
         );
         // create a Tokio runtime to run the async code
         let rt = Runtime::new().unwrap();
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { plan.execute(part, Arc::new(ctx?)) });
+            rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
     }

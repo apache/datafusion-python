@@ -60,6 +60,12 @@ jobs:
         with:
           toolchain: stable
 
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install maturin
+        run: pip install maturin==0.14.2
+
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
         uses: actions/download-artifact@v3
@@ -67,12 +73,21 @@ jobs:
           name: python-wheel-license
           path: .
 
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: '3.x'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build Python package
         run: maturin build --release --strip
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
         run: dir target\wheels\
+        # since the runner is dynamic shellcheck (from actionlint) can't infer this is powershell
+        # so we specify it explicitly
+        shell: powershell
 
       - name: List Mac wheels
         if: matrix.os != 'windows-latest'
@@ -97,20 +112,16 @@ jobs:
           name: python-wheel-license
           path: .
       - run: cat LICENSE.txt
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build wheels
         uses: PyO3/maturin-action@v1
+        env:
+          RUST_BACKTRACE: 1
         with:
-          env:
-            RUST_BACKTRACE: 1
           rust-toolchain: nightly
           target: x86_64
           manylinux: auto
-          args: --release --manylinux 2014
+          rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
+          args: --release --manylinux 2014 --features protoc
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:
@@ -135,7 +146,8 @@ jobs:
         with:
           rust-toolchain: stable
           manylinux: auto
-          args: --release --sdist --out dist
+          rustup-components: rust-std rustfmt
+          args: --release --sdist --out dist --features protoc
       - name: Archive wheels
         uses: actions/upload-artifact@v3
         with:

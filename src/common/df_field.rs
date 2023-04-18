@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::arrow::datatypes::DataType;
-use datafusion_common::DFField;
+use datafusion_common::{DFField, OwnedTableReference};
 use pyo3::prelude::*;
 
 use super::data_type::PyDataType;
@@ -46,10 +46,14 @@ impl From<DFField> for PyDFField {
 impl PyDFField {
     #[new]
     #[pyo3(signature = (qualifier=None, name="", data_type=DataType::Int64.into(), nullable=false))]
-    fn new(qualifier: Option<&str>, name: &str, data_type: PyDataType, nullable: bool) -> Self {
-        let owned_qualifier = qualifier.to_owned().unwrap().to_string();
+    fn new(qualifier: Option<String>, name: &str, data_type: PyDataType, nullable: bool) -> Self {
         PyDFField {
-            field: DFField::new(Some(owned_qualifier), name, data_type.into(), nullable),
+            field: DFField::new(
+                qualifier.map(|q| OwnedTableReference::from(q)),
+                name,
+                data_type.into(),
+                nullable,
+            ),
         }
     }
 
@@ -93,8 +97,7 @@ impl PyDFField {
 
     #[pyo3(name = "qualifier")]
     fn py_qualifier(&self) -> PyResult<Option<String>> {
-        let val = self.field.qualifier().unwrap().table().to_string();
-        Ok(Some(val))
+        Ok(self.field.qualifier().map(|q| format!("{}", q)))
     }
 
     // TODO: Need bindings for Arrow `Field` first

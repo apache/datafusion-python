@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "0.8.0"
+version = "22.0.0"
 homepage = "https://github.com/apache/arrow-datafusion-python"
 repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
@@ -25,28 +25,32 @@ description = "Apache Arrow DataFusion DataFrame and SQL Query Engine"
 readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
-rust-version = "1.62"
+rust-version = "1.64"
+include = ["/src", "/datafusion", "/LICENSE.txt", "pyproject.toml", "Cargo.toml", "Cargo.lock"]
 
 [features]
 default = ["mimalloc"]
+protoc = [ "datafusion-substrait/protoc" ]
 
 [dependencies]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates", features = ["pyarrow", "avro"]}
-datafusion-common = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates", features = ["pyarrow"]}
-datafusion-expr = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates" }
-datafusion-optimizer = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates" }
-datafusion-sql = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates" }
-datafusion-substrait = { git = "https://github.com/jdye64/arrow-datafusion.git", branch = "substrait_proto_build_updates" }
+datafusion = { version = "22.0.0", features = ["pyarrow", "avro"] }
+datafusion-common = { version = "22.0.0", features = ["pyarrow"] }
+datafusion-expr = { version = "22.0.0" }
+datafusion-optimizer = { version = "22.0.0" }
+datafusion-sql = { version = "22.0.0" }
+datafusion-substrait = { version = "22.0.0" }
 uuid = { version = "1.2", features = ["v4"] }
-mimalloc = { version = "*", optional = true, default-features = false }
+mimalloc = { version = "0.1", optional = true, default-features = false }
 async-trait = "0.1"
 futures = "0.3"
 object_store = { version = "0.5.3", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 regex-syntax = "0.6.28"
+syn = "2.0.11"
+url = "2.2"
 
 [lib]
 name = "datafusion_python"

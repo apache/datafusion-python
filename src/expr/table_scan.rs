@@ -67,8 +67,8 @@ impl Display for PyTableScan {
 impl PyTableScan {
     /// Retrieves the name of the table represented by this `TableScan` instance
     #[pyo3(name = "table_name")]
-    fn py_table_name(&self) -> PyResult<&str> {
-        Ok(&self.table_scan.table_name)
+    fn py_table_name(&self) -> PyResult<String> {
+        Ok(format!("{}", self.table_scan.table_name))
     }
 
     /// TODO: Bindings for `TableSource` need to exist first. Left as a

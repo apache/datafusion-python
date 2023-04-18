@@ -91,7 +91,7 @@ git push apache 0.8.0-rc1
 ### Create a source release
 
 ```bash
-./dev/release/create_tarball 0.8.0 1
+./dev/release/create-tarball.sh 0.8.0 1
 ```
 
 This will also create the email template to send to the mailing list. Here is an example:
@@ -196,6 +196,14 @@ Create the source release tarball:
 
 ```bash
 ./dev/release/release-tarball.sh 0.8.0 1
+```
+
+### Publishing Rust Crate to crates.io
+
+Some projects depend on the Rust crate directly, so we publish this to crates.io
+
+```shell
+cargo publish
 ```
 
 ### Publishing Python Artifacts to PyPi

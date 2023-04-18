@@ -84,10 +84,10 @@ def test_select_columns(df):
 
 
 def test_filter(df):
-    df = df.select(
+    df = df.filter(column("a") > literal(2)).select(
         column("a") + column("b"),
         column("a") - column("b"),
-    ).filter(column("a") > literal(2))
+    )
 
     # execute and collect the first (and only) batch
     result = df.collect()[0]
@@ -164,16 +164,17 @@ def test_join():
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df = ctx.create_dataframe([[batch]])
+    df = ctx.create_dataframe([[batch]], "l")
 
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2]), pa.array([8, 10])],
         names=["a", "c"],
     )
-    df1 = ctx.create_dataframe([[batch]])
+    df1 = ctx.create_dataframe([[batch]], "r")
 
     df = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
-    df = df.sort(column("a").sort(ascending=True))
+    df.show()
+    df = df.sort(column("l.a").sort(ascending=True))
     table = pa.Table.from_batches(df.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -607,3 +608,27 @@ def test_to_pydict(df):
     pydict = df.to_pydict()
     assert type(pydict) == dict
     assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 3.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 3.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 3.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
