@@ -52,6 +52,9 @@ regex-syntax = "0.6.28"
 syn = "2.0.11"
 url = "2.2"
 
+[build-dependencies]
+pyo3-build-config = "0.18.3"
+
 [lib]
 name = "datafusion_python"
 crate-type = ["cdylib", "rlib"]
