@@ -28,6 +28,7 @@ source:
 build:
   noarch: python
   number: 0
+  script: maturin build -r
 
 requirements:
   host:
