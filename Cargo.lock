@@ -899,6 +899,7 @@ dependencies = [
  "object_store",
  "parking_lot",
  "pyo3",
+ "pyo3-build-config",
  "rand",
  "regex-syntax",
  "syn 2.0.15",
