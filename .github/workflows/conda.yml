@@ -26,6 +26,13 @@ jobs:
           use-mamba: true
           python-version: "3.10"
           channel-priority: strict
+      - name: Install dependencies
+        run: |
+          mamba install boa conda-verify conda-build
+
+          which python
+          pip list
+          mamba list
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -39,7 +46,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build conda package
         run: |
-          conda-build conda/recipes \
+          conda build conda/recipes \
                            --no-anaconda-upload
       # - name: Upload conda package
       #   if: |
