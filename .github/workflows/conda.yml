@@ -15,8 +15,6 @@ jobs:
   conda:
     name: Build (and optionally upload) the conda nightly
     runs-on: ubuntu-latest
-    container:
-      image: amd64/rust
     steps:
       - uses: actions/checkout@v3
         with:
@@ -26,7 +24,7 @@ jobs:
         with:
           miniforge-variant: Mambaforge
           use-mamba: true
-          python-version: "3.8"
+          python-version: "3.10"
           channel-priority: strict
       - name: Install dependencies
         run: |
@@ -35,36 +33,19 @@ jobs:
           which python
           pip list
           mamba list
-      # - uses: actions-rs/toolchain@v1
-      #   with:
-      #     profile: minimal
-      #     toolchain: stable
-      #     override: true
-      #     components: clippy, rustfmt
-      - name: Setup Rust toolchain
-        uses: ./.github/actions/setup-builder
+      - uses: actions-rs/toolchain@v1
         with:
-          rust-version: stable
-      - name: Rust Enviroment
-        run: |
-
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: '3.x'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build conda package
-        env:
-            RUSTFMT: /usr/local/cargo/bin/rustfmt
         run: |
-          # suffix for nightly package versions
-          export VERSION_SUFFIX=a`date +%y%m%d`
-
-          echo "rustfmt: $(which rustfmt)"
-
-          echo "Ouput more"
-
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-          eval /usr/local/cargo/bin/rustfmt
-          echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-
-          /usr/local/cargo/bin/rustup default stable
-
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
                            --output-folder .

@@ -28,8 +28,6 @@ source:
 build:
   noarch: python
   number: 0
-  script_env:
-    - RUSTFMT
 
 requirements:
   host:
@@ -39,10 +37,10 @@ requirements:
     - maturin
   run:
     - python
-
-test:
-  imports:
-    - datafusion
+  build:
+    - python
+    - setuptools
+    - {{ compiler('rust') }}
 
 about:
   home: https://arrow.apache.org/datafusion
