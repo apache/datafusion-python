@@ -39,7 +39,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build conda package
         run: |
-          conda build conda/recipes \
+          conda-build conda/recipes \
                            --no-anaconda-upload
       # - name: Upload conda package
       #   if: |
