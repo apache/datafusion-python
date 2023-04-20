@@ -15,11 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{% set version = environ.get('GIT_DESCRIBE_TAG', '0.0.0.dev').lstrip('v') + environ.get('VERSION_SUFFIX', '') %}
-{% set minor_version = version.split('.')[0] + '.' + version.split('.')[1] %}
+{% set name = "datafusion" %}
+{% set major_minor_patch = environ.get('GIT_DESCRIBE_TAG', '0.0.0.dev').split('.') %}
+{% set new_patch = major_minor_patch[2] | int + 1 %}
+{% set version = (major_minor_patch[:2] + [new_patch]) | join('.') + environ.get('VERSION_SUFFIX', '') %}
+
 
 package:
-  name: datafusion
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
@@ -27,21 +30,25 @@ source:
 
 build:
   noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
   number: 0
-  script: maturin build -r
 
 requirements:
   host:
-    - {{ compiler('rust') }}
-    - python
-    - setuptools
-    - maturin
+    - python >=3.6
+    - maturin >=0.14,<0.15
+    - pip
   run:
-    - python
-  build:
-    - python
-    - setuptools
-    - {{ compiler('rust') }}
+    - python >=3.6
+    - pyarrow >=11.0.0
+
+test:
+  imports:
+    - datafusion
+  commands:
+    - pip check
+  requires:
+    - pip
 
 about:
   home: https://arrow.apache.org/datafusion

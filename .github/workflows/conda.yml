@@ -28,7 +28,7 @@ jobs:
           channel-priority: strict
       - name: Install dependencies
         run: |
-          mamba install boa conda-verify conda-build
+          mamba install boa conda-verify
 
           which python
           pip list
@@ -39,15 +39,14 @@ jobs:
           toolchain: stable
           override: true
           components: clippy, rustfmt
-      - name: Install Protoc
-        uses: arduino/setup-protoc@v1
-        with:
-          version: '3.x'
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Build conda package
         run: |
-          conda build conda/recipes \
-                           --no-anaconda-upload
+          # suffix for nightly package versions
+          export VERSION_SUFFIX=a`date +%y%m%d`
+
+          conda mambabuild conda/recipes \
+                           --no-anaconda-upload \
+                           --output-folder .
       # - name: Upload conda package
       #   if: |
       #     github.event_name == 'push'
