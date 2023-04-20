@@ -37,7 +37,7 @@ requirements:
   host:
     - python >=3.6
     - maturin >=0.14,<0.15
-    - libprotobuf =3
+    - libprotobuf >=21.5
     - pip
   run:
     - python >=3.6
