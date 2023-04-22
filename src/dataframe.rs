@@ -214,34 +214,15 @@ impl PyDataFrame {
 
     /// Thin wrapper for datafusion-rust `join_on`
     /// Slightly modified from original `join` above.
-    fn join_on(
-            &self,
-            right: PyDataFrame,
-            on_exprs: Vec<PyExpr>,
-            how: &str,
-        ) -> PyResult<Self> {
-        let join_type = match how {
-            "inner" => JoinType::Inner,
-            "left" => JoinType::Left,
-            "right" => JoinType::Right,
-            "full" => JoinType::Full,
-            "semi" => JoinType::LeftSemi,
-            "anti" => JoinType::LeftAnti,
-            how => {
-                return Err(DataFusionError::Common(format!(
-                    "The join type {how} does not exist or is not implemented"
-                ))
-                .into());
-            }
-        };
+    fn join_on(&self, right: PyDataFrame, on_exprs: Vec<PyExpr>, how: &str) -> PyResult<Self> {
+        let join_type = JoinType::from_str(how)?;
 
-        let expr: Vec<_> = on_exprs.into_iter().map(|py_expr| py_expr.into()).collect();
+        let expr = on_exprs.into_iter().map(Into::into).collect();
 
-        let df = self.df.as_ref().clone().join_on(
-            right.df.as_ref().clone(),
-            join_type,
-            expr,
-        )?;
+        let df = self
+            .df
+            .as_ref()
+            .join_on(right.df.as_ref(), join_type, expr)?;
         Ok(Self::new(df))
     }
 
