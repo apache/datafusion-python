@@ -222,7 +222,8 @@ impl PyDataFrame {
         let df = self
             .df
             .as_ref()
-            .join_on(right.df.as_ref(), join_type, expr)?;
+            .clone()
+            .join_on(right.df.as_ref().clone(), join_type, expr)?;
         Ok(Self::new(df))
     }
 
