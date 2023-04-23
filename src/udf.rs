@@ -41,7 +41,7 @@ fn to_rust_function(func: PyObject) -> ScalarFunctionImplementation {
                 // 1. cast args to Pyarrow arrays
                 let py_args = args
                     .iter()
-                    .map(|arg| arg.data().to_owned().to_pyarrow(py).unwrap())
+                    .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
                     .collect::<Vec<_>>();
                 let py_args = PyTuple::new(py, py_args);
 

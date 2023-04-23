@@ -117,7 +117,9 @@ impl PyLiteral {
             ScalarValue::TimestampNanosecond(iv, tz)
             | ScalarValue::TimestampMicrosecond(iv, tz)
             | ScalarValue::TimestampMillisecond(iv, tz)
-            | ScalarValue::TimestampSecond(iv, tz) => Ok((*iv, tz.clone())),
+            | ScalarValue::TimestampSecond(iv, tz) => {
+                Ok((*iv, tz.as_ref().map(|s| s.as_ref().to_string())))
+            }
             other => Err(unexpected_literal_value(other)),
         }
     }

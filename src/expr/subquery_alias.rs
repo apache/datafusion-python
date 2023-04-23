@@ -68,7 +68,7 @@ impl PySubqueryAlias {
     }
 
     fn alias(&self) -> PyResult<String> {
-        Ok(self.subquery_alias.alias.clone())
+        Ok(self.subquery_alias.alias.to_string())
     }
 
     fn __repr__(&self) -> PyResult<String> {
