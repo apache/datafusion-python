@@ -36,7 +36,6 @@ jobs:
           - "3.10"
         toolchain:
           - "stable"
-          - "beta"
           # we are not that much eager in walking on the edge yet
           # - nightly
         # build stable for only 3.7
