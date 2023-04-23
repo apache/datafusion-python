@@ -141,8 +141,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip
-
+        run: maturin build --release --strip --target aarch64-apple-darwin --no-sdist
       - name: List Mac wheels
         run: find target/wheels/
 
