@@ -145,7 +145,17 @@ Pushing an `rc` tag to the release branch will cause a GitHub Workflow to run th
 Go to https://github.com/apache/arrow-datafusion-python/actions and look for an action named "Python Release Build"
 that has run against the pushed tag.
 
-Click on the action and scroll down to the bottom of the page titled "Artifacts". Download `dist.zip`.
+Click on the action and scroll down to the bottom of the page titled "Artifacts". Download `dist.zip`. It should
+contain files such as:
+
+```text
+datafusion-22.0.0-cp37-abi3-macosx_10_7_x86_64.whl
+datafusion-22.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+datafusion-22.0.0-cp37-abi3-win_amd64.whl
+```
+
+Note that there is no arm64 build for macos yet. This can be built manually on a Mac with Apple
+silicon using `maturin build --release`.
 
 Upload the wheels to testpypi.
 
