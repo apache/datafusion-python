@@ -150,19 +150,17 @@ contain files such as:
 
 ```text
 datafusion-22.0.0-cp37-abi3-macosx_10_7_x86_64.whl
+datafusion-22.0.0-cp37-abi3-macosx_11_0_arm64.whl
 datafusion-22.0.0-cp37-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
 datafusion-22.0.0-cp37-abi3-win_amd64.whl
 ```
-
-Note that there is no arm64 build for macos yet. This can be built manually on a Mac with Apple
-silicon using `maturin build --release`.
 
 Upload the wheels to testpypi.
 
 ```bash
 unzip dist.zip
 python3 -m pip install --upgrade setuptools twine build
-python3 -m twine upload --repository testpypi datafusion-0.7.0-cp37-abi3-*.whl
+python3 -m twine upload --repository testpypi datafusion-22.0.0-cp37-abi3-*.whl
 ```
 
 When prompted for username, enter `__token__`. When prompted for a password, enter a valid GitHub Personal Access Token
