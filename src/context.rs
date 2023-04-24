@@ -36,7 +36,7 @@ use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
-use crate::utils::wait_for_future;
+use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -52,7 +52,6 @@ use datafusion::prelude::{
 };
 use datafusion_common::ScalarValue;
 use pyo3::types::PyTuple;
-use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -722,7 +721,7 @@ impl PySessionContext {
             Arc::new(RuntimeEnv::default()),
         );
         // create a Tokio runtime to run the async code
-        let rt = Runtime::new().unwrap();
+        let rt = &get_tokio_runtime(py).0;
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
