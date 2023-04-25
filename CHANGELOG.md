@@ -25,8 +25,15 @@
 
 **Merged pull requests:**
 
+**Merged pull requests:**
+
 - Improve API docs, README, and examples for configuring context [#321](https://github.com/apache/arrow-datafusion-python/pull/321) (andygrove)
 - Osx build linker args [#330](https://github.com/apache/arrow-datafusion-python/pull/330) (jdye64)
+- Add requirements file for python 3.11 [#332](https://github.com/apache/arrow-datafusion-python/pull/332) (r4ntix)
+- mac arm64 build [#338](https://github.com/apache/arrow-datafusion-python/pull/338) (andygrove)
+- Add conda.yaml baseline workflow file [#281](https://github.com/apache/arrow-datafusion-python/pull/281) (jdye64)
+- Prepare for 23.0.0 release [#335](https://github.com/apache/arrow-datafusion-python/pull/335) (andygrove)
+- Reuse the Tokio Runtime [#341](https://github.com/apache/arrow-datafusion-python/pull/341) (kylebrooks-8451)
 
 ## [22.0.0](https://github.com/apache/arrow-datafusion-python/tree/22.0.0) (2023-04-10)
 
