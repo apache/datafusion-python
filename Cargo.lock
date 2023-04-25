@@ -899,6 +899,8 @@ dependencies = [
  "mimalloc",
  "object_store",
  "parking_lot",
+ "prost",
+ "prost-types",
  "pyo3",
  "pyo3-build-config",
  "rand",

@@ -41,6 +41,8 @@ def test_substrait_serialization(ctx):
     substrait_plan = ss.substrait.serde.serialize_to_plan(
         "SELECT * FROM t", ctx
     )
+    substrait_bytes = substrait_plan.encode()
+    assert type(substrait_bytes) is bytes
     substrait_bytes = ss.substrait.serde.serialize_bytes(
         "SELECT * FROM t", ctx
     )

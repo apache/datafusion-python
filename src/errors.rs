@@ -21,6 +21,7 @@ use std::fmt::Debug;
 
 use datafusion::arrow::error::ArrowError;
 use datafusion::error::DataFusionError as InnerDataFusionError;
+use prost::EncodeError;
 use pyo3::{exceptions::PyException, PyErr};
 
 pub type Result<T> = std::result::Result<T, DataFusionError>;
@@ -31,6 +32,7 @@ pub enum DataFusionError {
     ArrowError(ArrowError),
     Common(String),
     PythonError(PyErr),
+    EncodeError(EncodeError),
 }
 
 impl fmt::Display for DataFusionError {
@@ -40,6 +42,7 @@ impl fmt::Display for DataFusionError {
             DataFusionError::ArrowError(e) => write!(f, "Arrow error: {e:?}"),
             DataFusionError::PythonError(e) => write!(f, "Python error {e:?}"),
             DataFusionError::Common(e) => write!(f, "{e}"),
+            DataFusionError::EncodeError(e) => write!(f, "Failed to encode substrait plan: {e}"),
         }
     }
 }
