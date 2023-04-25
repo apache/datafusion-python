@@ -370,6 +370,9 @@ def test_execution_plan(aggregate_df):
 
     assert expected == plan.display()
 
+    # Check the number of partitions is as expected.
+    assert type(plan.partition_count) is int
+
     expected = (
         "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
         "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"

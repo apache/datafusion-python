@@ -53,6 +53,11 @@ impl PyExecutionPlan {
         let d = displayable(self.plan.as_ref());
         format!("{}", d.indent())
     }
+
+    #[getter]
+    pub fn partition_count(&self) -> usize {
+        self.plan.output_partitioning().partition_count()
+    }
 }
 
 impl From<PyExecutionPlan> for Arc<dyn ExecutionPlan> {

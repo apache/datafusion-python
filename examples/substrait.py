@@ -23,7 +23,7 @@ from datafusion import substrait as ss
 ctx = SessionContext()
 
 # Register table with context
-ctx.register_parquet(
+ctx.register_csv(
     "aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv"
 )
 
