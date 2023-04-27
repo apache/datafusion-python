@@ -13,12 +13,8 @@ defaults:
 
 jobs:
   conda:
-    name: Build (and optionally upload) the conda nightly (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+    name: Build (and optionally upload) the conda nightly
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -54,7 +50,7 @@ jobs:
       - name: Upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: conda package data (${{ matrix.os }})
+          name: conda packages
           path: artifacts/*
       # - name: Upload conda package
       #   if: |
