@@ -19,6 +19,22 @@
 
 # Changelog
 
+## [23.0.0](https://github.com/apache/arrow-datafusion-python/tree/23.0.0) (2023-04-23)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/22.0.0...23.0.0)
+
+**Merged pull requests:**
+
+**Merged pull requests:**
+
+- Improve API docs, README, and examples for configuring context [#321](https://github.com/apache/arrow-datafusion-python/pull/321) (andygrove)
+- Osx build linker args [#330](https://github.com/apache/arrow-datafusion-python/pull/330) (jdye64)
+- Add requirements file for python 3.11 [#332](https://github.com/apache/arrow-datafusion-python/pull/332) (r4ntix)
+- mac arm64 build [#338](https://github.com/apache/arrow-datafusion-python/pull/338) (andygrove)
+- Add conda.yaml baseline workflow file [#281](https://github.com/apache/arrow-datafusion-python/pull/281) (jdye64)
+- Prepare for 23.0.0 release [#335](https://github.com/apache/arrow-datafusion-python/pull/335) (andygrove)
+- Reuse the Tokio Runtime [#341](https://github.com/apache/arrow-datafusion-python/pull/341) (kylebrooks-8451)
+
 ## [22.0.0](https://github.com/apache/arrow-datafusion-python/tree/22.0.0) (2023-04-10)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/21.0.0...22.0.0)
@@ -163,7 +179,7 @@
 - Arrow type bindings [\#173](https://github.com/apache/arrow-datafusion-python/pull/173) ([jdye64](https://github.com/jdye64))
 - Pyo3 bump [\#171](https://github.com/apache/arrow-datafusion-python/pull/171) ([jdye64](https://github.com/jdye64))
 - feature: Add additional aggregation functions [\#170](https://github.com/apache/arrow-datafusion-python/pull/170) ([simicd](https://github.com/simicd))
-- Make from\_substrait\_plan return DataFrame instead of LogicalPlan [\#164](https://github.com/apache/arrow-datafusion-python/pull/164) ([andygrove](https://github.com/andygrove))
+- Make from_substrait_plan return DataFrame instead of LogicalPlan [\#164](https://github.com/apache/arrow-datafusion-python/pull/164) ([andygrove](https://github.com/andygrove))
 - feature: Implement count method [\#163](https://github.com/apache/arrow-datafusion-python/pull/163) ([simicd](https://github.com/simicd))
 - CI Fixes [\#162](https://github.com/apache/arrow-datafusion-python/pull/162) ([jdye64](https://github.com/jdye64))
 - Upgrade to DataFusion 17 [\#160](https://github.com/apache/arrow-datafusion-python/pull/160) ([andygrove](https://github.com/andygrove))
@@ -180,7 +196,7 @@
 - Prepare for 0.8.0 release [\#141](https://github.com/apache/arrow-datafusion-python/pull/141) ([andygrove](https://github.com/andygrove))
 - Improve README and add more examples [\#137](https://github.com/apache/arrow-datafusion-python/pull/137) ([andygrove](https://github.com/andygrove))
 - test: Expand tests for built-in functions [\#129](https://github.com/apache/arrow-datafusion-python/pull/129) ([simicd](https://github.com/simicd))
-- build\(deps\): bump object\_store from 0.5.2 to 0.5.3 [\#126](https://github.com/apache/arrow-datafusion-python/pull/126) ([dependabot[bot]](https://github.com/apps/dependabot))
+- build\(deps\): bump object_store from 0.5.2 to 0.5.3 [\#126](https://github.com/apache/arrow-datafusion-python/pull/126) ([dependabot[bot]](https://github.com/apps/dependabot))
 - build\(deps\): bump mimalloc from 0.1.32 to 0.1.34 [\#125](https://github.com/apache/arrow-datafusion-python/pull/125) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Introduce conda directory containing datafusion-dev.yaml conda enviro… [\#124](https://github.com/apache/arrow-datafusion-python/pull/124) ([jdye64](https://github.com/jdye64))
 - build\(deps\): bump bzip2 from 0.4.3 to 0.4.4 [\#121](https://github.com/apache/arrow-datafusion-python/pull/121) ([dependabot[bot]](https://github.com/apps/dependabot))
@@ -188,7 +204,7 @@
 - build\(deps\): bump async-trait from 0.1.60 to 0.1.61 [\#118](https://github.com/apache/arrow-datafusion-python/pull/118) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Upgrade to DataFusion 16.0.0 [\#115](https://github.com/apache/arrow-datafusion-python/pull/115) ([andygrove](https://github.com/andygrove))
 - Bump async-trait from 0.1.57 to 0.1.60 [\#114](https://github.com/apache/arrow-datafusion-python/pull/114) ([dependabot[bot]](https://github.com/apps/dependabot))
-- Bump object\_store from 0.5.1 to 0.5.2 [\#112](https://github.com/apache/arrow-datafusion-python/pull/112) ([dependabot[bot]](https://github.com/apps/dependabot))
+- Bump object_store from 0.5.1 to 0.5.2 [\#112](https://github.com/apache/arrow-datafusion-python/pull/112) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Bump tokio from 1.21.2 to 1.23.0 [\#109](https://github.com/apache/arrow-datafusion-python/pull/109) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Add entries for publishing production \(asf-site\) and staging docs [\#107](https://github.com/apache/arrow-datafusion-python/pull/107) ([martin-g](https://github.com/martin-g))
 - Add a workflow that builds the docs and deploys them at staged or production [\#104](https://github.com/apache/arrow-datafusion-python/pull/104) ([martin-g](https://github.com/martin-g))
@@ -212,9 +228,9 @@
 
 **Implemented enhancements:**
 
-- Add bindings for datafusion\_common::DFField [\#184](https://github.com/apache/arrow-datafusion-python/issues/184)
+- Add bindings for datafusion_common::DFField [\#184](https://github.com/apache/arrow-datafusion-python/issues/184)
 - Add bindings for DFSchema/DFSchemaRef [\#181](https://github.com/apache/arrow-datafusion-python/issues/181)
-- Add bindings for datafusion\_expr Projection [\#179](https://github.com/apache/arrow-datafusion-python/issues/179)
+- Add bindings for datafusion_expr Projection [\#179](https://github.com/apache/arrow-datafusion-python/issues/179)
 - Add bindings for `TableScan` struct from `datafusion_expr::TableScan` [\#177](https://github.com/apache/arrow-datafusion-python/issues/177)
 - Add a "mapping" struct for types [\#172](https://github.com/apache/arrow-datafusion-python/issues/172)
 - Improve string representation of datafusion classes \(dataframe, context, expression, ...\) [\#158](https://github.com/apache/arrow-datafusion-python/issues/158)
@@ -233,7 +249,7 @@
 
 - Build is broken [\#161](https://github.com/apache/arrow-datafusion-python/issues/161)
 - Out of memory when sorting [\#157](https://github.com/apache/arrow-datafusion-python/issues/157)
-- window\_lead test appears to be non-deterministic [\#135](https://github.com/apache/arrow-datafusion-python/issues/135)
+- window_lead test appears to be non-deterministic [\#135](https://github.com/apache/arrow-datafusion-python/issues/135)
 - Reading csv does not work [\#130](https://github.com/apache/arrow-datafusion-python/issues/130)
 - Github actions produce a lot of warnings [\#94](https://github.com/apache/arrow-datafusion-python/issues/94)
 - ASF source release tarball has wrong directory name [\#90](https://github.com/apache/arrow-datafusion-python/issues/90)
@@ -251,7 +267,6 @@
 ## [0.7.0-rc2](https://github.com/apache/arrow-datafusion-python/tree/0.7.0-rc2) (2022-11-26)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/0.7.0...0.7.0-rc2)
-
 
 ## [Unreleased](https://github.com/datafusion-contrib/datafusion-python/tree/HEAD)
 
@@ -319,5 +334,4 @@
 
 \* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_
 
-
-\* *This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)*
+\* _This Changelog was automatically generated by [github_changelog_generator](https://github.com/github-changelog-generator/github-changelog-generator)_

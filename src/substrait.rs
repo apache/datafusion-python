@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::PyBytes};
 
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, DataFusionError};
@@ -25,11 +25,23 @@ use crate::utils::wait_for_future;
 use datafusion_substrait::logical_plan::{consumer, producer};
 use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
+use prost::Message;
 
 #[pyclass(name = "plan", module = "datafusion.substrait", subclass, unsendable)]
 #[derive(Debug, Clone)]
 pub(crate) struct PyPlan {
     pub(crate) plan: Plan,
+}
+
+#[pymethods]
+impl PyPlan {
+    fn encode(&self, py: Python) -> PyResult<PyObject> {
+        let mut proto_bytes = Vec::<u8>::new();
+        self.plan
+            .encode(&mut proto_bytes)
+            .map_err(|e| DataFusionError::EncodeError(e))?;
+        Ok(PyBytes::new(py, &proto_bytes).into())
+    }
 }
 
 impl From<PyPlan> for Plan {
@@ -63,16 +75,19 @@ impl PySubstraitSerializer {
     #[staticmethod]
     pub fn serialize_to_plan(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyPlan> {
         match PySubstraitSerializer::serialize_bytes(sql, ctx, py) {
-            Ok(proto_bytes) => PySubstraitSerializer::deserialize_bytes(proto_bytes, py),
+            Ok(proto_bytes) => {
+                let proto_bytes: &PyBytes = proto_bytes.as_ref(py).downcast().unwrap();
+                PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
+            }
             Err(e) => Err(py_datafusion_err(e)),
         }
     }
 
     #[staticmethod]
-    pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<Vec<u8>> {
+    pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyObject> {
         let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))
             .map_err(DataFusionError::from)?;
-        Ok(proto_bytes)
+        Ok(PyBytes::new(py, &proto_bytes).into())
     }
 
     #[staticmethod]
@@ -136,6 +151,7 @@ impl PySubstraitConsumer {
 }
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
+    m.add_class::<PyPlan>()?;
     m.add_class::<PySubstraitConsumer>()?;
     m.add_class::<PySubstraitProducer>()?;
     m.add_class::<PySubstraitSerializer>()?;

@@ -23,7 +23,7 @@ from datafusion import substrait as ss
 ctx = SessionContext()
 
 # Register table with context
-ctx.register_parquet(
+ctx.register_csv(
     "aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv"
 )
 
@@ -32,8 +32,13 @@ substrait_plan = ss.substrait.serde.serialize_to_plan(
 )
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>
 
+# Encode it to bytes
+substrait_bytes = substrait_plan.encode()
+# type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
+# where they could subsequently be deserialized on the receiving end.
+
 # Alternative serialization approaches
-# type(substrait_bytes) -> <class 'list'>, at this point the bytes can be distributed to file, network, etc safely
+# type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
 # where they could subsequently be deserialized on the receiving end.
 substrait_bytes = ss.substrait.serde.serialize_bytes(
     "SELECT * FROM aggregate_test_data", ctx

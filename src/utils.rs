@@ -16,10 +16,17 @@
 // under the License.
 
 use crate::errors::DataFusionError;
+use crate::TokioRuntime;
 use datafusion_expr::Volatility;
 use pyo3::prelude::*;
 use std::future::Future;
 use tokio::runtime::Runtime;
+
+/// Utility to get the Tokio Runtime from Python
+pub(crate) fn get_tokio_runtime(py: Python) -> PyRef<TokioRuntime> {
+    let datafusion = py.import("datafusion._internal").unwrap();
+    datafusion.getattr("runtime").unwrap().extract().unwrap()
+}
 
 /// Utility to collect rust futures with GIL released
 pub fn wait_for_future<F: Future>(py: Python, f: F) -> F::Output
@@ -27,8 +34,8 @@ where
     F: Send,
     F::Output: Send,
 {
-    let rt = Runtime::new().unwrap();
-    py.allow_threads(|| rt.block_on(f))
+    let runtime: &Runtime = &get_tokio_runtime(py).0;
+    py.allow_threads(|| runtime.block_on(f))
 }
 
 pub(crate) fn parse_volatility(value: &str) -> Result<Volatility, DataFusionError> {

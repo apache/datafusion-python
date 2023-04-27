@@ -180,7 +180,7 @@ impl DataTypeMap {
             DataType::Struct(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
-            DataType::Union(_, _, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
+            DataType::Union(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
             DataType::Dictionary(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
