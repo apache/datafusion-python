@@ -712,14 +712,7 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyResult<PyRecordBatchStream> {
-        let ctx = TaskContext::new(
-            None,
-            "session_id".to_string(),
-            SessionConfig::new(),
-            HashMap::new(),
-            HashMap::new(),
-            Arc::new(RuntimeEnv::default()),
-        );
+        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
         let plan = plan.plan.clone();
