@@ -50,12 +50,12 @@ jobs:
 
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
-                           --output-folder .
+                           --output-folder artifacts
       - name: Upload packages
         uses: actions/upload-artifact@v3
         with:
-          name: conda packages built on ${{ matrix.os }}
-          path: */*.tar.bz2
+          name: conda package data (${{ matrix.os }})
+          path: artifacts/*
       # - name: Upload conda package
       #   if: |
       #     github.event_name == 'push'
