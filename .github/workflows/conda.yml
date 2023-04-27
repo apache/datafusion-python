@@ -13,8 +13,12 @@ defaults:
 
 jobs:
   conda:
-    name: Build (and optionally upload) the conda nightly
-    runs-on: ubuntu-latest
+    name: Build (and optionally upload) the conda nightly (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -47,6 +51,11 @@ jobs:
           conda mambabuild conda/recipes \
                            --no-anaconda-upload \
                            --output-folder .
+      - name: Upload packages
+        uses: actions/upload-artifact@v3
+        with:
+          name: conda packages built on ${{ matrix.os }}
+          path: */*.tar.bz2
       # - name: Upload conda package
       #   if: |
       #     github.event_name == 'push'
