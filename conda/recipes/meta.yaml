@@ -29,18 +29,21 @@ source:
   git_url: ../..
 
 build:
-  noarch: python
   script: {{ PYTHON }} -m pip install . -vv
-  number: 0
+  number: {{ GIT_DESCRIBE_NUMBER }}
+  string: py{{ python | replace(".", "") }}_{{ GIT_DESCRIBE_HASH }}_{{ GIT_DESCRIBE_NUMBER }}
 
 requirements:
-  host:
-    - python >=3.6
+  build:
+    - {{ compiler('rust') }}
     - maturin >=0.14,<0.15
     - libprotobuf =3
+  host:
     - pip
+    - python
+    - maturin >=0.14,<0.15
   run:
-    - python >=3.6
+    - python
     - pyarrow >=11.0.0
 
 test:
