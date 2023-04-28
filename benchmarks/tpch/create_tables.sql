@@ -1,5 +1,3 @@
-CREATE EXTERNAL TABLE customer STORED AS CSV WITH HEADER ROW DELIMITER '|' LOCATION 'data/customer.tbl';
-
 CREATE EXTERNAL TABLE customer (
     c_custkey INT NOT NULL,
     c_name VARCHAR NOT NULL,
@@ -12,7 +10,7 @@ CREATE EXTERNAL TABLE customer (
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION 'data/customer.tbl';
+LOCATION '$PATH/customer.tbl';
 
 CREATE EXTERNAL TABLE lineitem (
     l_orderkey INT NOT NULL,
