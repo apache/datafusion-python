@@ -224,7 +224,7 @@ impl PySessionContext {
         let config = if let Some(c) = config {
             c.config
         } else {
-            SessionConfig::default()
+            SessionConfig::default().with_information_schema(true)
         };
         let runtime_config = if let Some(c) = runtime {
             c.config
