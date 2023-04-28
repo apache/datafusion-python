@@ -40,7 +40,7 @@ mod dataset;
 mod dataset_exec;
 pub mod errors;
 #[allow(clippy::borrow_deref_ref)]
-mod expr;
+pub mod expr;
 #[allow(clippy::borrow_deref_ref)]
 mod functions;
 pub mod physical_plan;
