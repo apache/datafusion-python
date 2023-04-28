@@ -81,28 +81,11 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/config.html">
-     Config
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-    <label for="toctree-checkbox-2">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.Config.html">
-       datafusion.Config
-      </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
     <a class="reference internal" href="api/dataframe.html">
      DataFrame
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
+    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+    <label for="toctree-checkbox-2">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -118,12 +101,22 @@
     <a class="reference internal" href="api/execution_context.html">
      SessionContext
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+    <label for="toctree-checkbox-3">
      <i class="fas fa-chevron-down">
      </i>
     </label>
     <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="generated/datafusion.SessionConfig.html">
+       datafusion.SessionConfig
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="generated/datafusion.RuntimeConfig.html">
+       datafusion.RuntimeConfig
+      </a>
+     </li>
      <li class="toctree-l3">
       <a class="reference internal" href="generated/datafusion.SessionContext.html">
        datafusion.SessionContext
@@ -135,8 +128,8 @@
     <a class="reference internal" href="api/expression.html">
      Expr
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -152,8 +145,8 @@
     <a class="reference internal" href="api/functions.html">
      Functions
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -169,8 +162,8 @@
     <a class="reference internal" href="api/object_store.html">
      ObjectStore
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-    <label for="toctree-checkbox-7">
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -240,12 +233,14 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config.__init__">__init__() (datafusion.Config method)</a>
+      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.__init__">__init__() (datafusion.DataFrame method)</a>
 
       <ul>
-        <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.__init__">(datafusion.DataFrame method)</a>
-</li>
         <li><a href="generated/datafusion.Expr.html#datafusion.Expr.__init__">(datafusion.Expr method)</a>
+</li>
+        <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.__init__">(datafusion.RuntimeConfig method)</a>
+</li>
+        <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.__init__">(datafusion.SessionConfig method)</a>
 </li>
         <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.__init__">(datafusion.SessionContext method)</a>
 </li>
@@ -340,13 +335,11 @@
 </li>
       <li><a href="generated/datafusion.Expr.html#datafusion.Expr.column">column() (datafusion.Expr static method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat">concat() (in module datafusion.functions.functions)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat_ws">concat_ws() (in module datafusion.functions.functions)</a>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat">concat() (in module datafusion.functions.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config">Config (class in datafusion)</a>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.concat_ws">concat_ws() (in module datafusion.functions.functions)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.corr">corr() (in module datafusion.functions.functions)</a>
 </li>
@@ -452,12 +445,10 @@
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_arrow_table">from_arrow_table() (datafusion.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config.from_env">from_env() (datafusion.Config static method)</a>
+      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pandas">from_pandas() (datafusion.SessionContext method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pandas">from_pandas() (datafusion.SessionContext method)</a>
-</li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_polars">from_polars() (datafusion.SessionContext method)</a>
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pydict">from_pydict() (datafusion.SessionContext method)</a>
@@ -472,14 +463,10 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config.get">get() (datafusion.Config method)</a>
-</li>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config.get_all">get_all() (datafusion.Config method)</a>
+      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.GoogleCloud">GoogleCloud (class in datafusion.object_store.object_store)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.GoogleCloud">GoogleCloud (class in datafusion.object_store.object_store)</a>
-</li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.grouping">grouping() (in module datafusion.functions.functions)</a>
 </li>
   </ul></td>
@@ -665,6 +652,8 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.rtrim">rtrim() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig">RuntimeConfig (class in datafusion)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -679,9 +668,11 @@
 </li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.session_id">session_id() (datafusion.SessionContext method)</a>
 </li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig">SessionConfig (class in datafusion)</a>
+</li>
       <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext">SessionContext (class in datafusion)</a>
 </li>
-      <li><a href="generated/datafusion.Config.html#datafusion.Config.set">set() (datafusion.Config method)</a>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.set">set() (datafusion.SessionConfig method)</a>
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.sha224">sha224() (in module datafusion.functions.functions)</a>
 </li>
@@ -695,10 +686,10 @@
 </li>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.signum">signum() (in module datafusion.functions.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.sin">sin() (in module datafusion.functions.functions)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.sin">sin() (in module datafusion.functions.functions)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.sort">sort() (datafusion.DataFrame method)</a>
 
       <ul>
@@ -809,12 +800,50 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="generated/datafusion.functions.functions.html#datafusion.functions.functions.window">window() (in module datafusion.functions.functions)</a>
 </li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_batch_size">with_batch_size() (datafusion.SessionConfig method)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.with_column">with_column() (datafusion.DataFrame method)</a>
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.with_column_renamed">with_column_renamed() (datafusion.DataFrame method)</a>
 </li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_create_default_catalog_and_schema">with_create_default_catalog_and_schema() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_default_catalog_and_schema">with_default_catalog_and_schema() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_disabled">with_disk_manager_disabled() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_os">with_disk_manager_os() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_specified">with_disk_manager_specified() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_fair_spill_pool">with_fair_spill_pool() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_greedy_memory_pool">with_greedy_memory_pool() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_information_schema">with_information_schema() (datafusion.SessionConfig method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_parquet_pruning">with_parquet_pruning() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_aggregations">with_repartition_aggregations() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_min_size">with_repartition_file_min_size() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_scans">with_repartition_file_scans() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_joins">with_repartition_joins() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_sorts">with_repartition_sorts() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_windows">with_repartition_windows() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_target_partitions">with_target_partitions() (datafusion.SessionConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_temp_file_path">with_temp_file_path() (datafusion.RuntimeConfig method)</a>
+</li>
+      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_unbounded_memory_pool">with_unbounded_memory_pool() (datafusion.RuntimeConfig method)</a>
+</li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.write_csv">write_csv() (datafusion.DataFrame method)</a>
 </li>
       <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.write_json">write_json() (datafusion.DataFrame method)</a>

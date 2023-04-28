@@ -1,0 +1,29 @@
+﻿datafusion.RuntimeConfig
+========================
+
+.. currentmodule:: datafusion
+
+.. autoclass:: RuntimeConfig
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~RuntimeConfig.__init__
+      ~RuntimeConfig.with_disk_manager_disabled
+      ~RuntimeConfig.with_disk_manager_os
+      ~RuntimeConfig.with_disk_manager_specified
+      ~RuntimeConfig.with_fair_spill_pool
+      ~RuntimeConfig.with_greedy_memory_pool
+      ~RuntimeConfig.with_temp_file_path
+      ~RuntimeConfig.with_unbounded_memory_pool
+   
+   
+
+   
+   
+   

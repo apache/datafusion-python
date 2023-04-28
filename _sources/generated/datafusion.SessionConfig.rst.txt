@@ -1,0 +1,35 @@
+﻿datafusion.SessionConfig
+========================
+
+.. currentmodule:: datafusion
+
+.. autoclass:: SessionConfig
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SessionConfig.__init__
+      ~SessionConfig.set
+      ~SessionConfig.with_batch_size
+      ~SessionConfig.with_create_default_catalog_and_schema
+      ~SessionConfig.with_default_catalog_and_schema
+      ~SessionConfig.with_information_schema
+      ~SessionConfig.with_parquet_pruning
+      ~SessionConfig.with_repartition_aggregations
+      ~SessionConfig.with_repartition_file_min_size
+      ~SessionConfig.with_repartition_file_scans
+      ~SessionConfig.with_repartition_joins
+      ~SessionConfig.with_repartition_sorts
+      ~SessionConfig.with_repartition_windows
+      ~SessionConfig.with_target_partitions
+   
+   
+
+   
+   
+   
