@@ -16,13 +16,15 @@
 # under the License.
 
 import argparse
-from datafusion import SessionContext, RuntimeConfig, SessionConfig
+from datafusion import SessionContext
 import time
 
+
 def bench(data_path, query_path):
-    with open("results.csv", 'w') as results:
+    with open("results.csv", "w") as results:
         # register tables
         start = time.time()
+        total_time_millis = 0
 
         # create context
         # runtime = (
@@ -39,8 +41,7 @@ def bench(data_path, query_path):
         # ctx = SessionContext(config, runtime)
 
         ctx = SessionContext()
-
-        print(ctx)
+        print("Configuration:\n", ctx)
 
         # register tables
         with open("create_tables.sql") as f:
@@ -50,24 +51,22 @@ def bench(data_path, query_path):
                     continue
                 sql = sql + line
                 if sql.strip().endswith(";"):
-                    sql = sql.strip().replace('$PATH', data_path)
-                    #print(sql)
+                    sql = sql.strip().replace("$PATH", data_path)
                     ctx.sql(sql)
                     sql = ""
 
         end = time.time()
-        print("setup,{}".format(round((end-start)*1000,1)))
-        results.write("setup,{}\n".format(round((end-start)*1000,1)))
+        time_millis = (end - start) * 1000
+        total_time_millis += time_millis
+        print("setup,{}".format(round(time_millis, 1)))
+        results.write("setup,{}\n".format(round(time_millis, 1)))
         results.flush()
 
-        #ctx.sql("SHOW TABLES").show()
-
         # run queries
-        total_time_millis = 0
         for query in range(1, 23):
             with open("{}/q{}.sql".format(query_path, query)) as f:
                 text = f.read()
-                tmp = text.split(';')
+                tmp = text.split(";")
                 queries = []
                 for str in tmp:
                     if len(str.strip()) > 0:
@@ -83,17 +82,21 @@ def bench(data_path, query_path):
                     end = time.time()
                     time_millis = (end - start) * 1000
                     total_time_millis += time_millis
-                    print("q{},{}".format(query, round(time_millis,1)))
-                    results.write("q{},{}\n".format(query, round(time_millis,1)))
+                    print("q{},{}".format(query, round(time_millis, 1)))
+                    results.write(
+                        "q{},{}\n".format(query, round(time_millis, 1))
+                    )
                     results.flush()
                 except Exception as e:
                     print("query", query, "failed", e)
-        print("total,{}".format(round(total_time_millis,1)))
-        results.write("total,{}\n".format(round(total_time_millis,1)))
+
+        print("total,{}".format(round(total_time_millis, 1)))
+        results.write("total,{}\n".format(round(total_time_millis, 1)))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_path')
-    parser.add_argument('query_path')
+    parser.add_argument("data_path")
+    parser.add_argument("query_path")
     args = parser.parse_args()
     bench(args.data_path, args.query_path)
