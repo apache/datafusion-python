@@ -55,7 +55,7 @@ use pyo3::types::PyTuple;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
-#[pyclass(name = "SessionConfig", module = "datafusion", subclass, unsendable)]
+#[pyclass(name = "SessionConfig", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub(crate) struct PySessionConfig {
     pub(crate) config: SessionConfig,
@@ -148,7 +148,7 @@ impl PySessionConfig {
 }
 
 /// Runtime options for a SessionContext
-#[pyclass(name = "RuntimeConfig", module = "datafusion", subclass, unsendable)]
+#[pyclass(name = "RuntimeConfig", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub(crate) struct PyRuntimeConfig {
     pub(crate) config: RuntimeConfig,
@@ -210,7 +210,7 @@ impl PyRuntimeConfig {
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
 /// multi-threaded execution engine to perform the execution.
-#[pyclass(name = "SessionContext", module = "datafusion", subclass, unsendable)]
+#[pyclass(name = "SessionContext", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub(crate) struct PySessionContext {
     pub(crate) ctx: SessionContext,
@@ -712,14 +712,7 @@ impl PySessionContext {
         part: usize,
         py: Python,
     ) -> PyResult<PyRecordBatchStream> {
-        let ctx = TaskContext::new(
-            None,
-            "session_id".to_string(),
-            SessionConfig::new(),
-            HashMap::new(),
-            HashMap::new(),
-            Arc::new(RuntimeEnv::default()),
-        );
+        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
         let plan = plan.plan.clone();

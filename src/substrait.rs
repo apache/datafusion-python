@@ -27,7 +27,7 @@ use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
 use prost::Message;
 
-#[pyclass(name = "plan", module = "datafusion.substrait", subclass, unsendable)]
+#[pyclass(name = "plan", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub(crate) struct PyPlan {
     pub(crate) plan: Plan,
@@ -59,7 +59,7 @@ impl From<Plan> for PyPlan {
 /// A PySubstraitSerializer is a representation of a Serializer that is capable of both serializing
 /// a `LogicalPlan` instance to Substrait Protobuf bytes and also deserialize Substrait Protobuf bytes
 /// to a valid `LogicalPlan` instance.
-#[pyclass(name = "serde", module = "datafusion.substrait", subclass, unsendable)]
+#[pyclass(name = "serde", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub(crate) struct PySubstraitSerializer;
 
@@ -105,12 +105,7 @@ impl PySubstraitSerializer {
     }
 }
 
-#[pyclass(
-    name = "producer",
-    module = "datafusion.substrait",
-    subclass,
-    unsendable
-)]
+#[pyclass(name = "producer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub(crate) struct PySubstraitProducer;
 
@@ -126,12 +121,7 @@ impl PySubstraitProducer {
     }
 }
 
-#[pyclass(
-    name = "consumer",
-    module = "datafusion.substrait",
-    subclass,
-    unsendable
-)]
+#[pyclass(name = "consumer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub(crate) struct PySubstraitConsumer;
 

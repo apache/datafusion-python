@@ -22,7 +22,7 @@ notifications:
   jira_options: link label worklog
 github:
   description: "Apache Arrow DataFusion Python Bindings"
-  homepage: https://arrow.apache.org/datafusion
+  homepage: https://arrow.apache.org/datafusion-python
   enabled_merge_buttons:
     squash: true
     merge: false
