@@ -1,3 +1,20 @@
+-- Licensed to the Apache Software Foundation (ASF) under one
+-- or more contributor license agreements.  See the NOTICE file
+-- distributed with this work for additional information
+-- regarding copyright ownership.  The ASF licenses this file
+-- to you under the Apache License, Version 2.0 (the
+-- "License"); you may not use this file except in compliance
+-- with the License.  You may obtain a copy of the License at
+--
+--   http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing,
+-- software distributed under the License is distributed on an
+-- "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+-- KIND, either express or implied.  See the License for the
+-- specific language governing permissions and limitations
+-- under the License.
+
 CREATE EXTERNAL TABLE customer (
     c_custkey INT NOT NULL,
     c_name VARCHAR NOT NULL,
@@ -7,10 +24,11 @@ CREATE EXTERNAL TABLE customer (
     c_acctbal DECIMAL(15, 2) NOT NULL,
     c_mktsegment VARCHAR NOT NULL,
     c_comment VARCHAR NOT NULL,
+    c_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/customer.tbl';
+LOCATION '$PATH/customer.csv';
 
 CREATE EXTERNAL TABLE lineitem (
     l_orderkey INT NOT NULL,
@@ -29,20 +47,22 @@ CREATE EXTERNAL TABLE lineitem (
     l_shipinstruct VARCHAR NOT NULL,
     l_shipmode VARCHAR NOT NULL,
     l_comment VARCHAR NOT NULL,
+    l_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/lineitem.tbl';
+LOCATION '$PATH/lineitem.csv';
 
 CREATE EXTERNAL TABLE nation (
     n_nationkey INT NOT NULL,
     n_name VARCHAR NOT NULL,
     n_regionkey INT NOT NULL,
     n_comment VARCHAR NOT NULL,
+    n_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/nation.tbl';
+LOCATION '$PATH/nation.csv';
 
 CREATE EXTERNAL TABLE orders (
     o_orderkey INT NOT NULL,
@@ -54,10 +74,11 @@ CREATE EXTERNAL TABLE orders (
     o_clerk VARCHAR NOT NULL,
     o_shippriority INT NULL,
     o_comment VARCHAR NOT NULL,
+    o_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/orders.tbl';
+LOCATION '$PATH/orders.csv';
 
 CREATE EXTERNAL TABLE part (
     p_partkey INT NOT NULL,
@@ -69,10 +90,11 @@ CREATE EXTERNAL TABLE part (
     p_container VARCHAR NOT NULL,
     p_retailprice DECIMAL(15, 2) NOT NULL,
     p_comment VARCHAR NOT NULL,
+    p_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/part.tbl';
+LOCATION '$PATH/part.csv';
 
 CREATE EXTERNAL TABLE partsupp (
     ps_partkey INT NOT NULL,
@@ -80,19 +102,21 @@ CREATE EXTERNAL TABLE partsupp (
     ps_availqty INT NOT NULL,
     ps_supplycost DECIMAL(15, 2) NOT NULL,
     ps_comment VARCHAR NOT NULL,
+    ps_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/partsupp.tbl';
+LOCATION '$PATH/partsupp.csv';
 
 CREATE EXTERNAL TABLE region (
     r_regionkey INT NOT NULL,
     r_name VARCHAR NOT NULL,
     r_comment VARCHAR NOT NULL,
+    r_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/region.tbl';
+LOCATION '$PATH/region.csv';
 
 CREATE EXTERNAL TABLE supplier (
     s_suppkey INT NOT NULL,
@@ -102,8 +126,8 @@ CREATE EXTERNAL TABLE supplier (
     s_phone VARCHAR NOT NULL,
     s_acctbal DECIMAL(15, 2) NOT NULL,
     s_comment VARCHAR NOT NULL,
+    s_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
 WITH HEADER ROW DELIMITER '|'
-LOCATION '$PATH/supplier.tbl';
-
+LOCATION '$PATH/supplier.csv';
