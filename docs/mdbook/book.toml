@@ -1,0 +1,6 @@
+[book]
+authors = ["Matthew Powers"]
+language = "en"
+multilingual = false
+src = "src"
+title = "DataFusion Book"
