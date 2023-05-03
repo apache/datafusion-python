@@ -20,7 +20,8 @@ use datafusion::arrow::pyarrow::PyArrowConvert;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::StreamExt;
-use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
+use pyo3::{pyclass, pymethods, PyObject, PyRef, PyResult, Python};
+use std::sync::Mutex;
 
 #[pyclass(name = "RecordBatch", module = "datafusion", subclass)]
 pub struct PyRecordBatch {
@@ -42,19 +43,26 @@ impl From<RecordBatch> for PyRecordBatch {
 
 #[pyclass(name = "RecordBatchStream", module = "datafusion", subclass)]
 pub struct PyRecordBatchStream {
-    stream: SendableRecordBatchStream,
+    stream: Mutex<SendableRecordBatchStream>,
 }
 
 impl PyRecordBatchStream {
     pub fn new(stream: SendableRecordBatchStream) -> Self {
-        Self { stream }
+        Self {
+            stream: Mutex::new(stream),
+        }
     }
 }
 
 #[pymethods]
 impl PyRecordBatchStream {
-    fn next(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
-        let result = self.stream.next();
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+
+    fn __next__(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
+        let mut stream = self.stream.lock().unwrap();
+        let result = stream.next();
         match wait_for_future(py, result) {
             None => Ok(None),
             Some(Ok(b)) => Ok(Some(b.into())),
