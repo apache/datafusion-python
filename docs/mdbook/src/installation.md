@@ -1,14 +1,30 @@
+<!---
+  Licensed to the Apache Software Foundation (ASF) under one
+  or more contributor license agreements.  See the NOTICE file
+  distributed with this work for additional information
+  regarding copyright ownership.  The ASF licenses this file
+  to you under the Apache License, Version 2.0 (the
+  "License"); you may not use this file except in compliance
+  with the License.  You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+  Unless required by applicable law or agreed to in writing,
+  software distributed under the License is distributed on an
+  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  KIND, either express or implied.  See the License for the
+  specific language governing permissions and limitations
+  under the License.
+-->
 # Installation
 
 DataFusion is easy to install, just like any other Python library.
 
-## Using Pip
+## Using pip
 
 ``` bash
 pip install datafusion
 ```
 
-## conda & JupyterLab setup
+## Conda & JupyterLab setup
 
 This section explains how to install DataFusion in a conda environment with other libraries that allow for a nice Jupyter workflow.  This setup is completely optional.  These steps are only needed if you'd like to run DataFusion in a Jupyter notebook and have an interface like this:
 
@@ -43,4 +59,4 @@ Run `jupyter lab` or open the [JupyterLab Desktop application](https://github.co
 
 ## Examples
 
-See the [pydata-examples](https://github.com/MrPowers/pydata-examples) for a variety of Jupyter notebooks that show DataFusion in action!
+See the [DataFusion Python Examples](https://github.com/apache/arrow-datafusion-python/tree/main/examples) for a variety of Python scripts that show DataFusion in action!

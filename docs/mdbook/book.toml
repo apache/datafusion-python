@@ -1,5 +1,5 @@
 [book]
-authors = ["Matthew Powers"]
+authors = ["Apache Arrow <dev@arrow.apache.org>"]
 language = "en"
 multilingual = false
 src = "src"
