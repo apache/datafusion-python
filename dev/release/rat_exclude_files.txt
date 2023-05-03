@@ -43,3 +43,5 @@ Cargo.lock
 *rat.txt
 */.git
 .github/*
+benchmarks/tpch/queries/q*.sql
+benchmarks/tpch/create_tables.sql
