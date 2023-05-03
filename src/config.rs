@@ -45,7 +45,7 @@ impl PyConfig {
     }
 
     /// Get a configuration option
-    pub fn get(&mut self, key: &str, py: Python) -> PyResult<PyObject> {
+    pub fn get(&self, key: &str, py: Python) -> PyResult<PyObject> {
         let options = self.config.to_owned();
         for entry in options.entries() {
             if entry.key == key {
@@ -64,7 +64,7 @@ impl PyConfig {
     }
 
     /// Get all configuration options
-    pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
+    pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
         let options = self.config.to_owned();
         for entry in options.entries() {
@@ -73,7 +73,7 @@ impl PyConfig {
         Ok(dict.into())
     }
 
-    fn __repr__(&mut self, py: Python) -> PyResult<String> {
+    fn __repr__(&self, py: Python) -> PyResult<String> {
         let dict = self.get_all(py);
         match dict {
             Ok(result) => Ok(format!("Config({result})")),

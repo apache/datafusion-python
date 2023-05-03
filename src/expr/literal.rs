@@ -61,7 +61,7 @@ impl PyLiteral {
         extract_scalar_value!(self, Float64)
     }
 
-    pub fn value_decimal128(&mut self) -> PyResult<(Option<i128>, u8, i8)> {
+    pub fn value_decimal128(&self) -> PyResult<(Option<i128>, u8, i8)> {
         match &self.value {
             ScalarValue::Decimal128(value, precision, scale) => Ok((*value, *precision, *scale)),
             other => Err(unexpected_literal_value(other)),
@@ -112,7 +112,7 @@ impl PyLiteral {
         extract_scalar_value!(self, Time64Nanosecond)
     }
 
-    pub fn value_timestamp(&mut self) -> PyResult<(Option<i64>, Option<String>)> {
+    pub fn value_timestamp(&self) -> PyResult<(Option<i64>, Option<String>)> {
         match &self.value {
             ScalarValue::TimestampNanosecond(iv, tz)
             | ScalarValue::TimestampMicrosecond(iv, tz)
