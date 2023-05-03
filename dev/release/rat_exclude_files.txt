@@ -44,3 +44,4 @@ Cargo.lock
 */.git
 .github/*
 benchmarks/tpch/queries/q*.sql
+benchmarks/tpch/create_tables.sql
