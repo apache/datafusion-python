@@ -421,7 +421,7 @@ impl DataTypeMap {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(name = "DataType", module = "datafusion.common")]
 pub struct PyDataType {
-    data_type: DataType,
+    pub data_type: DataType,
 }
 
 impl From<PyDataType> for DataType {
