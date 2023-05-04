@@ -39,6 +39,8 @@ jobs:
           toolchain: stable
           override: true
           components: clippy, rustfmt
+      - name: Generate license file
+        run: python ./dev/create_license.py
       - name: Build conda package
         run: |
           # suffix for nightly package versions
