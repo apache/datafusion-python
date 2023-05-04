@@ -33,12 +33,12 @@ use crate::errors::py_datafusion_err;
 #[derive(Debug, Clone)]
 #[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
 pub struct DataTypeMap {
-    #[allow(dead_code)]
-    arrow_type: PyDataType,
-    #[allow(dead_code)]
-    python_type: PythonType,
-    #[allow(dead_code)]
-    sql_type: SqlType,
+    #[pyo3(get, set)]
+    pub arrow_type: PyDataType,
+    #[pyo3(get, set)]
+    pub python_type: PythonType,
+    #[pyo3(get, set)]
+    pub sql_type: SqlType,
 }
 
 impl DataTypeMap {
