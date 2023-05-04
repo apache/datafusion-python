@@ -1,0 +1,12 @@
+.cargo
+.github
+.pytest_cache
+ci
+conda
+dev
+docs
+examples
+parquet
+target
+testing
+venv

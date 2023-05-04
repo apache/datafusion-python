@@ -23,9 +23,9 @@ This directory contains scripts for running DataFusion with the https://github.c
 
 ## Directions
 
-Run the following from root `arrow-datafusion` directory
+Run the following from root `arrow-datafusion-python` directory
 
 ```bash
-$ docker buildx build -t db-benchmark -f benchmarks/db-benchmark/db-benchmark.dockerfile .
+$ docker build -t db-benchmark -f benchmarks/db-benchmark/db-benchmark.dockerfile .
 $ docker run --privileged db-benchmark
 ```
