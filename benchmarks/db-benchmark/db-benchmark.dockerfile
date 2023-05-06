@@ -83,12 +83,11 @@ RUN Rscript -e 'install.packages("data.table", repos="https://rdatatable.gitlab.
 
 ## generate data for groupby 0.5GB
 RUN Rscript _data/groupby-datagen.R 1e7 1e2 0 0
+RUN #Rscript _data/groupby-datagen.R 1e8 1e2 0 0
+RUN #Rscript _data/groupby-datagen.R 1e9 1e2 0 0
 
 RUN mkdir data && \
   mv G1_1e7_1e2_0_0.csv data/
-
-RUN Rscript _data/groupby-datagen.R 1e8 1e2 0 0
-RUN Rscript _data/groupby-datagen.R 1e9 1e2 0 0
 
 # set only groupby task
 RUN echo "Changing run.conf and _control/data.csv to run only groupby at 0.5GB" && \
@@ -102,15 +101,19 @@ RUN mv _control/data.csv _control/data.csv.original && \
     echo "task,data,nrow,k,na,sort,active" > _control/data.csv && \
     echo "groupby,G1_1e7_1e2_0_0,1e7,1e2,0,0,1" >> _control/data.csv
 
-RUN ./dplyr/setup-dplyr.sh
-RUN ./datatable/setup-datatable.sh
-RUN ./duckdb/setup-duckdb.sh
+RUN #./dplyr/setup-dplyr.sh
+RUN #./datatable/setup-datatable.sh
+RUN #./duckdb/setup-duckdb.sh
 
 # END OF SETUP
 
+RUN python3 -m pip install --upgrade pandas
+RUN python3 -m pip install --upgrade datafusion
+
 # Now add our solution
-RUN rm -rf datafusion-python 2>/dev/null && mkdir datafusion-python
-ADD *.py datafusion-python/
-ADD run-bench.sh .
+RUN rm -rf datafusion-python 2>/dev/null && \
+    mkdir datafusion-python
+ADD benchmarks/db-benchmark/*.py datafusion-python/
+ADD benchmarks/db-benchmark/run-bench.sh .
 
 ENTRYPOINT [ "/db-benchmark/run-bench.sh" ]

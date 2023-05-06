@@ -28,5 +28,5 @@ Run the following from root of this project.
 
 ```bash
 $ docker build -t db-benchmark -f benchmarks/db-benchmark/db-benchmark.dockerfile .
-$ docker run --privileged db-benchmark
+$ docker run --privileged -it db-benchmark
 ```

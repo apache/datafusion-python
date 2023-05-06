@@ -90,7 +90,7 @@ print(
     flush=True,
 )
 
-ctx = df.ExecutionContext()
+ctx = df.SessionContext()
 
 x_data = pacsv.read_csv(
     src_jn_x, convert_options=pacsv.ConvertOptions(auto_dict_encode=True)
