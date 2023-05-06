@@ -39,76 +39,78 @@ RUN add-apt-repository "deb [arch=amd64,i386] https://cloud.r-project.org/bin/li
 
 RUN apt-get -qq install -y r-base-dev virtualenv
 
-#cd /usr/local/lib/R
-#sudo chmod o+w site-library
-#
-#cd ~
-#mkdir -p .R
-#echo 'CFLAGS=-O3 -mtune=native' >> ~/.R/Makevars
-#echo 'CXXFLAGS=-O3 -mtune=native' >> ~/.R/Makevars
-#
-#cd pydatatable
-#virtualenv py-pydatatable --python=/usr/bin/python3.10
-#cd ../pandas
-#virtualenv py-pandas --python=/usr/bin/python3.10
-#cd ../modin
-#virtualenv py-modin --python=/usr/bin/python3.10
-#cd ..
-#
-#
-#Rscript -e 'install.packages(c("jsonlite","bit64","devtools","rmarkdown"), dependecies=TRUE, repos="https://cloud.r-project.org")'
-#
-#
-#source ./pandas/py-pandas/bin/activate
-#python3 -m pip install --upgrade psutil
-#python3 -m pip install --upgrade pandas
-#deactivate
-#
-#source ./modin/py-modin/bin/activate
-#python3 -m pip install --upgrade modin
-#deactivate
-#
-#source ./pydatatable/py-pydatatable/bin/activate
-#python3 -m pip install --upgrade git+https://github.com/h2oai/datatable
-#deactivate
-#
+RUN cd /usr/local/lib/R && \
+  chmod o+w site-library
+
+RUN cd / && \
+    git clone https://github.com/duckdblabs/db-benchmark.git
+
+WORKDIR /db-benchmark
+
+RUN mkdir -p .R && \
+    echo 'CFLAGS=-O3 -mtune=native' >> .R/Makevars && \
+    echo 'CXXFLAGS=-O3 -mtune=native' >> .R/Makevars
+
+RUN cd pydatatable && \
+  virtualenv py-pydatatable --python=/usr/bin/python3.10
+RUN cd pandas && \
+  virtualenv py-pandas --python=/usr/bin/python3.10
+RUN cd modin && \
+  virtualenv py-modin --python=/usr/bin/python3.10
+
+RUN Rscript -e 'install.packages(c("jsonlite","bit64","devtools","rmarkdown"), dependecies=TRUE, repos="https://cloud.r-project.org")'
+
+SHELL ["/bin/bash", "-c"]
+
+RUN source ./pandas/py-pandas/bin/activate && \
+    python3 -m pip install --upgrade psutil && \
+    python3 -m pip install --upgrade pandas && \
+    deactivate
+
+RUN source ./modin/py-modin/bin/activate && \
+    python3 -m pip install --upgrade modin && \
+    deactivate
+
+RUN source ./pydatatable/py-pydatatable/bin/activate && \
+    python3 -m pip install --upgrade git+https://github.com/h2oai/datatable && \
+    deactivate
+
 ## install dplyr
-#Rscript -e 'devtools::install_github(c("tidyverse/readr","tidyverse/dplyr"))'
-#
-## install data.table
-#Rscript -e 'install.packages("data.table", repos="https://rdatatable.gitlab.io/data.table/")'
-#
-#
+RUN Rscript -e 'devtools::install_github(c("tidyverse/readr","tidyverse/dplyr"))'
+
+# install data.table
+RUN Rscript -e 'install.packages("data.table", repos="https://rdatatable.gitlab.io/data.table/")'
+
 ## generate data for groupby 0.5GB
-#Rscript _data/groupby-datagen.R 1e7 1e2 0 0
-#
-#mkdir data
-#mv G1_1e7_1e2_0_0.csv data/
-#
-## Rscript _data/groupby-datagen.R 1e8 1e2 0 0
-## Rscript _data/groupby-datagen.R 1e9 1e2 0 0
-#
-## set only groupby task
-#echo "Changing run.conf and _control/data.csv to run only groupby at 0.5GB"
-#cp run.conf run.conf.original
-#sed -i 's/groupby join groupby2014/groupby/g' run.conf
-#sed -i 's/data.table dplyr pandas pydatatable spark dask clickhouse polars arrow duckdb/data.table dplyr duckdb/g' run.conf
-#sed -i 's/DO_PUBLISH=true/DO_PUBLISH=false/g' run.conf
-#
+RUN Rscript _data/groupby-datagen.R 1e7 1e2 0 0
+
+RUN mkdir data && \
+  mv G1_1e7_1e2_0_0.csv data/
+
+RUN Rscript _data/groupby-datagen.R 1e8 1e2 0 0
+RUN Rscript _data/groupby-datagen.R 1e9 1e2 0 0
+
+# set only groupby task
+RUN echo "Changing run.conf and _control/data.csv to run only groupby at 0.5GB" && \
+    cp run.conf run.conf.original && \
+    sed -i 's/groupby join groupby2014/groupby/g' run.conf && \
+    sed -i 's/data.table dplyr pandas pydatatable spark dask clickhouse polars arrow duckdb/data.table dplyr duckdb/g' run.conf && \
+    sed -i 's/DO_PUBLISH=true/DO_PUBLISH=false/g' run.conf
+
 ## set sizes
-#mv _control/data.csv _control/data.csv.original
-#
-#echo "task,data,nrow,k,na,sort,active" > _control/data.csv
-#echo "groupby,G1_1e7_1e2_0_0,1e7,1e2,0,0,1" >> _control/data.csv
-#
-#./dplyr/setup-dplyr.sh
-#./datatable/setup-datatable.sh
-#./duckdb/setup-duckdb.sh
-#
-## running db-benchmark
-#echo "running benchmark"
-#./run.sh
-#
-#echo "Returning run.conf and _control/data.csv to original state"
-#mv run.cong.original run.conf
-#mv _control/data.csv.original _control/data.csv
+RUN mv _control/data.csv _control/data.csv.original && \
+    echo "task,data,nrow,k,na,sort,active" > _control/data.csv && \
+    echo "groupby,G1_1e7_1e2_0_0,1e7,1e2,0,0,1" >> _control/data.csv
+
+RUN ./dplyr/setup-dplyr.sh
+RUN ./datatable/setup-datatable.sh
+RUN ./duckdb/setup-duckdb.sh
+
+# END OF SETUP
+
+# Now add our solution
+RUN rm -rf datafusion-python 2>/dev/null && mkdir datafusion-python
+ADD *.py datafusion-python/
+ADD run-bench.sh .
+
+ENTRYPOINT [ "/db-benchmark/run-bench.sh" ]
