@@ -17,15 +17,16 @@
   under the License.
 -->
 
-# Run db-benchmark
+# DataFusion Implementation of db-benchmark
 
-This directory contains scripts for running DataFusion with the https://github.com/h2oai/db-benchmark
+This directory contains scripts for running [db-benchmark](https://github.com/duckdblabs/db-benchmark) with 
+DataFusion's Python bindings.
 
 ## Directions
 
-Run the following from root `arrow-datafusion` directory
+Run the following from root of this project.
 
 ```bash
-$ docker buildx build -t db-benchmark -f benchmarks/db-benchmark/db-benchmark.dockerfile .
-$ docker run --privileged db-benchmark
+$ docker build -t db-benchmark -f benchmarks/db-benchmark/db-benchmark.dockerfile .
+$ docker run --privileged -it db-benchmark
 ```

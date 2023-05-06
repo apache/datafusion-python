@@ -15,92 +15,105 @@
 # specific language governing permissions and limitations
 # under the License.
 
-FROM ubuntu
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TARGETPLATFORM
 
-RUN apt-get update && \
-    apt-get install -y git build-essential
+# This section is based on https://github.com/duckdblabs/db-benchmark/blob/master/_utils/repro.sh
 
-# Install R, curl, and python deps
-RUN apt-get -y install --no-install-recommends --no-install-suggests \
-    ca-certificates software-properties-common gnupg2 gnupg1 \
-    && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 \
-    && add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/' \
-    && apt-get -y install r-base \
-    && apt-get -y install curl \
-    && apt-get -y install python3.8 \
-    && apt-get -y install python3-pip
+RUN apt-get -qq update
+RUN apt-get -qq -y upgrade
+RUN apt-get -qq install -y apt-utils
 
-# Install R libraries
-RUN R -e "install.packages('data.table',dependencies=TRUE, repos='http://cran.rstudio.com/')" \
-    && R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN apt-get -qq install -y lsb-release software-properties-common wget curl vim htop git byobu libcurl4-openssl-dev libssl-dev
+RUN apt-get -qq install -y libfreetype6-dev
+RUN apt-get -qq install -y libfribidi-dev
+RUN apt-get -qq install -y libharfbuzz-dev
+RUN apt-get -qq install -y git
+RUN apt-get -qq install -y libxml2-dev
+RUN apt-get -qq install -y make
+RUN apt-get -qq install -y libfontconfig1-dev
+RUN apt-get -qq install -y libicu-dev pandoc zlib1g-dev libgit2-dev libcurl4-openssl-dev libssl-dev libjpeg-dev libpng-dev libtiff-dev
+# apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+RUN add-apt-repository "deb [arch=amd64,i386] https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
 
-# Install Rust
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+RUN apt-get -qq install -y r-base-dev virtualenv
 
-# Clone db-benchmark and download data
-RUN git clone https://github.com/h2oai/db-benchmark \
-    && cd db-benchmark \
-    && Rscript _data/groupby-datagen.R 1e7 1e2 0 0 \
-    && Rscript _data/join-datagen.R 1e7 0 0 0 \
-    && mkdir data \
-    && mv G1_1e7_1e2_0_0.csv data \
-    && mv J1_1e7_1e1_0_0.csv data \
-    && mv J1_1e7_1e4_0_0.csv data \
-    && mv J1_1e7_1e7_0_0.csv data \
-    && mv J1_1e7_NA_0_0.csv data \
-    && cd ..
+RUN cd /usr/local/lib/R && \
+  chmod o+w site-library
 
-# Clone datafusion-python and build python library
-# Not sure if the wheel will be the same on all computers
-RUN git clone https://github.com/datafusion-contrib/datafusion-python \
-    && cd datafusion-python && git reset --hard 368b50ed9662d5e93c70b539f94cceace685265e \
-    && python3 -m pip install pip \
-    && python3 -m pip install pandas \
-    && python3 -m pip install -r requirements.txt \
-    && cd ..
-
-# Copy local arrow-datafusion
-COPY . arrow-datafusion
-
-# 1. datafusion-python that builds from datafusion version referenced datafusion-python
-RUN cd datafusion-python \
-    && maturin build --release \
-    && case "${TARGETPLATFORM}" in \
-    */amd64) CPUARCH=x86_64 ;; \
-    */arm64) CPUARCH=aarch64 ;; \
-    *) exit 1 ;; \
-    esac \
-    # Version will need to be updated in conjunction with datafusion-python version
-    && python3 -m pip install target/wheels/datafusion-0.4.0-cp36-abi3-linux_${CPUARCH}.whl \
-    && cd ..
-
-# 2. datafusion-python that builds from local datafusion.  use this when making local changes to datafusion.
-# Currently, as of March 5th 2022, this done not build (i think) because datafusion is being split into multiple crates
-# and datafusion-python has not yet been updated to reflect this.
-# RUN cd datafusion-python \
-# && sed -i '/datafusion =/c\datafusion = { path = "../arrow-datafusion/datafusion", features = ["pyarrow"] }' Cargo.toml \
-# && sed -i '/fuzz-utils/d' ../arrow-datafusion/datafusion/Cargo.toml \
-# && maturin build --release \
-# && case "${TARGETPLATFORM}" in \
-#     */amd64) CPUARCH=x86_64 ;; \
-#     */amd64) CPUARCH=aarch64 ;; \
-#     *) exit 1 ;; \
-# esac \
-# && python3 -m pip install target/wheels/datafusion-0.4.0-cp36-abi3-linux_${CPUARCH}.whl \
-# && cd ..
-
-# Make datafusion directory in db-benchmark
-RUN mkdir db-benchmark/datafusion \
-    && cp ../arrow-datafusion/benchmarks/db-benchmark/groupby-datafusion.py db-benchmark/datafusion \
-    && cp ../arrow-datafusion/benchmarks/db-benchmark/join-datafusion.py db-benchmark/datafusion \
-    && cp ../arrow-datafusion/benchmarks/db-benchmark/run-bench.sh db-benchmark/ \
-    && chmod +x db-benchmark/run-bench.sh
+RUN cd / && \
+    git clone https://github.com/duckdblabs/db-benchmark.git
 
 WORKDIR /db-benchmark
 
-RUN ls && ls -al data/
+RUN mkdir -p .R && \
+    echo 'CFLAGS=-O3 -mtune=native' >> .R/Makevars && \
+    echo 'CXXFLAGS=-O3 -mtune=native' >> .R/Makevars
 
-ENTRYPOINT ./run-bench.sh
+RUN cd pydatatable && \
+  virtualenv py-pydatatable --python=/usr/bin/python3.10
+RUN cd pandas && \
+  virtualenv py-pandas --python=/usr/bin/python3.10
+RUN cd modin && \
+  virtualenv py-modin --python=/usr/bin/python3.10
+
+RUN Rscript -e 'install.packages(c("jsonlite","bit64","devtools","rmarkdown"), dependecies=TRUE, repos="https://cloud.r-project.org")'
+
+SHELL ["/bin/bash", "-c"]
+
+RUN source ./pandas/py-pandas/bin/activate && \
+    python3 -m pip install --upgrade psutil && \
+    python3 -m pip install --upgrade pandas && \
+    deactivate
+
+RUN source ./modin/py-modin/bin/activate && \
+    python3 -m pip install --upgrade modin && \
+    deactivate
+
+RUN source ./pydatatable/py-pydatatable/bin/activate && \
+    python3 -m pip install --upgrade git+https://github.com/h2oai/datatable && \
+    deactivate
+
+## install dplyr
+#RUN Rscript -e 'devtools::install_github(c("tidyverse/readr","tidyverse/dplyr"))'
+
+# install data.table
+RUN Rscript -e 'install.packages("data.table", repos="https://rdatatable.gitlab.io/data.table/")'
+
+## generate data for groupby 0.5GB
+RUN Rscript _data/groupby-datagen.R 1e7 1e2 0 0
+RUN #Rscript _data/groupby-datagen.R 1e8 1e2 0 0
+RUN #Rscript _data/groupby-datagen.R 1e9 1e2 0 0
+
+RUN mkdir data && \
+  mv G1_1e7_1e2_0_0.csv data/
+
+# set only groupby task
+RUN echo "Changing run.conf and _control/data.csv to run only groupby at 0.5GB" && \
+    cp run.conf run.conf.original && \
+    sed -i 's/groupby join groupby2014/groupby/g' run.conf && \
+    sed -i 's/data.table dplyr pandas pydatatable spark dask clickhouse polars arrow duckdb/data.table dplyr duckdb/g' run.conf && \
+    sed -i 's/DO_PUBLISH=true/DO_PUBLISH=false/g' run.conf
+
+## set sizes
+RUN mv _control/data.csv _control/data.csv.original && \
+    echo "task,data,nrow,k,na,sort,active" > _control/data.csv && \
+    echo "groupby,G1_1e7_1e2_0_0,1e7,1e2,0,0,1" >> _control/data.csv
+
+RUN #./dplyr/setup-dplyr.sh
+RUN #./datatable/setup-datatable.sh
+RUN #./duckdb/setup-duckdb.sh
+
+# END OF SETUP
+
+RUN python3 -m pip install --upgrade pandas
+RUN python3 -m pip install --upgrade datafusion
+
+# Now add our solution
+RUN rm -rf datafusion-python 2>/dev/null && \
+    mkdir datafusion-python
+ADD benchmarks/db-benchmark/*.py datafusion-python/
+ADD benchmarks/db-benchmark/run-bench.sh .
+
+ENTRYPOINT [ "/db-benchmark/run-bench.sh" ]
