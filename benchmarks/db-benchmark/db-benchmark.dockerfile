@@ -76,7 +76,7 @@ RUN source ./pydatatable/py-pydatatable/bin/activate && \
     deactivate
 
 ## install dplyr
-RUN Rscript -e 'devtools::install_github(c("tidyverse/readr","tidyverse/dplyr"))'
+#RUN Rscript -e 'devtools::install_github(c("tidyverse/readr","tidyverse/dplyr"))'
 
 # install data.table
 RUN Rscript -e 'install.packages("data.table", repos="https://rdatatable.gitlab.io/data.table/")'
