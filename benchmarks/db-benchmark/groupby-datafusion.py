@@ -21,6 +21,7 @@ import timeit
 import datafusion as df
 from datafusion import functions as f
 from datafusion import col
+import pyarrow
 from pyarrow import csv as pacsv
 
 
@@ -48,12 +49,24 @@ fun = ".groupby"
 cache = "TRUE"
 on_disk = "FALSE"
 
+# experimental - support running with both DataFrame and SQL APIs
+sql = True
+
 data_name = os.environ["SRC_DATANAME"]
 src_grp = os.path.join("data", data_name + ".csv")
 print("loading dataset %s" % src_grp, flush=True)
 
+schema = pyarrow.schema([
+    ('id4', pyarrow.int32()),
+    ('id5', pyarrow.int32()),
+    ('id6', pyarrow.int32()),
+    ('v1', pyarrow.int32()),
+    ('v2', pyarrow.int32()),
+    ('v3', pyarrow.float64())
+])
+
 data = pacsv.read_csv(
-    src_grp, convert_options=pacsv.ConvertOptions(auto_dict_encode=True)
+    src_grp, convert_options=pacsv.ConvertOptions(auto_dict_encode=True, column_types=schema)
 )
 print("dataset loaded")
 
@@ -71,7 +84,15 @@ task_init = timeit.default_timer()
 question = "sum v1 by id1"  # q1
 gc.collect()
 t_start = timeit.default_timer()
-ans = ctx.sql("SELECT id1, SUM(v1) AS v1 FROM x GROUP BY id1").collect()
+if sql:
+    df = ctx.sql("SELECT id1, SUM(v1) AS v1 FROM x GROUP BY id1")
+else:
+    df = ctx.table("x").aggregate(
+        [f.col("id1")], [f.sum(f.col("v1")).alias("v1")]
+    )
+#print(df.optimized_logical_plan())
+ans = df.collect()
+
 shape = ans_shape(ans)
 print(shape, flush=True)
 t = timeit.default_timer() - t_start
@@ -88,9 +109,16 @@ gc.collect()
 question = "sum v1 by id1:id2"  # q2
 gc.collect()
 t_start = timeit.default_timer()
-ans = ctx.sql(
-    "SELECT id1, id2, SUM(v1) AS v1 FROM x GROUP BY id1, id2"
-).collect()
+if sql:
+    df = ctx.sql(
+        "SELECT id1, id2, SUM(v1) AS v1 FROM x GROUP BY id1, id2"
+    )
+else:
+    df = ctx.table("x").aggregate(
+        [f.col("id1"), f.col("id2")], [f.sum(f.col("v1")).alias("v1")]
+    )
+#print(df.optimized_logical_plan())
+ans = df.collect()
 shape = ans_shape(ans)
 print(shape, flush=True)
 t = timeit.default_timer() - t_start
@@ -107,9 +135,20 @@ gc.collect()
 question = "sum v1 mean v3 by id3"  # q3
 gc.collect()
 t_start = timeit.default_timer()
-ans = ctx.sql(
-    "SELECT id3, SUM(v1) AS v1, AVG(v3) AS v3 FROM x GROUP BY id3"
-).collect()
+if sql:
+    df = ctx.sql(
+        "SELECT id3, SUM(v1) AS v1, AVG(v3) AS v3 FROM x GROUP BY id3"
+    )
+else:
+    df = ctx.table("x").aggregate(
+        [f.col("id3")],
+        [
+            f.sum(f.col("v1")).alias("v1"),
+            f.avg(f.col("v3")).alias("v3"),
+        ]
+    )
+#print(df.optimized_logical_plan())
+ans = df.collect()
 shape = ans_shape(ans)
 print(shape, flush=True)
 t = timeit.default_timer() - t_start
