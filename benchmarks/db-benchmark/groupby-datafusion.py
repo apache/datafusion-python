@@ -71,6 +71,8 @@ data = pacsv.read_csv(
 print("dataset loaded")
 
 ctx = df.SessionContext()
+print(ctx)
+
 ctx.register_record_batches("x", [data.to_batches()])
 print("registered record batches")
 # cols = ctx.sql("SHOW columns from x")

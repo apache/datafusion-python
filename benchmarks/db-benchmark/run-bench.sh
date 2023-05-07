@@ -17,9 +17,11 @@
 # under the License.
 set -e
 
-SRC_DATANAME=G1_1e7_1e2_0_0 python3 /db-benchmark/datafusion-python/groupby-datafusion.py
 SRC_DATANAME=G1_1e7_1e2_0_0 python3 /db-benchmark/polars/groupby-polars.py
+SRC_DATANAME=G1_1e7_1e2_0_0 python3 /db-benchmark/datafusion-python/groupby-datafusion.py
+
+# joins need more work still
+#SRC_DATANAME=G1_1e7_1e2_0_0 python3 /db-benchmark/datafusion-python/join-datafusion.py
+#SRC_DATANAME=G1_1e7_1e2_0_0 python3 /db-benchmark/polars/join-polars.py
 
 cat time.csv
-
-#SRC_DATANAME=J1_1e7_NA_0_0 python3 /db-benchmark/datafusion-python/join-datafusion.py
