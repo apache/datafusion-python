@@ -19,8 +19,7 @@ import os
 import gc
 import timeit
 import datafusion as df
-from datafusion import functions as f
-from datafusion import col
+from datafusion import col, functions as f, RuntimeConfig, SessionConfig, SessionContext
 import pyarrow
 from pyarrow import csv as pacsv
 
@@ -39,6 +38,10 @@ def ans_shape(batches):
         else:
             assert cols == batch.num_columns
     return rows, cols
+
+def execute(df):
+    print(df.execution_plan().display_indent())
+    return df.collect()
 
 
 ver = df.__version__
@@ -70,7 +73,15 @@ data = pacsv.read_csv(
 )
 print("dataset loaded")
 
-ctx = df.SessionContext()
+# create a session context with explicit runtime and config settings
+runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(64*1024*1024*1024)
+config = (
+    SessionConfig()
+    .with_repartition_joins(False)
+    .with_repartition_aggregations(False)
+    .set("datafusion.execution.coalesce_batches", "false")
+)
+ctx = SessionContext(config, runtime)
 print(ctx)
 
 ctx.register_record_batches("x", [data.to_batches()])
@@ -92,8 +103,7 @@ else:
     df = ctx.table("x").aggregate(
         [f.col("id1")], [f.sum(f.col("v1")).alias("v1")]
     )
-#print(df.optimized_logical_plan())
-ans = df.collect()
+ans = execute(df)
 
 shape = ans_shape(ans)
 print(shape, flush=True)
@@ -119,8 +129,7 @@ else:
     df = ctx.table("x").aggregate(
         [f.col("id1"), f.col("id2")], [f.sum(f.col("v1")).alias("v1")]
     )
-#print(df.optimized_logical_plan())
-ans = df.collect()
+ans = execute(df)
 shape = ans_shape(ans)
 print(shape, flush=True)
 t = timeit.default_timer() - t_start
@@ -149,8 +158,7 @@ else:
             f.avg(f.col("v3")).alias("v3"),
         ]
     )
-#print(df.optimized_logical_plan())
-ans = df.collect()
+ans = execute(df)
 shape = ans_shape(ans)
 print(shape, flush=True)
 t = timeit.default_timer() - t_start
