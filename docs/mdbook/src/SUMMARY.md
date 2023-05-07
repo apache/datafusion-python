@@ -22,3 +22,4 @@
 - [Usage](./usage/index.md)
     - [Create a table](./usage/create-table.md)
     - [Query a table](./usage/query-table.md)
+    - [Viewing Query Plans](./usage/query-plans.md)
