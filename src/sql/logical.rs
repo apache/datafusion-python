@@ -100,7 +100,7 @@ impl PyLogicalPlan {
     }
 
     fn display_graphviz(&self) -> String {
-        format!("{}", self.plan.display_indent_schema())
+        format!("{}", self.plan.display_graphviz())
     }
 }
 

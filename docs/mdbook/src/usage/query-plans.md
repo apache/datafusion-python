@@ -112,3 +112,59 @@ This plan has additional operators that were not in the logical plan:
 The `Aggregate` operator now appears twice. This is because aggregates are performed in a two step process. Data is
 aggregated within each partition in parallel and then those results (which could contain duplicate grouping keys) are
 combined and the aggregate operations is applied again.
+
+## Creating Query Plan Diagrams
+
+DataFusion supports generating query plan diagrams in [DOT format](<https://en.wikipedia.org/wiki/DOT_(graph_description_language)>).
+
+DOT is a language for describing graphs and there are open source tools such as GraphViz that can render diagrams
+from DOT files.
+
+We can use the following code to generate a DOT file for a logical query plan.
+
+```python
+>>> diagram = df.logical_plan().display_graphviz()
+>>> with open('plan.dot', 'w') as f:
+>>>   f.write(diagram)
+```
+
+If we view the view, we will see the following content.
+
+```
+// Begin DataFusion GraphViz Plan (see https://graphviz.org)
+digraph {
+  subgraph cluster_1
+  {
+    graph[label="LogicalPlan"]
+    2[shape=box label="Projection: my_table.a, SUM(my_table.b)"]
+    3[shape=box label="Aggregate: groupBy=[[my_table.a]], aggr=[[SUM(my_table.b)]]"]
+    2 -> 3 [arrowhead=none, arrowtail=normal, dir=back]
+    4[shape=box label="Filter: my_table.a < Int64(3)"]
+    3 -> 4 [arrowhead=none, arrowtail=normal, dir=back]
+    5[shape=box label="TableScan: my_table"]
+    4 -> 5 [arrowhead=none, arrowtail=normal, dir=back]
+  }
+  subgraph cluster_6
+  {
+    graph[label="Detailed LogicalPlan"]
+    7[shape=box label="Projection: my_table.a, SUM(my_table.b)\nSchema: [a:Int64;N, SUM(my_table.b):Int64;N]"]
+    8[shape=box label="Aggregate: groupBy=[[my_table.a]], aggr=[[SUM(my_table.b)]]\nSchema: [a:Int64;N, SUM(my_table.b):Int64;N]"]
+    7 -> 8 [arrowhead=none, arrowtail=normal, dir=back]
+    9[shape=box label="Filter: my_table.a < Int64(3)\nSchema: [a:Int64;N, b:Int64;N]"]
+    8 -> 9 [arrowhead=none, arrowtail=normal, dir=back]
+    10[shape=box label="TableScan: my_table\nSchema: [a:Int64;N, b:Int64;N]"]
+    9 -> 10 [arrowhead=none, arrowtail=normal, dir=back]
+  }
+}
+// End DataFusion GraphViz Plan
+```
+
+We can use GraphViz from the command-line to convert this DOT file into an image.
+
+```bash
+dot -Tsvg plan.dot > plan.svg
+```
+
+This generates the following diagram:
+
+![Query Plan Diagram](../images/plan.svg)
