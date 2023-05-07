@@ -19,7 +19,13 @@ import os
 import gc
 import timeit
 import datafusion as df
-from datafusion import col, functions as f, RuntimeConfig, SessionConfig, SessionContext
+from datafusion import (
+    col,
+    functions as f,
+    RuntimeConfig,
+    SessionConfig,
+    SessionContext,
+)
 import pyarrow
 from pyarrow import csv as pacsv
 
@@ -38,6 +44,7 @@ def ans_shape(batches):
         else:
             assert cols == batch.num_columns
     return rows, cols
+
 
 def execute(df):
     print(df.execution_plan().display_indent())
@@ -59,22 +66,31 @@ data_name = os.environ["SRC_DATANAME"]
 src_grp = os.path.join("data", data_name + ".csv")
 print("loading dataset %s" % src_grp, flush=True)
 
-schema = pyarrow.schema([
-    ('id4', pyarrow.int32()),
-    ('id5', pyarrow.int32()),
-    ('id6', pyarrow.int32()),
-    ('v1', pyarrow.int32()),
-    ('v2', pyarrow.int32()),
-    ('v3', pyarrow.float64())
-])
+schema = pyarrow.schema(
+    [
+        ("id4", pyarrow.int32()),
+        ("id5", pyarrow.int32()),
+        ("id6", pyarrow.int32()),
+        ("v1", pyarrow.int32()),
+        ("v2", pyarrow.int32()),
+        ("v3", pyarrow.float64()),
+    ]
+)
 
 data = pacsv.read_csv(
-    src_grp, convert_options=pacsv.ConvertOptions(auto_dict_encode=True, column_types=schema)
+    src_grp,
+    convert_options=pacsv.ConvertOptions(
+        auto_dict_encode=True, column_types=schema
+    ),
 )
 print("dataset loaded")
 
 # create a session context with explicit runtime and config settings
-runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(64*1024*1024*1024)
+runtime = (
+    RuntimeConfig()
+    .with_disk_manager_os()
+    .with_fair_spill_pool(64 * 1024 * 1024 * 1024)
+)
 config = (
     SessionConfig()
     .with_repartition_joins(False)
@@ -114,7 +130,25 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("v1"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -122,9 +156,7 @@ question = "sum v1 by id1:id2"  # q2
 gc.collect()
 t_start = timeit.default_timer()
 if sql:
-    df = ctx.sql(
-        "SELECT id1, id2, SUM(v1) AS v1 FROM x GROUP BY id1, id2"
-    )
+    df = ctx.sql("SELECT id1, id2, SUM(v1) AS v1 FROM x GROUP BY id1, id2")
 else:
     df = ctx.table("x").aggregate(
         [f.col("id1"), f.col("id2")], [f.sum(f.col("v1")).alias("v1")]
@@ -139,7 +171,25 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("v1"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -156,7 +206,7 @@ else:
         [
             f.sum(f.col("v1")).alias("v1"),
             f.avg(f.col("v3")).alias("v3"),
-        ]
+        ],
     )
 ans = execute(df)
 shape = ans_shape(ans)
@@ -173,7 +223,25 @@ chk = (
     .to_numpy()[0]
 )
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -197,7 +265,25 @@ chk = (
     .to_numpy()[0]
 )
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -221,7 +307,25 @@ chk = (
     .to_numpy()[0]
 )
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -245,7 +349,25 @@ chk = (
     .to_numpy()[0]
 )
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -264,7 +386,25 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("range_v1_v2"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -283,7 +423,25 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("v3"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -300,7 +458,25 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("corr"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -324,7 +500,25 @@ chk = (
     .to_numpy()[0]
 )
 chkt = timeit.default_timer() - t_start
-write_log(task=task, data=data_name, in_rows=in_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=in_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
