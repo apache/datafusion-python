@@ -83,7 +83,7 @@ pub mod union;
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
-    pub(crate) expr: Expr,
+    pub expr: Expr,
 }
 
 impl From<PyExpr> for Expr {
