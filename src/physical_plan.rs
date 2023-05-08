@@ -54,6 +54,10 @@ impl PyExecutionPlan {
         format!("{}", d.indent())
     }
 
+    fn __repr__(&self) -> String {
+        self.display_indent()
+    }
+
     #[getter]
     pub fn partition_count(&self) -> usize {
         self.plan.output_partitioning().partition_count()

@@ -26,7 +26,7 @@ Open the book locally by running `open book/index.html`.
 
 ## Install mdBook
 
-Download the `mdbook` binary.
+Download the `mdbook` binary or run `cargo install mdbook`.
 
 Then manually open it, so you have permissions to run it on your Mac.
 
