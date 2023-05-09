@@ -131,7 +131,7 @@ impl DataTypeMap {
                 SqlType::FLOAT,
             )),
             DataType::Timestamp(unit, tz) => Ok(DataTypeMap::new(
-                DataType::Timestamp(unit, tz),
+                DataType::Timestamp(unit.clone(), tz.clone()),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
@@ -146,12 +146,12 @@ impl DataTypeMap {
                 SqlType::DATE,
             )),
             DataType::Time32(unit) => Ok(DataTypeMap::new(
-                DataType::Time32(unit),
+                DataType::Time32(unit.clone()),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
             DataType::Time64(unit) => Ok(DataTypeMap::new(
-                DataType::Time64(unit),
+                DataType::Time64(unit.clone()),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
