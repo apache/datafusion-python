@@ -19,11 +19,34 @@
 
 # Changelog
 
+## [24.0.0](https://github.com/apache/arrow-datafusion-python/tree/24.0.0) (2023-05-09)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/23.0.0...24.0.0)
+
+**Documentation updates:**
+
+- Fix link to user guide [#354](https://github.com/apache/arrow-datafusion-python/pull/354) (andygrove)
+
+**Merged pull requests:**
+
+- Add interface to serialize Substrait plans to Python Bytes. [#344](https://github.com/apache/arrow-datafusion-python/pull/344) (kylebrooks-8451)
+- Add partition_count property to ExecutionPlan. [#346](https://github.com/apache/arrow-datafusion-python/pull/346) (kylebrooks-8451)
+- Remove unsendable from all Rust pyclass types. [#348](https://github.com/apache/arrow-datafusion-python/pull/348) (kylebrooks-8451)
+- Fix link to user guide [#354](https://github.com/apache/arrow-datafusion-python/pull/354) (andygrove)
+- Fix SessionContext execute. [#353](https://github.com/apache/arrow-datafusion-python/pull/353) (kylebrooks-8451)
+- Pub mod expr in lib.rs [#357](https://github.com/apache/arrow-datafusion-python/pull/357) (jdye64)
+- Add benchmark derived from TPC-H [#355](https://github.com/apache/arrow-datafusion-python/pull/355) (andygrove)
+- Add db-benchmark [#365](https://github.com/apache/arrow-datafusion-python/pull/365) (andygrove)
+- First pass of documentation in mdBook [#364](https://github.com/apache/arrow-datafusion-python/pull/364) (MrPowers)
+- Add 'pub' and '#[pyo3(get, set)]' to DataTypeMap [#371](https://github.com/apache/arrow-datafusion-python/pull/371) (jdye64)
+- Fix db-benchmark [#369](https://github.com/apache/arrow-datafusion-python/pull/369) (andygrove)
+- Docs explaining how to view query plans [#373](https://github.com/apache/arrow-datafusion-python/pull/373) (andygrove)
+- Improve db-benchmark [#372](https://github.com/apache/arrow-datafusion-python/pull/372) (andygrove)
+- Make expr member of PyExpr public [#375](https://github.com/apache/arrow-datafusion-python/pull/375) (jdye64)
+
 ## [23.0.0](https://github.com/apache/arrow-datafusion-python/tree/23.0.0) (2023-04-23)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/22.0.0...23.0.0)
-
-**Merged pull requests:**
 
 **Merged pull requests:**
 
