@@ -130,9 +130,11 @@ impl DataTypeMap {
                 PythonType::Float,
                 SqlType::FLOAT,
             )),
-            DataType::Timestamp(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Timestamp(unit, tz) => Ok(DataTypeMap::new(
+                DataType::Timestamp(unit, tz),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
             DataType::Date32 => Ok(DataTypeMap::new(
                 DataType::Date32,
                 PythonType::Datetime,
@@ -143,12 +145,16 @@ impl DataTypeMap {
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
-            DataType::Time32(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
-            DataType::Time64(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Time32(unit) => Ok(DataTypeMap::new(
+                DataType::Time32(unit),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
+            DataType::Time64(unit) => Ok(DataTypeMap::new(
+                DataType::Time64(unit),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
             DataType::Duration(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
