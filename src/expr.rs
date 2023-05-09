@@ -21,7 +21,7 @@ use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField, TryCast, Case, BinaryExpr, Like, Between};
+use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField, TryCast, Case, BinaryExpr, Like, Between, Operator};
 
 use crate::common::data_type::{RexType, DataTypeMap};
 use crate::errors::{py_runtime_err, py_type_err};
@@ -282,6 +282,38 @@ impl PyExpr {
      /// the literal or result of a `RexType::Call` for the `Expr`
      pub fn types(&self) -> PyResult<DataTypeMap> {
          match &self.expr {
+            Expr::BinaryExpr(BinaryExpr {
+                left: _,
+                op,
+                right: _,
+            }) => match op {
+                Operator::Eq
+                | Operator::NotEq
+                | Operator::Lt
+                | Operator::LtEq
+                | Operator::Gt
+                | Operator::GtEq
+                | Operator::And
+                | Operator::Or
+                | Operator::IsDistinctFrom
+                | Operator::IsNotDistinctFrom
+                | Operator::RegexMatch
+                | Operator::RegexIMatch
+                | Operator::RegexNotMatch
+                | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
+                Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
+                    DataTypeMap::map_from_arrow_type(&DataType::Int64)
+                }
+                Operator::Divide => DataTypeMap::map_from_arrow_type(&DataType::Float64),
+                Operator::StringConcat => DataTypeMap::map_from_arrow_type(&DataType::Utf8),
+                Operator::BitwiseShiftLeft
+                | Operator::BitwiseShiftRight
+                | Operator::BitwiseXor
+                | Operator::BitwiseAnd
+                | Operator::BitwiseOr => {
+                    DataTypeMap::map_from_arrow_type(&DataType::Binary)
+                }
+            },
              Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
              _ => {
                  return Err(py_type_err(format!(
