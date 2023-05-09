@@ -456,6 +456,61 @@ impl PyExpr {
             ))),
         }
     }
+
+
+    /// Extracts the operator associated with a RexType::Call
+    pub fn rex_call_operator(&self) -> PyResult<String> {
+        Ok(match &self.expr {
+            Expr::BinaryExpr(BinaryExpr {
+                left: _,
+                op,
+                right: _,
+            }) => format!("{op}"),
+            Expr::ScalarFunction { fun, args: _ } => format!("{fun}"),
+            Expr::ScalarUDF { fun, .. } => fun.name.clone(),
+            Expr::Cast { .. } => "cast".to_string(),
+            Expr::Between { .. } => "between".to_string(),
+            Expr::Case { .. } => "case".to_string(),
+            Expr::IsNull(..) => "is null".to_string(),
+            Expr::IsNotNull(..) => "is not null".to_string(),
+            Expr::IsTrue(_) => "is true".to_string(),
+            Expr::IsFalse(_) => "is false".to_string(),
+            Expr::IsUnknown(_) => "is unknown".to_string(),
+            Expr::IsNotTrue(_) => "is not true".to_string(),
+            Expr::IsNotFalse(_) => "is not false".to_string(),
+            Expr::IsNotUnknown(_) => "is not unknown".to_string(),
+            Expr::InList { .. } => "in list".to_string(),
+            Expr::Negative(..) => "negative".to_string(),
+            Expr::Not(..) => "not".to_string(),
+            Expr::Like(Like { negated, .. }) => {
+                if *negated {
+                    "not like".to_string()
+                } else {
+                    "like".to_string()
+                }
+            }
+            Expr::ILike(Like { negated, .. }) => {
+                if *negated {
+                    "not ilike".to_string()
+                } else {
+                    "ilike".to_string()
+                }
+            }
+            Expr::SimilarTo(Like { negated, .. }) => {
+                if *negated {
+                    "not similar to".to_string()
+                } else {
+                    "similar to".to_string()
+                }
+            }
+            _ => {
+                return Err(py_type_err(format!(
+                    "Catch all triggered in get_operator_name: {:?}",
+                    &self.expr
+                )))
+            }
+        })
+    }
 }
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
