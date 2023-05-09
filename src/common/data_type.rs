@@ -21,6 +21,17 @@ use pyo3::prelude::*;
 
 use crate::errors::py_datafusion_err;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[pyclass(name = "RexType", module = "datafusion.common")]
+pub enum RexType {
+    Alias,
+    Literal,
+    Call,
+    Reference,
+    ScalarSubquery,
+    Other,
+}
+
 /// These bindings are tying together several disparate systems.
 /// You have SQL types for the SQL strings and RDBMS systems itself.
 /// Rust types for the DataFusion code
