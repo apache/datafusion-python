@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_expr::Expr;
 use datafusion_expr::logical_plan::Projection;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
@@ -89,6 +90,19 @@ impl PyProjection {
 
     fn __name__(&self) -> PyResult<String> {
         Ok("Projection".to_string())
+    }
+
+    /// Projection: Gets the names of the fields that should be projected
+    pub fn projected_expressions(&self, local_expr: &PyExpr) -> Vec<PyExpr> {
+        let mut projs: Vec<PyExpr> = Vec::new();
+        match &local_expr.expr {
+            Expr::Alias(expr, _name) => {
+                let py_expr: PyExpr = PyExpr::from(*expr.clone());
+                projs.extend_from_slice(self.projected_expressions(&py_expr).as_slice());
+            }
+            _ => projs.push(local_expr.clone()),
+        }
+        projs
     }
 }
 
