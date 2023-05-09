@@ -22,6 +22,7 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
+use crate::common::data_type::RexType;
 use crate::errors::py_runtime_err;
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
@@ -83,7 +84,7 @@ pub mod union;
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
-    pub(crate) expr: Expr,
+    pub expr: Expr,
 }
 
 impl From<PyExpr> for Expr {
@@ -227,6 +228,51 @@ impl PyExpr {
         // is supported, omit that for now
         let expr = Expr::Cast(Cast::new(Box::new(self.expr.clone()), to.0));
         expr.into()
+    }
+
+    /// A Rex (Row Expression) specifies a single row of data. That specification
+    /// could include user defined functions or types. RexType identifies the row
+    /// as one of the possible valid `RexTypes`.
+    pub fn rex_type(&self) -> PyResult<RexType> {
+        Ok(match self.expr {
+            Expr::Alias(..) => RexType::Alias,
+            Expr::Column(..) | Expr::QualifiedWildcard { .. } | Expr::GetIndexedField { .. } => {
+                RexType::Reference
+            }
+            Expr::ScalarVariable(..) | Expr::Literal(..) => RexType::Literal,
+            Expr::BinaryExpr { .. }
+            | Expr::Not(..)
+            | Expr::IsNotNull(..)
+            | Expr::Negative(..)
+            | Expr::IsNull(..)
+            | Expr::Like { .. }
+            | Expr::ILike { .. }
+            | Expr::SimilarTo { .. }
+            | Expr::Between { .. }
+            | Expr::Case { .. }
+            | Expr::Cast { .. }
+            | Expr::TryCast { .. }
+            | Expr::Sort { .. }
+            | Expr::ScalarFunction { .. }
+            | Expr::AggregateFunction { .. }
+            | Expr::WindowFunction { .. }
+            | Expr::AggregateUDF { .. }
+            | Expr::InList { .. }
+            | Expr::Wildcard
+            | Expr::ScalarUDF { .. }
+            | Expr::Exists { .. }
+            | Expr::InSubquery { .. }
+            | Expr::GroupingSet(..)
+            | Expr::IsTrue(..)
+            | Expr::IsFalse(..)
+            | Expr::IsUnknown(_)
+            | Expr::IsNotTrue(..)
+            | Expr::IsNotFalse(..)
+            | Expr::Placeholder { .. }
+            | Expr::OuterReferenceColumn(_, _)
+            | Expr::IsNotUnknown(_) => RexType::Call,
+            Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
+        })
     }
 }
 
