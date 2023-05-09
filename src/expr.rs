@@ -15,12 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_expr::expr::{Sort, AggregateFunction, WindowFunction};
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
+use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField, TryCast, Case, BinaryExpr, Like, Between};
 
 use crate::common::data_type::{RexType, DataTypeMap};
 use crate::errors::{py_runtime_err, py_type_err};
@@ -339,6 +340,122 @@ impl PyExpr {
             }
         }
      }
+
+
+    /// Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
+    /// store those operands in different datastructures. This function examines the Expr variant and returns
+    /// the operands to the calling logic as a Vec of PyExpr instances.
+    pub fn rex_call_operands(&self) -> PyResult<Vec<PyExpr>> {
+        match &self.expr {
+            // Expr variants that are themselves the operand to return
+            Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
+                Ok(vec![PyExpr::from(
+                    self.expr.clone(),
+                )])
+            }
+
+            // Expr(s) that house the Expr instance to return in their bounded params
+            Expr::Alias(expr, ..)
+            | Expr::Not(expr)
+            | Expr::IsNull(expr)
+            | Expr::IsNotNull(expr)
+            | Expr::IsTrue(expr)
+            | Expr::IsFalse(expr)
+            | Expr::IsUnknown(expr)
+            | Expr::IsNotTrue(expr)
+            | Expr::IsNotFalse(expr)
+            | Expr::IsNotUnknown(expr)
+            | Expr::Negative(expr)
+            | Expr::GetIndexedField(GetIndexedField { expr, .. })
+            | Expr::Cast(Cast { expr, .. })
+            | Expr::TryCast(TryCast { expr, .. })
+            | Expr::Sort(Sort { expr, .. })
+            | Expr::InSubquery { expr, .. } => {
+                Ok(vec![PyExpr::from(*expr.clone())])
+            }
+
+            // Expr variants containing a collection of Expr(s) for operands
+            Expr::AggregateFunction(AggregateFunction { args, .. })
+            | Expr::AggregateUDF { args, .. }
+            | Expr::ScalarFunction { args, .. }
+            | Expr::ScalarUDF { args, .. }
+            | Expr::WindowFunction(WindowFunction { args, .. }) => Ok(args
+                .iter()
+                .map(|arg| PyExpr::from(arg.clone()))
+                .collect()),
+
+            // Expr(s) that require more specific processing
+            Expr::Case(Case {
+                expr,
+                when_then_expr,
+                else_expr,
+            }) => {
+                let mut operands: Vec<PyExpr> = Vec::new();
+
+                if let Some(e) = expr {
+                    operands.push(PyExpr::from(*e.clone()));
+                };
+
+                for (when, then) in when_then_expr {
+                    operands.push(PyExpr::from(*when.clone()));
+                    operands.push(PyExpr::from(*then.clone()));
+                }
+
+                if let Some(e) = else_expr {
+                    operands.push(PyExpr::from(*e.clone()));
+                };
+
+                Ok(operands)
+            }
+            Expr::InList { expr, list, .. } => {
+                let mut operands: Vec<PyExpr> =
+                    vec![PyExpr::from(*expr.clone())];
+                for list_elem in list {
+                    operands.push(PyExpr::from(list_elem.clone()));
+                }
+
+                Ok(operands)
+            }
+            Expr::BinaryExpr(BinaryExpr { left, right, .. }) => Ok(vec![
+                PyExpr::from(*left.clone()),
+                PyExpr::from(*right.clone()),
+            ]),
+            Expr::Like(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::ILike(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::SimilarTo(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::Between(Between {
+                expr,
+                negated: _,
+                low,
+                high,
+            }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*low.clone()),
+                PyExpr::from(*high.clone()),
+            ]),
+
+            // Currently un-support/implemented Expr types for Rex Call operations
+            Expr::GroupingSet(..)
+            | Expr::OuterReferenceColumn(_, _)
+            | Expr::Wildcard
+            | Expr::QualifiedWildcard { .. }
+            | Expr::ScalarSubquery(..)
+            | Expr::Placeholder { .. }
+            | Expr::Exists { .. } => Err(py_runtime_err(format!(
+                "Unimplemented Expr type: {}",
+                self.expr
+            ))),
+        }
+    }
 }
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
