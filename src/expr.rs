@@ -99,7 +99,6 @@ impl From<Expr> for PyExpr {
     }
 }
 
-#[pymethods]
 impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
@@ -289,6 +288,55 @@ impl PyExpr {
                  )))
              }
          }
+     }
+
+
+     /// Extracts the Expr value into a PyObject that can be shared with Python
+     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
+        match &self.expr {
+            Expr::Literal(scalar_value) => Ok(match scalar_value {
+                ScalarValue::Null => todo!(),
+                ScalarValue::Boolean(v) => v.into_py(py),
+                ScalarValue::Float32(v) => v.into_py(py),
+                ScalarValue::Float64(v) => v.into_py(py),
+                ScalarValue::Decimal128(_, _, _) => todo!(),
+                ScalarValue::Int8(v) => v.into_py(py),
+                ScalarValue::Int16(v) => v.into_py(py),
+                ScalarValue::Int32(v) => v.into_py(py),
+                ScalarValue::Int64(v) => v.into_py(py),
+                ScalarValue::UInt8(v) => v.into_py(py),
+                ScalarValue::UInt16(v) => v.into_py(py),
+                ScalarValue::UInt32(v) => v.into_py(py),
+                ScalarValue::UInt64(v) => v.into_py(py),
+                ScalarValue::Utf8(v) => v.into_py(py),
+                ScalarValue::LargeUtf8(v) => v.into_py(py),
+                ScalarValue::Binary(v) => v.into_py(py),
+                ScalarValue::FixedSizeBinary(_, _) => todo!(),
+                ScalarValue::LargeBinary(v) => v.into_py(py),
+                ScalarValue::List(_, _) => todo!(),
+                ScalarValue::Date32(v) => v.into_py(py),
+                ScalarValue::Date64(v) => v.into_py(py),
+                ScalarValue::Time32Second(v) => v.into_py(py),
+                ScalarValue::Time32Millisecond(v) => v.into_py(py),
+                ScalarValue::Time64Microsecond(v) => v.into_py(py),
+                ScalarValue::Time64Nanosecond(v) => v.into_py(py),
+                ScalarValue::TimestampSecond(_, _) => todo!(),
+                ScalarValue::TimestampMillisecond(_, _) => todo!(),
+                ScalarValue::TimestampMicrosecond(_, _) => todo!(),
+                ScalarValue::TimestampNanosecond(_, _) => todo!(),
+                ScalarValue::IntervalYearMonth(v) => v.into_py(py),
+                ScalarValue::IntervalDayTime(v) => v.into_py(py),
+                ScalarValue::IntervalMonthDayNano(v) => v.into_py(py),
+                ScalarValue::Struct(_, _) => todo!(),
+                ScalarValue::Dictionary(_, _) => todo!(),
+            }),
+            _ => {
+                return Err(py_type_err(format!(
+                    "Non Expr::Literal encountered in types: {:?}",
+                    &self.expr
+                )))
+            }
+        }
      }
 }
 
