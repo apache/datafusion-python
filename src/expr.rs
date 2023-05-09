@@ -22,8 +22,8 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
 
-use crate::common::data_type::RexType;
-use crate::errors::py_runtime_err;
+use crate::common::data_type::{RexType, DataTypeMap};
+use crate::errors::{py_runtime_err, py_type_err};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -274,6 +274,22 @@ impl PyExpr {
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
         })
     }
+
+
+     /// Given the current `Expr` return the DataTypeMap which represents the 
+     /// PythonType, Arrow DataType, and SqlType Enum which represents
+     /// the literal or result of a `RexType::Call` for the `Expr`
+     pub fn types(&self) -> PyResult<DataTypeMap> {
+         match &self.expr {
+             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
+             _ => {
+                 return Err(py_type_err(format!(
+                     "Non Expr::Literal encountered in types: {:?}",
+                     &self.expr
+                 )))
+             }
+         }
+     }
 }
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/

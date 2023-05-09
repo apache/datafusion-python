@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::arrow::datatypes::DataType;
-use datafusion_common::DataFusionError;
+use datafusion::arrow::datatypes::{DataType, TimeUnit, IntervalUnit};
+use datafusion_common::{DataFusionError, ScalarValue};
 use pyo3::prelude::*;
 
 use crate::errors::py_datafusion_err;
@@ -209,6 +209,58 @@ impl DataTypeMap {
             DataType::RunEndEncoded(_, _) => Err(py_datafusion_err(
                 DataFusionError::NotImplemented(format!("{:?}", arrow_type)),
             )),
+        }
+    }
+
+
+    /// Generate the `DataTypeMap` from a `ScalarValue` instance
+    pub fn map_from_scalar_value(scalar_val: &ScalarValue) -> Result<DataTypeMap, PyErr> {
+        DataTypeMap::map_from_arrow_type(&DataTypeMap::map_from_scalar_to_arrow(scalar_val)?)
+    }
+
+
+    /// Maps a `ScalarValue` to an Arrow `DataType`
+    pub fn map_from_scalar_to_arrow(scalar_val: &ScalarValue) -> Result<DataType, PyErr> {
+        match scalar_val {
+            ScalarValue::Boolean(_) => Ok(DataType::Boolean),
+            ScalarValue::Float32(_) => Ok(DataType::Float32),
+            ScalarValue::Float64(_) => Ok(DataType::Float64),
+            ScalarValue::Decimal128(_, precision, scale) => {
+                Ok(DataType::Decimal128(*precision, *scale))
+            },
+            ScalarValue::Dictionary(data_type, scalar_type) => {
+                // Call this function again to map the dictionary scalar_value to an Arrow type
+                Ok(DataType::Dictionary(Box::new(*data_type.clone()), Box::new(DataTypeMap::map_from_scalar_to_arrow(scalar_type)?)))
+            },
+            ScalarValue::Int8(_) => Ok(DataType::Int8),
+            ScalarValue::Int16(_) => Ok(DataType::Int16),
+            ScalarValue::Int32(_) => Ok(DataType::Int32),
+            ScalarValue::Int64(_) => Ok(DataType::Int64),
+            ScalarValue::UInt8(_) => Ok(DataType::UInt8),
+            ScalarValue::UInt16(_) => Ok(DataType::UInt16),
+            ScalarValue::UInt32(_) => Ok(DataType::UInt32),
+            ScalarValue::UInt64(_) => Ok(DataType::UInt64),
+            ScalarValue::Utf8(_) => Ok(DataType::Utf8),
+            ScalarValue::LargeUtf8(_) => Ok(DataType::LargeUtf8),
+            ScalarValue::Binary(_) => Ok(DataType::Binary),
+            ScalarValue::LargeBinary(_) => Ok(DataType::LargeBinary),
+            ScalarValue::Date32(_) => Ok(DataType::Date32),
+            ScalarValue::Date64(_) => Ok(DataType::Date64),
+            ScalarValue::Time32Second(_) => Ok(DataType::Time32(TimeUnit::Second)),
+            ScalarValue::Time32Millisecond(_) => Ok(DataType::Time32(TimeUnit::Millisecond)),
+            ScalarValue::Time64Microsecond(_) => Ok(DataType::Time64(TimeUnit::Microsecond)),
+            ScalarValue::Time64Nanosecond(_) => Ok(DataType::Time64(TimeUnit::Nanosecond)),
+            ScalarValue::Null => Ok(DataType::Null),
+            ScalarValue::TimestampSecond(_, tz) => Ok(DataType::Timestamp(TimeUnit::Second, tz.to_owned())),
+            ScalarValue::TimestampMillisecond(_, tz) => Ok(DataType::Timestamp(TimeUnit::Millisecond, tz.to_owned())),
+            ScalarValue::TimestampMicrosecond(_, tz) => Ok(DataType::Timestamp(TimeUnit::Microsecond, tz.to_owned())),
+            ScalarValue::TimestampNanosecond(_, tz) => Ok(DataType::Timestamp(TimeUnit::Nanosecond, tz.to_owned())),
+            ScalarValue::IntervalYearMonth(..) => Ok(DataType::Interval(IntervalUnit::YearMonth)),
+            ScalarValue::IntervalDayTime(..) => Ok(DataType::Interval(IntervalUnit::DayTime)),
+            ScalarValue::IntervalMonthDayNano(..) => Ok(DataType::Interval(IntervalUnit::MonthDayNano)),
+            ScalarValue::List(_val, field_ref) => Ok(DataType::List(field_ref.to_owned())),
+            ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
+            ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
         }
     }
 }
