@@ -571,12 +571,12 @@ impl PyExpr {
                    DataTypeMap::map_from_arrow_type(&DataType::Binary)
                }
            },
-           Expr::Cast(cast) => Self::_types(cast.expr.as_ref()),
+           Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
            Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
            _ => {
                 return Err(py_type_err(format!(
                     "Non Expr::Literal encountered in types: {:?}",
-                    &expr
+                    expr
                 )))
             }
         }
