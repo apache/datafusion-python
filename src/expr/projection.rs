@@ -27,7 +27,7 @@ use crate::sql::logical::PyLogicalPlan;
 #[pyclass(name = "Projection", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyProjection {
-    projection: Projection,
+    pub projection: Projection,
 }
 
 impl PyProjection {
