@@ -197,12 +197,16 @@ impl DataTypeMap {
             DataType::Dictionary(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
-            DataType::Decimal128(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
-            DataType::Decimal256(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Decimal128(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal128(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
+            DataType::Decimal256(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal256(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
             DataType::Map(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
