@@ -99,6 +99,7 @@ impl From<Expr> for PyExpr {
     }
 }
 
+#[pymethods]
 impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
@@ -308,11 +309,11 @@ impl PyExpr {
                 ScalarValue::UInt16(v) => v.into_py(py),
                 ScalarValue::UInt32(v) => v.into_py(py),
                 ScalarValue::UInt64(v) => v.into_py(py),
-                ScalarValue::Utf8(v) => v.into_py(py),
-                ScalarValue::LargeUtf8(v) => v.into_py(py),
-                ScalarValue::Binary(v) => v.into_py(py),
+                ScalarValue::Utf8(v) => v.clone().into_py(py),
+                ScalarValue::LargeUtf8(v) => v.clone().into_py(py),
+                ScalarValue::Binary(v) => v.clone().into_py(py),
                 ScalarValue::FixedSizeBinary(_, _) => todo!(),
-                ScalarValue::LargeBinary(v) => v.into_py(py),
+                ScalarValue::LargeBinary(v) => v.clone().into_py(py),
                 ScalarValue::List(_, _) => todo!(),
                 ScalarValue::Date32(v) => v.into_py(py),
                 ScalarValue::Date64(v) => v.into_py(py),
