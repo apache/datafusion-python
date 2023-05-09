@@ -91,14 +91,17 @@ impl PyProjection {
     fn __name__(&self) -> PyResult<String> {
         Ok("Projection".to_string())
     }
+}
 
+
+impl PyProjection {
     /// Projection: Gets the names of the fields that should be projected
-    pub fn projected_expressions(&self, local_expr: &PyExpr) -> Vec<PyExpr> {
+    pub fn projected_expressions(local_expr: &PyExpr) -> Vec<PyExpr> {
         let mut projs: Vec<PyExpr> = Vec::new();
         match &local_expr.expr {
             Expr::Alias(expr, _name) => {
                 let py_expr: PyExpr = PyExpr::from(*expr.clone());
-                projs.extend_from_slice(self.projected_expressions(&py_expr).as_slice());
+                projs.extend_from_slice(Self::projected_expressions(&py_expr).as_slice());
             }
             _ => projs.push(local_expr.clone()),
         }
