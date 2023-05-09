@@ -21,6 +21,7 @@
       ~Expr.display_name
       ~Expr.is_null
       ~Expr.literal
+      ~Expr.rex_type
       ~Expr.sort
       ~Expr.to_variant
    

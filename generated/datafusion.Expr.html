@@ -286,6 +286,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.rex_type">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.rex_type()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.Expr.sort">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -372,10 +381,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.sort" title="datafusion.Expr.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>([ascending, nulls_first])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_type" title="datafusion.Expr.rex_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_type</span></code></a>()</p></td>
+<td><p>A Rex (Row Expression) specifies a single row of data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.sort" title="datafusion.Expr.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>([ascending, nulls_first])</p></td>
 <td><p>Create a sort PyExpr from an existing PyExpr.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
 <td><p>Return the specific expression</p></td>
 </tr>
 </tbody>
@@ -418,6 +430,14 @@ will not include any CAST expressions.</p>
 <dt class="sig sig-object py" id="datafusion.Expr.literal">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.literal" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_type">
+<span class="sig-name descname"><span class="pre">rex_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>A Rex (Row Expression) specifies a single row of data. That specification
+could include user defined functions or types. RexType identifies the row
+as one of the possible valid <cite>RexTypes</cite>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.sort">
