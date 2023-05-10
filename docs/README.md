@@ -29,7 +29,7 @@ It's recommended to install build dependencies and build the documentation
 inside a Python `venv`.
 
 ```bash
-python -m pip install -r requirements-310.txt
+python -m pip install -r requirements.txt
 ```
 
 ## Build & Preview

@@ -38,18 +38,12 @@ def test_substrait_serialization(ctx):
     assert ctx.tables() == {"t"}
 
     # For now just make sure the method calls blow up
-    substrait_plan = ss.substrait.serde.serialize_to_plan(
-        "SELECT * FROM t", ctx
-    )
+    substrait_plan = ss.substrait.serde.serialize_to_plan("SELECT * FROM t", ctx)
     substrait_bytes = substrait_plan.encode()
     assert type(substrait_bytes) is bytes
-    substrait_bytes = ss.substrait.serde.serialize_bytes(
-        "SELECT * FROM t", ctx
-    )
+    substrait_bytes = ss.substrait.serde.serialize_bytes("SELECT * FROM t", ctx)
     substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
-    logical_plan = ss.substrait.consumer.from_substrait_plan(
-        ctx, substrait_plan
-    )
+    logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)
 
     # demonstrate how to create a DataFrame from a deserialized logical plan
     df = ctx.create_dataframe_from_logical_plan(logical_plan)

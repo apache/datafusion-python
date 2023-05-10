@@ -202,7 +202,7 @@ source venv/bin/activate
 # update pip itself if necessary
 python -m pip install -U pip
 # install dependencies (for Python 3.8+)
-python -m pip install -r requirements-310.txt
+python -m pip install --require-hashes --no-deps -r requirements.txt
 ```
 
 The tests rely on test data in git submodules.
@@ -235,13 +235,13 @@ To change test dependencies, change the `requirements.in` and run
 ```bash
 # install pip-tools (this can be done only once), also consider running in venv
 python -m pip install pip-tools
-python -m piptools compile --generate-hashes -o requirements-310.txt
+python -m piptools compile --generate-hashes -o requirements.txt
 ```
 
 To update dependencies, run with `-U`
 
 ```bash
-python -m piptools compile -U --generate-hashes -o requirements-310.txt
+python -m piptools compile -U --generate-hashes -o requirements.txt
 ```
 
 More details [here](https://github.com/jazzband/pip-tools)

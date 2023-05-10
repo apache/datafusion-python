@@ -25,3 +25,4 @@ pyarrow>=11.0.0
 pytest
 toml
 importlib_metadata; python_version < "3.8"
+exceptiongroup; python_version < "3.11"
