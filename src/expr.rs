@@ -327,12 +327,10 @@ impl PyExpr {
                 ScalarValue::Struct(_, _) => todo!(),
                 ScalarValue::Dictionary(_, _) => todo!(),
             }),
-            _ => {
-                Err(py_type_err(format!(
-                    "Non Expr::Literal encountered in types: {:?}",
-                    &self.expr
-                )))
-            }
+            _ => Err(py_type_err(format!(
+                "Non Expr::Literal encountered in types: {:?}",
+                &self.expr
+            ))),
         }
     }
 
@@ -563,12 +561,10 @@ impl PyExpr {
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
-            _ => {
-                Err(py_type_err(format!(
-                    "Non Expr::Literal encountered in types: {:?}",
-                    expr
-                )))
-            }
+            _ => Err(py_type_err(format!(
+                "Non Expr::Literal encountered in types: {:?}",
+                expr
+            ))),
         }
     }
 }
