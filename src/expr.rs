@@ -15,19 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_common::DFField;
+use datafusion_expr::expr::{AggregateFunction, Sort, WindowFunction};
+use datafusion_expr::utils::exprlist_to_fields;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField};
+use datafusion_expr::{
+    col, lit, Between, BinaryExpr, Case, Cast, Expr, GetIndexedField, Like, LogicalPlan, Operator,
+    TryCast,
+};
 
-use crate::common::data_type::RexType;
-use crate::errors::py_runtime_err;
+use crate::common::data_type::{DataTypeMap, RexType};
+use crate::errors::{py_runtime_err, py_type_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
+use crate::sql::logical::PyLogicalPlan;
 use datafusion::scalar::ScalarValue;
 
 use self::alias::PyAlias;
@@ -274,11 +281,296 @@ impl PyExpr {
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
         })
     }
+
+    /// Given the current `Expr` return the DataTypeMap which represents the
+    /// PythonType, Arrow DataType, and SqlType Enum which represents
+    pub fn types(&self) -> PyResult<DataTypeMap> {
+        Self::_types(&self.expr)
+    }
+
+    /// Extracts the Expr value into a PyObject that can be shared with Python
+    pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
+        match &self.expr {
+            Expr::Literal(scalar_value) => Ok(match scalar_value {
+                ScalarValue::Null => todo!(),
+                ScalarValue::Boolean(v) => v.into_py(py),
+                ScalarValue::Float32(v) => v.into_py(py),
+                ScalarValue::Float64(v) => v.into_py(py),
+                ScalarValue::Decimal128(_, _, _) => todo!(),
+                ScalarValue::Int8(v) => v.into_py(py),
+                ScalarValue::Int16(v) => v.into_py(py),
+                ScalarValue::Int32(v) => v.into_py(py),
+                ScalarValue::Int64(v) => v.into_py(py),
+                ScalarValue::UInt8(v) => v.into_py(py),
+                ScalarValue::UInt16(v) => v.into_py(py),
+                ScalarValue::UInt32(v) => v.into_py(py),
+                ScalarValue::UInt64(v) => v.into_py(py),
+                ScalarValue::Utf8(v) => v.clone().into_py(py),
+                ScalarValue::LargeUtf8(v) => v.clone().into_py(py),
+                ScalarValue::Binary(v) => v.clone().into_py(py),
+                ScalarValue::FixedSizeBinary(_, _) => todo!(),
+                ScalarValue::LargeBinary(v) => v.clone().into_py(py),
+                ScalarValue::List(_, _) => todo!(),
+                ScalarValue::Date32(v) => v.into_py(py),
+                ScalarValue::Date64(v) => v.into_py(py),
+                ScalarValue::Time32Second(v) => v.into_py(py),
+                ScalarValue::Time32Millisecond(v) => v.into_py(py),
+                ScalarValue::Time64Microsecond(v) => v.into_py(py),
+                ScalarValue::Time64Nanosecond(v) => v.into_py(py),
+                ScalarValue::TimestampSecond(_, _) => todo!(),
+                ScalarValue::TimestampMillisecond(_, _) => todo!(),
+                ScalarValue::TimestampMicrosecond(_, _) => todo!(),
+                ScalarValue::TimestampNanosecond(_, _) => todo!(),
+                ScalarValue::IntervalYearMonth(v) => v.into_py(py),
+                ScalarValue::IntervalDayTime(v) => v.into_py(py),
+                ScalarValue::IntervalMonthDayNano(v) => v.into_py(py),
+                ScalarValue::Struct(_, _) => todo!(),
+                ScalarValue::Dictionary(_, _) => todo!(),
+            }),
+            _ => Err(py_type_err(format!(
+                "Non Expr::Literal encountered in types: {:?}",
+                &self.expr
+            ))),
+        }
+    }
+
+    /// Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
+    /// store those operands in different datastructures. This function examines the Expr variant and returns
+    /// the operands to the calling logic as a Vec of PyExpr instances.
+    pub fn rex_call_operands(&self) -> PyResult<Vec<PyExpr>> {
+        match &self.expr {
+            // Expr variants that are themselves the operand to return
+            Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
+                Ok(vec![PyExpr::from(self.expr.clone())])
+            }
+
+            // Expr(s) that house the Expr instance to return in their bounded params
+            Expr::Alias(expr, ..)
+            | Expr::Not(expr)
+            | Expr::IsNull(expr)
+            | Expr::IsNotNull(expr)
+            | Expr::IsTrue(expr)
+            | Expr::IsFalse(expr)
+            | Expr::IsUnknown(expr)
+            | Expr::IsNotTrue(expr)
+            | Expr::IsNotFalse(expr)
+            | Expr::IsNotUnknown(expr)
+            | Expr::Negative(expr)
+            | Expr::GetIndexedField(GetIndexedField { expr, .. })
+            | Expr::Cast(Cast { expr, .. })
+            | Expr::TryCast(TryCast { expr, .. })
+            | Expr::Sort(Sort { expr, .. })
+            | Expr::InSubquery { expr, .. } => Ok(vec![PyExpr::from(*expr.clone())]),
+
+            // Expr variants containing a collection of Expr(s) for operands
+            Expr::AggregateFunction(AggregateFunction { args, .. })
+            | Expr::AggregateUDF { args, .. }
+            | Expr::ScalarFunction { args, .. }
+            | Expr::ScalarUDF { args, .. }
+            | Expr::WindowFunction(WindowFunction { args, .. }) => {
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
+
+            // Expr(s) that require more specific processing
+            Expr::Case(Case {
+                expr,
+                when_then_expr,
+                else_expr,
+            }) => {
+                let mut operands: Vec<PyExpr> = Vec::new();
+
+                if let Some(e) = expr {
+                    operands.push(PyExpr::from(*e.clone()));
+                };
+
+                for (when, then) in when_then_expr {
+                    operands.push(PyExpr::from(*when.clone()));
+                    operands.push(PyExpr::from(*then.clone()));
+                }
+
+                if let Some(e) = else_expr {
+                    operands.push(PyExpr::from(*e.clone()));
+                };
+
+                Ok(operands)
+            }
+            Expr::InList { expr, list, .. } => {
+                let mut operands: Vec<PyExpr> = vec![PyExpr::from(*expr.clone())];
+                for list_elem in list {
+                    operands.push(PyExpr::from(list_elem.clone()));
+                }
+
+                Ok(operands)
+            }
+            Expr::BinaryExpr(BinaryExpr { left, right, .. }) => Ok(vec![
+                PyExpr::from(*left.clone()),
+                PyExpr::from(*right.clone()),
+            ]),
+            Expr::Like(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::ILike(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::SimilarTo(Like { expr, pattern, .. }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*pattern.clone()),
+            ]),
+            Expr::Between(Between {
+                expr,
+                negated: _,
+                low,
+                high,
+            }) => Ok(vec![
+                PyExpr::from(*expr.clone()),
+                PyExpr::from(*low.clone()),
+                PyExpr::from(*high.clone()),
+            ]),
+
+            // Currently un-support/implemented Expr types for Rex Call operations
+            Expr::GroupingSet(..)
+            | Expr::OuterReferenceColumn(_, _)
+            | Expr::Wildcard
+            | Expr::QualifiedWildcard { .. }
+            | Expr::ScalarSubquery(..)
+            | Expr::Placeholder { .. }
+            | Expr::Exists { .. } => Err(py_runtime_err(format!(
+                "Unimplemented Expr type: {}",
+                self.expr
+            ))),
+        }
+    }
+
+    /// Extracts the operator associated with a RexType::Call
+    pub fn rex_call_operator(&self) -> PyResult<String> {
+        Ok(match &self.expr {
+            Expr::BinaryExpr(BinaryExpr {
+                left: _,
+                op,
+                right: _,
+            }) => format!("{op}"),
+            Expr::ScalarFunction { fun, args: _ } => format!("{fun}"),
+            Expr::ScalarUDF { fun, .. } => fun.name.clone(),
+            Expr::Cast { .. } => "cast".to_string(),
+            Expr::Between { .. } => "between".to_string(),
+            Expr::Case { .. } => "case".to_string(),
+            Expr::IsNull(..) => "is null".to_string(),
+            Expr::IsNotNull(..) => "is not null".to_string(),
+            Expr::IsTrue(_) => "is true".to_string(),
+            Expr::IsFalse(_) => "is false".to_string(),
+            Expr::IsUnknown(_) => "is unknown".to_string(),
+            Expr::IsNotTrue(_) => "is not true".to_string(),
+            Expr::IsNotFalse(_) => "is not false".to_string(),
+            Expr::IsNotUnknown(_) => "is not unknown".to_string(),
+            Expr::InList { .. } => "in list".to_string(),
+            Expr::Negative(..) => "negative".to_string(),
+            Expr::Not(..) => "not".to_string(),
+            Expr::Like(Like { negated, .. }) => {
+                if *negated {
+                    "not like".to_string()
+                } else {
+                    "like".to_string()
+                }
+            }
+            Expr::ILike(Like { negated, .. }) => {
+                if *negated {
+                    "not ilike".to_string()
+                } else {
+                    "ilike".to_string()
+                }
+            }
+            Expr::SimilarTo(Like { negated, .. }) => {
+                if *negated {
+                    "not similar to".to_string()
+                } else {
+                    "similar to".to_string()
+                }
+            }
+            _ => {
+                return Err(py_type_err(format!(
+                    "Catch all triggered in get_operator_name: {:?}",
+                    &self.expr
+                )))
+            }
+        })
+    }
+
+    pub fn column_name(&self, plan: PyLogicalPlan) -> PyResult<String> {
+        self._column_name(&plan.plan()).map_err(py_runtime_err)
+    }
+}
+
+impl PyExpr {
+    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
+        let field = Self::expr_to_field(&self.expr, plan)?;
+        Ok(field.qualified_column().flat_name())
+    }
+
+    /// Create a [DFField] representing an [Expr], given an input [LogicalPlan] to resolve against
+    pub fn expr_to_field(
+        expr: &Expr,
+        input_plan: &LogicalPlan,
+    ) -> Result<DFField, DataFusionError> {
+        match expr {
+            Expr::Sort(Sort { expr, .. }) => {
+                // DataFusion does not support create_name for sort expressions (since they never
+                // appear in projections) so we just delegate to the contained expression instead
+                Self::expr_to_field(expr, input_plan)
+            }
+            _ => {
+                let fields =
+                    exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
+                Ok(fields[0].clone())
+            }
+        }
+    }
+
+    fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
+        match expr {
+            Expr::BinaryExpr(BinaryExpr {
+                left: _,
+                op,
+                right: _,
+            }) => match op {
+                Operator::Eq
+                | Operator::NotEq
+                | Operator::Lt
+                | Operator::LtEq
+                | Operator::Gt
+                | Operator::GtEq
+                | Operator::And
+                | Operator::Or
+                | Operator::IsDistinctFrom
+                | Operator::IsNotDistinctFrom
+                | Operator::RegexMatch
+                | Operator::RegexIMatch
+                | Operator::RegexNotMatch
+                | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
+                Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
+                    DataTypeMap::map_from_arrow_type(&DataType::Int64)
+                }
+                Operator::Divide => DataTypeMap::map_from_arrow_type(&DataType::Float64),
+                Operator::StringConcat => DataTypeMap::map_from_arrow_type(&DataType::Utf8),
+                Operator::BitwiseShiftLeft
+                | Operator::BitwiseShiftRight
+                | Operator::BitwiseXor
+                | Operator::BitwiseAnd
+                | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
+            },
+            Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
+            Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
+            _ => Err(py_type_err(format!(
+                "Non Expr::Literal encountered in types: {:?}",
+                expr
+            ))),
+        }
+    }
 }
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
-    // expressions
     m.add_class::<PyExpr>()?;
     m.add_class::<PyColumn>()?;
     m.add_class::<PyLiteral>()?;
