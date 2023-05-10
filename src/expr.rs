@@ -149,6 +149,12 @@ impl PyExpr {
         Ok(self.expr.canonical_name())
     }
 
+    /// Returns the name of the Expr variant.
+    /// Ex: 'IsNotNull', 'Literal', 'BinaryExpr', etc
+    fn variant_name(&self) -> PyResult<&str> {
+        Ok(self.expr.variant_name())
+    }
+
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
         let expr = match op {
             CompareOp::Lt => self.expr.clone().lt(other.expr),
