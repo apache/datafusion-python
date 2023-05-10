@@ -328,7 +328,7 @@ impl PyExpr {
                 ScalarValue::Dictionary(_, _) => todo!(),
             }),
             _ => {
-                return Err(py_type_err(format!(
+                Err(py_type_err(format!(
                     "Non Expr::Literal encountered in types: {:?}",
                     &self.expr
                 )))
@@ -506,13 +506,12 @@ impl PyExpr {
 
 impl PyExpr {
     pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
-        let field = self.expr_to_field(&self.expr, plan)?;
+        let field = Self::expr_to_field(&self.expr, plan)?;
         Ok(field.qualified_column().flat_name())
     }
 
     /// Create a [DFField] representing an [Expr], given an input [LogicalPlan] to resolve against
     pub fn expr_to_field(
-        &self,
         expr: &Expr,
         input_plan: &LogicalPlan,
     ) -> Result<DFField, DataFusionError> {
@@ -520,7 +519,7 @@ impl PyExpr {
             Expr::Sort(Sort { expr, .. }) => {
                 // DataFusion does not support create_name for sort expressions (since they never
                 // appear in projections) so we just delegate to the contained expression instead
-                self.expr_to_field(expr, input_plan)
+                Self::expr_to_field(expr, input_plan)
             }
             _ => {
                 let fields =
@@ -565,7 +564,7 @@ impl PyExpr {
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => {
-                return Err(py_type_err(format!(
+                Err(py_type_err(format!(
                     "Non Expr::Literal encountered in types: {:?}",
                     expr
                 )))
