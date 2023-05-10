@@ -56,7 +56,7 @@ impl PyLogicalPlan {
 #[pymethods]
 impl PyLogicalPlan {
     /// Return the specific logical operator
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+    pub fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match self.plan.as_ref() {
             LogicalPlan::Aggregate(plan) => PyAggregate::from(plan.clone()).to_variant(py),
             LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
