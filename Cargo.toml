@@ -61,9 +61,6 @@ pyo3-build-config = "0.18.3"
 name = "datafusion_python"
 crate-type = ["cdylib", "rlib"]
 
-[package.metadata.maturin]
-name = "datafusion._internal"
-
 [profile.release]
 lto = true
 codegen-units = 1

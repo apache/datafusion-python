@@ -18,10 +18,10 @@
 black
 flake8
 isort
-maturin>=0.14
+maturin>=0.15
 mypy
 numpy
-pyarrow
+pyarrow>=11.0.0
 pytest
 toml
 importlib_metadata; python_version < "3.8"

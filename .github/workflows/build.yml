@@ -64,7 +64,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install maturin
-        run: pip install maturin==0.14.2
+        run: pip install maturin==0.15.1
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -76,7 +76,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
-          version: '3.x'
+          version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
@@ -125,7 +125,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install maturin
-        run: pip install maturin==0.14.2
+        run: pip install maturin==0.15.1
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -137,7 +137,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
-          version: '3.x'
+          version: "3.x"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package

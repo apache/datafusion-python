@@ -35,12 +35,12 @@ build:
 
 requirements:
   host:
-    - python >=3.6
-    - maturin >=0.14,<0.15
+    - python >=3.7
+    - maturin >=0.15,<0.16
     - libprotobuf =3
     - pip
   run:
-    - python >=3.6
+    - python >=3.7
     - pyarrow >=11.0.0
 
 test:

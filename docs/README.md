@@ -19,17 +19,18 @@
 
 # DataFusion Documentation
 
-This folder contains the source content of the [python api](./source/api).
+This folder contains the source content of the [Python API](./source/api).
 This is published to https://arrow.apache.org/datafusion-python/ by a GitHub action
 when changes are merged to the main branch.
 
 ## Dependencies
 
 It's recommended to install build dependencies and build the documentation
-inside a Python virtualenv.
+inside a Python `venv`.
 
-- Python
-- `pip3 install -r requirements.txt`
+```bash
+python -m pip install -r requirements-310.txt
+```
 
 ## Build & Preview
 
@@ -57,8 +58,6 @@ version of the docs, follow these steps:
 2. Clone the arrow-site repo
 3. Checkout to the `asf-site` branch (NOT `master`)
 4. Copy build artifacts into `arrow-site` repo's `datafusion` folder with a command such as
-
-- `cp -rT ./build/html/ ../../arrow-site/datafusion/` (doesn't work on mac)
-- `rsync -avzr ./build/html/ ../../arrow-site/datafusion/`
-
+   - `cp -rT ./build/html/ ../../arrow-site/datafusion/` (doesn't work on mac)
+   - `rsync -avzr ./build/html/ ../../arrow-site/datafusion/`
 5. Commit changes in `arrow-site` and send a PR.

@@ -16,29 +16,29 @@
 # under the License.
 
 channels:
-- conda-forge
+  - conda-forge
 dependencies:
-- black
-- flake8
-- isort
-- maturin
-- mypy
-- numpy
-- pyarrow
-- pytest
-- toml
-- importlib_metadata
-- python>=3.10
-# Packages useful for building distributions and releasing
-- mamba
-- conda-build
-- anaconda-client
-# Packages for documentation building
-- sphinx
-- pydata-sphinx-theme==0.8.0
-- myst-parser
-- jinja2
-# GPU packages
-- cudf
-- cudatoolkit=11.8
+  - black
+  - flake8
+  - isort
+  - maturin>=0.15
+  - mypy
+  - numpy
+  - pyarrow>=11.0.0
+  - pytest
+  - toml
+  - importlib_metadata
+  - python>=3.10
+  # Packages useful for building distributions and releasing
+  - mamba
+  - conda-build
+  - anaconda-client
+  # Packages for documentation building
+  - sphinx
+  - pydata-sphinx-theme==0.8.0
+  - myst-parser
+  - jinja2
+  # GPU packages
+  - cudf
+  - cudatoolkit=11.8
 name: datafusion-dev
