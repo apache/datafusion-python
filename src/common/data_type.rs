@@ -158,9 +158,15 @@ impl DataTypeMap {
             DataType::Duration(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
-            DataType::Interval(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Interval(interval_unit) => Ok(DataTypeMap::new(
+                DataType::Interval(interval_unit.clone()),
+                PythonType::Datetime,
+                match interval_unit {
+                    IntervalUnit::DayTime => SqlType::INTERVAL_DAY,
+                    IntervalUnit::MonthDayNano => SqlType::INTERVAL_MONTH,
+                    IntervalUnit::YearMonth => SqlType::INTERVAL_YEAR_MONTH,
+                },
+            )),
             DataType::Binary => Ok(DataTypeMap::new(
                 DataType::Binary,
                 PythonType::Bytes,
