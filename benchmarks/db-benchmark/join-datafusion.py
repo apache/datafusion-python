@@ -26,26 +26,7 @@ from pyarrow import csv as pacsv
 
 print("# join-datafusion.py", flush=True)
 
-# exec(open("./_helpers/helpers.py").read())
-
-
-def join_to_tbls(data_name):
-    x_n = int(float(data_name.split("_")[1]))
-    y_n = [
-        "{:.0e}".format(x_n / 1e6),
-        "{:.0e}".format(x_n / 1e3),
-        "{:.0e}".format(x_n),
-    ]
-    y_n = [
-        y_n[0].replace("+0", ""),
-        y_n[1].replace("+0", ""),
-        y_n[2].replace("+0", ""),
-    ]
-    return [
-        data_name.replace("NA", y_n[0]),
-        data_name.replace("NA", y_n[1]),
-        data_name.replace("NA", y_n[2]),
-    ]
+exec(open("./_helpers/helpers.py").read())
 
 
 def ans_shape(batches):
@@ -59,7 +40,7 @@ def ans_shape(batches):
     return rows, cols
 
 
-ver = "6.0.0"
+ver = df.__version__
 task = "join"
 git = ""
 solution = "datafusion"
@@ -84,13 +65,16 @@ print(
     + ", "
     + y_data_name[0]
     + ", "
-    + y_data_name[2]
+    + y_data_name[1]
     + ", "
     + y_data_name[2],
     flush=True,
 )
 
 ctx = df.SessionContext()
+print(ctx)
+
+# TODO we should be applying projections to these table reads to crete relations of different sizes
 
 x_data = pacsv.read_csv(
     src_jn_x, convert_options=pacsv.ConvertOptions(auto_dict_encode=True)
@@ -133,8 +117,26 @@ t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
 chk = df.aggregate([], [f.sum(col("v1"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
-# m = memory_usage()
-# write_log(task=task, data=data_name, in_rows=x_data.num_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+m = memory_usage()
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=x_data.num_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -156,8 +158,26 @@ chk = (
     .column(0)[0]
 )
 chkt = timeit.default_timer() - t_start
-# m = memory_usage()
-# write_log(task=task, data=data_name, in_rows=x_data.num_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+m = memory_usage()
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=x_data.num_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -179,8 +199,26 @@ chk = (
     .column(0)[0]
 )
 chkt = timeit.default_timer() - t_start
-# m = memory_usage()
-# write_log(task=task, data=data_name, in_rows=x_data.num_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+m = memory_usage()
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=x_data.num_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -202,8 +240,26 @@ chk = (
     .column(0)[0]
 )
 chkt = timeit.default_timer() - t_start
-# m = memory_usage()
-# write_log(task=task, data=data_name, in_rows=x_data.num_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+m = memory_usage()
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=x_data.num_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 
@@ -225,8 +281,26 @@ chk = (
     .column(0)[0]
 )
 chkt = timeit.default_timer() - t_start
-# m = memory_usage()
-# write_log(task=task, data=data_name, in_rows=x_data.num_rows, question=question, out_rows=shape[0], out_cols=shape[1], solution=solution, version=ver, git=git, fun=fun, run=1, time_sec=t, mem_gb=m, cache=cache, chk=make_chk([chk]), chk_time_sec=chkt, on_disk=on_disk)
+m = memory_usage()
+write_log(
+    task=task,
+    data=data_name,
+    in_rows=x_data.num_rows,
+    question=question,
+    out_rows=shape[0],
+    out_cols=shape[1],
+    solution=solution,
+    version=ver,
+    git=git,
+    fun=fun,
+    run=1,
+    time_sec=t,
+    mem_gb=m,
+    cache=cache,
+    chk=make_chk([chk]),
+    chk_time_sec=chkt,
+    on_disk=on_disk,
+)
 del ans
 gc.collect()
 

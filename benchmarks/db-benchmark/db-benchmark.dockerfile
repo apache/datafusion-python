@@ -108,6 +108,7 @@ RUN #./duckdb/setup-duckdb.sh
 # END OF SETUP
 
 RUN python3 -m pip install --upgrade pandas
+RUN python3 -m pip install --upgrade polars psutil
 RUN python3 -m pip install --upgrade datafusion
 
 # Now add our solution

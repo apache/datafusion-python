@@ -282,7 +282,6 @@ impl PyExpr {
 
      /// Given the current `Expr` return the DataTypeMap which represents the 
      /// PythonType, Arrow DataType, and SqlType Enum which represents
-     /// the literal or result of a `RexType::Call` for the `Expr`
      pub fn types(&self) -> PyResult<DataTypeMap> {
          Self::_types(&self.expr)
      }
@@ -585,7 +584,6 @@ impl PyExpr {
 
 /// Initializes the `expr` module to match the pattern of `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
-    // expressions
     m.add_class::<PyExpr>()?;
     m.add_class::<PyColumn>()?;
     m.add_class::<PyLiteral>()?;

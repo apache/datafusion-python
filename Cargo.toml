@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "23.0.0"
+version = "24.0.0"
 homepage = "https://github.com/apache/arrow-datafusion-python"
 repository = "https://github.com/apache/arrow-datafusion-python"
 authors = ["Apache Arrow <dev@arrow.apache.org>"]
@@ -36,12 +36,12 @@ protoc = [ "datafusion-substrait/protoc" ]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.18.1", features = ["extension-module", "abi3", "abi3-py37"] }
-datafusion = { version = "23.0.0" , features = ["pyarrow", "avro"] }
-datafusion-common = { version = "23.0.0", features = ["pyarrow"] }
-datafusion-expr = "23.0.0"
-datafusion-optimizer = "23.0.0"
-datafusion-sql = "23.0.0"
-datafusion-substrait = "23.0.0"
+datafusion = { version = "24.0.0" , features = ["pyarrow", "avro"] }
+datafusion-common = { version = "24.0.0", features = ["pyarrow"] }
+datafusion-expr = "24.0.0"
+datafusion-optimizer = "24.0.0"
+datafusion-sql = "24.0.0"
+datafusion-substrait = "24.0.0"
 prost = "0.11"
 prost-types = "0.11"
 uuid = { version = "1.2", features = ["v4"] }
