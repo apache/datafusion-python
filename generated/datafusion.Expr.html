@@ -259,6 +259,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.column_name">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.column_name()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.Expr.display_name">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -286,6 +295,33 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.python_value">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.python_value()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.rex_call_operands">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.rex_call_operands()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.rex_call_operator">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.rex_call_operator()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.Expr.rex_type">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -308,6 +344,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        Expr.to_variant()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr.types">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr.types()
       </span>
      </code>
     </a>
@@ -372,14 +417,26 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.column" title="datafusion.Expr.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.display_name" title="datafusion.Expr.display_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_name</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.column_name" title="datafusion.Expr.column_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column_name</span></code></a>(plan)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.display_name" title="datafusion.Expr.display_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_name</span></code></a>()</p></td>
 <td><p>Returns the name of this expression as it should appear in a schema.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.is_null" title="datafusion.Expr.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.is_null" title="datafusion.Expr.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
 <td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.python_value" title="datafusion.Expr.python_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">python_value</span></code></a>()</p></td>
+<td><p>Extracts the Expr value into a PyObject that can be shared with Python</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operands" title="datafusion.Expr.rex_call_operands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operands</span></code></a>()</p></td>
+<td><p>Row expressions, Rex(s), operate on the concept of operands.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operator" title="datafusion.Expr.rex_call_operator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operator</span></code></a>()</p></td>
+<td><p>Extracts the operator associated with a RexType::Call</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_type" title="datafusion.Expr.rex_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_type</span></code></a>()</p></td>
 <td><p>A Rex (Row Expression) specifies a single row of data.</p></td>
@@ -389,6 +446,9 @@
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
 <td><p>Return the specific expression</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.types" title="datafusion.Expr.types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">types</span></code></a>()</p></td>
+<td><p>Given the current <cite>Expr</cite> return the DataTypeMap which represents the PythonType, Arrow DataType, and SqlType Enum which represents</p></td>
 </tr>
 </tbody>
 </table>
@@ -415,6 +475,11 @@
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.column_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.display_name">
 <span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.display_name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the name of this expression as it should appear in a schema. This name
@@ -430,6 +495,26 @@ will not include any CAST expressions.</p>
 <dt class="sig sig-object py" id="datafusion.Expr.literal">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.literal" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.python_value">
+<span class="sig-name descname"><span class="pre">python_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.python_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the Expr value into a PyObject that can be shared with Python</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_call_operands">
+<span class="sig-name descname"><span class="pre">rex_call_operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_call_operands" title="Permalink to this definition">¶</a></dt>
+<dd><p>Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
+store those operands in different datastructures. This function examines the Expr variant and returns
+the operands to the calling logic as a Vec of PyExpr instances.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_call_operator">
+<span class="sig-name descname"><span class="pre">rex_call_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_call_operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extracts the operator associated with a RexType::Call</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.rex_type">
@@ -449,6 +534,13 @@ as one of the possible valid <cite>RexTypes</cite>.</p>
 <dt class="sig sig-object py" id="datafusion.Expr.to_variant">
 <span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.to_variant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the specific expression</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the current <cite>Expr</cite> return the DataTypeMap which represents the
+PythonType, Arrow DataType, and SqlType Enum which represents</p>
 </dd></dl>
 
 </dd></dl>
