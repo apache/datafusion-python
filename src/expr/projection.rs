@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::Expr;
 use datafusion_expr::logical_plan::Projection;
+use datafusion_expr::Expr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
@@ -92,7 +92,6 @@ impl PyProjection {
         Ok("Projection".to_string())
     }
 }
-
 
 impl PyProjection {
     /// Projection: Gets the names of the fields that should be projected

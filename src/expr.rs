@@ -16,23 +16,26 @@
 // under the License.
 
 use datafusion_common::DFField;
-use datafusion_expr::expr::{Sort, AggregateFunction, WindowFunction};
+use datafusion_expr::expr::{AggregateFunction, Sort, WindowFunction};
 use datafusion_expr::utils::exprlist_to_fields;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion_expr::{col, lit, Cast, Expr, GetIndexedField, TryCast, Case, BinaryExpr, Like, Between, Operator, LogicalPlan};
+use datafusion_expr::{
+    col, lit, Between, BinaryExpr, Case, Cast, Expr, GetIndexedField, Like, LogicalPlan, Operator,
+    TryCast,
+};
 
-use crate::common::data_type::{RexType, DataTypeMap};
+use crate::common::data_type::{DataTypeMap, RexType};
 use crate::errors::{py_runtime_err, py_type_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
-use datafusion::scalar::ScalarValue;
 use crate::sql::logical::PyLogicalPlan;
+use datafusion::scalar::ScalarValue;
 
 use self::alias::PyAlias;
 use self::bool_expr::{
@@ -279,16 +282,14 @@ impl PyExpr {
         })
     }
 
+    /// Given the current `Expr` return the DataTypeMap which represents the
+    /// PythonType, Arrow DataType, and SqlType Enum which represents
+    pub fn types(&self) -> PyResult<DataTypeMap> {
+        Self::_types(&self.expr)
+    }
 
-     /// Given the current `Expr` return the DataTypeMap which represents the 
-     /// PythonType, Arrow DataType, and SqlType Enum which represents
-     pub fn types(&self) -> PyResult<DataTypeMap> {
-         Self::_types(&self.expr)
-     }
-
-
-     /// Extracts the Expr value into a PyObject that can be shared with Python
-     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
+    /// Extracts the Expr value into a PyObject that can be shared with Python
+    pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
             Expr::Literal(scalar_value) => Ok(match scalar_value {
                 ScalarValue::Null => todo!(),
@@ -333,8 +334,7 @@ impl PyExpr {
                 )))
             }
         }
-     }
-
+    }
 
     /// Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
     /// store those operands in different datastructures. This function examines the Expr variant and returns
@@ -343,9 +343,7 @@ impl PyExpr {
         match &self.expr {
             // Expr variants that are themselves the operand to return
             Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
-                Ok(vec![PyExpr::from(
-                    self.expr.clone(),
-                )])
+                Ok(vec![PyExpr::from(self.expr.clone())])
             }
 
             // Expr(s) that house the Expr instance to return in their bounded params
@@ -364,19 +362,16 @@ impl PyExpr {
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
             | Expr::Sort(Sort { expr, .. })
-            | Expr::InSubquery { expr, .. } => {
-                Ok(vec![PyExpr::from(*expr.clone())])
-            }
+            | Expr::InSubquery { expr, .. } => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
             Expr::AggregateFunction(AggregateFunction { args, .. })
             | Expr::AggregateUDF { args, .. }
             | Expr::ScalarFunction { args, .. }
             | Expr::ScalarUDF { args, .. }
-            | Expr::WindowFunction(WindowFunction { args, .. }) => Ok(args
-                .iter()
-                .map(|arg| PyExpr::from(arg.clone()))
-                .collect()),
+            | Expr::WindowFunction(WindowFunction { args, .. }) => {
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -402,8 +397,7 @@ impl PyExpr {
                 Ok(operands)
             }
             Expr::InList { expr, list, .. } => {
-                let mut operands: Vec<PyExpr> =
-                    vec![PyExpr::from(*expr.clone())];
+                let mut operands: Vec<PyExpr> = vec![PyExpr::from(*expr.clone())];
                 for list_elem in list {
                     operands.push(PyExpr::from(list_elem.clone()));
                 }
@@ -450,7 +444,6 @@ impl PyExpr {
             ))),
         }
     }
-
 
     /// Extracts the operator associated with a RexType::Call
     pub fn rex_call_operator(&self) -> PyResult<String> {
@@ -503,16 +496,13 @@ impl PyExpr {
                     &self.expr
                 )))
             }
-        })      
+        })
     }
-
 
     pub fn column_name(&self, plan: PyLogicalPlan) -> PyResult<String> {
-        self._column_name(&plan.plan())
-            .map_err(py_runtime_err)
+        self._column_name(&plan.plan()).map_err(py_runtime_err)
     }
 }
-
 
 impl PyExpr {
     pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
@@ -521,7 +511,11 @@ impl PyExpr {
     }
 
     /// Create a [DFField] representing an [Expr], given an input [LogicalPlan] to resolve against
-    pub fn expr_to_field(&self, expr: &Expr, input_plan: &LogicalPlan) -> Result<DFField, DataFusionError> {
+    pub fn expr_to_field(
+        &self,
+        expr: &Expr,
+        input_plan: &LogicalPlan,
+    ) -> Result<DFField, DataFusionError> {
         match expr {
             Expr::Sort(Sort { expr, .. }) => {
                 // DataFusion does not support create_name for sort expressions (since they never
@@ -538,41 +532,39 @@ impl PyExpr {
 
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
         match expr {
-           Expr::BinaryExpr(BinaryExpr {
-               left: _,
-               op,
-               right: _,
-           }) => match op {
-               Operator::Eq
-               | Operator::NotEq
-               | Operator::Lt
-               | Operator::LtEq
-               | Operator::Gt
-               | Operator::GtEq
-               | Operator::And
-               | Operator::Or
-               | Operator::IsDistinctFrom
-               | Operator::IsNotDistinctFrom
-               | Operator::RegexMatch
-               | Operator::RegexIMatch
-               | Operator::RegexNotMatch
-               | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
-               Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
-                   DataTypeMap::map_from_arrow_type(&DataType::Int64)
-               }
-               Operator::Divide => DataTypeMap::map_from_arrow_type(&DataType::Float64),
-               Operator::StringConcat => DataTypeMap::map_from_arrow_type(&DataType::Utf8),
-               Operator::BitwiseShiftLeft
-               | Operator::BitwiseShiftRight
-               | Operator::BitwiseXor
-               | Operator::BitwiseAnd
-               | Operator::BitwiseOr => {
-                   DataTypeMap::map_from_arrow_type(&DataType::Binary)
-               }
-           },
-           Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
-           Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
-           _ => {
+            Expr::BinaryExpr(BinaryExpr {
+                left: _,
+                op,
+                right: _,
+            }) => match op {
+                Operator::Eq
+                | Operator::NotEq
+                | Operator::Lt
+                | Operator::LtEq
+                | Operator::Gt
+                | Operator::GtEq
+                | Operator::And
+                | Operator::Or
+                | Operator::IsDistinctFrom
+                | Operator::IsNotDistinctFrom
+                | Operator::RegexMatch
+                | Operator::RegexIMatch
+                | Operator::RegexNotMatch
+                | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
+                Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
+                    DataTypeMap::map_from_arrow_type(&DataType::Int64)
+                }
+                Operator::Divide => DataTypeMap::map_from_arrow_type(&DataType::Float64),
+                Operator::StringConcat => DataTypeMap::map_from_arrow_type(&DataType::Utf8),
+                Operator::BitwiseShiftLeft
+                | Operator::BitwiseShiftRight
+                | Operator::BitwiseXor
+                | Operator::BitwiseAnd
+                | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
+            },
+            Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
+            Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
+            _ => {
                 return Err(py_type_err(format!(
                     "Non Expr::Literal encountered in types: {:?}",
                     expr
