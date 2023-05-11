@@ -508,6 +508,7 @@ impl DataTypeMap {
     /// Unfortunately PyO3 does not allow for us to expose the DataType as an enum since
     /// we cannot directly annotae the Enum instance of dependency code. Therefore, here
     /// we provide an enum to mimic it.
+    #[pyo3(name = "friendly_arrow_type_name")]
     pub fn friendly_arrow_type_name(&self) -> PyResult<&str> {
         Ok(match &self.arrow_type.data_type {
             DataType::Null => "Null",
