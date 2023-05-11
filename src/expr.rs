@@ -302,7 +302,7 @@ impl PyExpr {
                 ScalarValue::Boolean(v) => v.into_py(py),
                 ScalarValue::Float32(v) => v.into_py(py),
                 ScalarValue::Float64(v) => v.into_py(py),
-                ScalarValue::Decimal128(_, _, _) => todo!(),
+                ScalarValue::Decimal128(v, _, _) => v.into_py(py),
                 ScalarValue::Int8(v) => v.into_py(py),
                 ScalarValue::Int16(v) => v.into_py(py),
                 ScalarValue::Int32(v) => v.into_py(py),
