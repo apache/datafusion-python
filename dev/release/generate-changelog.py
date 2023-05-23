@@ -23,13 +23,13 @@ import re
 
 
 def print_pulls(repo_name, title, pulls):
-if len(pulls)  > 0:
-print("**{}:**".format(title))
-print()
-for (pull, commit) in pulls:
-url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
-print("- {} [#{}]({}) ({})".format(pull.title, pull.number, url, commit.author.login))
-print()
+    if len(pulls)  > 0:
+        print("**{}:**".format(title))
+        print()
+        for (pull, commit) in pulls:
+            url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
+            print("- {} [#{}]({}) ({})".format(pull.title, pull.number, url, commit.author.login))
+        print()
 
 
 def generate_changelog(repo, repo_name, tag1, tag2):
@@ -94,9 +94,9 @@ def generate_changelog(repo, repo_name, tag1, tag2):
 
 
 def cli(args=None):
-"""Process command line arguments."""
-if not args:
-args = sys.argv[1:]
+    """Process command line arguments."""
+    if not args:
+        args = sys.argv[1:]
 
     parser = argparse.ArgumentParser()
     parser.add_argument("project", help="The project name e.g. apache/arrow-datafusion-python")
@@ -111,4 +111,4 @@ args = sys.argv[1:]
     generate_changelog(repo, args.project, args.tag1, args.tag2)
 
 if __name__ == "__main__":
-cli()
+    cli()
