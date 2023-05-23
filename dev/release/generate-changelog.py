@@ -23,19 +23,27 @@ import re
 
 
 def print_pulls(repo_name, title, pulls):
-    if len(pulls)  > 0:
+    if len(pulls) > 0:
         print("**{}:**".format(title))
         print()
         for (pull, commit) in pulls:
-            url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
-            print("- {} [#{}]({}) ({})".format(pull.title, pull.number, url, commit.author.login))
+            url = "https://github.com/{}/pull/{}".format(
+                repo_name, pull.number
+            )
+            print(
+                "- {} [#{}]({}) ({})".format(
+                    pull.title, pull.number, url, commit.author.login
+                )
+            )
         print()
 
 
 def generate_changelog(repo, repo_name, tag1, tag2):
 
     # get a list of commits between two tags
-    print(f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr)
+    print(
+        f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr
+    )
     comparison = repo.compare(tag1, tag2)
 
     # get the pull requests for these commits
@@ -52,7 +60,7 @@ def generate_changelog(repo, repo_name, tag1, tag2):
                 all_pulls.append((pull, commit))
 
     # we split the pulls into categories
-    #TODO: make categories configurable
+    # TODO: make categories configurable
     breaking = []
     bugs = []
     docs = []
@@ -63,25 +71,25 @@ def generate_changelog(repo, repo_name, tag1, tag2):
     for (pull, commit) in all_pulls:
 
         # see if PR title uses Conventional Commits
-        cc_type = ''
-        cc_scope = ''
-        cc_breaking = ''
-        parts = re.findall(r'^([a-z]+)(\([a-z]+\))?(!)?:', pull.title)
+        cc_type = ""
+        # cc_scope = ''
+        cc_breaking = ""
+        parts = re.findall(r"^([a-z]+)(\([a-z]+\))?(!)?:", pull.title)
         if len(parts) == 1:
             parts_tuple = parts[0]
-            cc_type = parts_tuple[0] # fix, feat, docs, chore
-            cc_scope = parts_tuple[1] # component within project
-            cc_breaking = parts_tuple[2] == '!'
+            cc_type = parts_tuple[0]  # fix, feat, docs, chore
+            # cc_scope = parts_tuple[1]  # component within project
+            cc_breaking = parts_tuple[2] == "!"
 
         labels = [label.name for label in pull.labels]
-        #print(pull.number, labels, parts, file=sys.stderr)
-        if 'api change' in labels or cc_breaking:
+        # print(pull.number, labels, parts, file=sys.stderr)
+        if "api change" in labels or cc_breaking:
             breaking.append((pull, commit))
-        elif 'bug' in labels or cc_type == 'fix':
+        elif "bug" in labels or cc_type == "fix":
             bugs.append((pull, commit))
-        elif 'enhancement' in labels or cc_type == 'feat':
+        elif "enhancement" in labels or cc_type == "feat":
             enhancements.append((pull, commit))
-        elif 'documentation' in labels or cc_type == 'docs':
+        elif "documentation" in labels or cc_type == "docs":
             docs.append((pull, commit))
 
     # produce the changelog content
@@ -99,7 +107,9 @@ def cli(args=None):
         args = sys.argv[1:]
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("project", help="The project name e.g. apache/arrow-datafusion-python")
+    parser.add_argument(
+        "project", help="The project name e.g. apache/arrow-datafusion-python"
+    )
     parser.add_argument("tag1", help="The previous release tag")
     parser.add_argument("tag2", help="The current release tag")
     args = parser.parse_args()
@@ -109,6 +119,7 @@ def cli(args=None):
     g = Github(token)
     repo = g.get_repo(args.project)
     generate_changelog(repo, args.project, args.tag1, args.tag2)
+
 
 if __name__ == "__main__":
     cli()
