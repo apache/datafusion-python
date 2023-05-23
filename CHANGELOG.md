@@ -17,7 +17,21 @@
   under the License.
 -->
 
-# Changelog
+# DataFusion Python Changelog
+
+## [25.0.0](https://github.com/apache/arrow-datafusion-python/tree/25.0.0) (2023-05-23)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/24.0.0...25.0.0)
+
+**Merged pull requests:**
+
+- Prepare 24.0.0 Release [#376](https://github.com/apache/arrow-datafusion-python/pull/376) (andygrove)
+- build(deps): bump uuid from 1.3.1 to 1.3.2 [#359](https://github.com/apache/arrow-datafusion-python/pull/359) (dependabot[bot])
+- build(deps): bump mimalloc from 0.1.36 to 0.1.37 [#361](https://github.com/apache/arrow-datafusion-python/pull/361) (dependabot[bot])
+- build(deps): bump regex-syntax from 0.6.29 to 0.7.1 [#334](https://github.com/apache/arrow-datafusion-python/pull/334) (dependabot[bot])
+- upgrade maturin to 0.15.1 [#379](https://github.com/apache/arrow-datafusion-python/pull/379) (Jimexist)
+- Expand Expr to include RexType basic support [#378](https://github.com/apache/arrow-datafusion-python/pull/378) (jdye64)
+- Add Python script for generating changelog [#383](https://github.com/apache/arrow-datafusion-python/pull/383) (andygrove)
 
 ## [24.0.0](https://github.com/apache/arrow-datafusion-python/tree/24.0.0) (2023-05-09)
 
