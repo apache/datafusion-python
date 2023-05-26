@@ -381,13 +381,11 @@ impl PyExpr {
 
                 if let Some(e) = expr {
                     for (when, then) in when_then_expr {
-                        operands.push(PyExpr::from(
-                            Expr::BinaryExpr(BinaryExpr::new(
-                                Box::new(*e.clone()),
-                                Operator::Eq,
-                                Box::new(*when.clone()),
-                            )),
-                        ));
+                        operands.push(PyExpr::from(Expr::BinaryExpr(BinaryExpr::new(
+                            Box::new(*e.clone()),
+                            Operator::Eq,
+                            Box::new(*when.clone()),
+                        ))));
                         operands.push(PyExpr::from(*then.clone()));
                     }
                 } else {
