@@ -66,10 +66,6 @@ impl SqlTable {
         _schema_name: String,
         table_name: String,
         columns: Vec<(String, DataTypeMap)>,
-        // primary_key: Option<String>,
-        // foreign_keys: Vec<String>,
-        // indexes: Vec<String>,
-        // constraints: Vec<String>,
         row_count: f64,
         filepath: Option<String>,
     ) -> Self {
@@ -84,50 +80,6 @@ impl SqlTable {
             filepath,
         }
     }
-
-    // // TODO: Really wish we could accept a SqlTypeName instance here instead of a String for `column_type` ....
-    // #[pyo3(name = "add_column")]
-    // pub fn add_column(&mut self, column_name: &str, type_map: DaskTypeMap) {
-    //     self.columns.push((column_name.to_owned(), type_map));
-    // }
-
-    // #[pyo3(name = "getSchema")]
-    // pub fn get_schema(&self) -> PyResult<Option<String>> {
-    //     Ok(self.schema_name.clone())
-    // }
-
-    // #[pyo3(name = "getTableName")]
-    // pub fn get_table_name(&self) -> PyResult<String> {
-    //     Ok(self.table_name.clone())
-    // }
-
-    // #[pyo3(name = "getQualifiedName")]
-    // pub fn qualified_name(&self, plan: logical::PyLogicalPlan) -> Vec<String> {
-    //     let mut qualified_name = match &self.schema_name {
-    //         Some(schema_name) => vec![schema_name.clone()],
-    //         None => vec![],
-    //     };
-
-    //     match plan.original_plan {
-    //         LogicalPlan::TableScan(table_scan) => {
-    //             qualified_name.push(table_scan.table_name.to_string());
-    //         }
-    //         _ => {
-    //             qualified_name.push(self.table_name.clone());
-    //         }
-    //     }
-
-    //     qualified_name
-    // }
-
-    // #[pyo3(name = "getRowType")]
-    // pub fn row_type(&self) -> RelDataType {
-    //     let mut fields: Vec<RelDataTypeField> = Vec::new();
-    //     for (name, data_type) in &self.columns {
-    //         fields.push(RelDataTypeField::new(name.as_str(), data_type.clone(), 255));
-    //     }
-    //     RelDataType::new(false, fields)
-    // }
 }
 
 #[pyclass(name = "SqlView", module = "datafusion.common", subclass)]
@@ -163,30 +115,6 @@ impl SqlSchema {
     pub fn add_table(&mut self, table: SqlTable) {
         self.tables.push(table);
     }
-
-    // pub fn add_or_overload_function(
-    //     &mut self,
-    //     name: String,
-    //     input_types: Vec<PyDataType>,
-    //     return_type: PyDataType,
-    //     aggregation: bool,
-    // ) {
-    //     self.functions
-    //         .entry(name.clone())
-    //         .and_modify(|e| {
-    //             (*e).lock()
-    //                 .unwrap()
-    //                 .add_type_mapping(input_types.clone(), return_type.clone());
-    //         })
-    //         .or_insert_with(|| {
-    //             Arc::new(Mutex::new(SQLFunction::new(
-    //                 name,
-    //                 input_types,
-    //                 return_type,
-    //                 aggregation,
-    //             )))
-    //         });
-    // }
 }
 
 /// SqlTable wrapper that is compatible with DataFusion logical query plans
