@@ -16,6 +16,9 @@
 # under the License.
 
 from abc import ABC, abstractmethod
+from typing import Dict
+
+from datafusion.common import SqlSchema
 
 
 class BaseSessionContext(ABC):
@@ -23,6 +26,55 @@ class BaseSessionContext(ABC):
     Abstraction defining all methods, properties, and common functionality
     shared amongst implementations using DataFusion as their SQL Parser/Engine
     """
+
+    DEFAULT_CATALOG_NAME = "root"
+    DEFAULT_SCHEMA_NAME = "datafusion"
+
+    @abstractmethod
+    def create_schema(
+        self,
+        schema_name: str,
+        **kwargs,
+    ):
+        """
+        Creates/Registers a logical container that holds database
+        objects such as tables, views, indexes, and other
+        related objects. It provides a way to group related database
+        objects together. A schema can be owned by a database
+        user and can be used to separate objects in different
+        logical groups for easy management.
+        """
+        pass
+
+    @abstractmethod
+    def update_schema(
+        self,
+        schema_name: str,
+        new_schema: SqlSchema,
+        **kwargs,
+    ):
+        """
+        Updates an existing schema in the SessionContext
+        """
+        pass
+
+    @abstractmethod
+    def drop_schema(
+        self,
+        schema_name: str,
+        **kwargs,
+    ):
+        """
+        Drops the specified Schema, based on name, from the current context
+        """
+        pass
+
+    @abstractmethod
+    def show_schemas(self, **kwargs) -> Dict[str, SqlSchema]:
+        """
+        Return all schemas in the current SessionContext impl.
+        """
+        pass
 
     @abstractmethod
     def register_table(

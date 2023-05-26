@@ -18,12 +18,12 @@
 use std::any::Any;
 
 use datafusion::arrow::datatypes::SchemaRef;
-use datafusion_expr::{TableSource, TableProviderFilterPushDown, Expr};
+use datafusion_expr::{Expr, TableProviderFilterPushDown, TableSource};
 use pyo3::prelude::*;
 
 use datafusion_optimizer::utils::split_conjunction;
 
-use super::{function::SqlFunction, data_type::DataTypeMap};
+use super::{data_type::DataTypeMap, function::SqlFunction};
 
 #[pyclass(name = "SqlSchema", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
@@ -139,7 +139,6 @@ pub struct SqlView {
     pub definition: String, // SQL code that defines the view
 }
 
-
 #[pymethods]
 impl SqlSchema {
     #[new]
@@ -189,7 +188,6 @@ impl SqlSchema {
     //         });
     // }
 }
-
 
 /// SqlTable wrapper that is compatible with DataFusion logical query plans
 pub struct SqlTableSource {
