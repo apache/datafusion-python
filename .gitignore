@@ -10,6 +10,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Python dist ignore
+dist
+
 # C extensions
 *.so
 

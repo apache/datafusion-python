@@ -384,13 +384,20 @@ impl PyExpr {
                 let mut operands: Vec<PyExpr> = Vec::new();
 
                 if let Some(e) = expr {
-                    operands.push(PyExpr::from(*e.clone()));
+                    for (when, then) in when_then_expr {
+                        operands.push(PyExpr::from(Expr::BinaryExpr(BinaryExpr::new(
+                            Box::new(*e.clone()),
+                            Operator::Eq,
+                            Box::new(*when.clone()),
+                        ))));
+                        operands.push(PyExpr::from(*then.clone()));
+                    }
+                } else {
+                    for (when, then) in when_then_expr {
+                        operands.push(PyExpr::from(*when.clone()));
+                        operands.push(PyExpr::from(*then.clone()));
+                    }
                 };
-
-                for (when, then) in when_then_expr {
-                    operands.push(PyExpr::from(*when.clone()));
-                    operands.push(PyExpr::from(*then.clone()));
-                }
 
                 if let Some(e) = else_expr {
                     operands.push(PyExpr::from(*e.clone()));
