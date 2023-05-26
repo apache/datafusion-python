@@ -16,9 +16,9 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Dict
+from typing import Dict, List
 
-from datafusion.common import SqlSchema
+from datafusion.common import SqlSchema, SqlTable
 
 
 class BaseSessionContext(ABC):
@@ -73,6 +73,48 @@ class BaseSessionContext(ABC):
     def show_schemas(self, **kwargs) -> Dict[str, SqlSchema]:
         """
         Return all schemas in the current SessionContext impl.
+        """
+        pass
+
+    @abstractmethod
+    def create_table(
+        self,
+        table_name: str,
+        schema_name: str = None,
+        **kwargs,
+    ):
+        """
+        Creates/Registers a table in the specied schema instance
+        """
+        pass
+
+    @abstractmethod
+    def update_table(
+        self,
+        table_name: str,
+        new_table: SqlTable,
+        **kwargs,
+    ):
+        """
+        Updates an existing table in the SessionContext
+        """
+        pass
+
+    @abstractmethod
+    def drop_table(
+        self,
+        table_name: str,
+        **kwargs,
+    ):
+        """
+        Drops the specified table, based on name, from the current context
+        """
+        pass
+
+    @abstractmethod
+    def show_tables(self, **kwargs) -> List[SqlTable]:
+        """
+        Return all tables in the current SessionContext impl.
         """
         pass
 
