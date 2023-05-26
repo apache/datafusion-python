@@ -17,18 +17,15 @@
 
 import polars
 import datafusion
+from datafusion.context import BaseSessionContext
 from datafusion.expr import Projection, TableScan, Aggregate
 from datafusion.expr import Column, AggregateFunction
 
 
-class SessionContext:
+class SessionContext(BaseSessionContext):
     def __init__(self):
         self.datafusion_ctx = datafusion.SessionContext()
         self.parquet_tables = {}
-
-    def register_parquet(self, name, path):
-        self.parquet_tables[name] = path
-        self.datafusion_ctx.register_parquet(name, path)
 
     def to_polars_expr(self, expr):
         # get Python wrapper for logical expression
@@ -77,6 +74,13 @@ class SessionContext:
             raise Exception(
                 "unsupported logical operator: {}".format(type(node))
             )
+
+    def register_table(self, name, path, **kwargs):
+        self.parquet_tables[name] = path
+        self.datafusion_ctx.register_parquet(name, path)
+
+    def explain(self, sql):
+        super.explain()
 
     def sql(self, sql):
         datafusion_df = self.datafusion_ctx.sql(sql)

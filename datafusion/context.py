@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,10 +15,31 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion.cudf import SessionContext
+from abc import ABC, abstractmethod
 
 
-ctx = SessionContext()
-ctx.register_table("taxi", "yellow_tripdata_2021-01.parquet")
-df = ctx.sql("select passenger_count from taxi")
-print(df)
+class BaseSessionContext(ABC):
+    """
+    Abstraction defining all methods, properties, and common functionality
+    shared amongst implementations using DataFusion as their SQL Parser/Engine
+    """
+
+    @abstractmethod
+    def register_table(
+        self,
+        table_name: str,
+        path: str,
+        **kwargs,
+    ):
+        pass
+
+    # TODO: Remove abstraction, this functionality can be shared
+    # between all implementing classes since it just prints the
+    # logical plan from DataFusion
+    @abstractmethod
+    def explain(self, sql):
+        pass
+
+    @abstractmethod
+    def sql(self, sql):
+        pass
