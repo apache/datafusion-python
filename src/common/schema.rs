@@ -63,7 +63,6 @@ pub struct SqlTable {
 impl SqlTable {
     #[new]
     pub fn new(
-        _schema_name: String,
         table_name: String,
         columns: Vec<(String, DataTypeMap)>,
         row_count: f64,
