@@ -103,6 +103,7 @@ class BaseSessionContext(ABC):
     @abstractmethod
     def drop_table(
         self,
+        schema_name: str,
         table_name: str,
         **kwargs,
     ):
