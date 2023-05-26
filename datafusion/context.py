@@ -91,6 +91,7 @@ class BaseSessionContext(ABC):
     @abstractmethod
     def update_table(
         self,
+        schema_name: str,
         table_name: str,
         new_table: SqlTable,
         **kwargs,
