@@ -115,6 +115,10 @@ impl SqlSchema {
     pub fn add_table(&mut self, table: SqlTable) {
         self.tables.push(table);
     }
+
+    pub fn drop_table(&mut self, table_name: String) {
+        self.tables.retain(|x| !x.name.eq(&table_name));
+    }
 }
 
 /// SqlTable wrapper that is compatible with DataFusion logical query plans
