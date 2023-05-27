@@ -22,6 +22,14 @@ from datafusion.common import SqlTable
 
 
 class BaseInputSource(ABC):
+    """
+    If a consuming library would like to provider their own InputSource
+    this is the class they should extend to write their own. Once
+    completed the Plugin InputSource can be registered with the
+    SessionContext to ensure that it will be used in order
+    to obtain the SqlTable information from the custom datasource.
+    """
+
     @abstractmethod
     def is_correct_input(
         self, input_item: Any, table_name: str, **kwargs
