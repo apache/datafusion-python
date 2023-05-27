@@ -17,7 +17,7 @@
 
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
 use datafusion_common::{DataFusionError, ScalarValue};
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::errors::py_datafusion_err;
 
@@ -301,6 +301,26 @@ impl DataTypeMap {
             python_type,
             sql_type,
         }
+    }
+
+    #[staticmethod]
+    #[pyo3(name = "from_parquet_type_str")]
+    /// When using pyarrow.parquet.read_metadata().schema.column(x).physical_type you are presented
+    /// with a String type for schema rather than an object type. Here we make a best effort
+    /// to convert that to a physical type.
+    pub fn py_map_from_parquet_type_str(parquet_str_type: String) -> PyResult<DataTypeMap> {
+        let arrow_dtype = match parquet_str_type.to_lowercase().as_str() {
+            "boolean" => Ok(DataType::Boolean),
+            "int32" => Ok(DataType::Int32),
+            "int64" => Ok(DataType::Int64),
+            "float" => Ok(DataType::Float32),
+            "double" => Ok(DataType::Float64),
+            _ => Err(PyValueError::new_err(format!(
+                "Unable to determine Arrow Data Type from Parquet String type: {:?}",
+                parquet_str_type
+            ))),
+        };
+        DataTypeMap::map_from_arrow_type(&arrow_dtype?)
     }
 
     #[staticmethod]
