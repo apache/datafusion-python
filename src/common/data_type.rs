@@ -330,6 +330,13 @@ impl DataTypeMap {
     }
 
     #[staticmethod]
+    #[pyo3(name = "arrow_str")]
+    pub fn py_map_from_arrow_type_str(arrow_type_str: String) -> PyResult<DataTypeMap> {
+        let data_type = PyDataType::py_map_from_arrow_type_str(arrow_type_str);
+        DataTypeMap::map_from_arrow_type(&data_type?.data_type)
+    }
+
+    #[staticmethod]
     #[pyo3(name = "sql")]
     pub fn py_map_from_sql_type(sql_type: &SqlType) -> PyResult<DataTypeMap> {
         match sql_type {
@@ -534,10 +541,7 @@ pub struct PyDataType {
     pub data_type: DataType,
 }
 
-#[pymethods]
 impl PyDataType {
-    #[staticmethod]
-    #[pyo3(name = "from_arrow_type_str")]
     /// There are situations when obtaining dtypes on the Python side where the Arrow type
     /// is presented as a String rather than an actual DataType. This function is used to
     /// convert that String to a DataType for the Python side to use.
