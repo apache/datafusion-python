@@ -534,6 +534,32 @@ pub struct PyDataType {
     pub data_type: DataType,
 }
 
+#[pymethods]
+impl PyDataType {
+    #[staticmethod]
+    #[pyo3(name = "from_arrow_type_str")]
+    /// There are situations when obtaining dtypes on the Python side where the Arrow type
+    /// is presented as a String rather than an actual DataType. This function is used to
+    /// convert that String to a DataType for the Python side to use.
+    pub fn py_map_from_arrow_type_str(arrow_str_type: String) -> PyResult<PyDataType> {
+        let arrow_dtype = match arrow_str_type.to_lowercase().as_str() {
+            "boolean" => Ok(DataType::Boolean),
+            "int32" => Ok(DataType::Int32),
+            "int64" => Ok(DataType::Int64),
+            "float" => Ok(DataType::Float32),
+            "double" => Ok(DataType::Float64),
+            "float64" => Ok(DataType::Float64),
+            _ => Err(PyValueError::new_err(format!(
+                "Unable to determine Arrow Data Type from Arrow String type: {:?}",
+                arrow_str_type
+            ))),
+        };
+        Ok(PyDataType {
+            data_type: arrow_dtype?,
+        })
+    }
+}
+
 impl From<PyDataType> for DataType {
     fn from(data_type: PyDataType) -> DataType {
         data_type.data_type
