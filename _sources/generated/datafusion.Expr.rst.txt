@@ -18,12 +18,17 @@
       ~Expr.canonical_name
       ~Expr.cast
       ~Expr.column
+      ~Expr.column_name
       ~Expr.display_name
       ~Expr.is_null
       ~Expr.literal
+      ~Expr.python_value
+      ~Expr.rex_call_operands
+      ~Expr.rex_call_operator
       ~Expr.rex_type
       ~Expr.sort
       ~Expr.to_variant
+      ~Expr.types
    
    
 
