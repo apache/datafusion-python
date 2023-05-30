@@ -15,16 +15,36 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import logging
 import cudf
-import datafusion
 from datafusion.context import BaseSessionContext
 from datafusion.expr import Projection, TableScan, Column
 
+from datafusion.common import SqlSchema
+
+logger = logging.getLogger(__name__)
+
 
 class SessionContext(BaseSessionContext):
-    def __init__(self):
-        self.datafusion_ctx = datafusion.SessionContext()
-        self.parquet_tables = {}
+    def __init__(self, context, logging_level=logging.INFO):
+        """
+        Create a new Session.
+        """
+        # Cudf requires a provided context
+        self.context = context
+
+        # Set the logging level for this SQL context
+        logging.basicConfig(level=logging_level)
+
+        # Name of the root catalog
+        self.catalog_name = self.DEFAULT_CATALOG_NAME
+        # Name of the root schema
+        self.schema_name = self.DEFAULT_SCHEMA_NAME
+        # Add the schema to the context
+        sch = SqlSchema(self.schema_name)
+        self.schemas = {}
+        self.schemas[self.schema_name] = sch
+        self.context.register_schema(self.schema_name, sch)
 
     def to_cudf_expr(self, expr):
         # get Python wrapper for logical expression
@@ -51,6 +71,20 @@ class SessionContext(BaseSessionContext):
             raise Exception(
                 "unsupported logical operator: {}".format(type(node))
             )
+
+    def create_schema(self, schema_name: str, **kwargs):
+        logger.debug(f"Creating schema: {schema_name}")
+        self.schemas[schema_name] = SqlSchema(schema_name)
+        self.context.register_schema(schema_name, SqlSchema(schema_name))
+
+    def update_schema(self, schema_name: str, new_schema: SqlSchema, **kwargs):
+        self.schemas[schema_name] = new_schema
+
+    def drop_schema(self, schema_name, **kwargs):
+        del self.schemas[schema_name]
+
+    def show_schemas(self, **kwargs):
+        return self.schemas
 
     def register_table(self, name, path, **kwargs):
         self.parquet_tables[name] = path
