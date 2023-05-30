@@ -18,10 +18,13 @@
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use datafusion_common::Column;
-use datafusion_expr::expr::AggregateFunction;
-use datafusion_expr::expr::{Sort, WindowFunction};
-use datafusion_expr::window_function::find_df_window_func;
-use datafusion_expr::{aggregate_function, lit, BuiltinScalarFunction, Expr, WindowFrame};
+use datafusion_expr::{
+    aggregate_function,
+    expr::{AggregateFunction, ScalarFunction, Sort, WindowFunction},
+    lit,
+    window_function::find_df_window_func,
+    BuiltinScalarFunction, Expr, WindowFrame,
+};
 
 use crate::errors::DataFusionError;
 use crate::expr::PyExpr;
@@ -106,6 +109,7 @@ fn count_star() -> PyResult<PyExpr> {
             args: vec![lit(1)],
             distinct: false,
             filter: None,
+            order_by: None,
         }),
     })
 }
@@ -153,10 +157,10 @@ macro_rules! scalar_function {
         #[pyfunction]
         #[pyo3(signature = (*args))]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
-            let expr = datafusion_expr::Expr::ScalarFunction {
+            let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
                 fun: BuiltinScalarFunction::$FUNC,
                 args: args.into_iter().map(|e| e.into()).collect(),
-            };
+            });
             expr.into()
         }
     };
@@ -176,6 +180,7 @@ macro_rules! aggregate_function {
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,
+                order_by: None,
             });
             expr.into()
         }
