@@ -63,7 +63,6 @@ pub struct SqlTable {
 impl SqlTable {
     #[new]
     pub fn new(
-        _schema_name: String,
         table_name: String,
         columns: Vec<(String, DataTypeMap)>,
         row_count: f64,
@@ -114,6 +113,10 @@ impl SqlSchema {
 
     pub fn add_table(&mut self, table: SqlTable) {
         self.tables.push(table);
+    }
+
+    pub fn drop_table(&mut self, table_name: String) {
+        self.tables.retain(|x| !x.name.eq(&table_name));
     }
 }
 
