@@ -15,9 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::arrow::datatypes::SchemaRef;
+use datafusion_common::TableReference;
 use datafusion_expr::logical_plan::TableScan;
+use datafusion_expr::TableSource;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
@@ -69,6 +73,26 @@ impl PyTableScan {
     #[pyo3(name = "table_name")]
     fn py_table_name(&self) -> PyResult<String> {
         Ok(format!("{}", self.table_scan.table_name))
+    }
+
+    #[pyo3(name = "fqn")]
+    fn fqn(&self) -> PyResult<(Option<String>, Option<String>, String)> {
+        let table_ref: TableReference = self.table_scan.table_name.clone();
+        Ok(match table_ref {
+            TableReference::Bare { table } => (None, None, table.to_string()),
+            TableReference::Partial { schema, table } => {
+                (None, Some(schema.to_string()), table.to_string())
+            }
+            TableReference::Full {
+                catalog,
+                schema,
+                table,
+            } => (
+                Some(catalog.to_string()),
+                Some(schema.to_string()),
+                table.to_string(),
+            ),
+        })
     }
 
     /// TODO: Bindings for `TableSource` need to exist first. Left as a
