@@ -313,6 +313,10 @@ impl DataTypeMap {
             "boolean" => Ok(DataType::Boolean),
             "int32" => Ok(DataType::Int32),
             "int64" => Ok(DataType::Int64),
+            "int96" => {
+                // Int96 is an old datatype that is now deprecated. We convert to nanosecond timestamp
+                Ok(DataType::Timestamp(TimeUnit::Nanosecond, None))
+            }
             "float" => Ok(DataType::Float32),
             "double" => Ok(DataType::Float64),
             _ => Err(PyValueError::new_err(format!(
