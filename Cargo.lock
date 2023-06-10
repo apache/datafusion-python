@@ -112,19 +112,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "218ca81dd088b102c0fd6687c72e73fad1ba93d2ef7b3cf9a1043b04b2c39dbf"
 dependencies = [
  "ahash",
- "arrow-arith",
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-csv",
- "arrow-data",
- "arrow-ipc",
- "arrow-json",
- "arrow-ord",
- "arrow-row",
- "arrow-schema",
- "arrow-select",
- "arrow-string",
+ "arrow-arith 39.0.0",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-cast 39.0.0",
+ "arrow-csv 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-ipc 39.0.0",
+ "arrow-json 39.0.0",
+ "arrow-ord 39.0.0",
+ "arrow-row 39.0.0",
+ "arrow-schema 39.0.0",
+ "arrow-select 39.0.0",
+ "arrow-string 39.0.0",
+ "pyo3",
+]
+
+[[package]]
+name = "arrow"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6619cab21a0cdd8c9b9f1d9e09bfaa9b1974e5ef809a6566aef0b998caf38ace"
+dependencies = [
+ "ahash",
+ "arrow-arith 40.0.0",
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-cast 40.0.0",
+ "arrow-csv 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-ipc 40.0.0",
+ "arrow-json 40.0.0",
+ "arrow-ord 40.0.0",
+ "arrow-row 40.0.0",
+ "arrow-schema 40.0.0",
+ "arrow-select 40.0.0",
+ "arrow-string 40.0.0",
  "pyo3",
 ]
 
@@ -134,10 +157,25 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d49309fa2299ec34a709cfc9f487c41ecaead96d1ab70e21857466346bbbd690"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "chrono",
+ "half",
+ "num",
+]
+
+[[package]]
+name = "arrow-arith"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0dc95485623a76e00929bda8caa40c1f838190952365c4f43a7b9ae86d03e94"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "chrono",
  "half",
  "num",
@@ -150,9 +188,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7a27466d897d99654357a6d95dc0a26931d9e4306e60c14fc31a894edb86579"
 dependencies = [
  "ahash",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "chrono",
+ "chrono-tz",
+ "half",
+ "hashbrown 0.13.2",
+ "num",
+]
+
+[[package]]
+name = "arrow-array"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3267847f53d3042473cfd2c769afd8d74a6d7d201fc3a34f5cb84c0282ef47a7"
+dependencies = [
+ "ahash",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "chrono",
  "chrono-tz",
  "half",
@@ -171,16 +226,43 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-buffer"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5f66553e66e120ac4b21570368ee9ebf35ff3f5399f872b0667699e145678f5"
+dependencies = [
+ "half",
+ "num",
+]
+
+[[package]]
 name = "arrow-cast"
 version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be0ec5a79a87783dc828b7ff8f89f62880b3f553bc5f5b932a82f4a1035024b4"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "arrow-select 39.0.0",
+ "chrono",
+ "comfy-table",
+ "lexical-core",
+ "num",
+]
+
+[[package]]
+name = "arrow-cast"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "65e6f3579dbf0d97c683d451b2550062b0f0e62a3169bf74238b5f59f44ad6d8"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
+ "arrow-select 40.0.0",
  "chrono",
  "comfy-table",
  "lexical-core",
@@ -193,11 +275,30 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "350d8e55c3b2d602a0a04389bcc1da40167657143a9922a7103190603e7b7692"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-cast 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "chrono",
+ "csv",
+ "csv-core",
+ "lazy_static",
+ "lexical-core",
+ "regex",
+]
+
+[[package]]
+name = "arrow-csv"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "373579c4c1a8f5307d3125b7a89c700fcf8caf85821c77eb4baab3855ae0aba5"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-cast 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "chrono",
  "csv",
  "csv-core",
@@ -212,8 +313,20 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6f710d98964d2c069b8baf566130045e79e11baa105623f038a6c942f805681"
 dependencies = [
- "arrow-buffer",
- "arrow-schema",
+ "arrow-buffer 39.0.0",
+ "arrow-schema 39.0.0",
+ "half",
+ "num",
+]
+
+[[package]]
+name = "arrow-data"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "61bc8df9912cca6642665fdf989d6fa0de2570f18a7f709bcf59d29de96d2097"
+dependencies = [
+ "arrow-buffer 40.0.0",
+ "arrow-schema 40.0.0",
  "half",
  "num",
 ]
@@ -224,11 +337,25 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c99787cb8fabc187285da9e7182d22f2b80ecfac61ca0a42c4299e9eecdf903"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-cast 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "flatbuffers",
+]
+
+[[package]]
+name = "arrow-ipc"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0105dcf5f91daa7182d87b713ee0b32b3bfc88e0c48e7dc3e9d6f1277a07d1ae"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-cast 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "flatbuffers",
 ]
 
@@ -238,11 +365,31 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "91c95a58ce63f60d80d7a3a1222d65df0bc060b71d31353c34a8118c2a6eae7b"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-cast 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "chrono",
+ "half",
+ "indexmap",
+ "lexical-core",
+ "num",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "arrow-json"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e73134fb5b5ec8770f8cbb214c2c487b2d350081e403ca4eeeb6f8f5e19846ac"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-cast 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "chrono",
  "half",
  "indexmap",
@@ -258,11 +405,26 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4141e6488610cc144e841da3de5f5371488f3cf5bc6bc7b3e752c64e7639c31b"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "arrow-select 39.0.0",
+ "half",
+ "num",
+]
+
+[[package]]
+name = "arrow-ord"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89f25bc66e18d4c2aa1fe2f9bb03e2269da60e636213210385ae41a107f9965a"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
+ "arrow-select 40.0.0",
  "half",
  "num",
 ]
@@ -274,10 +436,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "940191a3c636c111c41e816325b0941484bf904c46de72cd9553acd1afd24d33"
 dependencies = [
  "ahash",
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "half",
+ "hashbrown 0.13.2",
+]
+
+[[package]]
+name = "arrow-row"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1095ff85ea4f5ff02d17b30b089de31b51a50be01c6b674f0a0509ab771232f1"
+dependencies = [
+ "ahash",
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "half",
  "hashbrown 0.13.2",
 ]
@@ -292,15 +469,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "arrow-schema"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25187bbef474151a2e4ddec67b9e34bda5cbfba292dc571392fa3a1f71ff5a82"
+dependencies = [
+ "bitflags 2.3.1",
+]
+
+[[package]]
 name = "arrow-select"
 version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fcbdda2772b7e712e77444f3a71f4ee517095aceb993b35de71de41c70d9b4f"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "num",
+]
+
+[[package]]
+name = "arrow-select"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd0d4ee884aec3aa05e41478e3cd312bf609de9babb5d187a43fb45931da4da4"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
  "num",
 ]
 
@@ -310,11 +509,26 @@ version = "39.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7081c34f4b534ad320a03db79d58e38972041bb7c65686b98bbcc2f9a67a9cee"
 dependencies = [
- "arrow-array",
- "arrow-buffer",
- "arrow-data",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-schema 39.0.0",
+ "arrow-select 39.0.0",
+ "regex",
+ "regex-syntax",
+]
+
+[[package]]
+name = "arrow-string"
+version = "40.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6d71c3ffe4c07e66ce8fdc6aed5b00e0e60c5144911879b10546f5b72d8fa1c"
+dependencies = [
+ "arrow-array 40.0.0",
+ "arrow-buffer 40.0.0",
+ "arrow-data 40.0.0",
+ "arrow-schema 40.0.0",
+ "arrow-select 40.0.0",
  "regex",
  "regex-syntax",
 ]
@@ -655,16 +869,16 @@ checksum = "9a99e1dc003c0b310b203e4dc2aadc6531dccb37fa681630b588c5154d1b7637"
 dependencies = [
  "ahash",
  "apache-avro",
- "arrow",
- "arrow-array",
- "arrow-schema",
+ "arrow 39.0.0",
+ "arrow-array 39.0.0",
+ "arrow-schema 39.0.0",
  "async-compression",
  "async-trait",
  "bytes",
  "bzip2",
  "chrono",
  "dashmap",
- "datafusion-common",
+ "datafusion-common 25.0.0",
  "datafusion-execution",
  "datafusion-expr",
  "datafusion-optimizer",
@@ -688,7 +902,7 @@ dependencies = [
  "pin-project-lite",
  "rand",
  "smallvec",
- "sqlparser",
+ "sqlparser 0.33.0",
  "tempfile",
  "tokio",
  "tokio-stream",
@@ -706,14 +920,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "362811fd9cb830877f5a538a19e5f9a1e5519486dcd6dc4f39a3d6192d2f4ba6"
 dependencies = [
  "apache-avro",
- "arrow",
- "arrow-array",
+ "arrow 39.0.0",
+ "arrow-array 39.0.0",
  "chrono",
  "num_cpus",
  "object_store",
  "parquet",
  "pyo3",
- "sqlparser",
+ "sqlparser 0.33.0",
+]
+
+[[package]]
+name = "datafusion-common"
+version = "26.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c3be97f7a7c720cdbb71e9eeabf814fa6ad8102b9022390f6cac74d3b4af6392"
+dependencies = [
+ "arrow 40.0.0",
+ "arrow-array 40.0.0",
+ "chrono",
+ "num_cpus",
+ "pyo3",
+ "sqlparser 0.34.0",
 ]
 
 [[package]]
@@ -723,7 +951,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b052014fe38299019dd2e7dec6c2dd44c7ad9a5375ab4a36e5ed800700d7eb7a"
 dependencies = [
  "dashmap",
- "datafusion-common",
+ "datafusion-common 25.0.0",
  "datafusion-expr",
  "hashbrown 0.13.2",
  "log",
@@ -741,9 +969,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55b590b184c6f59a65ee3ada666475ff8173bfd409c618c3c29b5abf7ef4a92c"
 dependencies = [
  "ahash",
- "arrow",
- "datafusion-common",
- "sqlparser",
+ "arrow 39.0.0",
+ "datafusion-common 25.0.0",
+ "sqlparser 0.33.0",
 ]
 
 [[package]]
@@ -752,10 +980,10 @@ version = "25.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "543311151a4c068b2b663f07905dd4d4a605279dacb24ab9434f8f29a1917cd3"
 dependencies = [
- "arrow",
+ "arrow 39.0.0",
  "async-trait",
  "chrono",
- "datafusion-common",
+ "datafusion-common 25.0.0",
  "datafusion-expr",
  "datafusion-physical-expr",
  "hashbrown 0.13.2",
@@ -771,14 +999,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b49cfd92e225d948a2199650e8e292ef1f0a3d62ab9b540795c3d3ba9edc2b2e"
 dependencies = [
  "ahash",
- "arrow",
- "arrow-array",
- "arrow-buffer",
- "arrow-schema",
+ "arrow 39.0.0",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-schema 39.0.0",
  "blake2",
  "blake3",
  "chrono",
- "datafusion-common",
+ "datafusion-common 25.0.0",
  "datafusion-expr",
  "datafusion-row",
  "half",
@@ -803,7 +1031,7 @@ version = "25.0.0"
 dependencies = [
  "async-trait",
  "datafusion",
- "datafusion-common",
+ "datafusion-common 26.0.0",
  "datafusion-expr",
  "datafusion-optimizer",
  "datafusion-sql",
@@ -830,8 +1058,8 @@ version = "25.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e98cdd6f0d005bce0035bebe03a35ccb7eca3cf40a9bce27e24b1e2a56941ffc"
 dependencies = [
- "arrow",
- "datafusion-common",
+ "arrow 39.0.0",
+ "datafusion-common 25.0.0",
  "paste",
  "rand",
 ]
@@ -842,12 +1070,12 @@ version = "25.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9585219bbbad5287c762ad9ede044ab6c0b778fde980c9858b15d6dd5bd80f35"
 dependencies = [
- "arrow",
- "arrow-schema",
- "datafusion-common",
+ "arrow 39.0.0",
+ "arrow-schema 39.0.0",
+ "datafusion-common 25.0.0",
  "datafusion-expr",
  "log",
- "sqlparser",
+ "sqlparser 0.33.0",
 ]
 
 [[package]]
@@ -1772,13 +2000,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b0a1e6fa27f09ebddba280f5966ef435f3ac4d74cfc3ffe370fd3fd59c2e004d"
 dependencies = [
  "ahash",
- "arrow-array",
- "arrow-buffer",
- "arrow-cast",
- "arrow-data",
- "arrow-ipc",
- "arrow-schema",
- "arrow-select",
+ "arrow-array 39.0.0",
+ "arrow-buffer 39.0.0",
+ "arrow-cast 39.0.0",
+ "arrow-data 39.0.0",
+ "arrow-ipc 39.0.0",
+ "arrow-schema 39.0.0",
+ "arrow-select 39.0.0",
  "base64",
  "brotli",
  "bytes",
@@ -2490,6 +2718,15 @@ checksum = "355dc4d4b6207ca8a3434fc587db0a8016130a574dbcdbfb93d7f7b5bc5b211a"
 dependencies = [
  "log",
  "sqlparser_derive",
+]
+
+[[package]]
+name = "sqlparser"
+version = "0.34.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37d3706eefb17039056234df6b566b0014f303f867f2656108334a55b8096f59"
+dependencies = [
+ "log",
 ]
 
 [[package]]
