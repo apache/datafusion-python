@@ -41,7 +41,7 @@ datafusion-common = { version = "25.0.0", features = ["pyarrow"] }
 datafusion-expr = "25.0.0"
 datafusion-optimizer = "25.0.0"
 datafusion-sql = "25.0.0"
-datafusion-substrait = "25.0.0"
+datafusion-substrait = "26.0.0"
 prost = "0.11"
 prost-types = "0.11"
 uuid = { version = "1.3", features = ["v4"] }
