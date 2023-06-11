@@ -56,7 +56,7 @@ impl From<PyBuiltinScalarFunction> for BuiltinScalarFunction {
 #[pymethods]
 impl PyScalarFunction {
     fn fun(&self) -> PyResult<PyBuiltinScalarFunction> {
-        Ok(self.scalar_function.clone().into())
+        Ok(self.scalar_function.into())
     }
 
     fn args(&self) -> PyResult<Vec<PyExpr>> {

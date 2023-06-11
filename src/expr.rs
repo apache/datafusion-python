@@ -186,7 +186,8 @@ impl PyExpr {
     }
 
     fn __mod__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().modulus(rhs.expr).into())
+        let expr = self.expr.clone() % rhs.expr;
+        Ok(expr.into())
     }
 
     fn __and__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
@@ -198,7 +199,8 @@ impl PyExpr {
     }
 
     fn __invert__(&self) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().not().into())
+        let expr = !self.expr.clone();
+        Ok(expr.into())
     }
 
     fn __getitem__(&self, key: &str) -> PyResult<PyExpr> {

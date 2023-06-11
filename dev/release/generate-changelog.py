@@ -26,7 +26,7 @@ def print_pulls(repo_name, title, pulls):
     if len(pulls) > 0:
         print("**{}:**".format(title))
         print()
-        for (pull, commit) in pulls:
+        for pull, commit in pulls:
             url = "https://github.com/{}/pull/{}".format(
                 repo_name, pull.number
             )
@@ -39,7 +39,6 @@ def print_pulls(repo_name, title, pulls):
 
 
 def generate_changelog(repo, repo_name, tag1, tag2):
-
     # get a list of commits between two tags
     print(
         f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr
@@ -68,8 +67,7 @@ def generate_changelog(repo, repo_name, tag1, tag2):
 
     # categorize the pull requests based on GitHub labels
     print("Categorizing pull requests", file=sys.stderr)
-    for (pull, commit) in all_pulls:
-
+    for pull, commit in all_pulls:
         # see if PR title uses Conventional Commits
         cc_type = ""
         # cc_scope = ''
