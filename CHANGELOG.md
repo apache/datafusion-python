@@ -19,6 +19,17 @@
 
 # DataFusion Python Changelog
 
+## [26.0.0](https://github.com/apache/arrow-datafusion-python/tree/26.0.0) (2023-06-11)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/25.0.0...26.0.0)
+
+**Merged pull requests:**
+
+- Add Expr::Case when_then_else support to rex_call_operands function [#388](https://github.com/apache/arrow-datafusion-python/pull/388) (jdye64)
+- Introduce BaseSessionContext abstract class [#390](https://github.com/apache/arrow-datafusion-python/pull/390) (jdye64)
+- CRUD Schema support for `BaseSessionContext` [#392](https://github.com/apache/arrow-datafusion-python/pull/392) (jdye64)
+- CRUD Table support for `BaseSessionContext` [#394](https://github.com/apache/arrow-datafusion-python/pull/394) (jdye64)
+
 ## [25.0.0](https://github.com/apache/arrow-datafusion-python/tree/25.0.0) (2023-05-23)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/24.0.0...25.0.0)
