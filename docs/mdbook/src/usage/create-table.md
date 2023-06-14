@@ -55,5 +55,5 @@ ctx.register_csv("csv_1e8", "G1_1e8_1e2_0_0.csv")
 You can read a Parquet file into a DataFusion DataFrame.  Here's how to read the `yellow_tripdata_2021-01.parquet` file into a table named `taxi`.
 
 ```python
-ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")
+ctx.register_table("taxi", "yellow_tripdata_2021-01.parquet")
 ```

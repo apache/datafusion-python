@@ -22,7 +22,7 @@ use std::convert::TryFrom;
 use std::result::Result;
 
 use datafusion_common::{Column, ScalarValue};
-use datafusion_expr::{Between, BinaryExpr, Expr, Operator};
+use datafusion_expr::{expr::InList, Between, BinaryExpr, Expr, Operator};
 
 use crate::errors::DataFusionError;
 
@@ -161,11 +161,11 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
 
                     Ok(if *negated { invert.call1((ret,))? } else { ret })
                 }
-                Expr::InList {
+                Expr::InList(InList {
                     expr,
                     list,
                     negated,
-                } => {
+                }) => {
                     let expr = PyArrowFilterExpression::try_from(expr.as_ref())?
                         .0
                         .into_ref(py);

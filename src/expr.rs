@@ -15,17 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::DFField;
-use datafusion_expr::expr::{AggregateFunction, Sort, WindowFunction};
-use datafusion_expr::utils::exprlist_to_fields;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::scalar::ScalarValue;
+use datafusion_common::DFField;
 use datafusion_expr::{
-    col, lit, Between, BinaryExpr, Case, Cast, Expr, GetIndexedField, Like, LogicalPlan, Operator,
-    TryCast,
+    col,
+    expr::{
+        AggregateFunction, AggregateUDF, InList, InSubquery, ScalarFunction, ScalarUDF, Sort,
+        WindowFunction,
+    },
+    lit,
+    utils::exprlist_to_fields,
+    Between, BinaryExpr, Case, Cast, Expr, GetIndexedField, Like, LogicalPlan, Operator, TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
@@ -35,7 +40,6 @@ use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use crate::sql::logical::PyLogicalPlan;
-use datafusion::scalar::ScalarValue;
 
 use self::alias::PyAlias;
 use self::bool_expr::{
@@ -188,7 +192,8 @@ impl PyExpr {
     }
 
     fn __mod__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().modulus(rhs.expr).into())
+        let expr = self.expr.clone() % rhs.expr;
+        Ok(expr.into())
     }
 
     fn __and__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
@@ -200,7 +205,8 @@ impl PyExpr {
     }
 
     fn __invert__(&self) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().not().into())
+        let expr = !self.expr.clone();
+        Ok(expr.into())
     }
 
     fn __getitem__(&self, key: &str) -> PyResult<PyExpr> {
@@ -366,13 +372,13 @@ impl PyExpr {
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
             | Expr::Sort(Sort { expr, .. })
-            | Expr::InSubquery { expr, .. } => Ok(vec![PyExpr::from(*expr.clone())]),
+            | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
             Expr::AggregateFunction(AggregateFunction { args, .. })
-            | Expr::AggregateUDF { args, .. }
-            | Expr::ScalarFunction { args, .. }
-            | Expr::ScalarUDF { args, .. }
+            | Expr::AggregateUDF(AggregateUDF { args, .. })
+            | Expr::ScalarFunction(ScalarFunction { args, .. })
+            | Expr::ScalarUDF(ScalarUDF { args, .. })
             | Expr::WindowFunction(WindowFunction { args, .. }) => {
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
@@ -386,13 +392,20 @@ impl PyExpr {
                 let mut operands: Vec<PyExpr> = Vec::new();
 
                 if let Some(e) = expr {
-                    operands.push(PyExpr::from(*e.clone()));
+                    for (when, then) in when_then_expr {
+                        operands.push(PyExpr::from(Expr::BinaryExpr(BinaryExpr::new(
+                            Box::new(*e.clone()),
+                            Operator::Eq,
+                            Box::new(*when.clone()),
+                        ))));
+                        operands.push(PyExpr::from(*then.clone()));
+                    }
+                } else {
+                    for (when, then) in when_then_expr {
+                        operands.push(PyExpr::from(*when.clone()));
+                        operands.push(PyExpr::from(*then.clone()));
+                    }
                 };
-
-                for (when, then) in when_then_expr {
-                    operands.push(PyExpr::from(*when.clone()));
-                    operands.push(PyExpr::from(*then.clone()));
-                }
 
                 if let Some(e) = else_expr {
                     operands.push(PyExpr::from(*e.clone()));
@@ -400,7 +413,7 @@ impl PyExpr {
 
                 Ok(operands)
             }
-            Expr::InList { expr, list, .. } => {
+            Expr::InList(InList { expr, list, .. }) => {
                 let mut operands: Vec<PyExpr> = vec![PyExpr::from(*expr.clone())];
                 for list_elem in list {
                     operands.push(PyExpr::from(list_elem.clone()));
@@ -457,8 +470,8 @@ impl PyExpr {
                 op,
                 right: _,
             }) => format!("{op}"),
-            Expr::ScalarFunction { fun, args: _ } => format!("{fun}"),
-            Expr::ScalarUDF { fun, .. } => fun.name.clone(),
+            Expr::ScalarFunction(ScalarFunction { fun, args: _ }) => format!("{fun}"),
+            Expr::ScalarUDF(ScalarUDF { fun, .. }) => fun.name.clone(),
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
             Expr::Case { .. } => "case".to_string(),
