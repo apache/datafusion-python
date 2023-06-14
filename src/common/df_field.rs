@@ -49,7 +49,7 @@ impl PyDFField {
     fn new(qualifier: Option<String>, name: &str, data_type: PyDataType, nullable: bool) -> Self {
         PyDFField {
             field: DFField::new(
-                qualifier.map(|q| OwnedTableReference::from(q)),
+                qualifier.map(OwnedTableReference::from),
                 name,
                 data_type.into(),
                 nullable,

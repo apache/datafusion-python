@@ -614,7 +614,6 @@ def test_to_pydict(df):
 
 
 def test_describe(df):
-
     # Calculate statistics
     df = df.describe()
 
