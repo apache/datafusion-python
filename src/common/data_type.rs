@@ -292,7 +292,6 @@ impl DataTypeMap {
     }
 }
 
-
 #[pymethods]
 impl DataTypeMap {
     #[new]
@@ -545,7 +544,7 @@ impl DataTypeMap {
             DataType::Decimal128(_, _) => "Decimal128",
             DataType::Decimal256(_, _) => "Decimal256",
             DataType::Map(_, _) => "Map",
-            DataType::RunEndEncoded(_, _) => "RunEndEncoded"
+            DataType::RunEndEncoded(_, _) => "RunEndEncoded",
         })
     }
 }
