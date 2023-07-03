@@ -20,7 +20,7 @@ use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 use crate::{errors::DataFusionError, expr::PyExpr};
 use datafusion::arrow::datatypes::Schema;
-use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
+use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::dataframe::DataFrame;
 use datafusion::prelude::*;
