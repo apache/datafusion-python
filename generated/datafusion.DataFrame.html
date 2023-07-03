@@ -751,7 +751,7 @@ maintaining the input partitioning.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.explain">
-<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.explain" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.explain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the query plan</p>
 </dd></dl>
 
@@ -818,7 +818,7 @@ maintaining the input partitioning.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.show" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.show" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the result, 20 lines by default</p>
 </dd></dl>
 
@@ -864,7 +864,7 @@ Each list item represents one row encoded as dictionary</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.union">
-<span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the union of two <a href="#id29"><span class="problematic" id="id30">`</span></a>DataFrame`s, preserving duplicate rows.The
 two <a href="#id31"><span class="problematic" id="id32">`</span></a>DataFrame`s must have exactly the same schema</p>
 </dd></dl>
