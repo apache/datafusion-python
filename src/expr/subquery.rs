@@ -15,8 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::fmt::{self, Display, Formatter};
+
 use datafusion_expr::Subquery;
 use pyo3::prelude::*;
+
+use crate::sql::logical::PyLogicalPlan;
+
+use super::logical_node::LogicalNode;
 
 #[pyclass(name = "Subquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -33,5 +39,43 @@ impl From<PySubquery> for Subquery {
 impl From<Subquery> for PySubquery {
     fn from(subquery: Subquery) -> PySubquery {
         PySubquery { subquery }
+    }
+}
+
+impl Display for PySubquery {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Subquery
+            Subquery: {:?}
+            outer_ref_columns: {:?}",
+            self.subquery.subquery, self.subquery.outer_ref_columns,
+        )
+    }
+}
+
+#[pymethods]
+impl PySubquery {
+    /// Retrieves the input `LogicalPlan` to this `Projection` node
+    fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
+        Ok(Self::inputs(self))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("Subquery({})", self))
+    }
+
+    fn __name__(&self) -> PyResult<String> {
+        Ok("Subquery".to_string())
+    }
+}
+
+impl LogicalNode for PySubquery {
+    fn inputs(&self) -> Vec<PyLogicalPlan> {
+        vec![]
+    }
+
+    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+        Ok(self.clone().into_py(py))
     }
 }
