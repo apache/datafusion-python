@@ -51,7 +51,7 @@ impl PyExecutionPlan {
 
     pub fn display_indent(&self) -> String {
         let d = displayable(self.plan.as_ref());
-        format!("{}", d.indent())
+        format!("{}", d.indent(false))
     }
 
     fn __repr__(&self) -> String {

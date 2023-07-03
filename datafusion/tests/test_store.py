@@ -37,7 +37,7 @@ def ctx(local):
 def test_read_parquet(ctx):
     ctx.register_parquet(
         "test",
-        f"file://{os.getcwd()}/testing/data/parquet",
+        f"file://{os.getcwd()}/parquet/data/alltypes_plain.parquet",
         [],
         True,
         ".parquet",
