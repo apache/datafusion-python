@@ -29,6 +29,7 @@
       ~Expr.sort
       ~Expr.to_variant
       ~Expr.types
+      ~Expr.variant_name
    
    
 
