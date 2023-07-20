@@ -21,10 +21,10 @@ use pyo3::{prelude::*, types::PyTuple};
 
 use datafusion::arrow::array::{Array, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
-use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
+use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
-use datafusion_expr::{create_udaf, Accumulator, AccumulatorFunctionImplementation, AggregateUDF};
+use datafusion_expr::{create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF};
 
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
@@ -95,7 +95,7 @@ impl Accumulator for RustAccumulator {
     }
 }
 
-pub fn to_rust_accumulator(accum: PyObject) -> AccumulatorFunctionImplementation {
+pub fn to_rust_accumulator(accum: PyObject) -> AccumulatorFactoryFunction {
     Arc::new(move |_| -> Result<Box<dyn Accumulator>> {
         let accum = Python::with_gil(|py| {
             accum

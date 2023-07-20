@@ -39,7 +39,7 @@ impl PyPlan {
         let mut proto_bytes = Vec::<u8>::new();
         self.plan
             .encode(&mut proto_bytes)
-            .map_err(|e| DataFusionError::EncodeError(e))?;
+            .map_err(DataFusionError::EncodeError)?;
         Ok(PyBytes::new(py, &proto_bytes).into())
     }
 }
@@ -113,8 +113,8 @@ pub(crate) struct PySubstraitProducer;
 impl PySubstraitProducer {
     /// Convert DataFusion LogicalPlan to Substrait Plan
     #[staticmethod]
-    pub fn to_substrait_plan(plan: PyLogicalPlan) -> PyResult<PyPlan> {
-        match producer::to_substrait_plan(&plan.plan) {
+    pub fn to_substrait_plan(plan: PyLogicalPlan, ctx: &PySessionContext) -> PyResult<PyPlan> {
+        match producer::to_substrait_plan(&plan.plan, &ctx.ctx) {
             Ok(plan) => Ok(PyPlan { plan: *plan }),
             Err(e) => Err(py_datafusion_err(e)),
         }
