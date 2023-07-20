@@ -17,10 +17,8 @@
 
 use datafusion_common::TableReference;
 use datafusion_expr::logical_plan::TableScan;
-use datafusion_expr::TableSource;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
-use std::sync::Arc;
 
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
