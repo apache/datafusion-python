@@ -335,14 +335,13 @@ impl PyExpr {
                 ScalarValue::IntervalYearMonth(v) => v.into_py(py),
                 ScalarValue::IntervalDayTime(v) => v.into_py(py),
                 ScalarValue::IntervalMonthDayNano(v) => v.into_py(py),
+                ScalarValue::DurationSecond(v) => v.into_py(py),
+                ScalarValue::DurationMicrosecond(v) => v.into_py(py),
+                ScalarValue::DurationNanosecond(v) => v.into_py(py),
+                ScalarValue::DurationMillisecond(v) => v.into_py(py),
                 ScalarValue::Struct(_, _) => todo!(),
                 ScalarValue::Dictionary(_, _) => todo!(),
-                // new types in 28.0.0
-                ScalarValue::Fixedsizelist(_, _, _)
-                | ScalarValue::DurationSecond(_)
-                | ScalarValue::DurationMicrosecond(_)
-                | ScalarValue::DurationNanosecond(_)
-                | ScalarValue::DurationMillisecond(_) => todo!(),
+                ScalarValue::Fixedsizelist(_, _, _) => todo!(),
             }),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
