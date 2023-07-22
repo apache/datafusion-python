@@ -24,8 +24,8 @@ use pyo3::prelude::*;
 use crate::errors::DataFusionError;
 use crate::utils::wait_for_future;
 use datafusion::{
-    arrow::pyarrow::PyArrowConvert,
-    catalog::{catalog::CatalogProvider, schema::SchemaProvider},
+    arrow::pyarrow::ToPyArrow,
+    catalog::{schema::SchemaProvider, CatalogProvider},
     datasource::{TableProvider, TableType},
 };
 

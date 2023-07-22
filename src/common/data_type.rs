@@ -530,6 +530,50 @@ impl DataTypeMap {
             )),
         }
     }
+
+    /// Unfortunately PyO3 does not allow for us to expose the DataType as an enum since
+    /// we cannot directly annotae the Enum instance of dependency code. Therefore, here
+    /// we provide an enum to mimic it.
+    #[pyo3(name = "friendly_arrow_type_name")]
+    pub fn friendly_arrow_type_name(&self) -> PyResult<&str> {
+        Ok(match &self.arrow_type.data_type {
+            DataType::Null => "Null",
+            DataType::Boolean => "Boolean",
+            DataType::Int8 => "Int8",
+            DataType::Int16 => "Int16",
+            DataType::Int32 => "Int32",
+            DataType::Int64 => "Int64",
+            DataType::UInt8 => "UInt8",
+            DataType::UInt16 => "UInt16",
+            DataType::UInt32 => "UInt32",
+            DataType::UInt64 => "UInt64",
+            DataType::Float16 => "Float16",
+            DataType::Float32 => "Float32",
+            DataType::Float64 => "Float64",
+            DataType::Timestamp(_, _) => "Timestamp",
+            DataType::Date32 => "Date32",
+            DataType::Date64 => "Date64",
+            DataType::Time32(_) => "Time32",
+            DataType::Time64(_) => "Time64",
+            DataType::Duration(_) => "Duration",
+            DataType::Interval(_) => "Interval",
+            DataType::Binary => "Binary",
+            DataType::FixedSizeBinary(_) => "FixedSizeBinary",
+            DataType::LargeBinary => "LargeBinary",
+            DataType::Utf8 => "Utf8",
+            DataType::LargeUtf8 => "LargeUtf8",
+            DataType::List(_) => "List",
+            DataType::FixedSizeList(_, _) => "FixedSizeList",
+            DataType::LargeList(_) => "LargeList",
+            DataType::Struct(_) => "Struct",
+            DataType::Union(_, _) => "Union",
+            DataType::Dictionary(_, _) => "Dictionary",
+            DataType::Decimal128(_, _) => "Decimal128",
+            DataType::Decimal256(_, _) => "Decimal256",
+            DataType::Map(_, _) => "Map",
+            DataType::RunEndEncoded(_, _) => "RunEndEncoded",
+        })
+    }
 }
 
 /// PyO3 requires that objects passed between Rust and Python implement the trait `PyClass`

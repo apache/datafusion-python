@@ -239,7 +239,7 @@ impl ExecutionPlan for DatasetExec {
         Python::with_gil(|py| {
             let number_of_fragments = self.fragments.as_ref(py).len();
             match t {
-                DisplayFormatType::Default => {
+                DisplayFormatType::Default | DisplayFormatType::Verbose => {
                     let projected_columns: Vec<String> = self
                         .schema
                         .fields()

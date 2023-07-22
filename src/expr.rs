@@ -153,6 +153,12 @@ impl PyExpr {
         Ok(self.expr.canonical_name())
     }
 
+    /// Returns the name of the Expr variant.
+    /// Ex: 'IsNotNull', 'Literal', 'BinaryExpr', etc
+    fn variant_name(&self) -> PyResult<&str> {
+        Ok(self.expr.variant_name())
+    }
+
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
         let expr = match op {
             CompareOp::Lt => self.expr.clone().lt(other.expr),
@@ -302,7 +308,7 @@ impl PyExpr {
                 ScalarValue::Boolean(v) => v.into_py(py),
                 ScalarValue::Float32(v) => v.into_py(py),
                 ScalarValue::Float64(v) => v.into_py(py),
-                ScalarValue::Decimal128(_, _, _) => todo!(),
+                ScalarValue::Decimal128(v, _, _) => v.into_py(py),
                 ScalarValue::Int8(v) => v.into_py(py),
                 ScalarValue::Int16(v) => v.into_py(py),
                 ScalarValue::Int32(v) => v.into_py(py),
@@ -323,10 +329,10 @@ impl PyExpr {
                 ScalarValue::Time32Millisecond(v) => v.into_py(py),
                 ScalarValue::Time64Microsecond(v) => v.into_py(py),
                 ScalarValue::Time64Nanosecond(v) => v.into_py(py),
-                ScalarValue::TimestampSecond(_, _) => todo!(),
-                ScalarValue::TimestampMillisecond(_, _) => todo!(),
-                ScalarValue::TimestampMicrosecond(_, _) => todo!(),
-                ScalarValue::TimestampNanosecond(_, _) => todo!(),
+                ScalarValue::TimestampSecond(v, _) => v.into_py(py),
+                ScalarValue::TimestampMillisecond(v, _) => v.into_py(py),
+                ScalarValue::TimestampMicrosecond(v, _) => v.into_py(py),
+                ScalarValue::TimestampNanosecond(v, _) => v.into_py(py),
                 ScalarValue::IntervalYearMonth(v) => v.into_py(py),
                 ScalarValue::IntervalDayTime(v) => v.into_py(py),
                 ScalarValue::IntervalMonthDayNano(v) => v.into_py(py),
