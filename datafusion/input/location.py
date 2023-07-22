@@ -40,7 +40,7 @@ class LocationInputPlugin(BaseInputSource):
         _, extension = os.path.splitext(input_file)
         format = extension.lstrip(".").lower()
         num_rows = 0  # Total number of rows in the file. Used for statistics
-        columns = ()
+        columns = []
 
         if format == "parquet":
             import pyarrow.parquet as pq
