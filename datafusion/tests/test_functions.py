@@ -382,11 +382,11 @@ def test_temporal_functions(df):
     assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.float64())
     assert result.column(2) == pa.array(
         [datetime(2022, 12, 1), datetime(2027, 6, 1), datetime(2020, 7, 1)],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("us"),
     )
     assert result.column(3) == pa.array(
         [datetime(2022, 12, 31), datetime(2027, 6, 26), datetime(2020, 7, 2)],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("us"),
     )
     assert result.column(4) == pa.array(
         [
