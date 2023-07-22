@@ -288,6 +288,12 @@ impl DataTypeMap {
             ScalarValue::List(_val, field_ref) => Ok(DataType::List(field_ref.to_owned())),
             ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
             ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
+            // new types in 28.0.0
+            ScalarValue::Fixedsizelist(_, _, _)
+            | ScalarValue::DurationSecond(_)
+            | ScalarValue::DurationMicrosecond(_)
+            | ScalarValue::DurationNanosecond(_)
+            | ScalarValue::DurationMillisecond(_) => todo!(),
         }
     }
 }
