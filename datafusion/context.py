@@ -16,7 +16,7 @@
 # under the License.
 
 from abc import ABC, abstractmethod
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from datafusion.common import SqlSchema, SqlTable
 
@@ -79,8 +79,9 @@ class BaseSessionContext(ABC):
     @abstractmethod
     def create_table(
         self,
+        schema_name: str,
         table_name: str,
-        schema_name: str = None,
+        input_source: Any,
         **kwargs,
     ):
         """
