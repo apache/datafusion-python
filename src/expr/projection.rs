@@ -98,8 +98,8 @@ impl PyProjection {
     pub fn projected_expressions(local_expr: &PyExpr) -> Vec<PyExpr> {
         let mut projs: Vec<PyExpr> = Vec::new();
         match &local_expr.expr {
-            Expr::Alias(expr, _name) => {
-                let py_expr: PyExpr = PyExpr::from(*expr.clone());
+            Expr::Alias(alias) => {
+                let py_expr: PyExpr = PyExpr::from(*alias.expr.clone());
                 projs.extend_from_slice(Self::projected_expressions(&py_expr).as_slice());
             }
             _ => projs.push(local_expr.clone()),
