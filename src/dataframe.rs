@@ -136,8 +136,9 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    fn limit(&self, count: usize) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().limit(0, Some(count))?;
+    #[pyo3(signature = (count, offset=0))]
+    fn limit(&self, count: usize, offset: usize) -> PyResult<Self> {
+        let df = self.df.as_ref().clone().limit(offset, Some(count))?;
         Ok(Self::new(df))
     }
 

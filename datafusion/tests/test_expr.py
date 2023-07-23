@@ -81,6 +81,14 @@ def test_limit(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
+    assert plan.skip() == 0
+
+    df = test_ctx.sql("select c1 from test LIMIT 10 OFFSET 5")
+    plan = df.logical_plan()
+
+    plan = plan.to_variant()
+    assert isinstance(plan, Limit)
+    assert plan.skip() == 5
 
 
 def test_aggregate_query(test_ctx):
