@@ -1,0 +1,4 @@
+rust_compiler_version:
+    - 1.64
+libprotobuf:
+    - 3

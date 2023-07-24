@@ -35,13 +35,16 @@ build:
 
 requirements:
   build:
+    - libprotobuf             # [build_platform != target_platform]
+    - zlib                    # [build_platform != target_platform]
     - {{ compiler('rust') }}
-    - {{ compiler('c') }}  # [linux]
+    - {{ compiler('c') }}     # [linux]
   host:
     - python >=3.7
     - maturin >=0.15,<0.16
-    - libprotobuf =3
+    - libprotobuf
     - pip
+    - zlib
     - xz  # [linux]
   run:
     - python >=3.7
