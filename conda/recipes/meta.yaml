@@ -34,11 +34,15 @@ build:
   number: 0
 
 requirements:
+  build:
+    - {{ compiler('rust') }}
+    - {{ compiler('c') }}  # [linux]
   host:
     - python >=3.7
     - maturin >=0.15,<0.16
     - libprotobuf =3
     - pip
+    - xz  # [linux]
   run:
     - python >=3.7
     - pyarrow >=11.0.0
