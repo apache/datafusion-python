@@ -50,7 +50,6 @@ class LocationInputPlugin(BaseInputSource):
             num_rows = metadata.num_rows
 
             # Iterate through the schema and build the SqlTable
-            print(f"Metadata Schema: {metadata.schema}")
             for col in metadata.schema:
                 columns.append(
                     (

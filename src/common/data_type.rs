@@ -321,7 +321,7 @@ impl DataTypeMap {
             "int32" => Ok(DataType::Int32),
             "int64" => Ok(DataType::Int64),
             "int96" => {
-                // Int96 is an old datatype that is now deprecated. We convert to nanosecond timestamp
+                // Int96 is an old parquet datatype that is now deprecated. We convert to nanosecond timestamp
                 Ok(DataType::Timestamp(TimeUnit::Nanosecond, None))
             }
             "float" => Ok(DataType::Float32),
