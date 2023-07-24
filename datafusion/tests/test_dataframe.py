@@ -115,6 +115,17 @@ def test_limit(df):
     assert len(result.column(1)) == 1
 
 
+def test_limit_with_offset(df):
+    # only 3 rows, but limit past the end to ensure that offset is working
+    df = df.limit(5, offset=2)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert len(result.column(0)) == 1
+    assert len(result.column(1)) == 1
+
+
 def test_with_column(df):
     df = df.with_column("c", column("a") + column("b"))
 
