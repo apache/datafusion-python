@@ -151,6 +151,37 @@ jobs:
           name: dist
           path: target/wheels/*
 
+
+  build-manylinux-aarch64:
+    needs: [ generate-license ]
+    name: Manylinux ARM64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: rm LICENSE.txt
+      - name: Download LICENSE.txt
+        uses: actions/download-artifact@v3
+        with:
+          name: python-wheel-license
+          path: .
+      - run: cat LICENSE.txt
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          rust-toolchain: nightly
+          target: aarch64
+          manylinux: auto
+          rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
+          args: --release --manylinux 2014 --features protoc
+      - name: Archive wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: target/wheels/*
+
+
   build-manylinux:
     needs: [generate-license]
     name: Manylinux
