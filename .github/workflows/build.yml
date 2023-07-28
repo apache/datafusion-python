@@ -167,6 +167,8 @@ jobs:
       - run: cat LICENSE.txt
       - name: Setup QEMU
         uses: docker/setup-qemu-action@v1
+      - name: Install cross-compiler dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
