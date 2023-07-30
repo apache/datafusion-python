@@ -15,17 +15,15 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
+JSON
+====
+`JSON <https://www.json.org/json-en.html>`_ (JavaScript Object Notation) is a lightweight data-interchange format.
+When it comes to reading a JSON file, using :meth:`.SessionContext.read_json` is a simple and easy
 
-*************
-API Reference
-*************
+.. code-block:: python
 
-.. toctree::
-   :maxdepth: 2
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+    from datafusion import SessionContext
+
+    ctx = SessionContext()
+    df = ctx.read_avro("file.json")
