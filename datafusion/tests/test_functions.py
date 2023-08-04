@@ -411,3 +411,25 @@ def test_temporal_functions(df):
     assert result.column(9) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
+
+
+def test_case(df):
+    df = df.select(
+        f.case(column("b"))
+        .when(literal(4), literal(10))
+        .otherwise(literal(8)),
+        f.case(column("a"))
+        .when(literal("Hello"), literal("Hola"))
+        .when(literal("World"), literal("Mundo"))
+        .otherwise(literal("!!")),
+        f.case(column("a"))
+        .when(literal("Hello"), literal("Hola"))
+        .when(literal("World"), literal("Mundo"))
+        .end(),
+    )
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array([10, 8, 8])
+    assert result.column(1) == pa.array(["Hola", "Mundo", "!!"])
+    assert result.column(2) == pa.array(["Hola", "Mundo", None])

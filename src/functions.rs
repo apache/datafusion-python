@@ -17,6 +17,9 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
+use crate::errors::DataFusionError;
+use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::PyExpr;
 use datafusion_common::Column;
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
@@ -26,9 +29,6 @@ use datafusion_expr::{
     window_function::find_df_window_func,
     BuiltinScalarFunction, Expr, WindowFrame,
 };
-
-use crate::errors::DataFusionError;
-use crate::expr::PyExpr;
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
@@ -112,6 +112,14 @@ fn count_star() -> PyResult<PyExpr> {
             filter: None,
             order_by: None,
         }),
+    })
+}
+
+/// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
+#[pyfunction]
+fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
+    Ok(PyCaseBuilder {
+        case_builder: datafusion_expr::case(expr.expr),
     })
 }
 
@@ -355,6 +363,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(chr))?;
     m.add_wrapped(wrap_pyfunction!(char_length))?;
     m.add_wrapped(wrap_pyfunction!(coalesce))?;
+    m.add_wrapped(wrap_pyfunction!(case))?;
     m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
