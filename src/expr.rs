@@ -59,6 +59,7 @@ pub mod bool_expr;
 pub mod case;
 pub mod cast;
 pub mod column;
+pub mod conditional_expr;
 pub mod create_memory_table;
 pub mod create_view;
 pub mod cross_join;
