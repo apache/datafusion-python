@@ -15,17 +15,29 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
+.. _guide:
 
-*************
-API Reference
-*************
+Introduction
+============
 
-.. toctree::
-   :maxdepth: 2
+Welcome to the User Guide for the Python bindings of Arrow DataFusion. This guide aims to provide an introduction to
+DataFusion through various examples and highlight the most effective ways of using it.
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+Installation
+------------
+
+DataFusion is a Python library and, as such, can be installed via pip from `PyPI <https://pypi.org/project/datafusion>`__.
+
+.. code-block:: shell
+
+    pip install datafusion
+
+You can verify the installation by running:
+
+.. ipython:: python
+
+    import datafusion
+    datafusion.__version__
+
+
+
