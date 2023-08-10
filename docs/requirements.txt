@@ -20,3 +20,5 @@ pydata-sphinx-theme==0.8.0
 myst-parser
 maturin
 jinja2
+ipython
+pandas

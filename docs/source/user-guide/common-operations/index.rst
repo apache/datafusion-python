@@ -15,17 +15,16 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
-
-*************
-API Reference
-*************
+Common Operations
+=================
 
 .. toctree::
    :maxdepth: 2
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+   basic-info
+   select-and-filter
+   joins
+   functions
+   aggregations
+   windows
+   udf-and-udfa

@@ -15,17 +15,22 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
+Parquet
+=======
 
-*************
-API Reference
-*************
+It is quite simple to read a parquet file using the :meth:`.SessionContext.read_parquet` function.
 
-.. toctree::
-   :maxdepth: 2
+.. code-block:: python
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+
+    from datafusion import SessionContext
+
+    ctx = SessionContext()
+    df = ctx.read_parquet("file.parquet")
+
+An alternative is to use :meth:`.SessionContext.register_parquet`
+
+.. code-block:: python
+
+    ctx.register_parquet("file", "file.parquet")
+    df = ctx.table("file")
