@@ -350,6 +350,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#running-installing-pre-commit-hooks">
+   Running &amp; Installing pre-commit hooks
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#update-dependencies">
    Update Dependencies
   </a>
@@ -419,6 +424,12 @@ maturin<span class="w"> </span>develop
 python<span class="w"> </span>-m<span class="w"> </span>pytest
 </pre></div>
 </div>
+</section>
+<section id="running-installing-pre-commit-hooks">
+<h2>Running &amp; Installing pre-commit hooks<a class="headerlink" href="#running-installing-pre-commit-hooks" title="Permalink to this heading">¶</a></h2>
+<p>arrow-datafusion-python takes advantage of <a class="reference external" href="https://pre-commit.com/">pre-commit</a> to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.</p>
+<p>Our pre-commit hooks can be installed by running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code>, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.</p>
+<p>The pre-commit hooks can also be run adhoc without installing them by simply running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">run</span> <span class="pre">--all-files</span></code></p>
 </section>
 <section id="update-dependencies">
 <h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Permalink to this heading">¶</a></h2>
