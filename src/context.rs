@@ -17,6 +17,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use object_store::ObjectStore;
@@ -40,6 +41,7 @@ use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::datasource::file_format::file_type::FileCompressionType;
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::{SessionConfig, SessionContext, TaskContext};
@@ -469,7 +471,8 @@ impl PySessionContext {
                         has_header=true,
                         delimiter=",",
                         schema_infer_max_records=1000,
-                        file_extension=".csv"))]
+                        file_extension=".csv",
+                        file_compression_type=None))]
     fn register_csv(
         &mut self,
         name: &str,
@@ -479,6 +482,7 @@ impl PySessionContext {
         delimiter: &str,
         schema_infer_max_records: usize,
         file_extension: &str,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<()> {
         let path = path
@@ -495,7 +499,8 @@ impl PySessionContext {
             .has_header(has_header)
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension);
+            .file_extension(file_extension)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_csv(name, path, options);
@@ -559,7 +564,7 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![]))]
+    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
     fn read_json(
         &mut self,
         path: PathBuf,
@@ -567,13 +572,15 @@ impl PySessionContext {
         schema_infer_max_records: usize,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
@@ -595,7 +602,8 @@ impl PySessionContext {
         delimiter=",",
         schema_infer_max_records=1000,
         file_extension=".csv",
-        table_partition_cols=vec![]))]
+        table_partition_cols=vec![],
+        file_compression_type=None))]
     fn read_csv(
         &self,
         path: PathBuf,
@@ -605,6 +613,7 @@ impl PySessionContext {
         schema_infer_max_records: usize,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
@@ -623,7 +632,8 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
 
         if let Some(py_schema) = schema {
             options.schema = Some(&py_schema.0);
@@ -741,6 +751,15 @@ fn convert_table_partition_cols(
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+fn parse_file_compression_type(
+    file_compression_type: Option<String>,
+) -> Result<FileCompressionType, PyErr> {
+    FileCompressionType::from_str(&*file_compression_type.unwrap_or("".to_string()).as_str())
+        .map_err(|_| {
+            PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
+        })
 }
 
 impl From<PySessionContext> for SessionContext {

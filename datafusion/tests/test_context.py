@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import gzip
 import os
 
 import pyarrow as pa
@@ -336,8 +336,44 @@ def test_read_json(ctx):
     assert result[0].column(1) == pa.array([1, 2, 3])
 
 
+def test_read_json_compressed(ctx, tmp_path):
+    path = os.path.dirname(os.path.abspath(__file__))
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+
+    # File compression type
+    gzip_path = tmp_path / "data.json.gz"
+
+    with open(test_data_path, "rb") as csv_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(csv_file)
+
+    df = ctx.read_json(
+        gzip_path, file_extension=".gz", file_compression_type="gz"
+    )
+    result = df.collect()
+
+    assert result[0].column(0) == pa.array(["a", "b", "c"])
+    assert result[0].column(1) == pa.array([1, 2, 3])
+
+
 def test_read_csv(ctx):
     csv_df = ctx.read_csv(path="testing/data/csv/aggregate_test_100.csv")
+    csv_df.select(column("c1")).show()
+
+
+def test_read_csv_compressed(ctx, tmp_path):
+    test_data_path = "testing/data/csv/aggregate_test_100.csv"
+
+    # File compression type
+    gzip_path = tmp_path / "aggregate_test_100.csv.gz"
+
+    with open(test_data_path, "rb") as csv_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(csv_file)
+
+    csv_df = ctx.read_csv(
+        gzip_path, file_extension=".gz", file_compression_type="gz"
+    )
     csv_df.select(column("c1")).show()
 
 

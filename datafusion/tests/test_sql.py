@@ -19,6 +19,7 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
+import gzip
 
 from datafusion import udf
 
@@ -32,6 +33,7 @@ def test_no_table(ctx):
 
 def test_register_csv(ctx, tmp_path):
     path = tmp_path / "test.csv"
+    gzip_path = tmp_path / "test.csv.gz"
 
     table = pa.Table.from_arrays(
         [
@@ -43,6 +45,10 @@ def test_register_csv(ctx, tmp_path):
     )
     pa.csv.write_csv(table, path)
 
+    with open(path, "rb") as csv_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(csv_file)
+
     ctx.register_csv("csv", path)
     ctx.register_csv("csv1", str(path))
     ctx.register_csv(
@@ -52,6 +58,13 @@ def test_register_csv(ctx, tmp_path):
         delimiter=",",
         schema_infer_max_records=10,
     )
+    ctx.register_csv(
+        "csv_gzip",
+        gzip_path,
+        file_extension="gz",
+        file_compression_type="gzip",
+    )
+
     alternative_schema = pa.schema(
         [
             ("some_int", pa.int16()),
@@ -61,9 +74,9 @@ def test_register_csv(ctx, tmp_path):
     )
     ctx.register_csv("csv3", path, schema=alternative_schema)
 
-    assert ctx.tables() == {"csv", "csv1", "csv2", "csv3"}
+    assert ctx.tables() == {"csv", "csv1", "csv2", "csv3", "csv_gzip"}
 
-    for table in ["csv", "csv1", "csv2"]:
+    for table in ["csv", "csv1", "csv2", "csv_gzip"]:
         result = ctx.sql(f"SELECT COUNT(int) AS cnt FROM {table}").collect()
         result = pa.Table.from_batches(result)
         assert result.to_pydict() == {"cnt": [4]}
@@ -76,6 +89,12 @@ def test_register_csv(ctx, tmp_path):
         ValueError, match="Delimiter must be a single character"
     ):
         ctx.register_csv("csv4", path, delimiter="wrong")
+
+    with pytest.raises(
+        ValueError,
+        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+    ):
+        ctx.register_csv("csv4", path, file_compression_type="rar")
 
 
 def test_register_parquet(ctx, tmp_path):
