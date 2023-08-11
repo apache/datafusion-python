@@ -30,7 +30,8 @@ use datafusion_expr::{
     },
     lit,
     utils::exprlist_to_fields,
-    Between, BinaryExpr, Case, Cast, Expr, GetIndexedField, Like, LogicalPlan, Operator, TryCast,
+    Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, LogicalPlan,
+    Operator, TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
@@ -213,7 +214,9 @@ impl PyExpr {
     fn __getitem__(&self, key: &str) -> PyResult<PyExpr> {
         Ok(Expr::GetIndexedField(GetIndexedField::new(
             Box::new(self.expr.clone()),
-            ScalarValue::Utf8(Some(key.to_string())),
+            GetFieldAccess::NamedStructField {
+                name: ScalarValue::Utf8(Some(key.to_string())),
+            },
         ))
         .into())
     }
@@ -309,6 +312,7 @@ impl PyExpr {
                 ScalarValue::Float32(v) => v.into_py(py),
                 ScalarValue::Float64(v) => v.into_py(py),
                 ScalarValue::Decimal128(v, _, _) => v.into_py(py),
+                ScalarValue::Decimal256(_, _, _) => todo!(),
                 ScalarValue::Int8(v) => v.into_py(py),
                 ScalarValue::Int16(v) => v.into_py(py),
                 ScalarValue::Int32(v) => v.into_py(py),
@@ -577,6 +581,7 @@ impl PyExpr {
                 | Operator::BitwiseXor
                 | Operator::BitwiseAnd
                 | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
+                Operator::AtArrow | Operator::ArrowAt => todo!(),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),

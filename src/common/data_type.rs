@@ -242,6 +242,9 @@ impl DataTypeMap {
             ScalarValue::Decimal128(_, precision, scale) => {
                 Ok(DataType::Decimal128(*precision, *scale))
             }
+            ScalarValue::Decimal256(_, precision, scale) => {
+                Ok(DataType::Decimal256(*precision, *scale))
+            }
             ScalarValue::Dictionary(data_type, scalar_type) => {
                 // Call this function again to map the dictionary scalar_value to an Arrow type
                 Ok(DataType::Dictionary(

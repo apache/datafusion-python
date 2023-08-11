@@ -126,7 +126,7 @@ impl PyAggregateUDF {
     ) -> PyResult<Self> {
         let function = create_udaf(
             name,
-            input_type.0,
+            vec![input_type.0],
             Arc::new(return_type.0),
             parse_volatility(volatility)?,
             to_rust_accumulator(accumulator),
