@@ -14,12 +14,13 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import gzip
+import os
 
 import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-import gzip
 
 from datafusion import udf
 
@@ -152,6 +153,56 @@ def test_register_dataset(ctx, tmp_path):
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
     assert result.to_pydict() == {"cnt": [100]}
+
+
+def test_register_json(ctx, tmp_path):
+    path = os.path.dirname(os.path.abspath(__file__))
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    gzip_path = tmp_path / "data.json.gz"
+
+    with open(test_data_path, "rb") as json_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(json_file)
+
+    ctx.register_json("json", test_data_path)
+    ctx.register_json("json1", str(test_data_path))
+    ctx.register_json(
+        "json2",
+        test_data_path,
+        schema_infer_max_records=10,
+    )
+    ctx.register_json(
+        "json_gzip",
+        gzip_path,
+        file_extension="gz",
+        file_compression_type="gzip",
+    )
+
+    alternative_schema = pa.schema(
+        [
+            ("some_int", pa.int16()),
+            ("some_bytes", pa.string()),
+            ("some_floats", pa.float32()),
+        ]
+    )
+    ctx.register_json("json3", path, schema=alternative_schema)
+
+    assert ctx.tables() == {"json", "json1", "json2", "json3", "json_gzip"}
+
+    for table in ["json", "json1", "json2", "json_gzip"]:
+        result = ctx.sql(f'SELECT COUNT("B") AS cnt FROM {table}').collect()
+        result = pa.Table.from_batches(result)
+        assert result.to_pydict() == {"cnt": [3]}
+
+    result = ctx.sql("SELECT * FROM json3").collect()
+    result = pa.Table.from_batches(result)
+    assert result.schema == alternative_schema
+
+    with pytest.raises(
+        ValueError,
+        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+    ):
+        ctx.register_json("json4", gzip_path, file_compression_type="rar")
 
 
 def test_execute(ctx, tmp_path):
