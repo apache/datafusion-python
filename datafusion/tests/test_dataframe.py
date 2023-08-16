@@ -14,8 +14,10 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import os
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 
 from datafusion import functions as f
@@ -645,3 +647,68 @@ def test_describe(df):
         "b": [3.0, 3.0, 5.0, 1.0, 4.0, 6.0, 5.0],
         "c": [3.0, 3.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
     }
+
+
+def test_write_parquet(df, tmp_path):
+    path = tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "compression, compression_level",
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "compression, compression_level",
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["brotli", "zstd", "wrong"])
+def test_write_compressed_parquet_missing_compression_level(
+    df, tmp_path, compression
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)
