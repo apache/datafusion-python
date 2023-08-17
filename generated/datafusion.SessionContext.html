@@ -516,6 +516,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.register_json">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.register_json()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.SessionContext.register_object_store">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -715,37 +724,40 @@ multi-threaded execution engine to perform the execution.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_dataset" title="datafusion.SessionContext.register_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_dataset</span></code></a>(name, dataset)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_json" title="datafusion.SessionContext.register_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_json</span></code></a>(name, path[, schema, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
 <td><p>Register a an object store with the given name</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
 <td><p>Returns a PyDataFrame whose plan corresponds to the SQL statement.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.table" title="datafusion.SessionContext.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(name)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.table" title="datafusion.SessionContext.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(name)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.table_exist" title="datafusion.SessionContext.table_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table_exist</span></code></a>(name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.table_exist" title="datafusion.SessionContext.table_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table_exist</span></code></a>(name)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.tables" title="datafusion.SessionContext.tables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tables</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.tables" title="datafusion.SessionContext.tables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tables</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -840,6 +852,11 @@ multi-threaded execution engine to perform the execution.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.register_dataset">
 <span class="sig-name descname"><span class="pre">register_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_dataset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.register_json">
+<span class="sig-name descname"><span class="pre">register_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

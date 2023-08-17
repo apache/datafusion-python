@@ -31,6 +31,7 @@
       ~SessionContext.read_parquet
       ~SessionContext.register_csv
       ~SessionContext.register_dataset
+      ~SessionContext.register_json
       ~SessionContext.register_object_store
       ~SessionContext.register_parquet
       ~SessionContext.register_record_batches
