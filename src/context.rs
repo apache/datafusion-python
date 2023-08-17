@@ -509,6 +509,42 @@ impl PySessionContext {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        schema_infer_max_records=1000,
+                        file_extension=".json",
+                        table_partition_cols=vec![],
+                        file_compression_type=None))]
+    fn register_json(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
+        py: Python,
+    ) -> PyResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = NdJsonReadOptions::default()
+            .file_compression_type(parse_file_compression_type(file_compression_type)?)
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        options.schema_infer_max_records = schema_infer_max_records;
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_json(name, path, options);
+        wait_for_future(py, result).map_err(DataFusionError::from)?;
+
+        Ok(())
+    }
+
     // Registers a PyArrow.Dataset
     fn register_dataset(&self, name: &str, dataset: &PyAny, py: Python) -> PyResult<()> {
         let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
