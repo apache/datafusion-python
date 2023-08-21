@@ -205,6 +205,32 @@ def test_register_json(ctx, tmp_path):
         ctx.register_json("json4", gzip_path, file_compression_type="rar")
 
 
+def test_register_avro(ctx):
+    path = "testing/data/avro/alltypes_plain.avro"
+    ctx.register_avro("alltypes_plain", path)
+    result = ctx.sql(
+        "SELECT SUM(tinyint_col) as tinyint_sum FROM alltypes_plain"
+    ).collect()
+    result = pa.Table.from_batches(result).to_pydict()
+    assert result["tinyint_sum"][0] > 0
+
+    alternative_schema = pa.schema(
+        [
+            pa.field("id", pa.int64()),
+        ]
+    )
+
+    ctx.register_avro(
+        "alltypes_plain_schema",
+        path,
+        schema=alternative_schema,
+        infinite=False,
+    )
+    result = ctx.sql("SELECT * FROM alltypes_plain_schema").collect()
+    result = pa.Table.from_batches(result)
+    assert result.schema == alternative_schema
+
+
 def test_execute(ctx, tmp_path):
     data = [1, 1, 2, 2, 3, 11, 12]
 
