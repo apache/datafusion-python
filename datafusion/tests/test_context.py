@@ -214,6 +214,16 @@ def test_register_table(ctx, database):
     assert public.names() == {"csv", "csv1", "csv2", "csv3"}
 
 
+def test_read_table(ctx, database):
+    default = ctx.catalog()
+    public = default.database("public")
+    assert public.names() == {"csv", "csv1", "csv2"}
+
+    table = public.table("csv")
+    table_df = ctx.read_table(table)
+    table_df.show()
+
+
 def test_deregister_table(ctx, database):
     default = ctx.catalog()
     public = default.database("public")

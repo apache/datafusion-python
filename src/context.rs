@@ -545,6 +545,39 @@ impl PySessionContext {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        file_extension=".avro",
+                        table_partition_cols=vec![],
+                        infinite=false))]
+    fn register_avro(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        infinite: bool,
+        py: Python,
+    ) -> PyResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = AvroReadOptions::default()
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .mark_infinite(infinite);
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_avro(name, path, options);
+        wait_for_future(py, result).map_err(DataFusionError::from)?;
+
+        Ok(())
+    }
+
     // Registers a PyArrow.Dataset
     fn register_dataset(&self, name: &str, dataset: &PyAny, py: Python) -> PyResult<()> {
         let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
@@ -731,6 +764,14 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future).map_err(DataFusionError::from)?
         };
+        Ok(PyDataFrame::new(df))
+    }
+
+    fn read_table(&self, table: &PyTable) -> PyResult<PyDataFrame> {
+        let df = self
+            .ctx
+            .read_table(table.table())
+            .map_err(DataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
