@@ -829,7 +829,7 @@ The actual execution of a plan runs natively on Rust and Arrow on a multi-thread
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_json" title="datafusion.DataFrame.write_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_json</span></code></a>(path)</p></td>
 <td><p>Executes a query and writes the results to a partitioned JSON file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a>(path)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a>(path[, compression, ...])</p></td>
 <td><p>Write a <cite>DataFrame</cite> to a Parquet file.</p></td>
 </tr>
 </tbody>
@@ -1042,7 +1042,7 @@ renamed does not exist.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.write_parquet">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_parquet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uncompressed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_parquet" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a <cite>DataFrame</cite> to a Parquet file.</p>
 </dd></dl>
 
