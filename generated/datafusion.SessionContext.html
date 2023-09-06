@@ -498,6 +498,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.read_table">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.read_table()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.register_avro">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.register_avro()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.SessionContext.register_csv">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -718,6 +736,12 @@ multi-threaded execution engine to perform the execution.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.read_parquet" title="datafusion.SessionContext.read_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_parquet</span></code></a>(path[, table_partition_cols, ...])</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.read_table" title="datafusion.SessionContext.read_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_table</span></code></a>(table)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_avro" title="datafusion.SessionContext.register_avro"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_avro</span></code></a>(name, path[, schema, ...])</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_csv" title="datafusion.SessionContext.register_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_csv</span></code></a>(name, path[, schema, ...])</p></td>
 <td><p></p></td>
 </tr>
@@ -842,6 +866,16 @@ multi-threaded execution engine to perform the execution.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.read_parquet">
 <span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_parquet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.read_table">
+<span class="sig-name descname"><span class="pre">read_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.register_avro">
+<span class="sig-name descname"><span class="pre">register_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.avro'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infinite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_avro" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
