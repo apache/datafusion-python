@@ -22,7 +22,7 @@ use crate::{errors::DataFusionError, expr::PyExpr};
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::dataframe::DataFrame;
+use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::parquet::file::properties::WriterProperties;
 use datafusion::prelude::*;
@@ -305,7 +305,13 @@ impl PyDataFrame {
 
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.as_ref().clone().write_csv(path))?;
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_csv(path, DataFrameWriteOptions::default(), None),
+        )?;
         Ok(())
     }
 
@@ -357,17 +363,24 @@ impl PyDataFrame {
 
         wait_for_future(
             py,
-            self.df
-                .as_ref()
-                .clone()
-                .write_parquet(path, Option::from(writer_properties)),
+            self.df.as_ref().clone().write_parquet(
+                path,
+                DataFrameWriteOptions::default(),
+                Option::from(writer_properties),
+            ),
         )?;
         Ok(())
     }
 
     /// Executes a query and writes the results to a partitioned JSON file.
     fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.as_ref().clone().write_json(path))?;
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_json(path, DataFrameWriteOptions::default()),
+        )?;
         Ok(())
     }
 
