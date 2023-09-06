@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import math
 
 import numpy as np
 import pyarrow as pa
@@ -85,12 +86,15 @@ def test_math_functions():
     ctx = SessionContext()
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([0.1, -0.7, 0.55])], names=["value"]
+        [pa.array([0.1, -0.7, 0.55]), pa.array([float("nan"), 0, 2.0])],
+        names=["value", "na_value"],
     )
     df = ctx.create_dataframe([[batch]])
 
     values = np.array([0.1, -0.7, 0.55])
+    na_values = np.array([np.nan, 0, 2.0])
     col_v = column("value")
+    col_nav = column("na_value")
     df = df.select(
         f.abs(col_v),
         f.sin(col_v),
@@ -113,6 +117,20 @@ def test_math_functions():
         f.sqrt(col_v),
         f.signum(col_v),
         f.trunc(col_v),
+        f.asinh(col_v),
+        f.acosh(col_v),
+        f.atanh(col_v),
+        f.cbrt(col_v),
+        f.cosh(col_v),
+        f.degrees(col_v),
+        f.gcd(literal(9), literal(3)),
+        f.lcm(literal(6), literal(4)),
+        f.nanvl(col_nav, literal(5)),
+        f.pi(),
+        f.radians(col_v),
+        f.sinh(col_v),
+        f.tanh(col_v),
+        f.factorial(literal(6)),
     )
     batches = df.collect()
     assert len(batches) == 1
@@ -151,6 +169,22 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
     np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
     np.testing.assert_array_almost_equal(result.column(20), np.trunc(values))
+    np.testing.assert_array_almost_equal(result.column(21), np.arcsinh(values))
+    np.testing.assert_array_almost_equal(result.column(22), np.arccosh(values))
+    np.testing.assert_array_almost_equal(result.column(23), np.arctanh(values))
+    np.testing.assert_array_almost_equal(result.column(24), np.cbrt(values))
+    np.testing.assert_array_almost_equal(result.column(25), np.cosh(values))
+    np.testing.assert_array_almost_equal(result.column(26), np.degrees(values))
+    np.testing.assert_array_almost_equal(result.column(27), np.gcd(9, 3))
+    np.testing.assert_array_almost_equal(result.column(28), np.lcm(6, 4))
+    np.testing.assert_array_almost_equal(
+        result.column(29), np.where(np.isnan(na_values), 5, na_values)
+    )
+    np.testing.assert_array_almost_equal(result.column(30), np.pi)
+    np.testing.assert_array_almost_equal(result.column(31), np.radians(values))
+    np.testing.assert_array_almost_equal(result.column(32), np.sinh(values))
+    np.testing.assert_array_almost_equal(result.column(33), np.tanh(values))
+    np.testing.assert_array_almost_equal(result.column(34), math.factorial(6))
 
 
 def test_string_functions(df):
