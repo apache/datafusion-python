@@ -18,10 +18,12 @@
 name: Python Release Build
 on:
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
   push:
     tags: ["*-rc*"]
-    branches: ["branch-*"]
+    branches:
+      - branch-*
 
 jobs:
   generate-license:
