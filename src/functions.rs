@@ -232,7 +232,7 @@ scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
 scalar_function!(
     isnan,
-    IsNaN,
+    Isnan,
     "Returns true if a given number is +NaN or -NaN otherwise returns false."
 );
 scalar_function!(lcm, Lcm);
