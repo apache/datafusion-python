@@ -36,7 +36,7 @@ protoc = [ "datafusion-substrait/protoc" ]
 tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.19", features = ["extension-module", "abi3", "abi3-py38"] }
-datafusion = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1", features = ["pyarrow", "avro"] }
+datafusion = { git = "https://github.com/apache/arrow-datafusion.git", rev = "31.0.0-rc1", features = ["pyarrow", "avro"] }
 datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1", features = ["pyarrow"] }
 datafusion-expr = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
 datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
