@@ -33,7 +33,7 @@ default = ["mimalloc"]
 protoc = [ "datafusion-substrait/protoc" ]
 
 [dependencies]
-tokio = { version = "1.24", features = ["macros", "rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.32", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 rand = "0.8"
 pyo3 = { version = "0.19", features = ["extension-module", "abi3", "abi3-py38"] }
 datafusion = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1", features = ["pyarrow", "avro"] }
