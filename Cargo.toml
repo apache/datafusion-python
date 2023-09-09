@@ -41,7 +41,7 @@ datafusion-common = { git = "https://github.com/apache/arrow-datafusion.git", re
 datafusion-expr = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
 datafusion-optimizer = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
 datafusion-sql = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
-datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "29.0.0-rc1" }
+datafusion-substrait = { git = "https://github.com/apache/arrow-datafusion.git", rev = "31.0.0-rc1" }
 prost = "0.11"
 prost-types = "0.11"
 uuid = { version = "1.3", features = ["v4"] }
