@@ -25,9 +25,9 @@ jobs:
             exit 1
           fi
       - name: Checkout docs sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout docs target branch
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
