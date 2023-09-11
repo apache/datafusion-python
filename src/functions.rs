@@ -247,7 +247,7 @@ scalar_function!(
 scalar_function!(
     nanvl,
     Nanvl,
-    "Computes the MD5 hash of the argument, with the result written in hexadecimal."
+    "Returns x if x is not NaN otherwise returns y."
 );
 scalar_function!(octet_length, OctetLength, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
 scalar_function!(pi, Pi);
