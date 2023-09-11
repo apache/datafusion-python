@@ -33,8 +33,9 @@ def df():
             pa.array([1, 2, 3]),
             pa.array([4, 4, 6]),
             pa.array([9, 8, 5]),
+            pa.array([True, True, False]),
         ],
-        names=["a", "b", "c"],
+        names=["a", "b", "c", "d"],
     )
     return ctx.create_dataframe([[batch]])
 
@@ -73,7 +74,8 @@ def test_built_in_aggregation(df):
         ],
     )
     result = agg_df.collect()[0]
-    values_a, values_b, values_c = df.collect()[0]
+    print(df.collect()[0])
+    values_a, values_b, values_c, values_d = df.collect()[0]
 
     assert result.column(0) == pa.array([2], type=pa.uint64())
     assert result.column(1) == pa.array([4])
@@ -125,3 +127,36 @@ def test_built_in_aggregation(df):
     np.testing.assert_array_almost_equal(
         result.column(21), np.var(values_c, ddof=1)
     )
+
+
+def test_bit_add_or_xor(df):
+
+    df = df.aggregate(
+        [],
+        [
+            f.bit_and(column("a")),
+            f.bit_or(column("b")),
+            f.bit_xor(column("c")),
+        ],
+    )
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array([0])
+    assert result.column(1) == pa.array([6])
+    assert result.column(2) == pa.array([4])
+
+
+def test_bool_and_or(df):
+
+    df = df.aggregate(
+        [],
+        [
+            f.bool_and(column("d")),
+            f.bool_or(column("d")),
+        ],
+    )
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array([False])
+    assert result.column(1) == pa.array([True])

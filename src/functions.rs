@@ -362,6 +362,11 @@ aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(var_samp, Variance);
+aggregate_function!(bit_and, BitAnd);
+aggregate_function!(bit_or, BitOr);
+aggregate_function!(bit_xor, BitXor);
+aggregate_function!(bool_and, BoolAnd);
+aggregate_function!(bool_or, BoolOr);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
@@ -489,6 +494,11 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
+    m.add_wrapped(wrap_pyfunction!(bit_and))?;
+    m.add_wrapped(wrap_pyfunction!(bit_or))?;
+    m.add_wrapped(wrap_pyfunction!(bit_xor))?;
+    m.add_wrapped(wrap_pyfunction!(bool_and))?;
+    m.add_wrapped(wrap_pyfunction!(bool_or))?;
 
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
