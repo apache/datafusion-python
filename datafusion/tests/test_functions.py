@@ -131,6 +131,8 @@ def test_math_functions():
         f.sinh(col_v),
         f.tanh(col_v),
         f.factorial(literal(6)),
+        f.isnan(col_nav),
+        f.iszero(col_nav),
     )
     batches = df.collect()
     assert len(batches) == 1
@@ -185,6 +187,8 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(32), np.sinh(values))
     np.testing.assert_array_almost_equal(result.column(33), np.tanh(values))
     np.testing.assert_array_almost_equal(result.column(34), math.factorial(6))
+    np.testing.assert_array_almost_equal(result.column(35), np.isnan(na_values))
+    np.testing.assert_array_almost_equal(result.column(36), na_values == 0)
 
 
 def test_string_functions(df):

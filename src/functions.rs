@@ -230,7 +230,8 @@ scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
 scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
-scalar_function!(lcm, Lcm);
+scalar_function!(isnan, Isnan);
+scalar_function!(iszero, Iszero);scalar_function!(lcm, Lcm);
 scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
 scalar_function!(ln, Ln);
 scalar_function!(log, Log);
@@ -414,6 +415,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
+    m.add_wrapped(wrap_pyfunction!(isnan))?;
+    m.add_wrapped(wrap_pyfunction!(iszero))?;
     m.add_wrapped(wrap_pyfunction!(lcm))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
