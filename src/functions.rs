@@ -362,6 +362,15 @@ aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(var_samp, Variance);
+aggregate_function!(regr_avgx, RegrAvgx);
+aggregate_function!(regr_avgy, RegrAvgy);
+aggregate_function!(regr_count, RegrCount);
+aggregate_function!(regr_intercept, RegrIntercept);
+aggregate_function!(regr_r2, RegrR2);
+aggregate_function!(regr_slope, RegrSlope);
+aggregate_function!(regr_sxx, RegrSXX);
+aggregate_function!(regr_sxy, RegrSXY);
+aggregate_function!(regr_syy, RegrSYY);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
@@ -489,6 +498,15 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
+    m.add_wrapped(wrap_pyfunction!(regr_avgx))?;
+    m.add_wrapped(wrap_pyfunction!(regr_avgy))?;
+    m.add_wrapped(wrap_pyfunction!(regr_count))?;
+    m.add_wrapped(wrap_pyfunction!(regr_intercept))?;
+    m.add_wrapped(wrap_pyfunction!(regr_r2))?;
+    m.add_wrapped(wrap_pyfunction!(regr_slope))?;
+    m.add_wrapped(wrap_pyfunction!(regr_sxx))?;
+    m.add_wrapped(wrap_pyfunction!(regr_sxy))?;
+    m.add_wrapped(wrap_pyfunction!(regr_syy))?;
 
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
