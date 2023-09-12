@@ -479,6 +479,29 @@ def test_case(df):
     assert result.column(2) == pa.array(["Hola", "Mundo", None])
 
 
+def test_first_last_value(df):
+    df = df.aggregate(
+        [],
+        [
+            f.first_value(column("a")),
+            f.first_value(column("b")),
+            f.first_value(column("d")),
+            f.last_value(column("a")),
+            f.last_value(column("b")),
+            f.last_value(column("d")),
+        ],
+    )
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array(["Hello"])
+    assert result.column(1) == pa.array([4])
+    assert result.column(2) == pa.array([datetime(2022, 12, 31)])
+    assert result.column(3) == pa.array(["!"])
+    assert result.column(4) == pa.array([6])
+    assert result.column(5) == pa.array([datetime(2020, 7, 2)])
+
+
 def test_binary_string_functions(df):
     df = df.select(
         f.encode(column("a"), literal("base64")),

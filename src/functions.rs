@@ -362,6 +362,8 @@ aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(var_samp, Variance);
+aggregate_function!(first_value, FirstValue);
+aggregate_function!(last_value, LastValue);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
@@ -489,6 +491,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
+    m.add_wrapped(wrap_pyfunction!(first_value))?;
+    m.add_wrapped(wrap_pyfunction!(last_value))?;
 
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
