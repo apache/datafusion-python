@@ -15,17 +15,16 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
+Avro
+====
 
-*************
-API Reference
-*************
+`Avro <https://avro.apache.org/>`_ is a serialization format for record data. Reading an avro file is very straightforward
+with :meth:`.SessionContext.read_avro`
 
-.. toctree::
-   :maxdepth: 2
+.. code-block:: python
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+
+    from datafusion import SessionContext
+
+    ctx = SessionContext()
+    df = ctx.read_avro("file.avro")

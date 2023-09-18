@@ -1,0 +1,493 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+    <title>User Defined Functions &#8212; Arrow DataFusion  documentation</title>
+    
+    <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css" />
+    
+    <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="IO" href="../io/index.html" />
+    <link rel="prev" title="Window Functions" href="windows.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../../index.html">
+  <img src="../../_static/images/DataFusion-Logo-Background-White.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
+   Common Operations
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2">
+    <a class="reference internal" href="basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     User Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/avro.html">
+     Avro
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../api.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/dataframe.html">
+     DataFrame
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.DataFrame.html">
+       datafusion.DataFrame
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/execution_context.html">
+     SessionContext
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.SessionConfig.html">
+       datafusion.SessionConfig
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.RuntimeConfig.html">
+       datafusion.RuntimeConfig
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.SessionContext.html">
+       datafusion.SessionContext
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/expression.html">
+     Expr
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.Expr.html">
+       datafusion.Expr
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/functions.html">
+     Functions
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+    <label for="toctree-checkbox-7">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.functions.functions.html">
+       datafusion.functions.functions
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/object_store.html">
+     ObjectStore
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+    <label for="toctree-checkbox-8">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.object_store.object_store.html">
+       datafusion.object_store.object_store
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+
+<nav id="bd-toc-nav">
+    
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+
+<div class="tocsection editthispage">
+    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/user-guide/common-operations/udf-and-udfa.rst">
+        <i class="fas fa-pencil-alt"></i> Edit this page
+    </a>
+</div>
+
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="user-defined-functions">
+<h1>User Defined Functions<a class="headerlink" href="#user-defined-functions" title="Permalink to this heading">¶</a></h1>
+<p>DataFusion provides powerful expressions and functions, reducing the need for custom Python functions.
+However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs), with the <code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code> function.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pyarrow</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">datafusion</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">is_null</span><span class="p">()</span>
+   <span class="o">...</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">is_null_arr</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">is_null</span><span class="p">,</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">int64</span><span class="p">()],</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">bool_</span><span class="p">(),</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
+   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">...</span><span class="p">:</span> 
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;batch_array&quot;</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">is_null_arr</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)))</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
+   <span class="n">is_null</span><span class="p">(</span><span class="n">batch_array</span><span class="o">.</span><span class="n">a</span><span class="p">)</span>
+<span class="mi">0</span>                   <span class="kc">False</span>
+<span class="mi">1</span>                   <span class="kc">False</span>
+<span class="mi">2</span>                   <span class="kc">False</span>
+</pre></div>
+</div>
+<p>Additionally the <code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code> function allows you to define User-Defined Aggregate Functions (UDAFs)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyarrow</span>
+<span class="kn">import</span> <span class="nn">pyarrow.compute</span>
+<span class="kn">import</span> <span class="nn">datafusion</span>
+<span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">udaf</span><span class="p">,</span> <span class="n">Accumulator</span>
+
+<span class="k">class</span> <span class="nc">MyAccumulator</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interface of a user-defined accumulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># not nice since pyarrow scalars can&#39;t be summed yet. This breaks on `None`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># not nice since pyarrow scalars can&#39;t be summed yet. This breaks on `None`</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">states</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()])</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span>
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+        <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">my_udaf</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">MyAccumulator</span><span class="p">,</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s1">&#39;stable&#39;</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">([],[</span><span class="n">my_udaf</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))])</span>
+</pre></div>
+</div>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="windows.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Window Functions</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../io/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">IO</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  <footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2022, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+</p>
+    </div>
+    
+  </div>
+</footer>
+  </body>
+</html>

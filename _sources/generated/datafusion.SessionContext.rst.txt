@@ -29,8 +29,11 @@
       ~SessionContext.read_csv
       ~SessionContext.read_json
       ~SessionContext.read_parquet
+      ~SessionContext.read_table
+      ~SessionContext.register_avro
       ~SessionContext.register_csv
       ~SessionContext.register_dataset
+      ~SessionContext.register_json
       ~SessionContext.register_object_store
       ~SessionContext.register_parquet
       ~SessionContext.register_record_batches

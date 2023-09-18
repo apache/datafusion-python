@@ -72,13 +72,153 @@
 <nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
   <div class="bd-toc-item active">
     
-    <ul class="current nav bd-sidenav">
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">
+     User Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="../api.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -87,8 +227,8 @@
     <a class="reference internal" href="../api/dataframe.html">
      DataFrame
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-    <label for="toctree-checkbox-2">
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -104,8 +244,8 @@
     <a class="reference internal" href="../api/execution_context.html">
      SessionContext
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-    <label for="toctree-checkbox-3">
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -131,8 +271,8 @@
     <a class="reference internal" href="../api/expression.html">
      Expr
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -148,8 +288,8 @@
     <a class="reference internal" href="../api/functions.html">
      Functions
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
+    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+    <label for="toctree-checkbox-7">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -165,8 +305,8 @@
     <a class="reference internal" href="../api/object_store.html">
      ObjectStore
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
+    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+    <label for="toctree-checkbox-8">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -358,6 +498,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.read_table">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.read_table()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.register_avro">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.register_avro()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.SessionContext.register_csv">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -371,6 +529,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        SessionContext.register_dataset()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.register_json">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.register_json()
       </span>
      </code>
     </a>
@@ -569,43 +736,52 @@ multi-threaded execution engine to perform the execution.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.read_parquet" title="datafusion.SessionContext.read_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_parquet</span></code></a>(path[, table_partition_cols, ...])</p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.read_table" title="datafusion.SessionContext.read_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_table</span></code></a>(table)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_avro" title="datafusion.SessionContext.register_avro"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_avro</span></code></a>(name, path[, schema, ...])</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_csv" title="datafusion.SessionContext.register_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_csv</span></code></a>(name, path[, schema, ...])</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_dataset" title="datafusion.SessionContext.register_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_dataset</span></code></a>(name, dataset)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_json" title="datafusion.SessionContext.register_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_json</span></code></a>(name, path[, schema, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
 <td><p>Register a an object store with the given name</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
 <td><p>Returns a PyDataFrame whose plan corresponds to the SQL statement.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.table" title="datafusion.SessionContext.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(name)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.table" title="datafusion.SessionContext.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(name)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.table_exist" title="datafusion.SessionContext.table_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table_exist</span></code></a>(name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.table_exist" title="datafusion.SessionContext.table_exist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table_exist</span></code></a>(name)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.tables" title="datafusion.SessionContext.tables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tables</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.tables" title="datafusion.SessionContext.tables"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tables</span></code></a>()</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -679,27 +855,42 @@ multi-threaded execution engine to perform the execution.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.read_csv">
-<span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_csv" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_csv" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.read_json">
-<span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_json" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.read_parquet">
-<span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_parquet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sort_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_parquet" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.read_table">
+<span class="sig-name descname"><span class="pre">read_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.read_table" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.register_avro">
+<span class="sig-name descname"><span class="pre">register_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.avro'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">infinite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_avro" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.register_csv">
-<span class="sig-name descname"><span class="pre">register_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.csv'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_csv" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_csv" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.register_dataset">
 <span class="sig-name descname"><span class="pre">register_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_dataset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.register_json">
+<span class="sig-name descname"><span class="pre">register_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_json" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -710,7 +901,7 @@ multi-threaded execution engine to perform the execution.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.register_parquet">
-<span class="sig-name descname"><span class="pre">register_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_parquet" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sort_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_parquet" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">

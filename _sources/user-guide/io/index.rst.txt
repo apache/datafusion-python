@@ -15,17 +15,14 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-.. _api:
-
-*************
-API Reference
-*************
+IO
+==
 
 .. toctree::
    :maxdepth: 2
 
-   api/dataframe
-   api/execution_context
-   api/expression
-   api/functions
-   api/object_store
+   csv
+   parquet
+   json
+   avro
+
