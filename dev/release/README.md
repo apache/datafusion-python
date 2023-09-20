@@ -179,7 +179,7 @@ When prompted for username, enter `__token__`. When prompted for a password, ent
 Download the source tarball created in the previous step, untar it, and run:
 
 ```bash
-python3 -m build
+maturin sdist
 ```
 
 This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to testpypi:
@@ -262,4 +262,49 @@ anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.
 git checkout 0.8.0-rc1
 git tag 0.8.0
 git push apache 0.8.0
+```
+
+### Add the release to Apache Reporter
+
+Add the release to https://reporter.apache.org/addrelease.html?arrow with a version name prefixed with `RS-DATAFUSION-PYTHON`,
+for example `RS-DATAFUSION-PYTHON-31.0.0`.
+
+The release information is used to generate a template for a board report (see example
+[here](https://github.com/apache/arrow/pull/14357)).
+
+### Delete old RCs and Releases
+
+See the ASF documentation on [when to archive](https://www.apache.org/legal/release-policy.html#when-to-archive)
+for more information.
+
+#### Deleting old release candidates from `dev` svn
+
+Release candidates should be deleted once the release is published.
+
+Get a list of DataFusion release candidates:
+
+```bash
+svn ls https://dist.apache.org/repos/dist/dev/arrow | grep datafusion-python
+```
+
+Delete a release candidate:
+
+```bash
+svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/arrow/apache-arrow-datafusion-python-7.1.0-rc1/
+```
+
+#### Deleting old releases from `release` svn
+
+Only the latest release should be available. Delete old releases after publishing the new release.
+
+Get a list of DataFusion releases:
+
+```bash
+svn ls https://dist.apache.org/repos/dist/release/arrow | grep datafusion-python
+```
+
+Delete a release:
+
+```bash
+svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/arrow/arrow-datafusion-python-7.0.0
 ```
