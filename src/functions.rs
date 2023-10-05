@@ -17,9 +17,12 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
+use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::PyExpr;
+use crate::window_frame::PyWindowFrame;
+use datafusion::execution::FunctionRegistry;
 use datafusion_common::Column;
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
@@ -27,7 +30,7 @@ use datafusion_expr::{
     expr::{AggregateFunction, ScalarFunction, Sort, WindowFunction},
     lit,
     window_function::find_df_window_func,
-    BuiltinScalarFunction, Expr, WindowFrame,
+    BuiltinScalarFunction, Expr,
 };
 
 #[pyfunction]
@@ -130,13 +133,24 @@ fn window(
     args: Vec<PyExpr>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
+    window_frame: Option<PyWindowFrame>,
+    ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
-    let fun = find_df_window_func(name);
+    let fun = find_df_window_func(name).or_else(|| {
+        ctx.and_then(|ctx| {
+            ctx.ctx
+                .udaf(name)
+                .map(|fun| datafusion_expr::WindowFunction::AggregateUDF(fun))
+                .ok()
+        })
+    });
     if fun.is_none() {
         return Err(DataFusionError::Common("window function not found".to_string()).into());
     }
     let fun = fun.unwrap();
-    let window_frame = WindowFrame::new(order_by.is_some());
+    let window_frame = window_frame
+        .unwrap_or_else(|| PyWindowFrame::new("rows", None, Some(0)).unwrap())
+        .into();
     Ok(PyExpr {
         expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
             fun,
