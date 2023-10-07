@@ -50,7 +50,7 @@ macro_rules! extract_scalar_value {
 impl PyLiteral {
     /// Get the data type of this literal value
     fn data_type(&self) -> String {
-        format!("{}", self.value.get_datatype())
+        format!("{}", self.value.data_type())
     }
 
     pub fn value_f32(&self) -> PyResult<Option<f32>> {
