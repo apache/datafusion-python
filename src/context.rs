@@ -470,7 +470,7 @@ impl PySessionContext {
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
         options.file_sort_order = file_sort_order
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .into_iter()
             .map(|e| e.into_iter().map(|f| f.into()).collect())
             .collect();
@@ -759,7 +759,7 @@ impl PySessionContext {
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
         options.file_sort_order = file_sort_order
-            .unwrap_or(vec![])
+            .unwrap_or_default()
             .into_iter()
             .map(|e| e.into_iter().map(|f| f.into()).collect())
             .collect();
