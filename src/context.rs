@@ -42,10 +42,10 @@ use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::common::FileCompressionType;
+use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{SessionConfig, SessionContext, TaskContext};
+use datafusion::execution::context::{SessionConfig, SessionContext, SessionState, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
@@ -235,8 +235,9 @@ impl PySessionContext {
             RuntimeConfig::default()
         };
         let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
+        let session_state = SessionState::new_with_config_rt(config, runtime);
         Ok(PySessionContext {
-            ctx: SessionContext::with_config_rt(config, runtime),
+            ctx: SessionContext::new_with_state(session_state),
         })
     }
 
