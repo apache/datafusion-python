@@ -346,6 +346,9 @@ scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyw
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
+//Binary String Functions
+scalar_function!(encode, Encode);
+scalar_function!(decode, Decode);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -500,5 +503,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
+
+    //Binary String Functions
+    m.add_wrapped(wrap_pyfunction!(encode))?;
+    m.add_wrapped(wrap_pyfunction!(decode))?;
     Ok(())
 }

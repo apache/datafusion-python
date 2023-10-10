@@ -477,3 +477,17 @@ def test_case(df):
     assert result.column(0) == pa.array([10, 8, 8])
     assert result.column(1) == pa.array(["Hola", "Mundo", "!!"])
     assert result.column(2) == pa.array(["Hola", "Mundo", None])
+
+
+def test_binary_string_functions(df):
+    df = df.select(
+        f.encode(column("a"), literal("base64")),
+        f.decode(f.encode(column("a"), literal("base64")), literal("base64")),
+    )
+    result = df.collect()
+    assert len(result) == 1
+    result = result[0]
+    assert result.column(0) == pa.array(["SGVsbG8", "V29ybGQ", "IQ"])
+    assert pa.array(result.column(1)).cast(pa.string()) == pa.array(
+        ["Hello", "World", "!"]
+    )
