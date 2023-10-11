@@ -74,7 +74,6 @@ def test_built_in_aggregation(df):
         ],
     )
     result = agg_df.collect()[0]
-    print(df.collect()[0])
     values_a, values_b, values_c, values_d = df.collect()[0]
 
     assert result.column(0) == pa.array([2], type=pa.uint64())
