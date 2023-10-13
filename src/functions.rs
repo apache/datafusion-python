@@ -371,6 +371,13 @@ aggregate_function!(regr_slope, RegrSlope);
 aggregate_function!(regr_sxx, RegrSXX);
 aggregate_function!(regr_sxy, RegrSXY);
 aggregate_function!(regr_syy, RegrSYY);
+aggregate_function!(first_value, FirstValue);
+aggregate_function!(last_value, LastValue);
+aggregate_function!(bit_and, BitAnd);
+aggregate_function!(bit_or, BitOr);
+aggregate_function!(bit_xor, BitXor);
+aggregate_function!(bool_and, BoolAnd);
+aggregate_function!(bool_or, BoolOr);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
@@ -507,6 +514,13 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(regr_sxx))?;
     m.add_wrapped(wrap_pyfunction!(regr_sxy))?;
     m.add_wrapped(wrap_pyfunction!(regr_syy))?;
+    m.add_wrapped(wrap_pyfunction!(first_value))?;
+    m.add_wrapped(wrap_pyfunction!(last_value))?;
+    m.add_wrapped(wrap_pyfunction!(bit_and))?;
+    m.add_wrapped(wrap_pyfunction!(bit_or))?;
+    m.add_wrapped(wrap_pyfunction!(bit_xor))?;
+    m.add_wrapped(wrap_pyfunction!(bool_and))?;
+    m.add_wrapped(wrap_pyfunction!(bool_or))?;
 
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
