@@ -923,7 +923,7 @@ dependencies = [
  "pyo3",
  "pyo3-build-config",
  "rand",
- "regex-syntax 0.7.5",
+ "regex-syntax 0.8.1",
  "syn 2.0.38",
  "tokio",
  "url",
