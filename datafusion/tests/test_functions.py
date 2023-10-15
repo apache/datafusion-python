@@ -479,6 +479,28 @@ def test_case(df):
     assert result.column(2) == pa.array(["Hola", "Mundo", None])
 
 
+def test_regr_funcs(df):
+    # test case base on
+    # https://github.com/apache/arrow-datafusion/blob/d1361d56b9a9e0c165d3d71a8df6795d2a5f51dd/datafusion/core/tests/sqllogictests/test_files/aggregate.slt#L2330
+    ctx = SessionContext()
+    result = ctx.sql(
+        "select regr_slope(1,1), regr_intercept(1,1), "
+        "regr_count(1,1), regr_r2(1,1), regr_avgx(1,1), "
+        "regr_avgy(1,1), regr_sxx(1,1), regr_syy(1,1), "
+        "regr_sxy(1,1);"
+    ).collect()
+
+    assert result[0].column(0) == pa.array([None], type=pa.float64())
+    assert result[0].column(1) == pa.array([None], type=pa.float64())
+    assert result[0].column(2) == pa.array([1], type=pa.float64())
+    assert result[0].column(3) == pa.array([None], type=pa.float64())
+    assert result[0].column(4) == pa.array([1], type=pa.float64())
+    assert result[0].column(5) == pa.array([1], type=pa.float64())
+    assert result[0].column(6) == pa.array([0], type=pa.float64())
+    assert result[0].column(7) == pa.array([0], type=pa.float64())
+    assert result[0].column(8) == pa.array([0], type=pa.float64())
+
+
 def test_first_last_value(df):
     df = df.aggregate(
         [],
