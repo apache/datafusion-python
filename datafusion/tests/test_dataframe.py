@@ -21,7 +21,14 @@ import pyarrow.parquet as pq
 import pytest
 
 from datafusion import functions as f
-from datafusion import DataFrame, SessionContext, column, literal, udf
+from datafusion import (
+    DataFrame,
+    SessionContext,
+    WindowFrame,
+    column,
+    literal,
+    udf,
+)
 
 
 @pytest.fixture
@@ -302,6 +309,38 @@ def test_window_functions(df):
         "2nd_value": [None, 5, 5],
     }
     assert table.sort_by("a").to_pydict() == expected
+
+
+@pytest.mark.parametrize(
+    ("units", "start_bound", "end_bound"),
+    [
+        (units, start_bound, end_bound)
+        for units in ("rows", "range")
+        for start_bound in (None, 0, 1)
+        for end_bound in (None, 0, 1)
+    ]
+    + [
+        ("groups", 0, 0),
+    ],
+)
+def test_valid_window_frame(units, start_bound, end_bound):
+    WindowFrame(units, start_bound, end_bound)
+
+
+@pytest.mark.parametrize(
+    ("units", "start_bound", "end_bound"),
+    [
+        ("invalid-units", 0, None),
+        ("invalid-units", None, 0),
+        ("invalid-units", None, None),
+        ("groups", None, 0),
+        ("groups", 0, None),
+        ("groups", None, None),
+    ],
+)
+def test_invalid_window_frame(units, start_bound, end_bound):
+    with pytest.raises(RuntimeError):
+        WindowFrame(units, start_bound, end_bound)
 
 
 def test_get_dataframe(tmp_path):
