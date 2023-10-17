@@ -21,13 +21,17 @@ from typing import Any
 
 from datafusion.common import DataTypeMap, SqlTable
 from datafusion.input.base import BaseInputSource
+
+
 class LocationInputPlugin(BaseInputSource):
     """
     Input Plugin for everything, which can be read
     in from a file (on disk, remote etc.)
     """
+
     def is_correct_input(self, input_item: Any, table_name: str, **kwargs):
         return isinstance(input_item, str)
+
     def build_table(
         self,
         input_file: str,
@@ -40,6 +44,7 @@ class LocationInputPlugin(BaseInputSource):
         columns = []
         if format == "parquet":
             import pyarrow.parquet as pq
+
             # Read the Parquet metadata
             metadata = pq.read_metadata(input_file)
             num_rows = metadata.num_rows
@@ -53,6 +58,7 @@ class LocationInputPlugin(BaseInputSource):
                 )
         elif format == "csv":
             import csv
+
             # Consume header row and count number of rows for statistics.
             # TODO: Possibly makes sense to have the eager number of rows
             # calculated as a configuration since you must read the entire file
