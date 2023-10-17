@@ -16,12 +16,15 @@
 // under the License.
 
 use datafusion_common::DataFusionError;
+use datafusion_expr::expr::{AggregateFunction, AggregateUDF, Alias};
 use datafusion_expr::logical_plan::Aggregate;
+use datafusion_expr::Expr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
+use crate::errors::py_type_err;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -84,6 +87,24 @@ impl PyAggregate {
             .collect())
     }
 
+    /// Returns the inner Aggregate Expr(s)
+    pub fn agg_expressions(&self) -> PyResult<Vec<PyExpr>> {
+        Ok(self
+            .aggregate
+            .aggr_expr
+            .iter()
+            .map(|e| PyExpr::from(e.clone()))
+            .collect())
+    }
+
+    pub fn agg_func_name(&self, expr: PyExpr) -> PyResult<String> {
+        Self::_agg_func_name(&expr.expr)
+    }
+
+    pub fn aggregation_arguments(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
+        self._aggregation_arguments(&expr.expr)
+    }
+
     // Retrieves the input `LogicalPlan` to this `Aggregate` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {
         Ok(Self::inputs(self))
@@ -96,6 +117,34 @@ impl PyAggregate {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("Aggregate({})", self))
+    }
+}
+
+impl PyAggregate {
+    #[allow(clippy::only_used_in_recursion)]
+    fn _aggregation_arguments(&self, expr: &Expr) -> PyResult<Vec<PyExpr>> {
+        match expr {
+            // TODO: This Alias logic seems to be returning some strange results that we should investigate
+            Expr::Alias(Alias { expr, .. }) => self._aggregation_arguments(expr.as_ref()),
+            Expr::AggregateFunction(AggregateFunction { fun: _, args, .. })
+            | Expr::AggregateUDF(AggregateUDF { fun: _, args, .. }) => {
+                Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect())
+            }
+            _ => Err(py_type_err(
+                "Encountered a non Aggregate type in aggregation_arguments",
+            )),
+        }
+    }
+
+    fn _agg_func_name(expr: &Expr) -> PyResult<String> {
+        match expr {
+            Expr::Alias(Alias { expr, .. }) => Self::_agg_func_name(expr.as_ref()),
+            Expr::AggregateFunction(AggregateFunction { fun, .. }) => Ok(fun.to_string()),
+            Expr::AggregateUDF(AggregateUDF { fun, .. }) => Ok(fun.name.clone()),
+            _ => Err(py_type_err(
+                "Encountered a non Aggregate type in agg_func_name",
+            )),
+        }
     }
 }
 
