@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::ScalarValue;
+use datafusion_common::{DataFusionError, ScalarValue};
 use datafusion_expr::window_frame::{WindowFrame, WindowFrameBound, WindowFrameUnits};
 use pyo3::prelude::*;
 use std::fmt::{Display, Formatter};
+
+use crate::errors::py_datafusion_err;
 
 #[pyclass(name = "WindowFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
@@ -52,13 +54,18 @@ impl Display for PyWindowFrame {
 impl PyWindowFrame {
     #[new(unit, start_bound, end_bound)]
     pub fn new(units: &str, start_bound: Option<u64>, end_bound: Option<u64>) -> PyResult<Self> {
-        let units = match units.to_ascii_lowercase().as_str() {
-            "rows" => Some(WindowFrameUnits::Rows),
-            "range" => Some(WindowFrameUnits::Range),
-            "groups" => Some(WindowFrameUnits::Groups),
-            _ => None,
+        let units = units.to_ascii_lowercase();
+        let units = match units.as_str() {
+            "rows" => WindowFrameUnits::Rows,
+            "range" => WindowFrameUnits::Range,
+            "groups" => WindowFrameUnits::Groups,
+            _ => {
+                return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                    "{:?}",
+                    units,
+                ))));
+            }
         };
-        let units = units.unwrap();
         let start_bound = match start_bound {
             Some(start_bound) => {
                 WindowFrameBound::Preceding(ScalarValue::UInt64(Some(start_bound)))
@@ -66,7 +73,12 @@ impl PyWindowFrame {
             None => match units {
                 WindowFrameUnits::Range => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Rows => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
-                WindowFrameUnits::Groups => todo!(),
+                WindowFrameUnits::Groups => {
+                    return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                        "{:?}",
+                        units,
+                    ))));
+                }
             },
         };
         let end_bound = match end_bound {
@@ -74,7 +86,12 @@ impl PyWindowFrame {
             None => match units {
                 WindowFrameUnits::Rows => WindowFrameBound::Following(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Range => WindowFrameBound::Following(ScalarValue::UInt64(None)),
-                WindowFrameUnits::Groups => todo!(),
+                WindowFrameUnits::Groups => {
+                    return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                        "{:?}",
+                        units,
+                    ))));
+                }
             },
         };
         Ok(PyWindowFrame {
