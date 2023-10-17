@@ -30,4 +30,4 @@ def test_location_input():
     tbl = location_input.build_table(input_file, table_name)
     assert "blog" == tbl.name
     assert 3 == len(tbl.columns)
-    assert "blogs.parquet" in tbl.filepath
+    assert "blogs.parquet" in tbl.filepaths[0]
