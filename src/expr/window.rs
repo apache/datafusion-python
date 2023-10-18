@@ -15,19 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::ScalarValue;
+use datafusion_common::{DataFusionError, ScalarValue};
 use datafusion_expr::expr::WindowFunction;
-use datafusion_expr::{Expr, Window, WindowFrame, WindowFrameBound};
+use datafusion_expr::{Expr, Window, WindowFrame, WindowFrameBound, WindowFrameUnits};
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
-use crate::errors::{py_type_err, DataFusionError};
+use crate::errors::py_type_err;
 use crate::expr::logical_node::LogicalNode;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
 use super::py_expr_list;
+
+use crate::errors::py_datafusion_err;
 
 #[pyclass(name = "Window", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -39,6 +41,18 @@ pub struct PyWindow {
 #[derive(Clone)]
 pub struct PyWindowFrame {
     window_frame: WindowFrame,
+}
+
+impl From<PyWindowFrame> for WindowFrame {
+    fn from(window_frame: PyWindowFrame) -> Self {
+        window_frame.window_frame
+    }
+}
+
+impl From<WindowFrame> for PyWindowFrame {
+    fn from(window_frame: WindowFrame) -> PyWindowFrame {
+        PyWindowFrame { window_frame }
+    }
 }
 
 #[pyclass(name = "WindowFrameBound", module = "datafusion.expr", subclass)]
@@ -59,12 +73,6 @@ impl From<Window> for PyWindow {
     }
 }
 
-impl From<WindowFrame> for PyWindowFrame {
-    fn from(window_frame: WindowFrame) -> Self {
-        PyWindowFrame { window_frame }
-    }
-}
-
 impl From<WindowFrameBound> for PyWindowFrameBound {
     fn from(frame_bound: WindowFrameBound) -> Self {
         PyWindowFrameBound { frame_bound }
@@ -79,6 +87,16 @@ impl Display for PyWindow {
             Window Expr: {:?}
             Schema: {:?}",
             &self.window.window_expr, &self.window.schema
+        )
+    }
+}
+
+impl Display for PyWindowFrame {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(
+            f,
+            "OVER ({} BETWEEN {} AND {})",
+            self.window_frame.units, self.window_frame.start_bound, self.window_frame.end_bound
         )
     }
 }
@@ -130,7 +148,7 @@ impl PyWindow {
     }
 
     /// Returns a Pywindow frame for a given window function expression
-    pub fn get_window_frame(&self, expr: PyExpr) -> Option<PyWindowFrame> {
+    pub fn get_frame(&self, expr: PyExpr) -> Option<PyWindowFrame> {
         match expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { window_frame, .. }) => Some(window_frame.into()),
             _ => None,
@@ -148,6 +166,57 @@ fn not_window_function_err(expr: Expr) -> PyErr {
 
 #[pymethods]
 impl PyWindowFrame {
+    #[new(unit, start_bound, end_bound)]
+    pub fn new(units: &str, start_bound: Option<u64>, end_bound: Option<u64>) -> PyResult<Self> {
+        let units = units.to_ascii_lowercase();
+        let units = match units.as_str() {
+            "rows" => WindowFrameUnits::Rows,
+            "range" => WindowFrameUnits::Range,
+            "groups" => WindowFrameUnits::Groups,
+            _ => {
+                return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                    "{:?}",
+                    units,
+                ))));
+            }
+        };
+        let start_bound = match start_bound {
+            Some(start_bound) => {
+                WindowFrameBound::Preceding(ScalarValue::UInt64(Some(start_bound)))
+            }
+            None => match units {
+                WindowFrameUnits::Range => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
+                WindowFrameUnits::Rows => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
+                WindowFrameUnits::Groups => {
+                    return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                        "{:?}",
+                        units,
+                    ))));
+                }
+            },
+        };
+        let end_bound = match end_bound {
+            Some(end_bound) => WindowFrameBound::Following(ScalarValue::UInt64(Some(end_bound))),
+            None => match units {
+                WindowFrameUnits::Rows => WindowFrameBound::Following(ScalarValue::UInt64(None)),
+                WindowFrameUnits::Range => WindowFrameBound::Following(ScalarValue::UInt64(None)),
+                WindowFrameUnits::Groups => {
+                    return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
+                        "{:?}",
+                        units,
+                    ))));
+                }
+            },
+        };
+        Ok(PyWindowFrame {
+            window_frame: WindowFrame {
+                units,
+                start_bound,
+                end_bound,
+            },
+        })
+    }
+
     /// Returns the window frame units for the bounds
     pub fn get_frame_units(&self) -> PyResult<String> {
         Ok(self.window_frame.units.to_string())
@@ -159,6 +228,11 @@ impl PyWindowFrame {
     /// Returns end bound
     pub fn get_upper_bound(&self) -> PyResult<PyWindowFrameBound> {
         Ok(self.window_frame.end_bound.clone().into())
+    }
+
+    /// Get a String representation of this window frame
+    fn __repr__(&self) -> String {
+        format!("{}", self)
     }
 }
 
@@ -190,16 +264,15 @@ impl PyWindowFrameBound {
                     let s = v.clone().unwrap();
                     match s.parse::<u64>() {
                         Ok(s) => Ok(Some(s)),
-                        Err(_e) => Err(DataFusionError::Common(format!(
+                        Err(_e) => Err(DataFusionError::Plan(format!(
                             "Unable to parse u64 from Utf8 value '{s}'"
                         ))
                         .into()),
                     }
                 }
-                ref x => Err(DataFusionError::Common(format!(
-                    "Unexpected window frame bound: {x}"
-                ))
-                .into()),
+                ref x => {
+                    Err(DataFusionError::Plan(format!("Unexpected window frame bound: {x}")).into())
+                }
             },
             WindowFrameBound::CurrentRow => Ok(None),
         }
