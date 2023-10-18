@@ -46,6 +46,10 @@ impl PyJoinType {
     pub fn is_outer(&self) -> bool {
         self.join_type.is_outer()
     }
+
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{}", self.join_type))
+    }
 }
 
 impl Display for PyJoinType {
@@ -69,6 +73,16 @@ impl From<JoinConstraint> for PyJoinConstraint {
 impl From<PyJoinConstraint> for JoinConstraint {
     fn from(join_constraint: PyJoinConstraint) -> Self {
         join_constraint.join_constraint
+    }
+}
+
+#[pymethods]
+impl PyJoinConstraint {
+    fn __repr__(&self) -> PyResult<String> {
+        match self.join_constraint {
+            JoinConstraint::On => Ok("On".to_string()),
+            JoinConstraint::Using => Ok("Using".to_string()),
+        }
     }
 }
 
