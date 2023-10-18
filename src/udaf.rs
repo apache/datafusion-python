@@ -17,7 +17,7 @@
 
 use std::sync::Arc;
 
-use pyo3::{prelude::*, types::PyTuple};
+use pyo3::{prelude::*, types::PyBool, types::PyTuple};
 
 use datafusion::arrow::array::{Array, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
@@ -92,6 +92,34 @@ impl Accumulator for RustAccumulator {
 
     fn size(&self) -> usize {
         std::mem::size_of_val(self)
+    }
+
+    fn retract_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        Python::with_gil(|py| {
+            // 1. cast args to Pyarrow array
+            let py_args = values
+                .iter()
+                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
+                .collect::<Vec<_>>();
+            let py_args = PyTuple::new(py, py_args);
+
+            // 2. call function
+            self.accum
+                .as_ref(py)
+                .call_method1("retract_batch", py_args)
+                .map_err(|e| DataFusionError::Execution(format!("{e}")))?;
+
+            Ok(())
+        })
+    }
+
+    fn supports_retract_batch(&self) -> bool {
+        Python::with_gil(|py| {
+            let x: Result<&PyAny, PyErr> =
+                self.accum.as_ref(py).call_method0("supports_retract_batch");
+            let x: &PyAny = x.unwrap_or(PyBool::new(py, false));
+            x.extract().unwrap_or(false)
+        })
     }
 }
 

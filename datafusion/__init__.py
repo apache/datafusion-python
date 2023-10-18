@@ -33,6 +33,7 @@ from ._internal import (
     SessionConfig,
     RuntimeConfig,
     ScalarUDF,
+    WindowFrame,
 )
 
 from .common import (
@@ -98,6 +99,7 @@ __all__ = [
     "Expr",
     "AggregateUDF",
     "ScalarUDF",
+    "WindowFrame",
     "column",
     "literal",
     "TableScan",
