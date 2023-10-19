@@ -81,9 +81,7 @@ def test_built_in_aggregation(df):
     assert result.column(2) == pa.array([4])
     assert result.column(3) == pa.array([6])
     assert result.column(4) == pa.array([[4, 4, 6]])
-    np.testing.assert_array_almost_equal(
-        result.column(5), np.average(values_a)
-    )
+    np.testing.assert_array_almost_equal(result.column(5), np.average(values_a))
     np.testing.assert_array_almost_equal(
         result.column(6), np.corrcoef(values_a, values_b)[0][1]
     )
@@ -101,35 +99,20 @@ def test_built_in_aggregation(df):
     )
     np.testing.assert_array_almost_equal(result.column(11), np.max(values_a))
     np.testing.assert_array_almost_equal(result.column(12), np.mean(values_b))
-    np.testing.assert_array_almost_equal(
-        result.column(13), np.median(values_b)
-    )
+    np.testing.assert_array_almost_equal(result.column(13), np.median(values_b))
     np.testing.assert_array_almost_equal(result.column(14), np.min(values_a))
     np.testing.assert_array_almost_equal(
         result.column(15), np.sum(values_b.to_pylist())
     )
-    np.testing.assert_array_almost_equal(
-        result.column(16), np.std(values_a, ddof=1)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(17), np.std(values_b, ddof=0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(18), np.std(values_c, ddof=1)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(19), np.var(values_a, ddof=1)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(20), np.var(values_b, ddof=0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(21), np.var(values_c, ddof=1)
-    )
+    np.testing.assert_array_almost_equal(result.column(16), np.std(values_a, ddof=1))
+    np.testing.assert_array_almost_equal(result.column(17), np.std(values_b, ddof=0))
+    np.testing.assert_array_almost_equal(result.column(18), np.std(values_c, ddof=1))
+    np.testing.assert_array_almost_equal(result.column(19), np.var(values_a, ddof=1))
+    np.testing.assert_array_almost_equal(result.column(20), np.var(values_b, ddof=0))
+    np.testing.assert_array_almost_equal(result.column(21), np.var(values_c, ddof=1))
 
 
 def test_bit_add_or_xor(df):
-
     df = df.aggregate(
         [],
         [
@@ -147,7 +130,6 @@ def test_bit_add_or_xor(df):
 
 
 def test_bool_and_or(df):
-
     df = df.aggregate(
         [],
         [

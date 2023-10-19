@@ -27,9 +27,7 @@ def print_pulls(repo_name, title, pulls):
         print("**{}:**".format(title))
         print()
         for pull, commit in pulls:
-            url = "https://github.com/{}/pull/{}".format(
-                repo_name, pull.number
-            )
+            url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
             print(
                 "- {} [#{}]({}) ({})".format(
                     pull.title, pull.number, url, commit.author.login
@@ -40,9 +38,7 @@ def print_pulls(repo_name, title, pulls):
 
 def generate_changelog(repo, repo_name, tag1, tag2):
     # get a list of commits between two tags
-    print(
-        f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr
-    )
+    print(f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr)
     comparison = repo.compare(tag1, tag2)
 
     # get the pull requests for these commits

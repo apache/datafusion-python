@@ -684,9 +684,7 @@ def test_write_parquet(df, tmp_path):
     "compression, compression_level",
     [("gzip", 6), ("brotli", 7), ("zstd", 15)],
 )
-def test_write_compressed_parquet(
-    df, tmp_path, compression, compression_level
-):
+def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
     path = tmp_path
 
     df.write_parquet(
@@ -726,9 +724,7 @@ def test_write_compressed_parquet_wrong_compression_level(
 
 
 @pytest.mark.parametrize("compression", ["brotli", "zstd", "wrong"])
-def test_write_compressed_parquet_missing_compression_level(
-    df, tmp_path, compression
-):
+def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compression):
     path = tmp_path
 
     with pytest.raises(ValueError):

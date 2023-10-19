@@ -75,9 +75,7 @@ class LocationInputPlugin(BaseInputSource):
                     num_rows += 1
 
             # TODO: Need to actually consume this row into resonable columns
-            raise RuntimeError(
-                "TODO: Currently unable to support CSV input files."
-            )
+            raise RuntimeError("TODO: Currently unable to support CSV input files.")
         else:
             raise RuntimeError(
                 f"Input of format: `{format}` is currently not supported.\

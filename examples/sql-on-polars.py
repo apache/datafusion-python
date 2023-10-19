@@ -20,7 +20,5 @@ from datafusion.polars import SessionContext
 
 ctx = SessionContext()
 ctx.register_table("taxi", "yellow_tripdata_2021-01.parquet")
-df = ctx.sql(
-    "select passenger_count, count(*) from taxi group by passenger_count"
-)
+df = ctx.sql("select passenger_count, count(*) from taxi group by passenger_count")
 print(df)
