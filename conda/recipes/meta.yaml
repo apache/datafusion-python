@@ -36,6 +36,8 @@ requirements:
   build:
     - python                                 # [build_platform != target_platform]
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
+    - zlib                                   # [build_platform != target_platform]
+    - {{ compiler('c') }}                    # [linux64]
     - {{ compiler('rust') }}
     - cargo-bundle-licenses
     - maturin >=0.15,<0.16
@@ -45,6 +47,7 @@ requirements:
     - maturin >=0.15,<0.16
     - pip
     - zlib
+    - xz  # [linux64]
   run:
     - python
     - pyarrow >=11.0.0
