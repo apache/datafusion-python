@@ -15,11 +15,22 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::arrow::datatypes::DataType;
-use datafusion_common::DataFusionError;
-use pyo3::prelude::*;
+use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
+use datafusion_common::{DataFusionError, ScalarValue};
+use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::errors::py_datafusion_err;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[pyclass(name = "RexType", module = "datafusion.common")]
+pub enum RexType {
+    Alias,
+    Literal,
+    Call,
+    Reference,
+    ScalarSubquery,
+    Other,
+}
 
 /// These bindings are tying together several disparate systems.
 /// You have SQL types for the SQL strings and RDBMS systems itself.
@@ -33,12 +44,12 @@ use crate::errors::py_datafusion_err;
 #[derive(Debug, Clone)]
 #[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
 pub struct DataTypeMap {
-    #[allow(dead_code)]
-    arrow_type: PyDataType,
-    #[allow(dead_code)]
-    python_type: PythonType,
-    #[allow(dead_code)]
-    sql_type: SqlType,
+    #[pyo3(get, set)]
+    pub arrow_type: PyDataType,
+    #[pyo3(get, set)]
+    pub python_type: PythonType,
+    #[pyo3(get, set)]
+    pub sql_type: SqlType,
 }
 
 impl DataTypeMap {
@@ -119,9 +130,11 @@ impl DataTypeMap {
                 PythonType::Float,
                 SqlType::FLOAT,
             )),
-            DataType::Timestamp(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Timestamp(unit, tz) => Ok(DataTypeMap::new(
+                DataType::Timestamp(unit.clone(), tz.clone()),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
             DataType::Date32 => Ok(DataTypeMap::new(
                 DataType::Date32,
                 PythonType::Datetime,
@@ -132,18 +145,28 @@ impl DataTypeMap {
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
-            DataType::Time32(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
-            DataType::Time64(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Time32(unit) => Ok(DataTypeMap::new(
+                DataType::Time32(unit.clone()),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
+            DataType::Time64(unit) => Ok(DataTypeMap::new(
+                DataType::Time64(unit.clone()),
+                PythonType::Datetime,
+                SqlType::DATE,
+            )),
             DataType::Duration(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
-            DataType::Interval(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Interval(interval_unit) => Ok(DataTypeMap::new(
+                DataType::Interval(interval_unit.clone()),
+                PythonType::Datetime,
+                match interval_unit {
+                    IntervalUnit::DayTime => SqlType::INTERVAL_DAY,
+                    IntervalUnit::MonthDayNano => SqlType::INTERVAL_MONTH,
+                    IntervalUnit::YearMonth => SqlType::INTERVAL_YEAR_MONTH,
+                },
+            )),
             DataType::Binary => Ok(DataTypeMap::new(
                 DataType::Binary,
                 PythonType::Bytes,
@@ -186,18 +209,95 @@ impl DataTypeMap {
             DataType::Dictionary(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
-            DataType::Decimal128(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
-            DataType::Decimal256(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
-                format!("{:?}", arrow_type),
-            ))),
+            DataType::Decimal128(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal128(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
+            DataType::Decimal256(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal256(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
             DataType::Map(_, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 format!("{:?}", arrow_type),
             ))),
             DataType::RunEndEncoded(_, _) => Err(py_datafusion_err(
                 DataFusionError::NotImplemented(format!("{:?}", arrow_type)),
             )),
+        }
+    }
+
+    /// Generate the `DataTypeMap` from a `ScalarValue` instance
+    pub fn map_from_scalar_value(scalar_val: &ScalarValue) -> Result<DataTypeMap, PyErr> {
+        DataTypeMap::map_from_arrow_type(&DataTypeMap::map_from_scalar_to_arrow(scalar_val)?)
+    }
+
+    /// Maps a `ScalarValue` to an Arrow `DataType`
+    pub fn map_from_scalar_to_arrow(scalar_val: &ScalarValue) -> Result<DataType, PyErr> {
+        match scalar_val {
+            ScalarValue::Boolean(_) => Ok(DataType::Boolean),
+            ScalarValue::Float32(_) => Ok(DataType::Float32),
+            ScalarValue::Float64(_) => Ok(DataType::Float64),
+            ScalarValue::Decimal128(_, precision, scale) => {
+                Ok(DataType::Decimal128(*precision, *scale))
+            }
+            ScalarValue::Decimal256(_, precision, scale) => {
+                Ok(DataType::Decimal256(*precision, *scale))
+            }
+            ScalarValue::Dictionary(data_type, scalar_type) => {
+                // Call this function again to map the dictionary scalar_value to an Arrow type
+                Ok(DataType::Dictionary(
+                    Box::new(*data_type.clone()),
+                    Box::new(DataTypeMap::map_from_scalar_to_arrow(scalar_type)?),
+                ))
+            }
+            ScalarValue::Int8(_) => Ok(DataType::Int8),
+            ScalarValue::Int16(_) => Ok(DataType::Int16),
+            ScalarValue::Int32(_) => Ok(DataType::Int32),
+            ScalarValue::Int64(_) => Ok(DataType::Int64),
+            ScalarValue::UInt8(_) => Ok(DataType::UInt8),
+            ScalarValue::UInt16(_) => Ok(DataType::UInt16),
+            ScalarValue::UInt32(_) => Ok(DataType::UInt32),
+            ScalarValue::UInt64(_) => Ok(DataType::UInt64),
+            ScalarValue::Utf8(_) => Ok(DataType::Utf8),
+            ScalarValue::LargeUtf8(_) => Ok(DataType::LargeUtf8),
+            ScalarValue::Binary(_) => Ok(DataType::Binary),
+            ScalarValue::LargeBinary(_) => Ok(DataType::LargeBinary),
+            ScalarValue::Date32(_) => Ok(DataType::Date32),
+            ScalarValue::Date64(_) => Ok(DataType::Date64),
+            ScalarValue::Time32Second(_) => Ok(DataType::Time32(TimeUnit::Second)),
+            ScalarValue::Time32Millisecond(_) => Ok(DataType::Time32(TimeUnit::Millisecond)),
+            ScalarValue::Time64Microsecond(_) => Ok(DataType::Time64(TimeUnit::Microsecond)),
+            ScalarValue::Time64Nanosecond(_) => Ok(DataType::Time64(TimeUnit::Nanosecond)),
+            ScalarValue::Null => Ok(DataType::Null),
+            ScalarValue::TimestampSecond(_, tz) => {
+                Ok(DataType::Timestamp(TimeUnit::Second, tz.to_owned()))
+            }
+            ScalarValue::TimestampMillisecond(_, tz) => {
+                Ok(DataType::Timestamp(TimeUnit::Millisecond, tz.to_owned()))
+            }
+            ScalarValue::TimestampMicrosecond(_, tz) => {
+                Ok(DataType::Timestamp(TimeUnit::Microsecond, tz.to_owned()))
+            }
+            ScalarValue::TimestampNanosecond(_, tz) => {
+                Ok(DataType::Timestamp(TimeUnit::Nanosecond, tz.to_owned()))
+            }
+            ScalarValue::IntervalYearMonth(..) => Ok(DataType::Interval(IntervalUnit::YearMonth)),
+            ScalarValue::IntervalDayTime(..) => Ok(DataType::Interval(IntervalUnit::DayTime)),
+            ScalarValue::IntervalMonthDayNano(..) => {
+                Ok(DataType::Interval(IntervalUnit::MonthDayNano))
+            }
+            ScalarValue::List(_val, field_ref) => Ok(DataType::List(field_ref.to_owned())),
+            ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
+            ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
+            ScalarValue::Fixedsizelist(_, field_ref, size) => {
+                Ok(DataType::FixedSizeList(field_ref.to_owned(), *size))
+            }
+            ScalarValue::DurationSecond(_) => Ok(DataType::Duration(TimeUnit::Second)),
+            ScalarValue::DurationMillisecond(_) => Ok(DataType::Duration(TimeUnit::Millisecond)),
+            ScalarValue::DurationMicrosecond(_) => Ok(DataType::Duration(TimeUnit::Microsecond)),
+            ScalarValue::DurationNanosecond(_) => Ok(DataType::Duration(TimeUnit::Nanosecond)),
         }
     }
 }
@@ -214,9 +314,40 @@ impl DataTypeMap {
     }
 
     #[staticmethod]
+    #[pyo3(name = "from_parquet_type_str")]
+    /// When using pyarrow.parquet.read_metadata().schema.column(x).physical_type you are presented
+    /// with a String type for schema rather than an object type. Here we make a best effort
+    /// to convert that to a physical type.
+    pub fn py_map_from_parquet_type_str(parquet_str_type: String) -> PyResult<DataTypeMap> {
+        let arrow_dtype = match parquet_str_type.to_lowercase().as_str() {
+            "boolean" => Ok(DataType::Boolean),
+            "int32" => Ok(DataType::Int32),
+            "int64" => Ok(DataType::Int64),
+            "int96" => {
+                // Int96 is an old parquet datatype that is now deprecated. We convert to nanosecond timestamp
+                Ok(DataType::Timestamp(TimeUnit::Nanosecond, None))
+            }
+            "float" => Ok(DataType::Float32),
+            "double" => Ok(DataType::Float64),
+            _ => Err(PyValueError::new_err(format!(
+                "Unable to determine Arrow Data Type from Parquet String type: {:?}",
+                parquet_str_type
+            ))),
+        };
+        DataTypeMap::map_from_arrow_type(&arrow_dtype?)
+    }
+
+    #[staticmethod]
     #[pyo3(name = "arrow")]
     pub fn py_map_from_arrow_type(arrow_type: &PyDataType) -> PyResult<DataTypeMap> {
         DataTypeMap::map_from_arrow_type(&arrow_type.data_type)
+    }
+
+    #[staticmethod]
+    #[pyo3(name = "arrow_str")]
+    pub fn py_map_from_arrow_type_str(arrow_type_str: String) -> PyResult<DataTypeMap> {
+        let data_type = PyDataType::py_map_from_arrow_type_str(arrow_type_str);
+        DataTypeMap::map_from_arrow_type(&data_type?.data_type)
     }
 
     #[staticmethod]
@@ -413,6 +544,50 @@ impl DataTypeMap {
             )),
         }
     }
+
+    /// Unfortunately PyO3 does not allow for us to expose the DataType as an enum since
+    /// we cannot directly annotae the Enum instance of dependency code. Therefore, here
+    /// we provide an enum to mimic it.
+    #[pyo3(name = "friendly_arrow_type_name")]
+    pub fn friendly_arrow_type_name(&self) -> PyResult<&str> {
+        Ok(match &self.arrow_type.data_type {
+            DataType::Null => "Null",
+            DataType::Boolean => "Boolean",
+            DataType::Int8 => "Int8",
+            DataType::Int16 => "Int16",
+            DataType::Int32 => "Int32",
+            DataType::Int64 => "Int64",
+            DataType::UInt8 => "UInt8",
+            DataType::UInt16 => "UInt16",
+            DataType::UInt32 => "UInt32",
+            DataType::UInt64 => "UInt64",
+            DataType::Float16 => "Float16",
+            DataType::Float32 => "Float32",
+            DataType::Float64 => "Float64",
+            DataType::Timestamp(_, _) => "Timestamp",
+            DataType::Date32 => "Date32",
+            DataType::Date64 => "Date64",
+            DataType::Time32(_) => "Time32",
+            DataType::Time64(_) => "Time64",
+            DataType::Duration(_) => "Duration",
+            DataType::Interval(_) => "Interval",
+            DataType::Binary => "Binary",
+            DataType::FixedSizeBinary(_) => "FixedSizeBinary",
+            DataType::LargeBinary => "LargeBinary",
+            DataType::Utf8 => "Utf8",
+            DataType::LargeUtf8 => "LargeUtf8",
+            DataType::List(_) => "List",
+            DataType::FixedSizeList(_, _) => "FixedSizeList",
+            DataType::LargeList(_) => "LargeList",
+            DataType::Struct(_) => "Struct",
+            DataType::Union(_, _) => "Union",
+            DataType::Dictionary(_, _) => "Dictionary",
+            DataType::Decimal128(_, _) => "Decimal128",
+            DataType::Decimal256(_, _) => "Decimal256",
+            DataType::Map(_, _) => "Map",
+            DataType::RunEndEncoded(_, _) => "RunEndEncoded",
+        })
+    }
 }
 
 /// PyO3 requires that objects passed between Rust and Python implement the trait `PyClass`
@@ -421,7 +596,30 @@ impl DataTypeMap {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(name = "DataType", module = "datafusion.common")]
 pub struct PyDataType {
-    data_type: DataType,
+    pub data_type: DataType,
+}
+
+impl PyDataType {
+    /// There are situations when obtaining dtypes on the Python side where the Arrow type
+    /// is presented as a String rather than an actual DataType. This function is used to
+    /// convert that String to a DataType for the Python side to use.
+    pub fn py_map_from_arrow_type_str(arrow_str_type: String) -> PyResult<PyDataType> {
+        let arrow_dtype = match arrow_str_type.to_lowercase().as_str() {
+            "boolean" => Ok(DataType::Boolean),
+            "int32" => Ok(DataType::Int32),
+            "int64" => Ok(DataType::Int64),
+            "float" => Ok(DataType::Float32),
+            "double" => Ok(DataType::Float64),
+            "float64" => Ok(DataType::Float64),
+            _ => Err(PyValueError::new_err(format!(
+                "Unable to determine Arrow Data Type from Arrow String type: {:?}",
+                arrow_str_type
+            ))),
+        };
+        Ok(PyDataType {
+            data_type: arrow_dtype?,
+        })
+    }
 }
 
 impl From<PyDataType> for DataType {

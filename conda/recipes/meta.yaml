@@ -36,17 +36,16 @@ build:
   string: py{{ python | replace(".", "") }}_{{ GIT_DESCRIBE_HASH }}_{{ GIT_DESCRIBE_NUMBER }}
 
 requirements:
-  build:
-    - {{ compiler('rust') }}
-    - cargo-bundle-licenses
-    - maturin >=0.14,<0.15
+  host:
+    - python >=3.7
+    - maturin >=0.15,<0.16
     - libprotobuf =3
   host:
     - pip
     - python
     - maturin >=0.14,<0.15
   run:
-    - python
+    - python >=3.7
     - pyarrow >=11.0.0
 
 test:

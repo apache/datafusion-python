@@ -14,6 +14,8 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import gzip
+import os
 
 import numpy as np
 import pyarrow as pa
@@ -32,6 +34,7 @@ def test_no_table(ctx):
 
 def test_register_csv(ctx, tmp_path):
     path = tmp_path / "test.csv"
+    gzip_path = tmp_path / "test.csv.gz"
 
     table = pa.Table.from_arrays(
         [
@@ -43,6 +46,10 @@ def test_register_csv(ctx, tmp_path):
     )
     pa.csv.write_csv(table, path)
 
+    with open(path, "rb") as csv_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(csv_file)
+
     ctx.register_csv("csv", path)
     ctx.register_csv("csv1", str(path))
     ctx.register_csv(
@@ -52,6 +59,13 @@ def test_register_csv(ctx, tmp_path):
         delimiter=",",
         schema_infer_max_records=10,
     )
+    ctx.register_csv(
+        "csv_gzip",
+        gzip_path,
+        file_extension="gz",
+        file_compression_type="gzip",
+    )
+
     alternative_schema = pa.schema(
         [
             ("some_int", pa.int16()),
@@ -61,9 +75,9 @@ def test_register_csv(ctx, tmp_path):
     )
     ctx.register_csv("csv3", path, schema=alternative_schema)
 
-    assert ctx.tables() == {"csv", "csv1", "csv2", "csv3"}
+    assert ctx.tables() == {"csv", "csv1", "csv2", "csv3", "csv_gzip"}
 
-    for table in ["csv", "csv1", "csv2"]:
+    for table in ["csv", "csv1", "csv2", "csv_gzip"]:
         result = ctx.sql(f"SELECT COUNT(int) AS cnt FROM {table}").collect()
         result = pa.Table.from_batches(result)
         assert result.to_pydict() == {"cnt": [4]}
@@ -76,6 +90,12 @@ def test_register_csv(ctx, tmp_path):
         ValueError, match="Delimiter must be a single character"
     ):
         ctx.register_csv("csv4", path, delimiter="wrong")
+
+    with pytest.raises(
+        ValueError,
+        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+    ):
+        ctx.register_csv("csv4", path, file_compression_type="rar")
 
 
 def test_register_parquet(ctx, tmp_path):
@@ -133,6 +153,82 @@ def test_register_dataset(ctx, tmp_path):
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
     assert result.to_pydict() == {"cnt": [100]}
+
+
+def test_register_json(ctx, tmp_path):
+    path = os.path.dirname(os.path.abspath(__file__))
+    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    gzip_path = tmp_path / "data.json.gz"
+
+    with open(test_data_path, "rb") as json_file:
+        with gzip.open(gzip_path, "wb") as gzipped_file:
+            gzipped_file.writelines(json_file)
+
+    ctx.register_json("json", test_data_path)
+    ctx.register_json("json1", str(test_data_path))
+    ctx.register_json(
+        "json2",
+        test_data_path,
+        schema_infer_max_records=10,
+    )
+    ctx.register_json(
+        "json_gzip",
+        gzip_path,
+        file_extension="gz",
+        file_compression_type="gzip",
+    )
+
+    alternative_schema = pa.schema(
+        [
+            ("some_int", pa.int16()),
+            ("some_bytes", pa.string()),
+            ("some_floats", pa.float32()),
+        ]
+    )
+    ctx.register_json("json3", path, schema=alternative_schema)
+
+    assert ctx.tables() == {"json", "json1", "json2", "json3", "json_gzip"}
+
+    for table in ["json", "json1", "json2", "json_gzip"]:
+        result = ctx.sql(f'SELECT COUNT("B") AS cnt FROM {table}').collect()
+        result = pa.Table.from_batches(result)
+        assert result.to_pydict() == {"cnt": [3]}
+
+    result = ctx.sql("SELECT * FROM json3").collect()
+    result = pa.Table.from_batches(result)
+    assert result.schema == alternative_schema
+
+    with pytest.raises(
+        ValueError,
+        match="file_compression_type must one of: gzip, bz2, xz, zstd",
+    ):
+        ctx.register_json("json4", gzip_path, file_compression_type="rar")
+
+
+def test_register_avro(ctx):
+    path = "testing/data/avro/alltypes_plain.avro"
+    ctx.register_avro("alltypes_plain", path)
+    result = ctx.sql(
+        "SELECT SUM(tinyint_col) as tinyint_sum FROM alltypes_plain"
+    ).collect()
+    result = pa.Table.from_batches(result).to_pydict()
+    assert result["tinyint_sum"][0] > 0
+
+    alternative_schema = pa.schema(
+        [
+            pa.field("id", pa.int64()),
+        ]
+    )
+
+    ctx.register_avro(
+        "alltypes_plain_schema",
+        path,
+        schema=alternative_schema,
+        infinite=False,
+    )
+    result = ctx.sql("SELECT * FROM alltypes_plain_schema").collect()
+    result = pa.Table.from_batches(result)
+    assert result.schema == alternative_schema
 
 
 def test_execute(ctx, tmp_path):

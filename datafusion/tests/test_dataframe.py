@@ -14,12 +14,21 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import os
 
 import pyarrow as pa
+import pyarrow.parquet as pq
 import pytest
 
 from datafusion import functions as f
-from datafusion import DataFrame, SessionContext, column, literal, udf
+from datafusion import (
+    DataFrame,
+    SessionContext,
+    WindowFrame,
+    column,
+    literal,
+    udf,
+)
 
 
 @pytest.fixture
@@ -107,6 +116,17 @@ def test_sort(df):
 
 def test_limit(df):
     df = df.limit(1)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert len(result.column(0)) == 1
+    assert len(result.column(1)) == 1
+
+
+def test_limit_with_offset(df):
+    # only 3 rows, but limit past the end to ensure that offset is working
+    df = df.limit(5, offset=2)
 
     # execute and collect the first (and only) batch
     result = df.collect()[0]
@@ -289,6 +309,38 @@ def test_window_functions(df):
         "2nd_value": [None, 5, 5],
     }
     assert table.sort_by("a").to_pydict() == expected
+
+
+@pytest.mark.parametrize(
+    ("units", "start_bound", "end_bound"),
+    [
+        (units, start_bound, end_bound)
+        for units in ("rows", "range")
+        for start_bound in (None, 0, 1)
+        for end_bound in (None, 0, 1)
+    ]
+    + [
+        ("groups", 0, 0),
+    ],
+)
+def test_valid_window_frame(units, start_bound, end_bound):
+    WindowFrame(units, start_bound, end_bound)
+
+
+@pytest.mark.parametrize(
+    ("units", "start_bound", "end_bound"),
+    [
+        ("invalid-units", 0, None),
+        ("invalid-units", None, 0),
+        ("invalid-units", None, None),
+        ("groups", None, 0),
+        ("groups", 0, None),
+        ("groups", None, None),
+    ],
+)
+def test_invalid_window_frame(units, start_bound, end_bound):
+    with pytest.raises(RuntimeError):
+        WindowFrame(units, start_bound, end_bound)
 
 
 def test_get_dataframe(tmp_path):
@@ -614,7 +666,6 @@ def test_to_pydict(df):
 
 
 def test_describe(df):
-
     # Calculate statistics
     df = df.describe()
 
@@ -635,3 +686,68 @@ def test_describe(df):
         "b": [3.0, 3.0, 5.0, 1.0, 4.0, 6.0, 5.0],
         "c": [3.0, 3.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
     }
+
+
+def test_write_parquet(df, tmp_path):
+    path = tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "compression, compression_level",
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "compression, compression_level",
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["brotli", "zstd", "wrong"])
+def test_write_compressed_parquet_missing_compression_level(
+    df, tmp_path, compression
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)

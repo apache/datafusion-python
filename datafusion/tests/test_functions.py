@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import math
 
 import numpy as np
 import pyarrow as pa
@@ -85,12 +86,15 @@ def test_math_functions():
     ctx = SessionContext()
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([0.1, -0.7, 0.55])], names=["value"]
+        [pa.array([0.1, -0.7, 0.55]), pa.array([float("nan"), 0, 2.0])],
+        names=["value", "na_value"],
     )
     df = ctx.create_dataframe([[batch]])
 
     values = np.array([0.1, -0.7, 0.55])
+    na_values = np.array([np.nan, 0, 2.0])
     col_v = column("value")
+    col_nav = column("na_value")
     df = df.select(
         f.abs(col_v),
         f.sin(col_v),
@@ -113,6 +117,23 @@ def test_math_functions():
         f.sqrt(col_v),
         f.signum(col_v),
         f.trunc(col_v),
+        f.asinh(col_v),
+        f.acosh(col_v),
+        f.atanh(col_v),
+        f.cbrt(col_v),
+        f.cosh(col_v),
+        f.degrees(col_v),
+        f.gcd(literal(9), literal(3)),
+        f.lcm(literal(6), literal(4)),
+        f.nanvl(col_nav, literal(5)),
+        f.pi(),
+        f.radians(col_v),
+        f.sinh(col_v),
+        f.tanh(col_v),
+        f.factorial(literal(6)),
+        f.isnan(col_nav),
+        f.iszero(col_nav),
+        f.log(literal(3), col_v + literal(pa.scalar(1))),
     )
     batches = df.collect()
     assert len(batches) == 1
@@ -151,6 +172,29 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
     np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
     np.testing.assert_array_almost_equal(result.column(20), np.trunc(values))
+    np.testing.assert_array_almost_equal(result.column(21), np.arcsinh(values))
+    np.testing.assert_array_almost_equal(result.column(22), np.arccosh(values))
+    np.testing.assert_array_almost_equal(result.column(23), np.arctanh(values))
+    np.testing.assert_array_almost_equal(result.column(24), np.cbrt(values))
+    np.testing.assert_array_almost_equal(result.column(25), np.cosh(values))
+    np.testing.assert_array_almost_equal(result.column(26), np.degrees(values))
+    np.testing.assert_array_almost_equal(result.column(27), np.gcd(9, 3))
+    np.testing.assert_array_almost_equal(result.column(28), np.lcm(6, 4))
+    np.testing.assert_array_almost_equal(
+        result.column(29), np.where(np.isnan(na_values), 5, na_values)
+    )
+    np.testing.assert_array_almost_equal(result.column(30), np.pi)
+    np.testing.assert_array_almost_equal(result.column(31), np.radians(values))
+    np.testing.assert_array_almost_equal(result.column(32), np.sinh(values))
+    np.testing.assert_array_almost_equal(result.column(33), np.tanh(values))
+    np.testing.assert_array_almost_equal(result.column(34), math.factorial(6))
+    np.testing.assert_array_almost_equal(
+        result.column(35), np.isnan(na_values)
+    )
+    np.testing.assert_array_almost_equal(result.column(36), na_values == 0)
+    np.testing.assert_array_almost_equal(
+        result.column(37), np.emath.logn(3, values + 1.0)
+    )
 
 
 def test_string_functions(df):
@@ -382,11 +426,11 @@ def test_temporal_functions(df):
     assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.float64())
     assert result.column(2) == pa.array(
         [datetime(2022, 12, 1), datetime(2027, 6, 1), datetime(2020, 7, 1)],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("us"),
     )
     assert result.column(3) == pa.array(
         [datetime(2022, 12, 31), datetime(2027, 6, 26), datetime(2020, 7, 2)],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("us"),
     )
     assert result.column(4) == pa.array(
         [
@@ -410,4 +454,85 @@ def test_temporal_functions(df):
     )
     assert result.column(9) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
+    )
+
+
+def test_case(df):
+    df = df.select(
+        f.case(column("b"))
+        .when(literal(4), literal(10))
+        .otherwise(literal(8)),
+        f.case(column("a"))
+        .when(literal("Hello"), literal("Hola"))
+        .when(literal("World"), literal("Mundo"))
+        .otherwise(literal("!!")),
+        f.case(column("a"))
+        .when(literal("Hello"), literal("Hola"))
+        .when(literal("World"), literal("Mundo"))
+        .end(),
+    )
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array([10, 8, 8])
+    assert result.column(1) == pa.array(["Hola", "Mundo", "!!"])
+    assert result.column(2) == pa.array(["Hola", "Mundo", None])
+
+
+def test_regr_funcs(df):
+    # test case base on
+    # https://github.com/apache/arrow-datafusion/blob/d1361d56b9a9e0c165d3d71a8df6795d2a5f51dd/datafusion/core/tests/sqllogictests/test_files/aggregate.slt#L2330
+    ctx = SessionContext()
+    result = ctx.sql(
+        "select regr_slope(1,1), regr_intercept(1,1), "
+        "regr_count(1,1), regr_r2(1,1), regr_avgx(1,1), "
+        "regr_avgy(1,1), regr_sxx(1,1), regr_syy(1,1), "
+        "regr_sxy(1,1);"
+    ).collect()
+
+    assert result[0].column(0) == pa.array([None], type=pa.float64())
+    assert result[0].column(1) == pa.array([None], type=pa.float64())
+    assert result[0].column(2) == pa.array([1], type=pa.float64())
+    assert result[0].column(3) == pa.array([None], type=pa.float64())
+    assert result[0].column(4) == pa.array([1], type=pa.float64())
+    assert result[0].column(5) == pa.array([1], type=pa.float64())
+    assert result[0].column(6) == pa.array([0], type=pa.float64())
+    assert result[0].column(7) == pa.array([0], type=pa.float64())
+    assert result[0].column(8) == pa.array([0], type=pa.float64())
+
+
+def test_first_last_value(df):
+    df = df.aggregate(
+        [],
+        [
+            f.first_value(column("a")),
+            f.first_value(column("b")),
+            f.first_value(column("d")),
+            f.last_value(column("a")),
+            f.last_value(column("b")),
+            f.last_value(column("d")),
+        ],
+    )
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array(["Hello"])
+    assert result.column(1) == pa.array([4])
+    assert result.column(2) == pa.array([datetime(2022, 12, 31)])
+    assert result.column(3) == pa.array(["!"])
+    assert result.column(4) == pa.array([6])
+    assert result.column(5) == pa.array([datetime(2020, 7, 2)])
+
+
+def test_binary_string_functions(df):
+    df = df.select(
+        f.encode(column("a"), literal("base64")),
+        f.decode(f.encode(column("a"), literal("base64")), literal("base64")),
+    )
+    result = df.collect()
+    assert len(result) == 1
+    result = result[0]
+    assert result.column(0) == pa.array(["SGVsbG8", "V29ybGQ", "IQ"])
+    assert pa.array(result.column(1)).cast(pa.string()) == pa.array(
+        ["Hello", "World", "!"]
     )

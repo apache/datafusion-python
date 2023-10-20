@@ -17,6 +17,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use object_store::ObjectStore;
@@ -30,6 +31,7 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
+use crate::expr::PyExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -40,9 +42,10 @@ use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::datasource::datasource::TableProvider;
+use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::MemTable;
-use datafusion::execution::context::{SessionConfig, SessionContext, TaskContext};
+use datafusion::datasource::TableProvider;
+use datafusion::execution::context::{SessionConfig, SessionContext, SessionState, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
@@ -224,7 +227,7 @@ impl PySessionContext {
         let config = if let Some(c) = config {
             c.config
         } else {
-            SessionConfig::default()
+            SessionConfig::default().with_information_schema(true)
         };
         let runtime_config = if let Some(c) = runtime {
             c.config
@@ -232,8 +235,9 @@ impl PySessionContext {
             RuntimeConfig::default()
         };
         let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
+        let session_state = SessionState::new_with_config_rt(config, runtime);
         Ok(PySessionContext {
-            ctx: SessionContext::with_config_rt(config, runtime),
+            ctx: SessionContext::new_with_state(session_state),
         })
     }
 
@@ -443,7 +447,10 @@ impl PySessionContext {
     #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (name, path, table_partition_cols=vec![],
                         parquet_pruning=true,
-                        file_extension=".parquet"))]
+                        file_extension=".parquet",
+                        skip_metadata=true,
+                        schema=None,
+                        file_sort_order=None))]
     fn register_parquet(
         &mut self,
         name: &str,
@@ -451,12 +458,23 @@ impl PySessionContext {
         table_partition_cols: Vec<(String, String)>,
         parquet_pruning: bool,
         file_extension: &str,
+        skip_metadata: bool,
+        schema: Option<PyArrowType<Schema>>,
+        file_sort_order: Option<Vec<Vec<PyExpr>>>,
         py: Python,
     ) -> PyResult<()> {
         let mut options = ParquetReadOptions::default()
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .parquet_pruning(parquet_pruning);
+            .parquet_pruning(parquet_pruning)
+            .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+        options.file_sort_order = file_sort_order
+            .unwrap_or_default()
+            .into_iter()
+            .map(|e| e.into_iter().map(|f| f.into()).collect())
+            .collect();
+
         let result = self.ctx.register_parquet(name, path, options);
         wait_for_future(py, result).map_err(DataFusionError::from)?;
         Ok(())
@@ -469,7 +487,8 @@ impl PySessionContext {
                         has_header=true,
                         delimiter=",",
                         schema_infer_max_records=1000,
-                        file_extension=".csv"))]
+                        file_extension=".csv",
+                        file_compression_type=None))]
     fn register_csv(
         &mut self,
         name: &str,
@@ -479,6 +498,7 @@ impl PySessionContext {
         delimiter: &str,
         schema_infer_max_records: usize,
         file_extension: &str,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<()> {
         let path = path
@@ -495,10 +515,80 @@ impl PySessionContext {
             .has_header(has_header)
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension);
+            .file_extension(file_extension)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_csv(name, path, options);
+        wait_for_future(py, result).map_err(DataFusionError::from)?;
+
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        schema_infer_max_records=1000,
+                        file_extension=".json",
+                        table_partition_cols=vec![],
+                        file_compression_type=None))]
+    fn register_json(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
+        py: Python,
+    ) -> PyResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = NdJsonReadOptions::default()
+            .file_compression_type(parse_file_compression_type(file_compression_type)?)
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        options.schema_infer_max_records = schema_infer_max_records;
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_json(name, path, options);
+        wait_for_future(py, result).map_err(DataFusionError::from)?;
+
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        file_extension=".avro",
+                        table_partition_cols=vec![],
+                        infinite=false))]
+    fn register_avro(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        infinite: bool,
+        py: Python,
+    ) -> PyResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = AvroReadOptions::default()
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .mark_infinite(infinite);
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_avro(name, path, options);
         wait_for_future(py, result).map_err(DataFusionError::from)?;
 
         Ok(())
@@ -559,7 +649,7 @@ impl PySessionContext {
     }
 
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![]))]
+    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
     fn read_json(
         &mut self,
         path: PathBuf,
@@ -567,13 +657,15 @@ impl PySessionContext {
         schema_infer_max_records: usize,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
@@ -595,7 +687,8 @@ impl PySessionContext {
         delimiter=",",
         schema_infer_max_records=1000,
         file_extension=".csv",
-        table_partition_cols=vec![]))]
+        table_partition_cols=vec![],
+        file_compression_type=None))]
     fn read_csv(
         &self,
         path: PathBuf,
@@ -605,6 +698,7 @@ impl PySessionContext {
         schema_infer_max_records: usize,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let path = path
@@ -623,7 +717,8 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
 
         if let Some(py_schema) = schema {
             options.schema = Some(&py_schema.0);
@@ -643,7 +738,9 @@ impl PySessionContext {
         table_partition_cols=vec![],
         parquet_pruning=true,
         file_extension=".parquet",
-        skip_metadata=true))]
+        skip_metadata=true,
+        schema=None,
+        file_sort_order=None))]
     fn read_parquet(
         &self,
         path: &str,
@@ -651,6 +748,8 @@ impl PySessionContext {
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
+        schema: Option<PyArrowType<Schema>>,
+        file_sort_order: Option<Vec<Vec<PyExpr>>>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let mut options = ParquetReadOptions::default()
@@ -658,6 +757,12 @@ impl PySessionContext {
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+        options.file_sort_order = file_sort_order
+            .unwrap_or_default()
+            .into_iter()
+            .map(|e| e.into_iter().map(|f| f.into()).collect())
+            .collect();
 
         let result = self.ctx.read_parquet(path, options);
         let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
@@ -685,6 +790,14 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future).map_err(DataFusionError::from)?
         };
+        Ok(PyDataFrame::new(df))
+    }
+
+    fn read_table(&self, table: &PyTable) -> PyResult<PyDataFrame> {
+        let df = self
+            .ctx
+            .read_table(table.table())
+            .map_err(DataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -741,6 +854,15 @@ fn convert_table_partition_cols(
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+fn parse_file_compression_type(
+    file_compression_type: Option<String>,
+) -> Result<FileCompressionType, PyErr> {
+    FileCompressionType::from_str(&*file_compression_type.unwrap_or("".to_string()).as_str())
+        .map_err(|_| {
+            PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
+        })
 }
 
 impl From<PySessionContext> for SessionContext {

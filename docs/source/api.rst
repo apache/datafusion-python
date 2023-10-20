@@ -24,7 +24,6 @@ API Reference
 .. toctree::
    :maxdepth: 2
 
-   api/config
    api/dataframe
    api/execution_context
    api/expression

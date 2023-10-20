@@ -56,28 +56,37 @@ Before creating a new release:
 - a PR should be created and merged to update the major version number of the project
 - A new release branch should be created, such as `branch-0.8`
 
-### Update CHANGELOG.md
+### Change Log
 
-Define release branch (e.g. `branch-0.8`), base version tag (e.g. `0.7.0`) and future version tag (e.g. `0.9.0`). Commits
-between the base version tag and the release branch will be used to populate the changelog content.
+We maintain a `CHANGELOG.md` so our users know what has been changed between releases.
+
+The changelog is generated using a Python script:
 
 ```bash
-# create the changelog
-CHANGELOG_GITHUB_TOKEN=<TOKEN> ./dev/release/update_change_log-datafusion-python.sh main 0.8.0 0.7.0
-# review change log / edit issues and labels if needed, rerun until you are happy with the result
-git commit -a -m 'Create changelog for release'
+$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py apache/arrow-datafusion-python 24.0.0 HEAD > dev/changelog/25.0.0.md
 ```
 
-_If you see the error `"You have exceeded a secondary rate limit"` when running this script, try reducing the CPU
-allocation to slow the process down and throttle the number of GitHub requests made per minute, by modifying the
-value of the `--cpus` argument in the `update_change_log.sh` script._
+This script creates a changelog from GitHub PRs based on the labels associated with them as well as looking for
+titles starting with `feat:`, `fix:`, or `docs:` . The script will produce output similar to:
 
-You can add `invalid` or `development-process` label to exclude items from
-release notes.
+```
+Fetching list of commits between 24.0.0 and HEAD
+Fetching pull requests
+Categorizing pull requests
+Generating changelog content
+```
 
-Send a PR to get these changes merged into the release branch (e.g. `branch-0.8`). If new commits that could change the
-change log content landed in the release branch before you could merge the PR, you need to rerun the changelog update
-script to regenerate the changelog and update the PR accordingly.
+This process is not fully automated, so there are some additional manual steps:
+
+- Add the ASF header to the generated file
+- Add a link to this changelog from the top-level `/datafusion/CHANGELOG.md`
+- Add the following content (copy from the previous version's changelog and update as appropriate:
+
+```
+## [24.0.0](https://github.com/apache/arrow-datafusion-python/tree/24.0.0) (2023-05-06)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/23.0.0...24.0.0)
+```
 
 ### Preparing a Release Candidate
 
@@ -170,7 +179,7 @@ When prompted for username, enter `__token__`. When prompted for a password, ent
 Download the source tarball created in the previous step, untar it, and run:
 
 ```bash
-python3 -m build
+maturin sdist
 ```
 
 This will create a file named `dist/datafusion-0.7.0.tar.gz`. Upload this to testpypi:
@@ -253,4 +262,49 @@ anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.
 git checkout 0.8.0-rc1
 git tag 0.8.0
 git push apache 0.8.0
+```
+
+### Add the release to Apache Reporter
+
+Add the release to https://reporter.apache.org/addrelease.html?arrow with a version name prefixed with `RS-DATAFUSION-PYTHON`,
+for example `RS-DATAFUSION-PYTHON-31.0.0`.
+
+The release information is used to generate a template for a board report (see example
+[here](https://github.com/apache/arrow/pull/14357)).
+
+### Delete old RCs and Releases
+
+See the ASF documentation on [when to archive](https://www.apache.org/legal/release-policy.html#when-to-archive)
+for more information.
+
+#### Deleting old release candidates from `dev` svn
+
+Release candidates should be deleted once the release is published.
+
+Get a list of DataFusion release candidates:
+
+```bash
+svn ls https://dist.apache.org/repos/dist/dev/arrow | grep datafusion-python
+```
+
+Delete a release candidate:
+
+```bash
+svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/arrow/apache-arrow-datafusion-python-7.1.0-rc1/
+```
+
+#### Deleting old releases from `release` svn
+
+Only the latest release should be available. Delete old releases after publishing the new release.
+
+Get a list of DataFusion releases:
+
+```bash
+svn ls https://dist.apache.org/repos/dist/release/arrow | grep datafusion-python
+```
+
+Delete a release:
+
+```bash
+svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/arrow/arrow-datafusion-python-7.0.0
 ```

@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_common::TableReference;
 use datafusion_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
@@ -71,12 +72,25 @@ impl PyTableScan {
         Ok(format!("{}", self.table_scan.table_name))
     }
 
-    /// TODO: Bindings for `TableSource` need to exist first. Left as a
-    /// placeholder to display intention to add when able to.
-    // #[pyo3(name = "source")]
-    // fn py_source(&self) -> PyResult<Arc<dyn TableSource>> {
-    //     Ok(self.table_scan.source)
-    // }
+    #[pyo3(name = "fqn")]
+    fn fqn(&self) -> PyResult<(Option<String>, Option<String>, String)> {
+        let table_ref: TableReference = self.table_scan.table_name.clone();
+        Ok(match table_ref {
+            TableReference::Bare { table } => (None, None, table.to_string()),
+            TableReference::Partial { schema, table } => {
+                (None, Some(schema.to_string()), table.to_string())
+            }
+            TableReference::Full {
+                catalog,
+                schema,
+                table,
+            } => (
+                Some(catalog.to_string()),
+                Some(schema.to_string()),
+                table.to_string(),
+            ),
+        })
+    }
 
     /// The column indexes that should be. Note if this is empty then
     /// all columns should be read by the `TableProvider`. This function

@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::expr::GetIndexedField;
+use datafusion_expr::expr::{GetFieldAccess, GetIndexedField};
 use pyo3::prelude::*;
 use std::fmt::{Display, Formatter};
 
@@ -47,7 +47,7 @@ impl Display for PyGetIndexedField {
             "GetIndexedField
             Expr: {:?}
             Key: {:?}",
-            &self.indexed_field.expr, &self.indexed_field.key
+            &self.indexed_field.expr, &self.indexed_field.field
         )
     }
 }
@@ -59,7 +59,10 @@ impl PyGetIndexedField {
     }
 
     fn key(&self) -> PyResult<PyLiteral> {
-        Ok(self.indexed_field.key.clone().into())
+        match &self.indexed_field.field {
+            GetFieldAccess::NamedStructField { name, .. } => Ok(name.clone().into()),
+            _ => todo!(),
+        }
     }
 
     /// Get a String representation of this column

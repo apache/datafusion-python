@@ -20,11 +20,13 @@ use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 use crate::{errors::DataFusionError, expr::PyExpr};
 use datafusion::arrow::datatypes::Schema;
-use datafusion::arrow::pyarrow::{PyArrowConvert, PyArrowType};
+use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::dataframe::DataFrame;
+use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
+use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
+use datafusion::parquet::file::properties::WriterProperties;
 use datafusion::prelude::*;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
 use std::sync::Arc;
@@ -136,8 +138,9 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    fn limit(&self, count: usize) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().limit(0, Some(count))?;
+    #[pyo3(signature = (count, offset=0))]
+    fn limit(&self, count: usize, offset: usize) -> PyResult<Self> {
+        let df = self.df.as_ref().clone().limit(offset, Some(count))?;
         Ok(Self::new(df))
     }
 
@@ -302,19 +305,82 @@ impl PyDataFrame {
 
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.as_ref().clone().write_csv(path))?;
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_csv(path, DataFrameWriteOptions::new(), None),
+        )?;
         Ok(())
     }
 
     /// Write a `DataFrame` to a Parquet file.
-    fn write_parquet(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.as_ref().clone().write_parquet(path, None))?;
+    #[pyo3(signature = (
+        path,
+        compression="uncompressed",
+        compression_level=None
+        ))]
+    fn write_parquet(
+        &self,
+        path: &str,
+        compression: &str,
+        compression_level: Option<u32>,
+        py: Python,
+    ) -> PyResult<()> {
+        fn verify_compression_level(cl: Option<u32>) -> Result<u32, PyErr> {
+            cl.ok_or(PyValueError::new_err("compression_level is not defined"))
+        }
+
+        let compression_type = match compression.to_lowercase().as_str() {
+            "snappy" => Compression::SNAPPY,
+            "gzip" => Compression::GZIP(
+                GzipLevel::try_new(compression_level.unwrap_or(6))
+                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
+            ),
+            "brotli" => Compression::BROTLI(
+                BrotliLevel::try_new(verify_compression_level(compression_level)?)
+                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
+            ),
+            "zstd" => Compression::ZSTD(
+                ZstdLevel::try_new(verify_compression_level(compression_level)? as i32)
+                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
+            ),
+            "lz0" => Compression::LZO,
+            "lz4" => Compression::LZ4,
+            "lz4_raw" => Compression::LZ4_RAW,
+            "uncompressed" => Compression::UNCOMPRESSED,
+            _ => {
+                return Err(PyValueError::new_err(format!(
+                    "Unrecognized compression type {compression}"
+                )));
+            }
+        };
+
+        let writer_properties = WriterProperties::builder()
+            .set_compression(compression_type)
+            .build();
+
+        wait_for_future(
+            py,
+            self.df.as_ref().clone().write_parquet(
+                path,
+                DataFrameWriteOptions::new(),
+                Option::from(writer_properties),
+            ),
+        )?;
         Ok(())
     }
 
     /// Executes a query and writes the results to a partitioned JSON file.
     fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, self.df.as_ref().clone().write_json(path))?;
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_json(path, DataFrameWriteOptions::new()),
+        )?;
         Ok(())
     }
 

@@ -19,6 +19,6 @@ from datafusion.cudf import SessionContext
 
 
 ctx = SessionContext()
-ctx.register_parquet("taxi", "yellow_tripdata_2021-01.parquet")
+ctx.register_table("taxi", "yellow_tripdata_2021-01.parquet")
 df = ctx.sql("select passenger_count from taxi")
 print(df)

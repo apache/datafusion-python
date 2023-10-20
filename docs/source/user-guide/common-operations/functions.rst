@@ -1,0 +1,117 @@
+.. Licensed to the Apache Software Foundation (ASF) under one
+.. or more contributor license agreements.  See the NOTICE file
+.. distributed with this work for additional information
+.. regarding copyright ownership.  The ASF licenses this file
+.. to you under the Apache License, Version 2.0 (the
+.. "License"); you may not use this file except in compliance
+.. with the License.  You may obtain a copy of the License at
+
+..   http://www.apache.org/licenses/LICENSE-2.0
+
+.. Unless required by applicable law or agreed to in writing,
+.. software distributed under the License is distributed on an
+.. "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+.. KIND, either express or implied.  See the License for the
+.. specific language governing permissions and limitations
+.. under the License.
+
+Functions
+=========
+
+DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
+In here we will cover some of the more popular use cases. If you want to view all the functions go to the :ref:`Functions` API Reference.
+
+We'll use the pokemon dataset in the following examples.
+
+.. ipython:: python
+
+    import urllib.request
+    from datafusion import SessionContext
+
+    urllib.request.urlretrieve(
+    "https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv",
+    "pokemon.csv",
+    )
+
+    ctx = SessionContext()
+    ctx.register_csv("pokemon", "pokemon.csv")
+    df = ctx.table("pokemon")
+
+Mathematical
+------------
+
+DataFusion offers mathematical functions such as :func:`.pow` or :func:`.log`
+
+.. ipython:: python
+
+    from datafusion import col, literal
+    from datafusion import functions as f
+
+    df.select(
+        f.pow(col('"Attack"'), literal(2)) - f.pow(col('"Defense"'), literal(2))
+    ).limit(10)
+
+
+Conditional
+-----------
+
+There 3 conditional functions in DataFusion :func:`.coalesce`, :func:`.nullif` and :func:`.case` (not available in Python)
+
+.. ipython:: python
+
+    df.select(
+        f.coalesce(col('"Type 1"'), col('"Type 2"')).alias("dominant_type")
+    ).limit(10)
+
+Temporal
+--------
+
+For selecting the current time use :func:`.now`
+
+.. ipython:: python
+
+    df.select(f.now())
+
+Convert to timestamps using :func:`.to_timestamp`
+
+.. ipython:: python
+
+    df.select(f.to_timestamp(col('"Total"')).alias("timestamp"))
+
+String
+------
+
+In the field of data science, working with textual data is a common task. To make string manipulation easier,
+DataFusion offers a range of helpful options.
+
+.. ipython:: python
+
+    df.select(
+        f.char_length(col('"Name"')).alias("len"),
+        f.lower(col('"Name"')).alias("lower"),
+        f.left(col('"Name"'), literal(4)).alias("code")
+    )
+
+This also includes the functions for regular expressions :func:`.regexp_replace` and :func:`.regexp_match`
+
+.. ipython:: python
+
+    df.select(
+        f.regexp_match(col('"Name"'), literal("Char")).alias("dragons"),
+        f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers")
+    )
+
+
+Other
+-----
+
+The function :func:`.in_list` allows to check a column for the presence of multiple values:
+
+.. ipython:: python
+
+    types = [literal("Grass"), literal("Fire"), literal("Water")]
+    (
+        df.select(f.in_list(col('"Type 1"'), types, negated=False).alias("basic_types"))
+          .limit(20)
+          .to_pandas()
+    )

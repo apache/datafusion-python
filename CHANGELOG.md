@@ -17,13 +17,127 @@
   under the License.
 -->
 
-# Changelog
+# DataFusion Python Changelog
+
+## [31.0.0](https://github.com/apache/arrow-datafusion-python/tree/31.0.0) (2023-09-12)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/28.0.0...31.0.0)
+
+**Implemented enhancements:**
+
+- feat: add case function (#447) [#448](https://github.com/apache/arrow-datafusion-python/pull/448) (mesejo)
+- feat: add compression options [#456](https://github.com/apache/arrow-datafusion-python/pull/456) (mesejo)
+- feat: add register_json [#458](https://github.com/apache/arrow-datafusion-python/pull/458) (mesejo)
+- feat: add basic compression configuration to write_parquet [#459](https://github.com/apache/arrow-datafusion-python/pull/459) (mesejo)
+- feat: add example of reading parquet from s3 [#460](https://github.com/apache/arrow-datafusion-python/pull/460) (mesejo)
+- feat: add register_avro and read_table [#461](https://github.com/apache/arrow-datafusion-python/pull/461) (mesejo)
+- feat: add missing scalar math functions [#465](https://github.com/apache/arrow-datafusion-python/pull/465) (mesejo)
+
+**Documentation updates:**
+
+- docs: include pre-commit hooks section in contributor guide [#455](https://github.com/apache/arrow-datafusion-python/pull/455) (mesejo)
+
+**Merged pull requests:**
+
+- Build Linux aarch64 wheel [#443](https://github.com/apache/arrow-datafusion-python/pull/443) (gokselk)
+- feat: add case function (#447) [#448](https://github.com/apache/arrow-datafusion-python/pull/448) (mesejo)
+- enhancement(docs): Add user guide (#432) [#445](https://github.com/apache/arrow-datafusion-python/pull/445) (mesejo)
+- docs: include pre-commit hooks section in contributor guide [#455](https://github.com/apache/arrow-datafusion-python/pull/455) (mesejo)
+- feat: add compression options [#456](https://github.com/apache/arrow-datafusion-python/pull/456) (mesejo)
+- Upgrade to DF 28.0.0-rc1 [#457](https://github.com/apache/arrow-datafusion-python/pull/457) (andygrove)
+- feat: add register_json [#458](https://github.com/apache/arrow-datafusion-python/pull/458) (mesejo)
+- feat: add basic compression configuration to write_parquet [#459](https://github.com/apache/arrow-datafusion-python/pull/459) (mesejo)
+- feat: add example of reading parquet from s3 [#460](https://github.com/apache/arrow-datafusion-python/pull/460) (mesejo)
+- feat: add register_avro and read_table [#461](https://github.com/apache/arrow-datafusion-python/pull/461) (mesejo)
+- feat: add missing scalar math functions [#465](https://github.com/apache/arrow-datafusion-python/pull/465) (mesejo)
+- build(deps): bump arduino/setup-protoc from 1 to 2 [#452](https://github.com/apache/arrow-datafusion-python/pull/452) (dependabot[bot])
+- Revert "build(deps): bump arduino/setup-protoc from 1 to 2 (#452)" [#474](https://github.com/apache/arrow-datafusion-python/pull/474) (viirya)
+- Minor: fix wrongly copied function description [#497](https://github.com/apache/arrow-datafusion-python/pull/497) (viirya)
+- Upgrade to Datafusion 31.0.0 [#491](https://github.com/apache/arrow-datafusion-python/pull/491) (judahrand)
+- Add `isnan` and `iszero` [#495](https://github.com/apache/arrow-datafusion-python/pull/495) (judahrand)
+
+## 30.0.0
+
+- Skipped due to a breaking change in DataFusion
+
+## 29.0.0
+
+- Skipped
+
+## [28.0.0](https://github.com/apache/arrow-datafusion-python/tree/28.0.0) (2023-07-25)
+
+**Implemented enhancements:**
+
+- feat: expose offset in python API [#437](https://github.com/apache/arrow-datafusion-python/pull/437) (cpcloud)
+
+**Merged pull requests:**
+
+- File based input utils [#433](https://github.com/apache/arrow-datafusion-python/pull/433) (jdye64)
+- Upgrade to 28.0.0-rc1 [#434](https://github.com/apache/arrow-datafusion-python/pull/434) (andygrove)
+- Introduces utility for obtaining SqlTable information from a file like location [#398](https://github.com/apache/arrow-datafusion-python/pull/398) (jdye64)
+- feat: expose offset in python API [#437](https://github.com/apache/arrow-datafusion-python/pull/437) (cpcloud)
+- Use DataFusion 28 [#439](https://github.com/apache/arrow-datafusion-python/pull/439) (andygrove)
+
+## [27.0.0](https://github.com/apache/arrow-datafusion-python/tree/27.0.0) (2023-07-03)
+
+**Merged pull requests:**
+
+- LogicalPlan.to_variant() make public [#412](https://github.com/apache/arrow-datafusion-python/pull/412) (jdye64)
+- Prepare 27.0.0 release [#423](https://github.com/apache/arrow-datafusion-python/pull/423) (andygrove)
+
+## [26.0.0](https://github.com/apache/arrow-datafusion-python/tree/26.0.0) (2023-06-11)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/25.0.0...26.0.0)
+
+**Merged pull requests:**
+
+- Add Expr::Case when_then_else support to rex_call_operands function [#388](https://github.com/apache/arrow-datafusion-python/pull/388) (jdye64)
+- Introduce BaseSessionContext abstract class [#390](https://github.com/apache/arrow-datafusion-python/pull/390) (jdye64)
+- CRUD Schema support for `BaseSessionContext` [#392](https://github.com/apache/arrow-datafusion-python/pull/392) (jdye64)
+- CRUD Table support for `BaseSessionContext` [#394](https://github.com/apache/arrow-datafusion-python/pull/394) (jdye64)
+
+## [25.0.0](https://github.com/apache/arrow-datafusion-python/tree/25.0.0) (2023-05-23)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/24.0.0...25.0.0)
+
+**Merged pull requests:**
+
+- Prepare 24.0.0 Release [#376](https://github.com/apache/arrow-datafusion-python/pull/376) (andygrove)
+- build(deps): bump uuid from 1.3.1 to 1.3.2 [#359](https://github.com/apache/arrow-datafusion-python/pull/359) (dependabot[bot])
+- build(deps): bump mimalloc from 0.1.36 to 0.1.37 [#361](https://github.com/apache/arrow-datafusion-python/pull/361) (dependabot[bot])
+- build(deps): bump regex-syntax from 0.6.29 to 0.7.1 [#334](https://github.com/apache/arrow-datafusion-python/pull/334) (dependabot[bot])
+- upgrade maturin to 0.15.1 [#379](https://github.com/apache/arrow-datafusion-python/pull/379) (Jimexist)
+- Expand Expr to include RexType basic support [#378](https://github.com/apache/arrow-datafusion-python/pull/378) (jdye64)
+- Add Python script for generating changelog [#383](https://github.com/apache/arrow-datafusion-python/pull/383) (andygrove)
+
+## [24.0.0](https://github.com/apache/arrow-datafusion-python/tree/24.0.0) (2023-05-09)
+
+[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/23.0.0...24.0.0)
+
+**Documentation updates:**
+
+- Fix link to user guide [#354](https://github.com/apache/arrow-datafusion-python/pull/354) (andygrove)
+
+**Merged pull requests:**
+
+- Add interface to serialize Substrait plans to Python Bytes. [#344](https://github.com/apache/arrow-datafusion-python/pull/344) (kylebrooks-8451)
+- Add partition_count property to ExecutionPlan. [#346](https://github.com/apache/arrow-datafusion-python/pull/346) (kylebrooks-8451)
+- Remove unsendable from all Rust pyclass types. [#348](https://github.com/apache/arrow-datafusion-python/pull/348) (kylebrooks-8451)
+- Fix link to user guide [#354](https://github.com/apache/arrow-datafusion-python/pull/354) (andygrove)
+- Fix SessionContext execute. [#353](https://github.com/apache/arrow-datafusion-python/pull/353) (kylebrooks-8451)
+- Pub mod expr in lib.rs [#357](https://github.com/apache/arrow-datafusion-python/pull/357) (jdye64)
+- Add benchmark derived from TPC-H [#355](https://github.com/apache/arrow-datafusion-python/pull/355) (andygrove)
+- Add db-benchmark [#365](https://github.com/apache/arrow-datafusion-python/pull/365) (andygrove)
+- First pass of documentation in mdBook [#364](https://github.com/apache/arrow-datafusion-python/pull/364) (MrPowers)
+- Add 'pub' and '#[pyo3(get, set)]' to DataTypeMap [#371](https://github.com/apache/arrow-datafusion-python/pull/371) (jdye64)
+- Fix db-benchmark [#369](https://github.com/apache/arrow-datafusion-python/pull/369) (andygrove)
+- Docs explaining how to view query plans [#373](https://github.com/apache/arrow-datafusion-python/pull/373) (andygrove)
+- Improve db-benchmark [#372](https://github.com/apache/arrow-datafusion-python/pull/372) (andygrove)
+- Make expr member of PyExpr public [#375](https://github.com/apache/arrow-datafusion-python/pull/375) (jdye64)
 
 ## [23.0.0](https://github.com/apache/arrow-datafusion-python/tree/23.0.0) (2023-04-23)
 
 [Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/22.0.0...23.0.0)
-
-**Merged pull requests:**
 
 **Merged pull requests:**
 

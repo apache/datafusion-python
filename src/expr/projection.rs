@@ -16,6 +16,7 @@
 // under the License.
 
 use datafusion_expr::logical_plan::Projection;
+use datafusion_expr::Expr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
@@ -27,7 +28,7 @@ use crate::sql::logical::PyLogicalPlan;
 #[pyclass(name = "Projection", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyProjection {
-    projection: Projection,
+    pub projection: Projection,
 }
 
 impl PyProjection {
@@ -89,6 +90,21 @@ impl PyProjection {
 
     fn __name__(&self) -> PyResult<String> {
         Ok("Projection".to_string())
+    }
+}
+
+impl PyProjection {
+    /// Projection: Gets the names of the fields that should be projected
+    pub fn projected_expressions(local_expr: &PyExpr) -> Vec<PyExpr> {
+        let mut projs: Vec<PyExpr> = Vec::new();
+        match &local_expr.expr {
+            Expr::Alias(alias) => {
+                let py_expr: PyExpr = PyExpr::from(*alias.expr.clone());
+                projs.extend_from_slice(Self::projected_expressions(&py_expr).as_slice());
+            }
+            _ => projs.push(local_expr.clone()),
+        }
+        projs
     }
 }
 

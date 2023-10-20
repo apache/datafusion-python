@@ -52,6 +52,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "myst_parser",
+    "IPython.sphinxext.ipython_directive",
 ]
 
 source_suffix = {

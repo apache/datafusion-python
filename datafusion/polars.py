@@ -14,21 +14,22 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+import logging
 import polars
 import datafusion
+from datafusion.context import BaseSessionContext
 from datafusion.expr import Projection, TableScan, Aggregate
 from datafusion.expr import Column, AggregateFunction
 
+from datafusion.common import SqlSchema
 
-class SessionContext:
-    def __init__(self):
+logger = logging.getLogger(__name__)
+
+
+class SessionContext(BaseSessionContext):
+    def __init__(self, logging_level=logging.INFO):
         self.datafusion_ctx = datafusion.SessionContext()
         self.parquet_tables = {}
-
-    def register_parquet(self, name, path):
-        self.parquet_tables[name] = path
-        self.datafusion_ctx.register_parquet(name, path)
 
     def to_polars_expr(self, expr):
         # get Python wrapper for logical expression
@@ -77,6 +78,27 @@ class SessionContext:
             raise Exception(
                 "unsupported logical operator: {}".format(type(node))
             )
+
+    def create_schema(self, schema_name: str, **kwargs):
+        logger.debug(f"Creating schema: {schema_name}")
+        self.schemas[schema_name] = SqlSchema(schema_name)
+        self.context.register_schema(schema_name, SqlSchema(schema_name))
+
+    def update_schema(self, schema_name: str, new_schema: SqlSchema, **kwargs):
+        self.schemas[schema_name] = new_schema
+
+    def drop_schema(self, schema_name, **kwargs):
+        del self.schemas[schema_name]
+
+    def show_schemas(self, **kwargs):
+        return self.schemas
+
+    def register_table(self, name, path, **kwargs):
+        self.parquet_tables[name] = path
+        self.datafusion_ctx.register_parquet(name, path)
+
+    def explain(self, sql):
+        super.explain()
 
     def sql(self, sql):
         datafusion_df = self.datafusion_ctx.sql(sql)

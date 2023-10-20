@@ -17,14 +17,21 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
-use datafusion_common::Column;
-use datafusion_expr::expr::AggregateFunction;
-use datafusion_expr::expr::{Sort, WindowFunction};
-use datafusion_expr::window_function::find_df_window_func;
-use datafusion_expr::{aggregate_function, lit, BuiltinScalarFunction, Expr, WindowFrame};
-
+use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
+use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::PyExpr;
+use crate::window_frame::PyWindowFrame;
+use datafusion::execution::FunctionRegistry;
+use datafusion_common::Column;
+use datafusion_expr::expr::Alias;
+use datafusion_expr::{
+    aggregate_function,
+    expr::{AggregateFunction, ScalarFunction, Sort, WindowFunction},
+    lit,
+    window_function::find_df_window_func,
+    BuiltinScalarFunction, Expr,
+};
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
@@ -82,7 +89,7 @@ fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyRes
 #[pyfunction]
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Alias(Box::new(expr.expr), String::from(name)),
+        expr: datafusion_expr::Expr::Alias(Alias::new(expr.expr, name)),
     })
 }
 
@@ -106,7 +113,16 @@ fn count_star() -> PyResult<PyExpr> {
             args: vec![lit(1)],
             distinct: false,
             filter: None,
+            order_by: None,
         }),
+    })
+}
+
+/// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
+#[pyfunction]
+fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
+    Ok(PyCaseBuilder {
+        case_builder: datafusion_expr::case(expr.expr),
     })
 }
 
@@ -117,13 +133,24 @@ fn window(
     args: Vec<PyExpr>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
+    window_frame: Option<PyWindowFrame>,
+    ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
-    let fun = find_df_window_func(name);
+    let fun = find_df_window_func(name).or_else(|| {
+        ctx.and_then(|ctx| {
+            ctx.ctx
+                .udaf(name)
+                .map(|fun| datafusion_expr::WindowFunction::AggregateUDF(fun))
+                .ok()
+        })
+    });
     if fun.is_none() {
         return Err(DataFusionError::Common("window function not found".to_string()).into());
     }
     let fun = fun.unwrap();
-    let window_frame = WindowFrame::new(order_by.is_some());
+    let window_frame = window_frame
+        .unwrap_or_else(|| PyWindowFrame::new("rows", None, Some(0)).unwrap())
+        .into();
     Ok(PyExpr {
         expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
             fun,
@@ -153,10 +180,10 @@ macro_rules! scalar_function {
         #[pyfunction]
         #[pyo3(signature = (*args))]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
-            let expr = datafusion_expr::Expr::ScalarFunction {
+            let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
                 fun: BuiltinScalarFunction::$FUNC,
                 args: args.into_iter().map(|e| e.into()).collect(),
-            };
+            });
             expr.into()
         }
     };
@@ -176,6 +203,7 @@ macro_rules! aggregate_function {
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,
+                order_by: None,
             });
             expr.into()
         }
@@ -184,9 +212,12 @@ macro_rules! aggregate_function {
 
 scalar_function!(abs, Abs);
 scalar_function!(acos, Acos);
+scalar_function!(acosh, Acosh);
 scalar_function!(ascii, Ascii, "Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character.");
 scalar_function!(asin, Asin);
+scalar_function!(asinh, Asinh);
 scalar_function!(atan, Atan);
+scalar_function!(atanh, Atanh);
 scalar_function!(atan2, Atan2);
 scalar_function!(
     bit_length,
@@ -194,6 +225,7 @@ scalar_function!(
     "Returns number of bits in the string (8 times the octet_length)."
 );
 scalar_function!(btrim, Btrim, "Removes the longest string containing only characters in characters (a space by default) from the start and end of string.");
+scalar_function!(cbrt, Cbrt);
 scalar_function!(ceil, Ceil);
 scalar_function!(
     character_length,
@@ -205,9 +237,16 @@ scalar_function!(char_length, CharacterLength);
 scalar_function!(chr, Chr, "Returns the character with the given code.");
 scalar_function!(coalesce, Coalesce);
 scalar_function!(cos, Cos);
+scalar_function!(cosh, Cosh);
+scalar_function!(degrees, Degrees);
 scalar_function!(exp, Exp);
+scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
+scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
+scalar_function!(isnan, Isnan);
+scalar_function!(iszero, Iszero);
+scalar_function!(lcm, Lcm);
 scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
 scalar_function!(ln, Ln);
 scalar_function!(log, Log);
@@ -221,9 +260,16 @@ scalar_function!(
     MD5,
     "Computes the MD5 hash of the argument, with the result written in hexadecimal."
 );
+scalar_function!(
+    nanvl,
+    Nanvl,
+    "Returns x if x is not NaN otherwise returns y."
+);
 scalar_function!(octet_length, OctetLength, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+scalar_function!(pi, Pi);
 scalar_function!(power, Power);
 scalar_function!(pow, Power);
+scalar_function!(radians, Radians);
 scalar_function!(regexp_match, RegexpMatch);
 scalar_function!(
     regexp_replace,
@@ -255,6 +301,7 @@ scalar_function!(sha384, SHA384);
 scalar_function!(sha512, SHA512);
 scalar_function!(signum, Signum);
 scalar_function!(sin, Sin);
+scalar_function!(sinh, Sinh);
 scalar_function!(
     split_part,
     SplitPart,
@@ -269,6 +316,7 @@ scalar_function!(
 scalar_function!(strpos, Strpos, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
 scalar_function!(substr, Substr);
 scalar_function!(tan, Tan);
+scalar_function!(tanh, Tanh);
 scalar_function!(
     to_hex,
     ToHex,
@@ -298,6 +346,9 @@ scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyw
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
+//Binary String Functions
+scalar_function!(encode, Encode);
+scalar_function!(decode, Decode);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -325,10 +376,27 @@ aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(var_samp, Variance);
+aggregate_function!(regr_avgx, RegrAvgx);
+aggregate_function!(regr_avgy, RegrAvgy);
+aggregate_function!(regr_count, RegrCount);
+aggregate_function!(regr_intercept, RegrIntercept);
+aggregate_function!(regr_r2, RegrR2);
+aggregate_function!(regr_slope, RegrSlope);
+aggregate_function!(regr_sxx, RegrSXX);
+aggregate_function!(regr_sxy, RegrSXY);
+aggregate_function!(regr_syy, RegrSYY);
+aggregate_function!(first_value, FirstValue);
+aggregate_function!(last_value, LastValue);
+aggregate_function!(bit_and, BitAnd);
+aggregate_function!(bit_or, BitOr);
+aggregate_function!(bit_xor, BitXor);
+aggregate_function!(bool_and, BoolAnd);
+aggregate_function!(bool_or, BoolOr);
 
 pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
+    m.add_wrapped(wrap_pyfunction!(acosh))?;
     m.add_wrapped(wrap_pyfunction!(approx_distinct))?;
     m.add_wrapped(wrap_pyfunction!(alias))?;
     m.add_wrapped(wrap_pyfunction!(approx_median))?;
@@ -339,21 +407,26 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
+    m.add_wrapped(wrap_pyfunction!(asinh))?;
     m.add_wrapped(wrap_pyfunction!(atan))?;
+    m.add_wrapped(wrap_pyfunction!(atanh))?;
     m.add_wrapped(wrap_pyfunction!(atan2))?;
     m.add_wrapped(wrap_pyfunction!(avg))?;
     m.add_wrapped(wrap_pyfunction!(bit_length))?;
     m.add_wrapped(wrap_pyfunction!(btrim))?;
+    m.add_wrapped(wrap_pyfunction!(cbrt))?;
     m.add_wrapped(wrap_pyfunction!(ceil))?;
     m.add_wrapped(wrap_pyfunction!(character_length))?;
     m.add_wrapped(wrap_pyfunction!(chr))?;
     m.add_wrapped(wrap_pyfunction!(char_length))?;
     m.add_wrapped(wrap_pyfunction!(coalesce))?;
+    m.add_wrapped(wrap_pyfunction!(case))?;
     m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
     m.add_wrapped(wrap_pyfunction!(corr))?;
     m.add_wrapped(wrap_pyfunction!(cos))?;
+    m.add_wrapped(wrap_pyfunction!(cosh))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
     m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar))?;
@@ -361,6 +434,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
     m.add_wrapped(wrap_pyfunction!(current_time))?;
+    m.add_wrapped(wrap_pyfunction!(degrees))?;
     m.add_wrapped(wrap_pyfunction!(date_bin))?;
     m.add_wrapped(wrap_pyfunction!(datepart))?;
     m.add_wrapped(wrap_pyfunction!(date_part))?;
@@ -368,11 +442,16 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
     m.add_wrapped(wrap_pyfunction!(exp))?;
+    m.add_wrapped(wrap_pyfunction!(factorial))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
+    m.add_wrapped(wrap_pyfunction!(gcd))?;
     m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
+    m.add_wrapped(wrap_pyfunction!(isnan))?;
+    m.add_wrapped(wrap_pyfunction!(iszero))?;
+    m.add_wrapped(wrap_pyfunction!(lcm))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
     m.add_wrapped(wrap_pyfunction!(ln))?;
@@ -388,12 +467,15 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(mean))?;
     m.add_wrapped(wrap_pyfunction!(median))?;
     m.add_wrapped(wrap_pyfunction!(min))?;
+    m.add_wrapped(wrap_pyfunction!(nanvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
     m.add_wrapped(wrap_pyfunction!(order_by))?;
+    m.add_wrapped(wrap_pyfunction!(pi))?;
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(pow))?;
+    m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
     m.add_wrapped(wrap_pyfunction!(regexp_match))?;
     m.add_wrapped(wrap_pyfunction!(regexp_replace))?;
@@ -410,6 +492,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(sha512))?;
     m.add_wrapped(wrap_pyfunction!(signum))?;
     m.add_wrapped(wrap_pyfunction!(sin))?;
+    m.add_wrapped(wrap_pyfunction!(sinh))?;
     m.add_wrapped(wrap_pyfunction!(split_part))?;
     m.add_wrapped(wrap_pyfunction!(sqrt))?;
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
@@ -421,6 +504,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(substr))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
+    m.add_wrapped(wrap_pyfunction!(tanh))?;
     m.add_wrapped(wrap_pyfunction!(to_hex))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_millis))?;
@@ -435,5 +519,25 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
+    m.add_wrapped(wrap_pyfunction!(regr_avgx))?;
+    m.add_wrapped(wrap_pyfunction!(regr_avgy))?;
+    m.add_wrapped(wrap_pyfunction!(regr_count))?;
+    m.add_wrapped(wrap_pyfunction!(regr_intercept))?;
+    m.add_wrapped(wrap_pyfunction!(regr_r2))?;
+    m.add_wrapped(wrap_pyfunction!(regr_slope))?;
+    m.add_wrapped(wrap_pyfunction!(regr_sxx))?;
+    m.add_wrapped(wrap_pyfunction!(regr_sxy))?;
+    m.add_wrapped(wrap_pyfunction!(regr_syy))?;
+    m.add_wrapped(wrap_pyfunction!(first_value))?;
+    m.add_wrapped(wrap_pyfunction!(last_value))?;
+    m.add_wrapped(wrap_pyfunction!(bit_and))?;
+    m.add_wrapped(wrap_pyfunction!(bit_or))?;
+    m.add_wrapped(wrap_pyfunction!(bit_xor))?;
+    m.add_wrapped(wrap_pyfunction!(bool_and))?;
+    m.add_wrapped(wrap_pyfunction!(bool_or))?;
+
+    //Binary String Functions
+    m.add_wrapped(wrap_pyfunction!(encode))?;
+    m.add_wrapped(wrap_pyfunction!(decode))?;
     Ok(())
 }
