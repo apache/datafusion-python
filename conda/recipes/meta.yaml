@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-{% set name = "datafusion-python" %}
+{% set name = "datafusion" %}
 {% set major_minor_patch = environ.get('GIT_DESCRIBE_TAG', '0.0.0.dev').split('.') %}
 {% set new_patch = major_minor_patch[2] | int + 1 %}
 {% set version = (major_minor_patch[:2] + [new_patch]) | join('.') + environ.get('VERSION_SUFFIX', '') %}
@@ -29,23 +29,23 @@ source:
   git_url: ../..
 
 build:
-  script:
-    - cargo-bundle-licenses --format yaml --output THIRDPARTY.yml
-    - {{ PYTHON }} -m pip install . -vv
   number: {{ GIT_DESCRIBE_NUMBER }}
   string: py{{ python | replace(".", "") }}_{{ GIT_DESCRIBE_HASH }}_{{ GIT_DESCRIBE_NUMBER }}
 
 requirements:
-  host:
-    - python >=3.7
+  build:
+    - python                                 # [build_platform != target_platform]
+    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
+    - {{ compiler('rust') }}
+    - cargo-bundle-licenses
     - maturin >=0.15,<0.16
     - libprotobuf =3
   host:
-    - pip
     - python
-    - maturin >=0.14,<0.15
+    - maturin >=0.15,<0.16
+    - pip
   run:
-    - python >=3.7
+    - python
     - pyarrow >=11.0.0
 
 test:
