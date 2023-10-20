@@ -44,6 +44,7 @@ requirements:
     - python
     - maturin >=0.15,<0.16
     - pip
+    - zlib
   run:
     - python
     - pyarrow >=11.0.0

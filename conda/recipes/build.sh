@@ -20,8 +20,6 @@
 
 set -ex
 
-export RUST_BACKTRACE=full
-
 # See https://github.com/conda-forge/rust-feedstock/blob/master/recipe/build.sh for cc env explanation
 if [ "$c_compiler" = gcc ] ; then
     case "$target_platform" in
