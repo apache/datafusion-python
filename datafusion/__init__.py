@@ -33,7 +33,6 @@ from ._internal import (
     SessionConfig,
     RuntimeConfig,
     ScalarUDF,
-    WindowFrame,
 )
 
 from .common import (
@@ -86,6 +85,8 @@ from .expr import (
     DropTable,
     Repartition,
     Partitioning,
+    Window,
+    WindowFrame,
 )
 
 __version__ = importlib_metadata.version(__name__)
@@ -99,6 +100,7 @@ __all__ = [
     "Expr",
     "AggregateUDF",
     "ScalarUDF",
+    "Window",
     "WindowFrame",
     "column",
     "literal",
