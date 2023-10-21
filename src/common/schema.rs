@@ -56,7 +56,7 @@ pub struct SqlTable {
     #[pyo3(get, set)]
     pub statistics: SqlStatistics,
     #[pyo3(get, set)]
-    pub filepath: Option<String>,
+    pub filepaths: Option<Vec<String>>,
 }
 
 #[pymethods]
@@ -66,7 +66,7 @@ impl SqlTable {
         table_name: String,
         columns: Vec<(String, DataTypeMap)>,
         row_count: f64,
-        filepath: Option<String>,
+        filepaths: Option<Vec<String>>,
     ) -> Self {
         Self {
             name: table_name,
@@ -76,7 +76,7 @@ impl SqlTable {
             indexes: Vec::new(),
             constraints: Vec::new(),
             statistics: SqlStatistics::new(row_count),
-            filepath,
+            filepaths,
         }
     }
 }
@@ -124,7 +124,7 @@ impl SqlSchema {
 pub struct SqlTableSource {
     schema: SchemaRef,
     statistics: Option<SqlStatistics>,
-    filepath: Option<String>,
+    filepaths: Option<Vec<String>>,
 }
 
 impl SqlTableSource {
@@ -132,12 +132,12 @@ impl SqlTableSource {
     pub fn new(
         schema: SchemaRef,
         statistics: Option<SqlStatistics>,
-        filepath: Option<String>,
+        filepaths: Option<Vec<String>>,
     ) -> Self {
         Self {
             schema,
             statistics,
-            filepath,
+            filepaths,
         }
     }
 
@@ -148,8 +148,8 @@ impl SqlTableSource {
 
     /// Access optional filepath associated with this table source
     #[allow(dead_code)]
-    pub fn filepath(&self) -> Option<&String> {
-        self.filepath.as_ref()
+    pub fn filepaths(&self) -> Option<&Vec<String>> {
+        self.filepaths.as_ref()
     }
 }
 

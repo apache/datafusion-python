@@ -16,6 +16,7 @@
 # under the License.
 
 import os
+import glob
 from typing import Any
 
 from datafusion.common import DataTypeMap, SqlTable
@@ -41,14 +42,12 @@ class LocationInputPlugin(BaseInputSource):
         format = extension.lstrip(".").lower()
         num_rows = 0  # Total number of rows in the file. Used for statistics
         columns = []
-
         if format == "parquet":
             import pyarrow.parquet as pq
 
             # Read the Parquet metadata
             metadata = pq.read_metadata(input_file)
             num_rows = metadata.num_rows
-
             # Iterate through the schema and build the SqlTable
             for col in metadata.schema:
                 columns.append(
@@ -57,7 +56,6 @@ class LocationInputPlugin(BaseInputSource):
                         DataTypeMap.from_parquet_type_str(col.physical_type),
                     )
                 )
-
         elif format == "csv":
             import csv
 
@@ -73,7 +71,6 @@ class LocationInputPlugin(BaseInputSource):
                 print(header_row)
                 for _ in reader:
                     num_rows += 1
-
             # TODO: Need to actually consume this row into resonable columns
             raise RuntimeError(
                 "TODO: Currently unable to support CSV input files."
@@ -84,4 +81,7 @@ class LocationInputPlugin(BaseInputSource):
                 Only Parquet and CSV."
             )
 
-        return SqlTable(table_name, columns, num_rows, input_file)
+        # Input could possibly be multiple files. Create a list if so
+        input_files = glob.glob(input_file)
+
+        return SqlTable(table_name, columns, num_rows, input_files)
