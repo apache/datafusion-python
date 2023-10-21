@@ -140,7 +140,7 @@ fn window(
         ctx.and_then(|ctx| {
             ctx.ctx
                 .udaf(name)
-                .map(|fun| datafusion_expr::WindowFunction::AggregateUDF(fun))
+                .map(datafusion_expr::WindowFunction::AggregateUDF)
                 .ok()
         })
     });
