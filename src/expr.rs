@@ -92,6 +92,7 @@ pub mod subquery;
 pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
+pub mod window;
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -110,6 +111,11 @@ impl From<Expr> for PyExpr {
     fn from(expr: Expr) -> PyExpr {
         PyExpr { expr }
     }
+}
+
+/// Convert a list of DataFusion Expr to PyExpr
+pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
+    Ok(expr.iter().map(|e| PyExpr::from(e.clone())).collect())
 }
 
 #[pymethods]
@@ -542,6 +548,10 @@ impl PyExpr {
                 // appear in projections) so we just delegate to the contained expression instead
                 Self::expr_to_field(expr, input_plan)
             }
+            Expr::Wildcard => {
+                // Since * could be any of the valid column names just return the first one
+                Ok(input_plan.schema().field(0).clone())
+            }
             _ => {
                 let fields =
                     exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
@@ -652,5 +662,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<drop_table::PyDropTable>()?;
     m.add_class::<repartition::PyPartitioning>()?;
     m.add_class::<repartition::PyRepartition>()?;
+    m.add_class::<window::PyWindow>()?;
+    m.add_class::<window::PyWindowFrame>()?;
+    m.add_class::<window::PyWindowFrameBound>()?;
     Ok(())
 }
