@@ -41,7 +41,6 @@ requirements:
     - {{ compiler('rust') }}
     - cargo-bundle-licenses
     - maturin >=0.15,<0.16
-    - libprotobuf =3
   host:
     - python
     - maturin >=0.15,<0.16
