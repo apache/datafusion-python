@@ -113,11 +113,15 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
 
     // Register substrait as a submodule
     #[cfg(feature = "substrait")]
-    let substrait = PyModule::new(py, "substrait")?;
-    #[cfg(feature = "substrait")]
-    substrait::init_module(substrait)?;
-    #[cfg(feature = "substrait")]
-    m.add_submodule(substrait)?;
+    setup_substrait_module(py, m)?;
 
+    Ok(())
+}
+
+#[cfg(feature = "substrait")]
+fn setup_substrait_module(py: Python, m: &PyModule) -> PyResult<()> {
+    let substrait = PyModule::new(py, "substrait")?;
+    substrait::init_module(substrait)?;
+    m.add_submodule(substrait)?;
     Ok(())
 }
