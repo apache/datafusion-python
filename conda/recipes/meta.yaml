@@ -29,18 +29,27 @@ source:
   git_url: ../..
 
 build:
-  noarch: python
-  script: {{ PYTHON }} -m pip install . -vv
-  number: 0
+  number: {{ GIT_DESCRIBE_NUMBER }}
+  string: py{{ python | replace(".", "") }}_{{ GIT_DESCRIBE_HASH }}_{{ GIT_DESCRIBE_NUMBER }}
 
 requirements:
-  host:
-    - python >=3.7
+  build:
+    - python                                 # [build_platform != target_platform]
+    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
+    - zlib                                   # [build_platform != target_platform]
+    - {{ compiler('c') }}
+    - {{ compiler('rust') }}
+    - cargo-bundle-licenses
     - maturin >=0.15,<0.16
     - libprotobuf =3
+  host:
+    - python
+    - maturin >=0.15,<0.16
     - pip
+    - zlib
+    - xz  # [linux64]
   run:
-    - python >=3.7
+    - python
     - pyarrow >=11.0.0
 
 test:
@@ -55,5 +64,11 @@ about:
   home: https://arrow.apache.org/datafusion
   license: Apache-2.0
   license_family: APACHE
-  license_file: LICENSE.txt
-  summary: Apache Arrow DataFusion Python Bindings
+  license_file:
+    - LICENSE.txt
+    - THIRDPARTY.yml
+  description: |
+    DataFusion is an extensible query execution framework, written in Rust,
+    that uses Apache Arrow as its in-memory format.
+  doc_url: https://arrow.apache.org/datafusion
+  dev_url: https://github.com/apache/arrow-datafusion

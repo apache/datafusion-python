@@ -1,3 +1,4 @@
+#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,18 +15,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+#
 
-import os
-from datafusion.input.location import LocationInputPlugin
+maturin build -vv -j %CPU_COUNT% --release --strip --manylinux off --interpreter=%PYTHON%
 
+FOR /F "delims=" %%i IN ('dir /s /b target\wheels\*.whl') DO set datafusion_wheel=%%i
 
-def test_location_input():
-    location_input = LocationInputPlugin()
+%PYTHON% -m pip install --no-deps %datafusion_wheel% -vv
 
-    cwd = os.getcwd()
-    input_file = cwd + "/testing/data/parquet/generated_simple_numerics/blogs.parquet"
-    table_name = "blog"
-    tbl = location_input.build_table(input_file, table_name)
-    assert "blog" == tbl.name
-    assert 3 == len(tbl.columns)
-    assert "blogs.parquet" in tbl.filepaths[0]
+cargo-bundle-licenses --format yaml --output THIRDPARTY.yml

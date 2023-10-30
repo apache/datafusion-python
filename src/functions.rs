@@ -20,8 +20,8 @@ use pyo3::{prelude::*, wrap_pyfunction};
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
-use crate::window_frame::PyWindowFrame;
 use datafusion::execution::FunctionRegistry;
 use datafusion_common::Column;
 use datafusion_expr::expr::Alias;
@@ -140,7 +140,7 @@ fn window(
         ctx.and_then(|ctx| {
             ctx.ctx
                 .udaf(name)
-                .map(|fun| datafusion_expr::WindowFunction::AggregateUDF(fun))
+                .map(datafusion_expr::WindowFunction::AggregateUDF)
                 .ok()
         })
     });

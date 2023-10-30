@@ -329,6 +329,7 @@ impl DataTypeMap {
             }
             "float" => Ok(DataType::Float32),
             "double" => Ok(DataType::Float64),
+            "byte_array" => Ok(DataType::Utf8),
             _ => Err(PyValueError::new_err(format!(
                 "Unable to determine Arrow Data Type from Parquet String type: {:?}",
                 parquet_str_type
@@ -604,13 +605,30 @@ impl PyDataType {
     /// is presented as a String rather than an actual DataType. This function is used to
     /// convert that String to a DataType for the Python side to use.
     pub fn py_map_from_arrow_type_str(arrow_str_type: String) -> PyResult<PyDataType> {
+        // Certain string types contain "metadata" that should be trimmed here. Ex: "datetime64[ns, Europe/Berlin]"
+        let arrow_str_type = match arrow_str_type.find('[') {
+            Some(index) => arrow_str_type[0..index].to_string(),
+            None => arrow_str_type, // Return early if ',' is not found.
+        };
+
         let arrow_dtype = match arrow_str_type.to_lowercase().as_str() {
+            "bool" => Ok(DataType::Boolean),
             "boolean" => Ok(DataType::Boolean),
+            "uint8" => Ok(DataType::UInt8),
+            "uint16" => Ok(DataType::UInt16),
+            "uint32" => Ok(DataType::UInt32),
+            "uint64" => Ok(DataType::UInt64),
+            "int8" => Ok(DataType::Int8),
+            "int16" => Ok(DataType::Int16),
             "int32" => Ok(DataType::Int32),
             "int64" => Ok(DataType::Int64),
             "float" => Ok(DataType::Float32),
             "double" => Ok(DataType::Float64),
+            "float16" => Ok(DataType::Float16),
+            "float32" => Ok(DataType::Float32),
             "float64" => Ok(DataType::Float64),
+            "datetime64" => Ok(DataType::Date64),
+            "object" => Ok(DataType::Utf8),
             _ => Err(PyValueError::new_err(format!(
                 "Unable to determine Arrow Data Type from Arrow String type: {:?}",
                 arrow_str_type

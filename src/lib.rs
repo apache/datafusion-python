@@ -25,6 +25,8 @@ pub use datafusion_common;
 pub use datafusion_expr;
 pub use datafusion_optimizer;
 pub use datafusion_sql;
+
+#[cfg(feature = "substrait")]
 pub use datafusion_substrait;
 
 #[allow(clippy::borrow_deref_ref)]
@@ -48,13 +50,14 @@ mod pyarrow_filter_expression;
 mod record_batch;
 pub mod sql;
 pub mod store;
+
+#[cfg(feature = "substrait")]
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
 pub mod utils;
-mod window_frame;
 
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
@@ -84,7 +87,6 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<context::PySessionContext>()?;
     m.add_class::<dataframe::PyDataFrame>()?;
     m.add_class::<udf::PyScalarUDF>()?;
-    m.add_class::<window_frame::PyWindowFrame>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
@@ -110,9 +112,16 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_submodule(store)?;
 
     // Register substrait as a submodule
+    #[cfg(feature = "substrait")]
+    setup_substrait_module(py, m)?;
+
+    Ok(())
+}
+
+#[cfg(feature = "substrait")]
+fn setup_substrait_module(py: Python, m: &PyModule) -> PyResult<()> {
     let substrait = PyModule::new(py, "substrait")?;
     substrait::init_module(substrait)?;
     m.add_submodule(substrait)?;
-
     Ok(())
 }
