@@ -68,7 +68,8 @@ pub struct PyScalarUDF {
 
 #[pymethods]
 impl PyScalarUDF {
-    #[new(name, func, input_types, return_type, volatility)]
+    #[new]
+    #[pyo3(signature=(name, func, input_types, return_type, volatility))]
     fn new(
         name: &str,
         func: PyObject,

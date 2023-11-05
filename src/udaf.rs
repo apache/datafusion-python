@@ -143,7 +143,8 @@ pub struct PyAggregateUDF {
 
 #[pymethods]
 impl PyAggregateUDF {
-    #[new(name, accumulator, input_type, return_type, state_type, volatility)]
+    #[new]
+    #[pyo3(signature=(name, accumulator, input_type, return_type, state_type, volatility))]
     fn new(
         name: &str,
         accumulator: PyObject,

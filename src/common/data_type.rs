@@ -288,7 +288,7 @@ impl DataTypeMap {
             ScalarValue::IntervalMonthDayNano(..) => {
                 Ok(DataType::Interval(IntervalUnit::MonthDayNano))
             }
-            ScalarValue::List(_val, field_ref) => Ok(DataType::List(field_ref.to_owned())),
+            ScalarValue::List(_array_ref) => todo!(), //TODO fix this
             ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
             ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
             ScalarValue::Fixedsizelist(_, field_ref, size) => {

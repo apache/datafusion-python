@@ -332,7 +332,7 @@ impl PyExpr {
                 ScalarValue::Binary(v) => v.clone().into_py(py),
                 ScalarValue::FixedSizeBinary(_, _) => todo!(),
                 ScalarValue::LargeBinary(v) => v.clone().into_py(py),
-                ScalarValue::List(_, _) => todo!(),
+                ScalarValue::List(_) => todo!(),
                 ScalarValue::Date32(v) => v.into_py(py),
                 ScalarValue::Date64(v) => v.into_py(py),
                 ScalarValue::Time32Second(v) => v.into_py(py),
