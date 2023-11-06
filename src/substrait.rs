@@ -134,7 +134,7 @@ impl PySubstraitConsumer {
         plan: PyPlan,
         py: Python,
     ) -> PyResult<PyLogicalPlan> {
-        let result = consumer::from_substrait_plan(&mut ctx.ctx, &plan.plan);
+        let result = consumer::from_substrait_plan(&ctx.ctx, &plan.plan);
         let logical_plan = wait_for_future(py, result).map_err(DataFusionError::from)?;
         Ok(PyLogicalPlan::new(logical_plan))
     }

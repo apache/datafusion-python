@@ -166,9 +166,10 @@ fn not_window_function_err(expr: Expr) -> PyErr {
 
 #[pymethods]
 impl PyWindowFrame {
-    #[new(unit, start_bound, end_bound)]
-    pub fn new(units: &str, start_bound: Option<u64>, end_bound: Option<u64>) -> PyResult<Self> {
-        let units = units.to_ascii_lowercase();
+    #[new]
+    #[pyo3(signature=(unit, start_bound, end_bound))]
+    pub fn new(unit: &str, start_bound: Option<u64>, end_bound: Option<u64>) -> PyResult<Self> {
+        let units = unit.to_ascii_lowercase();
         let units = match units.as_str() {
             "rows" => WindowFrameUnits::Rows,
             "range" => WindowFrameUnits::Range,

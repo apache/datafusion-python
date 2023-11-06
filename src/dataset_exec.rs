@@ -133,13 +133,14 @@ impl DatasetExec {
             .downcast()
             .map_err(PyErr::from)?;
 
+        let projected_statistics = Statistics::new_unknown(&schema);
         Ok(DatasetExec {
             dataset: dataset.into(),
             schema,
             fragments: fragments.into(),
             columns,
             filter_expr,
-            projected_statistics: Default::default(),
+            projected_statistics,
         })
     }
 }
@@ -236,8 +237,8 @@ impl ExecutionPlan for DatasetExec {
         })
     }
 
-    fn statistics(&self) -> Statistics {
-        self.projected_statistics.clone()
+    fn statistics(&self) -> DFResult<Statistics> {
+        Ok(self.projected_statistics.clone())
     }
 }
 
