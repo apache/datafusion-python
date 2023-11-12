@@ -265,9 +265,7 @@ impl PyExpr {
     pub fn rex_type(&self) -> PyResult<RexType> {
         Ok(match self.expr {
             Expr::Alias(..) => RexType::Alias,
-            Expr::Column(..) | Expr::QualifiedWildcard { .. } | Expr::GetIndexedField { .. } => {
-                RexType::Reference
-            }
+            Expr::Column(..) | Expr::GetIndexedField { .. } => RexType::Reference,
             Expr::ScalarVariable(..) | Expr::Literal(..) => RexType::Literal,
             Expr::BinaryExpr { .. }
             | Expr::Not(..)
@@ -286,7 +284,7 @@ impl PyExpr {
             | Expr::WindowFunction { .. }
             | Expr::AggregateUDF { .. }
             | Expr::InList { .. }
-            | Expr::Wildcard
+            | Expr::Wildcard { .. }
             | Expr::ScalarUDF { .. }
             | Expr::Exists { .. }
             | Expr::InSubquery { .. }
@@ -463,8 +461,7 @@ impl PyExpr {
             // Currently un-support/implemented Expr types for Rex Call operations
             Expr::GroupingSet(..)
             | Expr::OuterReferenceColumn(_, _)
-            | Expr::Wildcard
-            | Expr::QualifiedWildcard { .. }
+            | Expr::Wildcard { .. }
             | Expr::ScalarSubquery(..)
             | Expr::Placeholder { .. }
             | Expr::Exists { .. } => Err(py_runtime_err(format!(
@@ -548,7 +545,7 @@ impl PyExpr {
                 // appear in projections) so we just delegate to the contained expression instead
                 Self::expr_to_field(expr, input_plan)
             }
-            Expr::Wildcard => {
+            Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(input_plan.schema().field(0).clone())
             }
