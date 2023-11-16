@@ -19,6 +19,13 @@
 
 # DataFusion Python Changelog
 
+## [33.0.0](https://github.com/apache/arrow-datafusion-python/tree/33.0.0) (2023-11-16)
+
+**Merged pull requests:**
+
+- First pass at getting architectured builds working [#350](https://github.com/apache/arrow-datafusion-python/pull/350) (charlesbluca)
+- Remove libprotobuf dep [#527](https://github.com/apache/arrow-datafusion-python/pull/527) (jdye64)
+
 ## [32.0.0](https://github.com/apache/arrow-datafusion-python/tree/32.0.0) (2023-10-21)
 
 **Implemented enhancements:**
