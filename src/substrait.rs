@@ -29,8 +29,8 @@ use prost::Message;
 
 #[pyclass(name = "plan", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PyPlan {
-    pub(crate) plan: Plan,
+pub struct PyPlan {
+    pub plan: Plan,
 }
 
 #[pymethods]
@@ -61,7 +61,7 @@ impl From<Plan> for PyPlan {
 /// to a valid `LogicalPlan` instance.
 #[pyclass(name = "serde", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PySubstraitSerializer;
+pub struct PySubstraitSerializer;
 
 #[pymethods]
 impl PySubstraitSerializer {
@@ -107,7 +107,7 @@ impl PySubstraitSerializer {
 
 #[pyclass(name = "producer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PySubstraitProducer;
+pub struct PySubstraitProducer;
 
 #[pymethods]
 impl PySubstraitProducer {
@@ -123,7 +123,7 @@ impl PySubstraitProducer {
 
 #[pyclass(name = "consumer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct PySubstraitConsumer;
+pub struct PySubstraitConsumer;
 
 #[pymethods]
 impl PySubstraitConsumer {
@@ -140,7 +140,7 @@ impl PySubstraitConsumer {
     }
 }
 
-pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
+pub fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PyPlan>()?;
     m.add_class::<PySubstraitConsumer>()?;
     m.add_class::<PySubstraitProducer>()?;

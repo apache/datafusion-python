@@ -30,18 +30,18 @@ use datafusion::{
 };
 
 #[pyclass(name = "Catalog", module = "datafusion", subclass)]
-pub(crate) struct PyCatalog {
-    catalog: Arc<dyn CatalogProvider>,
+pub struct PyCatalog {
+    pub catalog: Arc<dyn CatalogProvider>,
 }
 
 #[pyclass(name = "Database", module = "datafusion", subclass)]
-pub(crate) struct PyDatabase {
-    database: Arc<dyn SchemaProvider>,
+pub struct PyDatabase {
+    pub database: Arc<dyn SchemaProvider>,
 }
 
 #[pyclass(name = "Table", module = "datafusion", subclass)]
 pub struct PyTable {
-    table: Arc<dyn TableProvider>,
+    pub table: Arc<dyn TableProvider>,
 }
 
 impl PyCatalog {
