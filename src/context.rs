@@ -225,7 +225,7 @@ impl PySessionContext {
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
-        runtime: Option<PyRuntimeConfig>
+        runtime: Option<PyRuntimeConfig>,
     ) -> PyResult<Self> {
         let config = if let Some(c) = config {
             c.config
