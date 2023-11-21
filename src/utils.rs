@@ -27,9 +27,7 @@ pub(crate) fn get_tokio_runtime(py: Python) -> PyRef<TokioRuntime> {
     let datafusion = py.import("datafusion._internal").unwrap();
     let tmp = datafusion.getattr("runtime").unwrap();
     match tmp.extract::<PyRef<TokioRuntime>>() {
-        Ok(runtime) => {
-            runtime
-        },
+        Ok(runtime) => runtime,
         Err(_e) => {
             let rt = TokioRuntime(tokio::runtime::Runtime::new().unwrap());
             let obj: &PyAny = Py::new(py, rt).unwrap().into_ref(py);

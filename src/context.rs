@@ -223,7 +223,10 @@ pub struct PySessionContext {
 impl PySessionContext {
     #[pyo3(signature = (config=None, runtime=None))]
     #[new]
-    pub fn new(config: Option<PySessionConfig>, runtime: Option<PyRuntimeConfig>) -> PyResult<Self> {
+    pub fn new(
+        config: Option<PySessionConfig>,
+        runtime: Option<PyRuntimeConfig>
+    ) -> PyResult<Self> {
         let config = if let Some(c) = config {
             c.config
         } else {
