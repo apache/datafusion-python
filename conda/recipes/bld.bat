@@ -17,7 +17,7 @@
 # under the License.
 #
 
-maturin build -vv -j %CPU_COUNT% --release --strip --manylinux off --interpreter=%PYTHON%
+maturin build -vv -j %CPU_COUNT% --release --strip --features substrait --manylinux off --interpreter=%PYTHON%
 
 FOR /F "delims=" %%i IN ('dir /s /b target\wheels\*.whl') DO set datafusion_wheel=%%i
 
