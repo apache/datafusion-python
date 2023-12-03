@@ -80,7 +80,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip
+        run: maturin build --release --strip --features substrait
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -141,7 +141,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip --target aarch64-apple-darwin
+        run: maturin build --release --strip --target aarch64-apple-darwin --features substrait
       - name: List Mac wheels
         run: find target/wheels/
 
