@@ -26,4 +26,4 @@ When it comes to reading a JSON file, using :meth:`.SessionContext.read_json` is
     from datafusion import SessionContext
 
     ctx = SessionContext()
-    df = ctx.read_avro("file.json")
+    df = ctx.read_json("file.json")
