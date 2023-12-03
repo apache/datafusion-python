@@ -128,6 +128,7 @@ impl PyExpr {
             Expr::ScalarVariable(data_type, variables) => {
                 Ok(PyScalarVariable::new(data_type, variables).into_py(py))
             }
+            Expr::Like(value) => Ok(PyLike::from(value.clone()).into_py(py)),
             Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
             Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_py(py)),

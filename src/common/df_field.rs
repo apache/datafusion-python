@@ -27,7 +27,7 @@ use super::data_type::PyDataType;
 #[pyclass(name = "DFField", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyDFField {
-    field: DFField,
+    pub field: DFField,
 }
 
 impl From<PyDFField> for DFField {

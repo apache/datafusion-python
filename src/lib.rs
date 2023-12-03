@@ -35,7 +35,7 @@ pub mod common;
 #[allow(clippy::borrow_deref_ref)]
 mod config;
 #[allow(clippy::borrow_deref_ref)]
-mod context;
+pub mod context;
 #[allow(clippy::borrow_deref_ref)]
 mod dataframe;
 mod dataset;
