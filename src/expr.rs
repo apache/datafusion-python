@@ -24,10 +24,7 @@ use datafusion::scalar::ScalarValue;
 use datafusion_common::DFField;
 use datafusion_expr::{
     col,
-    expr::{
-        AggregateFunction, AggregateUDF, InList, InSubquery, ScalarFunction, ScalarUDF, Sort,
-        WindowFunction,
-    },
+    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
     lit,
     utils::exprlist_to_fields,
     Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, LogicalPlan,
@@ -283,10 +280,8 @@ impl PyExpr {
             | Expr::ScalarFunction { .. }
             | Expr::AggregateFunction { .. }
             | Expr::WindowFunction { .. }
-            | Expr::AggregateUDF { .. }
             | Expr::InList { .. }
             | Expr::Wildcard { .. }
-            | Expr::ScalarUDF { .. }
             | Expr::Exists { .. }
             | Expr::InSubquery { .. }
             | Expr::GroupingSet(..)
@@ -351,7 +346,7 @@ impl PyExpr {
                 ScalarValue::DurationMillisecond(v) => v.into_py(py),
                 ScalarValue::Struct(_, _) => todo!(),
                 ScalarValue::Dictionary(_, _) => todo!(),
-                ScalarValue::Fixedsizelist(_, _, _) => todo!(),
+                ScalarValue::FixedSizeList(_, _, _) => todo!(),
             }),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
@@ -391,9 +386,7 @@ impl PyExpr {
 
             // Expr variants containing a collection of Expr(s) for operands
             Expr::AggregateFunction(AggregateFunction { args, .. })
-            | Expr::AggregateUDF(AggregateUDF { args, .. })
             | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::ScalarUDF(ScalarUDF { args, .. })
             | Expr::WindowFunction(WindowFunction { args, .. }) => {
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
@@ -480,8 +473,9 @@ impl PyExpr {
                 op,
                 right: _,
             }) => format!("{op}"),
-            Expr::ScalarFunction(ScalarFunction { fun, args: _ }) => format!("{fun}"),
-            Expr::ScalarUDF(ScalarUDF { fun, .. }) => fun.name.clone(),
+            Expr::ScalarFunction(ScalarFunction { func_def, args: _ }) => {
+                format!("{}", func_def.name())
+            }
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
             Expr::Case { .. } => "case".to_string(),
