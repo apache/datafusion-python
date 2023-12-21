@@ -354,6 +354,8 @@ scalar_function!(decode, Decode);
 scalar_function!(array_append, ArrayAppend);
 scalar_function!(array_concat, ArrayConcat);
 scalar_function!(array_cat, ArrayConcat);
+scalar_function!(array_dims, ArrayDims);
+scalar_function!(list_dims, ArrayDims);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -549,6 +551,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_append))?;
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
+    m.add_wrapped(wrap_pyfunction!(array_dims))?;
+    m.add_wrapped(wrap_pyfunction!(list_dims))?;
 
     Ok(())
 }
