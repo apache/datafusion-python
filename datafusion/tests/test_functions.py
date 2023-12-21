@@ -229,6 +229,22 @@ def test_array_functions():
             f.list_dims(col),
             lambda: [[len(r)] for r in data],
         ],
+        [
+            f.array_element(col, literal(1)),
+            lambda: [r[0] for r in data],
+        ],
+        [
+            f.array_extract(col, literal(1)),
+            lambda: [r[0] for r in data],
+        ],
+        [
+            f.list_element(col, literal(1)),
+            lambda: [r[0] for r in data],
+        ],
+        [
+            f.list_extract(col, literal(1)),
+            lambda: [r[0] for r in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
