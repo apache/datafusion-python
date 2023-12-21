@@ -350,6 +350,11 @@ scalar_function!(random, Random);
 scalar_function!(encode, Encode);
 scalar_function!(decode, Decode);
 
+// Array Functions
+scalar_function!(array_append, ArrayAppend);
+scalar_function!(array_concat, ArrayConcat);
+scalar_function!(array_cat, ArrayConcat);
+
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
 aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
@@ -539,5 +544,11 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
     m.add_wrapped(wrap_pyfunction!(decode))?;
+
+    // Array Functions
+    m.add_wrapped(wrap_pyfunction!(array_append))?;
+    m.add_wrapped(wrap_pyfunction!(array_concat))?;
+    m.add_wrapped(wrap_pyfunction!(array_cat))?;
+
     Ok(())
 }
