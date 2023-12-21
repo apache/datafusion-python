@@ -221,6 +221,14 @@ def test_array_functions():
             f.array_cat(col, col),
             lambda: [np.concatenate([arr, arr]) for arr in data],
         ],
+        [
+            f.array_dims(col),
+            lambda: [[len(r)] for r in data],
+        ],
+        [
+            f.list_dims(col),
+            lambda: [[len(r)] for r in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
