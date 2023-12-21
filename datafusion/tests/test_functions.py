@@ -25,6 +25,8 @@ from datafusion import SessionContext, column
 from datafusion import functions as f
 from datafusion import literal
 
+np.seterr(invalid="ignore")
+
 
 @pytest.fixture
 def df():
@@ -195,6 +197,36 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(
         result.column(37), np.emath.logn(3, values + 1.0)
     )
+
+
+def test_array_functions():
+    data = [[1.0, 2.0, 3.0], [4.0, 5.0], [6.0]]
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [np.array(data, dtype=object)], names=["arr"]
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    col = column("arr")
+    test_items = [
+        [
+            f.array_append(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.array_concat(col, col),
+            lambda: [np.concatenate([arr, arr]) for arr in data],
+        ],
+        [
+            f.array_cat(col, col),
+            lambda: [np.concatenate([arr, arr]) for arr in data],
+        ],
+    ]
+
+    for stmt, py_expr in test_items:
+        query_result = df.select(stmt).collect()[0].column(0).tolist()
+        for a, b in zip(query_result, py_expr()):
+            np.testing.assert_array_almost_equal(a, b)
 
 
 def test_string_functions(df):
