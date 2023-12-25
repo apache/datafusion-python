@@ -360,6 +360,8 @@ scalar_function!(array_element, ArrayElement);
 scalar_function!(array_extract, ArrayElement);
 scalar_function!(list_element, ArrayElement);
 scalar_function!(list_extract, ArrayElement);
+scalar_function!(array_length, ArrayLength);
+scalar_function!(list_length, ArrayLength);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -561,6 +563,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_extract))?;
     m.add_wrapped(wrap_pyfunction!(list_element))?;
     m.add_wrapped(wrap_pyfunction!(list_extract))?;
+    m.add_wrapped(wrap_pyfunction!(array_length))?;
+    m.add_wrapped(wrap_pyfunction!(list_length))?;
 
     Ok(())
 }
