@@ -292,10 +292,9 @@ impl DataTypeMap {
             ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
             ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
             ScalarValue::FixedSizeList(_array_ref) => {
-                // Ok(DataType::FixedSizeList(
-                //     array_ref.to_owned(),
-                //     array_ref.len() as i32,
-                // ))
+                // The FieldRef was removed from ScalarValue::FixedSizeList in
+                // https://github.com/apache/arrow-datafusion/pull/8221, so we can no
+                // longer convert back to a DataType here
                 todo!()
             }
             ScalarValue::LargeList(_) => todo!(),
