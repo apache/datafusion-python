@@ -49,7 +49,7 @@ impl Display for PyAggregateFunction {
 impl PyAggregateFunction {
     /// Get the aggregate type, such as "MIN", or "MAX"
     fn aggregate_type(&self) -> String {
-        format!("{}", self.aggr.func_def.name())
+        self.aggr.func_def.name().to_string()
     }
 
     /// is this a distinct aggregate such as `COUNT(DISTINCT expr)`

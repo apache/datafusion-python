@@ -475,7 +475,7 @@ impl PyExpr {
                 right: _,
             }) => format!("{op}"),
             Expr::ScalarFunction(ScalarFunction { func_def, args: _ }) => {
-                format!("{}", func_def.name())
+                func_def.name().to_string()
             }
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
