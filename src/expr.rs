@@ -346,7 +346,8 @@ impl PyExpr {
                 ScalarValue::DurationMillisecond(v) => v.into_py(py),
                 ScalarValue::Struct(_, _) => todo!(),
                 ScalarValue::Dictionary(_, _) => todo!(),
-                ScalarValue::FixedSizeList(_, _, _) => todo!(),
+                ScalarValue::FixedSizeList(_) => todo!(),
+                ScalarValue::LargeList(_) => todo!(),
             }),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",

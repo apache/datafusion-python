@@ -291,10 +291,14 @@ impl DataTypeMap {
             ScalarValue::List(arr) => Ok(arr.data_type().to_owned()),
             ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
             ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
-            ScalarValue::FixedSizeList(array_ref) => Ok(DataType::FixedSizeList(
-                array_ref.to_owned(),
-                array_ref.len() as i32,
-            )),
+            ScalarValue::FixedSizeList(_array_ref) => {
+                // Ok(DataType::FixedSizeList(
+                //     array_ref.to_owned(),
+                //     array_ref.len() as i32,
+                // ))
+                todo!()
+            }
+            ScalarValue::LargeList(_) => todo!(),
             ScalarValue::DurationSecond(_) => Ok(DataType::Duration(TimeUnit::Second)),
             ScalarValue::DurationMillisecond(_) => Ok(DataType::Duration(TimeUnit::Millisecond)),
             ScalarValue::DurationMicrosecond(_) => Ok(DataType::Duration(TimeUnit::Microsecond)),

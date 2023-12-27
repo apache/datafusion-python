@@ -44,12 +44,22 @@ impl From<Distinct> for PyDistinct {
 
 impl Display for PyDistinct {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Distinct
+        match &self.distinct {
+            Distinct::All(input) => write!(
+                f,
+                "Distinct ALL
             \nInput: {:?}",
-            self.distinct.input,
-        )
+                input,
+            ),
+            Distinct::On(distinct_on) => {
+                write!(
+                    f,
+                    "Distinct ON
+            \nInput: {:?}",
+                    distinct_on.input,
+                )
+            }
+        }
     }
 }
 
@@ -71,7 +81,12 @@ impl PyDistinct {
 
 impl LogicalNode for PyDistinct {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
-        vec![PyLogicalPlan::from((*self.distinct.input).clone())]
+        match &self.distinct {
+            Distinct::All(input) => vec![PyLogicalPlan::from(input.as_ref().clone())],
+            Distinct::On(distinct_on) => {
+                vec![PyLogicalPlan::from(distinct_on.input.as_ref().clone())]
+            }
+        }
     }
 
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
