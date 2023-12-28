@@ -357,6 +357,19 @@ scalar_function!(random, Random);
 scalar_function!(encode, Encode);
 scalar_function!(decode, Decode);
 
+// Array Functions
+scalar_function!(array_append, ArrayAppend);
+scalar_function!(array_concat, ArrayConcat);
+scalar_function!(array_cat, ArrayConcat);
+scalar_function!(array_dims, ArrayDims);
+scalar_function!(list_dims, ArrayDims);
+scalar_function!(array_element, ArrayElement);
+scalar_function!(array_extract, ArrayElement);
+scalar_function!(list_element, ArrayElement);
+scalar_function!(list_extract, ArrayElement);
+scalar_function!(array_length, ArrayLength);
+scalar_function!(list_length, ArrayLength);
+
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
 aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
@@ -546,5 +559,19 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     //Binary String Functions
     m.add_wrapped(wrap_pyfunction!(encode))?;
     m.add_wrapped(wrap_pyfunction!(decode))?;
+
+    // Array Functions
+    m.add_wrapped(wrap_pyfunction!(array_append))?;
+    m.add_wrapped(wrap_pyfunction!(array_concat))?;
+    m.add_wrapped(wrap_pyfunction!(array_cat))?;
+    m.add_wrapped(wrap_pyfunction!(array_dims))?;
+    m.add_wrapped(wrap_pyfunction!(list_dims))?;
+    m.add_wrapped(wrap_pyfunction!(array_element))?;
+    m.add_wrapped(wrap_pyfunction!(array_extract))?;
+    m.add_wrapped(wrap_pyfunction!(list_element))?;
+    m.add_wrapped(wrap_pyfunction!(list_extract))?;
+    m.add_wrapped(wrap_pyfunction!(array_length))?;
+    m.add_wrapped(wrap_pyfunction!(list_length))?;
+
     Ok(())
 }
