@@ -95,6 +95,6 @@ impl PyScalarUDF {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("ScalarUDF({})", self.function.name))
+        Ok(format!("ScalarUDF({})", self.function.name()))
     }
 }

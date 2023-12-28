@@ -377,7 +377,7 @@ impl PySessionContext {
             // Because create_dataframe() expects a vector of vectors of record batches
             // here we need to wrap the vector of record batches in an additional vector
             let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>(py)?;
-            let list_of_batches = PyArrowType::try_from(vec![batches.0])?;
+            let list_of_batches = PyArrowType::from(vec![batches.0]);
             self.create_dataframe(list_of_batches, name, py)
         })
     }

@@ -36,7 +36,7 @@ use std::sync::Arc;
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
 #[pyclass(name = "DataFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
-pub(crate) struct PyDataFrame {
+pub struct PyDataFrame {
     df: Arc<DataFrame>,
 }
 

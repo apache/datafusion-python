@@ -21,7 +21,7 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion_expr::{Expr, TableProviderFilterPushDown, TableSource};
 use pyo3::prelude::*;
 
-use datafusion_optimizer::utils::split_conjunction;
+use datafusion_expr::utils::split_conjunction;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 

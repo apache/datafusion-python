@@ -23,11 +23,11 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
-use datafusion_common::Column;
+use datafusion_common::{Column, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
     aggregate_function,
-    expr::{AggregateFunction, ScalarFunction, Sort, WindowFunction},
+    expr::{AggregateFunction, AggregateFunctionDefinition, ScalarFunction, Sort, WindowFunction},
     lit,
     window_function::find_df_window_func,
     BuiltinScalarFunction, Expr,
@@ -88,8 +88,9 @@ fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyRes
 /// Creates a new Alias Expr
 #[pyfunction]
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
+    let relation: Option<TableReference> = None;
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Alias(Alias::new(expr.expr, name)),
+        expr: datafusion_expr::Expr::Alias(Alias::new(expr.expr, relation, name)),
     })
 }
 
@@ -109,7 +110,9 @@ fn col(name: &str) -> PyResult<PyExpr> {
 fn count_star() -> PyResult<PyExpr> {
     Ok(PyExpr {
         expr: Expr::AggregateFunction(AggregateFunction {
-            fun: aggregate_function::AggregateFunction::Count,
+            func_def: datafusion_expr::expr::AggregateFunctionDefinition::BuiltIn(
+                aggregate_function::AggregateFunction::Count,
+            ),
             args: vec![lit(1)],
             distinct: false,
             filter: None,
@@ -181,7 +184,9 @@ macro_rules! scalar_function {
         #[pyo3(signature = (*args))]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
             let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
-                fun: BuiltinScalarFunction::$FUNC,
+                func_def: datafusion_expr::ScalarFunctionDefinition::BuiltIn(
+                    BuiltinScalarFunction::$FUNC,
+                ),
                 args: args.into_iter().map(|e| e.into()).collect(),
             });
             expr.into()
@@ -199,7 +204,9 @@ macro_rules! aggregate_function {
         #[pyo3(signature = (*args, distinct=false))]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
             let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
-                fun: datafusion_expr::aggregate_function::AggregateFunction::$FUNC,
+                func_def: AggregateFunctionDefinition::BuiltIn(
+                    datafusion_expr::aggregate_function::AggregateFunction::$FUNC,
+                ),
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,

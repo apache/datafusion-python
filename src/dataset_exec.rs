@@ -38,8 +38,8 @@ use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, SendableRecordBatchStream,
     Statistics,
 };
+use datafusion_expr::utils::conjunction;
 use datafusion_expr::Expr;
-use datafusion_optimizer::utils::conjunction;
 
 use crate::errors::DataFusionError;
 use crate::pyarrow_filter_expression::PyArrowFilterExpression;
