@@ -19,7 +19,7 @@
 
 # DataFusion Python Changelog
 
-## [34.0.0](https://github.com/apache/arrow-datafusion-python/tree/33.0.0) (2023-12-28)
+## [34.0.0](https://github.com/apache/arrow-datafusion-python/tree/34.0.0) (2023-12-28)
 
 **Merged pull requests:**
 
