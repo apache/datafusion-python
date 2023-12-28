@@ -19,6 +19,15 @@
 
 # DataFusion Python Changelog
 
+## [34.0.0](https://github.com/apache/arrow-datafusion-python/tree/33.0.0) (2023-12-28)
+
+**Merged pull requests:**
+
+- Adjust visibility of crate private members & Functions [#537](https://github.com/apache/arrow-datafusion-python/pull/537) (jdye64)
+- Update json.rst [#538](https://github.com/apache/arrow-datafusion-python/pull/538) (ray-andrew)
+- Enable mimalloc local_dynamic_tls feature [#540](https://github.com/apache/arrow-datafusion-python/pull/540) (jdye64)
+- Enable substrait feature to be built by default in CI, for nightlies … [#544](https://github.com/apache/arrow-datafusion-python/pull/544) (jdye64)
+
 ## [33.0.0](https://github.com/apache/arrow-datafusion-python/tree/33.0.0) (2023-11-16)
 
 **Merged pull requests:**
