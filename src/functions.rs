@@ -372,6 +372,10 @@ scalar_function!(list_length, ArrayLength);
 scalar_function!(array_has, ArrayHas);
 scalar_function!(array_has_all, ArrayHasAll);
 scalar_function!(array_has_any, ArrayHasAny);
+scalar_function!(array_position, ArrayPosition);
+scalar_function!(array_indexof, ArrayPosition);
+scalar_function!(list_position, ArrayPosition);
+scalar_function!(list_indexof, ArrayPosition);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -578,6 +582,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_has))?;
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
     m.add_wrapped(wrap_pyfunction!(array_has_any))?;
+    m.add_wrapped(wrap_pyfunction!(array_position))?;
+    m.add_wrapped(wrap_pyfunction!(array_indexof))?;
+    m.add_wrapped(wrap_pyfunction!(list_position))?;
+    m.add_wrapped(wrap_pyfunction!(list_indexof))?;
 
     Ok(())
 }

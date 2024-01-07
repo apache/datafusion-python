@@ -207,6 +207,12 @@ def test_array_functions():
     )
     df = ctx.create_dataframe([[batch]])
 
+    def py_indexof(arr, v):
+        try:
+            return arr.index(v) + 1
+        except ValueError:
+            return np.nan
+
     col = column("arr")
     test_items = [
         [
@@ -269,10 +275,26 @@ def test_array_functions():
             ),
             lambda: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ],
+        [
+            f.array_position(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.array_indexof(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.list_position(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.list_indexof(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
-        query_result = df.select(stmt).collect()[0].column(0).tolist()
+        query_result = np.array(df.select(stmt).collect()[0].column(0))
         for a, b in zip(query_result, py_expr()):
             np.testing.assert_array_almost_equal(a, b)
 
