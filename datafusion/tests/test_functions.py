@@ -253,6 +253,22 @@ def test_array_functions():
             f.list_length(col),
             lambda: [len(r) for r in data],
         ],
+        [
+            f.array_has(col, literal(1.0)),
+            lambda: [1.0 in r for r in data],
+        ],
+        [
+            f.array_has_all(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ],
+        [
+            f.array_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
