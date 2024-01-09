@@ -311,6 +311,22 @@ def test_array_functions():
             f.list_ndims(col),
             lambda: [np.array(r).ndim for r in data],
         ],
+        [
+            f.array_prepend(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.array_push_front(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.list_prepend(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.list_push_front(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
