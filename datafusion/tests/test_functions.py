@@ -213,6 +213,18 @@ def test_array_functions():
         except ValueError:
             return np.nan
 
+    def py_arr_remove(arr, v, n=None):
+        new_arr = arr[:]
+        found = 0
+        while found != n:
+            try:
+                new_arr.remove(v)
+                found += 1
+            except ValueError:
+                break
+
+        return new_arr
+
     col = column("arr")
     test_items = [
         [
@@ -346,6 +358,30 @@ def test_array_functions():
         [
             f.array_pop_front(col),
             lambda: [arr[1:] for arr in data],
+        ],
+        [
+            f.array_remove(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0, 1) for arr in data],
+        ],
+        [
+            f.list_remove(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0, 1) for arr in data],
+        ],
+        [
+            f.array_remove_n(col, literal(3.0), literal(2)),
+            lambda: [py_arr_remove(arr, 3.0, 2) for arr in data],
+        ],
+        [
+            f.list_remove_n(col, literal(3.0), literal(2)),
+            lambda: [py_arr_remove(arr, 3.0, 2) for arr in data],
+        ],
+        [
+            f.array_remove_all(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0) for arr in data],
+        ],
+        [
+            f.list_remove_all(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0) for arr in data],
         ],
     ]
 

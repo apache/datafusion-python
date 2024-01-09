@@ -393,6 +393,12 @@ scalar_function!(list_prepend, ArrayPrepend);
 scalar_function!(list_push_front, ArrayPrepend);
 scalar_function!(array_pop_back, ArrayPopBack);
 scalar_function!(array_pop_front, ArrayPopFront);
+scalar_function!(array_remove, ArrayRemove);
+scalar_function!(list_remove, ArrayRemove);
+scalar_function!(array_remove_n, ArrayRemoveN);
+scalar_function!(list_remove_n, ArrayRemoveN);
+scalar_function!(array_remove_all, ArrayRemoveAll);
+scalar_function!(list_remove_all, ArrayRemoveAll);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -620,6 +626,12 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_push_front))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_back))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_front))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove_n))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove_n))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove_all))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove_all))?;
 
     Ok(())
 }
