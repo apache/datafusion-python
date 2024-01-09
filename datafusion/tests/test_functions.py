@@ -291,6 +291,14 @@ def test_array_functions():
             f.list_indexof(col, literal(1.0)),
             lambda: [py_indexof(r, 1.0) for r in data],
         ],
+        [
+            f.array_ndims(col),
+            lambda: [np.array(r).ndim for r in data],
+        ],
+        [
+            f.list_ndims(col),
+            lambda: [np.array(r).ndim for r in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:

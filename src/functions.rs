@@ -380,6 +380,8 @@ scalar_function!(array_to_string, ArrayToString);
 scalar_function!(array_join, ArrayToString);
 scalar_function!(list_to_string, ArrayToString);
 scalar_function!(list_join, ArrayToString);
+scalar_function!(array_ndims, ArrayNdims);
+scalar_function!(list_ndims, ArrayNdims);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -594,6 +596,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_join))?;
     m.add_wrapped(wrap_pyfunction!(list_to_string))?;
     m.add_wrapped(wrap_pyfunction!(list_join))?;
+    m.add_wrapped(wrap_pyfunction!(array_ndims))?;
+    m.add_wrapped(wrap_pyfunction!(list_ndims))?;
 
     Ok(())
 }
