@@ -220,6 +220,18 @@ def test_array_functions():
             lambda: [np.append(arr, 99.0) for arr in data],
         ],
         [
+            f.array_push_back(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.list_append(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.list_push_back(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
             f.array_concat(col, col),
             lambda: [np.concatenate([arr, arr]) for arr in data],
         ],
