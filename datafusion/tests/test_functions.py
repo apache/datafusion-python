@@ -383,12 +383,18 @@ def test_array_functions():
             f.list_remove_all(col, literal(3.0)),
             lambda: [py_arr_remove(arr, 3.0) for arr in data],
         ],
+        [
+            f.array_repeat(col, literal(2)),
+            lambda: [[arr] * 2 for arr in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
-        query_result = np.array(df.select(stmt).collect()[0].column(0))
+        query_result = df.select(stmt).collect()[0].column(0)
         for a, b in zip(query_result, py_expr()):
-            np.testing.assert_array_almost_equal(a, b)
+            np.testing.assert_array_almost_equal(
+                np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
+            )
 
     obj_test_items = [
         [

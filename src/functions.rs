@@ -399,6 +399,7 @@ scalar_function!(array_remove_n, ArrayRemoveN);
 scalar_function!(list_remove_n, ArrayRemoveN);
 scalar_function!(array_remove_all, ArrayRemoveAll);
 scalar_function!(list_remove_all, ArrayRemoveAll);
+scalar_function!(array_repeat, ArrayRepeat);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -632,6 +633,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_remove_n))?;
     m.add_wrapped(wrap_pyfunction!(array_remove_all))?;
     m.add_wrapped(wrap_pyfunction!(list_remove_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_repeat))?;
 
     Ok(())
 }
