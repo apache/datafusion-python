@@ -406,6 +406,8 @@ scalar_function!(array_replace_n, ArrayReplaceN);
 scalar_function!(list_replace_n, ArrayReplaceN);
 scalar_function!(array_replace_all, ArrayReplaceAll);
 scalar_function!(list_replace_all, ArrayReplaceAll);
+scalar_function!(array_slice, ArraySlice);
+scalar_function!(list_slice, ArraySlice);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -646,6 +648,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_replace_n))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(list_replace_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_slice))?;
+    m.add_wrapped(wrap_pyfunction!(list_slice))?;
 
     Ok(())
 }

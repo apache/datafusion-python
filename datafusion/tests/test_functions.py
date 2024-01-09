@@ -424,6 +424,14 @@ def test_array_functions():
             f.list_replace_all(col, literal(3.0), literal(4.0)),
             lambda: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
         ],
+        [
+            f.array_slice(col, literal(2), literal(4)),
+            lambda: [arr[1:4] for arr in data],
+        ],
+        [
+            f.list_slice(col, literal(-1), literal(2)),
+            lambda: [arr[-1:2] for arr in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
