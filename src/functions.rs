@@ -379,6 +379,8 @@ scalar_function!(array_position, ArrayPosition);
 scalar_function!(array_indexof, ArrayPosition);
 scalar_function!(list_position, ArrayPosition);
 scalar_function!(list_indexof, ArrayPosition);
+scalar_function!(array_positions, ArrayPositions);
+scalar_function!(list_positions, ArrayPositions);
 scalar_function!(array_to_string, ArrayToString);
 scalar_function!(array_join, ArrayToString);
 scalar_function!(list_to_string, ArrayToString);
@@ -604,6 +606,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_indexof))?;
     m.add_wrapped(wrap_pyfunction!(list_position))?;
     m.add_wrapped(wrap_pyfunction!(list_indexof))?;
+    m.add_wrapped(wrap_pyfunction!(array_positions))?;
+    m.add_wrapped(wrap_pyfunction!(list_positions))?;
     m.add_wrapped(wrap_pyfunction!(array_to_string))?;
     m.add_wrapped(wrap_pyfunction!(array_join))?;
     m.add_wrapped(wrap_pyfunction!(list_to_string))?;

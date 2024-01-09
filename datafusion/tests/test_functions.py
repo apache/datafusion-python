@@ -200,7 +200,7 @@ def test_math_functions():
 
 
 def test_array_functions():
-    data = [[1.0, 2.0, 3.0], [4.0, 5.0], [6.0]]
+    data = [[1.0, 2.0, 3.0, 3.0], [4.0, 5.0, 3.0], [6.0]]
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [np.array(data, dtype=object)], names=["arr"]
@@ -302,6 +302,18 @@ def test_array_functions():
         [
             f.list_indexof(col, literal(1.0)),
             lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.array_positions(col, literal(1.0)),
+            lambda: [
+                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
+            ],
+        ],
+        [
+            f.list_positions(col, literal(1.0)),
+            lambda: [
+                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
+            ],
         ],
         [
             f.array_ndims(col),
