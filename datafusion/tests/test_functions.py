@@ -327,6 +327,14 @@ def test_array_functions():
             f.list_push_front(literal(99.0), col),
             lambda: [np.insert(arr, 0, 99.0) for arr in data],
         ],
+        [
+            f.array_pop_back(col),
+            lambda: [arr[:-1] for arr in data],
+        ],
+        [
+            f.array_pop_front(col),
+            lambda: [arr[1:] for arr in data],
+        ],
     ]
 
     for stmt, py_expr in test_items:
