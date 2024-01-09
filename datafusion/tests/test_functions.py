@@ -225,6 +225,19 @@ def test_array_functions():
 
         return new_arr
 
+    def py_arr_replace(arr, from_, to, n=None):
+        new_arr = arr[:]
+        found = 0
+        while found != n:
+            try:
+                idx = new_arr.index(from_)
+                new_arr[idx] = to
+                found += 1
+            except ValueError:
+                break
+
+        return new_arr
+
     col = column("arr")
     test_items = [
         [
@@ -386,6 +399,30 @@ def test_array_functions():
         [
             f.array_repeat(col, literal(2)),
             lambda: [[arr] * 2 for arr in data],
+        ],
+        [
+            f.array_replace(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.list_replace(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.array_replace_n(col, literal(3.0), literal(4.0), literal(1)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.list_replace_n(col, literal(3.0), literal(4.0), literal(2)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 2) for arr in data],
+        ],
+        [
+            f.array_replace_all(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
+        ],
+        [
+            f.list_replace_all(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
         ],
     ]
 
