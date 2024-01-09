@@ -298,6 +298,30 @@ def test_array_functions():
         for a, b in zip(query_result, py_expr()):
             np.testing.assert_array_almost_equal(a, b)
 
+    obj_test_items = [
+        [
+            f.array_to_string(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.array_join(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.list_to_string(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.list_join(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+    ]
+
+    for stmt, py_expr in obj_test_items:
+        query_result = np.array(df.select(stmt).collect()[0].column(0))
+        for a, b in zip(query_result, py_expr()):
+            assert a == b
+
 
 def test_string_functions(df):
     df = df.select(
