@@ -249,7 +249,6 @@ scalar_function!(degrees, Degrees);
 scalar_function!(exp, Exp);
 scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
-scalar_function!(flatten, Flatten);
 scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
 scalar_function!(isnan, Isnan);
@@ -370,6 +369,7 @@ scalar_function!(list_element, ArrayElement);
 scalar_function!(list_extract, ArrayElement);
 scalar_function!(array_length, ArrayLength);
 scalar_function!(list_length, ArrayLength);
+scalar_function!(flatten, Flatten);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -465,7 +465,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(exp))?;
     m.add_wrapped(wrap_pyfunction!(factorial))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
-    m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
     m.add_wrapped(wrap_pyfunction!(grouping))?;
@@ -574,6 +573,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_extract))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
     m.add_wrapped(wrap_pyfunction!(list_length))?;
+    m.add_wrapped(wrap_pyfunction!(flatten))?;
 
     Ok(())
 }
