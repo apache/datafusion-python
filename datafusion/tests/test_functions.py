@@ -207,6 +207,15 @@ def test_array_functions():
     )
     df = ctx.create_dataframe([[batch]])
 
+    def py_flatten(arr):
+        result = []
+        for elem in arr:
+            if isinstance(elem, list):
+                result.extend(py_flatten(elem))
+            else:
+                result.append(elem)
+        return result
+
     col = column("arr")
     test_items = [
         [
@@ -252,6 +261,10 @@ def test_array_functions():
         [
             f.list_length(col),
             lambda: [len(r) for r in data],
+        ],
+        [
+            f.flatten(col),
+            lambda: [py_flatten(data)]
         ],
     ]
 

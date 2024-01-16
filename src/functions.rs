@@ -249,6 +249,7 @@ scalar_function!(degrees, Degrees);
 scalar_function!(exp, Exp);
 scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
+scalar_function!(flatten, Flatten);
 scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
 scalar_function!(isnan, Isnan);
@@ -464,6 +465,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(exp))?;
     m.add_wrapped(wrap_pyfunction!(factorial))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
+    m.add_wrapped(wrap_pyfunction!(flatten))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
     m.add_wrapped(wrap_pyfunction!(grouping))?;
