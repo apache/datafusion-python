@@ -569,8 +569,7 @@ impl PySessionContext {
                         path,
                         schema=None,
                         file_extension=".avro",
-                        table_partition_cols=vec![],
-                        infinite=false))]
+                        table_partition_cols=vec![]))]
     pub fn register_avro(
         &mut self,
         name: &str,
@@ -578,7 +577,6 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
-        infinite: bool,
         py: Python,
     ) -> PyResult<()> {
         let path = path
@@ -586,8 +584,7 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
         let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .mark_infinite(infinite);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 

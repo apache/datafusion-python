@@ -195,7 +195,7 @@ def test_register_json(ctx, tmp_path):
         assert result.to_pydict() == {"cnt": [3]}
 
     result = ctx.sql("SELECT * FROM json3").collect()
-    result = pa.Table.from_batches(result)
+    result = pa.Table.from_batches(result, alternative_schema)
     assert result.schema == alternative_schema
 
     with pytest.raises(
@@ -224,7 +224,6 @@ def test_register_avro(ctx):
         "alltypes_plain_schema",
         path,
         schema=alternative_schema,
-        infinite=False,
     )
     result = ctx.sql("SELECT * FROM alltypes_plain_schema").collect()
     result = pa.Table.from_batches(result)
