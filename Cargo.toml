@@ -41,7 +41,7 @@ datafusion = { version = "34.0.0", features = ["pyarrow", "avro"] }
 datafusion-common = { version = "34.0.0", features = ["pyarrow"] }
 datafusion-expr = { version = "34.0.0" }
 datafusion-optimizer = { version = "34.0.0" }
-datafusion-sql = { version = "34.0.0" }
+datafusion-sql = { version = "35.0.0" }
 datafusion-substrait = { version = "34.0.0", optional = true }
 prost = "0.12"
 prost-types = "0.12"
