@@ -27,10 +27,11 @@ use datafusion_common::{Column, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
     aggregate_function,
-    expr::{AggregateFunction, AggregateFunctionDefinition, ScalarFunction, Sort, WindowFunction},
-    lit,
-    window_function::find_df_window_func,
-    BuiltinScalarFunction, Expr,
+    expr::{
+        find_df_window_func, AggregateFunction, AggregateFunctionDefinition, ScalarFunction, Sort,
+        WindowFunction,
+    },
+    lit, BuiltinScalarFunction, Expr, WindowFunctionDefinition,
 };
 
 #[pyfunction]
@@ -143,7 +144,7 @@ fn window(
         ctx.and_then(|ctx| {
             ctx.ctx
                 .udaf(name)
-                .map(datafusion_expr::WindowFunction::AggregateUDF)
+                .map(WindowFunctionDefinition::AggregateUDF)
                 .ok()
         })
     });
