@@ -255,7 +255,7 @@ scalar_function!(initcap, InitCap, "Converts the first letter of each word to up
 scalar_function!(isnan, Isnan);
 scalar_function!(iszero, Iszero);
 scalar_function!(lcm, Lcm);
-scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
+scalar_function!(left, Left, r"Returns first n characters in the string, or when n is negative, returns all but last \|n\| characters.");
 scalar_function!(ln, Ln);
 scalar_function!(log, Log);
 scalar_function!(log10, Log10);
@@ -299,7 +299,7 @@ scalar_function!(
     Reverse,
     "Reverses the order of the characters in the string."
 );
-scalar_function!(right, Right, "Returns last n characters in the string, or when n is negative, returns all but first |n| characters.");
+scalar_function!(right, Right, r"Returns last n characters in the string, or when n is negative, returns all but first \|n\| characters.");
 scalar_function!(round, Round);
 scalar_function!(rpad, Rpad, "Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.");
 scalar_function!(rtrim, Rtrim, "Removes the longest string containing only characters in characters (a space by default) from the end of string.");

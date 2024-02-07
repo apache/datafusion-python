@@ -28,15 +28,31 @@ when changes are merged to the main branch.
 It's recommended to install build dependencies and build the documentation
 inside a Python `venv`.
 
-```bash
-python -m pip install -r requirements-310.txt
-```
+To prepare building the documentation run the following on the root level of the project:
+
+1. Set up virtual environment if it was not already created
+   ```bash
+   python3 -m venv venv
+   ```
+2. Activate virtual environment
+    ```bash
+    source venv/bin/activate
+    ```
+1. Install Datafusion's Python dependencies
+    ```bash
+    pip install -r requirements-310.txt
+    ```
+1. Install documentation dependencies
+    ```bash
+    pip install -r docs/requirements.txt
+    ```
 
 ## Build & Preview
 
 Run the provided script to build the HTML pages.
 
 ```bash
+cd docs
 ./build.sh
 ```
 
