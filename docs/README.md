@@ -34,7 +34,7 @@ To prepare building the documentation run the following on the root level of the
    ```bash
    python3 -m venv venv
    ```
-2. Activate virtual environment
+1. Activate virtual environment
     ```bash
     source venv/bin/activate
     ```
