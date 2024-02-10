@@ -65,14 +65,14 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 // Used to define Tokio Runtime as a Python module attribute
 #[pyclass]
-pub struct TokioRuntime(pub tokio::runtime::Runtime);
+pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
 
 /// Low-level DataFusion internal package.
 ///
 /// The higher-level public API is defined in pure python files under the
 /// datafusion directory.
 #[pymodule]
-pub fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
+fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     // Register the Tokio Runtime as a module attribute so we can reuse it
     m.add(
         "runtime",
