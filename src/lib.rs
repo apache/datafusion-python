@@ -37,7 +37,7 @@ mod config;
 #[allow(clippy::borrow_deref_ref)]
 pub mod context;
 #[allow(clippy::borrow_deref_ref)]
-mod dataframe;
+pub mod dataframe;
 mod dataset;
 mod dataset_exec;
 pub mod errors;
@@ -65,14 +65,14 @@ static GLOBAL: MiMalloc = MiMalloc;
 
 // Used to define Tokio Runtime as a Python module attribute
 #[pyclass]
-pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
+pub struct TokioRuntime(pub tokio::runtime::Runtime);
 
 /// Low-level DataFusion internal package.
 ///
 /// The higher-level public API is defined in pure python files under the
 /// datafusion directory.
 #[pymodule]
-fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
+pub fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     // Register the Tokio Runtime as a module attribute so we can reuse it
     m.add(
         "runtime",

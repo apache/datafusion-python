@@ -23,7 +23,7 @@ use std::future::Future;
 use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
-pub(crate) fn get_tokio_runtime(py: Python) -> PyRef<TokioRuntime> {
+pub fn get_tokio_runtime(py: Python) -> PyRef<TokioRuntime> {
     let datafusion = py.import("datafusion._internal").unwrap();
     let tmp = datafusion.getattr("runtime").unwrap();
     match tmp.extract::<PyRef<TokioRuntime>>() {
