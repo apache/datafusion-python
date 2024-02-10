@@ -842,7 +842,7 @@ impl PySessionContext {
     }
 }
 
-fn convert_table_partition_cols(
+pub fn convert_table_partition_cols(
     table_partition_cols: Vec<(String, String)>,
 ) -> Result<Vec<(String, DataType)>, DataFusionError> {
     table_partition_cols
@@ -856,7 +856,7 @@ fn convert_table_partition_cols(
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn parse_file_compression_type(
+pub fn parse_file_compression_type(
     file_compression_type: Option<String>,
 ) -> Result<FileCompressionType, PyErr> {
     FileCompressionType::from_str(&*file_compression_type.unwrap_or("".to_string()).as_str())
