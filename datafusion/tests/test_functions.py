@@ -15,14 +15,15 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
-from datetime import datetime
 
 import numpy as np
 import pyarrow as pa
 import pytest
+from datetime import datetime
 
-from datafusion import SessionContext, column, literal
+from datafusion import SessionContext, column
 from datafusion import functions as f
+from datafusion import literal
 
 np.seterr(invalid="ignore")
 
@@ -596,6 +597,6 @@ def test_binary_string_functions(df):
     assert len(result) == 1
     result = result[0]
     assert result.column(0) == pa.array(["SGVsbG8", "V29ybGQ", "IQ"])
-    assert result.column(1).cast(pa.string()) == pa.array(
+    assert pa.array(result.column(1)).cast(pa.string()) == pa.array(
         ["Hello", "World", "!"]
     )
