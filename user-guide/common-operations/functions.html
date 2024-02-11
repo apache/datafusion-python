@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Functions &#8212; Arrow DataFusion  documentation</title>
+    <title>Functions &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -23,18 +22,15 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Aggregation" href="aggregations.html" />
@@ -398,7 +394,7 @@
               <div>
                 
   <section id="functions">
-<h1>Functions<a class="headerlink" href="#functions" title="Permalink to this heading">¶</a></h1>
+<h1>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h1>
 <p>DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
 In here we will cover some of the more popular use cases. If you want to view all the functions go to the <span class="xref std std-ref">Functions</span> API Reference.</p>
 <p>We’ll use the pokemon dataset in the following examples.</p>
@@ -411,7 +407,7 @@ In here we will cover some of the more popular use cases. If you want to view al
    <span class="o">...</span><span class="p">:</span> <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fb4f32ac730</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f04090fb790</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -421,7 +417,7 @@ In here we will cover some of the more popular use cases. If you want to view al
 </pre></div>
 </div>
 <section id="mathematical">
-<h2>Mathematical<a class="headerlink" href="#mathematical" title="Permalink to this heading">¶</a></h2>
+<h2>Mathematical<a class="headerlink" href="#mathematical" title="Link to this heading">¶</a></h2>
 <p>DataFusion offers mathematical functions such as <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.pow" title="datafusion.functions.functions.pow"><code class="xref py py-func docutils literal notranslate"><span class="pre">pow()</span></code></a> or <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.log" title="datafusion.functions.functions.log"><code class="xref py py-func docutils literal notranslate"><span class="pre">log()</span></code></a></p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span>
 
@@ -451,7 +447,7 @@ In here we will cover some of the more popular use cases. If you want to view al
 </div>
 </section>
 <section id="conditional">
-<h2>Conditional<a class="headerlink" href="#conditional" title="Permalink to this heading">¶</a></h2>
+<h2>Conditional<a class="headerlink" href="#conditional" title="Link to this heading">¶</a></h2>
 <p>There 3 conditional functions in DataFusion <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.coalesce" title="datafusion.functions.functions.coalesce"><code class="xref py py-func docutils literal notranslate"><span class="pre">coalesce()</span></code></a>, <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.nullif" title="datafusion.functions.functions.nullif"><code class="xref py py-func docutils literal notranslate"><span class="pre">nullif()</span></code></a> and <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.case" title="datafusion.functions.functions.case"><code class="xref py py-func docutils literal notranslate"><span class="pre">case()</span></code></a> (not available in Python)</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">coalesce</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;dominant_type&quot;</span><span class="p">)</span>
@@ -477,7 +473,7 @@ In here we will cover some of the more popular use cases. If you want to view al
 </div>
 </section>
 <section id="temporal">
-<h2>Temporal<a class="headerlink" href="#temporal" title="Permalink to this heading">¶</a></h2>
+<h2>Temporal<a class="headerlink" href="#temporal" title="Link to this heading">¶</a></h2>
 <p>For selecting the current time use <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.now" title="datafusion.functions.functions.now"><code class="xref py py-func docutils literal notranslate"><span class="pre">now()</span></code></a></p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">now</span><span class="p">())</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">11</span><span class="p">]:</span> 
@@ -485,16 +481,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+--------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">10</span><span class="n">T17</span><span class="p">:</span><span class="mi">27</span><span class="p">:</span><span class="mf">34.615759795</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">11</span><span class="n">T19</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">56.194800530</span><span class="n">Z</span> <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
 </pre></div>
 </div>
@@ -520,7 +516,7 @@ In here we will cover some of the more popular use cases. If you want to view al
 </div>
 </section>
 <section id="string">
-<h2>String<a class="headerlink" href="#string" title="Permalink to this heading">¶</a></h2>
+<h2>String<a class="headerlink" href="#string" title="Link to this heading">¶</a></h2>
 <p>In the field of data science, working with textual data is a common task. To make string manipulation easier,
 DataFusion offers a range of helpful options.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
@@ -573,7 +569,7 @@ DataFusion offers a range of helpful options.</p>
 </div>
 </section>
 <section id="other">
-<h2>Other<a class="headerlink" href="#other" title="Permalink to this heading">¶</a></h2>
+<h2>Other<a class="headerlink" href="#other" title="Link to this heading">¶</a></h2>
 <p>The function <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.in_list" title="datafusion.functions.functions.in_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">in_list()</span></code></a> allows to check a column for the presence of multiple values:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Grass&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Fire&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Water&quot;</span><span class="p">)]</span>
 
@@ -639,22 +635,30 @@ DataFusion offers a range of helpful options.</p>
     </div>
   
     <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  <footer class="footer mt-5 mt-md-0">
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
   <div class="container">
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright 2022, Apache Software Foundation.<br>
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
 </p>
     </div>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
     </div>
     
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
   </div>
 </footer>
+
+
   </body>
 </html>

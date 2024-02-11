@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Window Functions &#8212; Arrow DataFusion  documentation</title>
+    <title>Window Functions &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -23,18 +22,15 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="User Defined Functions" href="udf-and-udfa.html" />
@@ -368,7 +364,7 @@
               <div>
                 
   <section id="window-functions">
-<h1>Window Functions<a class="headerlink" href="#window-functions" title="Permalink to this heading">¶</a></h1>
+<h1>Window Functions<a class="headerlink" href="#window-functions" title="Link to this heading">¶</a></h1>
 <p>In this section you will learn about window functions. A window function utilizes values from one or multiple rows to
 produce a result for each individual row, unlike an aggregate function that provides a single value for multiple rows.</p>
 <p>The functionality of window functions in DataFusion is supported by the dedicated <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.window" title="datafusion.functions.functions.window"><code class="xref py py-func docutils literal notranslate"><span class="pre">window()</span></code></a> function.</p>
@@ -386,7 +382,7 @@ produce a result for each individual row, unlike an aggregate function that prov
    <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fb4def6d090</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f0408e16920</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -442,16 +438,16 @@ a list of <a class="reference internal" href="../../generated/datafusion.functio
 <span class="o">+------------+--------+------+</span>
 <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
 <span class="o">+------------+--------+------+</span>
-<span class="o">|</span> <span class="n">Dratini</span>    <span class="o">|</span> <span class="mi">64</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dragonair</span>  <span class="o">|</span> <span class="mi">84</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Dragonite</span>  <span class="o">|</span> <span class="mi">134</span>    <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Clefairy</span>   <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Clefable</span>   <span class="o">|</span> <span class="mi">70</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Mankey</span>     <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Machop</span>     <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Machoke</span>    <span class="o">|</span> <span class="mi">100</span>    <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Primeape</span>   <span class="o">|</span> <span class="mi">105</span>    <span class="o">|</span> <span class="mi">4</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Hitmonchan</span> <span class="o">|</span> <span class="mi">105</span>    <span class="o">|</span> <span class="mi">4</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Exeggcute</span>  <span class="o">|</span> <span class="mi">40</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bulbasaur</span>  <span class="o">|</span> <span class="mi">49</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Oddish</span>     <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Tangela</span>    <span class="o">|</span> <span class="mi">55</span>     <span class="o">|</span> <span class="mi">4</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ivysaur</span>    <span class="o">|</span> <span class="mi">62</span>     <span class="o">|</span> <span class="mi">5</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Gloom</span>      <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="mi">6</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bellsprout</span> <span class="o">|</span> <span class="mi">75</span>     <span class="o">|</span> <span class="mi">7</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Vileplume</span>  <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="mi">8</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Venusaur</span>   <span class="o">|</span> <span class="mi">82</span>     <span class="o">|</span> <span class="mi">9</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Weepinbell</span> <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="mi">10</span>   <span class="o">|</span>
 <span class="o">+------------+--------+------+</span>
 </pre></div>
 </div>
@@ -519,22 +515,30 @@ a list of <a class="reference internal" href="../../generated/datafusion.functio
     </div>
   
     <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  <footer class="footer mt-5 mt-md-0">
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
   <div class="container">
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright 2022, Apache Software Foundation.<br>
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
 </p>
     </div>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
     </div>
     
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
   </div>
 </footer>
+
+
   </body>
 </html>
