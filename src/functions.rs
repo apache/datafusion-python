@@ -360,6 +360,9 @@ scalar_function!(decode, Decode);
 
 // Array Functions
 scalar_function!(array_append, ArrayAppend);
+scalar_function!(array_push_back, ArrayAppend);
+scalar_function!(list_append, ArrayAppend);
+scalar_function!(list_push_back, ArrayAppend);
 scalar_function!(array_concat, ArrayConcat);
 scalar_function!(array_cat, ArrayConcat);
 scalar_function!(array_dims, ArrayDims);
@@ -370,6 +373,42 @@ scalar_function!(list_element, ArrayElement);
 scalar_function!(list_extract, ArrayElement);
 scalar_function!(array_length, ArrayLength);
 scalar_function!(list_length, ArrayLength);
+scalar_function!(array_has, ArrayHas);
+scalar_function!(array_has_all, ArrayHasAll);
+scalar_function!(array_has_any, ArrayHasAny);
+scalar_function!(array_position, ArrayPosition);
+scalar_function!(array_indexof, ArrayPosition);
+scalar_function!(list_position, ArrayPosition);
+scalar_function!(list_indexof, ArrayPosition);
+scalar_function!(array_positions, ArrayPositions);
+scalar_function!(list_positions, ArrayPositions);
+scalar_function!(array_to_string, ArrayToString);
+scalar_function!(array_join, ArrayToString);
+scalar_function!(list_to_string, ArrayToString);
+scalar_function!(list_join, ArrayToString);
+scalar_function!(array_ndims, ArrayNdims);
+scalar_function!(list_ndims, ArrayNdims);
+scalar_function!(array_prepend, ArrayPrepend);
+scalar_function!(array_push_front, ArrayPrepend);
+scalar_function!(list_prepend, ArrayPrepend);
+scalar_function!(list_push_front, ArrayPrepend);
+scalar_function!(array_pop_back, ArrayPopBack);
+scalar_function!(array_pop_front, ArrayPopFront);
+scalar_function!(array_remove, ArrayRemove);
+scalar_function!(list_remove, ArrayRemove);
+scalar_function!(array_remove_n, ArrayRemoveN);
+scalar_function!(list_remove_n, ArrayRemoveN);
+scalar_function!(array_remove_all, ArrayRemoveAll);
+scalar_function!(list_remove_all, ArrayRemoveAll);
+scalar_function!(array_repeat, ArrayRepeat);
+scalar_function!(array_replace, ArrayReplace);
+scalar_function!(list_replace, ArrayReplace);
+scalar_function!(array_replace_n, ArrayReplaceN);
+scalar_function!(list_replace_n, ArrayReplaceN);
+scalar_function!(array_replace_all, ArrayReplaceAll);
+scalar_function!(list_replace_all, ArrayReplaceAll);
+scalar_function!(array_slice, ArraySlice);
+scalar_function!(list_slice, ArraySlice);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
 aggregate_function!(approx_median, ApproxMedian);
@@ -563,6 +602,9 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
+    m.add_wrapped(wrap_pyfunction!(array_push_back))?;
+    m.add_wrapped(wrap_pyfunction!(list_append))?;
+    m.add_wrapped(wrap_pyfunction!(list_push_back))?;
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
@@ -573,6 +615,42 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_extract))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
     m.add_wrapped(wrap_pyfunction!(list_length))?;
+    m.add_wrapped(wrap_pyfunction!(array_has))?;
+    m.add_wrapped(wrap_pyfunction!(array_has_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_has_any))?;
+    m.add_wrapped(wrap_pyfunction!(array_position))?;
+    m.add_wrapped(wrap_pyfunction!(array_indexof))?;
+    m.add_wrapped(wrap_pyfunction!(list_position))?;
+    m.add_wrapped(wrap_pyfunction!(list_indexof))?;
+    m.add_wrapped(wrap_pyfunction!(array_positions))?;
+    m.add_wrapped(wrap_pyfunction!(list_positions))?;
+    m.add_wrapped(wrap_pyfunction!(array_to_string))?;
+    m.add_wrapped(wrap_pyfunction!(array_join))?;
+    m.add_wrapped(wrap_pyfunction!(list_to_string))?;
+    m.add_wrapped(wrap_pyfunction!(list_join))?;
+    m.add_wrapped(wrap_pyfunction!(array_ndims))?;
+    m.add_wrapped(wrap_pyfunction!(list_ndims))?;
+    m.add_wrapped(wrap_pyfunction!(array_prepend))?;
+    m.add_wrapped(wrap_pyfunction!(array_push_front))?;
+    m.add_wrapped(wrap_pyfunction!(list_prepend))?;
+    m.add_wrapped(wrap_pyfunction!(list_push_front))?;
+    m.add_wrapped(wrap_pyfunction!(array_pop_back))?;
+    m.add_wrapped(wrap_pyfunction!(array_pop_front))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove_n))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove_n))?;
+    m.add_wrapped(wrap_pyfunction!(array_remove_all))?;
+    m.add_wrapped(wrap_pyfunction!(list_remove_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_repeat))?;
+    m.add_wrapped(wrap_pyfunction!(array_replace))?;
+    m.add_wrapped(wrap_pyfunction!(list_replace))?;
+    m.add_wrapped(wrap_pyfunction!(array_replace_n))?;
+    m.add_wrapped(wrap_pyfunction!(list_replace_n))?;
+    m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
+    m.add_wrapped(wrap_pyfunction!(list_replace_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_slice))?;
+    m.add_wrapped(wrap_pyfunction!(list_slice))?;
 
     Ok(())
 }
