@@ -263,7 +263,7 @@ def test_array_functions():
             lambda: [len(r) for r in data],
         ],
         [
-            f.flatten(col),
+            f.flatten(literal(data)),
             lambda: [py_flatten(data)]
         ],
     ]
