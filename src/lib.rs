@@ -37,7 +37,7 @@ mod config;
 #[allow(clippy::borrow_deref_ref)]
 pub mod context;
 #[allow(clippy::borrow_deref_ref)]
-mod dataframe;
+pub mod dataframe;
 mod dataset;
 mod dataset_exec;
 pub mod errors;

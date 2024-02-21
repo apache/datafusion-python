@@ -569,8 +569,7 @@ impl PySessionContext {
                         path,
                         schema=None,
                         file_extension=".avro",
-                        table_partition_cols=vec![],
-                        infinite=false))]
+                        table_partition_cols=vec![]))]
     pub fn register_avro(
         &mut self,
         name: &str,
@@ -578,7 +577,6 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
         table_partition_cols: Vec<(String, String)>,
-        infinite: bool,
         py: Python,
     ) -> PyResult<()> {
         let path = path
@@ -586,8 +584,7 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
         let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .mark_infinite(infinite);
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 
@@ -845,7 +842,7 @@ impl PySessionContext {
     }
 }
 
-fn convert_table_partition_cols(
+pub fn convert_table_partition_cols(
     table_partition_cols: Vec<(String, String)>,
 ) -> Result<Vec<(String, DataType)>, DataFusionError> {
     table_partition_cols
@@ -859,7 +856,7 @@ fn convert_table_partition_cols(
         .collect::<Result<Vec<_>, _>>()
 }
 
-fn parse_file_compression_type(
+pub fn parse_file_compression_type(
     file_compression_type: Option<String>,
 ) -> Result<FileCompressionType, PyErr> {
     FileCompressionType::from_str(&*file_compression_type.unwrap_or("".to_string()).as_str())

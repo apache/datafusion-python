@@ -210,11 +210,7 @@ impl PyWindowFrame {
             },
         };
         Ok(PyWindowFrame {
-            window_frame: WindowFrame {
-                units,
-                start_bound,
-                end_bound,
-            },
+            window_frame: WindowFrame::new_bounds(units, start_bound, end_bound),
         })
     }
 

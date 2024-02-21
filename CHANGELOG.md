@@ -19,6 +19,15 @@
 
 # DataFusion Python Changelog
 
+## [35.0.0](https://github.com/apache/arrow-datafusion-python/tree/35.0.0) (2024-01-20)
+
+**Merged pull requests:**
+
+- build(deps): bump syn from 2.0.41 to 2.0.43 [#559](https://github.com/apache/arrow-datafusion-python/pull/559) (dependabot[bot])
+- build(deps): bump tokio from 1.35.0 to 1.35.1 [#558](https://github.com/apache/arrow-datafusion-python/pull/558) (dependabot[bot])
+- build(deps): bump async-trait from 0.1.74 to 0.1.77 [#556](https://github.com/apache/arrow-datafusion-python/pull/556) (dependabot[bot])
+- build(deps): bump pyo3 from 0.20.0 to 0.20.2 [#557](https://github.com/apache/arrow-datafusion-python/pull/557) (dependabot[bot])
+
 ## [34.0.0](https://github.com/apache/arrow-datafusion-python/tree/34.0.0) (2023-12-28)
 
 **Merged pull requests:**

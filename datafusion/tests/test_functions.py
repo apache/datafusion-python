@@ -200,12 +200,43 @@ def test_math_functions():
 
 
 def test_array_functions():
-    data = [[1.0, 2.0, 3.0], [4.0, 5.0], [6.0]]
+    data = [[1.0, 2.0, 3.0, 3.0], [4.0, 5.0, 3.0], [6.0]]
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [np.array(data, dtype=object)], names=["arr"]
     )
     df = ctx.create_dataframe([[batch]])
+
+    def py_indexof(arr, v):
+        try:
+            return arr.index(v) + 1
+        except ValueError:
+            return np.nan
+
+    def py_arr_remove(arr, v, n=None):
+        new_arr = arr[:]
+        found = 0
+        while found != n:
+            try:
+                new_arr.remove(v)
+                found += 1
+            except ValueError:
+                break
+
+        return new_arr
+
+    def py_arr_replace(arr, from_, to, n=None):
+        new_arr = arr[:]
+        found = 0
+        while found != n:
+            try:
+                idx = new_arr.index(from_)
+                new_arr[idx] = to
+                found += 1
+            except ValueError:
+                break
+
+        return new_arr
 
     def py_flatten(arr):
         result = []
@@ -220,6 +251,18 @@ def test_array_functions():
     test_items = [
         [
             f.array_append(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.array_push_back(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.list_append(col, literal(99.0)),
+            lambda: [np.append(arr, 99.0) for arr in data],
+        ],
+        [
+            f.list_push_back(col, literal(99.0)),
             lambda: [np.append(arr, 99.0) for arr in data],
         ],
         [
@@ -262,13 +305,175 @@ def test_array_functions():
             f.list_length(col),
             lambda: [len(r) for r in data],
         ],
+        [
+            f.array_has(col, literal(1.0)),
+            lambda: [1.0 in r for r in data],
+        ],
+        [
+            f.array_has_all(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ],
+        [
+            f.array_has_any(
+                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
+            ),
+            lambda: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
+        ],
+        [
+            f.array_position(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.array_indexof(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.list_position(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.list_indexof(col, literal(1.0)),
+            lambda: [py_indexof(r, 1.0) for r in data],
+        ],
+        [
+            f.array_positions(col, literal(1.0)),
+            lambda: [
+                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
+            ],
+        ],
+        [
+            f.list_positions(col, literal(1.0)),
+            lambda: [
+                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
+            ],
+        ],
+        [
+            f.array_ndims(col),
+            lambda: [np.array(r).ndim for r in data],
+        ],
+        [
+            f.list_ndims(col),
+            lambda: [np.array(r).ndim for r in data],
+        ],
+        [
+            f.array_prepend(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.array_push_front(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.list_prepend(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.list_push_front(literal(99.0), col),
+            lambda: [np.insert(arr, 0, 99.0) for arr in data],
+        ],
+        [
+            f.array_pop_back(col),
+            lambda: [arr[:-1] for arr in data],
+        ],
+        [
+            f.array_pop_front(col),
+            lambda: [arr[1:] for arr in data],
+        ],
+        [
+            f.array_remove(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0, 1) for arr in data],
+        ],
+        [
+            f.list_remove(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0, 1) for arr in data],
+        ],
+        [
+            f.array_remove_n(col, literal(3.0), literal(2)),
+            lambda: [py_arr_remove(arr, 3.0, 2) for arr in data],
+        ],
+        [
+            f.list_remove_n(col, literal(3.0), literal(2)),
+            lambda: [py_arr_remove(arr, 3.0, 2) for arr in data],
+        ],
+        [
+            f.array_remove_all(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0) for arr in data],
+        ],
+        [
+            f.list_remove_all(col, literal(3.0)),
+            lambda: [py_arr_remove(arr, 3.0) for arr in data],
+        ],
+        [
+            f.array_repeat(col, literal(2)),
+            lambda: [[arr] * 2 for arr in data],
+        ],
+        [
+            f.array_replace(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.list_replace(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.array_replace_n(col, literal(3.0), literal(4.0), literal(1)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
+        ],
+        [
+            f.list_replace_n(col, literal(3.0), literal(4.0), literal(2)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0, 2) for arr in data],
+        ],
+        [
+            f.array_replace_all(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
+        ],
+        [
+            f.list_replace_all(col, literal(3.0), literal(4.0)),
+            lambda: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
+        ],
+        [
+            f.array_slice(col, literal(2), literal(4)),
+            lambda: [arr[1:4] for arr in data],
+        ],
+        [
+            f.list_slice(col, literal(-1), literal(2)),
+            lambda: [arr[-1:2] for arr in data],
+        ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
     ]
 
     for stmt, py_expr in test_items:
-        query_result = df.select(stmt).collect()[0].column(0).tolist()
+        query_result = df.select(stmt).collect()[0].column(0)
         for a, b in zip(query_result, py_expr()):
-            np.testing.assert_array_almost_equal(a, b)
+            np.testing.assert_array_almost_equal(
+                np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
+            )
+
+    obj_test_items = [
+        [
+            f.array_to_string(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.array_join(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.list_to_string(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+        [
+            f.list_join(col, literal(",")),
+            lambda: [",".join([str(int(v)) for v in r]) for r in data],
+        ],
+    ]
+
+    for stmt, py_expr in obj_test_items:
+        query_result = np.array(df.select(stmt).collect()[0].column(0))
+        for a, b in zip(query_result, py_expr()):
+            assert a == b
 
 
 def test_string_functions(df):

@@ -28,15 +28,31 @@ when changes are merged to the main branch.
 It's recommended to install build dependencies and build the documentation
 inside a Python `venv`.
 
-```bash
-python -m pip install -r requirements-310.txt
-```
+To prepare building the documentation run the following on the root level of the project:
+
+1. Set up virtual environment if it was not already created
+   ```bash
+   python3 -m venv venv
+   ```
+1. Activate virtual environment
+    ```bash
+    source venv/bin/activate
+    ```
+1. Install Datafusion's Python dependencies
+    ```bash
+    pip install -r requirements-310.txt
+    ```
+1. Install documentation dependencies
+    ```bash
+    pip install -r docs/requirements.txt
+    ```
 
 ## Build & Preview
 
 Run the provided script to build the HTML pages.
 
 ```bash
+cd docs
 ./build.sh
 ```
 
@@ -50,14 +66,15 @@ firefox build/html/index.html
 
 ## Release Process
 
-The documentation is served through the
-[arrow-site](https://github.com/apache/arrow-site/) repo. To release a new
-version of the docs, follow these steps:
+This documentation is hosted at https://arrow.apache.org/datafusion-python/
 
-1. Run `./build.sh` inside `docs` folder to generate the docs website inside the `build/html` folder.
-2. Clone the arrow-site repo
-3. Checkout to the `asf-site` branch (NOT `master`)
-4. Copy build artifacts into `arrow-site` repo's `datafusion` folder with a command such as
-   - `cp -rT ./build/html/ ../../arrow-site/datafusion/` (doesn't work on mac)
-   - `rsync -avzr ./build/html/ ../../arrow-site/datafusion/`
-5. Commit changes in `arrow-site` and send a PR.
+When the PR is merged to the `main` branch of the DataFusion
+repository, a [github workflow](https://github.com/apache/arrow-datafusion-python/blob/main/.github/workflows/docs.yaml) which:
+
+1. Builds the html content
+2. Pushes the html content to the [`asf-site`](https://github.com/apache/arrow-datafusion-python/tree/asf-site) branch in this repository.
+
+The Apache Software Foundation provides https://arrow.apache.org/,
+which serves content based on the configuration in
+[.asf.yaml](https://github.com/apache/arrow-datafusion-python/blob/main/.asf.yaml),
+which specifies the target as https://arrow.apache.org/datafusion-python/.
