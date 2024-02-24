@@ -52,7 +52,7 @@ futures = "0.3"
 object_store = { version = "0.9.0", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 regex-syntax = "0.8.1"
-syn = "2.0.43"
+syn = "2.0.50"
 url = "2.2"
 
 [build-dependencies]
