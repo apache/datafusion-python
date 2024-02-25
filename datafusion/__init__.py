@@ -33,6 +33,7 @@ from ._internal import (
     SessionConfig,
     RuntimeConfig,
     ScalarUDF,
+    SQLOptions,
 )
 
 from .common import (
@@ -96,6 +97,7 @@ __all__ = [
     "DataFrame",
     "SessionContext",
     "SessionConfig",
+    "SQLOptions",
     "RuntimeConfig",
     "Expr",
     "AggregateUDF",
