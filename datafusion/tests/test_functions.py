@@ -238,6 +238,15 @@ def test_array_functions():
 
         return new_arr
 
+    def py_flatten(arr):
+        result = []
+        for elem in arr:
+            if isinstance(elem, list):
+                result.extend(py_flatten(elem))
+            else:
+                result.append(elem)
+        return result
+
     col = column("arr")
     test_items = [
         [
@@ -432,6 +441,7 @@ def test_array_functions():
             f.list_slice(col, literal(-1), literal(2)),
             lambda: [arr[-1:2] for arr in data],
         ],
+        [f.flatten(literal(data)), lambda: [py_flatten(data)]],
     ]
 
     for stmt, py_expr in test_items:
