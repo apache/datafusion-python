@@ -16,7 +16,6 @@
 // under the License.
 
 use pyo3::{prelude::*, wrap_pyfunction};
-use std::sync::Arc;
 
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
@@ -35,7 +34,6 @@ use datafusion_expr::{
     },
     lit, BuiltinScalarFunction, Expr, WindowFunctionDefinition,
 };
-use datafusion_functions_array;
 
 #[pyfunction]
 pub fn isnan(expr: PyExpr) -> PyExpr {
