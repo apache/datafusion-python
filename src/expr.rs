@@ -607,7 +607,11 @@ impl PyExpr {
                 | Operator::RegexMatch
                 | Operator::RegexIMatch
                 | Operator::RegexNotMatch
-                | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
+                | Operator::RegexNotIMatch
+                | Operator::LikeMatch
+                | Operator::ILikeMatch
+                | Operator::NotLikeMatch
+                | Operator::NotILikeMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
                 Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
                     DataTypeMap::map_from_arrow_type(&DataType::Int64)
                 }
@@ -618,11 +622,9 @@ impl PyExpr {
                 | Operator::BitwiseXor
                 | Operator::BitwiseAnd
                 | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
-                Operator::AtArrow | Operator::ArrowAt => todo!(),
-                Operator::LikeMatch
-                | Operator::ILikeMatch
-                | Operator::NotLikeMatch
-                | Operator::NotILikeMatch => todo!(),
+                Operator::AtArrow | Operator::ArrowAt => {
+                    Err(py_type_err(format!("Unsupported expr: ${op}")))
+                }
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
