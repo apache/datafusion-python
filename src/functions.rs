@@ -239,25 +239,6 @@ macro_rules! scalar_function {
     };
 }
 
-macro_rules! udf_scalar_function {
-    ($NAME: ident, $FUNC: ident) => {
-        udf_scalar_function!($NAME, $FUNC, stringify!($NAME));
-    };
-
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
-        #[doc = $DOC]
-        #[pyfunction]
-        #[pyo3(signature = (*args))]
-        fn $NAME(args: Vec<PyExpr>) -> PyExpr {
-            let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
-                func_def: datafusion_expr::ScalarFunctionDefinition::UDF($FUNC::new()),
-                args: args.into_iter().map(|e| e.into()).collect(),
-            });
-            expr.into()
-        }
-    };
-}
-
 macro_rules! aggregate_function {
     ($NAME: ident, $FUNC: ident) => {
         aggregate_function!($NAME, $FUNC, stringify!($NAME));
