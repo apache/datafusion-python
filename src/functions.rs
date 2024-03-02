@@ -16,6 +16,7 @@
 // under the License.
 
 use pyo3::{prelude::*, wrap_pyfunction};
+use std::sync::Arc;
 
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
@@ -23,6 +24,7 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
+use datafusion::functions;
 use datafusion_common::{Column, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
@@ -33,6 +35,50 @@ use datafusion_expr::{
     },
     lit, BuiltinScalarFunction, Expr, WindowFunctionDefinition,
 };
+use datafusion_functions_array;
+
+#[pyfunction]
+pub fn isnan(expr: PyExpr) -> PyExpr {
+    functions::expr_fn::isnan(expr.into()).into()
+}
+
+#[pyfunction]
+pub fn nullif(expr1: PyExpr, expr2: PyExpr) -> PyExpr {
+    functions::expr_fn::nullif(expr1.into(), expr2.into()).into()
+}
+
+#[pyfunction]
+pub fn encode(input: PyExpr, encoding: PyExpr) -> PyExpr {
+    functions::expr_fn::encode(input.into(), encoding.into()).into()
+}
+
+#[pyfunction]
+pub fn decode(input: PyExpr, encoding: PyExpr) -> PyExpr {
+    functions::expr_fn::decode(input.into(), encoding.into()).into()
+}
+
+#[pyfunction]
+pub fn array_to_string(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    datafusion_functions_array::expr_fn::array_to_string(expr.into(), delim.into()).into()
+}
+
+#[pyfunction]
+pub fn array_join(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
+
+#[pyfunction]
+pub fn list_to_string(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
+
+#[pyfunction]
+pub fn list_join(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
@@ -188,6 +234,25 @@ macro_rules! scalar_function {
                 func_def: datafusion_expr::ScalarFunctionDefinition::BuiltIn(
                     BuiltinScalarFunction::$FUNC,
                 ),
+                args: args.into_iter().map(|e| e.into()).collect(),
+            });
+            expr.into()
+        }
+    };
+}
+
+macro_rules! udf_scalar_function {
+    ($NAME: ident, $FUNC: ident) => {
+        udf_scalar_function!($NAME, $FUNC, stringify!($NAME));
+    };
+
+    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
+        #[doc = $DOC]
+        #[pyfunction]
+        #[pyo3(signature = (*args))]
+        fn $NAME(args: Vec<PyExpr>) -> PyExpr {
+            let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
+                func_def: datafusion_expr::ScalarFunctionDefinition::UDF($FUNC::new()),
                 args: args.into_iter().map(|e| e.into()).collect(),
             });
             expr.into()
@@ -501,6 +566,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
+    m.add_wrapped(wrap_pyfunction!(isnan))?;
     m.add_wrapped(wrap_pyfunction!(iszero))?;
     m.add_wrapped(wrap_pyfunction!(lcm))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
@@ -520,6 +586,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
+    m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
     m.add_wrapped(wrap_pyfunction!(order_by))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
@@ -586,6 +653,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(bool_and))?;
     m.add_wrapped(wrap_pyfunction!(bool_or))?;
 
+    //Binary String Functions
+    m.add_wrapped(wrap_pyfunction!(encode))?;
+    m.add_wrapped(wrap_pyfunction!(decode))?;
+
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
     m.add_wrapped(wrap_pyfunction!(array_push_back))?;
@@ -610,6 +681,10 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_indexof))?;
     m.add_wrapped(wrap_pyfunction!(array_positions))?;
     m.add_wrapped(wrap_pyfunction!(list_positions))?;
+    m.add_wrapped(wrap_pyfunction!(array_to_string))?;
+    m.add_wrapped(wrap_pyfunction!(array_join))?;
+    m.add_wrapped(wrap_pyfunction!(list_to_string))?;
+    m.add_wrapped(wrap_pyfunction!(list_join))?;
     m.add_wrapped(wrap_pyfunction!(array_ndims))?;
     m.add_wrapped(wrap_pyfunction!(list_ndims))?;
     m.add_wrapped(wrap_pyfunction!(array_prepend))?;

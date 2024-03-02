@@ -946,6 +946,7 @@ dependencies = [
  "datafusion",
  "datafusion-common",
  "datafusion-expr",
+ "datafusion-functions-array",
  "datafusion-optimizer",
  "datafusion-sql",
  "datafusion-substrait",
