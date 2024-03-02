@@ -290,15 +290,21 @@ impl DataTypeMap {
                 Ok(DataType::Interval(IntervalUnit::MonthDayNano))
             }
             ScalarValue::List(arr) => Ok(arr.data_type().to_owned()),
-            ScalarValue::Struct(_, fields) => Ok(DataType::Struct(fields.to_owned())),
+            ScalarValue::Struct(_fields) => Err(py_datafusion_err(
+                DataFusionError::NotImplemented("ScalarValue::Struct".to_string()),
+            )),
             ScalarValue::FixedSizeBinary(size, _) => Ok(DataType::FixedSizeBinary(*size)),
             ScalarValue::FixedSizeList(_array_ref) => {
                 // The FieldRef was removed from ScalarValue::FixedSizeList in
                 // https://github.com/apache/arrow-datafusion/pull/8221, so we can no
                 // longer convert back to a DataType here
-                todo!()
+                Err(py_datafusion_err(DataFusionError::NotImplemented(
+                    "ScalarValue::FixedSizeList".to_string(),
+                )))
             }
-            ScalarValue::LargeList(_) => todo!(),
+            ScalarValue::LargeList(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
+                "ScalarValue::LargeList".to_string(),
+            ))),
             ScalarValue::DurationSecond(_) => Ok(DataType::Duration(TimeUnit::Second)),
             ScalarValue::DurationMillisecond(_) => Ok(DataType::Duration(TimeUnit::Millisecond)),
             ScalarValue::DurationMicrosecond(_) => Ok(DataType::Duration(TimeUnit::Microsecond)),

@@ -252,7 +252,6 @@ scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
 scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
-scalar_function!(isnan, Isnan);
 scalar_function!(iszero, Iszero);
 scalar_function!(lcm, Lcm);
 scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
@@ -348,15 +347,11 @@ scalar_function!(trunc, Trunc);
 scalar_function!(upper, Upper, "Converts the string to all upper case.");
 scalar_function!(make_array, MakeArray);
 scalar_function!(array, MakeArray);
-scalar_function!(nullif, NullIf);
 scalar_function!(uuid, Uuid);
 scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyword
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
-//Binary String Functions
-scalar_function!(encode, Encode);
-scalar_function!(decode, Decode);
 
 // Array Functions
 scalar_function!(array_append, ArrayAppend);
@@ -382,10 +377,6 @@ scalar_function!(list_position, ArrayPosition);
 scalar_function!(list_indexof, ArrayPosition);
 scalar_function!(array_positions, ArrayPositions);
 scalar_function!(list_positions, ArrayPositions);
-scalar_function!(array_to_string, ArrayToString);
-scalar_function!(array_join, ArrayToString);
-scalar_function!(list_to_string, ArrayToString);
-scalar_function!(list_join, ArrayToString);
 scalar_function!(array_ndims, ArrayNdims);
 scalar_function!(list_ndims, ArrayNdims);
 scalar_function!(array_prepend, ArrayPrepend);
@@ -510,7 +501,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
-    m.add_wrapped(wrap_pyfunction!(isnan))?;
     m.add_wrapped(wrap_pyfunction!(iszero))?;
     m.add_wrapped(wrap_pyfunction!(lcm))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
@@ -530,7 +520,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
-    m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
     m.add_wrapped(wrap_pyfunction!(order_by))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
@@ -597,10 +586,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(bool_and))?;
     m.add_wrapped(wrap_pyfunction!(bool_or))?;
 
-    //Binary String Functions
-    m.add_wrapped(wrap_pyfunction!(encode))?;
-    m.add_wrapped(wrap_pyfunction!(decode))?;
-
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
     m.add_wrapped(wrap_pyfunction!(array_push_back))?;
@@ -625,10 +610,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_indexof))?;
     m.add_wrapped(wrap_pyfunction!(array_positions))?;
     m.add_wrapped(wrap_pyfunction!(list_positions))?;
-    m.add_wrapped(wrap_pyfunction!(array_to_string))?;
-    m.add_wrapped(wrap_pyfunction!(array_join))?;
-    m.add_wrapped(wrap_pyfunction!(list_to_string))?;
-    m.add_wrapped(wrap_pyfunction!(list_join))?;
     m.add_wrapped(wrap_pyfunction!(array_ndims))?;
     m.add_wrapped(wrap_pyfunction!(list_ndims))?;
     m.add_wrapped(wrap_pyfunction!(array_prepend))?;
