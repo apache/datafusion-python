@@ -19,6 +19,23 @@
 
 # DataFusion Python Changelog
 
+## [36.0.0](https://github.com/apache/arrow-datafusion-python/tree/36.0.0) (2024-03-02)
+
+**Implemented enhancements:**
+
+- feat: Add `flatten` array function [#562](https://github.com/apache/arrow-datafusion-python/pull/562) (mobley-trent)
+
+**Documentation updates:**
+
+- docs: Add ASF attribution [#580](https://github.com/apache/arrow-datafusion-python/pull/580) (simicd)
+
+**Merged pull requests:**
+
+- Allow PyDataFrame to be used from other projects [#582](https://github.com/apache/arrow-datafusion-python/pull/582) (andygrove)
+- docs: Add ASF attribution [#580](https://github.com/apache/arrow-datafusion-python/pull/580) (simicd)
+- Add array functions [#560](https://github.com/apache/arrow-datafusion-python/pull/560) (ongchi)
+- feat: Add `flatten` array function [#562](https://github.com/apache/arrow-datafusion-python/pull/562) (mobley-trent)
+
 ## [35.0.0](https://github.com/apache/arrow-datafusion-python/tree/35.0.0) (2024-01-20)
 
 **Merged pull requests:**
