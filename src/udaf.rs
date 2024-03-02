@@ -41,12 +41,12 @@ impl RustAccumulator {
 }
 
 impl Accumulator for RustAccumulator {
-    fn state(&self) -> Result<Vec<ScalarValue>> {
+    fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Python::with_gil(|py| self.accum.as_ref(py).call_method0("state")?.extract())
             .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
-    fn evaluate(&self) -> Result<ScalarValue> {
+    fn evaluate(&mut self) -> Result<ScalarValue> {
         Python::with_gil(|py| self.accum.as_ref(py).call_method0("evaluate")?.extract())
             .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }

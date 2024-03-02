@@ -32,7 +32,7 @@ use datafusion_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
-use crate::errors::{py_runtime_err, py_type_err, DataFusionError};
+use crate::errors::{py_datafusion_err, py_runtime_err, py_type_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -292,6 +292,7 @@ impl PyExpr {
             | Expr::IsNotFalse(..)
             | Expr::Placeholder { .. }
             | Expr::OuterReferenceColumn(_, _)
+            | Expr::Unnest(_)
             | Expr::IsNotUnknown(_) => RexType::Call,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
         })
@@ -306,49 +307,81 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => Ok(match scalar_value {
-                ScalarValue::Null => todo!(),
-                ScalarValue::Boolean(v) => v.into_py(py),
-                ScalarValue::Float32(v) => v.into_py(py),
-                ScalarValue::Float64(v) => v.into_py(py),
-                ScalarValue::Decimal128(v, _, _) => v.into_py(py),
-                ScalarValue::Decimal256(_, _, _) => todo!(),
-                ScalarValue::Int8(v) => v.into_py(py),
-                ScalarValue::Int16(v) => v.into_py(py),
-                ScalarValue::Int32(v) => v.into_py(py),
-                ScalarValue::Int64(v) => v.into_py(py),
-                ScalarValue::UInt8(v) => v.into_py(py),
-                ScalarValue::UInt16(v) => v.into_py(py),
-                ScalarValue::UInt32(v) => v.into_py(py),
-                ScalarValue::UInt64(v) => v.into_py(py),
-                ScalarValue::Utf8(v) => v.clone().into_py(py),
-                ScalarValue::LargeUtf8(v) => v.clone().into_py(py),
-                ScalarValue::Binary(v) => v.clone().into_py(py),
-                ScalarValue::FixedSizeBinary(_, _) => todo!(),
-                ScalarValue::LargeBinary(v) => v.clone().into_py(py),
-                ScalarValue::List(_) => todo!(),
-                ScalarValue::Date32(v) => v.into_py(py),
-                ScalarValue::Date64(v) => v.into_py(py),
-                ScalarValue::Time32Second(v) => v.into_py(py),
-                ScalarValue::Time32Millisecond(v) => v.into_py(py),
-                ScalarValue::Time64Microsecond(v) => v.into_py(py),
-                ScalarValue::Time64Nanosecond(v) => v.into_py(py),
-                ScalarValue::TimestampSecond(v, _) => v.into_py(py),
-                ScalarValue::TimestampMillisecond(v, _) => v.into_py(py),
-                ScalarValue::TimestampMicrosecond(v, _) => v.into_py(py),
-                ScalarValue::TimestampNanosecond(v, _) => v.into_py(py),
-                ScalarValue::IntervalYearMonth(v) => v.into_py(py),
-                ScalarValue::IntervalDayTime(v) => v.into_py(py),
-                ScalarValue::IntervalMonthDayNano(v) => v.into_py(py),
-                ScalarValue::DurationSecond(v) => v.into_py(py),
-                ScalarValue::DurationMicrosecond(v) => v.into_py(py),
-                ScalarValue::DurationNanosecond(v) => v.into_py(py),
-                ScalarValue::DurationMillisecond(v) => v.into_py(py),
-                ScalarValue::Struct(_, _) => todo!(),
-                ScalarValue::Dictionary(_, _) => todo!(),
-                ScalarValue::FixedSizeList(_) => todo!(),
-                ScalarValue::LargeList(_) => todo!(),
-            }),
+            Expr::Literal(scalar_value) => match scalar_value {
+                ScalarValue::Null => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Null".to_string(),
+                    ),
+                )),
+                ScalarValue::Boolean(v) => Ok(v.into_py(py)),
+                ScalarValue::Float32(v) => Ok(v.into_py(py)),
+                ScalarValue::Float64(v) => Ok(v.into_py(py)),
+                ScalarValue::Decimal128(v, _, _) => Ok(v.into_py(py)),
+                ScalarValue::Decimal256(_, _, _) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Decimal256".to_string(),
+                    ),
+                )),
+                ScalarValue::Int8(v) => Ok(v.into_py(py)),
+                ScalarValue::Int16(v) => Ok(v.into_py(py)),
+                ScalarValue::Int32(v) => Ok(v.into_py(py)),
+                ScalarValue::Int64(v) => Ok(v.into_py(py)),
+                ScalarValue::UInt8(v) => Ok(v.into_py(py)),
+                ScalarValue::UInt16(v) => Ok(v.into_py(py)),
+                ScalarValue::UInt32(v) => Ok(v.into_py(py)),
+                ScalarValue::UInt64(v) => Ok(v.into_py(py)),
+                ScalarValue::Utf8(v) => Ok(v.clone().into_py(py)),
+                ScalarValue::LargeUtf8(v) => Ok(v.clone().into_py(py)),
+                ScalarValue::Binary(v) => Ok(v.clone().into_py(py)),
+                ScalarValue::FixedSizeBinary(_, _) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::FixedSizeBinary".to_string(),
+                    ),
+                )),
+                ScalarValue::LargeBinary(v) => Ok(v.clone().into_py(py)),
+                ScalarValue::List(_) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::List".to_string(),
+                    ),
+                )),
+                ScalarValue::Date32(v) => Ok(v.into_py(py)),
+                ScalarValue::Date64(v) => Ok(v.into_py(py)),
+                ScalarValue::Time32Second(v) => Ok(v.into_py(py)),
+                ScalarValue::Time32Millisecond(v) => Ok(v.into_py(py)),
+                ScalarValue::Time64Microsecond(v) => Ok(v.into_py(py)),
+                ScalarValue::Time64Nanosecond(v) => Ok(v.into_py(py)),
+                ScalarValue::TimestampSecond(v, _) => Ok(v.into_py(py)),
+                ScalarValue::TimestampMillisecond(v, _) => Ok(v.into_py(py)),
+                ScalarValue::TimestampMicrosecond(v, _) => Ok(v.into_py(py)),
+                ScalarValue::TimestampNanosecond(v, _) => Ok(v.into_py(py)),
+                ScalarValue::IntervalYearMonth(v) => Ok(v.into_py(py)),
+                ScalarValue::IntervalDayTime(v) => Ok(v.into_py(py)),
+                ScalarValue::IntervalMonthDayNano(v) => Ok(v.into_py(py)),
+                ScalarValue::DurationSecond(v) => Ok(v.into_py(py)),
+                ScalarValue::DurationMicrosecond(v) => Ok(v.into_py(py)),
+                ScalarValue::DurationNanosecond(v) => Ok(v.into_py(py)),
+                ScalarValue::DurationMillisecond(v) => Ok(v.into_py(py)),
+                ScalarValue::Struct(_) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Struct".to_string(),
+                    ),
+                )),
+                ScalarValue::Dictionary(_, _) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Dictionary".to_string(),
+                    ),
+                )),
+                ScalarValue::FixedSizeList(_) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::FixedSizeList".to_string(),
+                    ),
+                )),
+                ScalarValue::LargeList(_) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::LargeList".to_string(),
+                    ),
+                )),
+            },
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr
@@ -455,6 +488,7 @@ impl PyExpr {
 
             // Currently un-support/implemented Expr types for Rex Call operations
             Expr::GroupingSet(..)
+            | Expr::Unnest(_)
             | Expr::OuterReferenceColumn(_, _)
             | Expr::Wildcard { .. }
             | Expr::ScalarSubquery(..)
@@ -573,7 +607,11 @@ impl PyExpr {
                 | Operator::RegexMatch
                 | Operator::RegexIMatch
                 | Operator::RegexNotMatch
-                | Operator::RegexNotIMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
+                | Operator::RegexNotIMatch
+                | Operator::LikeMatch
+                | Operator::ILikeMatch
+                | Operator::NotLikeMatch
+                | Operator::NotILikeMatch => DataTypeMap::map_from_arrow_type(&DataType::Boolean),
                 Operator::Plus | Operator::Minus | Operator::Multiply | Operator::Modulo => {
                     DataTypeMap::map_from_arrow_type(&DataType::Int64)
                 }
@@ -584,7 +622,9 @@ impl PyExpr {
                 | Operator::BitwiseXor
                 | Operator::BitwiseAnd
                 | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
-                Operator::AtArrow | Operator::ArrowAt => todo!(),
+                Operator::AtArrow | Operator::ArrowAt => {
+                    Err(py_type_err(format!("Unsupported expr: ${op}")))
+                }
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),

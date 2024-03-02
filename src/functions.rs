@@ -23,6 +23,7 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
+use datafusion::functions;
 use datafusion_common::{Column, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
@@ -33,6 +34,49 @@ use datafusion_expr::{
     },
     lit, BuiltinScalarFunction, Expr, WindowFunctionDefinition,
 };
+
+#[pyfunction]
+pub fn isnan(expr: PyExpr) -> PyExpr {
+    functions::expr_fn::isnan(expr.into()).into()
+}
+
+#[pyfunction]
+pub fn nullif(expr1: PyExpr, expr2: PyExpr) -> PyExpr {
+    functions::expr_fn::nullif(expr1.into(), expr2.into()).into()
+}
+
+#[pyfunction]
+pub fn encode(input: PyExpr, encoding: PyExpr) -> PyExpr {
+    functions::expr_fn::encode(input.into(), encoding.into()).into()
+}
+
+#[pyfunction]
+pub fn decode(input: PyExpr, encoding: PyExpr) -> PyExpr {
+    functions::expr_fn::decode(input.into(), encoding.into()).into()
+}
+
+#[pyfunction]
+pub fn array_to_string(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    datafusion_functions_array::expr_fn::array_to_string(expr.into(), delim.into()).into()
+}
+
+#[pyfunction]
+pub fn array_join(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
+
+#[pyfunction]
+pub fn list_to_string(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
+
+#[pyfunction]
+pub fn list_join(expr: PyExpr, delim: PyExpr) -> PyExpr {
+    // alias for array_to_string
+    array_to_string(expr, delim)
+}
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
@@ -252,7 +296,6 @@ scalar_function!(factorial, Factorial);
 scalar_function!(floor, Floor);
 scalar_function!(gcd, Gcd);
 scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
-scalar_function!(isnan, Isnan);
 scalar_function!(iszero, Iszero);
 scalar_function!(lcm, Lcm);
 scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
@@ -348,15 +391,11 @@ scalar_function!(trunc, Trunc);
 scalar_function!(upper, Upper, "Converts the string to all upper case.");
 scalar_function!(make_array, MakeArray);
 scalar_function!(array, MakeArray);
-scalar_function!(nullif, NullIf);
 scalar_function!(uuid, Uuid);
 scalar_function!(r#struct, Struct); // Use raw identifier since struct is a keyword
 scalar_function!(from_unixtime, FromUnixtime);
 scalar_function!(arrow_typeof, ArrowTypeof);
 scalar_function!(random, Random);
-//Binary String Functions
-scalar_function!(encode, Encode);
-scalar_function!(decode, Decode);
 
 // Array Functions
 scalar_function!(array_append, ArrayAppend);
@@ -382,10 +421,6 @@ scalar_function!(list_position, ArrayPosition);
 scalar_function!(list_indexof, ArrayPosition);
 scalar_function!(array_positions, ArrayPositions);
 scalar_function!(list_positions, ArrayPositions);
-scalar_function!(array_to_string, ArrayToString);
-scalar_function!(array_join, ArrayToString);
-scalar_function!(list_to_string, ArrayToString);
-scalar_function!(list_join, ArrayToString);
 scalar_function!(array_ndims, ArrayNdims);
 scalar_function!(list_ndims, ArrayNdims);
 scalar_function!(array_prepend, ArrayPrepend);
