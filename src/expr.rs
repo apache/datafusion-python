@@ -292,9 +292,9 @@ impl PyExpr {
             | Expr::IsNotFalse(..)
             | Expr::Placeholder { .. }
             | Expr::OuterReferenceColumn(_, _)
+            | Expr::Unnest(_)
             | Expr::IsNotUnknown(_) => RexType::Call,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
-            Expr::Unnest(_) => todo!(),
         })
     }
 
