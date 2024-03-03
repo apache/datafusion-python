@@ -20,5 +20,6 @@ mypy
 numpy
 pyarrow>=11.0.0
 pytest
+ruff
 toml
 importlib_metadata; python_version < "3.8"
