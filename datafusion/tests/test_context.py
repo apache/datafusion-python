@@ -36,9 +36,7 @@ def test_create_context_no_args():
 
 
 def test_create_context_with_all_valid_args():
-    runtime = (
-        RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
-    )
+    runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
     config = (
         SessionConfig()
         .with_create_default_catalog_and_schema(True)
@@ -357,9 +355,7 @@ def test_read_json_compressed(ctx, tmp_path):
         with gzip.open(gzip_path, "wb") as gzipped_file:
             gzipped_file.writelines(csv_file)
 
-    df = ctx.read_json(
-        gzip_path, file_extension=".gz", file_compression_type="gz"
-    )
+    df = ctx.read_json(gzip_path, file_extension=".gz", file_compression_type="gz")
     result = df.collect()
 
     assert result[0].column(0) == pa.array(["a", "b", "c"])
@@ -381,9 +377,7 @@ def test_read_csv_compressed(ctx, tmp_path):
         with gzip.open(gzip_path, "wb") as gzipped_file:
             gzipped_file.writelines(csv_file)
 
-    csv_df = ctx.read_csv(
-        gzip_path, file_extension=".gz", file_compression_type="gz"
-    )
+    csv_df = ctx.read_csv(gzip_path, file_extension=".gz", file_compression_type="gz")
     csv_df.select(column("c1")).show()
 
 

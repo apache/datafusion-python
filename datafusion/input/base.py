@@ -31,13 +31,9 @@ class BaseInputSource(ABC):
     """
 
     @abstractmethod
-    def is_correct_input(
-        self, input_item: Any, table_name: str, **kwargs
-    ) -> bool:
+    def is_correct_input(self, input_item: Any, table_name: str, **kwargs) -> bool:
         pass
 
     @abstractmethod
-    def build_table(
-        self, input_item: Any, table_name: str, **kwarg
-    ) -> SqlTable:
+    def build_table(self, input_item: Any, table_name: str, **kwarg) -> SqlTable:
         pass

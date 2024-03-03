@@ -68,9 +68,7 @@ class SessionContext(BaseSessionContext):
         elif isinstance(node, TableScan):
             return cudf.read_parquet(self.parquet_tables[node.table_name()])
         else:
-            raise Exception(
-                "unsupported logical operator: {}".format(type(node))
-            )
+            raise Exception("unsupported logical operator: {}".format(type(node)))
 
     def create_schema(self, schema_name: str, **kwargs):
         logger.debug(f"Creating schema: {schema_name}")

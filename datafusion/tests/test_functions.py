@@ -74,9 +74,7 @@ def test_lit_arith(df):
     """
     Test literals with arithmetic operations
     """
-    df = df.select(
-        literal(1) + column("b"), f.concat(column("a"), literal("!"))
-    )
+    df = df.select(literal(1) + column("b"), f.concat(column("a"), literal("!")))
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -148,28 +146,16 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(4), np.arcsin(values))
     np.testing.assert_array_almost_equal(result.column(5), np.arccos(values))
     np.testing.assert_array_almost_equal(result.column(6), np.exp(values))
-    np.testing.assert_array_almost_equal(
-        result.column(7), np.log(values + 1.0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(8), np.log2(values + 1.0)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(9), np.log10(values + 1.0)
-    )
+    np.testing.assert_array_almost_equal(result.column(7), np.log(values + 1.0))
+    np.testing.assert_array_almost_equal(result.column(8), np.log2(values + 1.0))
+    np.testing.assert_array_almost_equal(result.column(9), np.log10(values + 1.0))
     np.testing.assert_array_less(result.column(10), np.ones_like(values))
     np.testing.assert_array_almost_equal(result.column(11), np.arctan(values))
-    np.testing.assert_array_almost_equal(
-        result.column(12), np.arctan2(values, 1.1)
-    )
+    np.testing.assert_array_almost_equal(result.column(12), np.arctan2(values, 1.1))
     np.testing.assert_array_almost_equal(result.column(13), np.ceil(values))
     np.testing.assert_array_almost_equal(result.column(14), np.floor(values))
-    np.testing.assert_array_almost_equal(
-        result.column(15), np.power(values, 3)
-    )
-    np.testing.assert_array_almost_equal(
-        result.column(16), np.power(values, 4)
-    )
+    np.testing.assert_array_almost_equal(result.column(15), np.power(values, 3))
+    np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
     np.testing.assert_array_almost_equal(result.column(17), np.round(values))
     np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
     np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
@@ -190,9 +176,7 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(32), np.sinh(values))
     np.testing.assert_array_almost_equal(result.column(33), np.tanh(values))
     np.testing.assert_array_almost_equal(result.column(34), math.factorial(6))
-    np.testing.assert_array_almost_equal(
-        result.column(35), np.isnan(na_values)
-    )
+    np.testing.assert_array_almost_equal(result.column(35), np.isnan(na_values))
     np.testing.assert_array_almost_equal(result.column(36), na_values == 0)
     np.testing.assert_array_almost_equal(
         result.column(37), np.emath.logn(3, values + 1.0)
@@ -202,9 +186,7 @@ def test_math_functions():
 def test_array_functions():
     data = [[1.0, 2.0, 3.0, 3.0], [4.0, 5.0, 3.0], [6.0]]
     ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays(
-        [np.array(data, dtype=object)], names=["arr"]
-    )
+    batch = pa.RecordBatch.from_arrays([np.array(data, dtype=object)], names=["arr"])
     df = ctx.create_dataframe([[batch]])
 
     def py_indexof(arr, v):
@@ -310,15 +292,11 @@ def test_array_functions():
             lambda: [1.0 in r for r in data],
         ],
         [
-            f.array_has_all(
-                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
-            ),
+            f.array_has_all(col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])),
             lambda: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ],
         [
-            f.array_has_any(
-                col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
-            ),
+            f.array_has_any(col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])),
             lambda: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
         ],
         [
@@ -339,15 +317,11 @@ def test_array_functions():
         ],
         [
             f.array_positions(col, literal(1.0)),
-            lambda: [
-                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
-            ],
+            lambda: [[i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data],
         ],
         [
             f.list_positions(col, literal(1.0)),
-            lambda: [
-                [i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data
-            ],
+            lambda: [[i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data],
         ],
         [
             f.array_ndims(col),
@@ -588,18 +562,9 @@ def test_hash_functions(df):
     )
     assert result.column(2) == pa.array(
         [
-            b(
-                "185F8DB32271FE25F561A6FC938B2E26"
-                "4306EC304EDA518007D1764826381969"
-            ),
-            b(
-                "78AE647DC5544D227130A0682A51E30B"
-                "C7777FBB6D8A8F17007463A3ECD1D524"
-            ),
-            b(
-                "BB7208BC9B5D7C04F1236A82A0093A5E"
-                "33F40423D5BA8D4266F7092C3BA43B62"
-            ),
+            b("185F8DB32271FE25F561A6FC938B2E26" "4306EC304EDA518007D1764826381969"),
+            b("78AE647DC5544D227130A0682A51E30B" "C7777FBB6D8A8F17007463A3ECD1D524"),
+            b("BB7208BC9B5D7C04F1236A82A0093A5E" "33F40423D5BA8D4266F7092C3BA43B62"),
         ]
     )
     assert result.column(3) == pa.array(
@@ -645,34 +610,16 @@ def test_hash_functions(df):
     )
     assert result.column(5) == pa.array(
         [
-            b(
-                "F73A5FBF881F89B814871F46E26AD3FA"
-                "37CB2921C5E8561618639015B3CCBB71"
-            ),
-            b(
-                "B792A0383FB9E7A189EC150686579532"
-                "854E44B71AC394831DAED169BA85CCC5"
-            ),
-            b(
-                "27988A0E51812297C77A433F63523334"
-                "6AEE29A829DCF4F46E0F58F402C6CFCB"
-            ),
+            b("F73A5FBF881F89B814871F46E26AD3FA" "37CB2921C5E8561618639015B3CCBB71"),
+            b("B792A0383FB9E7A189EC150686579532" "854E44B71AC394831DAED169BA85CCC5"),
+            b("27988A0E51812297C77A433F63523334" "6AEE29A829DCF4F46E0F58F402C6CFCB"),
         ]
     )
     assert result.column(6) == pa.array(
         [
-            b(
-                "FBC2B0516EE8744D293B980779178A35"
-                "08850FDCFE965985782C39601B65794F"
-            ),
-            b(
-                "BF73D18575A736E4037D45F9E316085B"
-                "86C19BE6363DE6AA789E13DEAACC1C4E"
-            ),
-            b(
-                "C8D11B9F7237E4034ADBCD2005735F9B"
-                "C4C597C75AD89F4492BEC8F77D15F7EB"
-            ),
+            b("FBC2B0516EE8744D293B980779178A35" "08850FDCFE965985782C39601B65794F"),
+            b("BF73D18575A736E4037D45F9E316085B" "86C19BE6363DE6AA789E13DEAACC1C4E"),
+            b("C8D11B9F7237E4034ADBCD2005735F9B" "C4C597C75AD89F4492BEC8F77D15F7EB"),
         ]
     )
     assert result.column(7) == result.column(1)  # SHA-224
@@ -738,9 +685,7 @@ def test_temporal_functions(df):
 
 def test_case(df):
     df = df.select(
-        f.case(column("b"))
-        .when(literal(4), literal(10))
-        .otherwise(literal(8)),
+        f.case(column("b")).when(literal(4), literal(10)).otherwise(literal(8)),
         f.case(column("a"))
         .when(literal("Hello"), literal("Hola"))
         .when(literal("World"), literal("Mundo"))

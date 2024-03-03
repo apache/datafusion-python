@@ -23,9 +23,7 @@ def test_location_input():
     location_input = LocationInputPlugin()
 
     cwd = os.getcwd()
-    input_file = (
-        cwd + "/testing/data/parquet/generated_simple_numerics/blogs.parquet"
-    )
+    input_file = cwd + "/testing/data/parquet/generated_simple_numerics/blogs.parquet"
     table_name = "blog"
     tbl = location_input.build_table(input_file, table_name)
     assert "blog" == tbl.name
