@@ -15,9 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-black
-flake8
-isort
 maturin>=0.15
 mypy
 numpy
