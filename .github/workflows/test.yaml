@@ -34,10 +34,9 @@ jobs:
       matrix:
         python-version:
           - "3.10"
+          - "3.11"
         toolchain:
           - "stable"
-          # we are not that much eager in walking on the edge yet
-          # - nightly
         # build stable for only 3.7
         include:
           - python-version: "3.7"
@@ -83,6 +82,13 @@ jobs:
           command: clippy
           args: --all-targets --all-features -- -D clippy::all -A clippy::redundant_closure
 
+      - name: Create Virtualenv (3.7)
+        if: ${{ matrix.python-version == '3.7' }}
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements-37.txt
+
       - name: Create Virtualenv (3.10)
         if: ${{ matrix.python-version == '3.10' }}
         run: |
@@ -90,12 +96,12 @@ jobs:
           source venv/bin/activate
           pip install -r requirements-310.txt
 
-      - name: Create Virtualenv (3.7)
-        if: ${{ matrix.python-version == '3.7' }}
+      - name: Create Virtualenv (3.11)
+        if: ${{ matrix.python-version == '3.11' }}
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements-37.txt
+          pip install -r requirements-311.txt
 
       - name: Run Python Linters
         if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
