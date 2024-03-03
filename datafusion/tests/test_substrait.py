@@ -40,7 +40,7 @@ def test_substrait_serialization(ctx):
     # For now just make sure the method calls blow up
     substrait_plan = ss.substrait.serde.serialize_to_plan("SELECT * FROM t", ctx)
     substrait_bytes = substrait_plan.encode()
-    assert isinstance(type(substrait_bytes), bytes)
+    assert isinstance(substrait_bytes, bytes)
     substrait_bytes = ss.substrait.serde.serialize_bytes("SELECT * FROM t", ctx)
     substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
     logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)

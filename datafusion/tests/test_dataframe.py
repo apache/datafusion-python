@@ -415,7 +415,7 @@ def test_execution_plan(aggregate_df):
     assert expected == plan.display()
 
     # Check the number of partitions is as expected.
-    assert isinstance(type(plan.partition_count), int)
+    assert isinstance(plan.partition_count, int)
 
     expected = (
         "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
@@ -634,7 +634,7 @@ def test_empty_to_arrow_table(df):
 def test_to_pylist(df):
     # Convert datafusion dataframe to Python list
     pylist = df.to_pylist()
-    assert isinstance(type(pylist), list)
+    assert isinstance(pylist, list)
     assert pylist == [
         {"a": 1, "b": 4, "c": 8},
         {"a": 2, "b": 5, "c": 5},
@@ -645,7 +645,7 @@ def test_to_pylist(df):
 def test_to_pydict(df):
     # Convert datafusion dataframe to Python dictionary
     pydict = df.to_pydict()
-    assert isinstance(type(pydict), dict)
+    assert isinstance(pydict, dict)
     assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
 
 
