@@ -420,6 +420,10 @@ def test_array_functions():
             lambda: [arr[-1:2] for arr in data],
         ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
+        [
+            f.range(literal(1), literal(5), literal(2)),
+            lambda: [np.arange(1, 5, 2)],
+        ],
     ]
 
     for stmt, py_expr in test_items:
