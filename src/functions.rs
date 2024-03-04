@@ -449,6 +449,8 @@ scalar_function!(array_slice, ArraySlice);
 scalar_function!(list_slice, ArraySlice);
 scalar_function!(array_intersect, ArrayIntersect);
 scalar_function!(list_intersect, ArrayIntersect);
+scalar_function!(array_union, ArrayUnion);
+scalar_function!(list_union, ArrayUnion);
 scalar_function!(flatten, Flatten);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
@@ -671,6 +673,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_to_string))?;
     m.add_wrapped(wrap_pyfunction!(array_intersect))?;
     m.add_wrapped(wrap_pyfunction!(list_intersect))?;
+    m.add_wrapped(wrap_pyfunction!(array_union))?;
+    m.add_wrapped(wrap_pyfunction!(list_union))?;
     m.add_wrapped(wrap_pyfunction!(array_join))?;
     m.add_wrapped(wrap_pyfunction!(list_to_string))?;
     m.add_wrapped(wrap_pyfunction!(list_join))?;
