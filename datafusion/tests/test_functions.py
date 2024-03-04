@@ -439,6 +439,14 @@ def test_array_functions():
             f.list_union(col, literal([12.0, 999.0])),
             lambda: [np.union1d(arr, [12.0, 999.0]) for arr in data],
         ],
+        [
+            f.array_except(col, literal([3.0])),
+            lambda: [np.setdiff1d(arr, [3.0]) for arr in data],
+        ],
+        [
+            f.list_except(col, literal([3.0])),
+            lambda: [np.setdiff1d(arr, [3.0]) for arr in data],
+        ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
         [
             f.range(literal(1), literal(5), literal(2)),
