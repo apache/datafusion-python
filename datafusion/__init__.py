@@ -208,9 +208,7 @@ def udaf(accum, input_type, return_type, state_type, volatility, name=None):
     Create a new User Defined Aggregate Function
     """
     if not issubclass(accum, Accumulator):
-        raise TypeError(
-            "`accum` must implement the abstract base class Accumulator"
-        )
+        raise TypeError("`accum` must implement the abstract base class Accumulator")
     if name is None:
         name = accum.__qualname__.lower()
     if isinstance(input_type, pa.lib.DataType):

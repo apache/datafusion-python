@@ -152,11 +152,7 @@ t = timeit.default_timer() - t_start
 print(f"q2: {t}")
 t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
-chk = (
-    df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))])
-    .collect()[0]
-    .column(0)[0]
-)
+chk = df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
 m = memory_usage()
 write_log(
@@ -193,11 +189,7 @@ t = timeit.default_timer() - t_start
 print(f"q3: {t}")
 t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
-chk = (
-    df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))])
-    .collect()[0]
-    .column(0)[0]
-)
+chk = df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
 m = memory_usage()
 write_log(
@@ -234,11 +226,7 @@ t = timeit.default_timer() - t_start
 print(f"q4: {t}")
 t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
-chk = (
-    df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))])
-    .collect()[0]
-    .column(0)[0]
-)
+chk = df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
 m = memory_usage()
 write_log(
@@ -275,11 +263,7 @@ t = timeit.default_timer() - t_start
 print(f"q5: {t}")
 t_start = timeit.default_timer()
 df = ctx.create_dataframe([ans])
-chk = (
-    df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))])
-    .collect()[0]
-    .column(0)[0]
-)
+chk = df.aggregate([], [f.sum(col("v1")), f.sum(col("v2"))]).collect()[0].column(0)[0]
 chkt = timeit.default_timer() - t_start
 m = memory_usage()
 write_log(

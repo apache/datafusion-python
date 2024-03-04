@@ -20,21 +20,14 @@ repos:
         rev: v1.6.23
         hooks:
               - id: actionlint-docker
-      - repo: https://github.com/psf/black
-        rev: 22.3.0
+      - repo: https://github.com/astral-sh/ruff-pre-commit
+        # Ruff version.
+        rev: v0.3.0
         hooks:
-              - id: black
-                files: datafusion/.*
-                # Explicitly specify the pyproject.toml at the repo root, not per-project.
-                args: ["--config", "pyproject.toml", "--line-length", "79", "--diff", "--check", "."]
-      - repo: https://github.com/PyCQA/flake8
-        rev: 5.0.4
-        hooks:
-              - id: flake8
-                files: datafusion/.*$
-                types: [file]
-                types_or: [python]
-                additional_dependencies: ["flake8-force"]
+          # Run the linter.
+          - id: ruff
+          # Run the formatter.
+          - id: ruff-format
       - repo: local
         hooks:
           - id: rust-fmt

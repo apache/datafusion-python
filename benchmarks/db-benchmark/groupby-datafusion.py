@@ -79,17 +79,13 @@ schema = pyarrow.schema(
 
 data = pacsv.read_csv(
     src_grp,
-    convert_options=pacsv.ConvertOptions(
-        auto_dict_encode=True, column_types=schema
-    ),
+    convert_options=pacsv.ConvertOptions(auto_dict_encode=True, column_types=schema),
 )
 print("dataset loaded")
 
 # create a session context with explicit runtime and config settings
 runtime = (
-    RuntimeConfig()
-    .with_disk_manager_os()
-    .with_fair_spill_pool(64 * 1024 * 1024 * 1024)
+    RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(64 * 1024 * 1024 * 1024)
 )
 config = (
     SessionConfig()
@@ -116,9 +112,7 @@ t_start = timeit.default_timer()
 if sql:
     df = ctx.sql("SELECT id1, SUM(v1) AS v1 FROM x GROUP BY id1")
 else:
-    df = ctx.table("x").aggregate(
-        [f.col("id1")], [f.sum(f.col("v1")).alias("v1")]
-    )
+    df = ctx.table("x").aggregate([f.col("id1")], [f.sum(f.col("v1")).alias("v1")])
 ans = execute(df)
 
 shape = ans_shape(ans)
@@ -197,9 +191,7 @@ question = "sum v1 mean v3 by id3"  # q3
 gc.collect()
 t_start = timeit.default_timer()
 if sql:
-    df = ctx.sql(
-        "SELECT id3, SUM(v1) AS v1, AVG(v3) AS v3 FROM x GROUP BY id3"
-    )
+    df = ctx.sql("SELECT id3, SUM(v1) AS v1, AVG(v3) AS v3 FROM x GROUP BY id3")
 else:
     df = ctx.table("x").aggregate(
         [f.col("id3")],

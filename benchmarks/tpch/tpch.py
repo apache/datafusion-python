@@ -83,9 +83,7 @@ def bench(data_path, query_path):
                     time_millis = (end - start) * 1000
                     total_time_millis += time_millis
                     print("q{},{}".format(query, round(time_millis, 1)))
-                    results.write(
-                        "q{},{}\n".format(query, round(time_millis, 1))
-                    )
+                    results.write("q{},{}\n".format(query, round(time_millis, 1)))
                     results.flush()
                 except Exception as e:
                     print("query", query, "failed", e)

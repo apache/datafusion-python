@@ -23,9 +23,7 @@ from datafusion import substrait as ss
 ctx = SessionContext()
 
 # Register table with context
-ctx.register_csv(
-    "aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv"
-)
+ctx.register_csv("aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv")
 
 substrait_plan = ss.substrait.serde.serialize_to_plan(
     "SELECT * FROM aggregate_test_data", ctx
@@ -49,9 +47,7 @@ substrait_bytes = ss.substrait.serde.serialize_bytes(
 substrait_plan = ss.substrait.serde.deserialize_bytes(substrait_bytes)
 
 # type(df_logical_plan) -> <class 'substrait.LogicalPlan'>
-df_logical_plan = ss.substrait.consumer.from_substrait_plan(
-    ctx, substrait_plan
-)
+df_logical_plan = ss.substrait.consumer.from_substrait_plan(ctx, substrait_plan)
 
 # Back to Substrait Plan just for demonstration purposes
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>

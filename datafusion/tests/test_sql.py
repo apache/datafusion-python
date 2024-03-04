@@ -86,9 +86,7 @@ def test_register_csv(ctx, tmp_path):
     result = pa.Table.from_batches(result)
     assert result.schema == alternative_schema
 
-    with pytest.raises(
-        ValueError, match="Delimiter must be a single character"
-    ):
+    with pytest.raises(ValueError, match="Delimiter must be a single character"):
         ctx.register_csv("csv4", path, delimiter="wrong")
 
     with pytest.raises(
@@ -134,9 +132,7 @@ def test_register_parquet_partitioned(ctx, tmp_path):
     )
     assert ctx.tables() == {"datapp"}
 
-    result = ctx.sql(
-        "SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp"
-    ).collect()
+    result = ctx.sql("SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp").collect()
     result = pa.Table.from_batches(result)
 
     rd = result.to_pydict()
@@ -240,9 +236,7 @@ def test_execute(ctx, tmp_path):
     assert ctx.tables() == {"t"}
 
     # count
-    result = ctx.sql(
-        "SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL"
-    ).collect()
+    result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
 
     expected = pa.array([7], pa.int64())
     expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
@@ -280,9 +274,7 @@ def test_execute(ctx, tmp_path):
     ).collect()
     expected_a = pa.array([50.0219, 50.0152], pa.float64())
     expected_cast = pa.array([50, 50], pa.int32())
-    expected = [
-        pa.RecordBatch.from_arrays([expected_a, expected_cast], ["a", "a_int"])
-    ]
+    expected = [pa.RecordBatch.from_arrays([expected_a, expected_cast], ["a", "a_int"])]
     np.testing.assert_equal(expected[0].column(1), expected[0].column(1))
 
 
@@ -302,9 +294,7 @@ def test_cast(ctx, tmp_path):
         "float",
     ]
 
-    select = ", ".join(
-        [f"CAST(9 AS {t}) AS A{i}" for i, t in enumerate(valid_types)]
-    )
+    select = ", ".join([f"CAST(9 AS {t}) AS A{i}" for i, t in enumerate(valid_types)])
 
     # can execute, which implies that we can cast
     ctx.sql(f"SELECT {select} FROM t").collect()
@@ -333,14 +323,10 @@ def test_udf(
     ctx, tmp_path, fn, input_types, output_type, input_values, expected_values
 ):
     # write to disk
-    path = helpers.write_parquet(
-        tmp_path / "a.parquet", pa.array(input_values)
-    )
+    path = helpers.write_parquet(tmp_path / "a.parquet", pa.array(input_values))
     ctx.register_parquet("t", path)
 
-    func = udf(
-        fn, input_types, output_type, name="func", volatility="immutable"
-    )
+    func = udf(fn, input_types, output_type, name="func", volatility="immutable")
     ctx.register_udf(func)
 
     batches = ctx.sql("SELECT func(a) AS tt FROM t").collect()

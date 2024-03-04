@@ -202,7 +202,7 @@ source venv/bin/activate
 # update pip itself if necessary
 python -m pip install -U pip
 # install dependencies (for Python 3.8+)
-python -m pip install -r requirements-310.txt
+python -m pip install -r requirements.in
 ```
 
 The tests rely on test data in git submodules.
@@ -222,11 +222,26 @@ python -m pytest
 
 ### Running & Installing pre-commit hooks
 
-arrow-datafusion-python takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.
+arrow-datafusion-python takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce
+the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the
+developer but certainly helpful for keeping PRs clean and concise.
 
-Our pre-commit hooks can be installed by running `pre-commit install`, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.
+Our pre-commit hooks can be installed by running `pre-commit install`, which will install the configurations in
+your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete
+the commit if an offending lint is found allowing you to make changes locally before pushing.
 
 The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`
+
+## Running linters without using pre-commit
+
+There are scripts in `ci/scripts` for running Rust and Python linters.
+
+```shell
+./ci/scripts/python_lint.sh
+./ci/scripts/rust_clippy.sh
+./ci/scripts/rust_fmt.sh
+./ci/scripts/rust_toml_fmt.sh
+```
 
 ## How to update dependencies
 
