@@ -423,6 +423,14 @@ def test_array_functions():
             f.list_slice(col, literal(-1), literal(2)),
             lambda: [arr[-1:2] for arr in data],
         ],
+        [
+            f.array_intersect(col, literal([3.0, 4.0])),
+            lambda: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
+        ],
+        [
+            f.list_intersect(col, literal([3.0, 4.0])),
+            lambda: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
+        ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
         [
             f.range(literal(1), literal(5), literal(2)),
