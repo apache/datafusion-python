@@ -453,6 +453,8 @@ scalar_function!(array_union, ArrayUnion);
 scalar_function!(list_union, ArrayUnion);
 scalar_function!(array_except, ArrayExcept);
 scalar_function!(list_except, ArrayExcept);
+scalar_function!(array_resize, ArrayResize);
+scalar_function!(list_resize, ArrayResize);
 scalar_function!(flatten, Flatten);
 
 aggregate_function!(approx_distinct, ApproxDistinct);
@@ -679,6 +681,8 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_union))?;
     m.add_wrapped(wrap_pyfunction!(array_except))?;
     m.add_wrapped(wrap_pyfunction!(list_except))?;
+    m.add_wrapped(wrap_pyfunction!(array_resize))?;
+    m.add_wrapped(wrap_pyfunction!(list_resize))?;
     m.add_wrapped(wrap_pyfunction!(array_join))?;
     m.add_wrapped(wrap_pyfunction!(list_to_string))?;
     m.add_wrapped(wrap_pyfunction!(list_join))?;

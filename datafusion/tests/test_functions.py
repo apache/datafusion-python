@@ -220,6 +220,15 @@ def test_array_functions():
 
         return new_arr
 
+    def py_arr_resize(arr, size, value):
+        arr = np.asarray(arr)
+        return np.pad(
+            arr,
+            [(0, size - arr.shape[0])],
+            "constant",
+            constant_values=value,
+        )
+
     def py_flatten(arr):
         result = []
         for elem in arr:
@@ -446,6 +455,14 @@ def test_array_functions():
         [
             f.list_except(col, literal([3.0])),
             lambda: [np.setdiff1d(arr, [3.0]) for arr in data],
+        ],
+        [
+            f.array_resize(col, literal(10), literal(0.0)),
+            lambda: [py_arr_resize(arr, 10, 0.0) for arr in data],
+        ],
+        [
+            f.list_resize(col, literal(10), literal(0.0)),
+            lambda: [py_arr_resize(arr, 10, 0.0) for arr in data],
         ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
         [
