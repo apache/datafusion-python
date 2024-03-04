@@ -760,3 +760,19 @@ def test_binary_string_functions(df):
     assert pa.array(result.column(1)).cast(pa.string()) == pa.array(
         ["Hello", "World", "!"]
     )
+
+
+def test_other_functions(df):
+    test_items = [
+        [
+            f.arrow_typeof(column("b").cast(pa.int32())),
+            lambda: [pa.int32()] * 3,
+        ]
+    ]
+
+    for stmt, py_expr in test_items:
+        query_result = df.select(stmt).collect()[0].column(0)
+        for a, b in zip(query_result, py_expr()):
+            np.testing.assert_array_almost_equal(
+                np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
+            )
