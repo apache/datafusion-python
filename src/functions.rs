@@ -405,6 +405,7 @@ scalar_function!(list_push_back, ArrayAppend);
 scalar_function!(array_concat, ArrayConcat);
 scalar_function!(array_cat, ArrayConcat);
 scalar_function!(array_dims, ArrayDims);
+scalar_function!(array_distinct, ArrayDistinct);
 scalar_function!(list_dims, ArrayDims);
 scalar_function!(array_element, ArrayElement);
 scalar_function!(array_extract, ArrayElement);
@@ -644,6 +645,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
+    m.add_wrapped(wrap_pyfunction!(array_distinct))?;
     m.add_wrapped(wrap_pyfunction!(list_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
     m.add_wrapped(wrap_pyfunction!(array_extract))?;
