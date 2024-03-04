@@ -264,6 +264,10 @@ def test_array_functions():
             lambda: [list(set(r)) for r in data],
         ],
         [
+            f.list_distinct(col),
+            lambda: [list(set(r)) for r in data],
+        ],
+        [
             f.list_dims(col),
             lambda: [[len(r)] for r in data],
         ],
