@@ -1,12 +1,11 @@
-
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Introduction &#8212; Arrow DataFusion  documentation</title>
+    <title>Introduction &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -23,18 +22,15 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="API Reference" href="../api.html" />
@@ -388,7 +384,7 @@
               <div>
                 
   <section id="introduction">
-<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this heading">¶</a></h1>
+<h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading">¶</a></h1>
 <p>We welcome and encourage contributions of all kinds, such as:</p>
 <ol class="arabic simple">
 <li><p>Tickets with issue reports of feature requests</p></li>
@@ -398,7 +394,7 @@
 <p>In addition to submitting new PRs, we have a healthy tradition of community members reviewing each other’s PRs.
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.</p>
 <section id="how-to-develop">
-<h2>How to develop<a class="headerlink" href="#how-to-develop" title="Permalink to this heading">¶</a></h2>
+<h2>How to develop<a class="headerlink" href="#how-to-develop" title="Link to this heading">¶</a></h2>
 <p>This assumes that you have rust and cargo installed. We use the workflow recommended by <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>.</p>
 <p>Bootstrap:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch this repo</span>
@@ -426,13 +422,13 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest
 </div>
 </section>
 <section id="running-installing-pre-commit-hooks">
-<h2>Running &amp; Installing pre-commit hooks<a class="headerlink" href="#running-installing-pre-commit-hooks" title="Permalink to this heading">¶</a></h2>
+<h2>Running &amp; Installing pre-commit hooks<a class="headerlink" href="#running-installing-pre-commit-hooks" title="Link to this heading">¶</a></h2>
 <p>arrow-datafusion-python takes advantage of <a class="reference external" href="https://pre-commit.com/">pre-commit</a> to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.</p>
 <p>Our pre-commit hooks can be installed by running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code>, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.</p>
 <p>The pre-commit hooks can also be run adhoc without installing them by simply running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">run</span> <span class="pre">--all-files</span></code></p>
 </section>
 <section id="update-dependencies">
-<h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Permalink to this heading">¶</a></h2>
+<h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Link to this heading">¶</a></h2>
 <p>To change test dependencies, change the <cite>requirements.in</cite> and run</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pip-tools (this can be done only once), also consider running in venv</span>
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pip-tools
@@ -476,22 +472,30 @@ python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w">
     </div>
   
     <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
-  <footer class="footer mt-5 mt-md-0">
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
   <div class="container">
     
     <div class="footer-item">
       <p class="copyright">
-    &copy; Copyright 2022, Apache Software Foundation.<br>
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
 </p>
     </div>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 5.3.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
 </p>
     </div>
     
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
   </div>
 </footer>
+
+
   </body>
 </html>
