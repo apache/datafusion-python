@@ -22,6 +22,8 @@
       ~DataFrame.describe
       ~DataFrame.distinct
       ~DataFrame.except_all
+      ~DataFrame.execute_stream
+      ~DataFrame.execute_stream_partitioned
       ~DataFrame.execution_plan
       ~DataFrame.explain
       ~DataFrame.filter

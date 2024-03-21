@@ -431,6 +431,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.execute_stream">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.execute_stream()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.execute_stream_partitioned">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.execute_stream_partitioned()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.DataFrame.execution_plan">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -747,6 +765,12 @@ The actual execution of a plan runs natively on Rust and Arrow on a multi-thread
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.except_all" title="datafusion.DataFrame.except_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">except_all</span></code></a>(py_df)</p></td>
 <td><p>Calculate the exception of two <a href="#id3"><span class="problematic" id="id4">`</span></a>DataFrame`s. The two <a href="#id5"><span class="problematic" id="id6">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream" title="datafusion.DataFrame.execute_stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream_partitioned" title="datafusion.DataFrame.execute_stream_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream_partitioned</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.execution_plan" title="datafusion.DataFrame.execution_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execution_plan</span></code></a>()</p></td>
 <td><p>Get the execution plan for this <cite>DataFrame</cite></p></td>
 </tr>
@@ -878,6 +902,16 @@ maintaining the input partitioning.</p>
 <span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.except_all" title="Link to this definition">¶</a></dt>
 <dd><p>Calculate the exception of two <a href="#id21"><span class="problematic" id="id22">`</span></a>DataFrame`s.  The two <a href="#id23"><span class="problematic" id="id24">`</span></a>DataFrame`s must have exactly the same schema</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.execute_stream">
+<span class="sig-name descname"><span class="pre">execute_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.execute_stream" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.execute_stream_partitioned">
+<span class="sig-name descname"><span class="pre">execute_stream_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.execute_stream_partitioned" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.execution_plan">
