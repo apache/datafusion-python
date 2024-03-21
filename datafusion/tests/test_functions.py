@@ -220,6 +220,15 @@ def test_array_functions():
 
         return new_arr
 
+    def py_arr_resize(arr, size, value):
+        arr = np.asarray(arr)
+        return np.pad(
+            arr,
+            [(0, size - arr.shape[0])],
+            "constant",
+            constant_values=value,
+        )
+
     def py_flatten(arr):
         result = []
         for elem in arr:
@@ -258,6 +267,14 @@ def test_array_functions():
         [
             f.array_dims(col),
             lambda: [[len(r)] for r in data],
+        ],
+        [
+            f.array_distinct(col),
+            lambda: [list(set(r)) for r in data],
+        ],
+        [
+            f.list_distinct(col),
+            lambda: [list(set(r)) for r in data],
         ],
         [
             f.list_dims(col),
@@ -415,7 +432,43 @@ def test_array_functions():
             f.list_slice(col, literal(-1), literal(2)),
             lambda: [arr[-1:2] for arr in data],
         ],
+        [
+            f.array_intersect(col, literal([3.0, 4.0])),
+            lambda: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
+        ],
+        [
+            f.list_intersect(col, literal([3.0, 4.0])),
+            lambda: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
+        ],
+        [
+            f.array_union(col, literal([12.0, 999.0])),
+            lambda: [np.union1d(arr, [12.0, 999.0]) for arr in data],
+        ],
+        [
+            f.list_union(col, literal([12.0, 999.0])),
+            lambda: [np.union1d(arr, [12.0, 999.0]) for arr in data],
+        ],
+        [
+            f.array_except(col, literal([3.0])),
+            lambda: [np.setdiff1d(arr, [3.0]) for arr in data],
+        ],
+        [
+            f.list_except(col, literal([3.0])),
+            lambda: [np.setdiff1d(arr, [3.0]) for arr in data],
+        ],
+        [
+            f.array_resize(col, literal(10), literal(0.0)),
+            lambda: [py_arr_resize(arr, 10, 0.0) for arr in data],
+        ],
+        [
+            f.list_resize(col, literal(10), literal(0.0)),
+            lambda: [py_arr_resize(arr, 10, 0.0) for arr in data],
+        ],
         [f.flatten(literal(data)), lambda: [py_flatten(data)]],
+        [
+            f.range(literal(1), literal(5), literal(2)),
+            lambda: [np.arange(1, 5, 2)],
+        ],
     ]
 
     for stmt, py_expr in test_items:
