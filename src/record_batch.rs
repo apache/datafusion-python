@@ -20,6 +20,7 @@ use datafusion::arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::StreamExt;
+use pyo3::prelude::*;
 use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
 
 #[pyclass(name = "RecordBatch", module = "datafusion", subclass)]
@@ -60,5 +61,13 @@ impl PyRecordBatchStream {
             Some(Ok(b)) => Ok(Some(b.into())),
             Some(Err(e)) => Err(e.into()),
         }
+    }
+
+    fn __next__(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
+        self.next(py)
+    }
+
+    fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
     }
 }

@@ -15,21 +15,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::physical_plan::PyExecutionPlan;
-use crate::sql::logical::PyLogicalPlan;
-use crate::utils::wait_for_future;
-use crate::{errors::DataFusionError, expr::PyExpr};
+use std::sync::Arc;
+
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
+use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::parquet::file::properties::WriterProperties;
 use datafusion::prelude::*;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyTuple;
-use std::sync::Arc;
+use tokio::task::JoinHandle;
+
+use crate::errors::py_datafusion_err;
+use crate::physical_plan::PyExecutionPlan;
+use crate::record_batch::PyRecordBatchStream;
+use crate::sql::logical::PyLogicalPlan;
+use crate::utils::{get_tokio_runtime, wait_for_future};
+use crate::{errors::DataFusionError, expr::PyExpr};
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -397,6 +403,35 @@ impl PyDataFrame {
             let table: PyObject = table_class.call_method1("from_batches", args)?.into();
             Ok(table)
         })
+    }
+
+    fn execute_stream(&self, py: Python) -> PyResult<PyRecordBatchStream> {
+        // create a Tokio runtime to run the async code
+        let rt = &get_tokio_runtime(py).0;
+        let df = self.df.as_ref().clone();
+        let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
+            rt.spawn(async move { df.execute_stream().await });
+        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
+        Ok(PyRecordBatchStream::new(stream?))
+    }
+
+    fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
+        // create a Tokio runtime to run the async code
+        let rt = &get_tokio_runtime(py).0;
+        let df = self.df.as_ref().clone();
+        let fut: JoinHandle<datafusion_common::Result<Vec<SendableRecordBatchStream>>> =
+            rt.spawn(async move { df.execute_stream_partitioned().await });
+        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
+
+        match stream {
+            Ok(batches) => Ok(batches
+                .into_iter()
+                .map(|batch_stream| PyRecordBatchStream::new(batch_stream))
+                .collect()),
+            _ => Err(PyValueError::new_err(
+                "Unable to execute stream partitioned",
+            )),
+        }
     }
 
     /// Convert to pandas dataframe with pyarrow

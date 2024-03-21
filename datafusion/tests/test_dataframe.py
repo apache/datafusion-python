@@ -623,6 +623,36 @@ def test_to_arrow_table(df):
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 
+def test_execute_stream(df):
+    stream = df.execute_stream()
+    assert all(batch is not None for batch in stream)
+    assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.parametrize("schema", [True, False])
+def test_execute_stream_to_arrow_table(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            (batch.to_pyarrow() for batch in stream), schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches((batch.to_pyarrow() for batch in stream))
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream_partitioned(df):
+    streams = df.execute_stream_partitioned()
+    assert all(batch is not None for stream in streams for batch in stream)
+    assert all(
+        not list(stream) for stream in streams
+    )  # after one iteration all generators must be exhausted
+
+
 def test_empty_to_arrow_table(df):
     # Convert empty datafusion dataframe to pyarrow Table
     pyarrow_table = df.limit(0).to_arrow_table()
