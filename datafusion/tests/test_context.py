@@ -138,6 +138,37 @@ def test_from_arrow_table_with_name(ctx):
     assert tables[0] == "tbl"
 
 
+def test_from_arrow_table_empty(ctx):
+    data = {"a": [], "b": []}
+    schema = pa.schema([("a", pa.int32()), ("b", pa.string())])
+    table = pa.Table.from_pydict(data, schema=schema)
+
+    # convert to DataFrame
+    df = ctx.from_arrow_table(table)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert isinstance(df, DataFrame)
+    assert set(df.schema().names) == {"a", "b"}
+    assert len(df.collect()) == 0
+
+
+def test_from_arrow_table_empty_no_schema(ctx):
+    data = {"a": [], "b": []}
+    table = pa.Table.from_pydict(data)
+
+    # convert to DataFrame
+    df = ctx.from_arrow_table(table)
+    tables = list(ctx.tables())
+
+    assert df
+    assert len(tables) == 1
+    assert isinstance(df, DataFrame)
+    assert set(df.schema().names) == {"a", "b"}
+    assert len(df.collect()) == 0
+
+
 def test_from_pylist(ctx):
     # create a dataframe from Python list
     data = [
