@@ -849,8 +849,9 @@ pub fn convert_table_partition_cols(
         .into_iter()
         .map(|(name, ty)| match ty.as_str() {
             "string" => Ok((name, DataType::Utf8)),
+            "int" => Ok((name, DataType::Int32)),
             _ => Err(DataFusionError::Common(format!(
-                "Unsupported data type '{ty}' for partition column"
+                "Unsupported data type '{ty}' for partition column. Supported types are 'string' and 'int'"
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
