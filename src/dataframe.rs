@@ -424,10 +424,7 @@ impl PyDataFrame {
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
 
         match stream {
-            Ok(batches) => Ok(batches
-                .into_iter()
-                .map(|batch_stream| PyRecordBatchStream::new(batch_stream))
-                .collect()),
+            Ok(batches) => Ok(batches.into_iter().map(PyRecordBatchStream::new).collect()),
             _ => Err(PyValueError::new_err(
                 "Unable to execute stream partitioned",
             )),
