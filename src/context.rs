@@ -39,10 +39,14 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::{get_tokio_runtime, wait_for_future};
-use datafusion::arrow::datatypes::{DataType, Schema};
+use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
+use datafusion::datasource::file_format::parquet::ParquetFormat;
+use datafusion::datasource::listing::{
+    ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
+};
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
 use datafusion::execution::context::{SessionConfig, SessionContext, SessionState, TaskContext};
@@ -275,6 +279,53 @@ impl PySessionContext {
         let url_string = format!("{}{}", scheme, derived_host);
         let url = Url::parse(&url_string).unwrap();
         self.ctx.runtime_env().register_object_store(&url, store);
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name, path, table_partition_cols=vec![],
+    file_extension=".parquet",
+    schema=None,
+    file_sort_order=None))]
+    pub fn register_listing_table(
+        &mut self,
+        name: &str,
+        path: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_extension: &str,
+        schema: Option<PyArrowType<Schema>>,
+        file_sort_order: Option<Vec<Vec<PyExpr>>>,
+        py: Python,
+    ) -> PyResult<()> {
+        let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
+            .with_file_extension(file_extension)
+            .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .with_file_sort_order(
+                file_sort_order
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|e| e.into_iter().map(|f| f.into()).collect())
+                    .collect(),
+            );
+        let table_path = ListingTableUrl::parse(path)?;
+        let resolved_schema: SchemaRef = match schema {
+            Some(s) => Arc::new(s.0),
+            None => {
+                let state = self.ctx.state();
+                let schema = options.infer_schema(&state, &table_path);
+                wait_for_future(py, schema).map_err(DataFusionError::from)?
+            }
+        };
+        let config = ListingTableConfig::new(table_path)
+            .with_listing_options(options)
+            .with_schema(resolved_schema);
+        let table = ListingTable::try_new(config)?;
+        self.register_table(
+            name,
+            &PyTable {
+                table: Arc::new(table),
+            },
+        )?;
         Ok(())
     }
 
