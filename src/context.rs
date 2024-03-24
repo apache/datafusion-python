@@ -244,7 +244,7 @@ impl PySessionContext {
         })
     }
 
-    /// Register a an object store with the given name
+    /// Register an object store with the given name
     pub fn register_object_store(
         &mut self,
         scheme: &str,
