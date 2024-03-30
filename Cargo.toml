@@ -57,7 +57,7 @@ syn = "2.0.43"
 url = "2.2"
 
 [build-dependencies]
-pyo3-build-config = "0.20.0"
+pyo3-build-config = "0.21.0"
 
 [lib]
 name = "datafusion_python"
