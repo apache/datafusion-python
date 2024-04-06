@@ -957,7 +957,7 @@ dependencies = [
  "prost",
  "prost-types",
  "pyo3",
- "pyo3-build-config",
+ "pyo3-build-config 0.21.1",
  "rand",
  "regex-syntax",
  "syn 2.0.48",
@@ -2127,7 +2127,7 @@ dependencies = [
  "libc",
  "memoffset",
  "parking_lot",
- "pyo3-build-config",
+ "pyo3-build-config 0.20.2",
  "pyo3-ffi",
  "pyo3-macros",
  "unindent",
@@ -2144,13 +2144,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyo3-build-config"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "650dca34d463b6cdbdb02b1d71bfd6eb6b6816afc708faebb3bac1380ff4aef7"
+dependencies = [
+ "once_cell",
+ "target-lexicon",
+]
+
+[[package]]
 name = "pyo3-ffi"
 version = "0.20.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dbb7dec17e17766b46bca4f1a4215a85006b4c2ecde122076c562dd058da6cf1"
 dependencies = [
  "libc",
- "pyo3-build-config",
+ "pyo3-build-config 0.20.2",
 ]
 
 [[package]]
