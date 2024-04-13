@@ -39,7 +39,7 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::utils::{get_tokio_runtime, wait_for_future};
-use datafusion::arrow::datatypes::{DataType, Schema};
+use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -344,9 +344,15 @@ impl PySessionContext {
         &mut self,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
         name: Option<&str>,
+        schema: Option<PyArrowType<Schema>>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
-        let schema = partitions.0[0][0].schema();
+        let schema = if let Some(schema) = schema {
+            SchemaRef::from(schema.0)
+        } else {
+            partitions.0[0][0].schema()
+        };
+
         let table = MemTable::try_new(schema, partitions.0).map_err(DataFusionError::from)?;
 
         // generate a random (unique) name for this table if none is provided
@@ -428,12 +434,15 @@ impl PySessionContext {
             // Instantiate pyarrow Table object & convert to batches
             let table = data.call_method0(py, "to_batches")?;
 
+            let schema = data.getattr(py, "schema")?;
+            let schema = schema.extract::<PyArrowType<Schema>>(py)?;
+
             // Cast PyObject to RecordBatch type
             // Because create_dataframe() expects a vector of vectors of record batches
             // here we need to wrap the vector of record batches in an additional vector
             let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>(py)?;
             let list_of_batches = PyArrowType::from(vec![batches.0]);
-            self.create_dataframe(list_of_batches, name, py)
+            self.create_dataframe(list_of_batches, name, Some(schema), py)
         })
     }
 
