@@ -45,7 +45,9 @@ use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{SessionConfig, SessionContext, SessionState, TaskContext};
+use datafusion::execution::context::{
+    SQLOptions, SessionConfig, SessionContext, SessionState, TaskContext,
+};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
@@ -210,6 +212,43 @@ impl PyRuntimeConfig {
     }
 }
 
+/// `PySQLOptions` allows you to specify options to the sql execution.
+#[pyclass(name = "SQLOptions", module = "datafusion", subclass)]
+#[derive(Clone)]
+pub struct PySQLOptions {
+    pub options: SQLOptions,
+}
+
+impl From<SQLOptions> for PySQLOptions {
+    fn from(options: SQLOptions) -> Self {
+        Self { options }
+    }
+}
+
+#[pymethods]
+impl PySQLOptions {
+    #[new]
+    fn new() -> Self {
+        let options = SQLOptions::new();
+        Self { options }
+    }
+
+    /// Should DDL data modification commands  (e.g. `CREATE TABLE`) be run? Defaults to `true`.
+    fn with_allow_ddl(&self, allow: bool) -> Self {
+        Self::from(self.options.with_allow_ddl(allow))
+    }
+
+    /// Should DML data modification commands (e.g. `INSERT and COPY`) be run? Defaults to `true`
+    pub fn with_allow_dml(&self, allow: bool) -> Self {
+        Self::from(self.options.with_allow_dml(allow))
+    }
+
+    /// Should Statements such as (e.g. `SET VARIABLE and `BEGIN TRANSACTION` ...`) be run?. Defaults to `true`
+    pub fn with_allow_statements(&self, allow: bool) -> Self {
+        Self::from(self.options.with_allow_statements(allow))
+    }
+}
+
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
 /// multi-threaded execution engine to perform the execution.
@@ -281,6 +320,22 @@ impl PySessionContext {
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
     pub fn sql(&mut self, query: &str, py: Python) -> PyResult<PyDataFrame> {
         let result = self.ctx.sql(query);
+        let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
+        Ok(PyDataFrame::new(df))
+    }
+
+    pub fn sql_with_options(
+        &mut self,
+        query: &str,
+        options: Option<PySQLOptions>,
+        py: Python,
+    ) -> PyResult<PyDataFrame> {
+        let options = if let Some(options) = options {
+            options.options
+        } else {
+            SQLOptions::new()
+        };
+        let result = self.ctx.sql_with_options(query, options);
         let df = wait_for_future(py, result).map_err(DataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
