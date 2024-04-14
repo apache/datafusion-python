@@ -21,8 +21,9 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
+from datafusion.object_store import LocalFileSystem
 
-from datafusion import udf
+from datafusion import udf, col
 
 from . import generic as helpers
 
@@ -374,3 +375,58 @@ def test_simple_select(ctx, tmp_path, arr):
     result = batches[0].column(0)
 
     np.testing.assert_equal(result, arr)
+
+
+@pytest.mark.parametrize("file_sort_order", (None, [[col("int").sort(True, True)]]))
+@pytest.mark.parametrize("pass_schema", (True, False))
+def test_register_listing_table(ctx, tmp_path, pass_schema, file_sort_order):
+    dir_root = tmp_path / "dataset_parquet_partitioned"
+    dir_root.mkdir(exist_ok=False)
+    (dir_root / "grp=a/date_id=20201005").mkdir(exist_ok=False, parents=True)
+    (dir_root / "grp=a/date_id=20211005").mkdir(exist_ok=False, parents=True)
+    (dir_root / "grp=b/date_id=20201005").mkdir(exist_ok=False, parents=True)
+
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4, 5, 6, 7],
+            ["a", "b", "c", "d", "e", "f", "g"],
+            [1.1, 2.2, 3.3, 4.4, 5.5, 6.6, 7.7],
+        ],
+        names=["int", "str", "float"],
+    )
+    pa.parquet.write_table(
+        table.slice(0, 3), dir_root / "grp=a/date_id=20201005/file.parquet"
+    )
+    pa.parquet.write_table(
+        table.slice(3, 2), dir_root / "grp=a/date_id=20211005/file.parquet"
+    )
+    pa.parquet.write_table(
+        table.slice(5, 10), dir_root / "grp=b/date_id=20201005/file.parquet"
+    )
+
+    ctx.register_object_store("file://local", LocalFileSystem(), None)
+    ctx.register_listing_table(
+        "my_table",
+        f"file://{dir_root}/",
+        table_partition_cols=[("grp", "string"), ("date_id", "int")],
+        file_extension=".parquet",
+        schema=table.schema if pass_schema else None,
+        file_sort_order=file_sort_order,
+    )
+    assert ctx.tables() == {"my_table"}
+
+    result = ctx.sql(
+        "SELECT grp, COUNT(*) AS count FROM my_table GROUP BY grp"
+    ).collect()
+    result = pa.Table.from_batches(result)
+
+    rd = result.to_pydict()
+    assert dict(zip(rd["grp"], rd["count"])) == {"a": 5, "b": 2}
+
+    result = ctx.sql(
+        "SELECT grp, COUNT(*) AS count FROM my_table WHERE date_id=20201005 GROUP BY grp"
+    ).collect()
+    result = pa.Table.from_batches(result)
+
+    rd = result.to_pydict()
+    assert dict(zip(rd["grp"], rd["count"])) == {"a": 3, "b": 2}
