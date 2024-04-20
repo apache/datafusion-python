@@ -89,6 +89,7 @@ pub mod subquery;
 pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
+pub mod unnest;
 pub mod window;
 
 /// A PyExpr that can be used on a DataFrame
@@ -684,6 +685,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<join::PyJoinConstraint>()?;
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
+    m.add_class::<unnest::PyUnnest>()?;
     m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
