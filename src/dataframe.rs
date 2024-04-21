@@ -295,7 +295,7 @@ impl PyDataFrame {
     }
 
     #[pyo3(signature = (column, preserve_nulls=true))]
-    fn unnest(&self, column: &str, preserve_nulls: bool) -> PyResult<Self> {
+    fn unnest_column(&self, column: &str, preserve_nulls: bool) -> PyResult<Self> {
         let unnest_options = UnnestOptions { preserve_nulls };
         let df = self
             .df
