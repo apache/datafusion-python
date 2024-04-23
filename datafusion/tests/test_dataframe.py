@@ -63,6 +63,20 @@ def struct_df():
 
 
 @pytest.fixture
+def nested_df():
+    ctx = SessionContext()
+
+    # create a RecordBatch and a new DataFrame from it
+    # Intentionally make each array of different length
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([[1], [2, 3], [4, 5, 6], None]), pa.array([7, 8, 9, 10])],
+        names=["a", "b"],
+    )
+
+    return ctx.create_dataframe([[batch]])
+
+
+@pytest.fixture
 def aggregate_df():
     ctx = SessionContext()
     ctx.register_csv("test", "testing/data/csv/aggregate_test_100.csv")
@@ -158,6 +172,26 @@ def test_with_column_renamed(df):
     assert result.schema.field(0).name == "a"
     assert result.schema.field(1).name == "b"
     assert result.schema.field(2).name == "sum"
+
+
+def test_unnest(nested_df):
+    nested_df = nested_df.unnest_column("a")
+
+    # execute and collect the first (and only) batch
+    result = nested_df.collect()[0]
+
+    assert result.column(0) == pa.array([1, 2, 3, 4, 5, 6, None])
+    assert result.column(1) == pa.array([7, 8, 8, 9, 9, 9, 10])
+
+
+def test_unnest_without_nulls(nested_df):
+    nested_df = nested_df.unnest_column("a", preserve_nulls=False)
+
+    # execute and collect the first (and only) batch
+    result = nested_df.collect()[0]
+
+    assert result.column(0) == pa.array([1, 2, 3, 4, 5, 6])
+    assert result.column(1) == pa.array([7, 8, 8, 9, 9, 9])
 
 
 def test_udf(df):
