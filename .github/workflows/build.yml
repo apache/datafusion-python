@@ -92,7 +92,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
-          version: "3.x"
+          version: "3.20.2"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
@@ -153,7 +153,7 @@ jobs:
       - name: Install Protoc
         uses: arduino/setup-protoc@v1
         with:
-          version: "3.x"
+          version: "3.20.2"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
