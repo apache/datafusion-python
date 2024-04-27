@@ -42,7 +42,7 @@ datafusion-common = { version = "36.0.0", features = ["pyarrow"] }
 datafusion-expr = "36.0.0"
 datafusion-functions-array = "36.0.0"
 datafusion-optimizer = "36.0.0"
-datafusion-sql = "36.0.0"
+datafusion-sql = "37.1.0"
 datafusion-substrait = { version = "36.0.0", optional = true }
 prost = "0.12"
 prost-types = "0.12"
