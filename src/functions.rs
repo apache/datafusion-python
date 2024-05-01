@@ -162,6 +162,7 @@ fn count_star() -> PyResult<PyExpr> {
             distinct: false,
             filter: None,
             order_by: None,
+            null_treatment: None,
         }),
     })
 }
@@ -214,6 +215,7 @@ fn window(
                 .map(|x| x.expr)
                 .collect::<Vec<_>>(),
             window_frame,
+            null_treatment: None,
         }),
     })
 }
@@ -256,6 +258,7 @@ macro_rules! aggregate_function {
                 distinct,
                 filter: None,
                 order_by: None,
+                null_treatment: None,
             });
             expr.into()
         }

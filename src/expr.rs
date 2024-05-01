@@ -382,6 +382,11 @@ impl PyExpr {
                         "ScalarValue::LargeList".to_string(),
                     ),
                 )),
+                ScalarValue::Union(_, _, _) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Union".to_string(),
+                    ),
+                )),
             },
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
