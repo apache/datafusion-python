@@ -742,8 +742,18 @@ impl PySessionContext {
     }
 
     pub fn tables(&self) -> HashSet<String> {
-        #[allow(deprecated)]
-        self.ctx.tables().unwrap()
+        self.ctx
+            .catalog_names()
+            .into_iter()
+            .filter_map(|name| self.ctx.catalog(&name))
+            .flat_map(move |catalog| {
+                catalog
+                    .schema_names()
+                    .into_iter()
+                    .filter_map(move |name| catalog.schema(&name))
+            })
+            .flat_map(|schema| schema.table_names())
+            .collect()
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
