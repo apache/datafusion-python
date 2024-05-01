@@ -741,11 +741,6 @@ impl PySessionContext {
         }
     }
 
-    pub fn tables(&self) -> HashSet<String> {
-        #[allow(deprecated)]
-        self.ctx.tables().unwrap()
-    }
-
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
         let x = wait_for_future(py, self.ctx.table(name)).map_err(DataFusionError::from)?;
         Ok(PyDataFrame::new(x))
