@@ -35,8 +35,8 @@ use datafusion::execution::context::TaskContext;
 use datafusion::physical_expr::PhysicalSortExpr;
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
-    DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, SendableRecordBatchStream,
-    Statistics,
+    DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
+    SendableRecordBatchStream, Statistics,
 };
 use datafusion_expr::utils::conjunction;
 use datafusion_expr::Expr;
@@ -156,18 +156,6 @@ impl ExecutionPlan for DatasetExec {
         self.schema.clone()
     }
 
-    /// Get the output partitioning of this plan
-    fn output_partitioning(&self) -> Partitioning {
-        Python::with_gil(|py| {
-            let fragments = self.fragments.as_ref(py);
-            Partitioning::UnknownPartitioning(fragments.len())
-        })
-    }
-
-    fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
-        None
-    }
-
     fn children(&self) -> Vec<Arc<dyn ExecutionPlan>> {
         // this is a leaf node and has no children
         vec![]
@@ -239,6 +227,32 @@ impl ExecutionPlan for DatasetExec {
 
     fn statistics(&self) -> DFResult<Statistics> {
         Ok(self.projected_statistics.clone())
+    }
+
+    fn properties(&self) -> &datafusion::physical_plan::PlanProperties {
+        todo!()
+    }
+}
+
+impl ExecutionPlanProperties for DatasetExec {
+    /// Get the output partitioning of this plan
+    fn output_partitioning(&self) -> &Partitioning {
+        &Python::with_gil(|py| {
+            let fragments = self.fragments.as_ref(py);
+            Partitioning::UnknownPartitioning(fragments.len())
+        })
+    }
+
+    fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
+        None
+    }
+
+    fn execution_mode(&self) -> datafusion::physical_plan::ExecutionMode {
+        todo!()
+    }
+
+    fn equivalence_properties(&self) -> &datafusion::physical_expr::EquivalenceProperties {
+        todo!()
     }
 }
 
