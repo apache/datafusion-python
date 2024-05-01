@@ -48,7 +48,7 @@ jobs:
           set -x
           python3 -m venv venv
           source venv/bin/activate
-          pip install -r requirements-310.txt
+          pip install -r requirements-311.txt
           pip install -r docs/requirements.txt
       - name: Build Datafusion
         run: |
