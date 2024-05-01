@@ -29,7 +29,7 @@
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
     <script src="../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -89,6 +89,11 @@
    Code of conduct
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -104,6 +109,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../user-guide/basics.html">
    Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/configuration.html">
+   Configuration
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -539,6 +549,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.register_listing_table">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.register_listing_table()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.SessionContext.register_object_store">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -606,6 +625,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        SessionContext.sql()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionContext.sql_with_options">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionContext.sql_with_options()
       </span>
      </code>
     </a>
@@ -690,7 +718,7 @@ multi-threaded execution engine to perform the execution.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.catalog" title="datafusion.SessionContext.catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">catalog</span></code></a>([name])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.create_dataframe" title="datafusion.SessionContext.create_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataframe</span></code></a>(partitions[, name])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.create_dataframe" title="datafusion.SessionContext.create_dataframe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataframe</span></code></a>(partitions[, name, schema])</p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.create_dataframe_from_logical_plan" title="datafusion.SessionContext.create_dataframe_from_logical_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_dataframe_from_logical_plan</span></code></a>(plan)</p></td>
@@ -747,29 +775,35 @@ multi-threaded execution engine to perform the execution.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_json" title="datafusion.SessionContext.register_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_json</span></code></a>(name, path[, schema, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
-<td><p>Register a an object store with the given name</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_listing_table" title="datafusion.SessionContext.register_listing_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_listing_table</span></code></a>(name, path[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_object_store" title="datafusion.SessionContext.register_object_store"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_object_store</span></code></a>(scheme, store[, host])</p></td>
+<td><p>Register an object store with the given name</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_parquet" title="datafusion.SessionContext.register_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_parquet</span></code></a>(name, path[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_record_batches" title="datafusion.SessionContext.register_record_batches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_record_batches</span></code></a>(name, partitions)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_table" title="datafusion.SessionContext.register_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_table</span></code></a>(name, table)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udaf" title="datafusion.SessionContext.register_udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udaf</span></code></a>(udaf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.register_udf" title="datafusion.SessionContext.register_udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_udf</span></code></a>(udf)</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.session_id" title="datafusion.SessionContext.session_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">session_id</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql" title="datafusion.SessionContext.sql"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql</span></code></a>(query)</p></td>
 <td><p>Returns a PyDataFrame whose plan corresponds to the SQL statement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionContext.sql_with_options" title="datafusion.SessionContext.sql_with_options"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sql_with_options</span></code></a>(query[, options])</p></td>
+<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionContext.table" title="datafusion.SessionContext.table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">table</span></code></a>(name)</p></td>
 <td><p></p></td>
@@ -789,7 +823,7 @@ multi-threaded execution engine to perform the execution.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.create_dataframe">
-<span class="sig-name descname"><span class="pre">create_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partitions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.create_dataframe" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partitions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.create_dataframe" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -890,9 +924,14 @@ multi-threaded execution engine to perform the execution.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.register_listing_table">
+<span class="sig-name descname"><span class="pre">register_listing_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Ellipsis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sort_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_listing_table" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.register_object_store">
 <span class="sig-name descname"><span class="pre">register_object_store</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scheme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.register_object_store" title="Link to this definition">¶</a></dt>
-<dd><p>Register a an object store with the given name</p>
+<dd><p>Register an object store with the given name</p>
 </dd></dl>
 
 <dl class="py method">
@@ -930,6 +969,11 @@ multi-threaded execution engine to perform the execution.</p>
 <span class="sig-name descname"><span class="pre">sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.sql" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a PyDataFrame whose plan corresponds to the SQL statement.</p>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionContext.sql_with_options">
+<span class="sig-name descname"><span class="pre">sql_with_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionContext.sql_with_options" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionContext.table">
@@ -992,7 +1036,7 @@ multi-threaded execution engine to perform the execution.</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
 </p>
     </div>
     

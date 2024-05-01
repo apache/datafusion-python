@@ -29,7 +29,7 @@
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
     <script src="../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -89,6 +89,11 @@
    Code of conduct
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -104,6 +109,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../user-guide/basics.html">
    Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/configuration.html">
+   Configuration
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -647,6 +657,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.unnest_column">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.unnest_column()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.DataFrame.with_column">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -837,19 +856,22 @@ The actual execution of a plan runs natively on Rust and Arrow on a multi-thread
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.union_distinct" title="datafusion.DataFrame.union_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union_distinct</span></code></a>(py_df)</p></td>
 <td><p>Calculate the distinct union of two <a href="#id15"><span class="problematic" id="id16">`</span></a>DataFrame`s. The two <a href="#id17"><span class="problematic" id="id18">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column" title="datafusion.DataFrame.with_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column</span></code></a>(name, expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.unnest_column" title="datafusion.DataFrame.unnest_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unnest_column</span></code></a>(column[, preserve_nulls])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column_renamed" title="datafusion.DataFrame.with_column_renamed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column_renamed</span></code></a>(old_name, new_name)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column" title="datafusion.DataFrame.with_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column</span></code></a>(name, expr)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column_renamed" title="datafusion.DataFrame.with_column_renamed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column_renamed</span></code></a>(old_name, new_name)</p></td>
 <td><p>Rename one column by applying a new projection.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_csv" title="datafusion.DataFrame.write_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_csv</span></code></a>(path)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_csv" title="datafusion.DataFrame.write_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_csv</span></code></a>(path)</p></td>
 <td><p>Write a <cite>DataFrame</cite> to a CSV file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_json" title="datafusion.DataFrame.write_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_json</span></code></a>(path)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_json" title="datafusion.DataFrame.write_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_json</span></code></a>(path)</p></td>
 <td><p>Executes a query and writes the results to a partitioned JSON file.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a>(path[, compression, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a>(path[, compression, ...])</p></td>
 <td><p>Write a <cite>DataFrame</cite> to a Parquet file.</p></td>
 </tr>
 </tbody>
@@ -1047,6 +1069,11 @@ two <a href="#id35"><span class="problematic" id="id36">`</span></a>DataFrame`s 
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.unnest_column">
+<span class="sig-name descname"><span class="pre">unnest_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.unnest_column" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.with_column">
 <span class="sig-name descname"><span class="pre">with_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.with_column" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1122,7 +1149,7 @@ renamed does not exist.</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
 </p>
     </div>
     

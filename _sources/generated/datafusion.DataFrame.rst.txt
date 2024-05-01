@@ -46,6 +46,7 @@
       ~DataFrame.to_pylist
       ~DataFrame.union
       ~DataFrame.union_distinct
+      ~DataFrame.unnest_column
       ~DataFrame.with_column
       ~DataFrame.with_column_renamed
       ~DataFrame.write_csv
