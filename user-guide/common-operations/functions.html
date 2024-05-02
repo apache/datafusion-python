@@ -29,7 +29,7 @@
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
     <script src="../../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -89,6 +89,11 @@
    Code of conduct
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -104,6 +109,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../basics.html">
    Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../configuration.html">
+   Configuration
   </a>
  </li>
  <li class="toctree-l1 current active has-children">
@@ -407,7 +417,7 @@ In here we will cover some of the more popular use cases. If you want to view al
    <span class="o">...</span><span class="p">:</span> <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f3f37a00eb0</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f6b4e621750</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -481,16 +491,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+--------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">10</span><span class="n">T23</span><span class="p">:</span><span class="mi">18</span><span class="p">:</span><span class="mf">38.153563379</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">02</span><span class="n">T14</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">11.205148995</span><span class="n">Z</span> <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
 </pre></div>
 </div>
@@ -648,7 +658,7 @@ DataFusion offers a range of helpful options.</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
 </p>
     </div>
     

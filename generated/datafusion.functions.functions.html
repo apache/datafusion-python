@@ -29,7 +29,7 @@
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
     <script src="../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../_static/doctools.js?v=888ff710"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -89,6 +89,11 @@
    Code of conduct
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
 </ul>
 <p aria-level="2" class="caption" role="heading">
  <span class="caption-text">
@@ -104,6 +109,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../user-guide/basics.html">
    Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/configuration.html">
+   Configuration
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -467,10 +477,28 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_distinct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_distinct()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.array_element">
    <code class="docutils literal notranslate">
     <span class="pre">
      array_element()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_except">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_except()
     </span>
    </code>
   </a>
@@ -516,6 +544,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      array_indexof()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_intersect">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_intersect()
     </span>
    </code>
   </a>
@@ -674,6 +711,15 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_resize">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_resize()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.array_slice">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -687,6 +733,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      array_to_string()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.array_union">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     array_union()
     </span>
    </code>
   </a>
@@ -1250,10 +1305,28 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.list_distinct">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     list_distinct()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.list_element">
    <code class="docutils literal notranslate">
     <span class="pre">
      list_element()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.list_except">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     list_except()
     </span>
    </code>
   </a>
@@ -1272,6 +1345,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      list_indexof()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.list_intersect">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     list_intersect()
     </span>
    </code>
   </a>
@@ -1403,6 +1485,15 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.list_resize">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     list_resize()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.functions.list_slice">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1416,6 +1507,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      list_to_string()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.list_union">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     list_union()
     </span>
    </code>
   </a>
@@ -1623,6 +1723,15 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      random()
+    </span>
+   </code>
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#datafusion.functions.functions.range">
+   <code class="docutils literal notranslate">
+    <span class="pre">
+     range()
     </span>
    </code>
   </a>
@@ -2188,8 +2297,18 @@
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_distinct">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_distinct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array_element">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_element" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_except">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_except</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_except" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2215,6 +2334,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array_indexof">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_indexof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_indexof" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_intersect">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_intersect" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2303,6 +2427,11 @@
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_resize">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_resize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array_slice">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_slice" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2310,6 +2439,11 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array_to_string">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_to_string" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.array_union">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_union" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2640,8 +2774,18 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.list_distinct">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_distinct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.list_element">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_element" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.list_except">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_except</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_except" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2652,6 +2796,11 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.list_indexof">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_indexof</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_indexof" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.list_intersect">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_intersect" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2725,6 +2874,11 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 <dd></dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.list_resize">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_resize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.list_slice">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_slice" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2732,6 +2886,11 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.list_to_string">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_to_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delim</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_to_string" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.list_union">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_union" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2854,6 +3013,11 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.random">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">random</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.random" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.functions.range">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.range" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -3171,7 +3335,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.2.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
 </p>
     </div>
     

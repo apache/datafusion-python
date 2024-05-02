@@ -34,6 +34,7 @@
       ~SessionContext.register_csv
       ~SessionContext.register_dataset
       ~SessionContext.register_json
+      ~SessionContext.register_listing_table
       ~SessionContext.register_object_store
       ~SessionContext.register_parquet
       ~SessionContext.register_record_batches
@@ -42,6 +43,7 @@
       ~SessionContext.register_udf
       ~SessionContext.session_id
       ~SessionContext.sql
+      ~SessionContext.sql_with_options
       ~SessionContext.table
       ~SessionContext.table_exist
       ~SessionContext.tables

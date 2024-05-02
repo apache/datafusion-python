@@ -22,6 +22,8 @@
       ~DataFrame.describe
       ~DataFrame.distinct
       ~DataFrame.except_all
+      ~DataFrame.execute_stream
+      ~DataFrame.execute_stream_partitioned
       ~DataFrame.execution_plan
       ~DataFrame.explain
       ~DataFrame.filter
@@ -44,6 +46,7 @@
       ~DataFrame.to_pylist
       ~DataFrame.union
       ~DataFrame.union_distinct
+      ~DataFrame.unnest_column
       ~DataFrame.with_column
       ~DataFrame.with_column_renamed
       ~DataFrame.write_csv

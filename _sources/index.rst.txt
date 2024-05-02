@@ -75,6 +75,7 @@ Example
    Github and Issue Tracker <https://github.com/apache/arrow-datafusion-python>
    Rust's API Docs <https://docs.rs/datafusion/latest/datafusion/>
    Code of conduct <https://github.com/apache/arrow-datafusion/blob/main/CODE_OF_CONDUCT.md>
+   Examples <https://github.com/apache/arrow-datafusion-python/tree/main/examples>
 
 .. _toc.guide:
 .. toctree::
@@ -84,6 +85,7 @@ Example
 
    user-guide/introduction
    user-guide/basics
+   user-guide/configuration
    user-guide/common-operations/index
    user-guide/io/index
    user-guide/sql
