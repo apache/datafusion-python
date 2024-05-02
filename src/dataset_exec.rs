@@ -237,10 +237,12 @@ impl ExecutionPlan for DatasetExec {
 impl ExecutionPlanProperties for DatasetExec {
     /// Get the output partitioning of this plan
     fn output_partitioning(&self) -> &Partitioning {
-        &Python::with_gil(|py| {
-            let fragments = self.fragments.as_ref(py);
-            Partitioning::UnknownPartitioning(fragments.len())
-        })
+        todo!()
+        // NOTE: the below snippet doesn't work because we can't return a reference
+        // Python::with_gil(|py| {
+        //     let fragments = self.fragments.as_ref(py);
+        //     &Partitioning::UnknownPartitioning(fragments.len())
+        // })
     }
 
     fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
