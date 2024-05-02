@@ -20,7 +20,7 @@ use std::sync::Arc;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::config::{ParquetOptions, TableParquetOptions};
+use datafusion::config::TableParquetOptions;
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
