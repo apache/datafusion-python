@@ -16,7 +16,9 @@ on:
 # When this workflow is queued, automatically cancel any previous running
 # or pending jobs from the same branch
 concurrency:
-  group: conda-${{ github.head_ref }}
+  # temporarily making this a global lock to debug conda nightlies build
+  # group: conda-${{ github.head_ref }}
+  group: conda
   cancel-in-progress: true
 
 # Required shell entrypoint to have properly activated conda environments
