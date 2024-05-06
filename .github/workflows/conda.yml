@@ -16,9 +16,7 @@ on:
 # When this workflow is queued, automatically cancel any previous running
 # or pending jobs from the same branch
 concurrency:
-  # temporarily making this a global lock to debug conda nightlies build
-  # group: conda-${{ github.head_ref }}
-  group: conda
+  group: conda-${{ github.head_ref }}
   cancel-in-progress: true
 
 # Required shell entrypoint to have properly activated conda environments
@@ -83,9 +81,6 @@ jobs:
           which python
           pip list
           mamba list
-      # Clean the conda cache
-      # - name: Clean Conda Cache
-      #   run: conda clean --all --yes
       - name: Build conda packages
         run: |
           # suffix for nightly package versions
