@@ -147,6 +147,22 @@ fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     array_position(array, element, index)
 }
 
+#[pyfunction]
+#[pyo3(signature = (array, begin, end, stride = 1))]
+fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
+    let stride = ScalarValue::Int64(stride);
+    let stride = Expr::Literal(stride);
+    datafusion_functions_array::expr_fn::array_slice(array.into(), begin.into(), end.into(), stride)
+        .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (array, begin, end, stride = 1))]
+fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
+    // alias of array_slice
+    array_slice(array, begin, end, stride)
+}
+
 /// Replaces substring(s) matching a POSIX regular expression
 #[pyfunction]
 fn regexp_replace(arg1: PyExpr, arg2: PyExpr, arg3: PyExpr, arg4: PyExpr) -> PyExpr {
@@ -586,8 +602,6 @@ array_fn!(array_replace_n, array from to max);
 array_fn!(list_replace_n, array_replace_n, array from to max);
 array_fn!(array_replace_all, array from to);
 array_fn!(list_replace_all, array_replace_all, array from to);
-array_fn!(array_slice, array begin end stride);
-array_fn!(list_slice, array_slice, array begin end stride);
 array_fn!(array_intersect, first_array second_array);
 array_fn!(list_intersect, array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
