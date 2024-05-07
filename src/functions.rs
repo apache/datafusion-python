@@ -24,7 +24,7 @@ use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions;
-use datafusion_common::{Column, TableReference};
+use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
     aggregate_function,
@@ -116,6 +116,35 @@ fn array_concat(expr1: PyExpr, expr2: PyExpr) -> PyExpr {
 fn array_cat(expr1: PyExpr, expr2: PyExpr) -> PyExpr {
     // alias for array_concat
     array_concat(expr1, expr2)
+}
+
+#[pyfunction]
+#[pyo3(signature = (array, element, index = 1))]
+fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
+    let index = ScalarValue::Int64(index);
+    let index = Expr::Literal(index);
+    datafusion_functions_array::expr_fn::array_position(array.into(), element.into(), index).into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (array, element, index = 1))]
+fn array_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
+    // alias of array_position
+    array_position(array, element, index)
+}
+
+#[pyfunction]
+#[pyo3(signature = (array, element, index = 1))]
+fn list_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
+    // alias of array_position
+    array_position(array, element, index)
+}
+
+#[pyfunction]
+#[pyo3(signature = (array, element, index = 1))]
+fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
+    // alias of array_position
+    array_position(array, element, index)
 }
 
 /// Replaces substring(s) matching a POSIX regular expression
@@ -534,10 +563,6 @@ array_fn!(list_length, array_length, array);
 array_fn!(array_has, first_array second_array);
 array_fn!(array_has_all, first_array second_array);
 array_fn!(array_has_any, first_array second_array);
-array_fn!(array_position, array element index);
-array_fn!(array_indexof, array_position, array element index);
-array_fn!(list_position, array_position, array element index);
-array_fn!(list_indexof, array_position, array element index);
 array_fn!(array_positions, array_position, array element indexs);
 array_fn!(list_positions, array_position, array element indexs);
 array_fn!(array_ndims, array);
