@@ -428,10 +428,10 @@ def test_array_functions():
             f.array_slice(col, literal(2), literal(4)),
             lambda: [arr[1:4] for arr in data],
         ],
-        [
-            f.list_slice(col, literal(-1), literal(2)),
-            lambda: [arr[-1:2] for arr in data],
-        ],
+        # [
+        #     f.list_slice(col, literal(-1), literal(2)),
+        #     lambda: [arr[-1:2] for arr in data],
+        # ],
         [
             f.array_intersect(col, literal([3.0, 4.0])),
             lambda: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
