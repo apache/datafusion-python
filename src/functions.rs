@@ -379,6 +379,7 @@ macro_rules! expr_fn_vec {
     ($NAME: ident, $FUNC: ident, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
+        #[pyo3(signature = (*args))]
         fn $NAME(args: Vec<PyExpr>) -> PyExpr {
             let args = args.into_iter().map(|e| e.into()).collect::<Vec<_>>();
             functions::expr_fn::$FUNC(args).into()
