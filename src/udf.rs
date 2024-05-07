@@ -23,7 +23,6 @@ use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::DataFusionError;
-use datafusion::physical_plan::functions::make_scalar_function;
 use datafusion::physical_plan::udf::ScalarUDF;
 use datafusion_expr::create_udf;
 use datafusion_expr::function::ScalarFunctionImplementation;
@@ -35,7 +34,8 @@ use crate::utils::parse_volatility;
 /// that expects pyarrow arrays. This is more efficient as it performs
 /// a zero-copy of the contents.
 fn to_rust_function(func: PyObject) -> ScalarFunctionImplementation {
-    make_scalar_function(
+    #[allow(deprecated)]
+    datafusion::physical_plan::functions::make_scalar_function(
         move |args: &[ArrayRef]| -> Result<ArrayRef, DataFusionError> {
             Python::with_gil(|py| {
                 // 1. cast args to Pyarrow arrays
