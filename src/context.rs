@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -739,6 +739,19 @@ impl PySessionContext {
                 &name,
             ))),
         }
+    }
+
+    pub fn tables(&self) -> HashSet<String> {
+        let catalogs = self.ctx.catalog_names();
+        let mut tables = HashSet::new();
+        for catalog_name in catalogs {
+            let catalog = self.ctx.catalog(&catalog_name).unwrap();
+            for schema_name in catalog.schema_names() {
+                let schema = catalog.schema(&schema_name).unwrap();
+                tables.extend(schema.table_names());
+            }
+        }
+        tables
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
