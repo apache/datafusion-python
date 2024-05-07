@@ -742,16 +742,18 @@ impl PySessionContext {
     }
 
     pub fn tables(&self) -> HashSet<String> {
-        let catalogs = self.ctx.catalog_names();
-        let mut tables = HashSet::new();
-        for catalog_name in catalogs {
-            let catalog = self.ctx.catalog(&catalog_name).unwrap();
-            for schema_name in catalog.schema_names() {
-                let schema = catalog.schema(&schema_name).unwrap();
-                tables.extend(schema.table_names());
-            }
-        }
-        tables
+        self.ctx
+            .catalog_names()
+            .into_iter()
+            .filter_map(|name| self.ctx.catalog(&name))
+            .flat_map(move |catalog| {
+                catalog
+                    .schema_names()
+                    .into_iter()
+                    .filter_map(move |name| catalog.schema(&name))
+            })
+            .flat_map(|schema| schema.table_names())
+            .collect()
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
