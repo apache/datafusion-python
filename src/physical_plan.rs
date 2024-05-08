@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::physical_plan::{displayable, ExecutionPlan};
+use datafusion::physical_plan::{displayable, ExecutionPlan, ExecutionPlanProperties};
 use std::sync::Arc;
 
 use pyo3::prelude::*;

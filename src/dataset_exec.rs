@@ -32,11 +32,11 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::error::{DataFusionError as InnerDataFusionError, Result as DFResult};
 use datafusion::execution::context::TaskContext;
-use datafusion::physical_expr::PhysicalSortExpr;
+use datafusion::physical_expr::{EquivalenceProperties, PhysicalSortExpr};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
-    DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, SendableRecordBatchStream,
-    Statistics,
+    DisplayAs, DisplayFormatType, ExecutionMode, ExecutionPlan, ExecutionPlanProperties,
+    Partitioning, SendableRecordBatchStream, Statistics,
 };
 use datafusion_expr::utils::conjunction;
 use datafusion_expr::Expr;
@@ -73,6 +73,7 @@ pub(crate) struct DatasetExec {
     columns: Option<Vec<String>>,
     filter_expr: Option<PyObject>,
     projected_statistics: Statistics,
+    plan_properties: datafusion::physical_plan::PlanProperties,
 }
 
 impl DatasetExec {
@@ -134,6 +135,12 @@ impl DatasetExec {
             .map_err(PyErr::from)?;
 
         let projected_statistics = Statistics::new_unknown(&schema);
+        let plan_properties = datafusion::physical_plan::PlanProperties::new(
+            EquivalenceProperties::new(schema.clone()),
+            Partitioning::UnknownPartitioning(fragments.len()),
+            ExecutionMode::Bounded,
+        );
+
         Ok(DatasetExec {
             dataset: dataset.into(),
             schema,
@@ -141,6 +148,7 @@ impl DatasetExec {
             columns,
             filter_expr,
             projected_statistics,
+            plan_properties,
         })
     }
 }
@@ -154,18 +162,6 @@ impl ExecutionPlan for DatasetExec {
     /// Get the schema for this execution plan
     fn schema(&self) -> SchemaRef {
         self.schema.clone()
-    }
-
-    /// Get the output partitioning of this plan
-    fn output_partitioning(&self) -> Partitioning {
-        Python::with_gil(|py| {
-            let fragments = self.fragments.as_ref(py);
-            Partitioning::UnknownPartitioning(fragments.len())
-        })
-    }
-
-    fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
-        None
     }
 
     fn children(&self) -> Vec<Arc<dyn ExecutionPlan>> {
@@ -239,6 +235,29 @@ impl ExecutionPlan for DatasetExec {
 
     fn statistics(&self) -> DFResult<Statistics> {
         Ok(self.projected_statistics.clone())
+    }
+
+    fn properties(&self) -> &datafusion::physical_plan::PlanProperties {
+        &self.plan_properties
+    }
+}
+
+impl ExecutionPlanProperties for DatasetExec {
+    /// Get the output partitioning of this plan
+    fn output_partitioning(&self) -> &Partitioning {
+        self.plan_properties.output_partitioning()
+    }
+
+    fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
+        None
+    }
+
+    fn execution_mode(&self) -> datafusion::physical_plan::ExecutionMode {
+        self.plan_properties.execution_mode
+    }
+
+    fn equivalence_properties(&self) -> &datafusion::physical_expr::EquivalenceProperties {
+        &self.plan_properties.eq_properties
     }
 }
 
