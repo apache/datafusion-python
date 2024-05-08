@@ -23,6 +23,7 @@ Common Operations
 
    basic-info
    select-and-filter
+   expressions
    joins
    functions
    aggregations
