@@ -19,6 +19,33 @@
 
 # DataFusion Python Changelog
 
+## [37.1.0](https://github.com/apache/arrow-datafusion-python/tree/37.1.0) (2024-05-08)
+
+**Implemented enhancements:**
+
+- feat: add execute_stream and execute_stream_partitioned [#610](https://github.com/apache/arrow-datafusion-python/pull/610) (mesejo)
+
+**Documentation updates:**
+
+- docs: update docs CI to install python-311 requirements [#661](https://github.com/apache/arrow-datafusion-python/pull/661) (Michael-J-Ward)
+
+**Merged pull requests:**
+
+- Switch to Ruff for Python linting [#529](https://github.com/apache/arrow-datafusion-python/pull/529) (andygrove)
+- Remove sql-on-pandas/polars/cudf examples [#602](https://github.com/apache/arrow-datafusion-python/pull/602) (andygrove)
+- build(deps): bump object_store from 0.9.0 to 0.9.1 [#611](https://github.com/apache/arrow-datafusion-python/pull/611) (dependabot[bot])
+- More missing array funcs [#605](https://github.com/apache/arrow-datafusion-python/pull/605) (judahrand)
+- feat: add execute_stream and execute_stream_partitioned [#610](https://github.com/apache/arrow-datafusion-python/pull/610) (mesejo)
+- build(deps): bump uuid from 1.7.0 to 1.8.0 [#615](https://github.com/apache/arrow-datafusion-python/pull/615) (dependabot[bot])
+- Bind SQLOptions and relative ctx method #567 [#588](https://github.com/apache/arrow-datafusion-python/pull/588) (giacomorebecchi)
+- bugfix: no panic on empty table [#613](https://github.com/apache/arrow-datafusion-python/pull/613) (mesejo)
+- Expose `register_listing_table` [#618](https://github.com/apache/arrow-datafusion-python/pull/618) (henrifroese)
+- Expose unnest feature [#641](https://github.com/apache/arrow-datafusion-python/pull/641) (timsaucer)
+- Update domain names and paths in asf yaml [#643](https://github.com/apache/arrow-datafusion-python/pull/643) (andygrove)
+- use python 3.11 to publish docs [#645](https://github.com/apache/arrow-datafusion-python/pull/645) (andygrove)
+- docs: update docs CI to install python-311 requirements [#661](https://github.com/apache/arrow-datafusion-python/pull/661) (Michael-J-Ward)
+- Upgrade Datafusion to v37.1.0 [#669](https://github.com/apache/arrow-datafusion-python/pull/669) (Michael-J-Ward)
+
 ## [36.0.0](https://github.com/apache/arrow-datafusion-python/tree/36.0.0) (2024-03-02)
 
 **Implemented enhancements:**
