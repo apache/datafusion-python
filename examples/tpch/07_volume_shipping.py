@@ -15,15 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
 
 """
-The Volume Shipping Query finds, for two given nations, the gross discounted revenues derived from lineitems in
-which parts were shipped from a supplier in either nation to a customer in the other nation during 1995 and 1996.
-The query lists the supplier nation, the customer nation, the year, and the revenue from shipments that took place in
-that year. The query orders the answer by Supplier nation, Customer nation, and year (all ascending).
+The Volume Shipping Query finds, for two given nations, the gross discounted revenues derived from
+lineitems in which parts were shipped from a supplier in either nation to a customer in the other
+nation during 1995 and 1996. The query lists the supplier nation, the customer nation, the year,
+and the revenue from shipments that took place in that year. The query orders the answer by
+Supplier nation, Customer nation, and year (all ascending).
 """
 
 # Variables of interest to query over
@@ -65,19 +66,20 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= start_date).filter(
 )
 
 
-# Until https://github.com/apache/datafusion-python/issues/667 is resolved, work around
-# using boolean operations to find the nation dataframe by doing a case operation. It
-# would be nice to do something along the lines of:
-# `.filter(col("n_name") == nation_1 or col("n_name") == nation_2)`
+# A simpler way to do the following operation is to use a filter, but we also want to demonstrate
+# how to use case statements. Here we are assigning `n_name` to be itself when it is either of
+# the two nations of interest. Since there is no `otherwise()` statement, any values that do
+# not match these will result in a null value and then get filtered out.
+#
+# To do the same using a simle filter would be:
+# df_nation = df_nation.filter((F.col("n_name") == nation_1) | (F.col("n_name") == nation_2))
 df_nation = df_nation.with_column(
-    "of_interest",
+    "n_name",
     F.case(col("n_name"))
-    .when(nation_1, lit(True))
-    .when(nation_2, lit(True))
-    .otherwise(lit(False)),
-)
-
-df_nation = df_nation.filter(col("of_interest"))
+    .when(nation_1, col("n_name"))
+    .when(nation_2, col("n_name"))
+    .end(),
+).filter(~col("n_name").is_null())
 
 
 # Limit suppliers to either nation
@@ -90,7 +92,8 @@ df_customer = df_customer.join(
     df_nation, (["c_nationkey"], ["n_nationkey"]), how="inner"
 ).select(col("c_custkey"), col("n_name").alias("cust_nation"))
 
-# Join up all the data frames from line items, and make sure the supplier and customer are in different nations.
+# Join up all the data frames from line items, and make sure the supplier and customer are in
+# different nations.
 df = (
     df_lineitem.join(df_orders, (["l_orderkey"], ["o_orderkey"]), how="inner")
     .join(df_customer, (["o_custkey"], ["c_custkey"]), how="inner")
