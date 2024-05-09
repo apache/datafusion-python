@@ -234,7 +234,7 @@ git push apache 0.8.0
 Add the release to https://reporter.apache.org/addrelease.html?datafusion with a version name prefixed with `DATAFUSION-PYTHON`,
 for example `DATAFUSION-PYTHON-31.0.0`.
 
-The release information is used to generate a template for a board report (see example
+The release information is used to generate a template for a board report (see example from Apache Arrow 
 [here](https://github.com/apache/arrow/pull/14357)).
 
 ### Delete old RCs and Releases
