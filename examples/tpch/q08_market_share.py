@@ -15,25 +15,26 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The market share for a given nation within a given region is defined as the fraction of the
+revenue, the sum of [l_extendedprice * (1-l_discount)], from the products of a specified type in
+that region that was supplied by suppliers from the given nation. The query determines this for the
+years 1995 and 1996 presented in this order.
+"""
+
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
-
-"""
-The market share for a given nation within a given region is defined as the fraction of the revenue, the sum of
-[l_extendedprice * (1-l_discount)], from the products of a specified type in that region that was supplied by suppli-
-ers from the given nation. The query determines this for the years 1995 and 1996 presented in this order.
-"""
 
 supplier_nation = lit("BRAZIL")
 customer_region = lit("AMERICA")
 part_of_interest = lit("ECONOMY ANODIZED STEEL")
 
-start_date = "1995-01-01"
-end_date = "1996-12-31"
+START_DATE = "1995-01-01"
+END_DATE = "1996-12-31"
 
-start_date = lit(datetime.strptime(start_date, "%Y-%m-%d").date())
-end_date = lit(datetime.strptime(end_date, "%Y-%m-%d").date())
+start_date = lit(datetime.strptime(START_DATE, "%Y-%m-%d").date())
+end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
 
 
 # Load the dataframes we need

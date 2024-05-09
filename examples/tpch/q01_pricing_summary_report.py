@@ -15,18 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow as pa
-import datafusion
-from datafusion import SessionContext, col, lit, functions as F
+"""
+The Pricing Summary Report Query provides a summary pricing report for all lineitems shipped as of
+a given date. The date is within 60 - 120 days of the greatest ship date contained in the database.
+The query lists totals for extended price, discounted extended price, discounted extended price
+plus tax, average quantity, average extended price, and average discount. These aggregates are
+grouped by RETURNFLAG and LINESTATUS, and listed in ascending order of RETURNFLAG and LINESTATUS.
+A count of the number of lineitems in each group is included.
+"""
 
-"""
-The Pricing Summary Report Query provides a summary pricing report for all lineitems shipped as of a given date.
-The date is within 60 - 120 days of the greatest ship date contained in the database. The query lists totals for
-extended price, discounted extended price, discounted extended price plus tax, average quantity, average extended
-price, and average discount. These aggregates are grouped by RETURNFLAG and LINESTATUS, and listed in
-ascending order of RETURNFLAG and LINESTATUS. A count of the number of lineitems in each group is
-included.
-"""
+import pyarrow as pa
+from datafusion import SessionContext, col, lit, functions as F
 
 ctx = SessionContext()
 
@@ -41,11 +40,11 @@ greatest_ship_date = df.aggregate(
 
 # From the given problem, this is how close to the last date in the database we
 # want to report results for. It should be between 60-120 days before the end.
-days_before_final = 68
+DAYS_BEFORE_FINAL = 68
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, days_before_final), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 0, DAYS_BEFORE_FINAL), type=pa.month_day_nano_interval())
 
 print("Final date in database:", greatest_ship_date)
 

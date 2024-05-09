@@ -15,32 +15,33 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The Forecasting Revenue Change Query considers all the lineitems shipped in a given year with
+discounts between DISCOUNT-0.01 and DISCOUNT+0.01. The query lists the amount by which the total
+revenue would have increased if these discounts had been eliminated for lineitems with l_quantity
+less than quantity. Note that the potential revenue increase is equal to the sum of
+[l_extendedprice * l_discount] for all lineitems with discounts and quantities in the qualifying
+range.
+"""
+
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
-
-"""
-The Forecasting Revenue Change Query considers all the lineitems shipped in a given year with discounts between
-DISCOUNT-0.01 and DISCOUNT+0.01. The query lists the amount by which the total revenue would have
-increased if these discounts had been eliminated for lineitems with l_quantity less than quantity. Note that the
-potential revenue increase is equal to the sum of [l_extendedprice * l_discount] for all lineitems with discounts and
-quantities in the qualifying range.
-"""
 
 # Variables from the example query
 
-date_of_interest = "1994-01-01"
-discount = 0.06
-delta = 0.01
-quantity = 24
+DATE_OF_INTEREST = "1994-01-01"
+DISCOUT = 0.06
+DELTA = 0.01
+QUANTITY = 24
 
-interval_days = 365
+INTERVAL_DAYS = 365
 
-date = datetime.strptime(date_of_interest, "%Y-%m-%d").date()
+date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, interval_days), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
@@ -55,9 +56,9 @@ df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
 df = (
     df_lineitem.filter(col("l_shipdate") >= lit(date))
     .filter(col("l_shipdate") < lit(date) + lit(interval))
-    .filter(col("l_discount") >= lit(discount) - lit(delta))
-    .filter(col("l_discount") <= lit(discount) + lit(delta))
-    .filter(col("l_quantity") < lit(quantity))
+    .filter(col("l_discount") >= lit(DISCOUT) - lit(DELTA))
+    .filter(col("l_discount") <= lit(DISCOUT) + lit(DELTA))
+    .filter(col("l_quantity") < lit(QUANTITY))
 )
 
 # Add up all the "lost" revenue

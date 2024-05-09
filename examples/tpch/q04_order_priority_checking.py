@@ -15,19 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The Order Priority Checking Query counts the number of orders ordered in a given quarter of a given
+year in which at least one lineitem was received by the customer later than its committed date. The
+query lists the count of such orders for each order priority sorted in ascending priority order.
+"""
+
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
-
-"""
-The Order Priority Checking Query counts the number of orders ordered in a given quarter of a given year in which
-at least one lineitem was received by the customer later than its committed date. The query lists the count of such
-orders for each order priority sorted in ascending priority order.
-"""
 
 # Ideally we could put 3 months into the interval. See note below.
-interval_days = 92
-date_of_interest = "1995-04-01"
+INTERVAL_DAYS = 92
+DATE_OF_INTEREST = "1995-04-01"
 
 # Load the dataframes we need
 
@@ -41,11 +41,11 @@ df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
 )
 
 # Create a date object from the string
-date = datetime.strptime(date_of_interest, "%Y-%m-%d").date()
+date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, interval_days), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
 
 # Limit results to cases where commitment date before receipt date
 # Aggregate the results so we only get one row to join with the order table.

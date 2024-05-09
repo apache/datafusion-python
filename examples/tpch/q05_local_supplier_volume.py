@@ -15,28 +15,29 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The Local Supplier Volume Query lists for each nation in a region the revenue volume that resulted
+from lineitem transactions in which the customer ordering parts and the supplier filling them were
+both within that nation. The query is run in order to determine whether to institute local
+distribution centers in a given region. The query considers only parts ordered in a given year. The
+query displays the nations and revenue volume in descending order by revenue. Revenue volume for all
+qualifying lineitems in a particular nation is defined as sum(l_extendedprice * (1 - l_discount)).
+"""
+
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
 
-"""
-The Local Supplier Volume Query lists for each nation in a region the revenue volume that resulted from lineitem
-transactions in which the customer ordering parts and the supplier filling them were both within that nation. The
-query is run in order to determine whether to institute local distribution centers in a given region. The query consid-
-ers only parts ordered in a given year. The query displays the nations and revenue volume in descending order by
-revenue. Revenue volume for all qualifying lineitems in a particular nation is defined as sum(l_extendedprice * (1 -
-l_discount)).
-"""
 
-date_of_interest = "1994-01-01"
-interval_days = 365
-region_of_interest = "AFRICA"
+DATE_OF_INTEREST = "1994-01-01"
+INTERVAL_DAYS = 365
+REGION_OF_INTEREST = "AFRICA"
 
-date = datetime.strptime(date_of_interest, "%Y-%m-%d").date()
+date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, interval_days), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
@@ -66,7 +67,7 @@ df_orders = df_orders.filter(col("o_orderdate") >= lit(date)).filter(
     col("o_orderdate") < lit(date) + lit(interval)
 )
 
-df_region = df_region.filter(col("r_name") == lit(region_of_interest))
+df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
 
 # Join all the dataframes
 

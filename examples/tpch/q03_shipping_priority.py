@@ -15,17 +15,17 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The Shipping Priority Query retrieves the shipping priority and potential revenue, defined as the
+sum of l_extendedprice * (1-l_discount), of the orders having the largest revenue among those that
+had not been shipped as of a given date. Orders are listed in decreasing order of revenue. If more
+than 10 unshipped orders exist, only the 10 orders with the largest revenue are listed.
+"""
+
 from datafusion import SessionContext, col, lit, functions as F
 
-"""
-The Shipping Priority Query retrieves the shipping priority and potential revenue, defined as the sum of
-l_extendedprice * (1-l_discount), of the orders having the largest revenue among those that had not been shipped as
-of a given date. Orders are listed in decreasing order of revenue. If more than 10 unshipped orders exist, only the 10
-orders with the largest revenue are listed.
-"""
-
-segment_of_interest = "BUILDING"
-date_of_interest = "1995-03-15"
+SEGMENT_OF_INTEREST = "BUILDING"
+DATE_OF_INTEREST = "1995-03-15"
 
 # Load the dataframes we need
 
@@ -43,9 +43,9 @@ df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
 
 # Limit dataframes to the rows of interest
 
-df_customer = df_customer.filter(col("c_mktsegment") == lit(segment_of_interest))
-df_orders = df_orders.filter(col("o_orderdate") < lit(date_of_interest))
-df_lineitem = df_lineitem.filter(col("l_shipdate") > lit(date_of_interest))
+df_customer = df_customer.filter(col("c_mktsegment") == lit(SEGMENT_OF_INTEREST))
+df_orders = df_orders.filter(col("o_orderdate") < lit(DATE_OF_INTEREST))
+df_lineitem = df_lineitem.filter(col("l_shipdate") > lit(DATE_OF_INTEREST))
 
 # Join all 3 dataframes
 

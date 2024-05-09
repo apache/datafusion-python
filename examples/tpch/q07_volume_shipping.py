@@ -15,10 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime
-import pyarrow as pa
-from datafusion import SessionContext, col, lit, functions as F
-
 """
 The Volume Shipping Query finds, for two given nations, the gross discounted revenues derived from
 lineitems in which parts were shipped from a supplier in either nation to a customer in the other
@@ -27,16 +23,20 @@ and the revenue from shipments that took place in that year. The query orders th
 Supplier nation, Customer nation, and year (all ascending).
 """
 
+from datetime import datetime
+import pyarrow as pa
+from datafusion import SessionContext, col, lit, functions as F
+
 # Variables of interest to query over
 
 nation_1 = lit("GERMANY")
 nation_2 = lit("IRAQ")
 
-start_date = "1995-01-01"
-end_date = "1996-12-31"
+START_DATE = "1995-01-01"
+END_DATE = "1996-12-31"
 
-start_date = lit(datetime.strptime(start_date, "%Y-%m-%d").date())
-end_date = lit(datetime.strptime(end_date, "%Y-%m-%d").date())
+start_date = lit(datetime.strptime(START_DATE, "%Y-%m-%d").date())
+end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
 
 
 # Load the dataframes we need

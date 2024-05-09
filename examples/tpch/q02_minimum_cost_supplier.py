@@ -15,21 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""
+The Minimum Cost Supplier Query finds, in a given region, for each part of a certain type and size,
+the supplier who can supply it at minimum cost. If several suppliers in that region offer the
+desired part type and size at the same (minimum) cost, the query lists the parts from suppliers with
+the 100 highest account balances. For each supplier, the query lists the supplier's account balance,
+name and nation; the part's number and manufacturer; the supplier's address, phone number and
+comment information.
+"""
+
 import datafusion
 from datafusion import SessionContext, col, lit, functions as F
 
-"""
-The Minimum Cost Supplier Query finds, in a given region, for each part of a certain type and size, the supplier who
-can supply it at minimum cost. If several suppliers in that region offer the desired part type and size at the same
-(minimum) cost, the query lists the parts from suppliers with the 100 highest account balances. For each supplier,
-the query lists the supplier's account balance, name and nation; the part's number and manufacturer; the supplier's
-address, phone number and comment information.
-"""
-
 # This is the part we're looking for
-size_of_interest = 15
-type_of_interest = "BRASS"
-region_of_interest = "EUROPE"
+SIZE_OF_INTEREST = 15
+TYPE_OF_INTEREST = "BRASS"
+REGION_OF_INTEREST = "EUROPE"
 
 # Load the dataframes we need
 
@@ -62,12 +63,12 @@ df_region = ctx.read_parquet("data/region.parquet").select_columns(
 # in the string where it is located.
 
 df_part = df_part.filter(
-    F.strpos(col("p_type"), lit(type_of_interest)) > lit(0)
-).filter(col("p_size") == lit(size_of_interest))
+    F.strpos(col("p_type"), lit(TYPE_OF_INTEREST)) > lit(0)
+).filter(col("p_size") == lit(SIZE_OF_INTEREST))
 
 # Filter regions down to the one of interest
 
-df_region = df_region.filter(col("r_name") == lit(region_of_interest))
+df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
 
 # Now that we have the region, find suppliers in that region. Suppliers are tied to their nation
 # and nations are tied to the region.

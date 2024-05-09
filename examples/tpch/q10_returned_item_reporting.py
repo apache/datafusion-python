@@ -16,20 +16,21 @@
 # under the License.
 
 """
-The Returned Item Reporting Query finds the top 20 customers, in terms of their effect on lost revenue for a given
-quarter, who have returned parts. The query considers only parts that were ordered in the specified quarter. The
-query lists the customer's name, address, nation, phone number, account balance, comment information and revenue
-lost. The customers are listed in descending order of lost revenue. Revenue lost is defined as
+The Returned Item Reporting Query finds the top 20 customers, in terms of their effect on lost
+revenue for a given quarter, who have returned parts. The query considers only parts that were
+ordered in the specified quarter. The query lists the customer's name, address, nation, phone
+number, account balance, comment information and revenue lost. The customers are listed in
+descending order of lost revenue. Revenue lost is defined as
 sum(l_extendedprice*(1-l_discount)) for all qualifying lineitems.
 """
 
+from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
-from datetime import datetime
 
-date_start_of_quarter = "1993-10-01"
+DATE_START_OF_QUARTER = "1993-10-01"
 
-date_start_of_quarter = lit(datetime.strptime(date_start_of_quarter, "%Y-%m-%d").date())
+date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d").date())
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
