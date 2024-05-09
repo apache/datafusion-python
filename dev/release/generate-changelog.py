@@ -102,7 +102,7 @@ def cli(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "project", help="The project name e.g. apache/arrow-datafusion-python"
+        "project", help="The project name e.g. apache/datafusion-python"
     )
     parser.add_argument("tag1", help="The previous release tag")
     parser.add_argument("tag2", help="The current release tag")
