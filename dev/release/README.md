@@ -63,7 +63,7 @@ We maintain a `CHANGELOG.md` so our users know what has been changed between rel
 The changelog is generated using a Python script:
 
 ```bash
-$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py apache/arrow-datafusion-python 24.0.0 HEAD > dev/changelog/25.0.0.md
+$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py apache/datafusion-python 24.0.0 HEAD > dev/changelog/25.0.0.md
 ```
 
 This script creates a changelog from GitHub PRs based on the labels associated with them as well as looking for
@@ -83,9 +83,9 @@ This process is not fully automated, so there are some additional manual steps:
 - Add the following content (copy from the previous version's changelog and update as appropriate:
 
 ```
-## [24.0.0](https://github.com/apache/arrow-datafusion-python/tree/24.0.0) (2023-05-06)
+## [24.0.0](https://github.com/apache/datafusion-python/tree/24.0.0) (2023-05-06)
 
-[Full Changelog](https://github.com/apache/arrow-datafusion-python/compare/23.0.0...24.0.0)
+[Full Changelog](https://github.com/apache/datafusion-python/compare/23.0.0...24.0.0)
 ```
 
 ### Preparing a Release Candidate
@@ -103,42 +103,7 @@ git push apache 0.8.0-rc1
 ./dev/release/create-tarball.sh 0.8.0 1
 ```
 
-This will also create the email template to send to the mailing list. Here is an example:
-
-```
-To: dev@arrow.apache.org
-Subject: [VOTE][RUST][DataFusion] Release DataFusion Python Bindings 0.7.0 RC2
-Hi,
-
-I would like to propose a release of Apache Arrow DataFusion Python Bindings,
-version 0.7.0.
-
-This release candidate is based on commit: bd1b78b6d444b7ab172c6aec23fa58c842a592d7 [1]
-The proposed release tarball and signatures are hosted at [2].
-The changelog is located at [3].
-The Python wheels are located at [4].
-
-Please download, verify checksums and signatures, run the unit tests, and vote
-on the release. The vote will be open for at least 72 hours.
-
-Only votes from PMC members are binding, but all members of the community are
-encouraged to test the release and vote with "(non-binding)".
-
-The standard verification procedure is documented at https://github.com/apache/arrow-datafusion-python/blob/main/dev/release/README.md#verifying-release-candidates.
-
-[ ] +1 Release this as Apache Arrow DataFusion Python 0.7.0
-[ ] +0
-[ ] -1 Do not release this as Apache Arrow DataFusion Python 0.7.0 because...
-
-Here is my vote:
-
-+1
-
-[1]: https://github.com/apache/arrow-datafusion-python/tree/bd1b78b6d444b7ab172c6aec23fa58c842a592d7
-[2]: https://dist.apache.org/repos/dist/dev/arrow/apache-arrow-datafusion-python-0.7.0-rc2
-[3]: https://github.com/apache/arrow-datafusion-python/blob/bd1b78b6d444b7ab172c6aec23fa58c842a592d7/CHANGELOG.md
-[4]: https://test.pypi.org/project/datafusion/0.7.0/
-```
+This will also create the email template to send to the mailing list. 
 
 Create a draft email using this content, but do not send until after completing the next step.
 
@@ -151,7 +116,7 @@ This section assumes some familiarity with publishing Python packages to PyPi. F
 
 Pushing an `rc` tag to the release branch will cause a GitHub Workflow to run that will build the Python wheels.
 
-Go to https://github.com/apache/arrow-datafusion-python/actions and look for an action named "Python Release Build"
+Go to https://github.com/apache/datafusion-python/actions and look for an action named "Python Release Build"
 that has run against the pushed tag.
 
 Click on the action and scroll down to the bottom of the page titled "Artifacts". Download `dist.zip`. It should
@@ -266,10 +231,10 @@ git push apache 0.8.0
 
 ### Add the release to Apache Reporter
 
-Add the release to https://reporter.apache.org/addrelease.html?arrow with a version name prefixed with `RS-DATAFUSION-PYTHON`,
-for example `RS-DATAFUSION-PYTHON-31.0.0`.
+Add the release to https://reporter.apache.org/addrelease.html?datafusion with a version name prefixed with `DATAFUSION-PYTHON`,
+for example `DATAFUSION-PYTHON-31.0.0`.
 
-The release information is used to generate a template for a board report (see example
+The release information is used to generate a template for a board report (see example from Apache Arrow 
 [here](https://github.com/apache/arrow/pull/14357)).
 
 ### Delete old RCs and Releases
@@ -284,13 +249,13 @@ Release candidates should be deleted once the release is published.
 Get a list of DataFusion release candidates:
 
 ```bash
-svn ls https://dist.apache.org/repos/dist/dev/arrow | grep datafusion-python
+svn ls https://dist.apache.org/repos/dist/dev/datafusion | grep datafusion-python
 ```
 
 Delete a release candidate:
 
 ```bash
-svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/arrow/apache-arrow-datafusion-python-7.1.0-rc1/
+svn delete -m "delete old DataFusion RC" https://dist.apache.org/repos/dist/dev/datafusion/apache-datafusion-python-7.1.0-rc1/
 ```
 
 #### Deleting old releases from `release` svn
@@ -300,11 +265,11 @@ Only the latest release should be available. Delete old releases after publishin
 Get a list of DataFusion releases:
 
 ```bash
-svn ls https://dist.apache.org/repos/dist/release/arrow | grep datafusion-python
+svn ls https://dist.apache.org/repos/dist/release/datafusion | grep datafusion-python
 ```
 
 Delete a release:
 
 ```bash
-svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/arrow/arrow-datafusion-python-7.0.0
+svn delete -m "delete old DataFusion release" https://dist.apache.org/repos/dist/release/datafusion/datafusion-python-7.0.0
 ```

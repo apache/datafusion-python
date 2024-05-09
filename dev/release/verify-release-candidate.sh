@@ -32,8 +32,8 @@ set -x
 set -o pipefail
 
 SOURCE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-ARROW_DIR="$(dirname $(dirname ${SOURCE_DIR}))"
-ARROW_DIST_URL='https://dist.apache.org/repos/dist/dev/arrow'
+DATAFUSION_PYTHON_DIR="$(dirname $(dirname ${SOURCE_DIR}))"
+DATAFUSION_PYTHON_DIST_URL='https://dist.apache.org/repos/dist/dev/datafusion'
 
 download_dist_file() {
   curl \
@@ -41,11 +41,11 @@ download_dist_file() {
     --show-error \
     --fail \
     --location \
-    --remote-name $ARROW_DIST_URL/$1
+    --remote-name $DATAFUSION_PYTHON_DIST_URL/$1
 }
 
 download_rc_file() {
-  download_dist_file apache-arrow-datafusion-python-${VERSION}-rc${RC_NUMBER}/$1
+  download_dist_file apache-datafusion-python-${VERSION}-rc${RC_NUMBER}/$1
 }
 
 import_gpg_keys() {
@@ -89,19 +89,19 @@ verify_dir_artifact_signatures() {
 setup_tempdir() {
   cleanup() {
     if [ "${TEST_SUCCESS}" = "yes" ]; then
-      rm -fr "${ARROW_TMPDIR}"
+      rm -fr "${DATAFUSION_PYTHON_TMPDIR}"
     else
-      echo "Failed to verify release candidate. See ${ARROW_TMPDIR} for details."
+      echo "Failed to verify release candidate. See ${DATAFUSION_PYTHON_TMPDIR} for details."
     fi
   }
 
-  if [ -z "${ARROW_TMPDIR}" ]; then
-    # clean up automatically if ARROW_TMPDIR is not defined
-    ARROW_TMPDIR=$(mktemp -d -t "$1.XXXXX")
+  if [ -z "${DATAFUSION_PYTHON_TMPDIR}" ]; then
+    # clean up automatically if DATAFUSION_PYTHON_TMPDIR is not defined
+    DATAFUSION_PYTHON_TMPDIR=$(mktemp -d -t "$1.XXXXX")
     trap cleanup EXIT
   else
     # don't clean up automatically
-    mkdir -p "${ARROW_TMPDIR}"
+    mkdir -p "${DATAFUSION_PYTHON_TMPDIR}"
   fi
 }
 
@@ -142,11 +142,11 @@ test_source_distribution() {
 
 TEST_SUCCESS=no
 
-setup_tempdir "arrow-${VERSION}"
-echo "Working in sandbox ${ARROW_TMPDIR}"
-cd ${ARROW_TMPDIR}
+setup_tempdir "datafusion-python-${VERSION}"
+echo "Working in sandbox ${DATAFUSION_PYTHON_TMPDIR}"
+cd ${DATAFUSION_PYTHON_TMPDIR}
 
-dist_name="apache-arrow-datafusion-python-${VERSION}"
+dist_name="apache-datafusion-python-${VERSION}"
 import_gpg_keys
 fetch_archive ${dist_name}
 tar xf ${dist_name}.tar.gz
