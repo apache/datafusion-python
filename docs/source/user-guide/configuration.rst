@@ -16,7 +16,7 @@
 .. under the License.
 
 Configuration
-========
+=============
 
 Let's look at how we can configure DataFusion. When creating a :code:`SessionContext`, you can pass in
 a :code:`SessionConfig` and :code:`RuntimeConfig` object. These two cover a wide range of options.
@@ -48,4 +48,4 @@ a :code:`SessionConfig` and :code:`RuntimeConfig` object. These two cover a wide
 
 
 You can read more about available :code:`SessionConfig` options `here <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
-and about :code:`RuntimeConfig` options `here https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html`_.
+and about :code:`RuntimeConfig` options `here <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html>`_.
