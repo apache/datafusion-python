@@ -19,7 +19,7 @@
 .. currentmodule:: datafusion.object_store
 
 ObjectStore
-=========
+===========
 
 .. autosummary::
    :toctree: ../generated/

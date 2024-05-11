@@ -4,6 +4,9 @@ on:
       - main
     tags-ignore:
       - "**-rc**"
+  pull_request:
+    branches:
+      - main
 
 name: Deploy DataFusion Python site
 
@@ -13,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set target branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         id: target-branch
         run: |
           set -x
@@ -27,6 +31,7 @@ jobs:
       - name: Checkout docs sources
         uses: actions/checkout@v3
       - name: Checkout docs target branch
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -64,6 +69,7 @@ jobs:
           make html
 
       - name: Copy & push the generated HTML
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           set -x
           cd docs-target
