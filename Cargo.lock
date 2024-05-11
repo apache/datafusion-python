@@ -749,7 +749,7 @@ dependencies = [
  "bzip2",
  "chrono",
  "dashmap",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-common-runtime",
  "datafusion-execution",
  "datafusion-expr",
@@ -774,7 +774,7 @@ dependencies = [
  "parquet",
  "pin-project-lite",
  "rand",
- "sqlparser",
+ "sqlparser 0.44.0",
  "tempfile",
  "tokio",
  "tokio-util",
@@ -804,7 +804,28 @@ dependencies = [
  "object_store",
  "parquet",
  "pyo3",
- "sqlparser",
+ "sqlparser 0.44.0",
+]
+
+[[package]]
+name = "datafusion-common"
+version = "38.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "741aeac15c82f239f2fc17deccaab19873abbd62987be20023689b15fa72fa09"
+dependencies = [
+ "ahash",
+ "arrow",
+ "arrow-array",
+ "arrow-buffer",
+ "arrow-schema",
+ "chrono",
+ "half",
+ "instant",
+ "libc",
+ "num_cpus",
+ "parquet",
+ "pyo3",
+ "sqlparser 0.45.0",
 ]
 
 [[package]]
@@ -825,7 +846,7 @@ dependencies = [
  "arrow",
  "chrono",
  "dashmap",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-expr",
  "futures",
  "hashbrown 0.14.3",
@@ -847,9 +868,9 @@ dependencies = [
  "arrow",
  "arrow-array",
  "chrono",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "paste",
- "sqlparser",
+ "sqlparser 0.44.0",
  "strum 0.26.1",
  "strum_macros 0.26.1",
 ]
@@ -865,7 +886,7 @@ dependencies = [
  "blake2",
  "blake3",
  "chrono",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-execution",
  "datafusion-expr",
  "datafusion-physical-expr",
@@ -890,7 +911,7 @@ dependencies = [
  "arrow-buffer",
  "arrow-ord",
  "arrow-schema",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-execution",
  "datafusion-expr",
  "datafusion-functions",
@@ -908,7 +929,7 @@ dependencies = [
  "arrow",
  "async-trait",
  "chrono",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-expr",
  "datafusion-physical-expr",
  "hashbrown 0.14.3",
@@ -934,7 +955,7 @@ dependencies = [
  "blake2",
  "blake3",
  "chrono",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-execution",
  "datafusion-expr",
  "half",
@@ -965,7 +986,7 @@ dependencies = [
  "arrow-schema",
  "async-trait",
  "chrono",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-common-runtime",
  "datafusion-execution",
  "datafusion-expr",
@@ -989,7 +1010,7 @@ version = "37.1.0"
 dependencies = [
  "async-trait",
  "datafusion",
- "datafusion-common",
+ "datafusion-common 38.0.0",
  "datafusion-expr",
  "datafusion-functions-array",
  "datafusion-optimizer",
@@ -1020,10 +1041,10 @@ dependencies = [
  "arrow",
  "arrow-array",
  "arrow-schema",
- "datafusion-common",
+ "datafusion-common 37.1.0",
  "datafusion-expr",
  "log",
- "sqlparser",
+ "sqlparser 0.44.0",
  "strum 0.26.1",
 ]
 
@@ -2765,6 +2786,16 @@ name = "sqlparser"
 version = "0.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "aaf9c7ff146298ffda83a200f8d5084f08dcee1edfc135fcc1d646a45d50ffd6"
+dependencies = [
+ "log",
+ "sqlparser_derive",
+]
+
+[[package]]
+name = "sqlparser"
+version = "0.45.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7bbffee862a796d67959a89859d6b1046bb5016d63e23835ad0da182777bbe0"
 dependencies = [
  "log",
  "sqlparser_derive",
