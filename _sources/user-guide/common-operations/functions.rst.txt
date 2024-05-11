@@ -92,13 +92,12 @@ DataFusion offers a range of helpful options.
         f.left(col('"Name"'), literal(4)).alias("code")
     )
 
-This also includes the functions for regular expressions :func:`.regexp_replace` and :func:`.regexp_match`
+This also includes the functions for regular expressions like :func:`.regexp_match`
 
 .. ipython:: python
 
     df.select(
         f.regexp_match(col('"Name"'), literal("Char")).alias("dragons"),
-        f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers")
     )
 
 
