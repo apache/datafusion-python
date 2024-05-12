@@ -16,11 +16,16 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 13:
+
 This query determines the distribution of customers by the number of orders they have made,
 including customers who have no record of orders, past or present. It counts and reports how many
 customers have no orders, how many have 1, 2, 3, etc. A check is made to ensure that the orders
 counted do not fall into one of several special categories of orders. Special categories are
 identified in the order comment column by looking for a particular pattern.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F

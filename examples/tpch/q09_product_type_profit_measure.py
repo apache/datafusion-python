@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 9:
+
 The Product Type Profit Measure Query finds, for each nation and each year, the profit for all parts
 ordered in that year that contain a specified substring in their names and that were filled by a
 supplier in that nation. The profit is defined as the sum of
 [(l_extendedprice*(1-l_discount)) - (ps_supplycost * l_quantity)] for all lineitems describing
 parts in the specified line. The query lists the nations in ascending alphabetical order and, for
 each nation, the year and profit in descending order by year (most recent first).
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import pyarrow as pa

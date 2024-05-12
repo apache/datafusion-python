@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 12:
+
 The Shipping Modes and Order Priority Query counts, by ship mode, for lineitems actually received
 by customers in a given year, the number of lineitems belonging to orders for which the
 l_receiptdate exceeds the l_commitdate for two different specified ship modes. Only lineitems that
 were actually shipped before the l_commitdate are considered. The late lineitems are partitioned
 into two groups, those with priority URGENT or HIGH, and those with a priority other than URGENT or
 HIGH.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

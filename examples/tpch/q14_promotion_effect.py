@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 14:
+
 The Promotion Effect Query determines what percentage of the revenue in a given year and month was
 derived from promotional parts. The query considers only parts actually shipped in that month and
 gives the percentage. Revenue is defined as (l_extendedprice * (1-l_discount)).
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

@@ -16,11 +16,16 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 16:
+
 The Parts/Supplier Relationship Query counts the number of suppliers who can supply parts that
 satisfy a particular customer's requirements. The customer is interested in parts of eight
 different sizes as long as they are not of a given type, not of a given brand, and not from a
 supplier who has had complaints registered at the Better Business Bureau. Results must be presented
 in descending count and ascending brand, type, and size.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import pyarrow as pa

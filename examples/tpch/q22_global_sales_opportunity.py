@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 22:
+
 This query counts how many customers within a specific range of country codes have not placed
 orders for 7 years but who have a greater than average “positive” account balance. It also reflects
 the magnitude of that balance. Country code is defined as the first two characters of c_phone.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F

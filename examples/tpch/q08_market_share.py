@@ -16,10 +16,15 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 8:
+
 The market share for a given nation within a given region is defined as the fraction of the
 revenue, the sum of [l_extendedprice * (1-l_discount)], from the products of a specified type in
 that region that was supplied by suppliers from the given nation. The query determines this for the
 years 1995 and 1996 presented in this order.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

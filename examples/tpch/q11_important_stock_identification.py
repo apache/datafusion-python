@@ -16,10 +16,15 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 11:
+
 The Important Stock Identification Query finds, from scanning the available stock of suppliers
 in a given nation, all the parts that represent a significant percentage of the total value of
 all available parts. The query displays the part number and the value of those parts in
 descending order of value.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F

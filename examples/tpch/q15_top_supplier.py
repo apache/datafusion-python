@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 15:
+
 The Top Supplier Query finds the supplier who contributed the most to the overall revenue for parts
 shipped during a given quarter of a given year. In case of a tie, the query lists all suppliers
 whose contribution was equal to the maximum, presented in supplier number order.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

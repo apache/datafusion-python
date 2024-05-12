@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 19:
+
 The Discounted Revenue query finds the gross discounted revenue for all orders for three different
 types of parts that were shipped by air and delivered in person. Parts are selected based on the
 combination of specific brands, a list of containers, and a range of sizes.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import pyarrow as pa

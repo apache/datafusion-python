@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 2:
+
 The Minimum Cost Supplier Query finds, in a given region, for each part of a certain type and size,
 the supplier who can supply it at minimum cost. If several suppliers in that region offer the
 desired part type and size at the same (minimum) cost, the query lists the parts from suppliers with
 the 100 highest account balances. For each supplier, the query lists the supplier's account balance,
 name and nation; the part's number and manufacturer; the supplier's address, phone number and
 comment information.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import datafusion

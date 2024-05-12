@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 10:
+
 The Returned Item Reporting Query finds the top 20 customers, in terms of their effect on lost
 revenue for a given quarter, who have returned parts. The query considers only parts that were
 ordered in the specified quarter. The query lists the customer's name, address, nation, phone
 number, account balance, comment information and revenue lost. The customers are listed in
 descending order of lost revenue. Revenue lost is defined as
 sum(l_extendedprice*(1-l_discount)) for all qualifying lineitems.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

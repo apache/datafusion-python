@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 1:
+
 The Pricing Summary Report Query provides a summary pricing report for all lineitems shipped as of
 a given date. The date is within 60 - 120 days of the greatest ship date contained in the database.
 The query lists totals for extended price, discounted extended price, discounted extended price
 plus tax, average quantity, average extended price, and average discount. These aggregates are
 grouped by RETURNFLAG and LINESTATUS, and listed in ascending order of RETURNFLAG and LINESTATUS.
 A count of the number of lineitems in each group is included.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import pyarrow as pa

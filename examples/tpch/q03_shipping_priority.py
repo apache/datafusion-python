@@ -16,10 +16,15 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 3:
+
 The Shipping Priority Query retrieves the shipping priority and potential revenue, defined as the
 sum of l_extendedprice * (1-l_discount), of the orders having the largest revenue among those that
 had not been shipped as of a given date. Orders are listed in decreasing order of revenue. If more
 than 10 unshipped orders exist, only the 10 orders with the largest revenue are listed.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F

@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 4:
+
 The Order Priority Checking Query counts the number of orders ordered in a given quarter of a given
 year in which at least one lineitem was received by the customer later than its committed date. The
 query lists the count of such orders for each order priority sorted in ascending priority order.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

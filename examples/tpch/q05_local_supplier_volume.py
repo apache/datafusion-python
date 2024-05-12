@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 5:
+
 The Local Supplier Volume Query lists for each nation in a region the revenue volume that resulted
 from lineitem transactions in which the customer ordering parts and the supplier filling them were
 both within that nation. The query is run in order to determine whether to institute local
 distribution centers in a given region. The query considers only parts ordered in a given year. The
 query displays the nations and revenue volume in descending order by revenue. Revenue volume for all
 qualifying lineitems in a particular nation is defined as sum(l_extendedprice * (1 - l_discount)).
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

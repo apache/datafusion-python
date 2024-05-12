@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 21:
+
 The Suppliers Who Kept Orders Waiting query identifies suppliers, for a given nation, whose product
 was part of a multi-supplier order (with current status of 'F') where they were the only supplier
 who failed to meet the committed delivery date.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F

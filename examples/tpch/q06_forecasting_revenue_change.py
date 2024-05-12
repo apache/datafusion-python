@@ -16,12 +16,17 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 6:
+
 The Forecasting Revenue Change Query considers all the lineitems shipped in a given year with
 discounts between DISCOUNT-0.01 and DISCOUNT+0.01. The query lists the amount by which the total
 revenue would have increased if these discounts had been eliminated for lineitems with l_quantity
 less than quantity. Note that the potential revenue increase is equal to the sum of
 [l_extendedprice * l_discount] for all lineitems with discounts and quantities in the qualifying
 range.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

@@ -16,11 +16,16 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 7:
+
 The Volume Shipping Query finds, for two given nations, the gross discounted revenues derived from
 lineitems in which parts were shipped from a supplier in either nation to a customer in the other
 nation during 1995 and 1996. The query lists the supplier nation, the customer nation, the year,
 and the revenue from shipments that took place in that year. The query orders the answer by
 Supplier nation, Customer nation, and year (all ascending).
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

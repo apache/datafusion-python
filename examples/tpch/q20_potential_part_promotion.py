@@ -16,10 +16,15 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 20:
+
 The Potential Part Promotion query identifies suppliers who have an excess of a given part
 available; an excess is defined to be more than 50% of the parts like the given part that the
 supplier shipped in a given year for a given nation. Only parts whose names share a certain naming
 convention are considered.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime

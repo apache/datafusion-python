@@ -52,3 +52,10 @@ Here is a direct link to the file used in the examples:
 - [Executing SQL on Polars](./sql-on-polars.py)
 - [Executing SQL on Pandas](./sql-on-pandas.py)
 - [Executing SQL on cuDF](./sql-on-cudf.py)
+
+## TPC-H Examples
+
+Within the subdirectory `tpch` there are 22 examples that reproduce queries in
+the TPC-H specification. These include realistic data that can be generated at
+arbitrary scale and allow the user to see use cases for a variety of data frame
+operations.

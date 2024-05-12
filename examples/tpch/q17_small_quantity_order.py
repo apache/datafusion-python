@@ -16,11 +16,16 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 17:
+
 The Small-Quantity-Order Revenue Query considers parts of a given brand and with a given container
 type and determines the average lineitem quantity of such parts ordered for all orders (past and
 pending) in the 7-year database. What would be the average yearly gross (undiscounted) loss in
 revenue if orders for these parts with a quantity of less than 20% of this average were no longer
 taken?
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F

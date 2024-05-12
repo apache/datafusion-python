@@ -16,9 +16,14 @@
 # under the License.
 
 """
+TPC-H Problem Statement Query 18:
+
 The Large Volume Customer Query finds a list of the top 100 customers who have ever placed large
 quantity orders. The query lists the customer name, customer key, the order key, date and total
 price and the quantity for the order.
+
+The above problem statement text is copyrighted by the Transaction Processing Performance Council
+as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F
