@@ -74,6 +74,7 @@ df = df.filter(
 
 df = df.join(df_part, (["l_partkey"], ["p_partkey"]), "inner")
 
+
 # Create the user defined function (UDF) definition that does the work
 def is_of_interest(
     brand_arr: pa.Array,
@@ -111,6 +112,7 @@ def is_of_interest(
             result.append(False)
 
     return pa.array(result)
+
 
 # Turn the above function into a UDF that DataFusion can understand
 is_of_interest_udf = udf(

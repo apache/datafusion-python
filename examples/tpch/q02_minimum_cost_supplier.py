@@ -98,7 +98,13 @@ df = df_partsupp.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), how="inner")
 # We want to evaluate the entire data frame, so we specify this.
 window_frame = datafusion.WindowFrame("rows", None, None)
 df = df.with_column(
-    "min_cost", F.window("min", [col("ps_supplycost")], partition_by=[col("ps_partkey")], window_frame=window_frame)
+    "min_cost",
+    F.window(
+        "min",
+        [col("ps_supplycost")],
+        partition_by=[col("ps_partkey")],
+        window_frame=window_frame,
+    ),
 )
 
 df = df.filter(col("min_cost") == col("ps_supplycost"))
