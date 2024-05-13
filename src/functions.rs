@@ -474,6 +474,7 @@ expr_fn!(
 );
 expr_fn!(sqrt, num);
 expr_fn!(starts_with, arg1 arg2, "Returns true if string starts with prefix.");
+expr_fn!(ends_with, arg1 arg2, "Returns true if string ends with suffix.");
 expr_fn!(strpos, string substring, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
 expr_fn!(substr, string position);
 expr_fn!(tan, num);
