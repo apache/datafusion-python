@@ -21,23 +21,19 @@ use std::convert::{From, Into};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::scalar::ScalarValue;
-use datafusion_common::DFField;
 use datafusion_expr::{
     col,
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
-    lit,
-    utils::exprlist_to_fields,
-    Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, LogicalPlan,
-    Operator, TryCast,
+    lit, Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, Operator,
+    TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
-use crate::errors::{py_datafusion_err, py_runtime_err, py_type_err, DataFusionError};
+use crate::errors::{py_datafusion_err, py_runtime_err, py_type_err};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
-use crate::sql::logical::PyLogicalPlan;
 
 use self::alias::PyAlias;
 use self::bool_expr::{
@@ -557,41 +553,9 @@ impl PyExpr {
             }
         })
     }
-
-    pub fn column_name(&self, plan: PyLogicalPlan) -> PyResult<String> {
-        self._column_name(&plan.plan()).map_err(py_runtime_err)
-    }
 }
 
 impl PyExpr {
-    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
-        let field = Self::expr_to_field(&self.expr, plan)?;
-        Ok(field.qualified_column().flat_name())
-    }
-
-    /// Create a [DFField] representing an [Expr], given an input [LogicalPlan] to resolve against
-    pub fn expr_to_field(
-        expr: &Expr,
-        input_plan: &LogicalPlan,
-    ) -> Result<DFField, DataFusionError> {
-        match expr {
-            Expr::Sort(Sort { expr, .. }) => {
-                // DataFusion does not support create_name for sort expressions (since they never
-                // appear in projections) so we just delegate to the contained expression instead
-                Self::expr_to_field(expr, input_plan)
-            }
-            Expr::Wildcard { .. } => {
-                // Since * could be any of the valid column names just return the first one
-                Ok(input_plan.schema().field(0).clone())
-            }
-            _ => {
-                let fields =
-                    exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
-                Ok(fields[0].clone())
-            }
-        }
-    }
-
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
         match expr {
             Expr::BinaryExpr(BinaryExpr {

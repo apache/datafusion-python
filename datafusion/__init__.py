@@ -37,7 +37,6 @@ from ._internal import (
 )
 
 from .common import (
-    DFField,
     DFSchema,
 )
 
