@@ -134,7 +134,7 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 #[pyo3(signature = (*args))]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(datafusion_expr::concat(&args).into())
+    Ok(functions::string::expr_fn::concat(args).into())
 }
 
 /// Concatenates all but the first argument, with separators.
@@ -144,7 +144,7 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 #[pyo3(signature = (sep, *args))]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(datafusion_expr::concat_ws(lit(sep), args).into())
+    Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
 /// Creates a new Sort Expr
