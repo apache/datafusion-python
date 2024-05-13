@@ -36,7 +36,7 @@ from datafusion import SessionContext, col, lit, functions as F
 
 DATE_OF_INTEREST = "1994-01-01"
 INTERVAL_DAYS = 365
-REGION_OF_INTEREST = "AFRICA"
+REGION_OF_INTEREST = "ASIA"
 
 date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
