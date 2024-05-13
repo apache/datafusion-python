@@ -81,6 +81,9 @@ jobs:
           which python
           pip list
           mamba list
+      # Clean the conda cache
+      - name: Clean Conda Cache
+        run: conda clean --all --yes
       - name: Build conda packages
         run: |
           # suffix for nightly package versions
