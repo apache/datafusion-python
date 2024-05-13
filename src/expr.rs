@@ -15,10 +15,13 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_expr::utils::exprlist_to_fields;
+use datafusion_expr::LogicalPlan;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
+use std::sync::Arc;
 
-use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::scalar::ScalarValue;
 use datafusion_expr::{
@@ -29,11 +32,12 @@ use datafusion_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
-use crate::errors::{py_datafusion_err, py_runtime_err, py_type_err};
+use crate::errors::{py_datafusion_err, py_runtime_err, py_type_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
+use crate::sql::logical::PyLogicalPlan;
 
 use self::alias::PyAlias;
 use self::bool_expr::{
@@ -553,9 +557,40 @@ impl PyExpr {
             }
         })
     }
+
+    pub fn column_name(&self, plan: PyLogicalPlan) -> PyResult<String> {
+        self._column_name(&plan.plan()).map_err(py_runtime_err)
+    }
 }
 
 impl PyExpr {
+    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
+        let field = Self::expr_to_field(&self.expr, plan)?;
+        Ok(field.name().to_owned())
+    }
+
+    /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
+    pub fn expr_to_field(
+        expr: &Expr,
+        input_plan: &LogicalPlan,
+    ) -> Result<Arc<Field>, DataFusionError> {
+        match expr {
+            Expr::Sort(Sort { expr, .. }) => {
+                // DataFusion does not support create_name for sort expressions (since they never
+                // appear in projections) so we just delegate to the contained expression instead
+                Self::expr_to_field(expr, input_plan)
+            }
+            Expr::Wildcard { .. } => {
+                // Since * could be any of the valid column names just return the first one
+                Ok(Arc::new(input_plan.schema().field(0).clone()))
+            }
+            _ => {
+                let fields =
+                    exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
+                Ok(fields[0].1.clone())
+            }
+        }
+    }
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
         match expr {
             Expr::BinaryExpr(BinaryExpr {
