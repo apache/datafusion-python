@@ -80,7 +80,6 @@ pub mod logical_node;
 pub mod placeholder;
 pub mod projection;
 pub mod repartition;
-pub mod scalar_function;
 pub mod scalar_subquery;
 pub mod scalar_variable;
 pub mod signature;
@@ -665,8 +664,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
-    m.add_class::<scalar_function::PyScalarFunction>()?;
-    m.add_class::<scalar_function::PyBuiltinScalarFunction>()?;
     m.add_class::<in_list::PyInList>()?;
     m.add_class::<exists::PyExists>()?;
     m.add_class::<subquery::PySubquery>()?;

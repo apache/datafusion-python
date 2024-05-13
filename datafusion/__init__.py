@@ -64,8 +64,6 @@ from .expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
-    ScalarFunction,
-    BuiltinScalarFunction,
     InList,
     Exists,
     Subquery,
