@@ -77,6 +77,10 @@ df = df.sort(col("revenue").sort(ascending=False), col("o_orderdate").sort())
 
 df = df.limit(100)
 
+# Change the order that the columns are reported in just to match the spec
+
+df = df.select_columns("l_orderkey", "revenue", "o_orderdate", "o_shippriority")
+
 # Show result
 
 df.show()
