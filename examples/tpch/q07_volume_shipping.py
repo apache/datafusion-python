@@ -34,8 +34,8 @@ from datafusion import SessionContext, col, lit, functions as F
 
 # Variables of interest to query over
 
-nation_1 = lit("GERMANY")
-nation_2 = lit("IRAQ")
+nation_1 = lit("FRANCE")
+nation_2 = lit("GERMANY")
 
 START_DATE = "1995-01-01"
 END_DATE = "1996-12-31"

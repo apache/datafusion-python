@@ -83,4 +83,5 @@ df = df.aggregate(
 
 revenue = df.collect()[0]["revenue"][0].as_py()
 
+# Note: the output value from this query may be dependant on the size of the database generated
 print(f"Potential lost revenue: {revenue:.2f}")
