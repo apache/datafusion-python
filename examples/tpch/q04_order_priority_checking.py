@@ -32,7 +32,7 @@ from datafusion import SessionContext, col, lit, functions as F
 
 # Ideally we could put 3 months into the interval. See note below.
 INTERVAL_DAYS = 92
-DATE_OF_INTEREST = "1995-04-01"
+DATE_OF_INTEREST = "1993-07-01"
 
 # Load the dataframes we need
 
