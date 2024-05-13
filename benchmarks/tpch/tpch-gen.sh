@@ -29,7 +29,7 @@ FILE=./data/supplier.tbl
 if test -f "$FILE"; then
     echo "$FILE exists."
 else
-  docker run -v `pwd`/data:/data -it --rm ghcr.io/databloom-ai/tpch-docker:main -vf -s $1
+  docker run -v `pwd`/data:/data -it --rm ghcr.io/scalytics/tpch-docker:main -vf -s $1
 
   # workaround for https://github.com/apache/arrow-datafusion/issues/6147
   mv data/customer.tbl data/customer.csv
@@ -49,5 +49,5 @@ FILE=./data/answers/q1.out
 if test -f "$FILE"; then
     echo "$FILE exists."
 else
-  docker run -v `pwd`/data:/data -it --entrypoint /bin/bash --rm ghcr.io/databloom-ai/tpch-docker:main -c "cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/"
+  docker run -v `pwd`/data:/data -it --entrypoint /bin/bash --rm ghcr.io/scalytics/tpch-docker:main -c "cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/"
 fi
