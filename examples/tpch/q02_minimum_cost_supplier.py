@@ -88,7 +88,6 @@ df_supplier = df_supplier.join(
 # as matching the request
 
 df = df_partsupp.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), how="inner")
-df = df.join(df_part, (["ps_partkey"], ["p_partkey"]), how="inner")
 
 # Locate the minimum cost across all suppliers. There are multiple ways you could do this,
 # but one way is to create a window function across all suppliers, find the minimum, and
@@ -99,10 +98,12 @@ df = df.join(df_part, (["ps_partkey"], ["p_partkey"]), how="inner")
 # We want to evaluate the entire data frame, so we specify this.
 window_frame = datafusion.WindowFrame("rows", None, None)
 df = df.with_column(
-    "min_cost", F.window("min", [col("ps_supplycost")], window_frame=window_frame)
+    "min_cost", F.window("min", [col("ps_supplycost")], partition_by=[col("ps_partkey")], window_frame=window_frame)
 )
 
 df = df.filter(col("min_cost") == col("ps_supplycost"))
+
+df = df.join(df_part, (["ps_partkey"], ["p_partkey"]), how="inner")
 
 # From the problem statement, these are the values we wish to output
 
@@ -119,7 +120,7 @@ df = df.select_columns(
 
 # Sort and display 100 entries
 df = df.sort(
-    col("s_acctbal").sort(),
+    col("s_acctbal").sort(ascending=False),
     col("n_name").sort(),
     col("s_name").sort(),
     col("p_partkey").sort(),
