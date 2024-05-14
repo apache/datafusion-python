@@ -60,7 +60,7 @@ url = "2.2"
 pyo3-build-config = "0.20.0"
 
 [lib]
-name = "datafusion_python"
+name = "_internal"
 crate-type = ["cdylib", "rlib"]
 
 [profile.release]
