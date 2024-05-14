@@ -708,6 +708,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(split_part))?;
     m.add_wrapped(wrap_pyfunction!(sqrt))?;
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
+    m.add_wrapped(wrap_pyfunction!(ends_with))?;
     m.add_wrapped(wrap_pyfunction!(stddev))?;
     m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
     m.add_wrapped(wrap_pyfunction!(stddev_samp))?;
