@@ -301,7 +301,7 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .unnest_column_with_options(column, unnest_options)?;
+            .unnest_columns_with_options(&[column], unnest_options)?;
         Ok(Self::new(df))
     }
 

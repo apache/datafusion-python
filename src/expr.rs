@@ -15,20 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion_expr::utils::exprlist_to_fields;
+use datafusion_expr::LogicalPlan;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
+use std::sync::Arc;
 
-use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::scalar::ScalarValue;
-use datafusion_common::DFField;
 use datafusion_expr::{
     col,
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
-    lit,
-    utils::exprlist_to_fields,
-    Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, LogicalPlan,
-    Operator, TryCast,
+    lit, Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, Operator,
+    TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
@@ -80,7 +80,6 @@ pub mod logical_node;
 pub mod placeholder;
 pub mod projection;
 pub mod repartition;
-pub mod scalar_function;
 pub mod scalar_subquery;
 pub mod scalar_variable;
 pub mod signature;
@@ -567,14 +566,14 @@ impl PyExpr {
 impl PyExpr {
     pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
         let field = Self::expr_to_field(&self.expr, plan)?;
-        Ok(field.qualified_column().flat_name())
+        Ok(field.name().to_owned())
     }
 
-    /// Create a [DFField] representing an [Expr], given an input [LogicalPlan] to resolve against
+    /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
     pub fn expr_to_field(
         expr: &Expr,
         input_plan: &LogicalPlan,
-    ) -> Result<DFField, DataFusionError> {
+    ) -> Result<Arc<Field>, DataFusionError> {
         match expr {
             Expr::Sort(Sort { expr, .. }) => {
                 // DataFusion does not support create_name for sort expressions (since they never
@@ -583,16 +582,15 @@ impl PyExpr {
             }
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
-                Ok(input_plan.schema().field(0).clone())
+                Ok(Arc::new(input_plan.schema().field(0).clone()))
             }
             _ => {
                 let fields =
                     exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
-                Ok(fields[0].clone())
+                Ok(fields[0].1.clone())
             }
         }
     }
-
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
         match expr {
             Expr::BinaryExpr(BinaryExpr {
@@ -665,8 +663,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<PySimilarTo>()?;
     m.add_class::<PyScalarVariable>()?;
     m.add_class::<alias::PyAlias>()?;
-    m.add_class::<scalar_function::PyScalarFunction>()?;
-    m.add_class::<scalar_function::PyBuiltinScalarFunction>()?;
     m.add_class::<in_list::PyInList>()?;
     m.add_class::<exists::PyExists>()?;
     m.add_class::<subquery::PySubquery>()?;

@@ -37,7 +37,6 @@ from ._internal import (
 )
 
 from .common import (
-    DFField,
     DFSchema,
 )
 
@@ -64,8 +63,6 @@ from .expr import (
     IsNotFalse,
     IsNotUnknown,
     Negative,
-    ScalarFunction,
-    BuiltinScalarFunction,
     InList,
     Exists,
     Subquery,

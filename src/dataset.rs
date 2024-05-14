@@ -117,10 +117,16 @@ impl TableProvider for Dataset {
 
     /// Tests whether the table provider can make use of a filter expression
     /// to optimise data retrieval.
-    fn supports_filter_pushdown(&self, filter: &Expr) -> DFResult<TableProviderFilterPushDown> {
-        match PyArrowFilterExpression::try_from(filter) {
-            Ok(_) => Ok(TableProviderFilterPushDown::Exact),
-            _ => Ok(TableProviderFilterPushDown::Unsupported),
-        }
+    fn supports_filters_pushdown(
+        &self,
+        filter: &[&Expr],
+    ) -> DFResult<Vec<TableProviderFilterPushDown>> {
+        filter
+            .iter()
+            .map(|&f| match PyArrowFilterExpression::try_from(f) {
+                Ok(_) => Ok(TableProviderFilterPushDown::Exact),
+                _ => Ok(TableProviderFilterPushDown::Unsupported),
+            })
+            .collect()
     }
 }

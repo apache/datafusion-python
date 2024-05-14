@@ -24,16 +24,45 @@ use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions;
+use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
     aggregate_function,
     expr::{
-        find_df_window_func, AggregateFunction, AggregateFunctionDefinition, ScalarFunction, Sort,
-        WindowFunction,
+        find_df_window_func, AggregateFunction, AggregateFunctionDefinition, Sort, WindowFunction,
     },
-    lit, BuiltinScalarFunction, Expr, WindowFunctionDefinition,
+    lit, Expr, WindowFunctionDefinition,
 };
+
+#[pyfunction]
+#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
+pub fn covar_samp(
+    y: PyExpr,
+    x: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    // null_treatment: Option<sqlparser::ast::NullTreatment>,
+) -> PyExpr {
+    let filter = filter.map(|x| Box::new(x.expr));
+    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr, distinct, filter, order_by, None)
+        .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
+pub fn covar(
+    y: PyExpr,
+    x: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyExpr {
+    // alias for covar_samp
+    covar_samp(y, x, distinct, filter, order_by)
+}
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
@@ -134,7 +163,7 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 #[pyo3(signature = (*args))]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(datafusion_expr::concat(&args).into())
+    Ok(functions::string::expr_fn::concat(args).into())
 }
 
 /// Concatenates all but the first argument, with separators.
@@ -144,7 +173,7 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 #[pyo3(signature = (sep, *args))]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
-    Ok(datafusion_expr::concat_ws(lit(sep), args).into())
+    Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
 /// Creates a new Sort Expr
@@ -249,27 +278,6 @@ fn window(
     })
 }
 
-macro_rules! scalar_function {
-    ($NAME: ident, $FUNC: ident) => {
-        scalar_function!($NAME, $FUNC, stringify!($NAME));
-    };
-
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
-        #[doc = $DOC]
-        #[pyfunction]
-        #[pyo3(signature = (*args))]
-        fn $NAME(args: Vec<PyExpr>) -> PyExpr {
-            let expr = datafusion_expr::Expr::ScalarFunction(ScalarFunction {
-                func_def: datafusion_expr::ScalarFunctionDefinition::BuiltIn(
-                    BuiltinScalarFunction::$FUNC,
-                ),
-                args: args.into_iter().map(|e| e.into()).collect(),
-            });
-            expr.into()
-        }
-    };
-}
-
 macro_rules! aggregate_function {
     ($NAME: ident, $FUNC: ident) => {
         aggregate_function!($NAME, $FUNC, stringify!($NAME));
@@ -370,21 +378,21 @@ macro_rules! array_fn {
 
 expr_fn!(abs, num);
 expr_fn!(acos, num);
-scalar_function!(acosh, Acosh);
+expr_fn!(acosh, num);
 expr_fn!(ascii, arg1, "Returns the numeric code of the first character of the argument. In UTF8 encoding, returns the Unicode code point of the character. In other multibyte encodings, the argument must be an ASCII character.");
 expr_fn!(asin, num);
-scalar_function!(asinh, Asinh);
-scalar_function!(atan, Atan);
-scalar_function!(atanh, Atanh);
-scalar_function!(atan2, Atan2);
+expr_fn!(asinh, num);
+expr_fn!(atan, num);
+expr_fn!(atanh, num);
+expr_fn!(atan2, y x);
 expr_fn!(
     bit_length,
     arg,
     "Returns number of bits in the string (8 times the octet_length)."
 );
 expr_fn_vec!(btrim, "Removes the longest string containing only characters in characters (a space by default) from the start and end of string.");
-scalar_function!(cbrt, Cbrt);
-scalar_function!(ceil, Ceil);
+expr_fn!(cbrt, num);
+expr_fn!(ceil, num);
 expr_fn!(
     character_length,
     string,
@@ -393,44 +401,44 @@ expr_fn!(
 expr_fn!(length, string);
 expr_fn!(char_length, string);
 expr_fn!(chr, arg, "Returns the character with the given code.");
-scalar_function!(coalesce, Coalesce);
-scalar_function!(cos, Cos);
-scalar_function!(cosh, Cosh);
-scalar_function!(degrees, Degrees);
+expr_fn_vec!(coalesce);
+expr_fn!(cos, num);
+expr_fn!(cosh, num);
+expr_fn!(degrees, num);
 expr_fn!(decode, input encoding);
 expr_fn!(encode, input encoding);
-scalar_function!(exp, Exp);
-scalar_function!(factorial, Factorial);
-scalar_function!(floor, Floor);
-scalar_function!(gcd, Gcd);
-scalar_function!(initcap, InitCap, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
+expr_fn!(exp, num);
+expr_fn!(factorial, num);
+expr_fn!(floor, num);
+expr_fn!(gcd, x y);
+expr_fn!(initcap, string, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
 expr_fn!(isnan, num);
-scalar_function!(iszero, Iszero);
-scalar_function!(lcm, Lcm);
-scalar_function!(left, Left, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
-scalar_function!(ln, Ln);
-scalar_function!(log, Log);
-scalar_function!(log10, Log10);
-scalar_function!(log2, Log2);
+expr_fn!(iszero, num);
+expr_fn!(lcm, x y);
+expr_fn!(left, string n, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
+expr_fn!(ln, num);
+expr_fn!(log, base num);
+expr_fn!(log10, num);
+expr_fn!(log2, num);
 expr_fn!(lower, arg1, "Converts the string to all lower case");
-scalar_function!(lpad, Lpad, "Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right).");
+expr_fn_vec!(lpad, "Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right).");
 expr_fn_vec!(ltrim, "Removes the longest string containing only characters in characters (a space by default) from the start of string.");
 expr_fn!(
     md5,
     input_arg,
     "Computes the MD5 hash of the argument, with the result written in hexadecimal."
 );
-scalar_function!(
+expr_fn!(
     nanvl,
-    Nanvl,
+    x y,
     "Returns x if x is not NaN otherwise returns y."
 );
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn_vec!(octet_length, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
-scalar_function!(pi, Pi);
-scalar_function!(power, Power);
-scalar_function!(pow, Power);
-scalar_function!(radians, Radians);
+expr_fn!(pi);
+expr_fn!(power, base exponent);
+expr_fn!(pow, power, base exponent);
+expr_fn!(radians, num);
 expr_fn!(regexp_match, input_arg1 input_arg2);
 expr_fn!(
     regexp_replace,
@@ -443,31 +451,31 @@ expr_fn!(
     string from to,
     "Replaces all occurrences in string of substring from with substring to."
 );
-scalar_function!(
+expr_fn!(
     reverse,
-    Reverse,
+    string,
     "Reverses the order of the characters in the string."
 );
-scalar_function!(right, Right, "Returns last n characters in the string, or when n is negative, returns all but first |n| characters.");
-scalar_function!(round, Round);
-scalar_function!(rpad, Rpad, "Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.");
+expr_fn!(right, string n, "Returns last n characters in the string, or when n is negative, returns all but first |n| characters.");
+expr_fn_vec!(round);
+expr_fn_vec!(rpad, "Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated.");
 expr_fn_vec!(rtrim, "Removes the longest string containing only characters in characters (a space by default) from the end of string.");
 expr_fn!(sha224, input_arg1);
 expr_fn!(sha256, input_arg1);
 expr_fn!(sha384, input_arg1);
 expr_fn!(sha512, input_arg1);
-scalar_function!(signum, Signum);
-scalar_function!(sin, Sin);
-scalar_function!(sinh, Sinh);
+expr_fn!(signum, num);
+expr_fn!(sin, num);
+expr_fn!(sinh, num);
 expr_fn!(
     split_part,
     string delimiter index,
     "Splits string at occurrences of delimiter and returns the n'th field (counting from one)."
 );
-scalar_function!(sqrt, Sqrt);
+expr_fn!(sqrt, num);
 expr_fn!(starts_with, arg1 arg2, "Returns true if string starts with prefix.");
-scalar_function!(strpos, Strpos, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
-scalar_function!(substr, Substr);
+expr_fn!(strpos, string substring, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
+expr_fn!(substr, string position);
 expr_fn!(tan, num);
 expr_fn!(tanh, num);
 expr_fn!(
@@ -488,15 +496,15 @@ expr_fn!(date_trunc, part date);
 expr_fn!(datetrunc, date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
 
-scalar_function!(translate, Translate, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
+expr_fn!(translate, string from to, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
 expr_fn_vec!(trim, "Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string.");
-scalar_function!(trunc, Trunc);
+expr_fn_vec!(trunc);
 expr_fn!(upper, arg1, "Converts the string to all upper case.");
 expr_fn!(uuid);
-expr_fn!(r#struct, args); // Use raw identifier since struct is a keyword
+expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
-scalar_function!(random, Random);
+expr_fn!(random);
 
 // Array Functions
 array_fn!(array_append, array element);
@@ -565,9 +573,7 @@ aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
 aggregate_function!(count, Count);
-aggregate_function!(covar, Covariance);
 aggregate_function!(covar_pop, CovariancePop);
-aggregate_function!(covar_samp, Covariance);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
