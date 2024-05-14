@@ -55,6 +55,7 @@ repository = "https://github.com/apache/arrow-datafusion-python"
 profile = "black"
 
 [tool.maturin]
+python-source = "python"
 module-name = "datafusion._internal"
 include = [
     { path = "Cargo.lock", format = "sdist" }
