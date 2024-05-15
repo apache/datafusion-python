@@ -503,6 +503,7 @@ expr_fn_vec!(trunc);
 expr_fn!(upper, arg1, "Converts the string to all upper case.");
 expr_fn!(uuid);
 expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
+expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
 expr_fn!(random);
@@ -680,6 +681,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(mean))?;
     m.add_wrapped(wrap_pyfunction!(median))?;
     m.add_wrapped(wrap_pyfunction!(min))?;
+    m.add_wrapped(wrap_pyfunction!(named_struct))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;

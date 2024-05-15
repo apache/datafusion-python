@@ -50,6 +50,32 @@ def df():
     return ctx.create_dataframe([[batch]])
 
 
+def test_named_struct(df):
+    df = df.with_column(
+        "d",
+        f.named_struct(
+            literal("a"),
+            column("a"),
+            literal("b"),
+            column("b"),
+            literal("c"),
+            column("c"),
+        ),
+    )
+
+    expected = """DataFrame()
++-------+---+---------+------------------------------+
+| a     | b | c       | d                            |
++-------+---+---------+------------------------------+
+| Hello | 4 | hello   | {a: Hello, b: 4, c: hello }  |
+| World | 5 |  world  | {a: World, b: 5, c:  world } |
+| !     | 6 |  !      | {a: !, b: 6, c:  !}          |
++-------+---+---------+------------------------------+
+""".strip()
+
+    assert str(df) == expected
+
+
 def test_literal(df):
     df = df.select(
         literal(1),
