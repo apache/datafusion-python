@@ -19,16 +19,16 @@
 
 # DataFusion in Python
 
-[![Python test](https://github.com/apache/arrow-datafusion-python/actions/workflows/test.yaml/badge.svg)](https://github.com/apache/arrow-datafusion-python/actions/workflows/test.yaml)
-[![Python Release Build](https://github.com/apache/arrow-datafusion-python/actions/workflows/build.yml/badge.svg)](https://github.com/apache/arrow-datafusion-python/actions/workflows/build.yml)
+[![Python test](https://github.com/apache/datafusion-python/actions/workflows/test.yaml/badge.svg)](https://github.com/apache/datafusion-python/actions/workflows/test.yaml)
+[![Python Release Build](https://github.com/apache/datafusion-python/actions/workflows/build.yml/badge.svg)](https://github.com/apache/datafusion-python/actions/workflows/build.yml)
 
-This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/arrow-datafusion).
+This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/datafusion).
 
 DataFusion's Python bindings can be used as a foundation for building new data systems in Python. Here are some examples:
 
 - [Dask SQL](https://github.com/dask-contrib/dask-sql) uses DataFusion's Python bindings for SQL parsing, query
   planning, and logical plan optimizations, and then transpiles the logical plan to Dask operations for execution.
-- [DataFusion Ballista](https://github.com/apache/arrow-ballista) is a distributed SQL query engine that extends
+- [DataFusion Ballista](https://github.com/apache/datafusion-ballista) is a distributed SQL query engine that extends
   DataFusion's Python bindings for distributed use cases.
 
 It is also possible to use these Python bindings directly for DataFrame and SQL operations, but you may find that
@@ -172,7 +172,7 @@ Bootstrap (Conda):
 
 ```bash
 # fetch this repo
-git clone git@github.com:apache/arrow-datafusion-python.git
+git clone git@github.com:apache/datafusion-python.git
 # create the conda environment for dev
 conda env create -f ./conda/environments/datafusion-dev.yaml -n datafusion-dev
 # activate the conda environment
@@ -183,7 +183,7 @@ Bootstrap (Pip):
 
 ```bash
 # fetch this repo
-git clone git@github.com:apache/arrow-datafusion-python.git
+git clone git@github.com:apache/datafusion-python.git
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv venv
 # activate the venv
