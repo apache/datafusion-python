@@ -407,6 +407,7 @@ expr_fn!(cosh, num);
 expr_fn!(degrees, num);
 expr_fn!(decode, input encoding);
 expr_fn!(encode, input encoding);
+expr_fn!(ends_with, string suffix, "Returns true if string ends with suffix.");
 expr_fn!(exp, num);
 expr_fn!(factorial, num);
 expr_fn!(floor, num);
@@ -473,7 +474,7 @@ expr_fn!(
     "Splits string at occurrences of delimiter and returns the n'th field (counting from one)."
 );
 expr_fn!(sqrt, num);
-expr_fn!(starts_with, arg1 arg2, "Returns true if string starts with prefix.");
+expr_fn!(starts_with, string prefix, "Returns true if string starts with prefix.");
 expr_fn!(strpos, string substring, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
 expr_fn!(substr, string position);
 expr_fn!(tan, num);
@@ -652,6 +653,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(datetrunc))?;
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
+    m.add_wrapped(wrap_pyfunction!(ends_with))?;
     m.add_wrapped(wrap_pyfunction!(exp))?;
     m.add_wrapped(wrap_pyfunction!(factorial))?;
     m.add_wrapped(wrap_pyfunction!(floor))?;
