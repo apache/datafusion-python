@@ -20,7 +20,7 @@
 # DataFusion Documentation
 
 This folder contains the source content of the [Python API](./source/api).
-This is published to https://arrow.apache.org/datafusion-python/ by a GitHub action
+This is published to https://datafusion.apache.org/python by a GitHub action
 when changes are merged to the main branch.
 
 ## Dependencies
@@ -66,15 +66,15 @@ firefox build/html/index.html
 
 ## Release Process
 
-This documentation is hosted at https://arrow.apache.org/datafusion-python/
+This documentation is hosted at https://datafusion.apache.org/python
 
 When the PR is merged to the `main` branch of the DataFusion
-repository, a [github workflow](https://github.com/apache/arrow-datafusion-python/blob/main/.github/workflows/docs.yaml) which:
+repository, a [github workflow](https://github.com/apache/datafusion-python/blob/main/.github/workflows/docs.yaml) which:
 
 1. Builds the html content
-2. Pushes the html content to the [`asf-site`](https://github.com/apache/arrow-datafusion-python/tree/asf-site) branch in this repository.
+2. Pushes the html content to the [`asf-site`](https://github.com/apache/datafusion-python/tree/asf-site) branch in this repository.
 
 The Apache Software Foundation provides https://arrow.apache.org/,
 which serves content based on the configuration in
-[.asf.yaml](https://github.com/apache/arrow-datafusion-python/blob/main/.asf.yaml),
-which specifies the target as https://arrow.apache.org/datafusion-python/.
+[.asf.yaml](https://github.com/apache/datafusion-python/blob/main/.asf.yaml),
+which specifies the target as https://datafusion.apache.org/python.

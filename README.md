@@ -19,16 +19,16 @@
 
 # DataFusion in Python
 
-[![Python test](https://github.com/apache/arrow-datafusion-python/actions/workflows/test.yaml/badge.svg)](https://github.com/apache/arrow-datafusion-python/actions/workflows/test.yaml)
-[![Python Release Build](https://github.com/apache/arrow-datafusion-python/actions/workflows/build.yml/badge.svg)](https://github.com/apache/arrow-datafusion-python/actions/workflows/build.yml)
+[![Python test](https://github.com/apache/datafusion-python/actions/workflows/test.yaml/badge.svg)](https://github.com/apache/datafusion-python/actions/workflows/test.yaml)
+[![Python Release Build](https://github.com/apache/datafusion-python/actions/workflows/build.yml/badge.svg)](https://github.com/apache/datafusion-python/actions/workflows/build.yml)
 
-This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/arrow-datafusion).
+This is a Python library that binds to [Apache Arrow](https://arrow.apache.org/) in-memory query engine [DataFusion](https://github.com/apache/datafusion).
 
 DataFusion's Python bindings can be used as a foundation for building new data systems in Python. Here are some examples:
 
 - [Dask SQL](https://github.com/dask-contrib/dask-sql) uses DataFusion's Python bindings for SQL parsing, query
   planning, and logical plan optimizations, and then transpiles the logical plan to Dask operations for execution.
-- [DataFusion Ballista](https://github.com/apache/arrow-ballista) is a distributed SQL query engine that extends
+- [DataFusion Ballista](https://github.com/apache/datafusion-ballista) is a distributed SQL query engine that extends
   DataFusion's Python bindings for distributed use cases.
 
 It is also possible to use these Python bindings directly for DataFrame and SQL operations, but you may find that
@@ -120,23 +120,23 @@ See [examples](examples/README.md) for more information.
 
 ### Executing Queries with DataFusion
 
-- [Query a Parquet file using SQL](./examples/sql-parquet.py)
-- [Query a Parquet file using the DataFrame API](./examples/dataframe-parquet.py)
-- [Run a SQL query and store the results in a Pandas DataFrame](./examples/sql-to-pandas.py)
-- [Run a SQL query with a Python user-defined function (UDF)](./examples/sql-using-python-udf.py)
-- [Run a SQL query with a Python user-defined aggregation function (UDAF)](./examples/sql-using-python-udaf.py)
-- [Query PyArrow Data](./examples/query-pyarrow-data.py)
-- [Create dataframe](./examples/import.py)
-- [Export dataframe](./examples/export.py)
+- [Query a Parquet file using SQL](https://github.com/apache/datafusion-python/blob/main/examples/sql-parquet.py)
+- [Query a Parquet file using the DataFrame API](https://github.com/apache/datafusion-python/blob/main/examples/dataframe-parquet.py)
+- [Run a SQL query and store the results in a Pandas DataFrame](https://github.com/apache/datafusion-python/blob/main/examples/sql-to-pandas.py)
+- [Run a SQL query with a Python user-defined function (UDF)](https://github.com/apache/datafusion-python/blob/main/examples/sql-using-python-udf.py)
+- [Run a SQL query with a Python user-defined aggregation function (UDAF)](https://github.com/apache/datafusion-python/blob/main/examples/sql-using-python-udaf.py)
+- [Query PyArrow Data](https://github.com/apache/datafusion-python/blob/main/examples/query-pyarrow-data.py)
+- [Create dataframe](https://github.com/apache/datafusion-python/blob/main/examples/import.py)
+- [Export dataframe](https://github.com/apache/datafusion-python/blob/main/examples/export.py)
 
 ### Running User-Defined Python Code
 
-- [Register a Python UDF with DataFusion](./examples/python-udf.py)
-- [Register a Python UDAF with DataFusion](./examples/python-udaf.py)
+- [Register a Python UDF with DataFusion](https://github.com/apache/datafusion-python/blob/main/examples/python-udf.py)
+- [Register a Python UDAF with DataFusion](https://github.com/apache/datafusion-python/blob/main/examples/python-udaf.py)
 
 ### Substrait Support
 
-- [Serialize query plans using Substrait](./examples/substrait.py)
+- [Serialize query plans using Substrait](https://github.com/apache/datafusion-python/blob/main/examples/substrait.py)
 
 ## How to install (from pip)
 
@@ -172,7 +172,7 @@ Bootstrap (Conda):
 
 ```bash
 # fetch this repo
-git clone git@github.com:apache/arrow-datafusion-python.git
+git clone git@github.com:apache/datafusion-python.git
 # create the conda environment for dev
 conda env create -f ./conda/environments/datafusion-dev.yaml -n datafusion-dev
 # activate the conda environment
@@ -183,7 +183,7 @@ Bootstrap (Pip):
 
 ```bash
 # fetch this repo
-git clone git@github.com:apache/arrow-datafusion-python.git
+git clone git@github.com:apache/datafusion-python.git
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv venv
 # activate the venv

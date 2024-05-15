@@ -19,7 +19,7 @@
 DataFusion in Python
 ====================
 
-This is a Python library that binds to `Apache Arrow <https://arrow.apache.org/>`_ in-memory query engine `DataFusion <https://github.com/apache/arrow/tree/master/rust/datafusion>`_.
+This is a Python library that binds to `Apache Arrow <https://arrow.apache.org/>`_ in-memory query engine `DataFusion <https://github.com/apache/datafusion>`_.
 
 Like pyspark, it allows you to build a plan through SQL or a DataFrame API against in-memory data, parquet or CSV files, run it in a multi-threaded environment, and obtain the result back in Python.
 
@@ -72,10 +72,10 @@ Example
    :maxdepth: 1
    :caption: LINKS
 
-   Github and Issue Tracker <https://github.com/apache/arrow-datafusion-python>
+   Github and Issue Tracker <https://github.com/apache/datafusion-python>
    Rust's API Docs <https://docs.rs/datafusion/latest/datafusion/>
-   Code of conduct <https://github.com/apache/arrow-datafusion/blob/main/CODE_OF_CONDUCT.md>
-   Examples <https://github.com/apache/arrow-datafusion-python/tree/main/examples>
+   Code of conduct <https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md>
+   Examples <https://github.com/apache/datafusion-python/tree/main/examples>
 
 .. _toc.guide:
 .. toctree::
