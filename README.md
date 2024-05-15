@@ -120,23 +120,23 @@ See [examples](examples/README.md) for more information.
 
 ### Executing Queries with DataFusion
 
-- [Query a Parquet file using SQL](./examples/sql-parquet.py)
-- [Query a Parquet file using the DataFrame API](./examples/dataframe-parquet.py)
-- [Run a SQL query and store the results in a Pandas DataFrame](./examples/sql-to-pandas.py)
-- [Run a SQL query with a Python user-defined function (UDF)](./examples/sql-using-python-udf.py)
-- [Run a SQL query with a Python user-defined aggregation function (UDAF)](./examples/sql-using-python-udaf.py)
-- [Query PyArrow Data](./examples/query-pyarrow-data.py)
-- [Create dataframe](./examples/import.py)
-- [Export dataframe](./examples/export.py)
+- [Query a Parquet file using SQL](https://github.com/apache/datafusion-python/blob/main/examples/sql-parquet.py)
+- [Query a Parquet file using the DataFrame API](https://github.com/apache/datafusion-python/blob/main/examples/dataframe-parquet.py)
+- [Run a SQL query and store the results in a Pandas DataFrame](https://github.com/apache/datafusion-python/blob/main/examples/sql-to-pandas.py)
+- [Run a SQL query with a Python user-defined function (UDF)](https://github.com/apache/datafusion-python/blob/main/examples/sql-using-python-udf.py)
+- [Run a SQL query with a Python user-defined aggregation function (UDAF)](https://github.com/apache/datafusion-python/blob/main/examples/sql-using-python-udaf.py)
+- [Query PyArrow Data](https://github.com/apache/datafusion-python/blob/main/examples/query-pyarrow-data.py)
+- [Create dataframe](https://github.com/apache/datafusion-python/blob/main/examples/import.py)
+- [Export dataframe](https://github.com/apache/datafusion-python/blob/main/examples/export.py)
 
 ### Running User-Defined Python Code
 
-- [Register a Python UDF with DataFusion](./examples/python-udf.py)
-- [Register a Python UDAF with DataFusion](./examples/python-udaf.py)
+- [Register a Python UDF with DataFusion](https://github.com/apache/datafusion-python/blob/main/examples/python-udf.py)
+- [Register a Python UDAF with DataFusion](https://github.com/apache/datafusion-python/blob/main/examples/python-udaf.py)
 
 ### Substrait Support
 
-- [Serialize query plans using Substrait](./examples/substrait.py)
+- [Serialize query plans using Substrait](https://github.com/apache/datafusion-python/blob/main/examples/substrait.py)
 
 ## How to install (from pip)
 
