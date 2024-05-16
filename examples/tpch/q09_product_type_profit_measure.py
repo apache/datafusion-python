@@ -77,7 +77,7 @@ df = df.select(
     col("n_name").alias("nation"),
     F.datepart(lit("year"), col("o_orderdate")).cast(pa.int32()).alias("o_year"),
     (
-        col("l_extendedprice") * (lit(1.0) - col("l_discount"))
+        (col("l_extendedprice") * (lit(1) - col("l_discount")))
         - (col("ps_supplycost") * col("l_quantity"))
     ).alias("amount"),
 )

@@ -39,7 +39,7 @@ date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d")
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_one_quarter = lit(pa.scalar((0, 0, 120), type=pa.month_day_nano_interval()))
+interval_one_quarter = lit(pa.scalar((0, 0, 90), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 
@@ -80,7 +80,7 @@ df = df.join(df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner")
 # Compute the revenue
 df = df.aggregate(
     [col("o_custkey")],
-    [F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias("revenue")],
+    [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
 )
 
 # Now join in the customer data

@@ -59,7 +59,7 @@ df_partsupp = df_partsupp.join(
 )
 
 # Select the parts we are interested in
-df_part = df_part.filter(col("p_brand") == lit(BRAND))
+df_part = df_part.filter(col("p_brand") != lit(BRAND))
 df_part = df_part.filter(
     F.substr(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1)) != lit(TYPE_TO_IGNORE)
 )
