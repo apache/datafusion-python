@@ -29,62 +29,114 @@ The above problem statement text is copyrighted by the Transaction Processing Pe
 as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
+import decimal
 import pyarrow as pa
-from datafusion import SessionContext, col, lit, functions as F
-
-ctx = SessionContext()
-
-df = ctx.read_parquet("data/lineitem.parquet")
-
-# It may be that the date can be hard coded, based on examples shown.
-# This approach will work with any date range in the provided data set.
-
-greatest_ship_date = df.aggregate(
-    [], [F.max(col("l_shipdate")).alias("shipdate")]
-).collect()[0]["shipdate"][0]
+from datafusion import DataFrame, SessionContext, col, lit, functions as F
 
 # From the given problem, this is how close to the last date in the database we
 # want to report results for. It should be between 60-120 days before the end.
 DAYS_BEFORE_FINAL = 90
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, DAYS_BEFORE_FINAL), type=pa.month_day_nano_interval())
+def run_query(ctx: SessionContext) -> DataFrame:
+    """
+    This is the primary example code
+    """
 
-print("Final date in database:", greatest_ship_date)
+    df = ctx.read_parquet("data/lineitem.parquet")
 
-# Filter data to the dates of interest
-df = df.filter(col("l_shipdate") <= lit(greatest_ship_date) - lit(interval))
+    # It may be that the date can be hard coded, based on examples shown.
+    # This approach will work with any date range in the provided data set.
 
-# Aggregate the results
+    greatest_ship_date = df.aggregate(
+        [], [F.max(col("l_shipdate")).alias("shipdate")]
+    ).collect()[0]["shipdate"][0]
 
-df = df.aggregate(
-    [col("l_returnflag"), col("l_linestatus")],
-    [
-        F.sum(col("l_quantity")).alias("sum_qty"),
-        F.sum(col("l_extendedprice")).alias("sum_base_price"),
-        F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias(
-            "sum_disc_price"
-        ),
-        F.sum(
-            col("l_extendedprice")
-            * (lit(1.0) - col("l_discount"))
-            * (lit(1.0) + col("l_tax"))
-        ).alias("sum_charge"),
-        F.avg(col("l_quantity")).alias("avg_qty"),
-        F.avg(col("l_extendedprice")).alias("avg_price"),
-        F.avg(col("l_discount")).alias("avg_disc"),
-        F.count(col("l_returnflag")).alias(
-            "count_order"
-        ),  # Counting any column should return same result
-    ],
-)
+    # Note: this is a hack on setting the values. It should be set differently once
+    # https://github.com/apache/datafusion-python/issues/665 is resolved.
+    interval = pa.scalar((0, 0, DAYS_BEFORE_FINAL), type=pa.month_day_nano_interval())
 
-# Sort per the expected result
+    print("Final date in database:", greatest_ship_date)
 
-df = df.sort(col("l_returnflag").sort(), col("l_linestatus").sort())
+    # Filter data to the dates of interest
+    df = df.filter(col("l_shipdate") <= lit(greatest_ship_date) - lit(interval))
 
-# Note: There appears to be a discrepancy between what is returned here and what is in the generated
-# answers file for the case of return flag N and line status O, but I did not investigate further.
+    # Aggregate the results
 
-df.show()
+    df = df.aggregate(
+        [col("l_returnflag"), col("l_linestatus")],
+        [
+            F.sum(col("l_quantity")).alias("sum_qty"),
+            F.sum(col("l_extendedprice")).alias("sum_base_price"),
+            F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
+                "sum_disc_price"
+            ),
+            F.sum(
+                col("l_extendedprice")
+                * (lit(1) - col("l_discount"))
+                * (lit(1) + col("l_tax"))
+            ).alias("sum_charge"),
+            F.avg(col("l_quantity")).alias("avg_qty"),
+            F.avg(col("l_extendedprice")).alias("avg_price"),
+            F.avg(col("l_discount")).alias("avg_disc"),
+            F.count(col("l_returnflag")).alias(
+                "count_order"
+            ),  # Counting any column should return same result
+        ],
+    )
+
+    # Sort per the expected result
+
+    df = df.sort(col("l_returnflag").sort(), col("l_linestatus").sort())
+
+    return df
+
+def validate_result(ctx: SessionContext, df: DataFrame) -> bool:
+    """
+    This function is primarily to be used by CI. It tests the return values against those listed
+    in the specification. We need to do some unit conversion around decimal to floating point
+    conversion.
+    """
+
+    ref_values = {
+        "l_returnflag": ["A"],
+        "l_linestatus": ["F"],
+        "sum_qty": [decimal.Decimal("37734107.00")],
+        "sum_base_price": [decimal.Decimal("56586554400.73")],
+        "sum_disc_price": [decimal.Decimal("53758257134.87")],
+        "sum_charge": [decimal.Decimal("55909065222.83")],
+        "avg_qty": [decimal.Decimal("25.52")],
+        "avg_price": [decimal.Decimal("38273.13")],
+        "avg_disc": [decimal.Decimal("0.05")],
+        "count_order": [1478493],
+    }
+    df_ref = ctx.from_pydict(ref_values)
+    columns = list(ref_values)
+
+    df = df.select(
+        col("l_returnflag"),
+        col("l_linestatus"),
+        col("sum_qty"),
+        col("sum_base_price"),
+        col("sum_disc_price").cast(pa.decimal128(13, 2)),
+        col("sum_charge").cast(pa.decimal128(13, 2)),
+        col("avg_qty").cast(pa.decimal128(13, 2)),
+        col("avg_price").cast(pa.decimal128(13, 2)),
+        col("avg_disc").cast(pa.decimal128(13, 2)),
+        col("count_order"),
+    )
+
+    df = df.limit(1).join(df_ref, (columns, columns), how="anti")
+
+    return df.count() == 0
+
+def main():
+    """
+    Call the query, validate the results, and print the dataframe.
+    """
+    ctx = SessionContext()
+    df = run_query(ctx)
+    assert validate_result(ctx, df)
+    df.show()
+
+if __name__ == "__main__":
+    main()
