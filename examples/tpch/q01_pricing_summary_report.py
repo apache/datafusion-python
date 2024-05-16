@@ -45,7 +45,7 @@ greatest_ship_date = df.aggregate(
 
 # From the given problem, this is how close to the last date in the database we
 # want to report results for. It should be between 60-120 days before the end.
-DAYS_BEFORE_FINAL = 68
+DAYS_BEFORE_FINAL = 90
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.

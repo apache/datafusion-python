@@ -35,7 +35,7 @@ DATE = "1996-01-01"
 date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_3_months = lit(pa.scalar((0, 0, 90), type=pa.month_day_nano_interval()))
+interval_3_months = lit(pa.scalar((0, 0, 91), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 
@@ -59,7 +59,7 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
 df = df_lineitem.aggregate(
     [col("l_suppkey")],
     [
-        F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias(
+        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
             "total_revenue"
         )
     ],
