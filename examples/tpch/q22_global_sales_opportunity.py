@@ -27,6 +27,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from util import get_data_path
 
 NATION_CODE = 13
 
@@ -34,10 +35,10 @@ NATION_CODE = 13
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
     "c_phone", "c_acctbal", "c_custkey"
 )
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns("o_custkey")
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns("o_custkey")
 
 # The nation code is a two digit number, but we need to convert it to a string literal
 nation_code = lit(str(NATION_CODE))

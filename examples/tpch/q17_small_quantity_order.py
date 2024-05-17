@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from util import get_data_path
 
 BRAND = "Brand#23"
 CONTAINER = "MED BOX"
@@ -37,10 +38,10 @@ CONTAINER = "MED BOX"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_brand", "p_container"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey", "l_quantity", "l_extendedprice"
 )
 

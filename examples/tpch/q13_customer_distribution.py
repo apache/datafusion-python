@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 WORD_1 = "special"
 WORD_2 = "requests"
@@ -37,10 +38,10 @@ WORD_2 = "requests"
 
 ctx = SessionContext()
 
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_custkey", "o_comment"
 )
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns("c_custkey")
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns("c_custkey")
 
 # Use a regex to remove special cases
 df_orders = df_orders.filter(

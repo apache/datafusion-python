@@ -28,6 +28,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, udf, functions as F
+from util import get_data_path
 
 items_of_interest = {
     "Brand#12": {
@@ -51,10 +52,10 @@ items_of_interest = {
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_brand", "p_container", "p_size"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey",
     "l_quantity",
     "l_shipmode",

@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 # Ideally we could put 3 months into the interval. See note below.
 INTERVAL_DAYS = 92
@@ -38,10 +39,10 @@ DATE_OF_INTEREST = "1993-07-01"
 
 ctx = SessionContext()
 
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_orderdate", "o_orderpriority", "o_orderkey"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_orderkey", "l_commitdate", "l_receiptdate"
 )
 

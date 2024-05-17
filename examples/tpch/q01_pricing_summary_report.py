@@ -31,10 +31,11 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 ctx = SessionContext()
 
-df = ctx.read_parquet("data/lineitem.parquet")
+df = ctx.read_parquet(get_data_path("lineitem.parquet"))
 
 # It may be that the date can be hard coded, based on examples shown.
 # This approach will work with any date range in the provided data set.

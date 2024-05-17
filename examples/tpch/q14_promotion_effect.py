@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 DATE = "1995-09-01"
 
@@ -41,10 +42,10 @@ interval_one_month = lit(pa.scalar((0, 0, 30), type=pa.month_day_nano_interval()
 
 ctx = SessionContext()
 
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey", "l_shipdate", "l_extendedprice", "l_discount"
 )
-df_part = ctx.read_parquet("data/part.parquet").select_columns("p_partkey", "p_type")
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_type")
 
 
 # Check part type begins with PROMO
