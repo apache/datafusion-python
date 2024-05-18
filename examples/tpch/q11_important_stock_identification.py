@@ -72,7 +72,7 @@ df = df.with_column(
 )
 
 # Limit to the parts for which there is a significant value based on the fraction of the total
-df = df.filter(col("value") / col("total_value") > lit(FRACTION))
+df = df.filter(col("value") / col("total_value") >= lit(FRACTION))
 
 # We only need to report on these two columns
 df = df.select_columns("ps_partkey", "value")

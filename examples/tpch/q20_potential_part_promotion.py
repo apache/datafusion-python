@@ -91,7 +91,7 @@ df = df.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), "inner")
 df = df.join(df_nation, (["s_nationkey"], ["n_nationkey"]), "inner")
 
 # Restrict to the requested data per the problem statement
-df = df.select_columns("s_name", "s_address")
+df = df.select_columns("s_name", "s_address").distinct()
 
 df = df.sort(col("s_name").sort())
 

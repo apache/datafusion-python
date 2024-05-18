@@ -40,7 +40,7 @@ date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d")
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_one_quarter = lit(pa.scalar((0, 0, 90), type=pa.month_day_nano_interval()))
+interval_one_quarter = lit(pa.scalar((0, 0, 92), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 

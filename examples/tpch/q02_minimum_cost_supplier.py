@@ -35,8 +35,8 @@ from util import get_data_path
 
 # This is the part we're looking for. Values selected here differ from the spec in order to run
 # unit tests on a small data set.
-SIZE_OF_INTEREST = 20
-TYPE_OF_INTEREST = "STEEL"
+SIZE_OF_INTEREST = 15
+TYPE_OF_INTEREST = "BRASS"
 REGION_OF_INTEREST = "EUROPE"
 
 # Load the dataframes we need

@@ -52,7 +52,7 @@ df_orders = df_orders.filter(
 df = df_customer.join(df_orders, (["c_custkey"], ["o_custkey"]), how="left")
 
 # Find the number of orders for each customer
-df = df.aggregate([col("c_custkey")], [F.count(col("c_custkey")).alias("c_count")])
+df = df.aggregate([col("c_custkey")], [F.count(col("o_custkey")).alias("c_count")])
 
 # Ultimately we want to know the number of customers that have that customer count
 df = df.aggregate([col("c_count")], [F.count(col("c_count")).alias("custdist")])

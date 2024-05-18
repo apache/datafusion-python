@@ -31,7 +31,7 @@ from datafusion import SessionContext, col, lit, functions as F
 from util import get_data_path
 
 SEGMENT_OF_INTEREST = "BUILDING"
-DATE_OF_INTEREST = "1993-08-28"
+DATE_OF_INTEREST = "1995-03-15"
 
 # Load the dataframes we need
 
@@ -74,9 +74,9 @@ df = df.aggregate(
 
 df = df.sort(col("revenue").sort(ascending=False), col("o_orderdate").sort())
 
-# Only return 100 results
+# Only return 10 results
 
-df = df.limit(100)
+df = df.limit(10)
 
 # Change the order that the columns are reported in just to match the spec
 

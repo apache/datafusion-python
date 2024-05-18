@@ -65,6 +65,6 @@ df = df.filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
 df = df.aggregate([], [F.sum(col("l_extendedprice")).alias("total")])
 
 # Divide by number of years in the problem statement to get average
-df = df.select((col("total") / lit(7.0)).alias("avg_yearly"))
+df = df.select((col("total") / lit(7)).alias("avg_yearly"))
 
 df.show()

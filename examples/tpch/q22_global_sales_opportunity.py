@@ -29,7 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
 from util import get_data_path
 
-NATION_CODE = 13
+NATION_CODES = [13, 31, 23, 29, 30, 18, 17]
 
 # Load the dataframes we need
 
@@ -41,14 +41,14 @@ df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns
 df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns("o_custkey")
 
 # The nation code is a two digit number, but we need to convert it to a string literal
-nation_code = lit(str(NATION_CODE))
+nation_codes = F.make_array(*[lit(str(n)) for n in NATION_CODES])
 
 # Use the substring operation to extract the first two charaters of the phone number
 df = df_customer.with_column("cntrycode", F.substr(col("c_phone"), lit(0), lit(3)))
 
 # Limit our search to customers with some balance and in the country code above
 df = df.filter(col("c_acctbal") > lit(0.0))
-df = df.filter(nation_code == col("cntrycode"))
+df = df.filter(~F.array_position(nation_codes, col("cntrycode")).is_null())
 
 # Compute the average balance. By default, the window frame is from unbounded preceeding to the
 # current row. We want our frame to cover the entire data frame.
@@ -57,6 +57,7 @@ df = df.with_column(
     "avg_balance", F.window("avg", [col("c_acctbal")], window_frame=window_frame)
 )
 
+df.show()
 # Limit results to customers with above average balance
 df = df.filter(col("c_acctbal") > col("avg_balance"))
 

@@ -108,7 +108,7 @@ df = df.join(df_suppliers_of_interest, (["suppkey"], ["s_suppkey"]), "inner")
 df = df.aggregate([col("s_name")], [F.count(col("o_orderkey")).alias("numwait")])
 
 # Return in descending order
-df = df.sort(col("numwait").sort(ascending=False))
+df = df.sort(col("numwait").sort(ascending=False), col("s_name").sort())
 
 df = df.limit(100)
 
