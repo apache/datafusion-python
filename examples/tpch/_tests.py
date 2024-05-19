@@ -2,6 +2,7 @@ import pytest
 from importlib import import_module
 import pyarrow as pa
 from datafusion import col, lit, functions as F, Expr
+from util import get_answer_file
 
 def df_selection(col_name, col_type):
     if col_type == pa.float64() or isinstance(col_type, pa.Decimal128Type):
@@ -37,7 +38,7 @@ def selections_and_schema(original_schema):
     return (df_selections, expected_schema, expected_selections)
 
 def check_q17(df):
-    raw_value = df.collect()[0]["avg_yearly"][0].as_py()
+    raw_value = df.collect()[0]["avg_yearly"][0].cast(pa.float64()).as_py()
     value = round(raw_value, 2)
     assert abs(value - 348406.05) < 0.001
 
@@ -83,7 +84,7 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
 
     read_schema = pa.schema(expected_schema)
 
-    df_expected = module.ctx.read_csv(f"../../benchmarks/tpch/data/answers/{answer_file}.out", schema=read_schema, delimiter="|", file_extension=".out")
+    df_expected = module.ctx.read_csv(get_answer_file(answer_file), schema=read_schema, delimiter="|", file_extension=".out")
 
     df_expected = df_expected.select(*expected_selections)
 
@@ -91,5 +92,3 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
 
     assert df.join(df_expected, (cols, cols), "anti").count() == 0
     assert df.count() == df_expected.count()
-
-test_tpch_query_vs_answer_file("q17_small_quantity_order", "q17")
