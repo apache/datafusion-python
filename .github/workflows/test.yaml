@@ -32,7 +32,7 @@ jobs:
     container:
       image: ghcr.io/scalytics/tpch-docker:main
       volumes:
-        - benchmarks/tpch/data:/data
+        - ${{ vars.GITHUB_WORKSPACE }}/benchmarks/tpch/data:/data
     steps:
       - name: Run dbgen to create 1 Gb dataset
         run: |
