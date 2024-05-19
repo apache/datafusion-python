@@ -38,7 +38,8 @@ jobs:
         run: |
           echo $PWD
           ls
-          dbgen -h
+          dbgen -vf -s 1
+          data/customer.tbl data/customer.csv
   test-matrix:
     runs-on: ubuntu-latest
     strategy:
