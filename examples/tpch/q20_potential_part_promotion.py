@@ -63,7 +63,7 @@ interval = pa.scalar((0, 0, 365), type=pa.month_day_nano_interval())
 # Filter down dataframes
 df_nation = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
 df_part = df_part.filter(
-    F.substr(col("p_name"), lit(0), lit(len(COLOR_OF_INTEREST) + 1))
+    F.substring(col("p_name"), lit(0), lit(len(COLOR_OF_INTEREST) + 1))
     == lit(COLOR_OF_INTEREST)
 )
 

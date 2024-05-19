@@ -50,7 +50,7 @@ df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_part
 
 # Check part type begins with PROMO
 df_part = df_part.filter(
-    F.substr(col("p_type"), lit(0), lit(6)) == lit("PROMO")
+    F.substring(col("p_type"), lit(0), lit(6)) == lit("PROMO")
 ).with_column("promo_factor", lit(1.0))
 
 df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(

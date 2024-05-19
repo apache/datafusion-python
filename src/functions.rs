@@ -476,6 +476,7 @@ expr_fn!(sqrt, num);
 expr_fn!(starts_with, arg1 arg2, "Returns true if string starts with prefix.");
 expr_fn!(strpos, string substring, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
 expr_fn!(substr, string position);
+expr_fn!(substring, string position length);
 expr_fn!(tan, num);
 expr_fn!(tanh, num);
 expr_fn!(
@@ -713,6 +714,7 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(strpos))?;
     m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
+    m.add_wrapped(wrap_pyfunction!(substring))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
     m.add_wrapped(wrap_pyfunction!(tanh))?;

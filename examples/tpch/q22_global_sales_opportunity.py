@@ -44,7 +44,7 @@ df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns("o_
 nation_codes = F.make_array(*[lit(str(n)) for n in NATION_CODES])
 
 # Use the substring operation to extract the first two charaters of the phone number
-df = df_customer.with_column("cntrycode", F.substr(col("c_phone"), lit(0), lit(3)))
+df = df_customer.with_column("cntrycode", F.substring(col("c_phone"), lit(0), lit(3)))
 
 # Limit our search to customers with some balance and in the country code above
 df = df.filter(col("c_acctbal") > lit(0.0))
