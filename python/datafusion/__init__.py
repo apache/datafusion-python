@@ -17,6 +17,7 @@
 
 from abc import ABCMeta, abstractmethod
 from typing import List
+from typing import TYPE_CHECKING
 
 try:
     import importlib.metadata as importlib_metadata
@@ -87,8 +88,9 @@ from .expr import (
     WindowFrame,
 )
 
-from .context import SessionConfig, SessionContext
-from .dataframe import DataFrame
+if TYPE_CHECKING:
+    from .context import SessionConfig, SessionContext
+    from .dataframe import DataFrame
 
 __version__ = importlib_metadata.version(__name__)
 
