@@ -18,7 +18,7 @@
 import pytest
 from importlib import import_module
 import pyarrow as pa
-from datafusion import col, lit, functions as F, Expr
+from datafusion import col, lit, functions as F
 from util import get_answer_file
 
 def df_selection(col_name, col_type):
