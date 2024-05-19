@@ -37,9 +37,9 @@ jobs:
       - name: Run dbgen to create 1 Gb dataset
         run: |
           echo $PWD
-          ls
+          cd /opt/tpch/2.18.0_rc2/dbgen
           dbgen -vf -s 1
-          data/customer.tbl data/customer.csv
+          /data/customer.tbl /data/customer.csv
   test-matrix:
     runs-on: ubuntu-latest
     strategy:
