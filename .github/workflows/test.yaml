@@ -132,3 +132,9 @@ jobs:
           source venv/bin/activate
           pip install -e . -vv
           pytest -v .
+
+      - name: Run TPC-H examples
+        run |
+        cd examples/tpch
+        python convert_data_to_parquet.py
+        pytest _tests.py
