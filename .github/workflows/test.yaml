@@ -36,10 +36,18 @@ jobs:
     steps:
       - name: Run dbgen to create 1 Gb dataset
         run: |
-          echo $PWD
+          mkdir -p /data/answers
           cd /opt/tpch/2.18.0_rc2/dbgen
           dbgen -vf -s 1
-          /data/customer.tbl /data/customer.csv
+          mv /data/customer.tbl /data/customer.csv
+          mv data/lineitem.tbl data/lineitem.csv
+          mv data/nation.tbl data/nation.csv
+          mv data/orders.tbl data/orders.csv
+          mv data/part.tbl data/part.csv
+          mv data/partsupp.tbl data/partsupp.csv
+          mv data/region.tbl data/region.csv
+          mv data/supplier.tbl data/supplier.csv
+          cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/
   test-matrix:
     runs-on: ubuntu-latest
     strategy:
