@@ -87,6 +87,9 @@ from .expr import (
     WindowFrame,
 )
 
+from .context import SessionConfig, SessionContext
+from .dataframe import DataFrame
+
 __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
