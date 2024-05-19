@@ -135,7 +135,7 @@ jobs:
           pytest -v .
 
       - name: Run TPC-H examples
-        run |
+        run: |
         cd examples/tpch
         python convert_data_to_parquet.py
         pytest _tests.py
