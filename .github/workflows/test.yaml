@@ -27,6 +27,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  generate-data:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/scalytics/tpch-docker:main
+      volumes:
+        - benchmarks/tpch/data:/data
+    steps:
+      - name: Run dbgen to create 1 Gb dataset
+        run: |
+          echo $PWD
+          ls
+          dbgen -h
   test-matrix:
     runs-on: ubuntu-latest
     strategy:
