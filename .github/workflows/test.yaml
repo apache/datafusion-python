@@ -56,7 +56,6 @@ jobs:
 
   test-matrix:
     runs-on: ubuntu-latest
-    needs: generate-data
     strategy:
       fail-fast: false
       matrix:
