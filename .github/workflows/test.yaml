@@ -39,7 +39,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /data
-          key: tpch-data-${{hashFiles('benchmarks/tpch')}}
+          key: tpch-data-2.18.0
       - name: Run dbgen to create 1 Gb dataset
         if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
         run: |
@@ -146,7 +146,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: benchmarks/tpch/data
-          key: tpch-data-${{hashFiles('benchmarks/tpch')}}
+          key: tpch-data-2.18.0
 
       - name: Run TPC-H examples
         run: |
