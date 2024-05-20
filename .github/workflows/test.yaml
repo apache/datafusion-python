@@ -52,7 +52,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tpch-dataset
-          path: ${{ vars.GITHUB_WORKSPACE }}/benchmarks/tpch/data
+          path: /data
           retention-days: 1
 
   test-matrix:
