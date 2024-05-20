@@ -76,6 +76,7 @@ jobs:
 
       - name: Download cached TPC-H dataset
         id: restore-tpch-dataset
+        needs: generate-data
         uses: actions/cache/restore@v3
         with:
           path: /data
