@@ -82,6 +82,7 @@ jobs:
           path: /data
           key: tpch-data-2.18.0
           fail-on-cache-miss: true
+          restore-keys: tpch-data-
 
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
