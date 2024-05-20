@@ -52,7 +52,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tpch-dataset
-          path: benchmarks/tpch/data
+          path: ${{ vars.GITHUB_WORKSPACE }}/benchmarks/tpch/data
+          retention-days: 1
 
   test-matrix:
     runs-on: ubuntu-latest
