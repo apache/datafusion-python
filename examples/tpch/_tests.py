@@ -55,7 +55,7 @@ def selections_and_schema(original_schema):
     return (df_selections, expected_schema, expected_selections)
 
 def check_q17(df):
-    raw_value = df.collect()[0]["avg_yearly"][0].cast(pa.float64()).as_py()
+    raw_value = float(df.collect()[0]["avg_yearly"][0].as_py())
     value = round(raw_value, 2)
     assert abs(value - 348406.05) < 0.001
 
