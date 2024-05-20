@@ -82,7 +82,7 @@ jobs:
           path: /data
           key: tpch-data-2.18.0
           fail-on-cache-miss: true
-          restore-keys: tpch-data-
+          enableCrossOsArchive: true
 
       - name: Test keys
         run: |
