@@ -79,10 +79,9 @@ jobs:
         id: restore-tpch-dataset
         uses: actions/cache/restore@v3
         with:
-          path: /data
+          path: benchmarks/tpch/data
           key: tpch-data-2.18.0
           fail-on-cache-miss: true
-          enableCrossOsArchive: true
 
       - name: Test keys
         run: |
