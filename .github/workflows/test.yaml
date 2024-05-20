@@ -144,6 +144,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: tpch-dataset
+          path: ${{ vars.GITHUB_WORKSPACE }}/benchmarks/tpch/data
 
       - name: Run TPC-H examples
         run: |
