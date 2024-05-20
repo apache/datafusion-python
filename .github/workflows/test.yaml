@@ -48,6 +48,11 @@ jobs:
           mv /data/region.tbl /data/region.csv
           mv /data/supplier.tbl /data/supplier.csv
           cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/
+      - name: Upload TPC-H dataset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tpch-dataset
+          path: benchmarks/tpch/data
 
   test-matrix:
     runs-on: ubuntu-latest
@@ -135,8 +140,14 @@ jobs:
           pip install -e . -vv
           pytest -v .
 
+      - name: Download TPC-H dataset artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: tpch-dataset
+
       - name: Run TPC-H examples
         run: |
+          source venv/bin/activate
           cd examples/tpch
           python convert_data_to_parquet.py
           pytest _tests.py
