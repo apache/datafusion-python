@@ -81,7 +81,15 @@ jobs:
         with:
           path: benchmarks/tpch
           key: tpch-data-2.18.0
-          fail-on-cache-miss: true
+
+      - name: Debug output from chace
+        if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
+        run: |
+          pwd
+          echo "Cache hit failed"
+
+      - name: Debug2
+        run: echo "Cache finished"
 
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
