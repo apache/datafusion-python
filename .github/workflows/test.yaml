@@ -73,6 +73,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Download cached TPC-H dataset
+        id: restore-tpch-dataset
+        uses: actions/cache@v3
+        with:
+          path: benchmarks/tpch/data
+          key: tpch-data-2.18.0
+
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
         id: rust-toolchain
@@ -141,12 +148,6 @@ jobs:
           pip install -e . -vv
           pytest -v .
 
-      - name: Download cached TPC-H dataset
-        id: restore-tpch-dataset
-        uses: actions/cache@v3
-        with:
-          path: benchmarks/tpch/data
-          key: tpch-data-2.18.0
 
       - name: Run TPC-H examples
         run: |
