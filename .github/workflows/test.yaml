@@ -75,7 +75,7 @@ jobs:
 
       - name: Download cached TPC-H dataset
         id: restore-tpch-dataset
-        uses: actions/cache@v3
+        uses: actions/cache/restore@v3
         with:
           path: benchmarks/tpch/data
           key: tpch-data-2.18.0
