@@ -40,6 +40,7 @@ jobs:
         with:
           path: /data
           key: tpch-data-2.18.0
+
       - name: Run dbgen to create 1 Gb dataset
         if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
         run: |
@@ -77,8 +78,9 @@ jobs:
         id: restore-tpch-dataset
         uses: actions/cache/restore@v3
         with:
-          path: benchmarks/tpch/data
+          path: /data
           key: tpch-data-2.18.0
+          fail-on-cache-miss: true
 
       - name: Setup Rust Toolchain
         uses: actions-rs/toolchain@v1
