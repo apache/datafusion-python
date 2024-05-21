@@ -28,6 +28,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from util import get_data_path
 
 NATION = "GERMANY"
 FRACTION = 0.0001
@@ -36,13 +37,13 @@ FRACTION = 0.0001
 
 ctx = SessionContext()
 
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_nationkey"
 )
-df_partsupp = ctx.read_parquet("data/partsupp.parquet").select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
     "ps_supplycost", "ps_availqty", "ps_suppkey", "ps_partkey"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_name"
 )
 
@@ -71,7 +72,7 @@ df = df.with_column(
 )
 
 # Limit to the parts for which there is a significant value based on the fraction of the total
-df = df.filter(col("value") / col("total_value") > lit(FRACTION))
+df = df.filter(col("value") / col("total_value") >= lit(FRACTION))
 
 # We only need to report on these two columns
 df = df.select_columns("ps_partkey", "value")

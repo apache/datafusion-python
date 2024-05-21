@@ -28,6 +28,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, udf, functions as F
+from util import get_data_path
 
 items_of_interest = {
     "Brand#12": {
@@ -51,10 +52,10 @@ items_of_interest = {
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_brand", "p_container", "p_size"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey",
     "l_quantity",
     "l_shipmode",
@@ -67,9 +68,8 @@ df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
 
 df = df_lineitem.filter(col("l_shipinstruct") == lit("DELIVER IN PERSON"))
 
-# Small note: The data generated uses "REG AIR" but the spec says "AIR REG"
 df = df.filter(
-    (col("l_shipmode") == lit("AIR")) | (col("l_shipmode") == lit("REG AIR"))
+    (col("l_shipmode") == lit("AIR")) | (col("l_shipmode") == lit("AIR REG"))
 )
 
 df = df.join(df_part, (["l_partkey"], ["p_partkey"]), "inner")
@@ -117,7 +117,7 @@ def is_of_interest(
 # Turn the above function into a UDF that DataFusion can understand
 is_of_interest_udf = udf(
     is_of_interest,
-    [pa.utf8(), pa.utf8(), pa.float32(), pa.int32()],
+    [pa.utf8(), pa.utf8(), pa.decimal128(15, 2), pa.int32()],
     pa.bool_(),
     "stable",
 )
@@ -131,7 +131,7 @@ df = df.filter(
 
 df = df.aggregate(
     [],
-    [F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias("revenue")],
+    [F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias("revenue")],
 )
 
 df.show()

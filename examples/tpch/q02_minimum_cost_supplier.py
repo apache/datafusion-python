@@ -31,8 +31,10 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import datafusion
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
-# This is the part we're looking for
+# This is the part we're looking for. Values selected here differ from the spec in order to run
+# unit tests on a small data set.
 SIZE_OF_INTEREST = 15
 TYPE_OF_INTEREST = "BRASS"
 REGION_OF_INTEREST = "EUROPE"
@@ -41,10 +43,10 @@ REGION_OF_INTEREST = "EUROPE"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_mfgr", "p_type", "p_size"
 )
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_acctbal",
     "s_name",
     "s_address",
@@ -53,13 +55,13 @@ df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
     "s_nationkey",
     "s_suppkey",
 )
-df_partsupp = ctx.read_parquet("data/partsupp.parquet").select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
     "ps_partkey", "ps_suppkey", "ps_supplycost"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_regionkey", "n_name"
 )
-df_region = ctx.read_parquet("data/region.parquet").select_columns(
+df_region = ctx.read_parquet(get_data_path("region.parquet")).select_columns(
     "r_regionkey", "r_name"
 )
 

@@ -36,7 +36,7 @@ all_schemas["customer"] = [
     ("C_ADDRESS", pyarrow.string()),
     ("C_NATIONKEY", pyarrow.int32()),
     ("C_PHONE", pyarrow.string()),
-    ("C_ACCTBAL", pyarrow.float32()),
+    ("C_ACCTBAL", pyarrow.decimal128(15, 2)),
     ("C_MKTSEGMENT", pyarrow.string()),
     ("C_COMMENT", pyarrow.string()),
 ]
@@ -46,10 +46,10 @@ all_schemas["lineitem"] = [
     ("L_PARTKEY", pyarrow.int32()),
     ("L_SUPPKEY", pyarrow.int32()),
     ("L_LINENUMBER", pyarrow.int32()),
-    ("L_QUANTITY", pyarrow.float32()),
-    ("L_EXTENDEDPRICE", pyarrow.float32()),
-    ("L_DISCOUNT", pyarrow.float32()),
-    ("L_TAX", pyarrow.float32()),
+    ("L_QUANTITY", pyarrow.decimal128(15, 2)),
+    ("L_EXTENDEDPRICE", pyarrow.decimal128(15, 2)),
+    ("L_DISCOUNT", pyarrow.decimal128(15, 2)),
+    ("L_TAX", pyarrow.decimal128(15, 2)),
     ("L_RETURNFLAG", pyarrow.string()),
     ("L_LINESTATUS", pyarrow.string()),
     ("L_SHIPDATE", pyarrow.date32()),
@@ -71,7 +71,7 @@ all_schemas["orders"] = [
     ("O_ORDERKEY", pyarrow.int32()),
     ("O_CUSTKEY", pyarrow.int32()),
     ("O_ORDERSTATUS", pyarrow.string()),
-    ("O_TOTALPRICE", pyarrow.float32()),
+    ("O_TOTALPRICE", pyarrow.decimal128(15, 2)),
     ("O_ORDERDATE", pyarrow.date32()),
     ("O_ORDERPRIORITY", pyarrow.string()),
     ("O_CLERK", pyarrow.string()),
@@ -87,7 +87,7 @@ all_schemas["part"] = [
     ("P_TYPE", pyarrow.string()),
     ("P_SIZE", pyarrow.int32()),
     ("P_CONTAINER", pyarrow.string()),
-    ("P_RETAILPRICE", pyarrow.float32()),
+    ("P_RETAILPRICE", pyarrow.decimal128(15, 2)),
     ("P_COMMENT", pyarrow.string()),
 ]
 
@@ -95,7 +95,7 @@ all_schemas["partsupp"] = [
     ("PS_PARTKEY", pyarrow.int32()),
     ("PS_SUPPKEY", pyarrow.int32()),
     ("PS_AVAILQTY", pyarrow.int32()),
-    ("PS_SUPPLYCOST", pyarrow.float32()),
+    ("PS_SUPPLYCOST", pyarrow.decimal128(15, 2)),
     ("PS_COMMENT", pyarrow.string()),
 ]
 
@@ -111,7 +111,7 @@ all_schemas["supplier"] = [
     ("S_ADDRESS", pyarrow.string()),
     ("S_NATIONKEY", pyarrow.int32()),
     ("S_PHONE", pyarrow.string()),
-    ("S_ACCTBAL", pyarrow.float32()),
+    ("S_ACCTBAL", pyarrow.decimal128(15, 2)),
     ("S_COMMENT", pyarrow.string()),
 ]
 

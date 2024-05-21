@@ -111,3 +111,23 @@ jobs:
           source venv/bin/activate
           pip install -e . -vv
           pytest -v .
+
+      - name: Cache the generated dataset
+        id: cache-tpch-dataset
+        uses: actions/cache@v3
+        with:
+          path: benchmarks/tpch/data
+          key: tpch-data-2.18.0
+
+      - name: Run dbgen to create 1 Gb dataset
+        if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
+        run: |
+          cd benchmarks/tpch
+          RUN_IN_CI=TRUE ./tpch-gen.sh 1
+
+      - name: Run TPC-H examples
+        run: |
+          source venv/bin/activate
+          cd examples/tpch
+          python convert_data_to_parquet.py
+          pytest _tests.py

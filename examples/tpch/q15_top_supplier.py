@@ -29,22 +29,23 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from util import get_data_path
 
 DATE = "1996-01-01"
 
 date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_3_months = lit(pa.scalar((0, 0, 90), type=pa.month_day_nano_interval()))
+interval_3_months = lit(pa.scalar((0, 0, 91), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 
 ctx = SessionContext()
 
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_suppkey", "l_shipdate", "l_extendedprice", "l_discount"
 )
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey",
     "s_name",
     "s_address",
@@ -59,7 +60,7 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
 df = df_lineitem.aggregate(
     [col("l_suppkey")],
     [
-        F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias(
+        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
             "total_revenue"
         )
     ],

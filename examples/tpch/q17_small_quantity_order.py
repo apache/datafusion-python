@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from util import get_data_path
 
 BRAND = "Brand#23"
 CONTAINER = "MED BOX"
@@ -37,10 +38,10 @@ CONTAINER = "MED BOX"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_brand", "p_container"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey", "l_quantity", "l_extendedprice"
 )
 
@@ -55,7 +56,7 @@ df = df.join(df_lineitem, (["p_partkey"], ["l_partkey"]), "inner")
 # Find the average quantity
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(
-    "avg_quantity", F.window("avg", [col("l_quantity")], window_frame=window_frame)
+    "avg_quantity", F.window("avg", [col("l_quantity")], window_frame=window_frame, partition_by=[col("l_partkey")])
 )
 
 df = df.filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
@@ -64,6 +65,6 @@ df = df.filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
 df = df.aggregate([], [F.sum(col("l_extendedprice")).alias("total")])
 
 # Divide by number of years in the problem statement to get average
-df = df.select((col("total") / lit(7.0)).alias("avg_yearly"))
+df = df.select((col("total") / lit(7)).alias("avg_yearly"))
 
 df.show()
