@@ -20,6 +20,15 @@ mkdir -p data/answers 2>/dev/null
 
 set -e
 
+# If RUN_IN_CI is set, then do not produce verbose output or use an interactive terminal
+if [[ -z "${RUN_IN_CI}" ]]; then
+  TERMINAL_FLAG="-it"
+  VERBOSE_OUTPUT="-vf"
+else
+  TERMINAL_FLAG=""
+  VERBOSE_OUTPUT="-f"
+fi
+
 #pushd ..
 #. ./dev/build-set-env.sh
 #popd
@@ -29,7 +38,7 @@ FILE=./data/supplier.tbl
 if test -f "$FILE"; then
     echo "$FILE exists."
 else
-  docker run -v `pwd`/data:/data -it --rm ghcr.io/scalytics/tpch-docker:main -vf -s $1
+  docker run -v `pwd`/data:/data $TERMINAL_FLAG --rm ghcr.io/scalytics/tpch-docker:main $VERBOSE_OUTPUT -s $1
 
   # workaround for https://github.com/apache/arrow-datafusion/issues/6147
   mv data/customer.tbl data/customer.csv
@@ -49,5 +58,5 @@ FILE=./data/answers/q1.out
 if test -f "$FILE"; then
     echo "$FILE exists."
 else
-  docker run -v `pwd`/data:/data -it --entrypoint /bin/bash --rm ghcr.io/scalytics/tpch-docker:main -c "cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/"
+  docker run -v `pwd`/data:/data $TERMINAL_FLAG --entrypoint /bin/bash --rm ghcr.io/scalytics/tpch-docker:main -c "cp /opt/tpch/2.18.0_rc2/dbgen/answers/* /data/answers/"
 fi
