@@ -31,6 +31,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 part_color = lit("green")
 
@@ -38,14 +39,14 @@ part_color = lit("green")
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns("p_partkey", "p_name")
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_name")
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_nationkey"
 )
-df_partsupp = ctx.read_parquet("data/partsupp.parquet").select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
     "ps_suppkey", "ps_partkey", "ps_supplycost"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey",
     "l_extendedprice",
     "l_discount",
@@ -53,10 +54,10 @@ df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
     "l_orderkey",
     "l_quantity",
 )
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_orderkey", "o_custkey", "o_orderdate"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_name", "n_regionkey"
 )
 

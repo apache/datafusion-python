@@ -30,6 +30,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 BRAND = "Brand#45"
 TYPE_TO_IGNORE = "MEDIUM POLISHED"
@@ -39,13 +40,13 @@ SIZES_OF_INTEREST = [49, 14, 23, 45, 19, 3, 36, 9]
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
     "p_partkey", "p_brand", "p_type", "p_size"
 )
-df_partsupp = ctx.read_parquet("data/partsupp.parquet").select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
     "ps_suppkey", "ps_partkey"
 )
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_comment"
 )
 
@@ -61,7 +62,7 @@ df_partsupp = df_partsupp.join(
 # Select the parts we are interested in
 df_part = df_part.filter(col("p_brand") != lit(BRAND))
 df_part = df_part.filter(
-    F.substr(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1)) != lit(TYPE_TO_IGNORE)
+    F.substring(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1)) != lit(TYPE_TO_IGNORE)
 )
 
 # Python conversion of integer to literal casts it to int64 but the data for

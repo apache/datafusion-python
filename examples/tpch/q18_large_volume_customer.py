@@ -27,6 +27,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 QUANTITY = 300
 
@@ -34,13 +35,13 @@ QUANTITY = 300
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
     "c_custkey", "c_name"
 )
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_orderkey", "o_custkey", "o_orderdate", "o_totalprice"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_orderkey", "l_quantity", "l_extendedprice"
 )
 

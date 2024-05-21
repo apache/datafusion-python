@@ -29,6 +29,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 WORD_1 = "special"
 WORD_2 = "requests"
@@ -37,10 +38,10 @@ WORD_2 = "requests"
 
 ctx = SessionContext()
 
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_custkey", "o_comment"
 )
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns("c_custkey")
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns("c_custkey")
 
 # Use a regex to remove special cases
 df_orders = df_orders.filter(
@@ -51,7 +52,7 @@ df_orders = df_orders.filter(
 df = df_customer.join(df_orders, (["c_custkey"], ["o_custkey"]), how="left")
 
 # Find the number of orders for each customer
-df = df.aggregate([col("c_custkey")], [F.count(col("c_custkey")).alias("c_count")])
+df = df.aggregate([col("c_custkey")], [F.count(col("o_custkey")).alias("c_count")])
 
 # Ultimately we want to know the number of customers that have that customer count
 df = df.aggregate([col("c_count")], [F.count(col("c_count")).alias("custdist")])

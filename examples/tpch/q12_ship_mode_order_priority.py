@@ -32,6 +32,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 SHIP_MODE_1 = "MAIL"
 SHIP_MODE_2 = "SHIP"
@@ -41,10 +42,10 @@ DATE_OF_INTEREST = "1994-01-01"
 
 ctx = SessionContext()
 
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_orderkey", "o_orderpriority"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_orderkey", "l_shipmode", "l_commitdate", "l_shipdate", "l_receiptdate"
 )
 

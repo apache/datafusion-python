@@ -32,6 +32,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 DATE_START_OF_QUARTER = "1993-10-01"
 
@@ -39,13 +40,13 @@ date_start_of_quarter = lit(datetime.strptime(DATE_START_OF_QUARTER, "%Y-%m-%d")
 
 # Note: this is a hack on setting the values. It should be set differently once
 # https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_one_quarter = lit(pa.scalar((0, 0, 90), type=pa.month_day_nano_interval()))
+interval_one_quarter = lit(pa.scalar((0, 0, 92), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
     "c_custkey",
     "c_nationkey",
     "c_name",
@@ -54,13 +55,13 @@ df_customer = ctx.read_parquet("data/customer.parquet").select_columns(
     "c_phone",
     "c_comment",
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_extendedprice", "l_discount", "l_orderkey", "l_returnflag"
 )
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_orderkey", "o_custkey", "o_orderdate"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_name", "n_regionkey"
 )
 

@@ -31,10 +31,11 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 ctx = SessionContext()
 
-df = ctx.read_parquet("data/lineitem.parquet")
+df = ctx.read_parquet(get_data_path("lineitem.parquet"))
 
 # It may be that the date can be hard coded, based on examples shown.
 # This approach will work with any date range in the provided data set.
@@ -63,13 +64,13 @@ df = df.aggregate(
     [
         F.sum(col("l_quantity")).alias("sum_qty"),
         F.sum(col("l_extendedprice")).alias("sum_base_price"),
-        F.sum(col("l_extendedprice") * (lit(1.0) - col("l_discount"))).alias(
+        F.sum(col("l_extendedprice") * (lit(1) - col("l_discount"))).alias(
             "sum_disc_price"
         ),
         F.sum(
             col("l_extendedprice")
-            * (lit(1.0) - col("l_discount"))
-            * (lit(1.0) + col("l_tax"))
+            * (lit(1) - col("l_discount"))
+            * (lit(1) + col("l_tax"))
         ).alias("sum_charge"),
         F.avg(col("l_quantity")).alias("avg_qty"),
         F.avg(col("l_extendedprice")).alias("avg_price"),

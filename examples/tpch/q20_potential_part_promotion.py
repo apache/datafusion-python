@@ -30,6 +30,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 COLOR_OF_INTEREST = "forest"
 DATE_OF_INTEREST = "1994-01-01"
@@ -39,17 +40,17 @@ NATION_OF_INTEREST = "CANADA"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet("data/part.parquet").select_columns("p_partkey", "p_name")
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_name")
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_shipdate", "l_partkey", "l_suppkey", "l_quantity"
 )
-df_partsupp = ctx.read_parquet("data/partsupp.parquet").select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
     "ps_partkey", "ps_suppkey", "ps_availqty"
 )
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_address", "s_name", "s_nationkey"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_name"
 )
 
@@ -62,7 +63,7 @@ interval = pa.scalar((0, 0, 365), type=pa.month_day_nano_interval())
 # Filter down dataframes
 df_nation = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
 df_part = df_part.filter(
-    F.substr(col("p_name"), lit(0), lit(len(COLOR_OF_INTEREST) + 1))
+    F.substring(col("p_name"), lit(0), lit(len(COLOR_OF_INTEREST) + 1))
     == lit(COLOR_OF_INTEREST)
 )
 
@@ -90,7 +91,7 @@ df = df.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), "inner")
 df = df.join(df_nation, (["s_nationkey"], ["n_nationkey"]), "inner")
 
 # Restrict to the requested data per the problem statement
-df = df.select_columns("s_name", "s_address")
+df = df.select_columns("s_name", "s_address").distinct()
 
 df = df.sort(col("s_name").sort())
 

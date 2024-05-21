@@ -32,6 +32,7 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 from datetime import datetime
 import pyarrow as pa
 from datafusion import SessionContext, col, lit, functions as F
+from util import get_data_path
 
 
 DATE_OF_INTEREST = "1994-01-01"
@@ -48,22 +49,22 @@ interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet("data/customer.parquet").select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
     "c_custkey", "c_nationkey"
 )
-df_orders = ctx.read_parquet("data/orders.parquet").select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_custkey", "o_orderkey", "o_orderdate"
 )
-df_lineitem = ctx.read_parquet("data/lineitem.parquet").select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_orderkey", "l_suppkey", "l_extendedprice", "l_discount"
 )
-df_supplier = ctx.read_parquet("data/supplier.parquet").select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_nationkey"
 )
-df_nation = ctx.read_parquet("data/nation.parquet").select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
     "n_nationkey", "n_regionkey", "n_name"
 )
-df_region = ctx.read_parquet("data/region.parquet").select_columns(
+df_region = ctx.read_parquet(get_data_path("region.parquet")).select_columns(
     "r_regionkey", "r_name"
 )
 
