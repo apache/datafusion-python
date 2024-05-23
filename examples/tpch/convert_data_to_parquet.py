@@ -31,10 +31,10 @@ ctx = datafusion.SessionContext()
 all_schemas = {}
 
 all_schemas["customer"] = [
-    ("C_CUSTKEY", pyarrow.int32()),
+    ("C_CUSTKEY", pyarrow.int64()),
     ("C_NAME", pyarrow.string()),
     ("C_ADDRESS", pyarrow.string()),
-    ("C_NATIONKEY", pyarrow.int32()),
+    ("C_NATIONKEY", pyarrow.int64()),
     ("C_PHONE", pyarrow.string()),
     ("C_ACCTBAL", pyarrow.decimal128(15, 2)),
     ("C_MKTSEGMENT", pyarrow.string()),
@@ -42,9 +42,9 @@ all_schemas["customer"] = [
 ]
 
 all_schemas["lineitem"] = [
-    ("L_ORDERKEY", pyarrow.int32()),
-    ("L_PARTKEY", pyarrow.int32()),
-    ("L_SUPPKEY", pyarrow.int32()),
+    ("L_ORDERKEY", pyarrow.int64()),
+    ("L_PARTKEY", pyarrow.int64()),
+    ("L_SUPPKEY", pyarrow.int64()),
     ("L_LINENUMBER", pyarrow.int32()),
     ("L_QUANTITY", pyarrow.decimal128(15, 2)),
     ("L_EXTENDEDPRICE", pyarrow.decimal128(15, 2)),
@@ -61,15 +61,15 @@ all_schemas["lineitem"] = [
 ]
 
 all_schemas["nation"] = [
-    ("N_NATIONKEY", pyarrow.int32()),
+    ("N_NATIONKEY", pyarrow.int64()),
     ("N_NAME", pyarrow.string()),
-    ("N_REGIONKEY", pyarrow.int32()),
+    ("N_REGIONKEY", pyarrow.int64()),
     ("N_COMMENT", pyarrow.string()),
 ]
 
 all_schemas["orders"] = [
-    ("O_ORDERKEY", pyarrow.int32()),
-    ("O_CUSTKEY", pyarrow.int32()),
+    ("O_ORDERKEY", pyarrow.int64()),
+    ("O_CUSTKEY", pyarrow.int64()),
     ("O_ORDERSTATUS", pyarrow.string()),
     ("O_TOTALPRICE", pyarrow.decimal128(15, 2)),
     ("O_ORDERDATE", pyarrow.date32()),
@@ -80,7 +80,7 @@ all_schemas["orders"] = [
 ]
 
 all_schemas["part"] = [
-    ("P_PARTKEY", pyarrow.int32()),
+    ("P_PARTKEY", pyarrow.int64()),
     ("P_NAME", pyarrow.string()),
     ("P_MFGR", pyarrow.string()),
     ("P_BRAND", pyarrow.string()),
@@ -92,21 +92,21 @@ all_schemas["part"] = [
 ]
 
 all_schemas["partsupp"] = [
-    ("PS_PARTKEY", pyarrow.int32()),
-    ("PS_SUPPKEY", pyarrow.int32()),
+    ("PS_PARTKEY", pyarrow.int64()),
+    ("PS_SUPPKEY", pyarrow.int64()),
     ("PS_AVAILQTY", pyarrow.int32()),
     ("PS_SUPPLYCOST", pyarrow.decimal128(15, 2)),
     ("PS_COMMENT", pyarrow.string()),
 ]
 
 all_schemas["region"] = [
-    ("r_REGIONKEY", pyarrow.int32()),
+    ("r_REGIONKEY", pyarrow.int64()),
     ("r_NAME", pyarrow.string()),
     ("r_COMMENT", pyarrow.string()),
 ]
 
 all_schemas["supplier"] = [
-    ("S_SUPPKEY", pyarrow.int32()),
+    ("S_SUPPKEY", pyarrow.int64()),
     ("S_NAME", pyarrow.string()),
     ("S_ADDRESS", pyarrow.string()),
     ("S_NATIONKEY", pyarrow.int32()),
@@ -124,6 +124,8 @@ for filename, curr_schema in all_schemas.items():
     # Pre-collect the output columns so we can ignore the null field we add
     # in to handle the trailing | in the file
     output_cols = [r[0] for r in curr_schema]
+
+    curr_schema = [ pyarrow.field(r[0], r[1], nullable=False) for r in curr_schema]
 
     # Trailing | requires extra field for in processing
     curr_schema.append(("some_null", pyarrow.null()))
