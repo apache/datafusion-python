@@ -1016,7 +1016,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-python"
-version = "38.0.0"
+version = "38.0.1"
 dependencies = [
  "async-trait",
  "datafusion",
