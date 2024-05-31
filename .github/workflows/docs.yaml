@@ -11,6 +11,15 @@ on:
 name: Deploy DataFusion Python site
 
 jobs:
+  debug-github-context:    
+    name: Print github context
+    runs-on: ubuntu-latest
+    steps:
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
   build-docs:
     name: Build docs
     runs-on: ubuntu-latest
