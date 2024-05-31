@@ -397,7 +397,7 @@ produce a result for each individual row, unlike an aggregate function that prov
    <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f5bb4765ed0</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f4808b2ee90</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -450,20 +450,20 @@ a list of <a class="reference internal" href="../../generated/datafusion.functio
    <span class="o">...</span><span class="p">:</span> 
 <span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+-------------------+--------+------+</span>
-<span class="o">|</span> <span class="n">Name</span>              <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
-<span class="o">+-------------------+--------+------+</span>
-<span class="o">|</span> <span class="n">Gastly</span>            <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Haunter</span>           <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">GengarMega</span> <span class="n">Gengar</span> <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Gengar</span>            <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Chansey</span>           <span class="o">|</span> <span class="mi">5</span>      <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Pidgey</span>            <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Jigglypuff</span>        <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Meowth</span>            <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ditto</span>             <span class="o">|</span> <span class="mi">48</span>     <span class="o">|</span> <span class="mi">5</span>    <span class="o">|</span>
-<span class="o">|</span> <span class="n">Eevee</span>             <span class="o">|</span> <span class="mi">55</span>     <span class="o">|</span> <span class="mi">6</span>    <span class="o">|</span>
-<span class="o">+-------------------+--------+------+</span>
+<span class="o">+------------+--------+------+</span>
+<span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
+<span class="o">+------------+--------+------+</span>
+<span class="o">|</span> <span class="n">Exeggcute</span>  <span class="o">|</span> <span class="mi">40</span>     <span class="o">|</span> <span class="mi">1</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bulbasaur</span>  <span class="o">|</span> <span class="mi">49</span>     <span class="o">|</span> <span class="mi">2</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Oddish</span>     <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="mi">3</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Tangela</span>    <span class="o">|</span> <span class="mi">55</span>     <span class="o">|</span> <span class="mi">4</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ivysaur</span>    <span class="o">|</span> <span class="mi">62</span>     <span class="o">|</span> <span class="mi">5</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Gloom</span>      <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="mi">6</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bellsprout</span> <span class="o">|</span> <span class="mi">75</span>     <span class="o">|</span> <span class="mi">7</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Vileplume</span>  <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="mi">8</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Venusaur</span>   <span class="o">|</span> <span class="mi">82</span>     <span class="o">|</span> <span class="mi">9</span>    <span class="o">|</span>
+<span class="o">|</span> <span class="n">Weepinbell</span> <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="mi">10</span>   <span class="o">|</span>
+<span class="o">+------------+--------+------+</span>
 </pre></div>
 </div>
 <p>The possible window functions are:</p>
