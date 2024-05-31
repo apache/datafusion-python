@@ -56,7 +56,7 @@
             <div class="col-12 col-md-3 bd-sidebar">
               <div class="sidebar-start-items">
 <a class="navbar-brand" href="#">
-  <img src="_static/images/DataFusion-Logo-Background-White.png" class="logo" alt="logo">
+  <img src="_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
 </a>
 
 <form class="bd-search d-flex align-items-center" action="search.html" method="get">
@@ -74,7 +74,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
    Github and Issue Tracker
   </a>
  </li>
@@ -84,12 +84,12 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/arrow-datafusion/blob/main/CODE_OF_CONDUCT.md">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
    Code of conduct
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference external" href="https://github.com/apache/arrow-datafusion-python/tree/main/examples">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
    Examples
   </a>
  </li>
@@ -133,6 +133,11 @@
    <li class="toctree-l2">
     <a class="reference internal" href="user-guide/common-operations/select-and-filter.html">
      Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="user-guide/common-operations/expressions.html">
+     Expressions
     </a>
    </li>
    <li class="toctree-l2">
@@ -391,7 +396,7 @@
                 
   <section id="datafusion-in-python">
 <h1>DataFusion in Python<a class="headerlink" href="#datafusion-in-python" title="Link to this heading">¶</a></h1>
-<p>This is a Python library that binds to <a class="reference external" href="https://arrow.apache.org/">Apache Arrow</a> in-memory query engine <a class="reference external" href="https://github.com/apache/arrow/tree/master/rust/datafusion">DataFusion</a>.</p>
+<p>This is a Python library that binds to <a class="reference external" href="https://arrow.apache.org/">Apache Arrow</a> in-memory query engine <a class="reference external" href="https://github.com/apache/datafusion">DataFusion</a>.</p>
 <p>Like pyspark, it allows you to build a plan through SQL or a DataFrame API against in-memory data, parquet or CSV files, run it in a multi-threaded environment, and obtain the result back in Python.</p>
 <p>It also allows you to use UDFs and UDAFs for complex operations.</p>
 <p>The major advantage of this library over other execution engines is that this library achieves zero-copy between Python and its execution engine: there is no cost in using UDFs, UDAFs, and collecting the results to Python apart from having to lock the GIL when running those operations.</p>
