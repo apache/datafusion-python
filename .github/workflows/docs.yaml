@@ -38,16 +38,16 @@ jobs:
             exit 1
           fi
       - name: Checkout docs sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Checkout docs target branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
           path: docs-target
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
