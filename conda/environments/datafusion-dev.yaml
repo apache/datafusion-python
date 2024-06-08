@@ -21,7 +21,7 @@ dependencies:
   - black
   - flake8
   - isort
-  - maturin>=0.15
+  - maturin>=1.5.1
   - mypy
   - numpy
   - pyarrow>=11.0.0

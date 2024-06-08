@@ -80,7 +80,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install maturin
-        run: pip install maturin==0.15.1
+        run: pip install maturin==1.5.1
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
@@ -141,7 +141,7 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install maturin
-        run: pip install maturin==0.15.1
+        run: pip install maturin==1.5.1
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
