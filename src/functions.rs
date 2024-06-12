@@ -131,17 +131,18 @@ fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = 1))]
-fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
-    let stride = ScalarValue::Int64(stride);
-    let stride = Expr::Literal(stride);
-    datafusion_functions_array::expr_fn::array_slice(array.into(), begin.into(), end.into(), stride)
-        .into()
+fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
+    datafusion_functions_array::expr_fn::array_slice(
+        array.into(),
+        begin.into(),
+        end.into(),
+        stride.map(Into::into),
+    )
+    .into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = 1))]
-fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
+fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     // alias of array_slice
     array_slice(array, begin, end, stride)
 }
