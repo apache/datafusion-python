@@ -36,33 +36,14 @@ use datafusion_expr::{
 };
 
 #[pyfunction]
-#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
-pub fn covar_samp(
-    y: PyExpr,
-    x: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    // null_treatment: Option<sqlparser::ast::NullTreatment>,
-) -> PyExpr {
-    let filter = filter.map(|x| Box::new(x.expr));
-    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
-    todo!()
-    // functions_aggregate::expr_fn::covar_samp(y.expr, x.expr, distinct, filter, order_by, None)
-    //     .into()
+pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr).into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
-pub fn covar(
-    y: PyExpr,
-    x: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-) -> PyExpr {
+pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
     // alias for covar_samp
-    covar_samp(y, x, distinct, filter, order_by)
+    covar_samp(y, x)
 }
 
 #[pyfunction]
