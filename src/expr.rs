@@ -23,12 +23,12 @@ use std::sync::Arc;
 
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::scalar::ScalarValue;
 use datafusion_expr::{
     col,
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
-    lit, Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, GetIndexedField, Like, Operator,
-    TryCast,
+    lit, Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, Like, Operator, TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
@@ -71,7 +71,6 @@ pub mod filter;
 pub mod grouping_set;
 pub mod in_list;
 pub mod in_subquery;
-pub mod indexed_field;
 pub mod join;
 pub mod like;
 pub mod limit;
@@ -216,13 +215,7 @@ impl PyExpr {
     }
 
     fn __getitem__(&self, key: &str) -> PyResult<PyExpr> {
-        Ok(Expr::GetIndexedField(GetIndexedField::new(
-            Box::new(self.expr.clone()),
-            GetFieldAccess::NamedStructField {
-                name: ScalarValue::Utf8(Some(key.to_string())),
-            },
-        ))
-        .into())
+        Ok(self.expr.clone().field(key).into())
     }
 
     #[staticmethod]
@@ -263,7 +256,7 @@ impl PyExpr {
     pub fn rex_type(&self) -> PyResult<RexType> {
         Ok(match self.expr {
             Expr::Alias(..) => RexType::Alias,
-            Expr::Column(..) | Expr::GetIndexedField { .. } => RexType::Reference,
+            Expr::Column(..) => RexType::Reference,
             Expr::ScalarVariable(..) | Expr::Literal(..) => RexType::Literal,
             Expr::BinaryExpr { .. }
             | Expr::Not(..)
@@ -417,7 +410,6 @@ impl PyExpr {
             | Expr::IsNotFalse(expr)
             | Expr::IsNotUnknown(expr)
             | Expr::Negative(expr)
-            | Expr::GetIndexedField(GetIndexedField { expr, .. })
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
             | Expr::Sort(Sort { expr, .. })
@@ -674,7 +666,6 @@ pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
     m.add_class::<cast::PyCast>()?;
     m.add_class::<cast::PyTryCast>()?;
     m.add_class::<between::PyBetween>()?;
-    m.add_class::<indexed_field::PyGetIndexedField>()?;
     m.add_class::<explain::PyExplain>()?;
     m.add_class::<limit::PyLimit>()?;
     m.add_class::<aggregate::PyAggregate>()?;
