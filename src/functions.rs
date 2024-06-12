@@ -57,6 +57,17 @@ pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+pub fn var_samp(expression: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::var_sample(expression.expr).into()
+}
+
+#[pyfunction]
+/// Alias for [`var_samp`]
+pub fn var(y: PyExpr) -> PyExpr {
+    var_samp(y)
+}
+
+#[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
     datafusion_expr::in_list(
         expr.expr,
@@ -593,9 +604,7 @@ aggregate_function!(sum, Sum);
 aggregate_function!(stddev, Stddev);
 aggregate_function!(stddev_pop, StddevPop);
 aggregate_function!(stddev_samp, Stddev);
-aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
-aggregate_function!(var_samp, Variance);
 aggregate_function!(regr_avgx, RegrAvgx);
 aggregate_function!(regr_avgy, RegrAvgy);
 aggregate_function!(regr_count, RegrCount);
