@@ -47,8 +47,9 @@ pub fn covar_samp(
 ) -> PyExpr {
     let filter = filter.map(|x| Box::new(x.expr));
     let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
-    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr, distinct, filter, order_by, None)
-        .into()
+    todo!()
+    // functions_aggregate::expr_fn::covar_samp(y.expr, x.expr, distinct, filter, order_by, None)
+    //     .into()
 }
 
 #[pyfunction]
@@ -177,6 +178,28 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
+#[pyfunction]
+#[pyo3(signature = (values, regex, flags = None))]
+fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
+}
+
+#[pyfunction]
+/// Replaces substring(s) matching a POSIX regular expression.
+fn regexp_replace(
+    string: PyExpr,
+    pattern: PyExpr,
+    replacement: PyExpr,
+    flags: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_replace(
+        string.into(),
+        pattern.into(),
+        replacement.into(),
+        flags.map(|x| x.expr),
+    )
+    .into())
+}
 /// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
@@ -441,12 +464,6 @@ expr_fn!(pi);
 expr_fn!(power, base exponent);
 expr_fn!(pow, power, base exponent);
 expr_fn!(radians, num);
-expr_fn!(regexp_match, input_arg1 input_arg2);
-expr_fn!(
-    regexp_replace,
-    arg1 arg2 arg3 arg4,
-    "Replaces substring(s) matching a POSIX regular expression."
-);
 expr_fn!(repeat, string n, "Repeats string the specified number of times.");
 expr_fn!(
     replace,
