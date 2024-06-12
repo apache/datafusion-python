@@ -459,7 +459,7 @@ expr_fn!(
     "Returns x if x is not NaN otherwise returns y."
 );
 expr_fn!(nullif, arg_1 arg_2);
-expr_fn_vec!(octet_length, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
 expr_fn!(pi);
 expr_fn!(power, base exponent);
 expr_fn!(pow, power, base exponent);
