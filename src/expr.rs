@@ -505,9 +505,7 @@ impl PyExpr {
                 op,
                 right: _,
             }) => format!("{op}"),
-            Expr::ScalarFunction(ScalarFunction { func_def, args: _ }) => {
-                func_def.name().to_string()
-            }
+            Expr::ScalarFunction(ScalarFunction { func, args: _ }) => func.name().to_string(),
             Expr::Cast { .. } => "cast".to_string(),
             Expr::Between { .. } => "between".to_string(),
             Expr::Case { .. } => "case".to_string(),
