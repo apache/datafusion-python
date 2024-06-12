@@ -46,6 +46,11 @@ pub fn covar_pop(y: PyExpr, x: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+pub fn median(arg: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::median(arg.expr).into()
+}
+
+#[pyfunction]
 pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
     // alias for covar_samp
     covar_samp(y, x)
@@ -583,7 +588,6 @@ aggregate_function!(count, Count);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
-aggregate_function!(median, Median);
 aggregate_function!(min, Min);
 aggregate_function!(sum, Sum);
 aggregate_function!(stddev, Stddev);
