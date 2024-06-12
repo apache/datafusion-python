@@ -41,6 +41,11 @@ pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+pub fn covar_pop(y: PyExpr, x: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::covar_pop(y.expr, x.expr).into()
+}
+
+#[pyfunction]
 pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
     // alias for covar_samp
     covar_samp(y, x)
@@ -575,7 +580,6 @@ aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
 aggregate_function!(count, Count);
-aggregate_function!(covar_pop, CovariancePop);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
