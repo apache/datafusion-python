@@ -28,7 +28,7 @@ use datafusion::scalar::ScalarValue;
 use datafusion_expr::{
     col,
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
-    lit, Between, BinaryExpr, Case, Cast, Expr, GetFieldAccess, Like, Operator, TryCast,
+    lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
@@ -307,6 +307,11 @@ impl PyExpr {
                     ),
                 )),
                 ScalarValue::Boolean(v) => Ok(v.into_py(py)),
+                ScalarValue::Float16(_) => Err(py_datafusion_err(
+                    datafusion_common::DataFusionError::NotImplemented(
+                        "ScalarValue::Float16".to_string(),
+                    ),
+                )),
                 ScalarValue::Float32(v) => Ok(v.into_py(py)),
                 ScalarValue::Float64(v) => Ok(v.into_py(py)),
                 ScalarValue::Decimal128(v, _, _) => Ok(v.into_py(py)),
@@ -348,8 +353,8 @@ impl PyExpr {
                 ScalarValue::TimestampMicrosecond(v, _) => Ok(v.into_py(py)),
                 ScalarValue::TimestampNanosecond(v, _) => Ok(v.into_py(py)),
                 ScalarValue::IntervalYearMonth(v) => Ok(v.into_py(py)),
-                ScalarValue::IntervalDayTime(v) => Ok(v.into_py(py)),
-                ScalarValue::IntervalMonthDayNano(v) => Ok(v.into_py(py)),
+                ScalarValue::IntervalDayTime(v) => todo!(), // Ok(v.clone().into_py(py)),
+                ScalarValue::IntervalMonthDayNano(v) => todo!(), // Ok(v.into_py(py)),
                 ScalarValue::DurationSecond(v) => Ok(v.into_py(py)),
                 ScalarValue::DurationMicrosecond(v) => Ok(v.into_py(py)),
                 ScalarValue::DurationNanosecond(v) => Ok(v.into_py(py)),

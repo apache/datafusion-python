@@ -137,9 +137,7 @@ impl PyLiteral {
 
     pub fn value_interval_day_time(&self) -> PyResult<Option<(i32, i32)>> {
         match &self.value {
-            ScalarValue::IntervalDayTime(Some(iv)) => {
-                Ok(Some((iv.days, iv.milliseconds)))
-            }
+            ScalarValue::IntervalDayTime(Some(iv)) => Ok(Some((iv.days, iv.milliseconds))),
             ScalarValue::IntervalDayTime(None) => Ok(None),
             other => Err(unexpected_literal_value(other)),
         }
