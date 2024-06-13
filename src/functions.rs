@@ -68,6 +68,50 @@ pub fn var(y: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+pub fn first_value(
+    args: Vec<PyExpr>,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyExpr {
+    // TODO: allow user to select null_treatment
+    let null_treatment = None;
+    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
+    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    functions_aggregate::expr_fn::first_value(
+        args,
+        distinct,
+        filter.map(|x| Box::new(x.expr)),
+        order_by,
+        null_treatment,
+    )
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+pub fn last_value(
+    args: Vec<PyExpr>,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyExpr {
+    // TODO: allow user to select null_treatment
+    let null_treatment = None;
+    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
+    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    functions_aggregate::expr_fn::last_value(
+        args,
+        distinct,
+        filter.map(|x| Box::new(x.expr)),
+        order_by,
+        null_treatment,
+    )
+    .into()
+}
+
+#[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
     datafusion_expr::in_list(
         expr.expr,
@@ -614,8 +658,6 @@ aggregate_function!(regr_slope, RegrSlope);
 aggregate_function!(regr_sxx, RegrSXX);
 aggregate_function!(regr_sxy, RegrSXY);
 aggregate_function!(regr_syy, RegrSYY);
-aggregate_function!(first_value, FirstValue);
-aggregate_function!(last_value, LastValue);
 aggregate_function!(bit_and, BitAnd);
 aggregate_function!(bit_or, BitOr);
 aggregate_function!(bit_xor, BitXor);
