@@ -36,6 +36,11 @@ use datafusion_expr::{
 };
 
 #[pyfunction]
+pub fn sum(args: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::sum(args.expr).into()
+}
+
+#[pyfunction]
 pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::covar_samp(y.expr, x.expr).into()
 }
@@ -644,7 +649,6 @@ aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
 aggregate_function!(min, Min);
-aggregate_function!(sum, Sum);
 aggregate_function!(stddev, Stddev);
 aggregate_function!(stddev_pop, StddevPop);
 aggregate_function!(stddev_samp, Stddev);
