@@ -183,6 +183,7 @@ fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
 }
 
 #[pyfunction]
+#[pyo3(signature = (array, begin, end, stride = None))]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::array_slice(
         array.into(),
@@ -194,6 +195,7 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
 }
 
 #[pyfunction]
+#[pyo3(signature = (array, begin, end, stride = None))]
 fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     // alias of array_slice
     array_slice(array, begin, end, stride)
