@@ -2494,7 +2494,7 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.array_slice">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_slice" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">array_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.array_slice" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2685,17 +2685,17 @@ Other NULL arguments are ignored.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.covar">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.covar_pop">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_pop" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_pop" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.covar_samp">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_samp" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">covar_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.covar_samp" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2783,7 +2783,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.first_value">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">first_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.first_value" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">first_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.first_value" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2840,7 +2840,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.last_value">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">last_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.last_value" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">last_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.last_value" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -2999,7 +2999,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.list_slice">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_slice" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">list_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.list_slice" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -3079,7 +3079,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.median">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.median" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">median</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.median" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -3111,7 +3111,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.octet_length">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.octet_length" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.octet_length" title="Link to this definition">¶</a></dt>
 <dd><p>Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.</p>
 </dd></dl>
 
@@ -3157,13 +3157,12 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.regexp_match">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_arg2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_match" title="Link to this definition">¶</a></dt>
-<dd><p>$FUNC</p>
-</dd></dl>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_match</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regex</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_match" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.regexp_replace">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arg4</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_replace" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">regexp_replace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replacement</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.regexp_replace" title="Link to this definition">¶</a></dt>
 <dd><p>Replaces substring(s) matching a POSIX regular expression.</p>
 </dd></dl>
 
@@ -3354,7 +3353,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.sum">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sum" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">sum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.sum" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -3425,8 +3424,9 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.var">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var" title="Link to this definition">¶</a></dt>
+<dd><p>Alias for [<cite>var_samp</cite>]</p>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.var_pop">
@@ -3435,7 +3435,7 @@ Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, a
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.functions.var_samp">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var_samp" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.functions.</span></span><span class="sig-name descname"><span class="pre">var_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expression</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.functions.functions.var_samp" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
