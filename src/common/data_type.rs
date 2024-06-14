@@ -251,6 +251,7 @@ impl DataTypeMap {
     pub fn map_from_scalar_to_arrow(scalar_val: &ScalarValue) -> Result<DataType, PyErr> {
         match scalar_val {
             ScalarValue::Boolean(_) => Ok(DataType::Boolean),
+            ScalarValue::Float16(_) => Ok(DataType::Float16),
             ScalarValue::Float32(_) => Ok(DataType::Float32),
             ScalarValue::Float64(_) => Ok(DataType::Float64),
             ScalarValue::Decimal128(_, precision, scale) => {

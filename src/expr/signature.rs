@@ -20,7 +20,6 @@ use pyo3::prelude::*;
 
 #[allow(dead_code)]
 #[pyclass(name = "Signature", module = "datafusion.expr", subclass)]
-#[allow(dead_code)]
 #[derive(Clone)]
 pub struct PySignature {
     type_signature: TypeSignature,

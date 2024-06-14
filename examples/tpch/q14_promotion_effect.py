@@ -34,9 +34,8 @@ from util import get_data_path
 DATE = "1995-09-01"
 
 date_of_interest = lit(datetime.strptime(DATE, "%Y-%m-%d").date())
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval_one_month = lit(pa.scalar((0, 0, 30), type=pa.month_day_nano_interval()))
+
+interval_one_month = lit(pa.scalar((0, 30, 0), type=pa.month_day_nano_interval()))
 
 # Load the dataframes we need
 

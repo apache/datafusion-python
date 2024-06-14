@@ -461,7 +461,6 @@ def py_flatten(arr):
         pytest.param(
             lambda col: f.list_slice(col, literal(-1), literal(2)),
             lambda data: [arr[-1:2] for arr in data],
-            marks=pytest.mark.xfail,
         ),
         [
             lambda col: f.array_intersect(col, literal([3.0, 4.0])),

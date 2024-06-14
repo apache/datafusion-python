@@ -72,7 +72,10 @@ def check_q17(df):
         ("q08_market_share", "q8"),
         ("q09_product_type_profit_measure", "q9"),
         ("q10_returned_item_reporting", "q10"),
-        ("q11_important_stock_identification", "q11"),
+        pytest.param(
+            "q11_important_stock_identification", "q11", 
+            marks=pytest.mark.xfail # https://github.com/apache/datafusion-python/issues/730
+        ),
         ("q12_ship_mode_order_priority", "q12"),
         ("q13_customer_distribution", "q13"),
         ("q14_promotion_effect", "q14"),

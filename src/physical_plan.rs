@@ -40,7 +40,7 @@ impl PyExecutionPlan {
         self.plan
             .children()
             .iter()
-            .map(|p| p.to_owned().into())
+            .map(|&p| p.to_owned().into())
             .collect()
     }
 

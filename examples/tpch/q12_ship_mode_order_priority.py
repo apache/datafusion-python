@@ -51,9 +51,7 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns
 
 date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, 365), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
 
 
 df = df_lineitem.filter(col("l_receiptdate") >= lit(date)).filter(

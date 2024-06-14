@@ -36,32 +36,84 @@ use datafusion_expr::{
 };
 
 #[pyfunction]
-#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
-pub fn covar_samp(
-    y: PyExpr,
-    x: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    // null_treatment: Option<sqlparser::ast::NullTreatment>,
-) -> PyExpr {
-    let filter = filter.map(|x| Box::new(x.expr));
-    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
-    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr, distinct, filter, order_by, None)
-        .into()
+pub fn sum(args: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::sum(args.expr).into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (y, x, distinct = false, filter = None, order_by = None))]
-pub fn covar(
-    y: PyExpr,
-    x: PyExpr,
+pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr).into()
+}
+
+#[pyfunction]
+pub fn covar_pop(y: PyExpr, x: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::covar_pop(y.expr, x.expr).into()
+}
+
+#[pyfunction]
+pub fn median(arg: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::median(arg.expr).into()
+}
+
+#[pyfunction]
+pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
+    // alias for covar_samp
+    covar_samp(y, x)
+}
+
+#[pyfunction]
+pub fn var_samp(expression: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::var_sample(expression.expr).into()
+}
+
+#[pyfunction]
+/// Alias for [`var_samp`]
+pub fn var(y: PyExpr) -> PyExpr {
+    var_samp(y)
+}
+
+#[pyfunction]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+pub fn first_value(
+    args: Vec<PyExpr>,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
 ) -> PyExpr {
-    // alias for covar_samp
-    covar_samp(y, x, distinct, filter, order_by)
+    // TODO: allow user to select null_treatment
+    let null_treatment = None;
+    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
+    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    functions_aggregate::expr_fn::first_value(
+        args,
+        distinct,
+        filter.map(|x| Box::new(x.expr)),
+        order_by,
+        null_treatment,
+    )
+    .into()
+}
+
+#[pyfunction]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+pub fn last_value(
+    args: Vec<PyExpr>,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyExpr {
+    // TODO: allow user to select null_treatment
+    let null_treatment = None;
+    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
+    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    functions_aggregate::expr_fn::last_value(
+        args,
+        distinct,
+        filter.map(|x| Box::new(x.expr)),
+        order_by,
+        null_treatment,
+    )
+    .into()
 }
 
 #[pyfunction]
@@ -131,17 +183,20 @@ fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = 1))]
-fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
-    let stride = ScalarValue::Int64(stride);
-    let stride = Expr::Literal(stride);
-    datafusion_functions_array::expr_fn::array_slice(array.into(), begin.into(), end.into(), stride)
-        .into()
+#[pyo3(signature = (array, begin, end, stride = None))]
+fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
+    datafusion_functions_array::expr_fn::array_slice(
+        array.into(),
+        begin.into(),
+        end.into(),
+        stride.map(Into::into),
+    )
+    .into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = 1))]
-fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<i64>) -> PyExpr {
+#[pyo3(signature = (array, begin, end, stride = None))]
+fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     // alias of array_slice
     array_slice(array, begin, end, stride)
 }
@@ -176,6 +231,28 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
+#[pyfunction]
+#[pyo3(signature = (values, regex, flags = None))]
+fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
+}
+
+#[pyfunction]
+/// Replaces substring(s) matching a POSIX regular expression.
+fn regexp_replace(
+    string: PyExpr,
+    pattern: PyExpr,
+    replacement: PyExpr,
+    flags: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_replace(
+        string.into(),
+        pattern.into(),
+        replacement.into(),
+        flags.map(|x| x.expr),
+    )
+    .into())
+}
 /// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
@@ -435,17 +512,11 @@ expr_fn!(
     "Returns x if x is not NaN otherwise returns y."
 );
 expr_fn!(nullif, arg_1 arg_2);
-expr_fn_vec!(octet_length, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
 expr_fn!(pi);
 expr_fn!(power, base exponent);
 expr_fn!(pow, power, base exponent);
 expr_fn!(radians, num);
-expr_fn!(regexp_match, input_arg1 input_arg2);
-expr_fn!(
-    regexp_replace,
-    arg1 arg2 arg3 arg4,
-    "Replaces substring(s) matching a POSIX regular expression."
-);
 expr_fn!(repeat, string n, "Repeats string the specified number of times.");
 expr_fn!(
     replace,
@@ -576,19 +647,14 @@ aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
 aggregate_function!(count, Count);
-aggregate_function!(covar_pop, CovariancePop);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
-aggregate_function!(median, Median);
 aggregate_function!(min, Min);
-aggregate_function!(sum, Sum);
 aggregate_function!(stddev, Stddev);
 aggregate_function!(stddev_pop, StddevPop);
 aggregate_function!(stddev_samp, Stddev);
-aggregate_function!(var, Variance);
 aggregate_function!(var_pop, VariancePop);
-aggregate_function!(var_samp, Variance);
 aggregate_function!(regr_avgx, RegrAvgx);
 aggregate_function!(regr_avgy, RegrAvgy);
 aggregate_function!(regr_count, RegrCount);
@@ -598,8 +664,6 @@ aggregate_function!(regr_slope, RegrSlope);
 aggregate_function!(regr_sxx, RegrSXX);
 aggregate_function!(regr_sxy, RegrSXY);
 aggregate_function!(regr_syy, RegrSYY);
-aggregate_function!(first_value, FirstValue);
-aggregate_function!(last_value, LastValue);
 aggregate_function!(bit_and, BitAnd);
 aggregate_function!(bit_or, BitOr);
 aggregate_function!(bit_xor, BitXor);

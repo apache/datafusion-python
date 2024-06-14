@@ -137,12 +137,7 @@ impl PyLiteral {
 
     pub fn value_interval_day_time(&self) -> PyResult<Option<(i32, i32)>> {
         match &self.value {
-            ScalarValue::IntervalDayTime(Some(iv)) => {
-                let interval = *iv as u64;
-                let days = (interval >> 32) as i32;
-                let ms = interval as i32;
-                Ok(Some((days, ms)))
-            }
+            ScalarValue::IntervalDayTime(Some(iv)) => Ok(Some((iv.days, iv.milliseconds))),
             ScalarValue::IntervalDayTime(None) => Ok(None),
             other => Err(unexpected_literal_value(other)),
         }

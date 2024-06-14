@@ -41,9 +41,7 @@ REGION_OF_INTEREST = "ASIA"
 
 date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 # Load the dataframes we need
 
