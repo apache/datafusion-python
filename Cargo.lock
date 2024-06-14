@@ -1032,6 +1032,7 @@ dependencies = [
 name = "datafusion-python"
 version = "39.0.0"
 dependencies = [
+ "arrow",
  "async-trait",
  "datafusion",
  "datafusion-common",
