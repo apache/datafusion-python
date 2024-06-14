@@ -49,9 +49,7 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns
 # Create a date object from the string
 date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, INTERVAL_DAYS), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 # Limit results to cases where commitment date before receipt date
 # Aggregate the results so we only get one row to join with the order table.

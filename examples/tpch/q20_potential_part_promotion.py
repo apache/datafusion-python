@@ -56,9 +56,7 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
 
 date = datetime.strptime(DATE_OF_INTEREST, "%Y-%m-%d").date()
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, 365), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, 365, 0), type=pa.month_day_nano_interval())
 
 # Filter down dataframes
 df_nation = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))

@@ -48,9 +48,7 @@ greatest_ship_date = df.aggregate(
 # want to report results for. It should be between 60-120 days before the end.
 DAYS_BEFORE_FINAL = 90
 
-# Note: this is a hack on setting the values. It should be set differently once
-# https://github.com/apache/datafusion-python/issues/665 is resolved.
-interval = pa.scalar((0, 0, DAYS_BEFORE_FINAL), type=pa.month_day_nano_interval())
+interval = pa.scalar((0, DAYS_BEFORE_FINAL, 0), type=pa.month_day_nano_interval())
 
 print("Final date in database:", greatest_ship_date)
 
