@@ -54,7 +54,7 @@ object_store = { version = "0.10.1", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 regex-syntax = "0.8.1"
 syn = "2.0.43"
-url = "2.2"
+url = "2.5"
 
 [build-dependencies]
 pyo3-build-config = "0.21"
