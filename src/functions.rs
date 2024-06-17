@@ -670,7 +670,7 @@ aggregate_function!(bit_xor, BitXor);
 aggregate_function!(bool_and, BoolAnd);
 aggregate_function!(bool_or, BoolOr);
 
-pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
+pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
     m.add_wrapped(wrap_pyfunction!(acosh))?;

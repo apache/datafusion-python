@@ -140,7 +140,7 @@ impl PySubstraitConsumer {
     }
 }
 
-pub fn init_module(m: &PyModule) -> PyResult<()> {
+pub fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyPlan>()?;
     m.add_class::<PySubstraitConsumer>()?;
     m.add_class::<PySubstraitProducer>()?;
