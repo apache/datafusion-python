@@ -28,6 +28,7 @@ use datafusion::prelude::*;
 use datafusion_common::UnnestOptions;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::pybacked::PyBackedStr;
 use pyo3::types::PyTuple;
 use tokio::task::JoinHandle;
 
@@ -56,23 +57,25 @@ impl PyDataFrame {
 
 #[pymethods]
 impl PyDataFrame {
-    fn __getitem__(&self, key: PyObject) -> PyResult<Self> {
-        Python::with_gil(|py| {
-            if let Ok(key) = key.extract::<&str>(py) {
-                self.select_columns(vec![key])
-            } else if let Ok(tuple) = key.extract::<&PyTuple>(py) {
-                let keys = tuple
-                    .iter()
-                    .map(|item| item.extract::<&str>())
-                    .collect::<PyResult<Vec<&str>>>()?;
-                self.select_columns(keys)
-            } else if let Ok(keys) = key.extract::<Vec<&str>>(py) {
-                self.select_columns(keys)
-            } else {
-                let message = "DataFrame can only be indexed by string index or indices";
-                Err(PyTypeError::new_err(message))
-            }
-        })
+    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
+    fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyResult<Self> {
+        if let Ok(key) = key.extract::<PyBackedStr>() {
+            // df[col]
+            self.select_columns(vec![key])
+        } else if let Ok(tuple) = key.extract::<&PyTuple>() {
+            // df[col1, col2, col3]
+            let keys = tuple
+                .iter()
+                .map(|item| item.extract::<PyBackedStr>())
+                .collect::<PyResult<Vec<PyBackedStr>>>()?;
+            self.select_columns(keys)
+        } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
+            // df[[col1, col2, col3]]
+            self.select_columns(keys)
+        } else {
+            let message = "DataFrame can only be indexed by string index or indices";
+            Err(PyTypeError::new_err(message))
+        }
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
@@ -98,7 +101,8 @@ impl PyDataFrame {
     }
 
     #[pyo3(signature = (*args))]
-    fn select_columns(&self, args: Vec<&str>) -> PyResult<Self> {
+    fn select_columns(&self, args: Vec<PyBackedStr>) -> PyResult<Self> {
+        let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self.df.as_ref().clone().select_columns(&args)?;
         Ok(Self::new(df))
     }
@@ -194,7 +198,7 @@ impl PyDataFrame {
     fn join(
         &self,
         right: PyDataFrame,
-        join_keys: (Vec<&str>, Vec<&str>),
+        join_keys: (Vec<PyBackedStr>, Vec<PyBackedStr>),
         how: &str,
     ) -> PyResult<Self> {
         let join_type = match how {
@@ -212,11 +216,22 @@ impl PyDataFrame {
             }
         };
 
+        let left_keys = join_keys
+            .0
+            .iter()
+            .map(|s| s.as_ref())
+            .collect::<Vec<&str>>();
+        let right_keys = join_keys
+            .1
+            .iter()
+            .map(|s| s.as_ref())
+            .collect::<Vec<&str>>();
+
         let df = self.df.as_ref().clone().join(
             right.df.as_ref().clone(),
             join_type,
-            &join_keys.0,
-            &join_keys.1,
+            &left_keys,
+            &right_keys,
             None,
         )?;
         Ok(Self::new(df))
@@ -414,8 +429,8 @@ impl PyDataFrame {
 
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object and use its from_batches method
-            let table_class = py.import("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new(py, &[batches, schema]);
+            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new_bound(py, &[batches, schema]);
             let table: PyObject = table_class.call_method1("from_batches", args)?.into();
             Ok(table)
         })
@@ -489,8 +504,8 @@ impl PyDataFrame {
         let table = self.to_arrow_table(py)?;
 
         Python::with_gil(|py| {
-            let dataframe = py.import("polars")?.getattr("DataFrame")?;
-            let args = PyTuple::new(py, &[table]);
+            let dataframe = py.import_bound("polars")?.getattr("DataFrame")?;
+            let args = PyTuple::new_bound(py, &[table]);
             let result: PyObject = dataframe.call1(args)?.into();
             Ok(result)
         })
@@ -514,7 +529,7 @@ fn print_dataframe(py: Python, df: DataFrame) -> PyResult<()> {
 
     // Import the Python 'builtins' module to access the print function
     // Note that println! does not print to the Python debug console and is not visible in notebooks for instance
-    let print = py.import("builtins")?.getattr("print")?;
+    let print = py.import_bound("builtins")?.getattr("print")?;
     print.call1((result,))?;
     Ok(())
 }
