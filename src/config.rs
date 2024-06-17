@@ -65,7 +65,7 @@ impl PyConfig {
 
     /// Get all configuration options
     pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
-        let dict = PyDict::new(py);
+        let dict = PyDict::new_bound(py);
         let options = self.config.to_owned();
         for entry in options.entries() {
             dict.set_item(entry.key, entry.value.clone().into_py(py))?;
