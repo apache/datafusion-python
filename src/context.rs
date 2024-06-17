@@ -291,11 +291,11 @@ impl PySessionContext {
     pub fn register_object_store(
         &mut self,
         scheme: &str,
-        store: &PyAny,
+        store: &Bound<'_, PyAny>,
         host: Option<&str>,
     ) -> PyResult<()> {
         let res: Result<(Arc<dyn ObjectStore>, String), PyErr> =
-            match StorageContexts::extract(store) {
+            match StorageContexts::extract_bound(store) {
                 Ok(store) => match store {
                     StorageContexts::AmazonS3(s3) => Ok((s3.inner, s3.bucket_name)),
                     StorageContexts::GoogleCloudStorage(gcs) => Ok((gcs.inner, gcs.bucket_name)),
@@ -443,8 +443,8 @@ impl PySessionContext {
     ) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new(py, &[data]);
+            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new_bound(py, &[data]);
             let table = table_class.call_method1("from_pylist", args)?.into();
 
             // Convert Arrow Table to datafusion DataFrame
@@ -463,8 +463,8 @@ impl PySessionContext {
     ) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new(py, &[data]);
+            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new_bound(py, &[data]);
             let table = table_class.call_method1("from_pydict", args)?.into();
 
             // Convert Arrow Table to datafusion DataFrame
@@ -507,8 +507,8 @@ impl PySessionContext {
     ) -> PyResult<PyDataFrame> {
         Python::with_gil(|py| {
             // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new(py, &[data]);
+            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+            let args = PyTuple::new_bound(py, &[data]);
             let table = table_class.call_method1("from_pandas", args)?.into();
 
             // Convert Arrow Table to datafusion DataFrame
@@ -710,7 +710,12 @@ impl PySessionContext {
     }
 
     // Registers a PyArrow.Dataset
-    pub fn register_dataset(&self, name: &str, dataset: &PyAny, py: Python) -> PyResult<()> {
+    pub fn register_dataset(
+        &self,
+        name: &str,
+        dataset: &Bound<'_, PyAny>,
+        py: Python,
+    ) -> PyResult<()> {
         let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
 
         self.ctx
