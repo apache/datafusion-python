@@ -303,6 +303,25 @@ def test_dataset_filter(ctx, capfd):
     assert result[0].column(1) == pa.array([-3])
 
 
+def test_pyarrow_predicate_pushdown_is_null(ctx, capfd):
+    """Ensure that pyarrow filter gets pushed down for `IsNull`"""
+    # create a RecordBatch and register it as a pyarrow.dataset.Dataset
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([7, None, 9])],
+        names=["a", "b", "c"],
+    )
+    dataset = ds.dataset([batch])
+    ctx.register_dataset("t", dataset)
+    # Make sure the filter was pushed down in Physical Plan
+    df = ctx.sql("SELECT a FROM t WHERE c is NULL")
+    df.explain()
+    captured = capfd.readouterr()
+    assert "filter_expr=is_null(c, {nan_is_null=false})" in captured.out
+
+    result = df.collect()
+    assert result[0].column(0) == pa.array([2])
+
+
 def test_dataset_filter_nested_data(ctx):
     # create Arrow StructArrays to test nested data types
     data = pa.StructArray.from_arrays(

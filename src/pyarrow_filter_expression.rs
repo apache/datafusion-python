@@ -138,8 +138,13 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     let expr = PyArrowFilterExpression::try_from(expr.as_ref())?
                         .0
                         .into_bound(py);
-                    // TODO: this expression does not seems like it should be `call_method0`
-                    Ok(expr.clone().call_method1("is_null", (expr,))?)
+
+                    // https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Expression.html#pyarrow.dataset.Expression.is_null
+                    // Whether floating-point NaNs are considered null.
+                    let nan_is_null = false;
+
+                    let res = expr.call_method1("is_null", (nan_is_null,))?;
+                    Ok(res)
                 }
                 Expr::Between(Between {
                     expr,
