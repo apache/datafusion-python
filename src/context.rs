@@ -291,24 +291,17 @@ impl PySessionContext {
     pub fn register_object_store(
         &mut self,
         scheme: &str,
-        store: &Bound<'_, PyAny>,
+        store: StorageContexts,
         host: Option<&str>,
     ) -> PyResult<()> {
-        let res: Result<(Arc<dyn ObjectStore>, String), PyErr> =
-            match StorageContexts::extract_bound(store) {
-                Ok(store) => match store {
-                    StorageContexts::AmazonS3(s3) => Ok((s3.inner, s3.bucket_name)),
-                    StorageContexts::GoogleCloudStorage(gcs) => Ok((gcs.inner, gcs.bucket_name)),
-                    StorageContexts::MicrosoftAzure(azure) => {
-                        Ok((azure.inner, azure.container_name))
-                    }
-                    StorageContexts::LocalFileSystem(local) => Ok((local.inner, "".to_string())),
-                },
-                Err(_e) => Err(PyValueError::new_err("Invalid object store")),
-            };
-
         // for most stores the "host" is the bucket name and can be inferred from the store
-        let (store, upstream_host) = res?;
+        let (store, upstream_host): (Arc<dyn ObjectStore>, String) = match store {
+            StorageContexts::AmazonS3(s3) => (s3.inner, s3.bucket_name),
+            StorageContexts::GoogleCloudStorage(gcs) => (gcs.inner, gcs.bucket_name),
+            StorageContexts::MicrosoftAzure(azure) => (azure.inner, azure.container_name),
+            StorageContexts::LocalFileSystem(local) => (local.inner, "".to_string()),
+        };
+
         // let users override the host to match the api signature from upstream
         let derived_host = if let Some(host) = host {
             host
