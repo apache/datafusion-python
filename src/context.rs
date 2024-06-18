@@ -60,7 +60,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_common::ScalarValue;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -427,43 +427,43 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python list
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_pylist(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyList>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[data]);
-            let table = table_class.call_method1("from_pylist", args)?.into();
+        
+        // Acquire GIL Token
+        let py = data.py();
+        
+        // Instantiate pyarrow Table object & convert to Arrow Table
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[data]);
+        let table = table_class.call_method1("from_pylist", args)?.into();
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, py)?;
+        Ok(df)
     }
 
     /// Construct datafusion dataframe from Python dictionary
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_pydict(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyDict>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[data]);
-            let table = table_class.call_method1("from_pydict", args)?.into();
+        
+        // Acquire GIL Token
+        let py = data.py();
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Instantiate pyarrow Table object & convert to Arrow Table
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[data]);
+        let table = table_class.call_method1("from_pydict", args)?.into();
+
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, py)?;
+        Ok(df)
     }
 
     /// Construct datafusion dataframe from Arrow Table
