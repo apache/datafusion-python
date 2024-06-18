@@ -40,7 +40,7 @@ impl PyPlan {
         self.plan
             .encode(&mut proto_bytes)
             .map_err(DataFusionError::EncodeError)?;
-        Ok(PyBytes::new(py, &proto_bytes).into())
+        Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
     }
 }
 
@@ -76,7 +76,7 @@ impl PySubstraitSerializer {
     pub fn serialize_to_plan(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyPlan> {
         match PySubstraitSerializer::serialize_bytes(sql, ctx, py) {
             Ok(proto_bytes) => {
-                let proto_bytes: &PyBytes = proto_bytes.as_ref(py).downcast().unwrap();
+                let proto_bytes = proto_bytes.bind(py).downcast::<PyBytes>().unwrap();
                 PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
             }
             Err(e) => Err(py_datafusion_err(e)),
@@ -87,7 +87,7 @@ impl PySubstraitSerializer {
     pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyObject> {
         let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))
             .map_err(DataFusionError::from)?;
-        Ok(PyBytes::new(py, &proto_bytes).into())
+        Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
     }
 
     #[staticmethod]
@@ -140,7 +140,7 @@ impl PySubstraitConsumer {
     }
 }
 
-pub fn init_module(m: &PyModule) -> PyResult<()> {
+pub fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyPlan>()?;
     m.add_class::<PySubstraitConsumer>()?;
     m.add_class::<PySubstraitProducer>()?;

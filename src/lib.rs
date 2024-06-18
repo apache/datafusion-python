@@ -72,7 +72,7 @@ pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
 /// The higher-level public API is defined in pure python files under the
 /// datafusion directory.
 #[pymodule]
-fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
+fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     // Register the Tokio Runtime as a module attribute so we can reuse it
     m.add(
         "runtime",
@@ -94,35 +94,35 @@ fn _internal(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<physical_plan::PyExecutionPlan>()?;
 
     // Register `common` as a submodule. Matching `datafusion-common` https://docs.rs/datafusion-common/latest/datafusion_common/
-    let common = PyModule::new(py, "common")?;
-    common::init_module(common)?;
-    m.add_submodule(common)?;
+    let common = PyModule::new_bound(py, "common")?;
+    common::init_module(&common)?;
+    m.add_submodule(&common)?;
 
     // Register `expr` as a submodule. Matching `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
-    let expr = PyModule::new(py, "expr")?;
-    expr::init_module(expr)?;
-    m.add_submodule(expr)?;
+    let expr = PyModule::new_bound(py, "expr")?;
+    expr::init_module(&expr)?;
+    m.add_submodule(&expr)?;
 
     // Register the functions as a submodule
-    let funcs = PyModule::new(py, "functions")?;
-    functions::init_module(funcs)?;
-    m.add_submodule(funcs)?;
+    let funcs = PyModule::new_bound(py, "functions")?;
+    functions::init_module(&funcs)?;
+    m.add_submodule(&funcs)?;
 
-    let store = PyModule::new(py, "object_store")?;
-    store::init_module(store)?;
-    m.add_submodule(store)?;
+    let store = PyModule::new_bound(py, "object_store")?;
+    store::init_module(&store)?;
+    m.add_submodule(&store)?;
 
     // Register substrait as a submodule
     #[cfg(feature = "substrait")]
-    setup_substrait_module(py, m)?;
+    setup_substrait_module(py, &m)?;
 
     Ok(())
 }
 
 #[cfg(feature = "substrait")]
-fn setup_substrait_module(py: Python, m: &PyModule) -> PyResult<()> {
-    let substrait = PyModule::new(py, "substrait")?;
-    substrait::init_module(substrait)?;
-    m.add_submodule(substrait)?;
+fn setup_substrait_module(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    let substrait = PyModule::new_bound(py, "substrait")?;
+    substrait::init_module(&substrait)?;
+    m.add_submodule(&substrait)?;
     Ok(())
 }

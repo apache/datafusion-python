@@ -219,7 +219,7 @@ impl PyAmazonS3Context {
     }
 }
 
-pub(crate) fn init_module(m: &PyModule) -> PyResult<()> {
+pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyAmazonS3Context>()?;
     m.add_class::<PyMicrosoftAzureContext>()?;
     m.add_class::<PyGoogleCloudContext>()?;
