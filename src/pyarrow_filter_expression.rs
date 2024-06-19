@@ -21,6 +21,7 @@ use pyo3::prelude::*;
 use std::convert::TryFrom;
 use std::result::Result;
 
+use arrow::pyarrow::ToPyArrow;
 use datafusion_common::{Column, ScalarValue};
 use datafusion_expr::{expr::InList, Between, BinaryExpr, Expr, Operator};
 
@@ -56,6 +57,7 @@ fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, Data
     let ret: Result<Vec<PyObject>, DataFusionError> = exprs
         .iter()
         .map(|expr| match expr {
+            // TODO: should we also leverage `ScalarValue::to_pyarrow` here?
             Expr::Literal(v) => match v {
                 ScalarValue::Boolean(Some(b)) => Ok(b.into_py(py)),
                 ScalarValue::Int8(Some(i)) => Ok(i.into_py(py)),
@@ -100,23 +102,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
             let op_module = Python::import_bound(py, "operator")?;
             let pc_expr: Result<Bound<'_, PyAny>, DataFusionError> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
-                Expr::Literal(v) => match v {
-                    ScalarValue::Boolean(Some(b)) => Ok(pc.getattr("scalar")?.call1((*b,))?),
-                    ScalarValue::Int8(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::Int16(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::Int32(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::Int64(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::UInt8(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::UInt16(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::UInt32(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::UInt64(Some(i)) => Ok(pc.getattr("scalar")?.call1((*i,))?),
-                    ScalarValue::Float32(Some(f)) => Ok(pc.getattr("scalar")?.call1((*f,))?),
-                    ScalarValue::Float64(Some(f)) => Ok(pc.getattr("scalar")?.call1((*f,))?),
-                    ScalarValue::Utf8(Some(s)) => Ok(pc.getattr("scalar")?.call1((s,))?),
-                    _ => Err(DataFusionError::Common(format!(
-                        "PyArrow can't handle ScalarValue: {v:?}"
-                    ))),
-                },
+                Expr::Literal(scalar) => Ok(scalar.to_pyarrow(py)?.into_bound(py)),
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {
                     let operator = operator_to_py(op, &op_module)?;
                     let left = PyArrowFilterExpression::try_from(left.as_ref())?.0;
@@ -138,8 +124,13 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
                     let expr = PyArrowFilterExpression::try_from(expr.as_ref())?
                         .0
                         .into_bound(py);
-                    // TODO: this expression does not seems like it should be `call_method0`
-                    Ok(expr.clone().call_method1("is_null", (expr,))?)
+
+                    // https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Expression.html#pyarrow.dataset.Expression.is_null
+                    // Whether floating-point NaNs are considered null.
+                    let nan_is_null = false;
+
+                    let res = expr.call_method1("is_null", (nan_is_null,))?;
+                    Ok(res)
                 }
                 Expr::Between(Between {
                     expr,

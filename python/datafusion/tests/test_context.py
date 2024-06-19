@@ -16,6 +16,7 @@
 # under the License.
 import gzip
 import os
+import datetime as dt
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -301,6 +302,59 @@ def test_dataset_filter(ctx, capfd):
 
     assert result[0].column(0) == pa.array([9])
     assert result[0].column(1) == pa.array([-3])
+
+
+def test_pyarrow_predicate_pushdown_is_null(ctx, capfd):
+    """Ensure that pyarrow filter gets pushed down for `IsNull`"""
+    # create a RecordBatch and register it as a pyarrow.dataset.Dataset
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([7, None, 9])],
+        names=["a", "b", "c"],
+    )
+    dataset = ds.dataset([batch])
+    ctx.register_dataset("t", dataset)
+    # Make sure the filter was pushed down in Physical Plan
+    df = ctx.sql("SELECT a FROM t WHERE c is NULL")
+    df.explain()
+    captured = capfd.readouterr()
+    assert "filter_expr=is_null(c, {nan_is_null=false})" in captured.out
+
+    result = df.collect()
+    assert result[0].column(0) == pa.array([2])
+
+
+def test_pyarrow_predicate_pushdown_timestamp(ctx, tmpdir, capfd):
+    """Ensure that pyarrow filter gets pushed down for timestamp"""
+    # Ref: https://github.com/apache/datafusion-python/issues/703
+
+    # create pyarrow dataset with no actual files
+    col_type = pa.timestamp("ns", "+00:00")
+    nyd_2000 = pa.scalar(dt.datetime(2000, 1, 1, tzinfo=dt.timezone.utc), col_type)
+    pa_dataset_fs = pa.fs.SubTreeFileSystem(str(tmpdir), pa.fs.LocalFileSystem())
+    pa_dataset_format = pa.dataset.ParquetFileFormat()
+    pa_dataset_partition = pa.dataset.field("a") <= nyd_2000
+    fragments = [
+        # NOTE: we never actually make this file.
+        # Working predicate pushdown means it never gets accessed
+        pa_dataset_format.make_fragment(
+            "1.parquet",
+            filesystem=pa_dataset_fs,
+            partition_expression=pa_dataset_partition,
+        )
+    ]
+    pa_dataset = pa.dataset.FileSystemDataset(
+        fragments,
+        pa.schema([pa.field("a", col_type)]),
+        pa_dataset_format,
+        pa_dataset_fs,
+    )
+
+    ctx.register_dataset("t", pa_dataset)
+
+    # the partition for our only fragment is for a < 2000-01-01.
+    # so querying for a > 2024-01-01 should not touch any files
+    df = ctx.sql("SELECT * FROM t WHERE a > '2024-01-01T00:00:00+00:00'")
+    assert df.collect() == []
 
 
 def test_dataset_filter_nested_data(ctx):
