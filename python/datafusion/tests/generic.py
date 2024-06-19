@@ -40,7 +40,7 @@ def data_with_nans():
     np.random.seed(0)
     data = np.random.normal(0, 0.01, size=50)
     mask = np.random.randint(0, 2, size=50)
-    data[mask == 0] = np.NaN
+    data[mask == 0] = np.nan
     return data
 
 

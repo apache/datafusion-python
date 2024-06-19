@@ -35,12 +35,10 @@ jobs:
         python-version:
           - "3.10"
           - "3.11"
+          - "3.12"
         toolchain:
           - "stable"
-        # build stable for only 3.7
-        include:
-          - python-version: "3.7"
-            toolchain: "stable"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -82,12 +80,12 @@ jobs:
           command: clippy
           args: --all-targets --all-features -- -D clippy::all -A clippy::redundant_closure
 
-      - name: Create Virtualenv (3.7)
-        if: ${{ matrix.python-version == '3.7' }}
+      - name: Create Virtualenv (3.12)
+        if: ${{ matrix.python-version == '3.12' }}
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements-37.txt
+          pip install -r requirements-312.txt
 
       - name: Create Virtualenv (3.10)
         if: ${{ matrix.python-version == '3.10' }}
