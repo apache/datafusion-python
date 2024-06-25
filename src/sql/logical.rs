@@ -63,7 +63,7 @@ impl PyLogicalPlan {
 impl PyLogicalPlan {
     /// Return the specific logical operator
     pub fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Python::with_gil(|_| match self.plan.as_ref() {
+        match self.plan.as_ref() {
             LogicalPlan::Aggregate(plan) => PyAggregate::from(plan.clone()).to_variant(py),
             LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
             LogicalPlan::CrossJoin(plan) => PyCrossJoin::from(plan.clone()).to_variant(py),
@@ -85,7 +85,7 @@ impl PyLogicalPlan {
                 "Cannot convert this plan to a LogicalNode: {:?}",
                 other
             ))),
-        })
+        }
     }
 
     /// Get the inputs to this plan

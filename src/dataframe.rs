@@ -423,17 +423,15 @@ impl PyDataFrame {
 
     /// Convert to Arrow Table
     /// Collect the batches and pass to Arrow Table
-    fn to_arrow_table(&self, py: Python) -> PyResult<PyObject> {
+    fn to_arrow_table(&self, py: Python<'_>) -> PyResult<PyObject> {
         let batches = self.collect(py)?.to_object(py);
         let schema: PyObject = self.schema().into_py(py);
 
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object and use its from_batches method
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[batches, schema]);
-            let table: PyObject = table_class.call_method1("from_batches", args)?.into();
-            Ok(table)
-        })
+        // Instantiate pyarrow Table object and use its from_batches method
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[batches, schema]);
+        let table: PyObject = table_class.call_method1("from_batches", args)?.into();
+        Ok(table)
     }
 
     fn execute_stream(&self, py: Python) -> PyResult<PyRecordBatchStream> {
@@ -464,26 +462,22 @@ impl PyDataFrame {
 
     /// Convert to pandas dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
-    fn to_pandas(&self, py: Python) -> PyResult<PyObject> {
+    fn to_pandas(&self, py: Python<'_>) -> PyResult<PyObject> {
         let table = self.to_arrow_table(py)?;
 
-        Python::with_gil(|py| {
-            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
-            let result = table.call_method0(py, "to_pandas")?;
-            Ok(result)
-        })
+        // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
+        let result = table.call_method0(py, "to_pandas")?;
+        Ok(result)
     }
 
     /// Convert to Python list using pyarrow
     /// Each list item represents one row encoded as dictionary
-    fn to_pylist(&self, py: Python) -> PyResult<PyObject> {
+    fn to_pylist(&self, py: Python<'_>) -> PyResult<PyObject> {
         let table = self.to_arrow_table(py)?;
 
-        Python::with_gil(|py| {
-            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
-            let result = table.call_method0(py, "to_pylist")?;
-            Ok(result)
-        })
+        // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
+        let result = table.call_method0(py, "to_pylist")?;
+        Ok(result)
     }
 
     /// Convert to Python dictionary using pyarrow
@@ -491,24 +485,19 @@ impl PyDataFrame {
     fn to_pydict(&self, py: Python) -> PyResult<PyObject> {
         let table = self.to_arrow_table(py)?;
 
-        Python::with_gil(|py| {
-            // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
-            let result = table.call_method0(py, "to_pydict")?;
-            Ok(result)
-        })
+        // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
+        let result = table.call_method0(py, "to_pydict")?;
+        Ok(result)
     }
 
     /// Convert to polars dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
-    fn to_polars(&self, py: Python) -> PyResult<PyObject> {
+    fn to_polars(&self, py: Python<'_>) -> PyResult<PyObject> {
         let table = self.to_arrow_table(py)?;
-
-        Python::with_gil(|py| {
-            let dataframe = py.import_bound("polars")?.getattr("DataFrame")?;
-            let args = PyTuple::new_bound(py, &[table]);
-            let result: PyObject = dataframe.call1(args)?.into();
-            Ok(result)
-        })
+        let dataframe = py.import_bound("polars")?.getattr("DataFrame")?;
+        let args = PyTuple::new_bound(py, &[table]);
+        let result: PyObject = dataframe.call1(args)?.into();
+        Ok(result)
     }
 
     // Executes this DataFrame to get the total number of rows.
