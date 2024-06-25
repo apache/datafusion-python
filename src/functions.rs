@@ -17,6 +17,7 @@
 
 use pyo3::{prelude::*, wrap_pyfunction};
 
+use crate::common::data_type::NullTreatment;
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
@@ -73,15 +74,15 @@ pub fn var(y: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn first_value(
     args: Vec<PyExpr>,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyExpr {
-    // TODO: allow user to select null_treatment
-    let null_treatment = None;
+    let null_treatment = null_treatment.map(Into::into);
     let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
     let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
     functions_aggregate::expr_fn::first_value(
@@ -95,15 +96,15 @@ pub fn first_value(
 }
 
 #[pyfunction]
-#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None))]
+#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn last_value(
     args: Vec<PyExpr>,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
 ) -> PyExpr {
-    // TODO: allow user to select null_treatment
-    let null_treatment = None;
+    let null_treatment = null_treatment.map(Into::into);
     let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
     let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
     functions_aggregate::expr_fn::last_value(
