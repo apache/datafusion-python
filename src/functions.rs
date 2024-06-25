@@ -320,14 +320,20 @@ fn window(
     window_frame: Option<PyWindowFrame>,
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
-    let fun = find_df_window_func(name).or_else(|| {
-        ctx.and_then(|ctx| {
-            ctx.ctx
-                .udaf(name)
-                .map(WindowFunctionDefinition::AggregateUDF)
-                .ok()
+    // workaround for https://github.com/apache/datafusion-python/issues/730
+    let fun = if name == "sum" {
+        let sum_udf = functions_aggregate::sum::sum_udaf();
+        Some(WindowFunctionDefinition::AggregateUDF(sum_udf))
+    } else {
+        find_df_window_func(name).or_else(|| {
+            ctx.and_then(|ctx| {
+                ctx.ctx
+                    .udaf(name)
+                    .map(WindowFunctionDefinition::AggregateUDF)
+                    .ok()
+            })
         })
-    });
+    };
     if fun.is_none() {
         return Err(DataFusionError::Common("window function not found".to_string()).into());
     }
