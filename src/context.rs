@@ -60,7 +60,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_common::ScalarValue;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -291,24 +291,17 @@ impl PySessionContext {
     pub fn register_object_store(
         &mut self,
         scheme: &str,
-        store: &Bound<'_, PyAny>,
+        store: StorageContexts,
         host: Option<&str>,
     ) -> PyResult<()> {
-        let res: Result<(Arc<dyn ObjectStore>, String), PyErr> =
-            match StorageContexts::extract_bound(store) {
-                Ok(store) => match store {
-                    StorageContexts::AmazonS3(s3) => Ok((s3.inner, s3.bucket_name)),
-                    StorageContexts::GoogleCloudStorage(gcs) => Ok((gcs.inner, gcs.bucket_name)),
-                    StorageContexts::MicrosoftAzure(azure) => {
-                        Ok((azure.inner, azure.container_name))
-                    }
-                    StorageContexts::LocalFileSystem(local) => Ok((local.inner, "".to_string())),
-                },
-                Err(_e) => Err(PyValueError::new_err("Invalid object store")),
-            };
-
         // for most stores the "host" is the bucket name and can be inferred from the store
-        let (store, upstream_host) = res?;
+        let (store, upstream_host): (Arc<dyn ObjectStore>, String) = match store {
+            StorageContexts::AmazonS3(s3) => (s3.inner, s3.bucket_name),
+            StorageContexts::GoogleCloudStorage(gcs) => (gcs.inner, gcs.bucket_name),
+            StorageContexts::MicrosoftAzure(azure) => (azure.inner, azure.container_name),
+            StorageContexts::LocalFileSystem(local) => (local.inner, "".to_string()),
+        };
+
         // let users override the host to match the api signature from upstream
         let derived_host = if let Some(host) = host {
             host
@@ -434,105 +427,96 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python list
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_pylist(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyList>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[data]);
-            let table = table_class.call_method1("from_pylist", args)?.into();
+        // Acquire GIL Token
+        let py = data.py();
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Instantiate pyarrow Table object & convert to Arrow Table
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[data]);
+        let table = table_class.call_method1("from_pylist", args)?;
+
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, py)?;
+        Ok(df)
     }
 
     /// Construct datafusion dataframe from Python dictionary
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_pydict(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyDict>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[data]);
-            let table = table_class.call_method1("from_pydict", args)?.into();
+        // Acquire GIL Token
+        let py = data.py();
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Instantiate pyarrow Table object & convert to Arrow Table
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[data]);
+        let table = table_class.call_method1("from_pydict", args)?;
+
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, py)?;
+        Ok(df)
     }
 
     /// Construct datafusion dataframe from Arrow Table
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_arrow_table(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyAny>,
         name: Option<&str>,
-        _py: Python,
+        py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to batches
-            let table = data.call_method0(py, "to_batches")?;
+        // Instantiate pyarrow Table object & convert to batches
+        let table = data.call_method0("to_batches")?;
 
-            let schema = data.getattr(py, "schema")?;
-            let schema = schema.extract::<PyArrowType<Schema>>(py)?;
+        let schema = data.getattr("schema")?;
+        let schema = schema.extract::<PyArrowType<Schema>>()?;
 
-            // Cast PyObject to RecordBatch type
-            // Because create_dataframe() expects a vector of vectors of record batches
-            // here we need to wrap the vector of record batches in an additional vector
-            let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>(py)?;
-            let list_of_batches = PyArrowType::from(vec![batches.0]);
-            self.create_dataframe(list_of_batches, name, Some(schema), py)
-        })
+        // Cast PyAny to RecordBatch type
+        // Because create_dataframe() expects a vector of vectors of record batches
+        // here we need to wrap the vector of record batches in an additional vector
+        let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>()?;
+        let list_of_batches = PyArrowType::from(vec![batches.0]);
+        self.create_dataframe(list_of_batches, name, Some(schema), py)
     }
 
     /// Construct datafusion dataframe from pandas
     #[allow(clippy::wrong_self_convention)]
     pub fn from_pandas(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyAny>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Instantiate pyarrow Table object & convert to Arrow Table
-            let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-            let args = PyTuple::new_bound(py, &[data]);
-            let table = table_class.call_method1("from_pandas", args)?.into();
+        // Obtain GIL token
+        let py = data.py();
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Instantiate pyarrow Table object & convert to Arrow Table
+        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new_bound(py, &[data]);
+        let table = table_class.call_method1("from_pandas", args)?;
+
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, py)?;
+        Ok(df)
     }
 
     /// Construct datafusion dataframe from polars
-    #[allow(clippy::wrong_self_convention)]
     pub fn from_polars(
         &mut self,
-        data: PyObject,
+        data: Bound<'_, PyAny>,
         name: Option<&str>,
-        _py: Python,
     ) -> PyResult<PyDataFrame> {
-        Python::with_gil(|py| {
-            // Convert Polars dataframe to Arrow Table
-            let table = data.call_method0(py, "to_arrow")?;
+        // Convert Polars dataframe to Arrow Table
+        let table = data.call_method0("to_arrow")?;
 
-            // Convert Arrow Table to datafusion DataFrame
-            let df = self.from_arrow_table(table, name, py)?;
-            Ok(df)
-        })
+        // Convert Arrow Table to datafusion DataFrame
+        let df = self.from_arrow_table(table, name, data.py())?;
+        Ok(df)
     }
 
     pub fn register_table(&mut self, name: &str, table: &PyTable) -> PyResult<()> {
