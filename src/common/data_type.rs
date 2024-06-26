@@ -757,3 +757,33 @@ pub enum SqlType {
     VARBINARY,
     VARCHAR,
 }
+
+/// Specifies Ignore / Respect NULL within window functions.
+/// For example
+/// `FIRST_VALUE(column2) IGNORE NULLS OVER (PARTITION BY column1)`
+#[allow(non_camel_case_types)]
+#[allow(clippy::upper_case_acronyms)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[pyclass(name = "PythonType", module = "datafusion.common")]
+pub enum NullTreatment {
+    IGNORE_NULLS,
+    RESPECT_NULLS,
+}
+
+impl From<NullTreatment> for sqlparser::ast::NullTreatment {
+    fn from(null_treatment: NullTreatment) -> sqlparser::ast::NullTreatment {
+        match null_treatment {
+            NullTreatment::IGNORE_NULLS => sqlparser::ast::NullTreatment::IgnoreNulls,
+            NullTreatment::RESPECT_NULLS => sqlparser::ast::NullTreatment::RespectNulls,
+        }
+    }
+}
+
+impl From<sqlparser::ast::NullTreatment> for NullTreatment {
+    fn from(null_treatment: sqlparser::ast::NullTreatment) -> NullTreatment {
+        match null_treatment {
+            sqlparser::ast::NullTreatment::IgnoreNulls => NullTreatment::IGNORE_NULLS,
+            sqlparser::ast::NullTreatment::RespectNulls => NullTreatment::RESPECT_NULLS,
+        }
+    }
+}

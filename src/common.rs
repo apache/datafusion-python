@@ -29,6 +29,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<data_type::DataTypeMap>()?;
     m.add_class::<data_type::PythonType>()?;
     m.add_class::<data_type::SqlType>()?;
+    m.add_class::<data_type::NullTreatment>()?;
     m.add_class::<schema::SqlTable>()?;
     m.add_class::<schema::SqlSchema>()?;
     m.add_class::<schema::SqlView>()?;

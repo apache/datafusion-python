@@ -1051,6 +1051,7 @@ dependencies = [
  "pyo3-build-config",
  "rand",
  "regex-syntax",
+ "sqlparser",
  "syn 2.0.67",
  "tokio",
  "url",

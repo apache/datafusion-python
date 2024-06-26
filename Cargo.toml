@@ -56,6 +56,7 @@ parking_lot = "0.12"
 regex-syntax = "0.8.1"
 syn = "2.0.67"
 url = "2.2"
+sqlparser = "0.47.0"
 
 [build-dependencies]
 pyo3-build-config = "0.21"

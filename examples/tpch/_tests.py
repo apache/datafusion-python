@@ -74,7 +74,6 @@ def check_q17(df):
         ("q10_returned_item_reporting", "q10"),
         pytest.param(
             "q11_important_stock_identification", "q11", 
-            marks=pytest.mark.xfail # https://github.com/apache/datafusion-python/issues/730
         ),
         ("q12_ship_mode_order_priority", "q12"),
         ("q13_customer_distribution", "q13"),
