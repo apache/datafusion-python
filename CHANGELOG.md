@@ -19,7 +19,24 @@
 
 # DataFusion Python Changelog
 
-## [38.0.0](https://github.com/apache/datafusion-python/tree/38.0.0) (2024-05-16)
+## [39.0.0](https://github.com/apache/datafusion-python/tree/39.0.0) (2024-06-25)
+
+**Merged pull requests:**
+
+- ci: add substrait feature to linux builds [#720](https://github.com/apache/datafusion-python/pull/720) (Michael-J-Ward)
+- Docs deploy action [#721](https://github.com/apache/datafusion-python/pull/721) (Michael-J-Ward)
+- update deps [#723](https://github.com/apache/datafusion-python/pull/723) (Michael-J-Ward)
+- Upgrade maturin [#725](https://github.com/apache/datafusion-python/pull/725) (Michael-J-Ward)
+- Upgrade datafusion 39 [#728](https://github.com/apache/datafusion-python/pull/728) (Michael-J-Ward)
+- use ScalarValue::to_pyarrow to convert to python object [#731](https://github.com/apache/datafusion-python/pull/731) (Michael-J-Ward)
+- Pyo3 `Bound<'py, T>` api [#734](https://github.com/apache/datafusion-python/pull/734) (Michael-J-Ward)
+- github test action: drop python 3.7, add python 3.12 [#736](https://github.com/apache/datafusion-python/pull/736) (Michael-J-Ward)
+- Pyarrow filter pushdowns [#735](https://github.com/apache/datafusion-python/pull/735) (Michael-J-Ward)
+- build(deps): bump syn from 2.0.66 to 2.0.67 [#738](https://github.com/apache/datafusion-python/pull/738) (dependabot[bot])
+- Pyo3 refactorings [#740](https://github.com/apache/datafusion-python/pull/740) (Michael-J-Ward)
+- UDAF `sum` workaround [#741](https://github.com/apache/datafusion-python/pull/741) (Michael-J-Ward)
+
+## [38.0.1](https://github.com/apache/datafusion-python/tree/38.0.1) (2024-05-25)
 
 **Implemented enhancements:**
 
