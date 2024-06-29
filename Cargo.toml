@@ -53,7 +53,7 @@ async-trait = "0.1"
 futures = "0.3"
 object_store = { version = "0.10.1", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
-regex-syntax = "0.8.1"
+regex-syntax = "0.8.4"
 syn = "2.0.68"
 url = "2.2"
 sqlparser = "0.47.0"
