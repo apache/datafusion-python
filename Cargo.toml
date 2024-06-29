@@ -59,7 +59,7 @@ url = "2.2"
 sqlparser = "0.47.0"
 
 [build-dependencies]
-pyo3-build-config = "0.21"
+pyo3-build-config = "0.22"
 
 [lib]
 name = "datafusion_python"
