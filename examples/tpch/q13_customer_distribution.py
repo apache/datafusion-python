@@ -41,7 +41,9 @@ ctx = SessionContext()
 df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
     "o_custkey", "o_comment"
 )
-df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns("c_custkey")
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
+    "c_custkey"
+)
 
 # Use a regex to remove special cases
 df_orders = df_orders.filter(

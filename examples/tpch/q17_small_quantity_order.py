@@ -56,7 +56,13 @@ df = df.join(df_lineitem, (["p_partkey"], ["l_partkey"]), "inner")
 # Find the average quantity
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(
-    "avg_quantity", F.window("avg", [col("l_quantity")], window_frame=window_frame, partition_by=[col("l_partkey")])
+    "avg_quantity",
+    F.window(
+        "avg",
+        [col("l_quantity")],
+        window_frame=window_frame,
+        partition_by=[col("l_partkey")],
+    ),
 )
 
 df = df.filter(col("l_quantity") < lit(0.2) * col("avg_quantity"))
