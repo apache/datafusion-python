@@ -321,22 +321,19 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
         Some(ctx) => {
             let session_state = ctx.ctx.state();
 
-            match session_state.window_functions().contains_key(name.into()) {
+            match session_state.window_functions().contains_key(name) {
                 true => session_state
                     .window_functions()
-                    .get(name.into())
+                    .get(name)
                     .map(|f| WindowFunctionDefinition::WindowUDF(f.clone())),
                 false => session_state
                     .aggregate_functions()
-                    .get(name.into())
+                    .get(name)
                     .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone())),
             }
         }
         None => {
             let default_aggregate_fns = all_default_aggregate_functions();
-            for f in &default_aggregate_fns {
-                println!("default agg fn {}", f.name());
-            }
 
             default_aggregate_fns
                 .iter()
