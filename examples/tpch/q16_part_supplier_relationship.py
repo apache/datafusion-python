@@ -62,7 +62,8 @@ df_partsupp = df_partsupp.join(
 # Select the parts we are interested in
 df_part = df_part.filter(col("p_brand") != lit(BRAND))
 df_part = df_part.filter(
-    F.substring(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1)) != lit(TYPE_TO_IGNORE)
+    F.substring(col("p_type"), lit(0), lit(len(TYPE_TO_IGNORE) + 1))
+    != lit(TYPE_TO_IGNORE)
 )
 
 # Python conversion of integer to literal casts it to int64 but the data for

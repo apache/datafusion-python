@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::functions_aggregate::all_default_aggregate_functions;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -311,6 +312,50 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     })
 }
 
+/// Helper function to find the appropriate window function. First, if a session
+/// context is defined check it's registered functions. If no context is defined,
+/// attempt to find from all default functions. Lastly, as a fall back attempt
+/// to use built in window functions, which are being deprecated.
+fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
+    let mut maybe_fn = match &ctx {
+        Some(ctx) => {
+            let session_state = ctx.ctx.state();
+
+            match session_state.window_functions().contains_key(name) {
+                true => session_state
+                    .window_functions()
+                    .get(name)
+                    .map(|f| WindowFunctionDefinition::WindowUDF(f.clone())),
+                false => session_state
+                    .aggregate_functions()
+                    .get(name)
+                    .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone())),
+            }
+        }
+        None => {
+            let default_aggregate_fns = all_default_aggregate_functions();
+
+            default_aggregate_fns
+                .iter()
+                .find(|v| v.aliases().contains(&name.to_string()))
+                .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()))
+        }
+    };
+
+    if maybe_fn.is_none() {
+        maybe_fn = find_df_window_func(name).or_else(|| {
+            ctx.and_then(|ctx| {
+                ctx.ctx
+                    .udaf(name)
+                    .map(WindowFunctionDefinition::AggregateUDF)
+                    .ok()
+            })
+        });
+    }
+
+    maybe_fn.ok_or(DataFusionError::Common("window function not found".to_string()).into())
+}
+
 /// Creates a new Window function expression
 #[pyfunction]
 fn window(
@@ -321,24 +366,7 @@ fn window(
     window_frame: Option<PyWindowFrame>,
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
-    // workaround for https://github.com/apache/datafusion-python/issues/730
-    let fun = if name == "sum" {
-        let sum_udf = functions_aggregate::sum::sum_udaf();
-        Some(WindowFunctionDefinition::AggregateUDF(sum_udf))
-    } else {
-        find_df_window_func(name).or_else(|| {
-            ctx.and_then(|ctx| {
-                ctx.ctx
-                    .udaf(name)
-                    .map(WindowFunctionDefinition::AggregateUDF)
-                    .ok()
-            })
-        })
-    };
-    if fun.is_none() {
-        return Err(DataFusionError::Common("window function not found".to_string()).into());
-    }
-    let fun = fun.unwrap();
+    let fun = find_window_fn(name, ctx)?;
     let window_frame = window_frame
         .unwrap_or_else(|| PyWindowFrame::new("rows", None, Some(0)).unwrap())
         .into();

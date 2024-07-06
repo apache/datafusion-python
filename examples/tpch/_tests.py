@@ -21,6 +21,7 @@ import pyarrow as pa
 from datafusion import col, lit, functions as F
 from util import get_answer_file
 
+
 def df_selection(col_name, col_type):
     if col_type == pa.float64() or isinstance(col_type, pa.Decimal128Type):
         return F.round(col(col_name), lit(2)).alias(col_name)
@@ -29,6 +30,7 @@ def df_selection(col_name, col_type):
     else:
         return col(col_name)
 
+
 def load_schema(col_name, col_type):
     if col_type == pa.int64() or col_type == pa.int32():
         return col_name, pa.string()
@@ -36,7 +38,8 @@ def load_schema(col_name, col_type):
         return col_name, pa.float64()
     else:
         return col_name, col_type
-    
+
+
 def expected_selection(col_name, col_type):
     if col_type == pa.int64() or col_type == pa.int32():
         return F.trim(col(col_name)).cast(col_type).alias(col_name)
@@ -45,19 +48,22 @@ def expected_selection(col_name, col_type):
     else:
         return col(col_name)
 
-def selections_and_schema(original_schema):
-    columns = [ (c, original_schema.field(c).type) for c in original_schema.names ]
 
-    df_selections = [ df_selection(c, t) for (c, t) in columns]
-    expected_schema = [ load_schema(c, t) for (c, t) in columns]
-    expected_selections = [ expected_selection(c, t) for (c, t) in columns]
+def selections_and_schema(original_schema):
+    columns = [(c, original_schema.field(c).type) for c in original_schema.names]
+
+    df_selections = [df_selection(c, t) for (c, t) in columns]
+    expected_schema = [load_schema(c, t) for (c, t) in columns]
+    expected_selections = [expected_selection(c, t) for (c, t) in columns]
 
     return (df_selections, expected_schema, expected_selections)
+
 
 def check_q17(df):
     raw_value = float(df.collect()[0]["avg_yearly"][0].as_py())
     value = round(raw_value, 2)
     assert abs(value - 348406.05) < 0.001
+
 
 @pytest.mark.parametrize(
     ("query_code", "answer_file"),
@@ -72,9 +78,7 @@ def check_q17(df):
         ("q08_market_share", "q8"),
         ("q09_product_type_profit_measure", "q9"),
         ("q10_returned_item_reporting", "q10"),
-        pytest.param(
-            "q11_important_stock_identification", "q11", 
-        ),
+        ("q11_important_stock_identification", "q11"),
         ("q12_ship_mode_order_priority", "q12"),
         ("q13_customer_distribution", "q13"),
         ("q14_promotion_effect", "q14"),
@@ -97,13 +101,20 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
     if answer_file == "q17":
         return check_q17(df)
 
-    (df_selections, expected_schema, expected_selections) = selections_and_schema(df.schema())
+    (df_selections, expected_schema, expected_selections) = selections_and_schema(
+        df.schema()
+    )
 
     df = df.select(*df_selections)
 
     read_schema = pa.schema(expected_schema)
 
-    df_expected = module.ctx.read_csv(get_answer_file(answer_file), schema=read_schema, delimiter="|", file_extension=".out")
+    df_expected = module.ctx.read_csv(
+        get_answer_file(answer_file),
+        schema=read_schema,
+        delimiter="|",
+        file_extension=".out",
+    )
 
     df_expected = df_expected.select(*expected_selections)
 

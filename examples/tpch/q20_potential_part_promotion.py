@@ -40,7 +40,9 @@ NATION_OF_INTEREST = "CANADA"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_name")
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+    "p_partkey", "p_name"
+)
 df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_shipdate", "l_partkey", "l_suppkey", "l_quantity"
 )

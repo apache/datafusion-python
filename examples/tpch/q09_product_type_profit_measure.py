@@ -39,7 +39,9 @@ part_color = lit("green")
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_name")
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+    "p_partkey", "p_name"
+)
 df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_nationkey"
 )
