@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
 from typing import Callable, TYPE_CHECKING
