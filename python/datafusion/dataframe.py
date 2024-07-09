@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any, List, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
-import pyarrow as pa
-import pandas as pd
-import polars as pl
+
+if TYPE_CHECKING:
+    import pyarrow as pa
+    import pandas as pd
+    import polars as pl
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr
