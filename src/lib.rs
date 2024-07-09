@@ -92,6 +92,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;
+    m.add_class::<record_batch::PyRecordBatch>()?;
+    m.add_class::<record_batch::PyRecordBatchStream>()?;
 
     // Register `common` as a submodule. Matching `datafusion-common` https://docs.rs/datafusion-common/latest/datafusion_common/
     let common = PyModule::new_bound(py, "common")?;

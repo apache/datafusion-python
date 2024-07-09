@@ -27,6 +27,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<df_schema::PyDFSchema>()?;
     m.add_class::<data_type::PyDataType>()?;
     m.add_class::<data_type::DataTypeMap>()?;
+    m.add_class::<data_type::RexType>()?;
     m.add_class::<data_type::PythonType>()?;
     m.add_class::<data_type::SqlType>()?;
     m.add_class::<data_type::NullTreatment>()?;

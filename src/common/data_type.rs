@@ -764,7 +764,7 @@ pub enum SqlType {
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(name = "PythonType", module = "datafusion.common")]
+#[pyclass(name = "NullTreatment", module = "datafusion.common")]
 pub enum NullTreatment {
     IGNORE_NULLS,
     RESPECT_NULLS,

@@ -320,6 +320,18 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    #[pyo3(signature = (columns, preserve_nulls=true))]
+    fn unnest_columns(&self, columns: Vec<String>, preserve_nulls: bool) -> PyResult<Self> {
+        let unnest_options = UnnestOptions { preserve_nulls };
+        let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .unnest_columns_with_options(&cols, unnest_options)?;
+        Ok(Self::new(df))
+    }
+
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn intersect(&self, py_df: PyDataFrame) -> PyResult<Self> {
         let new_df = self
