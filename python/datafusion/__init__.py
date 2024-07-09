@@ -25,64 +25,67 @@ except ImportError:
 
 import pyarrow as pa
 
-from ._internal import (
-    AggregateUDF,
-    Config,
-    DataFrame,
+from .context import (
     SessionContext,
     SessionConfig,
     RuntimeConfig,
-    ScalarUDF,
     SQLOptions,
 )
+
+# The following imports are okay to remain as opaque to the user.
+from ._internal import Config
+
+from .udf import ScalarUDF, AggregateUDF
 
 from .common import (
     DFSchema,
 )
 
+from .dataframe import DataFrame
+
 from .expr import (
-    Alias,
-    Analyze,
+    #     Alias,
+    #     Analyze,
     Expr,
-    Filter,
-    Limit,
-    Like,
-    ILike,
-    Projection,
-    SimilarTo,
-    ScalarVariable,
-    Sort,
-    TableScan,
-    Not,
-    IsNotNull,
-    IsTrue,
-    IsFalse,
-    IsUnknown,
-    IsNotTrue,
-    IsNotFalse,
-    IsNotUnknown,
-    Negative,
-    InList,
-    Exists,
-    Subquery,
-    InSubquery,
-    ScalarSubquery,
-    GroupingSet,
-    Placeholder,
-    Case,
-    Cast,
-    TryCast,
-    Between,
-    Explain,
-    CreateMemoryTable,
-    SubqueryAlias,
-    Extension,
-    CreateView,
-    Distinct,
-    DropTable,
-    Repartition,
-    Partitioning,
-    Window,
+    #     Filter,
+    #     Limit,
+    #     Like,
+    #     ILike,
+    #     Projection,
+    #     SimilarTo,
+    #     ScalarVariable,
+    #     Sort,
+    #     TableScan,
+    #     Not,
+    #     IsNotNull,
+    #     IsTrue,
+    #     IsFalse,
+    #     IsUnknown,
+    #     IsNotTrue,
+    #     IsNotFalse,
+    #     IsNotUnknown,
+    #     Negative,
+    #     InList,
+    #     Exists,
+    #     Subquery,
+    #     InSubquery,
+    #     ScalarSubquery,
+    #     GroupingSet,
+    #     Placeholder,
+    #     Case,
+    #     Cast,
+    #     TryCast,
+    #     Between,
+    #     Explain,
+    #     CreateMemoryTable,
+    #     SubqueryAlias,
+    #     Extension,
+    #     CreateView,
+    #     Distinct,
+    #     DropTable,
+    #     Repartition,
+    #     Partitioning,
+    #     Window,
     WindowFrame,
 )
 
@@ -96,7 +99,6 @@ __all__ = [
     "SQLOptions",
     "RuntimeConfig",
     "Expr",
-    "AggregateUDF",
     "ScalarUDF",
     "Window",
     "WindowFrame",
@@ -175,8 +177,6 @@ col = column
 
 
 def literal(value):
-    if not isinstance(value, pa.Scalar):
-        value = pa.scalar(value)
     return Expr.literal(value)
 
 
@@ -200,7 +200,7 @@ def udf(func, input_types, return_type, volatility, name=None):
     )
 
 
-def udaf(accum, input_type, return_type, state_type, volatility, name=None):
+def udaf(accum, input_types, return_type, state_type, volatility, name=None):
     """
     Create a new User Defined Aggregate Function
     """
@@ -208,12 +208,12 @@ def udaf(accum, input_type, return_type, state_type, volatility, name=None):
         raise TypeError("`accum` must implement the abstract base class Accumulator")
     if name is None:
         name = accum.__qualname__.lower()
-    if isinstance(input_type, pa.lib.DataType):
-        input_type = [input_type]
+    if isinstance(input_types, pa.lib.DataType):
+        input_types = [input_types]
     return AggregateUDF(
         name=name,
         accumulator=accum,
-        input_type=input_type,
+        input_types=input_types,
         return_type=return_type,
         state_type=state_type,
         volatility=volatility,

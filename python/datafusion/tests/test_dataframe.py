@@ -17,6 +17,7 @@
 import os
 
 import pyarrow as pa
+from pyarrow.csv import write_csv
 import pyarrow.parquet as pq
 import pytest
 
@@ -379,7 +380,7 @@ def test_get_dataframe(tmp_path):
         ],
         names=["int", "str", "float"],
     )
-    pa.csv.write_csv(table, path)
+    write_csv(table, path)
 
     ctx.register_csv("csv", path)
 
@@ -659,6 +660,8 @@ def test_to_arrow_table(df):
 
 def test_execute_stream(df):
     stream = df.execute_stream()
+    for s in stream:
+        print(type(s))
     assert all(batch is not None for batch in stream)
     assert not list(stream)  # after one iteration the generator must be exhausted
 
@@ -795,3 +798,15 @@ def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compre
 
     with pytest.raises(ValueError):
         df.write_parquet(str(path), compression=compression)
+
+
+# ctx = SessionContext()
+
+# # create a RecordBatch and a new DataFrame from it
+# batch = pa.RecordBatch.from_arrays(
+#     [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
+#     names=["a", "b", "c"],
+# )
+
+# df = ctx.create_dataframe([[batch]])
+# test_execute_stream(df)

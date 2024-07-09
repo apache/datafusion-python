@@ -19,6 +19,7 @@ import os
 
 import numpy as np
 import pyarrow as pa
+from pyarrow.csv import write_csv
 import pyarrow.dataset as ds
 import pytest
 from datafusion.object_store import LocalFileSystem
@@ -45,7 +46,7 @@ def test_register_csv(ctx, tmp_path):
         ],
         names=["int", "str", "float"],
     )
-    pa.csv.write_csv(table, path)
+    write_csv(table, path)
 
     with open(path, "rb") as csv_file:
         with gzip.open(gzip_path, "wb") as gzipped_file:

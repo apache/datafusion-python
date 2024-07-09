@@ -18,6 +18,7 @@
 import pytest
 from datafusion import SessionContext
 import pyarrow as pa
+from pyarrow.csv import write_csv
 
 
 @pytest.fixture
@@ -37,7 +38,7 @@ def database(ctx, tmp_path):
         ],
         names=["int", "str", "float"],
     )
-    pa.csv.write_csv(table, path)
+    write_csv(table, path)
 
     ctx.register_csv("csv", path)
     ctx.register_csv("csv1", str(path))
