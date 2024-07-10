@@ -16,8 +16,15 @@
 # under the License.
 
 
-from ._internal import functions
-
-
 def __getattr__(name):
+    from ._internal import functions
+
     return getattr(functions, name)
+
+
+def __dir__():
+    from ._internal import functions
+
+    return list(globals().keys()) + [
+        obj for obj in dir(functions) if not obj.startswith("_")
+    ]

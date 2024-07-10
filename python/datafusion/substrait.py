@@ -16,8 +16,15 @@
 # under the License.
 
 
-from ._internal import substrait
-
-
 def __getattr__(name):
+    from ._internal import substrait
+
     return getattr(substrait, name)
+
+
+def __dir__():
+    from ._internal import substrait
+
+    return list(globals().keys()) + [
+        obj for obj in dir(substrait) if not obj.startswith("_")
+    ]
