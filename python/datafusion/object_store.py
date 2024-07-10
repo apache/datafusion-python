@@ -16,8 +16,15 @@
 # under the License.
 
 
-from ._internal import object_store
-
-
 def __getattr__(name):
+    from ._internal import object_store
+
     return getattr(object_store, name)
+
+
+def __dir__():
+    from ._internal import object_store
+
+    return list(globals().keys()) + [
+        obj for obj in dir(object_store) if not obj.startswith("_")
+    ]

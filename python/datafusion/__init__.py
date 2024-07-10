@@ -88,66 +88,6 @@ from .expr import (
 
 __version__ = importlib_metadata.version(__name__)
 
-__all__ = [
-    "Config",
-    "DataFrame",
-    "SessionContext",
-    "SessionConfig",
-    "SQLOptions",
-    "RuntimeConfig",
-    "Expr",
-    "AggregateUDF",
-    "ScalarUDF",
-    "Window",
-    "WindowFrame",
-    "column",
-    "literal",
-    "TableScan",
-    "Projection",
-    "DFSchema",
-    "DFField",
-    "Analyze",
-    "Sort",
-    "Limit",
-    "Filter",
-    "Like",
-    "ILike",
-    "SimilarTo",
-    "ScalarVariable",
-    "Alias",
-    "Not",
-    "IsNotNull",
-    "IsTrue",
-    "IsFalse",
-    "IsUnknown",
-    "IsNotTrue",
-    "IsNotFalse",
-    "IsNotUnknown",
-    "Negative",
-    "ScalarFunction",
-    "BuiltinScalarFunction",
-    "InList",
-    "Exists",
-    "Subquery",
-    "InSubquery",
-    "ScalarSubquery",
-    "GroupingSet",
-    "Placeholder",
-    "Case",
-    "Cast",
-    "TryCast",
-    "Between",
-    "Explain",
-    "SubqueryAlias",
-    "Extension",
-    "CreateMemoryTable",
-    "CreateView",
-    "Distinct",
-    "DropTable",
-    "Repartition",
-    "Partitioning",
-]
-
 
 class Accumulator(metaclass=ABCMeta):
     @abstractmethod
@@ -175,6 +115,8 @@ col = column
 
 
 def literal(value):
+    import pyarrow as pa
+
     if not isinstance(value, pa.Scalar):
         value = pa.scalar(value)
     return Expr.literal(value)
@@ -204,6 +146,8 @@ def udaf(accum, input_type, return_type, state_type, volatility, name=None):
     """
     Create a new User Defined Aggregate Function
     """
+    import pyarrow as pa
+
     if not issubclass(accum, Accumulator):
         raise TypeError("`accum` must implement the abstract base class Accumulator")
     if name is None:
@@ -218,3 +162,68 @@ def udaf(accum, input_type, return_type, state_type, volatility, name=None):
         state_type=state_type,
         volatility=volatility,
     )
+
+
+del ABCMeta
+del abstractmethod
+del List
+del importlib_metadata
+del pa
+
+
+__all__ = [
+    "Config",
+    "DataFrame",
+    "SessionContext",
+    "SessionConfig",
+    "SQLOptions",
+    "RuntimeConfig",
+    "Expr",
+    "AggregateUDF",
+    "ScalarUDF",
+    "Window",
+    "WindowFrame",
+    "column",
+    "literal",
+    "TableScan",
+    "Projection",
+    "DFSchema",
+    "Analyze",
+    "Sort",
+    "Limit",
+    "Filter",
+    "Like",
+    "ILike",
+    "SimilarTo",
+    "ScalarVariable",
+    "Alias",
+    "Not",
+    "IsNotNull",
+    "IsTrue",
+    "IsFalse",
+    "IsUnknown",
+    "IsNotTrue",
+    "IsNotFalse",
+    "IsNotUnknown",
+    "Negative",
+    "InList",
+    "Exists",
+    "Subquery",
+    "InSubquery",
+    "ScalarSubquery",
+    "GroupingSet",
+    "Placeholder",
+    "Case",
+    "Cast",
+    "TryCast",
+    "Between",
+    "Explain",
+    "SubqueryAlias",
+    "Extension",
+    "CreateMemoryTable",
+    "CreateView",
+    "Distinct",
+    "DropTable",
+    "Repartition",
+    "Partitioning",
+]

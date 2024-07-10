@@ -16,8 +16,15 @@
 # under the License.
 
 
-from ._internal import common
-
-
 def __getattr__(name):
+    from ._internal import common
+
     return getattr(common, name)
+
+
+def __dir__():
+    from ._internal import common
+
+    return list(globals().keys()) + [
+        obj for obj in dir(common) if not obj.startswith("_")
+    ]
