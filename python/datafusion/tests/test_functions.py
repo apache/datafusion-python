@@ -97,9 +97,7 @@ def test_literal(df):
 
 
 def test_lit_arith(df):
-    """
-    Test literals with arithmetic operations
-    """
+    """Test literals with arithmetic operations"""
     df = df.select(literal(1) + column("b"), f.concat(column("a"), literal("!")))
     result = df.collect()
     assert len(result) == 1

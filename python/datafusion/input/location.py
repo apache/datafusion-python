@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""This module provides ``LocationInputPlugin`` which is the default input source for DataFusion."""
+
 import os
 import glob
 from typing import Any
@@ -24,12 +26,10 @@ from datafusion.input.base import BaseInputSource
 
 
 class LocationInputPlugin(BaseInputSource):
-    """
-    Input Plugin for everything, which can be read
-    in from a file (on disk, remote etc.)
-    """
+    """Input Plugin for everything, which can be read in from a file (on disk, remote etc.)."""
 
     def is_correct_input(self, input_item: Any, table_name: str, **kwargs):
+        """Returns `True` if the input is valid."""
         return isinstance(input_item, str)
 
     def build_table(
@@ -38,6 +38,7 @@ class LocationInputPlugin(BaseInputSource):
         table_name: str,
         **kwargs,
     ) -> SqlTable:
+        """Create a table from the input source."""
         _, extension = os.path.splitext(input_file)
         format = extension.lstrip(".").lower()
         num_rows = 0  # Total number of rows in the file. Used for statistics

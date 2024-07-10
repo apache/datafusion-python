@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""Data catalog providers."""
+
 from __future__ import annotations
 
 import datafusion._internal as df_internal
@@ -26,34 +28,49 @@ if TYPE_CHECKING:
 
 
 class Catalog:
+    """DataFusion data catalog."""
+
     def __init__(self, catalog: df_internal.Catalog) -> None:
+        """This constructor is not typically called by the end user."""
         self.catalog = catalog
 
     def names(self) -> list[str]:
+        """Returns the list of databases in this catalog."""
         return self.catalog.names()
 
     def database(self, name: str = "public") -> Database:
+        """Returns the database with the given `name` from this catalog."""
         return Database(self.catalog.database(name))
 
 
 class Database:
+    """DataFusion Database."""
+
     def __init__(self, db: df_internal.Database) -> None:
+        """This constructor is not typically called by the end user."""
         self.db = db
 
     def names(self) -> set[str]:
+        """Returns the list of all tables in this database."""
         return self.db.names()
 
     def table(self, name: str) -> Table:
+        """Return the table with the given `name` from this database."""
         return Table(self.db.table(name))
 
 
 class Table:
+    """DataFusion table."""
+
     def __init__(self, table: df_internal.Table) -> None:
+        """This constructor is not typically called by the end user."""
         self.table = table
 
     def schema(self) -> pyarrow.Schema:
+        """Returns the schema associated with this table."""
         return self.table.schema()
 
     @property
     def kind(self) -> str:
+        """Returns the kind of table."""
         return self.table.kind()

@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""Session Context and it's associated configuration."""
+
 from __future__ import annotations
 
 from ._internal import SessionConfig as SessionConfigInternal
@@ -40,6 +42,8 @@ if TYPE_CHECKING:
 
 
 class SessionConfig:
+    """Session configuration options."""
+
     def __init__(self, config_options: dict[str, str] = {}) -> None:
         """Create a new `SessionConfig` with the given configuration options.
 
@@ -60,7 +64,7 @@ class SessionConfig:
         enabled : bool
             Whether the default catalog and schema will be automatically created.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -82,7 +86,7 @@ class SessionConfig:
         schema : str
             Schema name.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -100,7 +104,7 @@ class SessionConfig:
         enabled : bool
             Whether to include `information_schema` virtual tables.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -116,7 +120,7 @@ class SessionConfig:
         batch_size : int
             Batch size.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -134,7 +138,7 @@ class SessionConfig:
         target_partitions : int
             Number of target partitions.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -154,7 +158,7 @@ class SessionConfig:
         enabled : bool
             Whether to use repartitioning for aggregations.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -172,7 +176,7 @@ class SessionConfig:
         enabled : bool
             Whether to use repartitioning for joins.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -188,7 +192,7 @@ class SessionConfig:
         enabled : bool
             Whether to use repartitioning for window functions.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -204,7 +208,7 @@ class SessionConfig:
         enabled : bool
             Whether to use repartitioning for window functions.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -220,7 +224,7 @@ class SessionConfig:
         enabled : bool
             Whether to use repartitioning for file scans.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -236,7 +240,7 @@ class SessionConfig:
         size : int
             Minimum file range size.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -252,7 +256,7 @@ class SessionConfig:
         enabled : bool
             Whether to use pruning predicate for parquet readers.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -270,7 +274,7 @@ class SessionConfig:
         value : str
             Option value.
 
-        Returns
+        Returns:
         -------
         SessionConfig
             A new `SessionConfig` object with the updated setting.
@@ -280,6 +284,8 @@ class SessionConfig:
 
 
 class RuntimeConfig:
+    """Runtime configuration options."""
+
     def __init__(self) -> None:
         """Create a new `RuntimeConfig` with default values."""
         self.config_internal = RuntimeConfigInternal()
@@ -287,12 +293,12 @@ class RuntimeConfig:
     def with_disk_manager_disabled(self) -> RuntimeConfig:
         """Disable the disk manager, attempts to create temporary files will error.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_disk_manager_disabled()
         """
@@ -302,12 +308,12 @@ class RuntimeConfig:
     def with_disk_manager_os(self) -> RuntimeConfig:
         """Use the operating system's temporary directory for disk manager.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_disk_manager_os()
         """
@@ -322,12 +328,12 @@ class RuntimeConfig:
         paths : list[str]
             Paths to use for the disk manager's temporary files.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_disk_manager_specified(["/tmp"])
         """
@@ -337,12 +343,12 @@ class RuntimeConfig:
     def with_unbounded_memory_pool(self) -> RuntimeConfig:
         """Use an unbounded memory pool.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_unbounded_memory_pool()
         """
@@ -373,12 +379,12 @@ class RuntimeConfig:
         size : int
             Size of the memory pool in bytes.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         ```python
         >>> config = RuntimeConfig().with_fair_spill_pool(1024)
@@ -399,12 +405,12 @@ class RuntimeConfig:
         size : int
             Size of the memory pool in bytes.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_greedy_memory_pool(1024)
         """
@@ -419,12 +425,12 @@ class RuntimeConfig:
         path : str
             Path to use for temporary files.
 
-        Returns
+        Returns:
         -------
         RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> config = RuntimeConfig().with_temp_file_path("/tmp")
         """
@@ -433,6 +439,8 @@ class RuntimeConfig:
 
 
 class SQLOptions:
+    """Options to be used when performing SQL queries on the ``SessionContext``."""
+
     def __init__(self) -> None:
         """Create a new `SQLOptions` with default values.
 
@@ -453,13 +461,13 @@ class SQLOptions:
         allow : bool
             Allow DDL commands to be run.
 
-        Returns
+        Returns:
         -------
         SQLOptions
             A new `SQLOptions` object with the updated setting.
 
 
-        Examples
+        Examples:
         --------
         >>> options = SQLOptions().with_allow_ddl(True)
         """
@@ -476,13 +484,13 @@ class SQLOptions:
         allow : bool
             Allow DML commands to be run.
 
-        Returns
+        Returns:
         -------
         SQLOptions
             A new `SQLOptions` object with the updated setting.
 
 
-        Examples
+        Examples:
         --------
         >>> options = SQLOptions().with_allow_dml(True)
         """
@@ -497,12 +505,12 @@ class SQLOptions:
         allow : bool
             Allow statements to be run.
 
-        Returns
+        Returns:
         -------
         SQLOptions
             A new `SQLOptions` object with the updated setting.
 
-        Examples
+        Examples:
         --------
         >>> options = SQLOptions().with_allow_statements(True)
         """
@@ -511,6 +519,11 @@ class SQLOptions:
 
 
 class SessionContext:
+    """This is the main interface for executing queries and creating DataFrames.
+
+    See https://datafusion.apache.org/python/user-guide/basics.html for additional information.
+    """
+
     def __init__(
         self, config: SessionConfig | None = None, runtime: RuntimeConfig | None = None
     ) -> None:
@@ -527,7 +540,7 @@ class SessionContext:
         runtime : RuntimeConfig | None
             Runtime configuration options.
 
-        Examples
+        Examples:
         --------
         The following example demostrates how to use the context to execute
         a query against a CSV data source using the `DataFrame` API:
@@ -545,6 +558,7 @@ class SessionContext:
         self.ctx = SessionContextInternal(config, runtime)
 
     def register_object_store(self, schema: str, store: Any, host: str | None) -> None:
+        """Add a new object store into the session."""
         self.ctx.register_object_store(schema, store, host)
 
     def register_listing_table(
@@ -556,6 +570,7 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         file_sort_order: list[list[Expr]] | None = None,
     ) -> None:
+        """Registers a Table that can assemble multiple files from locations in an ``ObjectStore`` instance into a single table."""
         if file_sort_order is not None:
             file_sort_order = [[x.expr for x in xs] for xs in file_sort_order]
         self.ctx.register_listing_table(
@@ -574,7 +589,7 @@ class SessionContext:
         query : str
             SQL query text.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the SQL query.
@@ -582,8 +597,7 @@ class SessionContext:
         return DataFrame(self.ctx.sql(query))
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
-        """Create a `DataFrame` from SQL query text, first validating that
-        the query is allowed by the provided options.
+        """Create a `DataFrame` from SQL query text, first validating that the query is allowed by the provided options.
 
         Parameters
         ----------
@@ -592,7 +606,7 @@ class SessionContext:
         options : SQLOptions
             SQL options.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the SQL query.
@@ -605,6 +619,7 @@ class SessionContext:
         name: str | None = None,
         schema: pyarrow.Schema | None = None,
     ) -> DataFrame:
+        """Create and return a dataframe using the provided partitions."""
         return DataFrame(self.ctx.create_dataframe(partitions, name, schema))
 
     def create_dataframe_from_logical_plan(self, plan: LogicalPlan) -> DataFrame:
@@ -615,7 +630,7 @@ class SessionContext:
         plan : LogicalPlan
             Logical plan.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the logical plan.
@@ -634,7 +649,7 @@ class SessionContext:
         name : str | None
             Name of the DataFrame.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the list of dictionaries.
@@ -653,7 +668,7 @@ class SessionContext:
         name : str | None
             Name of the DataFrame.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the dictionary of lists.
@@ -672,7 +687,7 @@ class SessionContext:
         name : str | None
             Name of the DataFrame.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the Arrow table.
@@ -689,7 +704,7 @@ class SessionContext:
         name : str | None
             Name of the DataFrame.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the Pandas DataFrame.
@@ -706,7 +721,7 @@ class SessionContext:
         name : str | None
             Name of the DataFrame.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the Polars DataFrame.
@@ -714,14 +729,17 @@ class SessionContext:
         return DataFrame(self.ctx.from_polars(data, name))
 
     def register_table(self, name: str, table: pyarrow.Table) -> None:
+        """Register a table with the given name into the session."""
         self.ctx.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
+        """Remove a table from the session."""
         self.ctx.deregister_table(name)
 
     def register_record_batches(
         self, name: str, partitions: list[list[pyarrow.RecordBatch]]
     ) -> None:
+        """Convert the provided partitions into a table and register it into the session using the given name."""
         self.ctx.register_record_batches(name, partitions)
 
     def register_parquet(
@@ -887,8 +905,7 @@ class SessionContext:
         self.ctx.register_avro(name, path, schema, file_extension, table_partition_cols)
 
     def register_dataset(self, name: str, dataset: pyarrow.dataset.Dataset) -> None:
-        """
-        Register a `pyarrow.dataset.Dataset` as a table.
+        """Register a `pyarrow.dataset.Dataset` as a table.
 
         Parameters
         ----------
@@ -927,7 +944,7 @@ class SessionContext:
         name : str, optional
             Name of the catalog to retrieve, by default "datafusion".
 
-        Returns
+        Returns:
         -------
         Catalog
             Catalog representation.
@@ -939,6 +956,7 @@ class SessionContext:
         "examine available catalogs, schemas and tables"
     )
     def tables(self) -> set[str]:
+        """Deprecated."""
         return self.ctx.tables()
 
     def table(self, name: str) -> DataFrame:
@@ -949,7 +967,7 @@ class SessionContext:
         name : str
             Name of the table to retrieve.
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the table.
@@ -964,7 +982,7 @@ class SessionContext:
         name : str
             Name of the table to check.
 
-        Returns
+        Returns:
         -------
         bool
             Whether a table with the given name exists.
@@ -974,7 +992,7 @@ class SessionContext:
     def empty_table(self) -> DataFrame:
         """Create an empty `DataFrame`.
 
-        Returns
+        Returns:
         -------
         DataFrame
             An empty DataFrame.
@@ -984,7 +1002,7 @@ class SessionContext:
     def session_id(self) -> str:
         """Retrun an id that uniquely identifies this `SessionContext`.
 
-        Returns
+        Returns:
         -------
         str
             Unique session identifier
@@ -1017,7 +1035,7 @@ class SessionContext:
         file_compression_type : str | None, optional
             File compression type, by default None
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the read JSON files
@@ -1065,7 +1083,7 @@ class SessionContext:
         file_compression_type : str | None, optional
             File compression type, by default None
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the read CSV files
@@ -1114,7 +1132,7 @@ class SessionContext:
         file_sort_order : list[list[Expr]] | None, optional
             Sort order for the file, by default None
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the read Parquet files
@@ -1151,7 +1169,7 @@ class SessionContext:
         file_extension : str, optional
             File extension to select, by default ".avro"
 
-        Returns
+        Returns:
         -------
         DataFrame
             DataFrame representation of the read Avro file
@@ -1161,7 +1179,9 @@ class SessionContext:
         )
 
     def read_table(self, table: Table) -> DataFrame:
+        """Creates a ``DataFrame`` for a ``Table`` such as a ``ListingTable``."""
         return DataFrame(self.ctx.read_table(table))
 
-    def execute(self, plan: ExecutionPlan, part: int) -> RecordBatchStream:
-        return RecordBatchStream(self.ctx.execute(plan, part))
+    def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
+        """Execute the `plan` and return the results."""
+        return RecordBatchStream(self.ctx.execute(plan, partitions))

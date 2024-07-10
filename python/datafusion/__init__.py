@@ -15,6 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""DataFusion python package.
+
+This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
+See https://datafusion.apache.org/python/index.html for more information.
+"""
+
 from abc import ABCMeta, abstractmethod
 from typing import List
 
@@ -169,7 +175,8 @@ class Accumulator(metaclass=ABCMeta):
         pass
 
 
-def column(value):
+def column(value: str):
+    """Create a column expression."""
     return Expr.column(value)
 
 
@@ -177,6 +184,7 @@ col = column
 
 
 def literal(value):
+    """Create a literal expression."""
     return Expr.literal(value)
 
 
@@ -184,9 +192,7 @@ lit = literal
 
 
 def udf(func, input_types, return_type, volatility, name=None):
-    """
-    Create a new User Defined Function
-    """
+    """Create a new User Defined Function."""
     if not callable(func):
         raise TypeError("`func` argument must be callable")
     if name is None:
@@ -201,9 +207,7 @@ def udf(func, input_types, return_type, volatility, name=None):
 
 
 def udaf(accum, input_types, return_type, state_type, volatility, name=None):
-    """
-    Create a new User Defined Aggregate Function
-    """
+    """Create a new User Defined Aggregate Function."""
     if not issubclass(accum, Accumulator):
         raise TypeError("`accum` must implement the abstract base class Accumulator")
     if name is None:

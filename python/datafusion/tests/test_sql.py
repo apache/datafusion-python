@@ -281,9 +281,7 @@ def test_execute(ctx, tmp_path):
 
 
 def test_cast(ctx, tmp_path):
-    """
-    Verify that we can cast
-    """
+    """Verify that we can cast"""
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
 

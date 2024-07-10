@@ -15,6 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""This module supports expressions, one of the core concepts in DataFusion.
+
+See ``Expr`` for more details.
+"""
+
 from __future__ import annotations
 
 from ._internal import expr as expr_internal, LogicalPlan
@@ -81,118 +86,184 @@ Union = expr_internal.Union
 
 
 class Expr:
+    """Expression object.
+
+    Expressions are one of the core concepts in DataFusion. See
+    [the online help](https://datafusion.apache.org/python/user-guide/common-operations/expressions.html)
+    for more information.
+    """
+
     def __init__(self, expr: expr_internal.Expr) -> None:
+        """This constructor should not be called by the end user."""
         self.expr = expr
 
     def to_variant(self) -> Any:
+        """Convert this expression into a python object if possible."""
         return self.expr.to_variant()
 
     def display_name(self) -> str:
+        """Returns the name of this expression as it should appear in a schema.
+
+        This name will not include any CAST expressions.
+        """
         return self.expr.display_name()
 
     def canonical_name(self) -> str:
+        """Returns a full and complete string representation of this expression."""
         return self.expr.canonical_name()
 
     def variant_name(self) -> str:
+        """Returns the name of the Expr variant.
+
+        Ex: ``IsNotNull``, ``Literal``, ``BinaryExpr``, etc
+        """
         return self.expr.variant_name()
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
+        """Comparison operator."""
         return Expr(self.expr.__richcmp__(other, op))
 
     def __repr__(self) -> str:
+        """Generate a string representation of this expression."""
         return self.expr.__repr__()
 
     def __add__(self, rhs: Expr) -> Expr:
+        """Addition operator."""
         return Expr(self.expr.__add__(rhs.expr))
 
     def __sub__(self, rhs: Expr) -> Expr:
+        """Subtraction operator."""
         return Expr(self.expr.__sub__(rhs.expr))
 
     def __truediv__(self, rhs: Expr) -> Expr:
+        """Division operator."""
         return Expr(self.expr.__truediv__(rhs.expr))
 
     def __mul__(self, rhs: Expr) -> Expr:
+        """Multiplication operator."""
         return Expr(self.expr.__mul__(rhs.expr))
 
     def __mod__(self, rhs: Expr) -> Expr:
+        """Modulo operator (%)."""
         return Expr(self.expr.__mod__(rhs.expr))
 
     def __and__(self, rhs: Expr) -> Expr:
+        """Logical AND."""
         return Expr(self.expr.__and__(rhs.expr))
 
     def __or__(self, rhs: Expr) -> Expr:
+        """Logical OR."""
         return Expr(self.expr.__or__(rhs.expr))
 
     def __invert__(self) -> Expr:
+        """Binary not (~)."""
         return Expr(self.expr.__invert__())
 
     def __getitem__(self, key: str) -> Expr:
+        """For struct data types, return the field indicated by ``key``."""
         return Expr(self.expr.__getitem__(key))
 
     def __eq__(self, rhs: Expr) -> Expr:
+        """Equal to."""
         return Expr(self.expr.__eq__(rhs.expr))
 
     def __ne__(self, rhs: Expr) -> Expr:
+        """Not equal to."""
         return Expr(self.expr.__eq__(rhs.expr))
 
     def __ge__(self, rhs: Expr) -> Expr:
+        """Greater than or equal to."""
         return Expr(self.expr.__ge__(rhs.expr))
 
     def __gt__(self, rhs: Expr) -> Expr:
+        """Greater than."""
         return Expr(self.expr.__gt__(rhs.expr))
 
     def __le__(self, rhs: Expr) -> Expr:
+        """Less than or equal to."""
         return Expr(self.expr.__le__(rhs.expr))
 
     def __lt__(self, rhs: Expr) -> Expr:
+        """Less than."""
         return Expr(self.expr.__lt__(rhs.expr))
 
     @staticmethod
     def literal(value: Any) -> Expr:
+        """Creates a new expression representing a scalar value.
+
+        `value` must be a valid PyArrow scalar value or easily castable to one.
+        """
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
         return Expr(expr_internal.Expr.literal(value))
 
     @staticmethod
     def column(value: str) -> Expr:
+        """Creates a new expression representing a column in a ``DataFrame``."""
         return Expr(expr_internal.Expr.column(value))
 
     def alias(self, name: str) -> Expr:
+        """Assign a name to the expression."""
         return Expr(self.expr.alias(name))
 
     def sort(self, ascending: bool = True, nulls_first: bool = True) -> Expr:
+        """Creates a sort ``Expr`` from an existing ``Expr``."""
         return Expr(self.expr.sort(ascending=ascending, nulls_first=nulls_first))
 
     def is_null(self) -> Expr:
+        """Returns ``True`` if this expression is null."""
         return Expr(self.expr.is_null())
 
     def cast(self, to: pa.DataType[Any]) -> Expr:
+        """Cast to a new data type."""
         return Expr(self.expr.cast(to))
 
     def rex_type(self) -> RexType:
+        """Return the Rex Type of this expression.
+
+        A Rex (Row Expression) specifies a single row of data.That specification
+        could include user defined functions or types. RexType identifies the row
+        as one of the possible valid ``RexType``(s).
+        """
         return self.expr.rex_type()
 
     def types(self) -> DataTypeMap:
+        """Return the ``DataTypeMap`` which represents the PythonType, Arrow DataType, and SqlType Enum which this expression represents."""
         return self.expr.types()
 
     def python_value(self) -> Any:
+        """Extracts the Expr value into a PyObject that can be shared with Python.
+
+        This is only valid for literal expressions.
+        """
         return self.expr.python_value()
 
     def rex_call_operands(self) -> list[Expr]:
+        """Return the operands of the expression based on it's variant type.
+
+        Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
+        store those operands in different datastructures. This function examines the Expr variant and returns
+        the operands to the calling logic.
+        """
         return [Expr(e) for e in self.expr.rex_call_operands()]
 
     def rex_call_operator(self) -> str:
+        """Extracts the operator associated with a row expression type ``Call``."""
         return self.expr.rex_call_operator()
 
     def column_name(self, plan: LogicalPlan) -> str:
-        return self.expr.column_name()
+        """Compute the output column name based on the provided logical plan."""
+        return self.expr.column_name(plan)
 
 
 class WindowFrame:
+    """Defines a window frame for performing window operations."""
+
     def __init__(
         self, units: str, start_bound: int | None, end_bound: int | None
     ) -> None:
-        """
+        """Construct a window frame using the given parameters.
+
         :param units: Should be one of `rows`, `range`, or `groups`
         :param start_bound: Sets the preceeding bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
         :param end_bound: Sets the following bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
@@ -200,71 +271,81 @@ class WindowFrame:
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
     def get_frame_units(self) -> str:
-        """
-        Returns the window frame units for the bounds
-        """
+        """Returns the window frame units for the bounds."""
         return self.window_frame.get_frame_units()
 
     def get_lower_bound(self) -> WindowFrameBound:
-        """
-        Returns starting bound
-        """
+        """Returns starting bound."""
         return WindowFrameBound(self.window_frame.get_lower_bound())
 
     def get_upper_bound(self):
-        """
-        Returns end bound
-        """
+        """Returns end bound."""
         return WindowFrameBound(self.window_frame.get_upper_bound())
 
 
 class WindowFrameBound:
+    """Defines a single window frame bound.
+
+    ```WindowFrame`` typically requires a start and end bound.
+    """
+
     def __init__(self, frame_bound: expr_internal.WindowFrameBound) -> None:
+        """Constructs a window frame bound."""
         self.frame_bound = frame_bound
 
     def get_offset(self) -> int | None:
-        """
-        Returns the offset of the window frame
-        """
+        """Returns the offset of the window frame."""
         return self.frame_bound.get_offset()
 
     def is_current_row(self) -> bool:
-        """
-        Returns if the frame bound is current row
-        """
+        """Returns if the frame bound is current row."""
         return self.frame_bound.is_current_row()
 
     def is_following(self) -> bool:
-        """
-        Returns if the frame bound is following
-        """
+        """Returns if the frame bound is following."""
         return self.frame_bound.is_following()
 
     def is_preceding(self) -> bool:
-        """
-        Returns if the frame bound is preceding
-        """
+        """Returns if the frame bound is preceding."""
         return self.frame_bound.is_preceding()
 
     def is_unbounded(self) -> bool:
-        """
-        Returns if the frame bound is unbounded
-        """
+        """Returns if the frame bound is unbounded."""
         return self.frame_bound.is_unbounded()
 
 
 class CaseBuilder:
+    """Builder class for constructing case statements.
+
+    An example usage would be as follows:
+
+    ```python
+    import datafusion.functions as f
+    from datafusion import lit, col
+    df.select(f.case(col("column_a").when(lit(1), lit("One")).when(lit(2), lit("Two")).otherwise(lit("Unknown")))
+    ```
+    """
+
     def __init__(self, case_builder: expr_internal.CaseBuilder) -> None:
-        """
+        """Constructs a case builder.
+
+        This is not typically called by the end user directly. See ``datafusion.functions.case`` instead.
+
         :param case_builder: Internal object. This constructor is not expected to be used by the end user. Instead use :func:`case` to construct.
         """
         self.case_builder = case_builder
 
     def when(self, when_expr: Expr, then_expr: Expr) -> CaseBuilder:
+        """Add a case to match against."""
         return CaseBuilder(self.case_builder.when(when_expr.expr, then_expr.expr))
 
     def otherwise(self, else_expr: Expr) -> Expr:
+        """Set a default value for the case statement."""
         return Expr(self.case_builder.otherwise(else_expr.expr))
 
     def end(self) -> Expr:
+        """Finish building a case statement.
+
+        Any non-matching cases will end in a `null` value.
+        """
         return Expr(self.case_builder.end())

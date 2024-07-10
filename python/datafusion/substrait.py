@@ -15,6 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""This module provides support for using substrait with datafusion.
+
+For additional information about substrait, see https://substrait.io/ for more information
+about substrait.
+"""
+
 from __future__ import annotations
 
 from ._internal import substrait as substrait_internal
@@ -27,13 +33,20 @@ if TYPE_CHECKING:
 
 
 class plan:
+    """A class representing an encodable substrait plan."""
+
     def __init__(self, plan: substrait_internal.plan) -> None:
+        """Create a substrait plan.
+
+        The user should not have to call this constructor directly. Rather, it should be created
+        via ``serde`` or ``producer`` classes in this module.
+        """
         self.plan_internal = plan
 
     def encode(self) -> bytes:
         """Encode the plan to bytes.
 
-        Returns
+        Returns:
         -------
         bytes
             Encoded plan.
@@ -42,6 +55,8 @@ class plan:
 
 
 class serde:
+    """Provides the serialization and deserialization required to convert to and from a Substrait plan."""
+
     @staticmethod
     def serialize(sql: str, ctx: SessionContext, path: str) -> None:
         """Serialize a SQL query to a Substrait plan and write it to a file.
@@ -68,7 +83,7 @@ class serde:
         ctx : SessionContext
             SessionContext to use.
 
-        Returns
+        Returns:
         -------
         plan
             Substrait plan.
@@ -86,7 +101,7 @@ class serde:
         ctx : SessionContext
             SessionContext to use.
 
-        Returns
+        Returns:
         -------
         bytes
             Substrait plan as bytes.
@@ -102,7 +117,7 @@ class serde:
         path : str
             Path to read the Substrait plan from.
 
-        Returns
+        Returns:
         -------
         plan
             Substrait plan.
@@ -118,7 +133,7 @@ class serde:
         proto_bytes : bytes
             Bytes to read the Substrait plan from.
 
-        Returns
+        Returns:
         -------
         plan
             Substrait plan.
@@ -127,6 +142,8 @@ class serde:
 
 
 class producer:
+    """Generates substrait plans from a logical plan."""
+
     @staticmethod
     def to_substrait_plan(logical_plan: LogicalPlan, ctx: SessionContext) -> plan:
         """Convert a DataFusion LogicalPlan to a Substrait plan.
@@ -138,7 +155,7 @@ class producer:
         ctx : SessionContext
             SessionContext to use.
 
-        Returns
+        Returns:
         -------
         plan
             Substrait plan.
@@ -149,6 +166,8 @@ class producer:
 
 
 class consumer:
+    """Generates a logical plan from a substrait plan."""
+
     @staticmethod
     def from_substrait_plan(ctx: SessionContext, plan: plan) -> LogicalPlan:
         """Convert a Substrait plan to a DataFusion LogicalPlan.
@@ -160,7 +179,7 @@ class consumer:
         plan : plan
             Substrait plan to convert.
 
-        Returns
+        Returns:
         -------
         LogicalPlan
             LogicalPlan.
