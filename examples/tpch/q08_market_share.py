@@ -47,7 +47,9 @@ end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_type")
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+    "p_partkey", "p_type"
+)
 df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
     "s_suppkey", "s_nationkey"
 )

@@ -44,7 +44,9 @@ ctx = SessionContext()
 df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
     "l_partkey", "l_shipdate", "l_extendedprice", "l_discount"
 )
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns("p_partkey", "p_type")
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+    "p_partkey", "p_type"
+)
 
 
 # Check part type begins with PROMO

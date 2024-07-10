@@ -38,7 +38,9 @@ ctx = SessionContext()
 df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
     "c_phone", "c_acctbal", "c_custkey"
 )
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns("o_custkey")
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+    "o_custkey"
+)
 
 # The nation code is a two digit number, but we need to convert it to a string literal
 nation_codes = F.make_array(*[lit(str(n)) for n in NATION_CODES])

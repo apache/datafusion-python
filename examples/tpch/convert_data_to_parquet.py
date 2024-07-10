@@ -117,7 +117,6 @@ all_schemas["supplier"] = [
 
 curr_dir = os.path.dirname(os.path.abspath(__file__))
 for filename, curr_schema in all_schemas.items():
-
     # For convenience, go ahead and convert the schema column names to lowercase
     curr_schema = [(s[0].lower(), s[1]) for s in curr_schema]
 
@@ -125,7 +124,7 @@ for filename, curr_schema in all_schemas.items():
     # in to handle the trailing | in the file
     output_cols = [r[0] for r in curr_schema]
 
-    curr_schema = [ pyarrow.field(r[0], r[1], nullable=False) for r in curr_schema]
+    curr_schema = [pyarrow.field(r[0], r[1], nullable=False) for r in curr_schema]
 
     # Trailing | requires extra field for in processing
     curr_schema.append(("some_null", pyarrow.null()))
