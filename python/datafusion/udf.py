@@ -21,10 +21,12 @@ from __future__ import annotations
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     import pyarrow
+
+    _R = TypeVar("_R", bound=pyarrow.DataType)
 
 
 class ScalarUDF:
@@ -36,9 +38,9 @@ class ScalarUDF:
     def __init__(
         self,
         name: str | None,
-        func: Callable,
+        func: Callable[..., _R],
         input_types: list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
+        return_type: _R,
         volatility: str,
     ) -> None:
         """Instantiate a scalar user defined function (UDF)."""
@@ -64,9 +66,9 @@ class AggregateUDF:
     def __init__(
         self,
         name: str | None,
-        accumulator: Callable,
+        accumulator: Callable[..., _R],
         input_types: list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
+        return_type: _R,
         state_type: list[pyarrow.DataType],
         volatility: str,
     ) -> None:
