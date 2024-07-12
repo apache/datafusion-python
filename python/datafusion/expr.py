@@ -264,9 +264,10 @@ class WindowFrame:
     ) -> None:
         """Construct a window frame using the given parameters.
 
-        :param units: Should be one of `rows`, `range`, or `groups`
-        :param start_bound: Sets the preceeding bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
-        :param end_bound: Sets the following bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
+        Args:
+            units: Should be one of `rows`, `range`, or `groups`.
+            start_bound: Sets the preceeding bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
+            end_bound: Sets the following bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
         """
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
@@ -330,8 +331,6 @@ class CaseBuilder:
         """Constructs a case builder.
 
         This is not typically called by the end user directly. See ``datafusion.functions.case`` instead.
-
-        :param case_builder: Internal object. This constructor is not expected to be used by the end user. Instead use :func:`case` to construct.
         """
         self.case_builder = case_builder
 
