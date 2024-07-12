@@ -574,10 +574,9 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         file_sort_order: list[list[Expr]] | None = None,
     ) -> None:
-        """Registers a Table that can assemble multiple files from locations in an ``ObjectStore`` instance into a single table."""
+        """Registers a Table that can assemble multiple files from locations in an `ObjectStore` instance into a single table."""
         if file_sort_order is not None:
             file_sort_order = [[x.expr for x in xs] for xs in file_sort_order]
-        # TODO add unit test for pathlib path
         self.ctx.register_listing_table(
             name,
             str(path),
