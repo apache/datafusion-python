@@ -26,20 +26,22 @@ from __future__ import annotations
 from ._internal import substrait as substrait_internal
 
 from typing import TYPE_CHECKING
+from typing_extensions import deprecated
+import pathlib
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
     from datafusion._internal import LogicalPlan
 
 
-class plan:
+class Plan:
     """A class representing an encodable substrait plan."""
 
     def __init__(self, plan: substrait_internal.plan) -> None:
         """Create a substrait plan.
 
         The user should not have to call this constructor directly. Rather, it should be created
-        via ``serde`` or ``producer`` classes in this module.
+        via `Serde` or `Producer` classes in this module.
         """
         self.plan_internal = plan
 
@@ -54,11 +56,18 @@ class plan:
         return self.plan_internal.encode()
 
 
-class serde:
+@deprecated("Use `Plan` instead.")
+class plan(Plan):
+    """See `Plan`."""
+
+    pass
+
+
+class Serde:
     """Provides the serialization and deserialization required to convert to and from a Substrait plan."""
 
     @staticmethod
-    def serialize(sql: str, ctx: SessionContext, path: str) -> None:
+    def serialize(sql: str, ctx: SessionContext, path: str | pathlib.Path) -> None:
         """Serialize a SQL query to a Substrait plan and write it to a file.
 
         Parameters
@@ -69,11 +78,13 @@ class serde:
             SessionContext to use.
         path : str
             Path to write the Substrait plan to.
+
+        TODO add unit test on passing in as path instead of str
         """
-        return substrait_internal.serde.serialize(sql, ctx.ctx, path)
+        return substrait_internal.serde.serialize(sql, ctx.ctx, str(path))
 
     @staticmethod
-    def serialize_to_plan(sql: str, ctx: SessionContext) -> plan:
+    def serialize_to_plan(sql: str, ctx: SessionContext) -> Plan:
         """Serialize a SQL query to a Substrait plan.
 
         Parameters
@@ -88,7 +99,7 @@ class serde:
         plan
             Substrait plan.
         """
-        return plan(substrait_internal.serde.serialize_to_plan(sql, ctx.ctx))
+        return Plan(substrait_internal.serde.serialize_to_plan(sql, ctx.ctx))
 
     @staticmethod
     def serialize_bytes(sql: str, ctx: SessionContext) -> bytes:
@@ -109,7 +120,7 @@ class serde:
         return substrait_internal.serde.serialize_bytes(sql, ctx.ctx)
 
     @staticmethod
-    def deserialize(path: str) -> plan:
+    def deserialize(path: str | pathlib.Path) -> Plan:
         """Deserialize a Substrait plan from a file.
 
         Parameters
@@ -121,11 +132,13 @@ class serde:
         -------
         plan
             Substrait plan.
+
+        TODO add unit test for passing in as path
         """
-        return plan(substrait_internal.serde.deserialize(path))
+        return Plan(substrait_internal.serde.deserialize(path))
 
     @staticmethod
-    def deserialize_bytes(proto_bytes: bytes) -> plan:
+    def deserialize_bytes(proto_bytes: bytes) -> Plan:
         """Deserialize a Substrait plan from bytes.
 
         Parameters
@@ -138,14 +151,21 @@ class serde:
         plan
             Substrait plan.
         """
-        return plan(substrait_internal.serde.deserialize_bytes(proto_bytes))
+        return Plan(substrait_internal.serde.deserialize_bytes(proto_bytes))
 
 
-class producer:
+@deprecated("Use `Serde` instead.")
+class serde(Serde):
+    """See `Serde` instead."""
+
+    pass
+
+
+class Producer:
     """Generates substrait plans from a logical plan."""
 
     @staticmethod
-    def to_substrait_plan(logical_plan: LogicalPlan, ctx: SessionContext) -> plan:
+    def to_substrait_plan(logical_plan: LogicalPlan, ctx: SessionContext) -> Plan:
         """Convert a DataFusion LogicalPlan to a Substrait plan.
 
         Parameters
@@ -160,16 +180,23 @@ class producer:
         plan
             Substrait plan.
         """
-        return plan(
+        return Plan(
             substrait_internal.producer.to_substrait_plan(logical_plan, ctx.ctx)
         )
 
 
-class consumer:
+@deprecated("Use `Producer` instead.")
+class producer(Producer):
+    """Use `Producer` instead."""
+
+    pass
+
+
+class Consumer:
     """Generates a logical plan from a substrait plan."""
 
     @staticmethod
-    def from_substrait_plan(ctx: SessionContext, plan: plan) -> LogicalPlan:
+    def from_substrait_plan(ctx: SessionContext, plan: Plan) -> LogicalPlan:
         """Convert a Substrait plan to a DataFusion LogicalPlan.
 
         Parameters
@@ -187,3 +214,10 @@ class consumer:
         return substrait_internal.consumer.from_substrait_plan(
             ctx.ctx, plan.plan_internal
         )
+
+
+@deprecated("Use `Consumer` instead.")
+class consumer(Consumer):
+    """Use `Consumer` instead."""
+
+    pass

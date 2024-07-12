@@ -39,6 +39,7 @@ if TYPE_CHECKING:
     import pyarrow
     import pandas
     import polars
+    import pathlib
 
 
 class SessionConfig:
@@ -320,7 +321,9 @@ class RuntimeConfig:
         self.config_internal = self.config_internal.with_disk_manager_os()
         return self
 
-    def with_disk_manager_specified(self, paths: list[str]) -> RuntimeConfig:
+    def with_disk_manager_specified(
+        self, paths: list[str] | list[pathlib.Path]
+    ) -> RuntimeConfig:
         """Use the specified paths for the disk manager's temporary files.
 
         Parameters
@@ -337,6 +340,7 @@ class RuntimeConfig:
         --------
         >>> config = RuntimeConfig().with_disk_manager_specified(["/tmp"])
         """
+        paths = [str(p) for p in paths]
         self.config_internal = self.config_internal.with_disk_manager_specified(paths)
         return self
 
@@ -417,7 +421,7 @@ class RuntimeConfig:
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
         return self
 
-    def with_temp_file_path(self, path: str) -> RuntimeConfig:
+    def with_temp_file_path(self, path: str | pathlib.Path) -> RuntimeConfig:
         """Use the specified path to create any needed temporary files.
 
         Parameters
@@ -434,7 +438,7 @@ class RuntimeConfig:
         --------
         >>> config = RuntimeConfig().with_temp_file_path("/tmp")
         """
-        self.config_internal = self.config_internal.with_temp_file_path(path)
+        self.config_internal = self.config_internal.with_temp_file_path(str(path))
         return self
 
 
@@ -564,7 +568,7 @@ class SessionContext:
     def register_listing_table(
         self,
         name: str,
-        path: str,
+        path: str | pathlib.Path,
         table_partition_cols: list[tuple[str, str]] = [],
         file_extension: str = ".parquet",
         schema: pyarrow.Schema | None = None,
@@ -573,8 +577,14 @@ class SessionContext:
         """Registers a Table that can assemble multiple files from locations in an ``ObjectStore`` instance into a single table."""
         if file_sort_order is not None:
             file_sort_order = [[x.expr for x in xs] for xs in file_sort_order]
+        # TODO add unit test for pathlib path
         self.ctx.register_listing_table(
-            name, path, table_partition_cols, file_extension, schema, file_sort_order
+            name,
+            str(path),
+            table_partition_cols,
+            file_extension,
+            schema,
+            file_sort_order,
         )
 
     def sql(self, query: str) -> DataFrame:
@@ -745,7 +755,7 @@ class SessionContext:
     def register_parquet(
         self,
         name: str,
-        path: str,
+        path: str | pathlib.Path,
         table_partition_cols: list[tuple[str, str]] = [],
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
@@ -780,7 +790,7 @@ class SessionContext:
         """
         self.ctx.register_parquet(
             name,
-            path,
+            str(path),
             table_partition_cols,
             parquet_pruning,
             file_extension,
@@ -792,7 +802,7 @@ class SessionContext:
     def register_csv(
         self,
         name: str,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
@@ -825,7 +835,7 @@ class SessionContext:
         """
         self.ctx.register_csv(
             name,
-            path,
+            str(path),
             schema,
             has_header,
             delimiter,
@@ -837,7 +847,7 @@ class SessionContext:
     def register_json(
         self,
         name: str,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
@@ -868,7 +878,7 @@ class SessionContext:
         """
         self.ctx.register_json(
             name,
-            path,
+            str(path),
             schema,
             schema_infer_max_records,
             file_extension,
@@ -879,7 +889,7 @@ class SessionContext:
     def register_avro(
         self,
         name: str,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         file_extension: str = ".avro",
         table_partition_cols: list[tuple[str, str]] = [],
@@ -902,7 +912,9 @@ class SessionContext:
         table_partition_cols : list[tuple[str, str]], optional
             Partition columns, by default []
         """
-        self.ctx.register_avro(name, path, schema, file_extension, table_partition_cols)
+        self.ctx.register_avro(
+            name, str(path), schema, file_extension, table_partition_cols
+        )
 
     def register_dataset(self, name: str, dataset: pyarrow.dataset.Dataset) -> None:
         """Register a `pyarrow.dataset.Dataset` as a table.
@@ -1011,7 +1023,7 @@ class SessionContext:
 
     def read_json(
         self,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
@@ -1042,7 +1054,7 @@ class SessionContext:
         """
         return DataFrame(
             self.ctx.read_json(
-                path,
+                str(path),
                 schema,
                 schema_infer_max_records,
                 file_extension,
@@ -1053,7 +1065,7 @@ class SessionContext:
 
     def read_csv(
         self,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
@@ -1090,7 +1102,7 @@ class SessionContext:
         """
         return DataFrame(
             self.ctx.read_csv(
-                path,
+                str(path),
                 schema,
                 has_header,
                 delimiter,
@@ -1103,7 +1115,7 @@ class SessionContext:
 
     def read_parquet(
         self,
-        path: str,
+        path: str | pathlib.Path,
         table_partition_cols: list[tuple[str, str]] = [],
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
@@ -1139,7 +1151,7 @@ class SessionContext:
         """
         return DataFrame(
             self.ctx.read_parquet(
-                path,
+                str(path),
                 table_partition_cols,
                 parquet_pruning,
                 file_extension,
@@ -1151,7 +1163,7 @@ class SessionContext:
 
     def read_avro(
         self,
-        path: str,
+        path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         file_partition_cols: list[tuple[str, str]] = [],
         file_extension: str = ".avro",
@@ -1175,7 +1187,7 @@ class SessionContext:
             DataFrame representation of the read Avro file
         """
         return DataFrame(
-            self.ctx.read_avro(path, schema, file_partition_cols, file_extension)
+            self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
 
     def read_table(self, table: Table) -> DataFrame:

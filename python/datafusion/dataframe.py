@@ -29,6 +29,7 @@ if TYPE_CHECKING:
     import pyarrow as pa
     import pandas as pd
     import polars as pl
+    import pathlib
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr
@@ -464,7 +465,7 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str) -> None:
+    def write_csv(self, path: str | pathlib.Path) -> None:
         """Execute the `DataFrame`  and write the results to a CSV file.
 
         Parameters
@@ -472,11 +473,11 @@ class DataFrame:
         path : str
             Path of the CSV file to write.
         """
-        self.df.write_csv(path)
+        self.df.write_csv(str(path))
 
     def write_parquet(
         self,
-        path: str,
+        path: str | pathlib.Path,
         compression: str = "uncompressed",
         compression_level: int | None = None,
     ) -> None:
@@ -491,9 +492,9 @@ class DataFrame:
         compression_level : int | None, optional
             Compression level to use, by default None
         """
-        self.df.write_parquet(path, compression, compression_level)
+        self.df.write_parquet(str(path), compression, compression_level)
 
-    def write_json(self, path: str) -> None:
+    def write_json(self, path: str | pathlib.Path) -> None:
         """Execute the `DataFrame` and write the results to a JSON file.
 
         Parameters
@@ -501,7 +502,7 @@ class DataFrame:
         path : str
             Path of the JSON file to write.
         """
-        self.df.write_json(path)
+        self.df.write_json(str(path))
 
     def to_arrow_table(self) -> pa.Table:
         """Execute the `DataFrame` and convert it into an Arrow Table.
