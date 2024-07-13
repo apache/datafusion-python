@@ -176,7 +176,7 @@ def test_with_column_renamed(df):
 
 
 def test_unnest(nested_df):
-    nested_df = nested_df.unnest_column("a")
+    nested_df = nested_df.unnest_columns("a")
 
     # execute and collect the first (and only) batch
     result = nested_df.collect()[0]
@@ -186,7 +186,7 @@ def test_unnest(nested_df):
 
 
 def test_unnest_without_nulls(nested_df):
-    nested_df = nested_df.unnest_column("a", preserve_nulls=False)
+    nested_df = nested_df.unnest_columns("a", preserve_nulls=False)
 
     # execute and collect the first (and only) batch
     result = nested_df.collect()[0]

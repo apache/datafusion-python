@@ -35,7 +35,7 @@ def test_substrait_serialization(ctx):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     # For now just make sure the method calls blow up
     substrait_plan = ss.serde.serialize_to_plan("SELECT * FROM t", ctx)

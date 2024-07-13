@@ -17,6 +17,7 @@
 import gzip
 import os
 import datetime as dt
+import pathlib
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -68,7 +69,7 @@ def test_register_record_batches(ctx):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -84,7 +85,7 @@ def test_create_dataframe_registers_unique_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]])
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -104,7 +105,7 @@ def test_create_dataframe_registers_with_defined_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]], name="tbl")
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -118,7 +119,7 @@ def test_from_arrow_table(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -134,7 +135,7 @@ def test_from_arrow_table_with_name(ctx):
 
     # convert to DataFrame with optional name
     df = ctx.from_arrow_table(table, name="tbl")
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert tables[0] == "tbl"
@@ -147,7 +148,7 @@ def test_from_arrow_table_empty(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -162,7 +163,7 @@ def test_from_arrow_table_empty_no_schema(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -180,7 +181,7 @@ def test_from_pylist(ctx):
     ]
 
     df = ctx.from_pylist(data)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -194,7 +195,7 @@ def test_from_pydict(ctx):
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
 
     df = ctx.from_pydict(data)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -210,7 +211,7 @@ def test_from_pandas(ctx):
     pandas_df = pd.DataFrame(data)
 
     df = ctx.from_pandas(pandas_df)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -226,7 +227,7 @@ def test_from_polars(ctx):
     polars_df = pd.DataFrame(data)
 
     df = ctx.from_polars(polars_df)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -273,7 +274,7 @@ def test_register_dataset(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -290,7 +291,7 @@ def test_dataset_filter(ctx, capfd):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
     df = ctx.sql("SELECT a+b, a-b FROM t WHERE a BETWEEN 2 and 3 AND b > 5")
 
     # Make sure the filter was pushed down in Physical Plan
@@ -370,7 +371,7 @@ def test_dataset_filter_nested_data(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     df = ctx.table("t")
 
@@ -468,8 +469,13 @@ def test_read_csv_compressed(ctx, tmp_path):
 
 
 def test_read_parquet(ctx):
-    csv_df = ctx.read_parquet(path="parquet/data/alltypes_plain.parquet")
-    csv_df.show()
+    parquet_df = ctx.read_parquet(path="parquet/data/alltypes_plain.parquet")
+    parquet_df.show()
+    assert parquet_df is not None
+
+    path = pathlib.Path.cwd() / "parquet/data/alltypes_plain.parquet"
+    parquet_df = ctx.read_parquet(path=path)
+    assert parquet_df is not None
 
 
 def test_read_avro(ctx):

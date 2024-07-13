@@ -581,8 +581,7 @@ class DataFrame:
         """See ``unnest_columns``."""
         return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
-    def unnest_columns(
-        self, columns: list[str], preserve_nulls: bool = True
-    ) -> DataFrame:
+    def unnest_columns(self, *columns: str, preserve_nulls: bool = True) -> DataFrame:
         """Expand columns of arrays into a single row per array element."""
+        columns = [c for c in columns]
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
