@@ -23,7 +23,7 @@ from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import RuntimeConfig as RuntimeConfigInternal
 from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import SessionContext as SessionContextInternal
-from ._internal import LogicalPlan, ExecutionPlan  # TODO MAKE THIS A DEFINED CLASS
+from ._internal import LogicalPlan, ExecutionPlan
 
 from datafusion._internal import AggregateUDF
 from datafusion.catalog import Catalog, Table

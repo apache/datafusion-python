@@ -36,7 +36,7 @@ from datafusion.expr import Expr
 from datafusion._internal import (
     LogicalPlan,
     ExecutionPlan,
-)  # TODO make these first class python classes
+)
 
 
 class DataFrame:

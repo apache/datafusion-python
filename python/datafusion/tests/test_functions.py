@@ -50,7 +50,6 @@ def df():
     return ctx.create_dataframe([[batch]])
 
 
-# TODO Update documentation of PR to indicate this is a user facing change to how named_struct is called
 def test_named_struct(df):
     df = df.with_column(
         "d",

@@ -130,8 +130,6 @@ class Serde:
         -------
         plan
             Substrait plan.
-
-        TODO add unit test for passing in as path
         """
         return Plan(substrait_internal.serde.deserialize(str(path)))
 

@@ -597,8 +597,12 @@ def now() -> Expr:
 
 
 def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
-    """Converts a string and optional formats to a `Timestamp` in nanoseconds."""
-    # TODO Add a detailed description of how to use formatters.
+    """Converts a string and optional formats to a `Timestamp` in nanoseconds.
+
+    For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+    [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+    """
     if formatters is None:
         return f.to_timestamp(arg.expr)
 
@@ -640,7 +644,6 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
 
 def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
     """Converts a string and optional formats to a Unixtime."""
-    # TODO verify if the format arguments are the same as to_timestamp and update documentation appropriately.
     args = [f.expr for f in format_arguments]
     return Expr(f.to_unixtime(string.expr, *args))
 
@@ -1163,7 +1166,6 @@ def approx_percentile_cont(
     distinct: bool = False,
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of a distribution of values."""
-    # TODO validate that these parameters are passed properly
     if num_centroids is None:
         return Expr(
             f.approx_percentile_cont(arg.expr, percentile.expr, distinct=distinct)
@@ -1180,7 +1182,6 @@ def approx_percentile_cont_with_weight(
     arg: Expr, weight: Expr, percentile: Expr, distinct: bool = False
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of a distribution of values with associated weights."""
-    # TODO validate that these parameters are passed properly
     return Expr(
         f.approx_percentile_cont_with_weight(
             arg.expr, weight.expr, percentile.expr, distinct=distinct
