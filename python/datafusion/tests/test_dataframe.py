@@ -753,6 +753,19 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
 
 
 @pytest.mark.parametrize("path_to_str", (True, False))
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
 def test_write_parquet(df, tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
