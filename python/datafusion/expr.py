@@ -169,7 +169,7 @@ class Expr:
 
     def __ne__(self, rhs: Expr) -> Expr:
         """Not equal to."""
-        return Expr(self.expr.__eq__(rhs.expr))
+        return Expr(self.expr.__ne__(rhs.expr))
 
     def __ge__(self, rhs: Expr) -> Expr:
         """Greater than or equal to."""

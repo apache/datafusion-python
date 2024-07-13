@@ -126,22 +126,26 @@ class DataFrame:
         args = [arg.expr for arg in args]
         return DataFrame(self.df.select(*args))
 
-    def filter(self, predicate: Expr) -> DataFrame:
+    def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which `predicate` evaluates to `True`.
 
         Rows for which `predicate` evaluates to `False` or `None` are filtered out.
 
         Parameters
         ----------
-        predicate : Expr
-            Predicate expression to filter the DataFrame.
+        predicates : Predicate expression(s) to filter the DataFrame. If more than one
+        is provided, these predicates will be combined as a logical AND. If more complex
+        logic is required, see logical operations in `datafusion.functions`.
 
         Returns:
         -------
         DataFrame
             DataFrame after filtering.
         """
-        return DataFrame(self.df.filter(predicate.expr))
+        df = self.df
+        for p in predicates:
+            df = df.filter(p.expr)
+        return DataFrame(df)
 
     def with_column(self, name: str, expr: Expr) -> DataFrame:
         """Add an additional column to the DataFrame.
