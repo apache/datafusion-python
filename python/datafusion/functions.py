@@ -486,9 +486,12 @@ def right(string: Expr, n: Expr) -> Expr:
     return Expr(f.right(string.expr, n.expr))
 
 
-def round(arg: Expr) -> Expr:
+def round(value: Expr, decimal_places: Expr | None = None) -> Expr:
     """Round the argument to the nearest integer."""
-    return Expr(f.round(arg.expr))
+    if decimal_places is None:
+        return Expr(f.round(value.expr))
+
+    return Expr(f.round(value.expr, decimal_places.expr))
 
 
 def rpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
