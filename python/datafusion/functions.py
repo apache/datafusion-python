@@ -436,19 +436,7 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
 
 
 def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
-    """Returns an array with each element containing the leftmost-first match of the corresponding index in `regex` to string in `string`.
-
-    If there is no match, the list element is NULL.
-
-    If a match is found, and the pattern contains no capturing parenthesized subexpressions,
-    then the list element is a single-element [`GenericStringArray`] containing the substring
-    matching the whole pattern.
-
-    If a match is found, and the pattern contains capturing parenthesized subexpressions, then the
-    list element is a [`GenericStringArray`] whose n'th element is the substring matching
-    the n'th capturing parenthesized subexpression of the pattern.
-    """
-    # TODO VALIDATE THIS IS CORRECT FOR DATAFRAME RESULTS
+    """Returns an array with each element containing the leftmost-first match of the corresponding index in `regex` to string in `string`."""
     if flags is not None:
         flags = flags.expr
     return Expr(f.regexp_match(string.expr, regex.expr, flags))

@@ -592,7 +592,11 @@ def test_string_functions(df):
         f.upper(column("c")),
         f.ends_with(column("a"), literal("llo")),
         f.overlay(column("a"), literal("--"), literal(2)),
+        f.regexp_like(column("a"), literal("(ell|orl)")),
+        f.regexp_match(column("a"), literal("(ell|orl)")),
+        f.regexp_replace(column("a"), literal("(ell|orl)"), literal("-")),
     )
+
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -634,6 +638,9 @@ def test_string_functions(df):
     assert result.column(27) == pa.array(["HELLO ", " WORLD ", " !"])
     assert result.column(28) == pa.array([True, False, False])
     assert result.column(29) == pa.array(["H--lo", "W--ld", "--"])
+    assert result.column(30) == pa.array([True, True, False])
+    assert result.column(31) == pa.array([["ell"], ["orl"], None])
+    assert result.column(32) == pa.array(["H-o", "W-d", "!"])
 
 
 def test_hash_functions(df):
