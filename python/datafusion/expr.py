@@ -127,32 +127,61 @@ class Expr:
         """Generate a string representation of this expression."""
         return self.expr.__repr__()
 
-    def __add__(self, rhs: Expr) -> Expr:
-        """Addition operator."""
+    def __add__(self, rhs: Any) -> Expr:
+        """Addition operator.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__add__(rhs.expr))
 
-    def __sub__(self, rhs: Expr) -> Expr:
-        """Subtraction operator."""
+    def __sub__(self, rhs: Any) -> Expr:
+        """Subtraction operator.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__sub__(rhs.expr))
 
-    def __truediv__(self, rhs: Expr) -> Expr:
-        """Division operator."""
+    def __truediv__(self, rhs: Any) -> Expr:
+        """Division operator.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__truediv__(rhs.expr))
 
-    def __mul__(self, rhs: Expr) -> Expr:
-        """Multiplication operator."""
+    def __mul__(self, rhs: Any) -> Expr:
+        """Multiplication operator.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__mul__(rhs.expr))
 
-    def __mod__(self, rhs: Expr) -> Expr:
-        """Modulo operator (%)."""
+    def __mod__(self, rhs: Any) -> Expr:
+        """Modulo operator (%).
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__mod__(rhs.expr))
 
     def __and__(self, rhs: Expr) -> Expr:
         """Logical AND."""
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__and__(rhs.expr))
 
     def __or__(self, rhs: Expr) -> Expr:
         """Logical OR."""
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__or__(rhs.expr))
 
     def __invert__(self) -> Expr:
@@ -163,28 +192,58 @@ class Expr:
         """For struct data types, return the field indicated by ``key``."""
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: Expr) -> Expr:
-        """Equal to."""
+    def __eq__(self, rhs: Any) -> Expr:
+        """Equal to.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
 
-    def __ne__(self, rhs: Expr) -> Expr:
-        """Not equal to."""
+    def __ne__(self, rhs: Any) -> Expr:
+        """Not equal to.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__ne__(rhs.expr))
 
-    def __ge__(self, rhs: Expr) -> Expr:
-        """Greater than or equal to."""
+    def __ge__(self, rhs: Any) -> Expr:
+        """Greater than or equal to.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__ge__(rhs.expr))
 
-    def __gt__(self, rhs: Expr) -> Expr:
-        """Greater than."""
+    def __gt__(self, rhs: Any) -> Expr:
+        """Greater than.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__gt__(rhs.expr))
 
-    def __le__(self, rhs: Expr) -> Expr:
-        """Less than or equal to."""
+    def __le__(self, rhs: Any) -> Expr:
+        """Less than or equal to.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__le__(rhs.expr))
 
-    def __lt__(self, rhs: Expr) -> Expr:
-        """Less than."""
+    def __lt__(self, rhs: Any) -> Expr:
+        """Less than.
+
+        Accepts either an expression or any valid PyArrow scalar literal value.
+        """
+        if not isinstance(rhs, Expr):
+            rhs = Expr.literal(rhs)
         return Expr(self.expr.__lt__(rhs.expr))
 
     @staticmethod

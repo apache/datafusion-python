@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import SessionContext
+from datafusion import SessionContext, col
 from datafusion.expr import Column, Literal, BinaryExpr, AggregateFunction
 from datafusion.expr import (
     Projection,
@@ -25,6 +25,7 @@ from datafusion.expr import (
     Sort,
     TableScan,
 )
+import pyarrow
 import pytest
 
 
@@ -116,3 +117,25 @@ def test_sort(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Sort)
+
+
+def test_relational_expr(test_ctx):
+    ctx = SessionContext()
+
+    batch = pyarrow.RecordBatch.from_arrays(
+        [pyarrow.array([1, 2, 3]), pyarrow.array(["alpha", "beta", "gamma"])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], name="batch_array")
+
+    assert df.filter(col("a") == 1).count() == 1
+    assert df.filter(col("a") != 1).count() == 2
+    assert df.filter(col("a") >= 1).count() == 3
+    assert df.filter(col("a") > 1).count() == 2
+    assert df.filter(col("a") <= 3).count() == 3
+    assert df.filter(col("a") < 3).count() == 2
+
+    assert df.filter(col("b") == "beta").count() == 1
+    assert df.filter(col("b") != "beta").count() == 2
+
+    assert df.filter(col("a") == "beta").count() == 0
