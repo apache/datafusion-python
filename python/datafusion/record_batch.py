@@ -58,10 +58,10 @@ class RecordBatchStream:
 
         return next_batch
 
-    def __next__(self) -> RecordBatch | None:
+    def __next__(self) -> RecordBatch:
         """Iterator function."""
         next_batch = next(self.rbs)
-        return RecordBatch(next_batch) if next_batch is not None else None
+        return RecordBatch(next_batch)
 
     def __iter__(self) -> typing_extensions.Self:
         """Iterator function."""
