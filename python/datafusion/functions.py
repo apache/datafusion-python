@@ -486,16 +486,22 @@ def right(string: Expr, n: Expr) -> Expr:
     return Expr(f.right(string.expr, n.expr))
 
 
-def round(value: Expr, decimal_places: Expr | None = None) -> Expr:
-    """Round the argument to the nearest integer."""
-    if decimal_places is None:
-        return Expr(f.round(value.expr))
+def round(value: Expr, decimal_places: Expr = Expr.literal(0)) -> Expr:
+    """Round the argument to the nearest integer.
 
+    If the optional ``decimal_places`` is specified, round to the nearest number of
+    decimal places. You can specify a negative number of decimal places. For example
+    `round(lit(125.2345), lit(-2))` would yield a value of `100.0`.
+    """
     return Expr(f.round(value.expr, decimal_places.expr))
 
 
 def rpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
-    """Extends the string to length length by appending the characters fill (a space by default). If the string is already longer than length then it is truncated."""
+    """Add right padding to a string.
+
+    Extends the string to length length by appending the characters fill (a space
+    by default). If the string is already longer than length then it is truncated.
+    """
     characters = characters if characters is not None else Expr.literal(" ")
     return Expr(f.rpad(string.expr, count.expr, characters.expr))
 
