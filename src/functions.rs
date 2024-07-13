@@ -528,6 +528,7 @@ expr_fn!(
 );
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+expr_fn_vec!(overlay);
 expr_fn!(pi);
 expr_fn!(power, base exponent);
 expr_fn!(pow, power, base exponent);
@@ -774,6 +775,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
     m.add_wrapped(wrap_pyfunction!(order_by))?;
+    m.add_wrapped(wrap_pyfunction!(overlay))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(pow))?;
