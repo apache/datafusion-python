@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import pyarrow
     import datafusion._internal as df_internal
+    import typing_extensions
 
 
 class RecordBatch:
@@ -62,6 +63,6 @@ class RecordBatchStream:
         next_batch = next(self.rbs)
         return RecordBatch(next_batch) if next_batch is not None else None
 
-    def __iter__(self) -> RecordBatchStream:
+    def __iter__(self) -> typing_extensions.Self:
         """Iterator function."""
         return self
