@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 class Plan:
     """A class representing an encodable substrait plan."""
 
-    def __init__(self, plan: substrait_internal.plan) -> None:
+    def __init__(self, plan: substrait_internal.Plan) -> None:
         """Create a substrait plan.
 
         The user should not have to call this constructor directly. Rather, it should be created
@@ -78,8 +78,6 @@ class Serde:
             SessionContext to use.
         path : str
             Path to write the Substrait plan to.
-
-        TODO add unit test on passing in as path instead of str
         """
         return substrait_internal.serde.serialize(sql, ctx.ctx, str(path))
 
@@ -135,7 +133,7 @@ class Serde:
 
         TODO add unit test for passing in as path
         """
-        return Plan(substrait_internal.serde.deserialize(path))
+        return Plan(substrait_internal.serde.deserialize(str(path)))
 
     @staticmethod
     def deserialize_bytes(proto_bytes: bytes) -> Plan:

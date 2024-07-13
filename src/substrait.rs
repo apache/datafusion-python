@@ -27,7 +27,7 @@ use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
 use prost::Message;
 
-#[pyclass(name = "plan", module = "datafusion.substrait", subclass)]
+#[pyclass(name = "Plan", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyPlan {
     pub plan: Plan,
