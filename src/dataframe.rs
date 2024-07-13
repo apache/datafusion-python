@@ -20,7 +20,7 @@ use std::sync::Arc;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::config::TableParquetOptions;
+use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
@@ -349,13 +349,18 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a CSV file.
-    fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
+    fn write_csv(&self, path: &str, with_header: bool, py: Python) -> PyResult<()> {
+        let csv_options = CsvOptions {
+            has_header: Some(with_header),
+            ..Default::default()
+        };
         wait_for_future(
             py,
-            self.df
-                .as_ref()
-                .clone()
-                .write_csv(path, DataFrameWriteOptions::new(), None),
+            self.df.as_ref().clone().write_csv(
+                path,
+                DataFrameWriteOptions::new(),
+                Some(csv_options),
+            ),
         )?;
         Ok(())
     }

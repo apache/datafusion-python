@@ -465,7 +465,7 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str | pathlib.Path) -> None:
+    def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
         """Execute the `DataFrame`  and write the results to a CSV file.
 
         Parameters
@@ -473,7 +473,7 @@ class DataFrame:
         path : str
             Path of the CSV file to write.
         """
-        self.df.write_csv(str(path))
+        self.df.write_csv(str(path), with_header)
 
     def write_parquet(
         self,

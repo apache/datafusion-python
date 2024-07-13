@@ -739,6 +739,19 @@ def test_describe(df):
     }
 
 
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
 def test_write_parquet(df, tmp_path):
     path = tmp_path
 
