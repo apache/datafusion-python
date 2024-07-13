@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 class SessionConfig:
     """Session configuration options."""
 
-    def __init__(self, config_options: dict[str, str] = {}) -> None:
+    def __init__(self, config_options: dict[str, str] | None = None) -> None:
         """Create a new `SessionConfig` with the given configuration options.
 
         Parameters
