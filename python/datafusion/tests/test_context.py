@@ -479,8 +479,13 @@ def test_read_parquet(ctx):
 
 
 def test_read_avro(ctx):
-    csv_df = ctx.read_avro(path="testing/data/avro/alltypes_plain.avro")
-    csv_df.show()
+    avro_df = ctx.read_avro(path="testing/data/avro/alltypes_plain.avro")
+    avro_df.show()
+    assert avro_df is not None
+
+    path = pathlib.Path.cwd() / "testing/data/avro/alltypes_plain.avro"
+    avro_df = ctx.read_avro(path=path)
+    assert avro_df is not None
 
 
 def test_create_sql_options():
