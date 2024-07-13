@@ -97,6 +97,16 @@ def test_select(df):
     assert result.column(1) == pa.array([-3, -3, -3])
 
 
+def test_select_mixed_expr_string(df):
+    df = df.select_columns(column("b"), "a")
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4, 5, 6])
+    assert result.column(1) == pa.array([1, 2, 3])
+
+
 def test_select_columns(df):
     df = df.select_columns("b", "a")
 

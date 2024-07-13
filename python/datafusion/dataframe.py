@@ -113,9 +113,9 @@ class DataFrame:
         DataFrame
             DataFrame only containing the specified columns.
         """
-        return DataFrame(self.df.select_columns(*args))
+        return self.select(*args)
 
-    def select(self, *args: Expr) -> DataFrame:
+    def select(self, *args: Expr | str) -> DataFrame:
         """Project arbitrary expressions (like SQL SELECT expressions) into a new `DataFrame`.
 
         Returns:
@@ -123,7 +123,9 @@ class DataFrame:
         DataFrame
             DataFrame after projection. It has one column for each expression.
         """
-        args = [arg.expr for arg in args]
+        args = [
+            arg.expr if isinstance(arg, Expr) else Expr.column(arg).expr for arg in args
+        ]
         return DataFrame(self.df.select(*args))
 
     def filter(self, *predicates: Expr) -> DataFrame:

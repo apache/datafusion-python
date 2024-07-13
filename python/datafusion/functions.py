@@ -385,7 +385,9 @@ def octet_length(arg: Expr) -> Expr:
     return Expr(f.octet_length(arg.expr))
 
 
-def overlay(string: Expr, substring: Expr, start: Expr, length: Expr | None = None) -> Expr:
+def overlay(
+    string: Expr, substring: Expr, start: Expr, length: Expr | None = None
+) -> Expr:
     """Replace a substring with a new substring.
 
     Replace the substring of string that starts at the `start`'th character and extends for `length` characters with new substring.
@@ -393,6 +395,7 @@ def overlay(string: Expr, substring: Expr, start: Expr, length: Expr | None = No
     if length is None:
         return Expr(f.overlay(string.expr, substring.expr, start.expr))
     return Expr(f.overlay(string.expr, substring.expr, start.expr, length.expr))
+
 
 def pi() -> Expr:
     """Returns an approximate value of π."""
