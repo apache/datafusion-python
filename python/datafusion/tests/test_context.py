@@ -38,6 +38,36 @@ def test_create_context_no_args():
     SessionContext()
 
 
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_runtime_configs(tmp_path, path_to_str):
+    path1 = tmp_path / "dir1"
+    path2 = tmp_path / "dir2"
+
+    path1 = str(path1) if path_to_str else path1
+    path2 = str(path2) if path_to_str else path2
+
+    runtime = RuntimeConfig().with_disk_manager_specified(path1, path2)
+    config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
+    ctx = SessionContext(config, runtime)
+    assert ctx is not None
+
+    db = ctx.catalog("foo").database("bar")
+    assert db is not None
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_temporary_files(tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    runtime = RuntimeConfig().with_temp_file_path(path)
+    config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
+    ctx = SessionContext(config, runtime)
+    assert ctx is not None
+
+    db = ctx.catalog("foo").database("bar")
+    assert db is not None
+
+
 def test_create_context_with_all_valid_args():
     runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
     config = (

@@ -321,9 +321,7 @@ class RuntimeConfig:
         self.config_internal = self.config_internal.with_disk_manager_os()
         return self
 
-    def with_disk_manager_specified(
-        self, paths: list[str] | list[pathlib.Path]
-    ) -> RuntimeConfig:
+    def with_disk_manager_specified(self, *paths: str | pathlib.Path) -> RuntimeConfig:
         """Use the specified paths for the disk manager's temporary files.
 
         Parameters
