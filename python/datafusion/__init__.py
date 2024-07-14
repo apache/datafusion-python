@@ -21,15 +21,10 @@ This is a Python library that binds to Apache Arrow in-memory query engine DataF
 See https://datafusion.apache.org/python/index.html for more information.
 """
 
-from abc import ABCMeta, abstractmethod
-from typing import List
-
 try:
     import importlib.metadata as importlib_metadata
 except ImportError:
     import importlib_metadata
-
-import pyarrow as pa
 
 from .context import (
     SessionContext,
@@ -41,7 +36,7 @@ from .context import (
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 
-from .udf import ScalarUDF, AggregateUDF
+from .udf import ScalarUDF, AggregateUDF, Accumulator
 
 from .common import (
     DFSchema,
@@ -50,54 +45,14 @@ from .common import (
 from .dataframe import DataFrame
 
 from .expr import (
-    #     Alias,
-    #     Analyze,
     Expr,
-    #     Filter,
-    #     Limit,
-    #     Like,
-    #     ILike,
-    #     Projection,
-    #     SimilarTo,
-    #     ScalarVariable,
-    #     Sort,
-    #     TableScan,
-    #     Not,
-    #     IsNotNull,
-    #     IsTrue,
-    #     IsFalse,
-    #     IsUnknown,
-    #     IsNotTrue,
-    #     IsNotFalse,
-    #     IsNotUnknown,
-    #     Negative,
-    #     InList,
-    #     Exists,
-    #     Subquery,
-    #     InSubquery,
-    #     ScalarSubquery,
-    #     GroupingSet,
-    #     Placeholder,
-    #     Case,
-    #     Cast,
-    #     TryCast,
-    #     Between,
-    #     Explain,
-    #     CreateMemoryTable,
-    #     SubqueryAlias,
-    #     Extension,
-    #     CreateView,
-    #     Distinct,
-    #     DropTable,
-    #     Repartition,
-    #     Partitioning,
-    #     Window,
     WindowFrame,
 )
 
 __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
+    "Accumulator",
     "Config",
     "DataFrame",
     "SessionContext",
@@ -106,73 +61,11 @@ __all__ = [
     "RuntimeConfig",
     "Expr",
     "ScalarUDF",
-    # "Window",
     "WindowFrame",
     "column",
     "literal",
-    # "TableScan",
-    # "Projection",
     "DFSchema",
-    # "DFField",
-    # "Analyze",
-    # "Sort",
-    # "Limit",
-    # "Filter",
-    # "Like",
-    # "ILike",
-    # "SimilarTo",
-    # "ScalarVariable",
-    # "Alias",
-    # "Not",
-    # "IsNotNull",
-    # "IsTrue",
-    # "IsFalse",
-    # "IsUnknown",
-    # "IsNotTrue",
-    # "IsNotFalse",
-    # "IsNotUnknown",
-    # "Negative",
-    # "ScalarFunction",
-    # "BuiltinScalarFunction",
-    # "InList",
-    # "Exists",
-    # "Subquery",
-    # "InSubquery",
-    # "ScalarSubquery",
-    # "GroupingSet",
-    # "Placeholder",
-    # "Case",
-    # "Cast",
-    # "TryCast",
-    # "Between",
-    # "Explain",
-    # "SubqueryAlias",
-    # "Extension",
-    # "CreateMemoryTable",
-    # "CreateView",
-    # "Distinct",
-    # "DropTable",
-    # "Repartition",
-    # "Partitioning",
 ]
-
-
-class Accumulator(metaclass=ABCMeta):
-    @abstractmethod
-    def state(self) -> List[pa.Scalar]:
-        pass
-
-    @abstractmethod
-    def update(self, values: pa.Array) -> None:
-        pass
-
-    @abstractmethod
-    def merge(self, states: pa.Array) -> None:
-        pass
-
-    @abstractmethod
-    def evaluate(self) -> pa.Scalar:
-        pass
 
 
 def column(value: str):
@@ -190,35 +83,6 @@ def literal(value):
 
 lit = literal
 
+udf = ScalarUDF.udf
 
-def udf(func, input_types, return_type, volatility, name=None):
-    """Create a new User Defined Function."""
-    if not callable(func):
-        raise TypeError("`func` argument must be callable")
-    if name is None:
-        name = func.__qualname__.lower()
-    return ScalarUDF(
-        name=name,
-        func=func,
-        input_types=input_types,
-        return_type=return_type,
-        volatility=volatility,
-    )
-
-
-def udaf(accum, input_types, return_type, state_type, volatility, name=None):
-    """Create a new User Defined Aggregate Function."""
-    if not issubclass(accum, Accumulator):
-        raise TypeError("`accum` must implement the abstract base class Accumulator")
-    if name is None:
-        name = accum.__qualname__.lower()
-    if isinstance(input_types, pa.lib.DataType):
-        input_types = [input_types]
-    return AggregateUDF(
-        name=name,
-        accumulator=accum,
-        input_types=input_types,
-        return_type=return_type,
-        state_type=state_type,
-        volatility=volatility,
-    )
+udaf = AggregateUDF.udaf
