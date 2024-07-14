@@ -309,7 +309,7 @@ class RuntimeConfig:
 
         Examples usage:
         ```python
-            config = RuntimeConfig().with_fair_spill_pool(1024)
+        config = RuntimeConfig().with_fair_spill_pool(1024)
         ```
         """
         self.config_internal = self.config_internal.with_fair_spill_pool(size)
@@ -330,7 +330,7 @@ class RuntimeConfig:
 
         Example usage:
         ```python
-            config = RuntimeConfig().with_greedy_memory_pool(1024)
+        config = RuntimeConfig().with_greedy_memory_pool(1024)
         ```
         """
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
@@ -347,7 +347,7 @@ class RuntimeConfig:
 
         Example usage:
         ```python
-            config = RuntimeConfig().with_temp_file_path("/tmp")
+        config = RuntimeConfig().with_temp_file_path("/tmp")
         ```
         """
         self.config_internal = self.config_internal.with_temp_file_path(str(path))
@@ -987,7 +987,7 @@ class SessionContext:
         file_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
-        """Create a `DataFrame` for reading Avro data source.
+        """Create a ``DataFrame`` for reading Avro data source.
 
         Args:
             path: Path to the Avro file.
