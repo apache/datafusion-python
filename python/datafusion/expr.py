@@ -109,7 +109,7 @@ class Expr:
         return self.expr.display_name()
 
     def canonical_name(self) -> str:
-        """Returns a full and complete string representation of this expression."""
+        """Returns a complete string representation of this expression."""
         return self.expr.canonical_name()
 
     def variant_name(self) -> str:
@@ -266,7 +266,12 @@ class Expr:
         return Expr(self.expr.alias(name))
 
     def sort(self, ascending: bool = True, nulls_first: bool = True) -> Expr:
-        """Creates a sort ``Expr`` from an existing ``Expr``."""
+        """Creates a sort ``Expr`` from an existing ``Expr``.
+
+        Args:
+            ascending: If true, sort in ascending order.
+            nulls_first: Return null values first.
+        """
         return Expr(self.expr.sort(ascending=ascending, nulls_first=nulls_first))
 
     def is_null(self) -> Expr:
@@ -281,33 +286,42 @@ class Expr:
         """Return the Rex Type of this expression.
 
         A Rex (Row Expression) specifies a single row of data.That specification
-        could include user defined functions or types. RexType identifies the row
-        as one of the possible valid ``RexType``(s).
+        could include user defined functions or types. RexType identifies the
+        row as one of the possible valid ``RexType``(s).
         """
         return self.expr.rex_type()
 
     def types(self) -> DataTypeMap:
-        """Return the ``DataTypeMap`` which represents the PythonType, Arrow DataType, and SqlType Enum which this expression represents."""
+        """Return the ``DataTypeMap``.
+
+        Returns:
+            DataTypeMap which represents the PythonType, Arrow DataType, and
+            SqlType Enum which this expression represents.
+        """
         return self.expr.types()
 
     def python_value(self) -> Any:
-        """Extracts the Expr value into a PyObject that can be shared with Python.
+        """Extracts the Expr value into a PyObject.
 
         This is only valid for literal expressions.
+
+        Returns:
+            Python object representing literal value of the expression.
         """
         return self.expr.python_value()
 
     def rex_call_operands(self) -> list[Expr]:
         """Return the operands of the expression based on it's variant type.
 
-        Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
-        store those operands in different datastructures. This function examines the Expr variant and returns
+        Row expressions, Rex(s), operate on the concept of operands. Different
+        variants of Expressions, Expr(s), store those operands in different
+        datastructures. This function examines the Expr variant and returns
         the operands to the calling logic.
         """
         return [Expr(e) for e in self.expr.rex_call_operands()]
 
     def rex_call_operator(self) -> str:
-        """Extracts the operator associated with a row expression type ``Call``."""
+        """Extracts the operator associated with a row expression type call."""
         return self.expr.rex_call_operator()
 
     def column_name(self, plan: LogicalPlan) -> str:
@@ -325,8 +339,12 @@ class WindowFrame:
 
         Args:
             units: Should be one of `rows`, `range`, or `groups`.
-            start_bound: Sets the preceeding bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
-            end_bound: Sets the following bound. Must be >= 0. If none, this will be set to unbounded. If unit type is `groups`, this parameter must be set.
+            start_bound: Sets the preceeding bound. Must be >= 0. If none, this
+                will be set to unbounded. If unit type is `groups`, this
+                parameter must be set.
+            end_bound: Sets the following bound. Must be >= 0. If none, this
+                will be set to unbounded. If unit type is `groups`, this
+                parameter must be set.
         """
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
@@ -382,14 +400,20 @@ class CaseBuilder:
     ```python
     import datafusion.functions as f
     from datafusion import lit, col
-    df.select(f.case(col("column_a").when(lit(1), lit("One")).when(lit(2), lit("Two")).otherwise(lit("Unknown")))
+    df.select(
+        f.case(col("column_a")
+        .when(lit(1), lit("One"))
+        .when(lit(2), lit("Two"))
+        .otherwise(lit("Unknown"))
+    )
     ```
     """
 
     def __init__(self, case_builder: expr_internal.CaseBuilder) -> None:
         """Constructs a case builder.
 
-        This is not typically called by the end user directly. See ``datafusion.functions.case`` instead.
+        This is not typically called by the end user directly. See
+        ``datafusion.functions.case`` instead.
         """
         self.case_builder = case_builder
 
