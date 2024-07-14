@@ -48,26 +48,21 @@ class SessionConfig:
     def __init__(self, config_options: dict[str, str] | None = None) -> None:
         """Create a new `SessionConfig` with the given configuration options.
 
-        Parameters
-        ----------
-        config_options : dict[str, str]
-            Configuration options.
+        Args:
+            config_options: Configuration options.
         """
         self.config_internal = SessionConfigInternal(config_options)
 
     def with_create_default_catalog_and_schema(
         self, enabled: bool = True
     ) -> SessionConfig:
-        """Control whether the default catalog and schema will be automatically created.
+        """Control if the default catalog and schema will be automatically created.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether the default catalog and schema will be automatically created.
+        Args:
+            enabled: Whether the default catalog and schema will be
+                automatically created.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = (
@@ -80,16 +75,11 @@ class SessionConfig:
     ) -> SessionConfig:
         """Select a name for the default catalog and shcema.
 
-        Parameters
-        ----------
-        catalog : str
-            Catalog name.
-        schema : str
-            Schema name.
+        Args:
+            catalog: Catalog name.
+            schema: Schema name.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_default_catalog_and_schema(
@@ -100,14 +90,10 @@ class SessionConfig:
     def with_information_schema(self, enabled: bool = True) -> SessionConfig:
         """Enable or disable the inclusion of `information_schema` virtual tables.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to include `information_schema` virtual tables.
+        Args:
+            enabled: Whether to include `information_schema` virtual tables.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_information_schema(enabled)
@@ -116,14 +102,10 @@ class SessionConfig:
     def with_batch_size(self, batch_size: int) -> SessionConfig:
         """Customize batch size.
 
-        Parameters
-        ----------
-        batch_size : int
-            Batch size.
+        Args:
+            batch_size: Batch size.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_batch_size(batch_size)
@@ -134,14 +116,10 @@ class SessionConfig:
 
         Increasing partitions can increase concurrency.
 
-        Parameters
-        ----------
-        target_partitions : int
-            Number of target partitions.
+        Args:
+            target_partitions: Number of target partitions.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_target_partitions(
@@ -154,14 +132,10 @@ class SessionConfig:
 
         Enabling this improves parallelism.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use repartitioning for aggregations.
+        Args:
+            enabled: Whether to use repartitioning for aggregations.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_aggregations(
@@ -172,46 +146,38 @@ class SessionConfig:
     def with_repartition_joins(self, enabled: bool = True) -> SessionConfig:
         """Enable or disable the use of repartitioning for joins to improve parallelism.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use repartitioning for joins.
+        Args:
+            enabled: Whether to use repartitioning for joins.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_joins(enabled)
         return self
 
     def with_repartition_windows(self, enabled: bool = True) -> SessionConfig:
-        """Enable or disable the use of repartitioning for window functions to improve parallelism.
+        """Enable or disable the use of repartitioning for window functions.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use repartitioning for window functions.
+        This may improve parallelism.
+
+        Args:
+            enabled: Whether to use repartitioning for window functions.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_windows(enabled)
         return self
 
     def with_repartition_sorts(self, enabled: bool = True) -> SessionConfig:
-        """Enable or disable the use of repartitioning for window functions to improve parallelism.
+        """Enable or disable the use of repartitioning for window functions.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use repartitioning for window functions.
+        This may improve parallelism.
+
+        Args:
+            enabled: Whether to use repartitioning for window functions.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_sorts(enabled)
@@ -220,14 +186,10 @@ class SessionConfig:
     def with_repartition_file_scans(self, enabled: bool = True) -> SessionConfig:
         """Enable or disable the use of repartitioning for file scans.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use repartitioning for file scans.
+        Args:
+            enabled: Whether to use repartitioning for file scans.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_file_scans(enabled)
@@ -236,30 +198,24 @@ class SessionConfig:
     def with_repartition_file_min_size(self, size: int) -> SessionConfig:
         """Set minimum file range size for repartitioning scans.
 
-        Parameters
-        ----------
-        size : int
-            Minimum file range size.
+        Args:
+            size: Minimum file range size.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_file_min_size(size)
         return self
 
     def with_parquet_pruning(self, enabled: bool = True) -> SessionConfig:
-        """Enable or disable the use of pruning predicate for parquet readers to skip row groups.
+        """Enable or disable the use of pruning predicate for parquet readers.
 
-        Parameters
-        ----------
-        enabled : bool
-            Whether to use pruning predicate for parquet readers.
+        Pruning predicates will enable the reader to skip row groups.
+
+        Args:
+            enabled: Whether to use pruning predicate for parquet readers.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_parquet_pruning(enabled)
@@ -268,16 +224,11 @@ class SessionConfig:
     def set(self, key: str, value: str) -> SessionConfig:
         """Set a configuration option.
 
-        Parameters
-        ----------
-        key : str
-            Option key.
-        value : str
-            Option value.
+        Args:
+        key: Option key.
+        value: Option value.
 
         Returns:
-        -------
-        SessionConfig
             A new `SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.set(key, value)
@@ -295,13 +246,7 @@ class RuntimeConfig:
         """Disable the disk manager, attempts to create temporary files will error.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
-
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_disk_manager_disabled()
         """
         self.config_internal = self.config_internal.with_disk_manager_disabled()
         return self
@@ -310,13 +255,7 @@ class RuntimeConfig:
         """Use the operating system's temporary directory for disk manager.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
-
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_disk_manager_os()
         """
         self.config_internal = self.config_internal.with_disk_manager_os()
         return self
@@ -324,19 +263,11 @@ class RuntimeConfig:
     def with_disk_manager_specified(self, *paths: str | pathlib.Path) -> RuntimeConfig:
         """Use the specified paths for the disk manager's temporary files.
 
-        Parameters
-        ----------
-        paths : list[str]
-            Paths to use for the disk manager's temporary files.
+        Args:
+            paths: Paths to use for the disk manager's temporary files.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
-
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_disk_manager_specified(["/tmp"])
         """
         paths = [str(p) for p in paths]
         self.config_internal = self.config_internal.with_disk_manager_specified(paths)
@@ -346,13 +277,7 @@ class RuntimeConfig:
         """Use an unbounded memory pool.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
-
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_unbounded_memory_pool()
         """
         self.config_internal = self.config_internal.with_unbounded_memory_pool()
         return self
@@ -376,20 +301,15 @@ class RuntimeConfig:
             └───────────────────────z──────────────────────z───────────────┘
         ```
 
-        Parameters
-        ----------
-        size : int
-            Size of the memory pool in bytes.
+        Args:
+            size: Size of the memory pool in bytes.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples:
-        --------
+        Examples usage:
         ```python
-        >>> config = RuntimeConfig().with_fair_spill_pool(1024)
+            config = RuntimeConfig().with_fair_spill_pool(1024)
         ```
         """
         self.config_internal = self.config_internal.with_fair_spill_pool(size)
@@ -402,19 +322,16 @@ class RuntimeConfig:
         spillable operator. See `RuntimeConfig.with_fair_spill_pool` if there are
         multiple spillable operators that all will spill.
 
-        Parameters
-        ----------
-        size : int
-            Size of the memory pool in bytes.
+        Args:
+            size: Size of the memory pool in bytes.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_greedy_memory_pool(1024)
+        Example usage:
+        ```python
+            config = RuntimeConfig().with_greedy_memory_pool(1024)
+        ```
         """
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
         return self
@@ -422,19 +339,16 @@ class RuntimeConfig:
     def with_temp_file_path(self, path: str | pathlib.Path) -> RuntimeConfig:
         """Use the specified path to create any needed temporary files.
 
-        Parameters
-        ----------
-        path : str
-            Path to use for temporary files.
+        Args:
+            path: Path to use for temporary files.
 
         Returns:
-        -------
-        RuntimeConfig
             A new `RuntimeConfig` object with the updated setting.
 
-        Examples:
-        --------
-        >>> config = RuntimeConfig().with_temp_file_path("/tmp")
+        Example usage:
+        ```python
+            config = RuntimeConfig().with_temp_file_path("/tmp")
+        ```
         """
         self.config_internal = self.config_internal.with_temp_file_path(str(path))
         return self
@@ -458,20 +372,16 @@ class SQLOptions:
 
         Examples of DDL commands include `CREATE TABLE` and `DROP TABLE`.
 
-        Parameters
-        ----------
-        allow : bool
-            Allow DDL commands to be run.
+        Args:
+            allow: Allow DDL commands to be run.
 
         Returns:
-        -------
-        SQLOptions
             A new `SQLOptions` object with the updated setting.
 
-
-        Examples:
-        --------
-        >>> options = SQLOptions().with_allow_ddl(True)
+        Example usage:
+        ```python
+            options = SQLOptions().with_allow_ddl(True)
+        ```
         """
         self.options_internal = self.options_internal.with_allow_ddl(allow)
         return self
@@ -481,20 +391,16 @@ class SQLOptions:
 
         Examples of DML commands include `INSERT INTO` and `DELETE`.
 
-        Parameters
-        ----------
-        allow : bool
-            Allow DML commands to be run.
+        Args:
+            allow: Allow DML commands to be run.
 
         Returns:
-        -------
-        SQLOptions
             A new `SQLOptions` object with the updated setting.
 
-
-        Examples:
-        --------
-        >>> options = SQLOptions().with_allow_dml(True)
+        Example usage:
+        ```python
+            options = SQLOptions().with_allow_dml(True)
+        ```
         """
         self.options_internal = self.options_internal.with_allow_dml(allow)
         return self
@@ -502,19 +408,16 @@ class SQLOptions:
     def with_allow_statements(self, allow: bool = True) -> SQLOptions:
         """Should statements such as `SET VARIABLE` and `BEGIN TRANSACTION` be run?
 
-        Parameters
-        ----------
-        allow : bool
-            Allow statements to be run.
+        Args:
+            allow: Allow statements to be run.
 
         Returns:
-        -------
-        SQLOptions
             A new `SQLOptions` object with the updated setting.
 
-        Examples:
-        --------
-        >>> options = SQLOptions().with_allow_statements(True)
+        Example usage:
+        ```python
+            options = SQLOptions().with_allow_statements(True)
+        ```
         """
         self.options_internal = self.options_internal.with_allow_statements(allow)
         return self
@@ -523,7 +426,8 @@ class SQLOptions:
 class SessionContext:
     """This is the main interface for executing queries and creating DataFrames.
 
-    See https://datafusion.apache.org/python/user-guide/basics.html for additional information.
+    See https://datafusion.apache.org/python/user-guide/basics.html for
+    additional information.
     """
 
     def __init__(
@@ -535,15 +439,12 @@ class SessionContext:
         of the connection between a user and an instance of the DataFusion
         engine.
 
-        Parameters
-        ----------
-        config : SessionConfig | None
-            Session configuration options.
-        runtime : RuntimeConfig | None
-            Runtime configuration options.
+        Args:
+            config: Session configuration options.
+            runtime: Runtime configuration options.
 
-        Examples:
-        --------
+        Example usage:
+
         The following example demostrates how to use the context to execute
         a query against a CSV data source using the `DataFrame` API:
 
@@ -560,19 +461,39 @@ class SessionContext:
         self.ctx = SessionContextInternal(config, runtime)
 
     def register_object_store(self, schema: str, store: Any, host: str | None) -> None:
-        """Add a new object store into the session."""
+        """Add a new object store into the session.
+
+        Args:
+            schema: The data source schema.
+            store: The `ObjectStore` to register.
+            host: URL for the host.
+        """
         self.ctx.register_object_store(schema, store, host)
 
     def register_listing_table(
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".parquet",
         schema: pyarrow.Schema | None = None,
         file_sort_order: list[list[Expr]] | None = None,
     ) -> None:
-        """Registers a Table that can assemble multiple files from locations in an `ObjectStore` instance into a single table."""
+        """Register multiple files as a single table.
+
+        Registers a `Table` that can assemble multiple files from locations in
+        an `ObjectStore` instance.
+
+        Args:
+            name: Name of the resultant table.
+            path: Path to the file to register.
+            table_partition_cols: Partition columns.
+            file_extension: File extension of the provided table.
+            schema: The data source schema.
+            file_sort_order: Sort order for the file.
+        """
+        if table_partition_cols is None:
+            table_partition_cols = []
         if file_sort_order is not None:
             file_sort_order = [[x.expr for x in xs] for xs in file_sort_order]
         self.ctx.register_listing_table(
@@ -584,41 +505,38 @@ class SessionContext:
             file_sort_order,
         )
 
-    def sql(self, query: str) -> DataFrame:
+    def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
         """Create a `DataFrame` from SQL query text.
 
         Note: This API implements DDL statements such as `CREATE TABLE` and
         `CREATE VIEW` and DML statements such as `INSERT INTO` with in-memory
         default implementation. See `SessionContext.sql_with_options`.
 
-        Parameters
-        ----------
-        query : str
-            SQL query text.
+        Args:
+            query: SQL query text.
+            options: If provided, the query will be validated against these options.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the SQL query.
         """
-        return DataFrame(self.ctx.sql(query))
+        if options is None:
+            return DataFrame(self.ctx.sql(query))
+        return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
-        """Create a `DataFrame` from SQL query text, first validating that the query is allowed by the provided options.
+        """Create a `DataFrame` from SQL query text.
 
-        Parameters
-        ----------
-        query : str
-            SQL query text.
-        options : SQLOptions
-            SQL options.
+        This function will first validating that the query is allowed by the
+        provided options.
+
+        Args:
+            query: SQL query text.
+            options: SQL options.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the SQL query.
         """
-        return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
+        return self.sql(query, options)
 
     def create_dataframe(
         self,
@@ -626,20 +544,25 @@ class SessionContext:
         name: str | None = None,
         schema: pyarrow.Schema | None = None,
     ) -> DataFrame:
-        """Create and return a dataframe using the provided partitions."""
+        """Create and return a dataframe using the provided partitions.
+
+        Args:
+            partitions: `RecordBatch` partitions to register.
+            name: Resultant dataframe name.
+            schema: Schema for the partitions.
+
+        Returns:
+            DataFrame representation of the SQL query.
+        """
         return DataFrame(self.ctx.create_dataframe(partitions, name, schema))
 
     def create_dataframe_from_logical_plan(self, plan: LogicalPlan) -> DataFrame:
         """Create a `DataFrame` from an existing logical plan.
 
-        Parameters
-        ----------
-        plan : LogicalPlan
-            Logical plan.
+        Args:
+            plan: Logical plan.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the logical plan.
         """
         return DataFrame(self.ctx.create_dataframe_from_logical_plan(plan))
@@ -649,16 +572,11 @@ class SessionContext:
     ) -> DataFrame:
         """Create a `DataFrame` from a list of dictionaries.
 
-        Parameters
-        ----------
-        data : list[dict[str, Any]]
-            List of dictionaries.
-        name : str | None
-            Name of the DataFrame.
+        Args:
+            data: List of dictionaries.
+            name: Name of the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the list of dictionaries.
         """
         return DataFrame(self.ctx.from_pylist(data, name))
@@ -668,16 +586,11 @@ class SessionContext:
     ) -> DataFrame:
         """Create a `DataFrame` from a dictionary of lists.
 
-        Parameters
-        ----------
-        data : dict[str, list[Any]]
-            Dictionary of lists.
-        name : str | None
-            Name of the DataFrame.
+        Args:
+            data: Dictionary of lists.
+            name: Name of the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the dictionary of lists.
         """
         return DataFrame(self.ctx.from_pydict(data, name))
@@ -687,16 +600,11 @@ class SessionContext:
     ) -> DataFrame:
         """Create a `DataFrame` from an Arrow table.
 
-        Parameters
-        ----------
-        data : pyarrow.Table
-            Arrow table.
-        name : str | None
-            Name of the DataFrame.
+        Args:
+            data: Arrow table.
+            name: Name of the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the Arrow table.
         """
         return DataFrame(self.ctx.from_arrow_table(data, name))
@@ -704,16 +612,11 @@ class SessionContext:
     def from_pandas(self, data: pandas.DataFrame, name: str | None = None) -> DataFrame:
         """Create a `DataFrame` from a Pandas DataFrame.
 
-        Parameters
-        ----------
-        data : pandas.DataFrame
-            Pandas DataFrame.
-        name : str | None
-            Name of the DataFrame.
+        Args:
+            data: Pandas DataFrame.
+            name: Name of the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the Pandas DataFrame.
         """
         return DataFrame(self.ctx.from_pandas(data, name))
@@ -721,22 +624,22 @@ class SessionContext:
     def from_polars(self, data: polars.DataFrame, name: str | None = None) -> DataFrame:
         """Create a `DataFrame` from a Polars DataFrame.
 
-        Parameters
-        ----------
-        data : polars.DataFrame
-            Polars DataFrame.
-        name : str | None
-            Name of the DataFrame.
+        Args:
+            data: Polars DataFrame.
+            name: Name of the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the Polars DataFrame.
         """
         return DataFrame(self.ctx.from_polars(data, name))
 
     def register_table(self, name: str, table: pyarrow.Table) -> None:
-        """Register a table with the given name into the session."""
+        """Register a table with the given name into the session.
+
+        Args:
+            name: Name of the resultant table.
+            table: PyArrow table to add to the session context.
+        """
         self.ctx.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
@@ -746,14 +649,22 @@ class SessionContext:
     def register_record_batches(
         self, name: str, partitions: list[list[pyarrow.RecordBatch]]
     ) -> None:
-        """Convert the provided partitions into a table and register it into the session using the given name."""
+        """Register record batches as a table.
+
+        This function will convert the provided partitions into a table and
+        register it into the session using the given name.
+
+        Args:
+            name: Name of the resultant table.
+            partitions: Record batches to register as a table.
+        """
         self.ctx.register_record_batches(name, partitions)
 
     def register_parquet(
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
@@ -762,29 +673,25 @@ class SessionContext:
     ) -> None:
         """Register a Parquet file as a table.
 
-        The registered table can be referenced from SQL statement executed against
-        this context.
+        The registered table can be referenced from SQL statement executed
+        against this context.
 
-        Parameters
-        ----------
-        name : str
-            Name of the table to register.
-        path : str
-            Path to the Parquet file.
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        parquet_pruning : bool, optional
-            Whether the parquet reader should use the predicate to prune row groups, by default True
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".parquet"
-        skip_metadata : bool, optional
-            Whether the parquet reader should skip any metadata that may be in the file
-            schema. This can help avoid schema conflicts due to metadata. by default True
-        schema : pyarrow.Schema | None, optional
-            The data source schema, by default None
-        file_sort_order : list[list[Expr]] | None, optional
-            Sort order for the file, by default None
+        Args:
+            name: Name of the table to register.
+            path: Path to the Parquet file.
+            table_partition_cols: Partition columns.
+            parquet_pruning: Whether the parquet reader should use the
+                predicate to prune row groups.
+            file_extension: File extension; only files with this extension are
+                selected for data input.
+            skip_metadata: Whether the parquet reader should skip any metadata
+                that may be in the file schema. This can help avoid schema
+                conflicts due to metadata.
+            schema: The data source schema.
+            file_sort_order: Sort order for the file.
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         self.ctx.register_parquet(
             name,
             str(path),
@@ -811,24 +718,20 @@ class SessionContext:
 
         The registered table can be referenced from SQL statement executed against.
 
-        Parameters
-        ----------
-        name : str
-            Name of the table to register.
-        path : str
-            Path to the CSV file.
-        schema : pyarrow.Schema | None, optional
-            An optional schema representing the CSV file. If None, the CSV reader will try to infer it based on data in file, by default None
-        has_header : bool, optional
-            Whether the CSV file have a header. If schema inference is run on a file with no headers, default column names are created, by default True
-        delimiter : str, optional
-            An optional column delimiter, by default ","
-        schema_infer_max_records : int, optional
-            Maximum number of rows to read from CSV files for schema inference if needed, by default 1000
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".csv"
-        file_compression_type : str | None, optional
-            File compression type, by default None
+        Args:
+            name: Name of the table to register.
+            path: Path to the CSV file.
+            schema: An optional schema representing the CSV file. If None, the
+                CSV reader will try to infer it based on data in file.
+            has_header: Whether the CSV file have a header. If schema inference
+                is run on a file with no headers, default column names are
+                created.
+            delimiter: An optional column delimiter.
+            schema_infer_max_records: Maximum number of rows to read from CSV
+                files for schema inference if needed.
+            file_extension: File extension; only files with this extension are
+                selected for data input.
+            file_compression_type: File compression type.
         """
         self.ctx.register_csv(
             name,
@@ -848,31 +751,27 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
     ) -> None:
         """Register a JSON file as a table.
 
-        The registered table can be referenced from SQL statement executed against
-        this context.
+        The registered table can be referenced from SQL statement executed
+        against this context.
 
-        Parameters
-        ----------
-        name : str
-            Name of the table to register.
-        path : str
-            Path to the JSON file.
-        schema : pyarrow.Schema | None, optional
-            The data source schema, by default None
-        schema_infer_max_records : int, optional
-            Maximum number of rows to read from JSON files for schema inference if needed, by default 1000
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".json"
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        file_compression_type : str | None, optional
-            File compression type, by default None
+        Args:
+            name: Name of the table to register.
+            path: Path to the JSON file.
+            schema: The data source schema.
+            schema_infer_max_records: Maximum number of rows to read from JSON
+                files for schema inference if needed.
+            file_extension: File extension; only files with this extension are
+                selected for data input.
+            table_partition_cols: Partition columns.
+            file_compression_type: File compression type.
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         self.ctx.register_json(
             name,
             str(path),
@@ -889,26 +788,22 @@ class SessionContext:
         path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
         file_extension: str = ".avro",
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
     ) -> None:
         """Register an Avro file as a table.
 
         The registered table can be referenced from SQL statement executed against
         this context.
 
-        Parameters
-        ----------
-        name : str
-            Name of the table to register.
-        path : str
-            Path to the Avro file.
-        schema : pyarrow.Schema | None, optional
-            The data source schema, by default None
-        file_extension : str, optional
-            File extension to select, by default ".avro"
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
+        Args:
+            name: Name of the table to register.
+            path: Path to the Avro file.
+            schema: The data source schema.
+            file_extension: File extension to select.
+            table_partition_cols:  Partition columns.
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         self.ctx.register_avro(
             name, str(path), schema, file_extension, table_partition_cols
         )
@@ -916,48 +811,22 @@ class SessionContext:
     def register_dataset(self, name: str, dataset: pyarrow.dataset.Dataset) -> None:
         """Register a `pyarrow.dataset.Dataset` as a table.
 
-        Parameters
-        ----------
-        name : str
-            Name of the table to register.
-        dataset : dataset.Dataset
-            PyArrow dataset.
+        Args:
+            name: Name of the table to register.
+            dataset: PyArrow dataset.
         """
         self.ctx.register_dataset(name, dataset)
 
     def register_udf(self, udf: ScalarUDF) -> None:
-        """Register a user-defined function (UDF) with the context.
-
-        Parameters
-        ----------
-        udf : ScalarUDF
-            User-defined function.
-        """
+        """Register a user-defined function (UDF) with the context."""
         self.ctx.register_udf(udf.udf)
 
     def register_udaf(self, udaf: AggregateUDF) -> None:
-        """Register a user-defined aggregation function (UDAF) with the context.
-
-        Parameters
-        ----------
-        udaf : AggregateUDF
-            User-defined aggregation function.
-        """
+        """Register a user-defined aggregation function (UDAF) with the context."""
         self.ctx.register_udaf(udaf)
 
     def catalog(self, name: str = "datafusion") -> Catalog:
-        """Retrieve a catalog by name.
-
-        Parameters
-        ----------
-        name : str, optional
-            Name of the catalog to retrieve, by default "datafusion".
-
-        Returns:
-        -------
-        Catalog
-            Catalog representation.
-        """
+        """Retrieve a catalog by name."""
         return self.ctx.catalog(name)
 
     @deprecated(
@@ -969,53 +838,19 @@ class SessionContext:
         return self.ctx.tables()
 
     def table(self, name: str) -> DataFrame:
-        """Retrieve a `DataFrame` representing a previously registered table.
-
-        Parameters
-        ----------
-        name : str
-            Name of the table to retrieve.
-
-        Returns:
-        -------
-        DataFrame
-            DataFrame representation of the table.
-        """
+        """Retrieve a `DataFrame` representing a previously registered table."""
         return DataFrame(self.ctx.table(name))
 
     def table_exist(self, name: str) -> bool:
-        """Return whether a table with the given name exists.
-
-        Parameters
-        ----------
-        name : str
-            Name of the table to check.
-
-        Returns:
-        -------
-        bool
-            Whether a table with the given name exists.
-        """
+        """Return whether a table with the given name exists."""
         return self.ctx.table_exist(name)
 
     def empty_table(self) -> DataFrame:
-        """Create an empty `DataFrame`.
-
-        Returns:
-        -------
-        DataFrame
-            An empty DataFrame.
-        """
+        """Create an empty `DataFrame`."""
         return DataFrame(self.ctx.empty_table())
 
     def session_id(self) -> str:
-        """Retrun an id that uniquely identifies this `SessionContext`.
-
-        Returns:
-        -------
-        str
-            Unique session identifier
-        """
+        """Retrun an id that uniquely identifies this `SessionContext`."""
         return self.ctx.session_id()
 
     def read_json(
@@ -1024,31 +859,26 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Create a `DataFrame` for reading a line-delimited JSON data source.
 
-        Parameters
-        ----------
-        path : str
-            Path to the JSON file
-        schema : pyarrow.Schema | None, optional
-            The data source schema, by default None
-        schema_infer_max_records : int, optional
-            Maximum number of rows to read from JSON files for schema inference if needed, by default 1000
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".json"
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        file_compression_type : str | None, optional
-            File compression type, by default None
+        Args:
+            path: Path to the JSON file.
+            schema: The data source schema.
+            schema_infer_max_records: Maximum number of rows to read from JSON
+                files for schema inference if needed.
+            file_extension: File extension; only files with this extension are
+                selected for data input.
+            table_partition_cols: Partition columns.
+            file_compression_type: File compression type.
 
         Returns:
-        -------
-        DataFrame
-            DataFrame representation of the read JSON files
+            DataFrame representation of the read JSON files.
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         return DataFrame(
             self.ctx.read_json(
                 str(path),
@@ -1068,35 +898,31 @@ class SessionContext:
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
         file_extension: str = ".csv",
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Create a `DataFrame` for reading a CSV data source.
 
-        Parameters
-        ----------
-        path : str
-            Path to the CSV file
-        schema : pyarrow.Schema | None, optional
-            An optional schema representing the CSV files. If None, the CSV reader will try to infer it based on data in file, by default None
-        has_header : bool, optional
-            Whether the CSV file have a header. If schema inference is run on a file with no headers, default column names are created, by default True
-        delimiter : str, optional
-            An optional column delimiter, by default ","
-        schema_infer_max_records : int, optional
-            Maximum number of rows to read from CSV files for schema inference if needed, by default 1000
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".csv"
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        file_compression_type : str | None, optional
-            File compression type, by default None
+        Args:
+            path: Path to the CSV file
+            schema: An optional schema representing the CSV files. If None, the
+                CSV reader will try to infer it based on data in file.
+            has_header: Whether the CSV file have a header. If schema inference
+                is run on a file with no headers, default column names are
+                created.
+            delimiter: An optional column delimiter.
+            schema_infer_max_records: Maximum number of rows to read from CSV
+                files for schema inference if needed.
+            file_extension:  File extension; only files with this extension are
+                selected for data input.
+            table_partition_cols:  Partition columns.
+            file_compression_type:  File compression type.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the read CSV files
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         return DataFrame(
             self.ctx.read_csv(
                 str(path),
@@ -1113,7 +939,7 @@ class SessionContext:
     def read_parquet(
         self,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] = [],
+        table_partition_cols: list[tuple[str, str]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
@@ -1122,30 +948,26 @@ class SessionContext:
     ) -> DataFrame:
         """Create a `DataFrame` for reading Parquet data source.
 
-        Parameters
-        ----------
-        path: str
-            Path to the Parquet file
-        table_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        parquet_pruning : bool, optional
-            Whether the parquet reader should use the predicate to prune row groups, by default True
-        file_extension : str, optional
-            File extension; only files with this extension are selected for data input, by default ".parquet"
-        skip_metadata : bool, optional
-            Whether the parquet reader should skip any metadata that may be in the file
-            schema. This can help avoid schema conflicts due to metadata. by default True
-        schema : pyarrow.Schema | None, optional
-            An optional schema representing the parquet files. If None, the parquet
-            reader will try to infer it based on data in the file, by default None
-        file_sort_order : list[list[Expr]] | None, optional
-            Sort order for the file, by default None
+        Args:
+            path: Path to the Parquet file.
+            table_partition_cols: Partition columns.
+            parquet_pruning: Whether the parquet reader should use the predicate
+                to prune row groups.
+            file_extension: File extension; only files with this extension are
+                selected for data input.
+            skip_metadata: Whether the parquet reader should skip any metadata
+                that may be in the file schema. This can help avoid schema
+                conflicts due to metadata.
+            schema: An optional schema representing the parquet files. If None,
+                the parquet reader will try to infer it based on data in the
+                file.
+            file_sort_order: Sort order for the file.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the read Parquet files
         """
+        if table_partition_cols is None:
+            table_partition_cols = []
         return DataFrame(
             self.ctx.read_parquet(
                 str(path),
@@ -1162,27 +984,22 @@ class SessionContext:
         self,
         path: str | pathlib.Path,
         schema: pyarrow.Schema | None = None,
-        file_partition_cols: list[tuple[str, str]] = [],
+        file_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
         """Create a `DataFrame` for reading Avro data source.
 
-        Parameters
-        ----------
-        path : str
-            Path to the Avro file
-        schema : pyarrow.Schema | None, optional
-            The data source schema, by default None
-        file_partition_cols : list[tuple[str, str]], optional
-            Partition columns, by default []
-        file_extension : str, optional
-            File extension to select, by default ".avro"
+        Args:
+            path: Path to the Avro file.
+            schema: The data source schema.
+            file_partition_cols: Partition columns.
+            file_extension: File extension to select.
 
         Returns:
-        -------
-        DataFrame
             DataFrame representation of the read Avro file
         """
+        if file_partition_cols is None:
+            file_partition_cols = []
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
