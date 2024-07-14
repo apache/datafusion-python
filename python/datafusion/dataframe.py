@@ -16,7 +16,8 @@
 # under the License.
 """DataFrame is one of the core concepts in DataFusion.
 
-See https://datafusion.apache.org/python/user-guide/basics.html for more information.
+See https://datafusion.apache.org/python/user-guide/basics.html for more
+information.
 """
 
 from __future__ import annotations
@@ -40,9 +41,10 @@ from datafusion._internal import (
 
 
 class DataFrame:
-    """Two dimensional representation of data represented as rows and columns in a table.
+    """Two dimensional table representation of data.
 
-    See https://datafusion.apache.org/python/user-guide/basics.html for more information.
+    See https://datafusion.apache.org/python/user-guide/basics.html for more
+    information.
     """
 
     def __init__(self, df: DataFrameInternal) -> None:
@@ -55,14 +57,10 @@ class DataFrame:
     def __getitem__(self, key: str | List[str]) -> DataFrame:
         """Return a new `DataFrame` with the specified column or columns.
 
-        Parameters
-        ----------
-        key : Any
-            Column name or list of column names to select.
+        Args:
+            key: Column name or list of column names to select.
 
         Returns:
-        -------
-        DataFrame
             DataFrame with the specified column or columns.
         """
         return DataFrame(self.df.__getitem__(key))
@@ -71,8 +69,6 @@ class DataFrame:
         """Return a string representation of the DataFrame.
 
         Returns:
-        -------
-        str
             String representation of the DataFrame.
         """
         return self.df.__repr__()
@@ -86,8 +82,6 @@ class DataFrame:
         The output format is modeled after pandas.
 
         Returns:
-        -------
-        DataFrame
             A summary DataFrame containing statistics.
         """
         return DataFrame(self.df.describe())
@@ -99,8 +93,6 @@ class DataFrame:
         nullability for each column.
 
         Returns:
-        -------
-        pa.Schema
             Describing schema of the DataFrame
         """
         return self.df.schema()
@@ -109,39 +101,48 @@ class DataFrame:
         """Filter the DataFrame by columns.
 
         Returns:
-        -------
-        DataFrame
             DataFrame only containing the specified columns.
         """
         return self.select(*args)
 
-    def select(self, *args: Expr | str) -> DataFrame:
-        """Project arbitrary expressions (like SQL SELECT expressions) into a new `DataFrame`.
+    def select(self, *exprs: Expr | str) -> DataFrame:
+        """Project arbitrary expressions into a new `DataFrame`.
+
+        Args:
+            exprs: Either column names or `Expr` to select.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after projection. It has one column for each expression.
+
+        Example usage:
+
+        The following example will return 3 columns from the original dataframe.
+        The first two columns will be the original column `a` and `b` since the
+        string "a" is assumed to refer to column selection. Also a duplicate of
+        column `a` will be returned with the column name `alternate_a`.
+
+        ```python
+        df = df.select("a", col("b"), col("a").alias("alternate_a"))
+        ```
         """
-        args = [
-            arg.expr if isinstance(arg, Expr) else Expr.column(arg).expr for arg in args
+        exprs = [
+            arg.expr if isinstance(arg, Expr) else Expr.column(arg).expr
+            for arg in exprs
         ]
-        return DataFrame(self.df.select(*args))
+        return DataFrame(self.df.select(*exprs))
 
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which `predicate` evaluates to `True`.
 
-        Rows for which `predicate` evaluates to `False` or `None` are filtered out.
+        Rows for which `predicate` evaluates to `False` or `None` are filtered
+        out.  If more than one predicate is provided, these predicates will be
+        combined as a logical AND. If more complex logic is required, see the
+        logical operations in `datafusion.functions`.
 
-        Parameters
-        ----------
-        predicates : Predicate expression(s) to filter the DataFrame. If more than one
-        is provided, these predicates will be combined as a logical AND. If more complex
-        logic is required, see logical operations in `datafusion.functions`.
+        Args:
+            predicates: Predicate expression(s) to filter the DataFrame.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after filtering.
         """
         df = self.df
@@ -152,16 +153,11 @@ class DataFrame:
     def with_column(self, name: str, expr: Expr) -> DataFrame:
         """Add an additional column to the DataFrame.
 
-        Parameters
-        ----------
-        name : str
-            Name of the column to add.
-        expr : Expr
-            Expression to compute the column.
+        Args:
+            name: Name of the column to add.
+            expr: Expression to compute the column.
 
         Returns:
-        -------
-        DataFrame
             DataFrame with the new column.
         """
         return DataFrame(self.df.with_column(name, expr.expr))
@@ -174,35 +170,23 @@ class DataFrame:
         The method supports case sensitive rename with wrapping column name
         into one the following symbols (" or ' or `).
 
-        Parameters
-        ----------
-        old_name : str
-            Old column name.
-        new_name : str
-            New column name.
+        Args:
+            old_name: Old column name.
+            new_name: New column name.
 
         Returns:
-        -------
-        DataFrame
             DataFrame with the column renamed.
         """
         return DataFrame(self.df.with_column_renamed(old_name, new_name))
 
     def aggregate(self, group_by: list[Expr], aggs: list[Expr]) -> DataFrame:
-        """Return a new `DataFrame` that aggregates the rows of the current DataFrame.
+        """Aggregates the rows of the current DataFrame.
 
-        First optionally grouping by the given expressions.
-
-        Parameters
-        ----------
-        group_by : list[Expr]
-            List of expressions to group by.
-        aggs : list[Expr]
-            List of expressions to aggregate.
+        Args:
+            group_by: List of expressions to group by.
+            aggs: List of expressions to aggregate.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after aggregation.
         """
         group_by = [e.expr for e in group_by]
@@ -215,9 +199,10 @@ class DataFrame:
         Note that any expression can be turned into a sort expression by
         calling its `sort`  method.
 
+        Args:
+            exprs: Sort expressions, applied in order.
+
         Returns:
-        -------
-        DataFrame
             DataFrame after sorting.
         """
         exprs = [expr.expr for expr in exprs]
@@ -226,30 +211,23 @@ class DataFrame:
     def limit(self, count: int, offset: int = 0) -> DataFrame:
         """Return a new `DataFrame` with a limited number of rows.
 
-        Parameters
-        ----------
-        count : int
-            Number of rows to limit the DataFrame to.
-        offset : int, optional
-            Number of rows to skip, by default 0
+        Args:
+            count: Number of rows to limit the DataFrame to.
+            offset: Number of rows to skip.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after limiting.
         """
         return DataFrame(self.df.limit(count, offset))
 
     def collect(self) -> list[pa.RecordBatch]:
-        """Execute this `DataFrame` and collect `pyarrow.RecordBatch`es into memory.
+        """Execute this `DataFrame` and collect results into memory.
 
         Prior to calling `collect`, modifying a DataFrme simply updates a plan
         (no actual computation is performed). Calling `collect` triggers the
         computation.
 
         Returns:
-        -------
-        list[pa.RecordBatch]
             List of `pyarrow.RecordBatch`es collected from the DataFrame.
         """
         return self.df.collect()
@@ -258,29 +236,27 @@ class DataFrame:
         """Cache the DataFrame as a memory table.
 
         Returns:
-        -------
-        DataFrame
             Cached DataFrame.
         """
         return DataFrame(self.df.cache())
 
     def collect_partitioned(self) -> list[list[pa.RecordBatch]]:
-        """Execute this DataFrame and collect all results into a list of list of `pyarrow.RecordBatch`es maintaining the input partitioning.
+        """Execute this DataFrame and collect all partitioned results.
+
+        This operation returns `pyarrow.RecordBatch`es maintaining the input
+        partitioning.
 
         Returns:
-        -------
-        list[list[pa.RecordBatch]]
-            List of list of `pyarrow.RecordBatch`es collected from the DataFrame.
+            List of list of `pyarrow.RecordBatch`es collected from the
+                DataFrame.
         """
         return self.df.collect_partitioned()
 
     def show(self, num: int = 20) -> None:
         """Execute the DataFrame and print the result to the console.
 
-        Parameters
-        ----------
-        num : int, optional
-            Number of lines to show, by default 20
+        Args:
+            num: Number of lines to show.
         """
         self.df.show(num)
 
@@ -288,8 +264,6 @@ class DataFrame:
         """Return a new `DataFrame` with all duplicated rows removed.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after removing duplicates.
         """
         return DataFrame(self.df.distinct())
@@ -300,20 +274,18 @@ class DataFrame:
         join_keys: tuple[list[str], list[str]],
         how: str,
     ) -> DataFrame:
-        """Join this `DataFrame` with another `DataFrame`  using explicitly specified columns.
+        """Join this `DataFrame` with another `DataFrame`.
 
-        Parameters
-        ----------
-        right : DataFrame
-            Other DataFrame to join with.
-        join_keys : tuple[list[str], list[str]]
-            Tuple of two lists of column names to join on.
-        how : str
-            Type of join to perform. Supported types are "inner", "left", "right", "full", "semi", "anti".
+        Join keys are a pair of lists of column names in the left and right
+        dataframes, respectively. These lists must have the same length.
+
+        Args:
+            right: Other DataFrame to join with.
+            join_keys: Tuple of two lists of column names to join on.
+            how: Type of join to perform. Supported types are "inner", "left",
+                "right", "full", "semi", "anti".
 
         Returns:
-        -------
-        DataFrame
             DataFrame after join.
         """
         return DataFrame(self.df.join(right.df, join_keys, how))
@@ -323,16 +295,11 @@ class DataFrame:
 
         If `analyze` is specified, runs the plan and reports metrics.
 
-        Parameters
-        ----------
-        verbose : bool, optional
-            If `True`, more details will be included, by default False
-        analyze : bool, optional
-            If `True`, the plan will run and metrics reported, by default False
+        Args:
+            verbose: If `True`, more details will be included.
+            analyze: If `True`, the plan will run and metrics reported.
 
         Returns:
-        -------
-        DataFrame
             DataFrame with the explanation of its plan.
         """
         return DataFrame(self.df.explain(verbose, analyze))
@@ -341,8 +308,6 @@ class DataFrame:
         """Return the unoptimized `LogicalPlan` that comprises this `DataFrame`.
 
         Returns:
-        -------
-        LogicalPlan
             Unoptimized logical plan.
         """
         return self.df.logical_plan()
@@ -351,8 +316,6 @@ class DataFrame:
         """Return the optimized `LogicalPlan` that comprises this `DataFrame`.
 
         Returns:
-        -------
-        LogicalPlan
             Optimized logical plan.
         """
         return self.df.optimized_logical_plan()
@@ -361,8 +324,6 @@ class DataFrame:
         """Return the execution/physical plan that comprises this `DataFrame`.
 
         Returns:
-        -------
-        ExecutionPlan
             Execution plan.
         """
         return self.df.execution_plan()
@@ -372,49 +333,37 @@ class DataFrame:
 
         The batches allocation uses a round-robin algorithm.
 
-        Parameters
-        ----------
-        num : int
-            Number of partitions to repartition the DataFrame into.
+        Args:
+            num: Number of partitions to repartition the DataFrame into.
 
         Returns:
-        -------
-        DataFrame
             Repartitioned DataFrame.
         """
         return DataFrame(self.df.repartition(num))
 
-    def repartition_by_hash(self, *args: Expr, num: int) -> DataFrame:
-        """Repartition a DataFrame into `num` partitions using a hash partitioning scheme.
+    def repartition_by_hash(self, *exprs: Expr, num: int) -> DataFrame:
+        """Repartition a DataFrame using a hash partitioning scheme.
 
-        Parameters
-        ----------
-        num : int
-            Number of partitions to repartition the DataFrame into.
+        Args:
+            exprs: Expressions to evaluate and perform hashing on.
+            num: Number of partitions to repartition the DataFrame into.
 
         Returns:
-        -------
-        DataFrame
             Repartitioned DataFrame.
         """
-        args = [expr.expr for expr in args]
-        return DataFrame(self.df.repartition_by_hash(*args, num=num))
+        exprs = [expr.expr for expr in exprs]
+        return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the union of two `DataFrame`s.
 
         The two `DataFrame`s must have exactly the same schema.
 
-        Parameters
-        ----------
-        other : DataFrame
-            DataFrame to union with.
-        distinct : bool, optional
-            If `True`, duplicate rows will be removed, by default False
+        Args:
+            other: DataFrame to union with.
+            distinct: If `True`, duplicate rows will be removed.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after union.
         """
         return DataFrame(self.df.union(other.df, distinct))
@@ -425,14 +374,10 @@ class DataFrame:
         The two `DataFrame`s must have exactly the same schema.
         Any duplicate rows are discarded.
 
-        Parameters
-        ----------
-        other : DataFrame
-            DataFrame to union with.
+        Args:
+            other: DataFrame to union with.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after union.
         """
         return DataFrame(self.df.union_distinct(other.df))
@@ -442,14 +387,10 @@ class DataFrame:
 
         The two `DataFrame`s must have exactly the same schema.
 
-        Parameters
-        ----------
-        other : DataFrame
-            DataFrame to intersect with.
+        Args:
+            other:  DataFrame to intersect with.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after intersection.
         """
         return DataFrame(self.df.intersect(other.df))
@@ -459,14 +400,10 @@ class DataFrame:
 
         The two `DataFrame`s must have exactly the same schema.
 
-        Parameters
-        ----------
-        other : DataFrame
-            DataFrame to calculate exception with.
+        Args:
+            other: DataFrame to calculate exception with.
 
         Returns:
-        -------
-        DataFrame
             DataFrame after exception.
         """
         return DataFrame(self.df.except_all(other.df))
@@ -474,10 +411,9 @@ class DataFrame:
     def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
         """Execute the `DataFrame`  and write the results to a CSV file.
 
-        Parameters
-        ----------
-        path : str
-            Path of the CSV file to write.
+        Args:
+            path: Path of the CSV file to write.
+            with_header: If true, output the CSV header row.
         """
         self.df.write_csv(str(path), with_header)
 
@@ -489,24 +425,18 @@ class DataFrame:
     ) -> None:
         """Execute the `DataFrame` and write the results to a Parquet file.
 
-        Parameters
-        ----------
-        path : str
-            Path of the Parquet file to write.
-        compression : str, optional
-            Compression type to use, by default "uncompressed"
-        compression_level : int | None, optional
-            Compression level to use, by default None
+        Args:
+            path: Path of the Parquet file to write.
+            compression: Compression type to use.
+            compression_level: Compression level to use.
         """
         self.df.write_parquet(str(path), compression, compression_level)
 
     def write_json(self, path: str | pathlib.Path) -> None:
         """Execute the `DataFrame` and write the results to a JSON file.
 
-        Parameters
-        ----------
-        path : str
-            Path of the JSON file to write.
+        Args:
+            path: Path of the JSON file to write.
         """
         self.df.write_json(str(path))
 
@@ -514,18 +444,24 @@ class DataFrame:
         """Execute the `DataFrame` and convert it into an Arrow Table.
 
         Returns:
-        -------
-        pa.Table
             Arrow Table.
         """
         return self.df.to_arrow_table()
 
     def execute_stream(self) -> RecordBatchStream:
-        """Executes this DataFrame and returns a stream over a single partition."""
+        """Executes this DataFrame and returns a stream over a single partition.
+
+        Returns:
+            Record Batch Stream over a single partition.
+        """
         return RecordBatchStream(self.df.execute_stream())
 
     def execute_stream_partitioned(self) -> list[RecordBatchStream]:
-        """Executes this DataFrame and returns a stream for each partition."""
+        """Executes this DataFrame and returns a stream for each partition.
+
+        Returns:
+            One record batch stream per partition.
+        """
         streams = self.df.execute_stream_partitioned()
         return [RecordBatchStream(rbs) for rbs in streams]
 
@@ -533,8 +469,6 @@ class DataFrame:
         """Execute the `DataFrame` and convert it into a Pandas DataFrame.
 
         Returns:
-        -------
-        pd.DataFrame
             Pandas DataFrame.
         """
         return self.df.to_pandas()
@@ -543,8 +477,6 @@ class DataFrame:
         """Execute the `DataFrame` and convert it into a list of dictionaries.
 
         Returns:
-        -------
-        list[dict[str, Any]]
             List of dictionaries.
         """
         return self.df.to_pylist()
@@ -553,8 +485,6 @@ class DataFrame:
         """Execute the `DataFrame` and convert it into a dictionary of lists.
 
         Returns:
-        -------
-        dict[str, list[Any]]
             Dictionary of lists.
         """
         return self.df.to_pydict()
@@ -563,8 +493,6 @@ class DataFrame:
         """Execute the `DataFrame` and convert it into a Polars DataFrame.
 
         Returns:
-        -------
-        pl.DataFrame
             Polars DataFrame.
         """
         return self.df.to_polars()
@@ -576,8 +504,6 @@ class DataFrame:
         count, which may be slow for large or complicated DataFrames.
 
         Returns:
-        -------
-        int
             Number of rows in the DataFrame.
         """
         return self.df.count()
@@ -588,6 +514,15 @@ class DataFrame:
         return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
 
     def unnest_columns(self, *columns: str, preserve_nulls: bool = True) -> DataFrame:
-        """Expand columns of arrays into a single row per array element."""
+        """Expand columns of arrays into a single row per array element.
+
+        Args:
+            columns: Column names to perform unnest operation on.
+            preserve_nulls: If False, rows with null entries will not be
+                returned.
+
+        Returns:
+            A DataFrame with the columns expanded.
+        """
         columns = [c for c in columns]
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
