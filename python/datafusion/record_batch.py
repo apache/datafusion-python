@@ -15,7 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module provides the classes for handling record batches, which are typically the result of dataframe `execute_stream` operations."""
+"""This module provides the classes for handling record batches.
+
+These are typically the result of dataframe `execute_stream` operations.
+"""
 
 from __future__ import annotations
 
@@ -43,7 +46,10 @@ class RecordBatch:
 
 
 class RecordBatchStream:
-    """This class represents a stream of record batches, typically as the result of a DataFrame `execute_stream` operation."""
+    """This class represents a stream of record batches.
+
+    These are typically the result of a ``DataFrame::execute_stream`` operation.
+    """
 
     def __init__(self, record_batch_stream: df_internal.RecordBatchStream) -> None:
         """This constructor is typically not called by the end user."""
