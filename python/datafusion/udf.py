@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module provides the user defined functions for evaluation of dataframes."""
+"""Provides the user defined functions for evaluation of dataframes."""
 
 from __future__ import annotations
 
@@ -90,7 +90,10 @@ class ScalarUDF:
         return_type: _R,
         volatility: Volatility | str,
     ) -> None:
-        """Instantiate a scalar user defined function (UDF)."""
+        """Instantiate a scalar user defined function (UDF).
+
+        See helper method ``udf`` for argument details.
+        """
         self.udf = df_internal.ScalarUDF(
             name, func, input_types, return_type, str(volatility)
         )
@@ -120,7 +123,7 @@ class ScalarUDF:
                 must be of the same length as the number of arguments.
             return_type: The data type of the return value from the python
                 function.
-            volatility: See ~`Volatility` for allowed values.
+            volatility: See ``Volatility`` for allowed values.
             name: A descriptive name for the function.
 
         Returns:
@@ -186,7 +189,7 @@ class AggregateUDF:
     ) -> None:
         """Instantiate a user defined aggregate function (UDAF).
 
-        See ~`Aggregate::udaf` for a convenience function and arugment
+        See ``Aggregate::udaf`` for a convenience function and arugment
         descriptions.
         """
         self.udf = df_internal.AggregateUDF(

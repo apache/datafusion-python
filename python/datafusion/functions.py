@@ -34,7 +34,10 @@ def isnan(expr: Expr) -> Expr:
 
 
 def nullif(expr1: Expr, expr2: Expr) -> Expr:
-    """Returns NULL if expr1 equals expr2; otherwise it returns expr1. This can be used to perform the inverse operation of the COALESCE expression."""
+    """Returns NULL if expr1 equals expr2; otherwise it returns expr1.
+
+    This can be used to perform the inverse operation of the COALESCE expression.
+    """
     return Expr(f.nullif(expr1.expr, expr2.expr))
 
 
@@ -86,19 +89,26 @@ def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
 def digest(value: Expr, method: Expr) -> Expr:
     """Computes the binary hash of an expression using the specified algorithm.
 
-    Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
+    Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s,
+    blake2b, and blake3.
     """
     return Expr(f.digest(value.expr, method.expr))
 
 
 def concat(*args: Expr) -> Expr:
-    """Concatenates the text representations of all the arguments. NULL arguments are ignored."""
+    """Concatenates the text representations of all the arguments.
+
+    NULL arguments are ignored.
+    """
     args = [arg.expr for arg in args]
     return Expr(f.concat(*args))
 
 
 def concat_ws(separator: str, *args: Expr) -> Expr:
-    """Concatenates the list `args` with the separator. `NULL` arugments are ignored. `separator` should not be `NULL`."""
+    """Concatenates the list `args` with the separator.
+
+    `NULL` arugments are ignored. `separator` should not be `NULL`.
+    """
     args = [arg.expr for arg in args]
     return Expr(f.concat_ws(separator, *args))
 
@@ -124,7 +134,10 @@ def count_star() -> Expr:
 
 
 def case(expr: Expr) -> CaseBuilder:
-    """Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression."""
+    """Create a ``CaseBuilder`` to match cases for the expression ``expr``.
+
+    See ``datafusion.expr.CaseBuilder`` for detailed usage of ``CaseBuilder``.
+    """
     return CaseBuilder(f.case(expr.expr))
 
 
@@ -284,7 +297,10 @@ def factorial(arg: Expr) -> Expr:
 
 
 def find_in_set(string: Expr, string_list: Expr) -> Expr:
-    """Returns a value in the range of 1 to N if the string is in the string list `string_list` consisting of N substrings.
+    """Find a string in a list of strings.
+
+    Returns a value in the range of 1 to N if the string is in the string list
+    `string_list` consisting of N substrings.
 
     The string list is a string composed of substrings separated by `,` characters.
     """
@@ -302,7 +318,11 @@ def gcd(x: Expr, y: Expr) -> Expr:
 
 
 def initcap(string: Expr) -> Expr:
-    """Converts the first letter of each word in `string` in uppercase and the remaining characters in lowercase."""
+    """Set the initial letter of each word to capital.
+
+    Converts the first letter of each word in `string` to uppercase and the remaining
+    characters to lowercase.
+    """
     return Expr(f.initcap(string.expr))
 
 
@@ -360,7 +380,12 @@ def lower(arg: Expr) -> Expr:
 
 
 def lpad(string: Expr, count: Expr, characters: Expr | None = None) -> Expr:
-    """Extends the string to length length by prepending the characters fill (a space by default). If the string is already longer than length then it is truncated (on the right)."""
+    """Add left padding to a string.
+
+    Extends the string to length length by prepending the characters fill (a
+    space by default). If the string is already longer than length then it is
+    truncated (on the right).
+    """
     characters = characters if characters is not None else Expr.literal(" ")
     return Expr(f.lpad(string.expr, count.expr, characters.expr))
 
@@ -390,7 +415,8 @@ def overlay(
 ) -> Expr:
     """Replace a substring with a new substring.
 
-    Replace the substring of string that starts at the `start`'th character and extends for `length` characters with new substring.
+    Replace the substring of string that starts at the `start`'th character and
+    extends for `length` characters with new substring.
     """
     if length is None:
         return Expr(f.overlay(string.expr, substring.expr, start.expr))
@@ -429,14 +455,22 @@ def radians(arg: Expr) -> Expr:
 
 
 def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
-    """Tests a string using a regular expression returning true if at least one match, false otherwise."""
+    """Find if any regular expression (regex) matches exist.
+
+    Tests a string using a regular expression returning true if at least one match,
+    false otherwise.
+    """
     if flags is not None:
         flags = flags.expr
     return Expr(f.regexp_like(string.expr, regex.expr, flags))
 
 
 def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
-    """Returns an array with each element containing the leftmost-first match of the corresponding index in `regex` to string in `string`."""
+    """Perform regular expression (regex) matching.
+
+    Returns an array with each element containing the leftmost-first match of the
+    corresponding index in `regex` to string in `string`.
+    """
     if flags is not None:
         flags = flags.expr
     return Expr(f.regexp_match(string.expr, regex.expr, flags))
@@ -539,7 +573,11 @@ def sinh(arg: Expr) -> Expr:
 
 
 def split_part(string: Expr, delimiter: Expr, index: Expr) -> Expr:
-    """Splits a string based on a delimiter and picks out the desired field based on the index."""
+    """Split a string and return one part.
+
+    Splits a string based on a delimiter and picks out the desired field based
+    on the index.
+    """
     return Expr(f.split_part(string.expr, delimiter.expr, index.expr))
 
 
@@ -887,22 +925,30 @@ def array_has(first_array: Expr, second_array: Expr) -> Expr:
 
 
 def array_has_all(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if each element of the second array appears in the first array. Otherwise, it returns false."""
+    """Determines if there is complete overlap ``second_array`` in ``first_array``.
+
+    Returns true if each element of the second array appears in the first array.
+    Otherwise, it returns false.
+    """
     return Expr(f.array_has_all(first_array.expr, second_array.expr))
 
 
 def array_has_any(first_array: Expr, second_array: Expr) -> Expr:
-    """Returns true if at least one element of the second array appears in the first array. Otherwise, it returns false."""
+    """Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+    Returns true if at least one element of the second array appears in the first
+    array. Otherwise, it returns false.
+    """
     return Expr(f.array_has_any(first_array.expr, second_array.expr))
 
 
 def array_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
-    """Searches for an element in the array and returns the position of the first occurrence."""
+    """Return the position of the first occurrence of ``element`` in ``array``."""
     return Expr(f.array_position(array.expr, element.expr, index))
 
 
 def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
-    """Searches for an element in the array and returns the position of the first occurrence.
+    """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for `array_position`.
     """
@@ -910,7 +956,7 @@ def array_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 
 
 def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
-    """Searches for an element in the array and returns the position of the first occurrence.
+    """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for `array_position`.
     """
@@ -918,7 +964,7 @@ def list_position(array: Expr, element: Expr, index: int | None = 1) -> Expr:
 
 
 def list_indexof(array: Expr, element: Expr, index: int | None = 1) -> Expr:
-    """Searches for an element in the array and returns the position of the first occurrence.
+    """Return the position of the first occurrence of ``element`` in ``array``.
 
     This is an alias for `array_position`.
     """
@@ -1035,12 +1081,12 @@ def array_repeat(element: Expr, count: Expr) -> Expr:
 
 
 def array_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces the first occurrence of the specified element with another specified element."""
+    """Replaces the first occurrence of ``from_val`` with ``to_val``."""
     return Expr(f.array_replace(array.expr, from_val.expr, to_val.expr))
 
 
 def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces the first occurrence of the specified element with another specified element.
+    """Replaces the first occurrence of ``from_val`` with ``to_val``.
 
     This is an alias for `array_replace`.
     """
@@ -1048,12 +1094,19 @@ def list_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
 
 
 def array_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr:
-    """Replaces the first `max` occurrences of the specified element with another specified element."""
+    """Replace `n` occurrences of ``from_val`` with ``to_val``.
+
+    Replaces the first `max` occurrences of the specified element with another
+    specified element.
+    """
     return Expr(f.array_replace_n(array.expr, from_val.expr, to_val.expr, max.expr))
 
 
 def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr:
-    """Replaces the first `max` occurrences of the specified element with another specified element.
+    """Replace `n` occurrences of ``from_val`` with ``to_val``.
+
+    Replaces the first `max` occurrences of the specified element with another
+    specified element.
 
     This is an alias for `array_replace_n`.
     """
@@ -1061,12 +1114,12 @@ def list_replace_n(array: Expr, from_val: Expr, to_val: Expr, max: Expr) -> Expr
 
 
 def array_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces all occurrences of the specified element with another specified element."""
+    """Replaces all occurrences of ``from_val`` with ``to_val``."""
     return Expr(f.array_replace_all(array.expr, from_val.expr, to_val.expr))
 
 
 def list_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
-    """Replaces all occurrences of the specified element with another specified element.
+    """Replaces all occurrences of ``from_val`` with ``to_val``.
 
     This is an alias for `array_replace_all`.
     """
@@ -1104,12 +1157,17 @@ def list_intersect(array1: Expr, array2: Expr) -> Expr:
 
 
 def array_union(array1: Expr, array2: Expr) -> Expr:
-    """Returns an array of the elements in the union of array1 and array2 without duplicates."""
+    """Returns an array of the elements in the union of array1 and array2.
+
+    Duplicate rows will not be returned.
+    """
     return Expr(f.array_union(array1.expr, array2.expr))
 
 
 def list_union(array1: Expr, array2: Expr) -> Expr:
-    """Returns an array of the elements in the union of array1 and array2 without duplicates.
+    """Returns an array of the elements in the union of array1 and array2.
+
+    Duplicate rows will not be returned.
 
     This is an alias for `array_union`.
     """
@@ -1117,7 +1175,7 @@ def list_union(array1: Expr, array2: Expr) -> Expr:
 
 
 def array_except(array1: Expr, array2: Expr) -> Expr:
-    """Returns an array of the elements that appear in `array1` but not in the `array2`."""
+    """Returns an array of the elements that appear in `array1` but not in `array2`."""
     return Expr(f.array_except(array1.expr, array2.expr))
 
 
@@ -1130,15 +1188,19 @@ def list_except(array1: Expr, array2: Expr) -> Expr:
 
 
 def array_resize(array: Expr, size: Expr, value: Expr) -> Expr:
-    """Returns an array with the specified size filled. If `size` is greater than the `array` length, the additional entries will be filled with the given `value`."""
+    """Returns an array with the specified size filled.
+
+    If `size` is greater than the `array` length, the additional entries will be filled
+    with the given `value`.
+    """
     return Expr(f.array_resize(array.expr, size.expr, value.expr))
 
 
 def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
     """Returns an array with the specified size filled.
 
-    If `size` is greater than the `array` length, the additional entries will be filled with the given `value`.
-    This is an alias for `array_resize`.
+    If `size` is greater than the `array` length, the additional entries will be
+    filled with the given `value`. This is an alias for `array_resize`.
     """
     return array_resize(array, size, value)
 
@@ -1160,20 +1222,20 @@ def approx_median(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def approx_percentile_cont(
-    arg: Expr,
+    expr: Expr,
     percentile: Expr,
     num_centroids: int | None = None,
     distinct: bool = False,
 ) -> Expr:
-    """Returns the value that is approximately at a given percentile of a distribution of values."""
+    """Returns the value that is approximately at a given percentile of ``expr``."""
     if num_centroids is None:
         return Expr(
-            f.approx_percentile_cont(arg.expr, percentile.expr, distinct=distinct)
+            f.approx_percentile_cont(expr.expr, percentile.expr, distinct=distinct)
         )
 
     return Expr(
         f.approx_percentile_cont(
-            arg.expr, percentile.expr, num_centroids, distinct=distinct
+            expr.expr, percentile.expr, num_centroids, distinct=distinct
         )
     )
 
@@ -1181,7 +1243,11 @@ def approx_percentile_cont(
 def approx_percentile_cont_with_weight(
     arg: Expr, weight: Expr, percentile: Expr, distinct: bool = False
 ) -> Expr:
-    """Returns the value that is approximately at a given percentile of a distribution of values with associated weights."""
+    """Returns the value of the approximate percentile.
+
+    This function is similar to ``approx_percentile_cont`` except that it uses
+    the associated associated weights.
+    """
     return Expr(
         f.approx_percentile_cont_with_weight(
             arg.expr, weight.expr, percentile.expr, distinct=distinct
@@ -1232,7 +1298,10 @@ def covar_samp(y: Expr, x: Expr) -> Expr:
 
 
 def grouping(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns 1 if the value of the argument in the returned row is a null value."""
+    """Indicates if the expression is aggregated or not.
+
+    Returns 1 if the value of the argument is aggregated, 0 if not.
+    """
     return Expr(f.grouping([arg.expr], distinct=distinct))
 
 
@@ -1301,17 +1370,23 @@ def var_samp(arg: Expr) -> Expr:
 
 
 def regr_avgx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the average of the independent variable `x` for non-null pairs of the inputs."""
+    """Computes the average of the independent variable `x`.
+
+    Only non-null pairs of the inputs are evaluated.
+    """
     return Expr(f.regr_avgx[y.expr, x.expr], distinct)
 
 
 def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the average of the dependent variable `y` for non-null pairs of the inputs."""
+    """Computes the average of the dependent variable ``y``.
+
+    Only non-null pairs of the inputs are evaluated.
+    """
     return Expr(f.regr_avgy[y.expr, x.expr], distinct)
 
 
 def regr_count(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Counts the number of input rows in which both expressions are not null."""
+    """Counts the number of rows in which both expressions are not null."""
     return Expr(f.regr_count[y.expr, x.expr], distinct)
 
 
