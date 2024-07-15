@@ -17,8 +17,8 @@
 
 """This module provides support for using substrait with datafusion.
 
-For additional information about substrait, see https://substrait.io/ for more information
-about substrait.
+For additional information about substrait, see https://substrait.io/ for more
+information about substrait.
 """
 
 from __future__ import annotations
@@ -40,8 +40,8 @@ class Plan:
     def __init__(self, plan: substrait_internal.Plan) -> None:
         """Create a substrait plan.
 
-        The user should not have to call this constructor directly. Rather, it should be created
-        via `Serde` or `Producer` classes in this module.
+        The user should not have to call this constructor directly. Rather, it
+        should be created via `Serde` or `Producer` classes in this module.
         """
         self.plan_internal = plan
 
@@ -49,8 +49,6 @@ class Plan:
         """Encode the plan to bytes.
 
         Returns:
-        -------
-        bytes
             Encoded plan.
         """
         return self.plan_internal.encode()
@@ -64,20 +62,16 @@ class plan(Plan):
 
 
 class Serde:
-    """Provides the serialization and deserialization required to convert to and from a Substrait plan."""
+    """Provides the ``Substrait`` serialization and deserialization."""
 
     @staticmethod
     def serialize(sql: str, ctx: SessionContext, path: str | pathlib.Path) -> None:
         """Serialize a SQL query to a Substrait plan and write it to a file.
 
-        Parameters
-        ----------
-        sql : str
-            SQL query to serialize.
-        ctx : SessionContext
-            SessionContext to use.
-        path : str
-            Path to write the Substrait plan to.
+        Args:
+            sql:SQL query to serialize.
+            ctx: SessionContext to use.
+            path: Path to write the Substrait plan to.
         """
         return substrait_internal.serde.serialize(sql, ctx.ctx, str(path))
 
@@ -85,16 +79,11 @@ class Serde:
     def serialize_to_plan(sql: str, ctx: SessionContext) -> Plan:
         """Serialize a SQL query to a Substrait plan.
 
-        Parameters
-        ----------
-        sql : str
-            SQL query to serialize.
-        ctx : SessionContext
-            SessionContext to use.
+        Args:
+        sql: SQL query to serialize.
+        ctx: SessionContext to use.
 
         Returns:
-        -------
-        plan
             Substrait plan.
         """
         return Plan(substrait_internal.serde.serialize_to_plan(sql, ctx.ctx))
@@ -103,16 +92,11 @@ class Serde:
     def serialize_bytes(sql: str, ctx: SessionContext) -> bytes:
         """Serialize a SQL query to a Substrait plan as bytes.
 
-        Parameters
-        ----------
-        sql : str
-            SQL query to serialize.
-        ctx : SessionContext
-            SessionContext to use.
+        Args:
+            sql: SQL query to serialize.
+            ctx: SessionContext to use.
 
         Returns:
-        -------
-        bytes
             Substrait plan as bytes.
         """
         return substrait_internal.serde.serialize_bytes(sql, ctx.ctx)
@@ -121,14 +105,10 @@ class Serde:
     def deserialize(path: str | pathlib.Path) -> Plan:
         """Deserialize a Substrait plan from a file.
 
-        Parameters
-        ----------
-        path : str
-            Path to read the Substrait plan from.
+        Args:
+            path: Path to read the Substrait plan from.
 
         Returns:
-        -------
-        plan
             Substrait plan.
         """
         return Plan(substrait_internal.serde.deserialize(str(path)))
@@ -137,14 +117,10 @@ class Serde:
     def deserialize_bytes(proto_bytes: bytes) -> Plan:
         """Deserialize a Substrait plan from bytes.
 
-        Parameters
-        ----------
-        proto_bytes : bytes
-            Bytes to read the Substrait plan from.
+        Args:
+            proto_bytes: Bytes to read the Substrait plan from.
 
         Returns:
-        -------
-        plan
             Substrait plan.
         """
         return Plan(substrait_internal.serde.deserialize_bytes(proto_bytes))
@@ -164,16 +140,11 @@ class Producer:
     def to_substrait_plan(logical_plan: LogicalPlan, ctx: SessionContext) -> Plan:
         """Convert a DataFusion LogicalPlan to a Substrait plan.
 
-        Parameters
-        ----------
-        plan : LogicalPlan
-            LogicalPlan to convert.
-        ctx : SessionContext
-            SessionContext to use.
+        Args:
+            logical_plan: LogicalPlan to convert.
+            ctx: SessionContext to use.
 
         Returns:
-        -------
-        plan
             Substrait plan.
         """
         return Plan(
@@ -195,16 +166,11 @@ class Consumer:
     def from_substrait_plan(ctx: SessionContext, plan: Plan) -> LogicalPlan:
         """Convert a Substrait plan to a DataFusion LogicalPlan.
 
-        Parameters
-        ----------
-        ctx : SessionContext
-            SessionContext to use.
-        plan : plan
-            Substrait plan to convert.
+        Args:
+            ctx: SessionContext to use.
+            plan: Substrait plan to convert.
 
         Returns:
-        -------
-        LogicalPlan
             LogicalPlan.
         """
         return substrait_internal.consumer.from_substrait_plan(
