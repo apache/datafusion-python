@@ -55,6 +55,10 @@ jobs:
           version: '3.20.2'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
+      # To remove once https://github.com/MaterializeInc/rust-protobuf-native/issues/20 is resolved
+      - name: Install gtest
+        uses: MarkusJx/googletest-installer@v1.1
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
