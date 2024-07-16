@@ -153,7 +153,7 @@ def test_from_arrow_table(ctx):
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -215,7 +215,7 @@ def test_from_pylist(ctx):
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -229,7 +229,7 @@ def test_from_pydict(ctx):
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -245,7 +245,7 @@ def test_from_pandas(ctx):
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -261,7 +261,7 @@ def test_from_polars(ctx):
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 

@@ -634,7 +634,7 @@ def test_to_pandas(df):
 
     # Convert datafusion dataframe to pandas dataframe
     pandas_df = df.to_pandas()
-    assert type(pandas_df) == pd.DataFrame
+    assert isinstance(pandas_df, pd.DataFrame)
     assert pandas_df.shape == (3, 3)
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
@@ -645,7 +645,7 @@ def test_empty_to_pandas(df):
 
     # Convert empty datafusion dataframe to pandas dataframe
     pandas_df = df.limit(0).to_pandas()
-    assert type(pandas_df) == pd.DataFrame
+    assert isinstance(pandas_df, pd.DataFrame)
     assert pandas_df.shape == (0, 3)
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
@@ -656,7 +656,7 @@ def test_to_polars(df):
 
     # Convert datafusion dataframe to polars dataframe
     polars_df = df.to_polars()
-    assert type(polars_df) == pl.DataFrame
+    assert isinstance(polars_df, pl.DataFrame)
     assert polars_df.shape == (3, 3)
     assert set(polars_df.columns) == {"a", "b", "c"}
 
@@ -667,7 +667,7 @@ def test_empty_to_polars(df):
 
     # Convert empty datafusion dataframe to polars dataframe
     polars_df = df.limit(0).to_polars()
-    assert type(polars_df) == pl.DataFrame
+    assert isinstance(polars_df, pl.DataFrame)
     assert polars_df.shape == (0, 3)
     assert set(polars_df.columns) == {"a", "b", "c"}
 
@@ -675,7 +675,7 @@ def test_empty_to_polars(df):
 def test_to_arrow_table(df):
     # Convert datafusion dataframe to pyarrow Table
     pyarrow_table = df.to_arrow_table()
-    assert type(pyarrow_table) == pa.Table
+    assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (3, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
@@ -715,7 +715,7 @@ def test_execute_stream_partitioned(df):
 def test_empty_to_arrow_table(df):
     # Convert empty datafusion dataframe to pyarrow Table
     pyarrow_table = df.limit(0).to_arrow_table()
-    assert type(pyarrow_table) == pa.Table
+    assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (0, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
