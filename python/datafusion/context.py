@@ -288,9 +288,8 @@ class RuntimeConfig:
         This pool works best when you know beforehand the query has multiple spillable
         operators that will likely all need to spill. Sometimes it will cause spills
         even when there was sufficient memory (reserved for other operators) to avoid
-        doing so.
+        doing so::
 
-        ```text
             ┌───────────────────────z──────────────────────z───────────────┐
             │                       z                      z               │
             │                       z                      z               │
@@ -299,18 +298,16 @@ class RuntimeConfig:
             │                       z                      z               │
             │                       z                      z               │
             └───────────────────────z──────────────────────z───────────────┘
-        ```
 
         Args:
             size: Size of the memory pool in bytes.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new ``RuntimeConfig`` object with the updated setting.
 
-        Examples usage:
-        ```python
-        config = RuntimeConfig().with_fair_spill_pool(1024)
-        ```
+        Examples usage::
+
+            config = RuntimeConfig().with_fair_spill_pool(1024)
         """
         self.config_internal = self.config_internal.with_fair_spill_pool(size)
         return self
@@ -328,10 +325,9 @@ class RuntimeConfig:
         Returns:
             A new `RuntimeConfig` object with the updated setting.
 
-        Example usage:
-        ```python
-        config = RuntimeConfig().with_greedy_memory_pool(1024)
-        ```
+        Example usage::
+
+            config = RuntimeConfig().with_greedy_memory_pool(1024)
         """
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
         return self
@@ -345,10 +341,9 @@ class RuntimeConfig:
         Returns:
             A new `RuntimeConfig` object with the updated setting.
 
-        Example usage:
-        ```python
-        config = RuntimeConfig().with_temp_file_path("/tmp")
-        ```
+        Example usage::
+
+            config = RuntimeConfig().with_temp_file_path("/tmp")
         """
         self.config_internal = self.config_internal.with_temp_file_path(str(path))
         return self
@@ -378,10 +373,9 @@ class SQLOptions:
         Returns:
             A new `SQLOptions` object with the updated setting.
 
-        Example usage:
-        ```python
+        Example usage::
+
             options = SQLOptions().with_allow_ddl(True)
-        ```
         """
         self.options_internal = self.options_internal.with_allow_ddl(allow)
         return self
@@ -397,10 +391,9 @@ class SQLOptions:
         Returns:
             A new `SQLOptions` object with the updated setting.
 
-        Example usage:
-        ```python
+        Example usage::
+
             options = SQLOptions().with_allow_dml(True)
-        ```
         """
         self.options_internal = self.options_internal.with_allow_dml(allow)
         return self
@@ -414,10 +407,9 @@ class SQLOptions:
         Returns:
             A new `SQLOptions` object with the updated setting.
 
-        Example usage:
-        ```python
+        Example usage::
+
             options = SQLOptions().with_allow_statements(True)
-        ```
         """
         self.options_internal = self.options_internal.with_allow_statements(allow)
         return self
@@ -446,14 +438,12 @@ class SessionContext:
         Example usage:
 
         The following example demostrates how to use the context to execute
-        a query against a CSV data source using the `DataFrame` API:
+        a query against a CSV data source using the ``DataFrame`` API::
 
-        ```python
-        from datafusion import SessionContext
+            from datafusion import SessionContext
 
-        ctx = SessionContext()
-        df = ctx.read_csv("data.csv")
-        ```
+            ctx = SessionContext()
+            df = ctx.read_csv("data.csv")
         """
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if config is not None else None

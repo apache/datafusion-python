@@ -119,11 +119,10 @@ class DataFrame:
         The following example will return 3 columns from the original dataframe.
         The first two columns will be the original column `a` and `b` since the
         string "a" is assumed to refer to column selection. Also a duplicate of
-        column `a` will be returned with the column name `alternate_a`.
+        column `a` will be returned with the column name `alternate_a`::
 
-        ```python
-        df = df.select("a", col("b"), col("a").alias("alternate_a"))
-        ```
+            df = df.select("a", col("b"), col("a").alias("alternate_a"))
+
         """
         exprs = [
             arg.expr if isinstance(arg, Expr) else Expr.column(arg).expr
@@ -243,11 +242,11 @@ class DataFrame:
     def collect_partitioned(self) -> list[list[pa.RecordBatch]]:
         """Execute this DataFrame and collect all partitioned results.
 
-        This operation returns `pyarrow.RecordBatch`es maintaining the input
+        This operation returns ``RecordBatch`` maintaining the input
         partitioning.
 
         Returns:
-            List of list of `pyarrow.RecordBatch`es collected from the
+            List of list of ``RecordBatch`` collected from the
                 DataFrame.
         """
         return self.df.collect_partitioned()

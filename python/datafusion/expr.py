@@ -89,7 +89,7 @@ class Expr:
     """Expression object.
 
     Expressions are one of the core concepts in DataFusion. See
-    [the online help](https://datafusion.apache.org/python/user-guide/common-operations/expressions.html)
+    https://datafusion.apache.org/python/user-guide/common-operations/expressions.html
     for more information.
     """
 
@@ -364,7 +364,7 @@ class WindowFrame:
 class WindowFrameBound:
     """Defines a single window frame bound.
 
-    ```WindowFrame`` typically requires a start and end bound.
+    ``WindowFrame`` typically requires a start and end bound.
     """
 
     def __init__(self, frame_bound: expr_internal.WindowFrameBound) -> None:
@@ -395,18 +395,16 @@ class WindowFrameBound:
 class CaseBuilder:
     """Builder class for constructing case statements.
 
-    An example usage would be as follows:
+    An example usage would be as follows::
 
-    ```python
-    import datafusion.functions as f
-    from datafusion import lit, col
-    df.select(
-        f.case(col("column_a")
-        .when(lit(1), lit("One"))
-        .when(lit(2), lit("Two"))
-        .otherwise(lit("Unknown"))
-    )
-    ```
+        import datafusion.functions as f
+        from datafusion import lit, col
+        df.select(
+            f.case(col("column_a")
+            .when(lit(1), lit("One"))
+            .when(lit(2), lit("Two"))
+            .otherwise(lit("Unknown"))
+        )
     """
 
     def __init__(self, case_builder: expr_internal.CaseBuilder) -> None:
