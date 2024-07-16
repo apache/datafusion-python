@@ -15,7 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module provides ``BaseInputSource`` which a user can extend to provide a custom input source."""
+"""This module provides ``BaseInputSource``.
+
+A user can extend this to provide a custom input source.
+"""
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -24,7 +27,10 @@ from datafusion.common import SqlTable
 
 
 class BaseInputSource(ABC):
-    """If a consuming library would like to provider their own InputSource this is the class they should extend to write their own.
+    """Base Input Source class.
+
+    If a consuming library would like to provider their own InputSource this is
+    the class they should extend to write their own.
 
     Once completed the Plugin InputSource can be registered with the
     SessionContext to ensure that it will be used in order

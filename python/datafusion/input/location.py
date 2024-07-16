@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""This module provides ``LocationInputPlugin`` which is the default input source for DataFusion."""
+"""The default input source for DataFusion."""
 
 import os
 import glob
@@ -26,7 +26,10 @@ from datafusion.input.base import BaseInputSource
 
 
 class LocationInputPlugin(BaseInputSource):
-    """Input Plugin for everything, which can be read in from a file (on disk, remote etc.)."""
+    """Input Plugin for everything.
+
+    This can be read in from a file (on disk, remote etc.).
+    """
 
     def is_correct_input(self, input_item: Any, table_name: str, **kwargs):
         """Returns `True` if the input is valid."""
