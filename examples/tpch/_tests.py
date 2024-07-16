@@ -78,10 +78,7 @@ def check_q17(df):
         ("q08_market_share", "q8"),
         ("q09_product_type_profit_measure", "q9"),
         ("q10_returned_item_reporting", "q10"),
-        pytest.param(
-            "q11_important_stock_identification",
-            "q11",
-        ),
+        ("q11_important_stock_identification", "q11"),
         ("q12_ship_mode_order_priority", "q12"),
         ("q13_customer_distribution", "q13"),
         ("q14_promotion_effect", "q14"),
@@ -99,8 +96,9 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
     module = import_module(query_code)
     df = module.df
 
-    # Treat q17 as a special case. The answer file does not match the spec. Running at
-    # scale factor 1, we have manually verified this result does match the expected value.
+    # Treat q17 as a special case. The answer file does not match the spec.
+    # Running at scale factor 1, we have manually verified this result does
+    # match the expected value.
     if answer_file == "q17":
         return check_q17(df)
 
