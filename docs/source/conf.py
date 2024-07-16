@@ -80,6 +80,25 @@ autodoc_default_options = {
 
 autosummary_generate = True
 
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    exclude_functions = "__init__"
+    exclude_classes = ("Expr", "DataFrame")
+
+    class_name = ""
+    if hasattr(obj, "__qualname__"):
+        if obj.__qualname__ is not None:
+            class_name = obj.__qualname__.split(".")[0]
+
+    should_exclude = name in exclude_functions and class_name in exclude_classes
+
+    return True if should_exclude else None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", autodoc_skip_member)
+
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for

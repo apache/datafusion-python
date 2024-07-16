@@ -81,3 +81,4 @@ max-doc-length = 88
 "examples/*" = ["D"]
 "dev/*" = ["D"]
 "benchmarks/*" = ["D", "F"]
+"docs/*" = ["D"]
