@@ -29,7 +29,6 @@ dependencies:
   - toml
   - importlib_metadata
   - python>=3.10
-  - typing_extensions
   # Packages useful for building distributions and releasing
   - mamba
   - conda-build
