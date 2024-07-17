@@ -152,6 +152,11 @@ impl DatasetExec {
 }
 
 impl ExecutionPlan for DatasetExec {
+    fn name(&self) -> &str {
+        // [ExecutionPlan::name] docs recommends forwarding to `static_name`
+        Self::static_name()
+    }
+
     /// Return a reference to Any that can be used for downcasting
     fn as_any(&self) -> &dyn Any {
         self
