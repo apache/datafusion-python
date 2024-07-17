@@ -18,8 +18,6 @@
 from datafusion import SessionContext
 from datafusion import substrait as ss
 
-# TODO add user changing interface note to PR that datafusion.substrait.substrait is simplified to datafusion.substrait
-
 # Create a DataFusion context
 ctx = SessionContext()
 

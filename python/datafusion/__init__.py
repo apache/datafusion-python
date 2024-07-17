@@ -18,7 +18,7 @@
 """DataFusion python package.
 
 This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
-See https://datafusion.apache.org/python/index.html for more information.
+See https://datafusion.apache.org/python for more information.
 """
 
 try:
