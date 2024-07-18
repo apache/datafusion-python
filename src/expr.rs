@@ -583,6 +583,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<placeholder::PyPlaceholder>()?;
     m.add_class::<grouping_set::PyGroupingSet>()?;
     m.add_class::<case::PyCase>()?;
+    m.add_class::<conditional_expr::PyCaseBuilder>()?;
     m.add_class::<cast::PyCast>()?;
     m.add_class::<cast::PyTryCast>()?;
     m.add_class::<between::PyBetween>()?;

@@ -15,6 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""This package provides for input sources.
+
+The primary class used within DataFusion is ``LocationInputPlugin``.
+"""
+
 from .location import LocationInputPlugin
 
 __all__ = [

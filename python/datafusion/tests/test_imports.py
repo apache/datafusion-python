@@ -94,13 +94,24 @@ def test_datafusion_python_version():
 
 
 def test_class_module_is_datafusion():
+    # context
     for klass in [
         SessionContext,
-        DataFrame,
-        ScalarUDF,
-        AggregateUDF,
     ]:
-        assert klass.__module__ == "datafusion"
+        assert klass.__module__ == "datafusion.context"
+
+    # dataframe
+    for klass in [
+        DataFrame,
+    ]:
+        assert klass.__module__ == "datafusion.dataframe"
+
+    # udf
+    for klass in [
+        AggregateUDF,
+        ScalarUDF,
+    ]:
+        assert klass.__module__ == "datafusion.udf"
 
     # expressions
     for klass in [Expr, Column, Literal, BinaryExpr, AggregateFunction]:

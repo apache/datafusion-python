@@ -20,7 +20,7 @@ use std::sync::Arc;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::config::TableParquetOptions;
+use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
@@ -320,6 +320,18 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    #[pyo3(signature = (columns, preserve_nulls=true))]
+    fn unnest_columns(&self, columns: Vec<String>, preserve_nulls: bool) -> PyResult<Self> {
+        let unnest_options = UnnestOptions { preserve_nulls };
+        let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .unnest_columns_with_options(&cols, unnest_options)?;
+        Ok(Self::new(df))
+    }
+
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn intersect(&self, py_df: PyDataFrame) -> PyResult<Self> {
         let new_df = self
@@ -337,13 +349,18 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a CSV file.
-    fn write_csv(&self, path: &str, py: Python) -> PyResult<()> {
+    fn write_csv(&self, path: &str, with_header: bool, py: Python) -> PyResult<()> {
+        let csv_options = CsvOptions {
+            has_header: Some(with_header),
+            ..Default::default()
+        };
         wait_for_future(
             py,
-            self.df
-                .as_ref()
-                .clone()
-                .write_csv(path, DataFrameWriteOptions::new(), None),
+            self.df.as_ref().clone().write_csv(
+                path,
+                DataFrameWriteOptions::new(),
+                Some(csv_options),
+            ),
         )?;
         Ok(())
     }

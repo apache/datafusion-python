@@ -74,7 +74,8 @@ print(
 ctx = df.SessionContext()
 print(ctx)
 
-# TODO we should be applying projections to these table reads to crete relations of different sizes
+# TODO we should be applying projections to these table reads to create relations
+# of different sizes
 
 x_data = pacsv.read_csv(
     src_jn_x, convert_options=pacsv.ConvertOptions(auto_dict_encode=True)

@@ -17,6 +17,7 @@
 import gzip
 import os
 import datetime as dt
+import pathlib
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -35,6 +36,36 @@ from datafusion import (
 
 def test_create_context_no_args():
     SessionContext()
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_runtime_configs(tmp_path, path_to_str):
+    path1 = tmp_path / "dir1"
+    path2 = tmp_path / "dir2"
+
+    path1 = str(path1) if path_to_str else path1
+    path2 = str(path2) if path_to_str else path2
+
+    runtime = RuntimeConfig().with_disk_manager_specified(path1, path2)
+    config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
+    ctx = SessionContext(config, runtime)
+    assert ctx is not None
+
+    db = ctx.catalog("foo").database("bar")
+    assert db is not None
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_temporary_files(tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    runtime = RuntimeConfig().with_temp_file_path(path)
+    config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
+    ctx = SessionContext(config, runtime)
+    assert ctx is not None
+
+    db = ctx.catalog("foo").database("bar")
+    assert db is not None
 
 
 def test_create_context_with_all_valid_args():
@@ -68,7 +99,7 @@ def test_register_record_batches(ctx):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -84,7 +115,7 @@ def test_create_dataframe_registers_unique_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]])
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -104,7 +135,7 @@ def test_create_dataframe_registers_with_defined_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]], name="tbl")
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -118,11 +149,11 @@ def test_from_arrow_table(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -134,7 +165,7 @@ def test_from_arrow_table_with_name(ctx):
 
     # convert to DataFrame with optional name
     df = ctx.from_arrow_table(table, name="tbl")
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert tables[0] == "tbl"
@@ -147,7 +178,7 @@ def test_from_arrow_table_empty(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -162,7 +193,7 @@ def test_from_arrow_table_empty_no_schema(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow_table(table)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
@@ -180,11 +211,11 @@ def test_from_pylist(ctx):
     ]
 
     df = ctx.from_pylist(data)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -194,11 +225,11 @@ def test_from_pydict(ctx):
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
 
     df = ctx.from_pydict(data)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -210,11 +241,11 @@ def test_from_pandas(ctx):
     pandas_df = pd.DataFrame(data)
 
     df = ctx.from_pandas(pandas_df)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -226,11 +257,11 @@ def test_from_polars(ctx):
     polars_df = pd.DataFrame(data)
 
     df = ctx.from_polars(polars_df)
-    tables = list(ctx.tables())
+    tables = list(ctx.catalog().database().names())
 
     assert df
     assert len(tables) == 1
-    assert type(df) == DataFrame
+    assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
 
@@ -273,7 +304,7 @@ def test_register_dataset(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -290,7 +321,7 @@ def test_dataset_filter(ctx, capfd):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
     df = ctx.sql("SELECT a+b, a-b FROM t WHERE a BETWEEN 2 and 3 AND b > 5")
 
     # Make sure the filter was pushed down in Physical Plan
@@ -370,7 +401,7 @@ def test_dataset_filter_nested_data(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     df = ctx.table("t")
 
@@ -468,13 +499,23 @@ def test_read_csv_compressed(ctx, tmp_path):
 
 
 def test_read_parquet(ctx):
-    csv_df = ctx.read_parquet(path="parquet/data/alltypes_plain.parquet")
-    csv_df.show()
+    parquet_df = ctx.read_parquet(path="parquet/data/alltypes_plain.parquet")
+    parquet_df.show()
+    assert parquet_df is not None
+
+    path = pathlib.Path.cwd() / "parquet/data/alltypes_plain.parquet"
+    parquet_df = ctx.read_parquet(path=path)
+    assert parquet_df is not None
 
 
 def test_read_avro(ctx):
-    csv_df = ctx.read_avro(path="testing/data/avro/alltypes_plain.avro")
-    csv_df.show()
+    avro_df = ctx.read_avro(path="testing/data/avro/alltypes_plain.avro")
+    avro_df.show()
+    assert avro_df is not None
+
+    path = pathlib.Path.cwd() / "testing/data/avro/alltypes_plain.avro"
+    avro_df = ctx.read_avro(path=path)
+    assert avro_df is not None
 
 
 def test_create_sql_options():

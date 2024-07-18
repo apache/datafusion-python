@@ -19,6 +19,7 @@ import os
 
 import numpy as np
 import pyarrow as pa
+from pyarrow.csv import write_csv
 import pyarrow.dataset as ds
 import pytest
 from datafusion.object_store import LocalFileSystem
@@ -45,7 +46,7 @@ def test_register_csv(ctx, tmp_path):
         ],
         names=["int", "str", "float"],
     )
-    pa.csv.write_csv(table, path)
+    write_csv(table, path)
 
     with open(path, "rb") as csv_file:
         with gzip.open(gzip_path, "wb") as gzipped_file:
@@ -76,7 +77,13 @@ def test_register_csv(ctx, tmp_path):
     )
     ctx.register_csv("csv3", path, schema=alternative_schema)
 
-    assert ctx.tables() == {"csv", "csv1", "csv2", "csv3", "csv_gzip"}
+    assert ctx.catalog().database().names() == {
+        "csv",
+        "csv1",
+        "csv2",
+        "csv3",
+        "csv_gzip",
+    }
 
     for table in ["csv", "csv1", "csv2", "csv_gzip"]:
         result = ctx.sql(f"SELECT COUNT(int) AS cnt FROM {table}").collect()
@@ -100,14 +107,16 @@ def test_register_csv(ctx, tmp_path):
 def test_register_parquet(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
-    assert ctx.tables() == {"t"}
+    ctx.register_parquet("t1", str(path))
+    assert ctx.catalog().database().names() == {"t", "t1"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
     assert result.to_pydict() == {"cnt": [100]}
 
 
-def test_register_parquet_partitioned(ctx, tmp_path):
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
     (dir_root / "grp=a").mkdir(exist_ok=False)
@@ -124,14 +133,16 @@ def test_register_parquet_partitioned(ctx, tmp_path):
     pa.parquet.write_table(table.slice(0, 3), dir_root / "grp=a/file.parquet")
     pa.parquet.write_table(table.slice(3, 4), dir_root / "grp=b/file.parquet")
 
+    dir_root = str(dir_root) if path_to_str else dir_root
+
     ctx.register_parquet(
         "datapp",
-        str(dir_root),
+        dir_root,
         table_partition_cols=[("grp", "string")],
         parquet_pruning=True,
         file_extension=".parquet",
     )
-    assert ctx.tables() == {"datapp"}
+    assert ctx.catalog().database().names() == {"datapp"}
 
     result = ctx.sql("SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp").collect()
     result = pa.Table.from_batches(result)
@@ -140,12 +151,14 @@ def test_register_parquet_partitioned(ctx, tmp_path):
     assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
 
 
-def test_register_dataset(ctx, tmp_path):
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_register_dataset(ctx, tmp_path, path_to_str):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
+    path = str(path) if path_to_str else path
     dataset = ds.dataset(path, format="parquet")
 
     ctx.register_dataset("t", dataset)
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
@@ -174,6 +187,12 @@ def test_register_json(ctx, tmp_path):
         file_extension="gz",
         file_compression_type="gzip",
     )
+    ctx.register_json(
+        "json_gzip1",
+        str(gzip_path),
+        file_extension="gz",
+        file_compression_type="gzip",
+    )
 
     alternative_schema = pa.schema(
         [
@@ -184,7 +203,14 @@ def test_register_json(ctx, tmp_path):
     )
     ctx.register_json("json3", path, schema=alternative_schema)
 
-    assert ctx.tables() == {"json", "json1", "json2", "json3", "json_gzip"}
+    assert ctx.catalog().database().names() == {
+        "json",
+        "json1",
+        "json2",
+        "json3",
+        "json_gzip",
+        "json_gzip1",
+    }
 
     for table in ["json", "json1", "json2", "json_gzip"]:
         result = ctx.sql(f'SELECT COUNT("B") AS cnt FROM {table}').collect()
@@ -234,7 +260,7 @@ def test_execute(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", pa.array(data))
     ctx.register_parquet("t", path)
 
-    assert ctx.tables() == {"t"}
+    assert ctx.catalog().database().names() == {"t"}
 
     # count
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
@@ -280,9 +306,7 @@ def test_execute(ctx, tmp_path):
 
 
 def test_cast(ctx, tmp_path):
-    """
-    Verify that we can cast
-    """
+    """Verify that we can cast"""
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
 
@@ -379,7 +403,10 @@ def test_simple_select(ctx, tmp_path, arr):
 
 @pytest.mark.parametrize("file_sort_order", (None, [[col("int").sort(True, True)]]))
 @pytest.mark.parametrize("pass_schema", (True, False))
-def test_register_listing_table(ctx, tmp_path, pass_schema, file_sort_order):
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_register_listing_table(
+    ctx, tmp_path, pass_schema, file_sort_order, path_to_str
+):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
     (dir_root / "grp=a/date_id=20201005").mkdir(exist_ok=False, parents=True)
@@ -404,16 +431,18 @@ def test_register_listing_table(ctx, tmp_path, pass_schema, file_sort_order):
         table.slice(5, 10), dir_root / "grp=b/date_id=20201005/file.parquet"
     )
 
+    dir_root = f"file://{dir_root}/" if path_to_str else dir_root
+
     ctx.register_object_store("file://local", LocalFileSystem(), None)
     ctx.register_listing_table(
         "my_table",
-        f"file://{dir_root}/",
+        dir_root,
         table_partition_cols=[("grp", "string"), ("date_id", "int")],
         file_extension=".parquet",
         schema=table.schema if pass_schema else None,
         file_sort_order=file_sort_order,
     )
-    assert ctx.tables() == {"my_table"}
+    assert ctx.catalog().database().names() == {"my_table"}
 
     result = ctx.sql(
         "SELECT grp, COUNT(*) AS count FROM my_table GROUP BY grp"

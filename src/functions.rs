@@ -235,6 +235,12 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
 
 #[pyfunction]
 #[pyo3(signature = (values, regex, flags = None))]
+fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_like(values.expr, regex.expr, flags.map(|x| x.expr)).into())
+}
+
+#[pyfunction]
+#[pyo3(signature = (values, regex, flags = None))]
 fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
@@ -257,12 +263,12 @@ fn regexp_replace(
 }
 /// Creates a new Sort Expr
 #[pyfunction]
-fn order_by(expr: PyExpr, asc: Option<bool>, nulls_first: Option<bool>) -> PyResult<PyExpr> {
+fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PyExpr> {
     Ok(PyExpr {
         expr: datafusion_expr::Expr::Sort(Sort {
             expr: Box::new(expr.expr),
-            asc: asc.unwrap_or(true),
-            nulls_first: nulls_first.unwrap_or(true),
+            asc,
+            nulls_first,
         }),
     })
 }
@@ -516,6 +522,7 @@ expr_fn!(chr, arg, "Returns the character with the given code.");
 expr_fn_vec!(coalesce);
 expr_fn!(cos, num);
 expr_fn!(cosh, num);
+expr_fn!(cot, num);
 expr_fn!(degrees, num);
 expr_fn!(decode, input encoding);
 expr_fn!(encode, input encoding);
@@ -527,6 +534,7 @@ expr_fn!(gcd, x y);
 expr_fn!(initcap, string, "Converts the first letter of each word to upper case and the rest to lower case. Words are sequences of alphanumeric characters separated by non-alphanumeric characters.");
 expr_fn!(isnan, num);
 expr_fn!(iszero, num);
+expr_fn!(levenshtein, string1 string2);
 expr_fn!(lcm, x y);
 expr_fn!(left, string n, "Returns first n characters in the string, or when n is negative, returns all but last |n| characters.");
 expr_fn!(ln, num);
@@ -548,6 +556,7 @@ expr_fn!(
 );
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
+expr_fn_vec!(overlay);
 expr_fn!(pi);
 expr_fn!(power, base exponent);
 expr_fn!(pow, power, base exponent);
@@ -583,7 +592,9 @@ expr_fn!(sqrt, num);
 expr_fn!(starts_with, string prefix, "Returns true if string starts with prefix.");
 expr_fn!(strpos, string substring, "Returns starting index of specified substring within string, or zero if it's not present. (Same as position(substring in string), but note the reversed argument order.)");
 expr_fn!(substr, string position);
+expr_fn!(substr_index, string delimiter count);
 expr_fn!(substring, string position length);
+expr_fn!(find_in_set, string string_list);
 expr_fn!(tan, num);
 expr_fn!(tanh, num);
 expr_fn!(
@@ -596,6 +607,7 @@ expr_fn_vec!(to_timestamp);
 expr_fn_vec!(to_timestamp_millis);
 expr_fn_vec!(to_timestamp_micros);
 expr_fn_vec!(to_timestamp_seconds);
+expr_fn_vec!(to_unixtime);
 expr_fn!(current_date);
 expr_fn!(current_time);
 expr_fn!(date_part, part date);
@@ -603,6 +615,7 @@ expr_fn!(datepart, date_part, part date);
 expr_fn!(date_trunc, part date);
 expr_fn!(datetrunc, date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
+expr_fn!(make_date, year month day);
 
 expr_fn!(translate, string from to, "Replaces each character in string that matches a character in the from set with the corresponding character in the to set. If from is longer than to, occurrences of the extra characters in from are deleted.");
 expr_fn_vec!(trim, "Removes the longest string containing only characters in characters (a space by default) from the start, end, or both ends (BOTH is the default) of string.");
@@ -740,6 +753,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(corr))?;
     m.add_wrapped(wrap_pyfunction!(cos))?;
     m.add_wrapped(wrap_pyfunction!(cosh))?;
+    m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
     m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar))?;
@@ -753,6 +767,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(date_part))?;
     m.add_wrapped(wrap_pyfunction!(datetrunc))?;
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
+    m.add_wrapped(wrap_pyfunction!(make_date))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
     m.add_wrapped(wrap_pyfunction!(ends_with))?;
     m.add_wrapped(wrap_pyfunction!(exp))?;
@@ -765,6 +780,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(isnan))?;
     m.add_wrapped(wrap_pyfunction!(iszero))?;
+    m.add_wrapped(wrap_pyfunction!(levenshtein))?;
     m.add_wrapped(wrap_pyfunction!(lcm))?;
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
@@ -787,11 +803,13 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
     m.add_wrapped(wrap_pyfunction!(order_by))?;
+    m.add_wrapped(wrap_pyfunction!(overlay))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(pow))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
+    m.add_wrapped(wrap_pyfunction!(regexp_like))?;
     m.add_wrapped(wrap_pyfunction!(regexp_match))?;
     m.add_wrapped(wrap_pyfunction!(regexp_replace))?;
     m.add_wrapped(wrap_pyfunction!(repeat))?;
@@ -817,7 +835,9 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(strpos))?;
     m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
+    m.add_wrapped(wrap_pyfunction!(substr_index))?;
     m.add_wrapped(wrap_pyfunction!(substring))?;
+    m.add_wrapped(wrap_pyfunction!(find_in_set))?;
     m.add_wrapped(wrap_pyfunction!(sum))?;
     m.add_wrapped(wrap_pyfunction!(tan))?;
     m.add_wrapped(wrap_pyfunction!(tanh))?;
@@ -826,6 +846,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(to_timestamp_millis))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_micros))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_seconds))?;
+    m.add_wrapped(wrap_pyfunction!(to_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(translate))?;
     m.add_wrapped(wrap_pyfunction!(trim))?;
     m.add_wrapped(wrap_pyfunction!(trunc))?;

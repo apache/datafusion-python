@@ -54,12 +54,11 @@ def test_named_struct(df):
     df = df.with_column(
         "d",
         f.named_struct(
-            literal("a"),
-            column("a"),
-            literal("b"),
-            column("b"),
-            literal("c"),
-            column("c"),
+            [
+                ("a", column("a")),
+                ("b", column("b")),
+                ("c", column("c")),
+            ]
         ),
     )
 
@@ -97,9 +96,7 @@ def test_literal(df):
 
 
 def test_lit_arith(df):
-    """
-    Test literals with arithmetic operations
-    """
+    """Test literals with arithmetic operations"""
     df = df.select(literal(1) + column("b"), f.concat(column("a"), literal("!")))
     result = df.collect()
     assert len(result) == 1
@@ -140,6 +137,7 @@ def test_math_functions():
         f.power(col_v, literal(pa.scalar(3))),
         f.pow(col_v, literal(pa.scalar(4))),
         f.round(col_v),
+        f.round(col_v, literal(pa.scalar(3))),
         f.sqrt(col_v),
         f.signum(col_v),
         f.trunc(col_v),
@@ -183,29 +181,30 @@ def test_math_functions():
     np.testing.assert_array_almost_equal(result.column(15), np.power(values, 3))
     np.testing.assert_array_almost_equal(result.column(16), np.power(values, 4))
     np.testing.assert_array_almost_equal(result.column(17), np.round(values))
-    np.testing.assert_array_almost_equal(result.column(18), np.sqrt(values))
-    np.testing.assert_array_almost_equal(result.column(19), np.sign(values))
-    np.testing.assert_array_almost_equal(result.column(20), np.trunc(values))
-    np.testing.assert_array_almost_equal(result.column(21), np.arcsinh(values))
-    np.testing.assert_array_almost_equal(result.column(22), np.arccosh(values))
-    np.testing.assert_array_almost_equal(result.column(23), np.arctanh(values))
-    np.testing.assert_array_almost_equal(result.column(24), np.cbrt(values))
-    np.testing.assert_array_almost_equal(result.column(25), np.cosh(values))
-    np.testing.assert_array_almost_equal(result.column(26), np.degrees(values))
-    np.testing.assert_array_almost_equal(result.column(27), np.gcd(9, 3))
-    np.testing.assert_array_almost_equal(result.column(28), np.lcm(6, 4))
+    np.testing.assert_array_almost_equal(result.column(18), np.round(values, 3))
+    np.testing.assert_array_almost_equal(result.column(19), np.sqrt(values))
+    np.testing.assert_array_almost_equal(result.column(20), np.sign(values))
+    np.testing.assert_array_almost_equal(result.column(21), np.trunc(values))
+    np.testing.assert_array_almost_equal(result.column(22), np.arcsinh(values))
+    np.testing.assert_array_almost_equal(result.column(23), np.arccosh(values))
+    np.testing.assert_array_almost_equal(result.column(24), np.arctanh(values))
+    np.testing.assert_array_almost_equal(result.column(25), np.cbrt(values))
+    np.testing.assert_array_almost_equal(result.column(26), np.cosh(values))
+    np.testing.assert_array_almost_equal(result.column(27), np.degrees(values))
+    np.testing.assert_array_almost_equal(result.column(28), np.gcd(9, 3))
+    np.testing.assert_array_almost_equal(result.column(29), np.lcm(6, 4))
     np.testing.assert_array_almost_equal(
-        result.column(29), np.where(np.isnan(na_values), 5, na_values)
+        result.column(30), np.where(np.isnan(na_values), 5, na_values)
     )
-    np.testing.assert_array_almost_equal(result.column(30), np.pi)
-    np.testing.assert_array_almost_equal(result.column(31), np.radians(values))
-    np.testing.assert_array_almost_equal(result.column(32), np.sinh(values))
-    np.testing.assert_array_almost_equal(result.column(33), np.tanh(values))
-    np.testing.assert_array_almost_equal(result.column(34), math.factorial(6))
-    np.testing.assert_array_almost_equal(result.column(35), np.isnan(na_values))
-    np.testing.assert_array_almost_equal(result.column(36), na_values == 0)
+    np.testing.assert_array_almost_equal(result.column(31), np.pi)
+    np.testing.assert_array_almost_equal(result.column(32), np.radians(values))
+    np.testing.assert_array_almost_equal(result.column(33), np.sinh(values))
+    np.testing.assert_array_almost_equal(result.column(34), np.tanh(values))
+    np.testing.assert_array_almost_equal(result.column(35), math.factorial(6))
+    np.testing.assert_array_almost_equal(result.column(36), np.isnan(na_values))
+    np.testing.assert_array_almost_equal(result.column(37), na_values == 0)
     np.testing.assert_array_almost_equal(
-        result.column(37), np.emath.logn(3, values + 1.0)
+        result.column(38), np.emath.logn(3, values + 1.0)
     )
 
 
@@ -591,7 +590,12 @@ def test_string_functions(df):
         f.trim(column("c")),
         f.upper(column("c")),
         f.ends_with(column("a"), literal("llo")),
+        f.overlay(column("a"), literal("--"), literal(2)),
+        f.regexp_like(column("a"), literal("(ell|orl)")),
+        f.regexp_match(column("a"), literal("(ell|orl)")),
+        f.regexp_replace(column("a"), literal("(ell|orl)"), literal("-")),
     )
+
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -632,6 +636,10 @@ def test_string_functions(df):
     assert result.column(26) == pa.array(["hello", "world", "!"])
     assert result.column(27) == pa.array(["HELLO ", " WORLD ", " !"])
     assert result.column(28) == pa.array([True, False, False])
+    assert result.column(29) == pa.array(["H--lo", "W--ld", "--"])
+    assert result.column(30) == pa.array([True, True, False])
+    assert result.column(31) == pa.array([["ell"], ["orl"], None])
+    assert result.column(32) == pa.array(["H-o", "W-d", "!"])
 
 
 def test_hash_functions(df):

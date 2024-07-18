@@ -15,6 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""This module provides ``BaseInputSource``.
+
+A user can extend this to provide a custom input source.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -22,18 +27,22 @@ from datafusion.common import SqlTable
 
 
 class BaseInputSource(ABC):
-    """
-    If a consuming library would like to provider their own InputSource
-    this is the class they should extend to write their own. Once
-    completed the Plugin InputSource can be registered with the
+    """Base Input Source class.
+
+    If a consuming library would like to provider their own InputSource this is
+    the class they should extend to write their own.
+
+    Once completed the Plugin InputSource can be registered with the
     SessionContext to ensure that it will be used in order
     to obtain the SqlTable information from the custom datasource.
     """
 
     @abstractmethod
     def is_correct_input(self, input_item: Any, table_name: str, **kwargs) -> bool:
+        """Returns `True` if the input is valid."""
         pass
 
     @abstractmethod
     def build_table(self, input_item: Any, table_name: str, **kwarg) -> SqlTable:
+        """Create a table from the input source."""
         pass

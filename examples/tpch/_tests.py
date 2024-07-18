@@ -96,8 +96,9 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
     module = import_module(query_code)
     df = module.df
 
-    # Treat q17 as a special case. The answer file does not match the spec. Running at
-    # scale factor 1, we have manually verified this result does match the expected value.
+    # Treat q17 as a special case. The answer file does not match the spec.
+    # Running at scale factor 1, we have manually verified this result does
+    # match the expected value.
     if answer_file == "q17":
         return check_q17(df)
 

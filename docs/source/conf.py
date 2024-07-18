@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+"""Documenation generation."""
+
 # Configuration file for the Sphinx documentation builder.
 #
 # This file only contains a selection of the most common options. For a full
@@ -77,6 +79,25 @@ autodoc_default_options = {
 }
 
 autosummary_generate = True
+
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    exclude_functions = "__init__"
+    exclude_classes = ("Expr", "DataFrame")
+
+    class_name = ""
+    if hasattr(obj, "__qualname__"):
+        if obj.__qualname__ is not None:
+            class_name = obj.__qualname__.split(".")[0]
+
+    should_exclude = name in exclude_functions and class_name in exclude_classes
+
+    return True if should_exclude else None
+
+
+def setup(app):
+    app.connect("autodoc-skip-member", autodoc_skip_member)
+
 
 # -- Options for HTML output -------------------------------------------------
 

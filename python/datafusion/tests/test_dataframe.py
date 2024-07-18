@@ -17,6 +17,7 @@
 import os
 
 import pyarrow as pa
+from pyarrow.csv import write_csv
 import pyarrow.parquet as pq
 import pytest
 
@@ -96,6 +97,16 @@ def test_select(df):
     assert result.column(1) == pa.array([-3, -3, -3])
 
 
+def test_select_mixed_expr_string(df):
+    df = df.select_columns(column("b"), "a")
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([4, 5, 6])
+    assert result.column(1) == pa.array([1, 2, 3])
+
+
 def test_select_columns(df):
     df = df.select_columns("b", "a")
 
@@ -107,16 +118,28 @@ def test_select_columns(df):
 
 
 def test_filter(df):
-    df = df.filter(column("a") > literal(2)).select(
+    df1 = df.filter(column("a") > literal(2)).select(
         column("a") + column("b"),
         column("a") - column("b"),
     )
 
     # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    result = df1.collect()[0]
 
     assert result.column(0) == pa.array([9])
     assert result.column(1) == pa.array([-3])
+
+    df.show()
+    # verify that if there is no filter applied, internal dataframe is unchanged
+    df2 = df.filter()
+    assert df.df == df2.df
+
+    df3 = df.filter(column("a") > literal(1), column("b") != literal(6))
+    result = df3.collect()[0]
+
+    assert result.column(0) == pa.array([2])
+    assert result.column(1) == pa.array([5])
+    assert result.column(2) == pa.array([5])
 
 
 def test_sort(df):
@@ -175,7 +198,7 @@ def test_with_column_renamed(df):
 
 
 def test_unnest(nested_df):
-    nested_df = nested_df.unnest_column("a")
+    nested_df = nested_df.unnest_columns("a")
 
     # execute and collect the first (and only) batch
     result = nested_df.collect()[0]
@@ -185,7 +208,7 @@ def test_unnest(nested_df):
 
 
 def test_unnest_without_nulls(nested_df):
-    nested_df = nested_df.unnest_column("a", preserve_nulls=False)
+    nested_df = nested_df.unnest_columns("a", preserve_nulls=False)
 
     # execute and collect the first (and only) batch
     result = nested_df.collect()[0]
@@ -379,7 +402,7 @@ def test_get_dataframe(tmp_path):
         ],
         names=["int", "str", "float"],
     )
-    pa.csv.write_csv(table, path)
+    write_csv(table, path)
 
     ctx.register_csv("csv", path)
 
@@ -611,7 +634,7 @@ def test_to_pandas(df):
 
     # Convert datafusion dataframe to pandas dataframe
     pandas_df = df.to_pandas()
-    assert type(pandas_df) == pd.DataFrame
+    assert isinstance(pandas_df, pd.DataFrame)
     assert pandas_df.shape == (3, 3)
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
@@ -622,7 +645,7 @@ def test_empty_to_pandas(df):
 
     # Convert empty datafusion dataframe to pandas dataframe
     pandas_df = df.limit(0).to_pandas()
-    assert type(pandas_df) == pd.DataFrame
+    assert isinstance(pandas_df, pd.DataFrame)
     assert pandas_df.shape == (0, 3)
     assert set(pandas_df.columns) == {"a", "b", "c"}
 
@@ -633,7 +656,7 @@ def test_to_polars(df):
 
     # Convert datafusion dataframe to polars dataframe
     polars_df = df.to_polars()
-    assert type(polars_df) == pl.DataFrame
+    assert isinstance(polars_df, pl.DataFrame)
     assert polars_df.shape == (3, 3)
     assert set(polars_df.columns) == {"a", "b", "c"}
 
@@ -644,7 +667,7 @@ def test_empty_to_polars(df):
 
     # Convert empty datafusion dataframe to polars dataframe
     polars_df = df.limit(0).to_polars()
-    assert type(polars_df) == pl.DataFrame
+    assert isinstance(polars_df, pl.DataFrame)
     assert polars_df.shape == (0, 3)
     assert set(polars_df.columns) == {"a", "b", "c"}
 
@@ -652,13 +675,15 @@ def test_empty_to_polars(df):
 def test_to_arrow_table(df):
     # Convert datafusion dataframe to pyarrow Table
     pyarrow_table = df.to_arrow_table()
-    assert type(pyarrow_table) == pa.Table
+    assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (3, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 
 def test_execute_stream(df):
     stream = df.execute_stream()
+    for s in stream:
+        print(type(s))
     assert all(batch is not None for batch in stream)
     assert not list(stream)  # after one iteration the generator must be exhausted
 
@@ -690,7 +715,7 @@ def test_execute_stream_partitioned(df):
 def test_empty_to_arrow_table(df):
     # Convert empty datafusion dataframe to pyarrow Table
     pyarrow_table = df.limit(0).to_arrow_table()
-    assert type(pyarrow_table) == pa.Table
+    assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (0, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
@@ -736,8 +761,35 @@ def test_describe(df):
     }
 
 
-def test_write_parquet(df, tmp_path):
-    path = tmp_path
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", (True, False))
+def test_write_parquet(df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
 
     df.write_parquet(str(path))
     result = pq.read_table(str(path)).to_pydict()
@@ -795,3 +847,15 @@ def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compre
 
     with pytest.raises(ValueError):
         df.write_parquet(str(path), compression=compression)
+
+
+# ctx = SessionContext()
+
+# # create a RecordBatch and a new DataFrame from it
+# batch = pa.RecordBatch.from_arrays(
+#     [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
+#     names=["a", "b", "c"],
+# )
+
+# df = ctx.create_dataframe([[batch]])
+# test_execute_stream(df)

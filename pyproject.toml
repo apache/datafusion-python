@@ -64,3 +64,21 @@ exclude = [".github/**", "ci/**", ".asf.yaml"]
 # Require Cargo.lock is up to date
 locked = true
 features = ["substrait"]
+
+# Enable docstring linting using the google style guide
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "D", "W"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.pycodestyle]
+max-doc-length = 88
+
+# Disable docstring checking for these directories
+[tool.ruff.lint.per-file-ignores]
+"python/datafusion/tests/*" = ["D"]
+"examples/*" = ["D", "W505"]
+"dev/*" = ["D"]
+"benchmarks/*" = ["D", "F"]
+"docs/*" = ["D"]

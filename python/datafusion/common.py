@@ -14,7 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+"""Common data types used throughout the DataFusion project."""
 
 from ._internal import common
 

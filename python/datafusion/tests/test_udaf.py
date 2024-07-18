@@ -25,9 +25,7 @@ from datafusion import Accumulator, SessionContext, column, udaf
 
 
 class Summarize(Accumulator):
-    """
-    Interface of a user-defined accumulation.
-    """
+    """Interface of a user-defined accumulation."""
 
     def __init__(self):
         self._sum = pa.scalar(0.0)
