@@ -13,7 +13,6 @@
 
    .. autosummary::
    
-      ~Expr.__init__
       ~Expr.alias
       ~Expr.canonical_name
       ~Expr.cast

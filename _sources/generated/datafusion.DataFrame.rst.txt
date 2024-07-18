@@ -13,7 +13,6 @@
 
    .. autosummary::
    
-      ~DataFrame.__init__
       ~DataFrame.aggregate
       ~DataFrame.cache
       ~DataFrame.collect
@@ -47,6 +46,7 @@
       ~DataFrame.union
       ~DataFrame.union_distinct
       ~DataFrame.unnest_column
+      ~DataFrame.unnest_columns
       ~DataFrame.with_column
       ~DataFrame.with_column_renamed
       ~DataFrame.write_csv

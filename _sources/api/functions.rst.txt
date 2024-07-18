@@ -24,4 +24,4 @@ Functions
 .. autosummary::
    :toctree: ../generated/
 
-   functions.functions
+   functions

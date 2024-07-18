@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="../../generated/datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -382,7 +382,7 @@
 <h1>Window Functions<a class="headerlink" href="#window-functions" title="Link to this heading">¶</a></h1>
 <p>In this section you will learn about window functions. A window function utilizes values from one or multiple rows to
 produce a result for each individual row, unlike an aggregate function that provides a single value for multiple rows.</p>
-<p>The functionality of window functions in DataFusion is supported by the dedicated <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.window" title="datafusion.functions.functions.window"><code class="xref py py-func docutils literal notranslate"><span class="pre">window()</span></code></a> function.</p>
+<p>The functionality of window functions in DataFusion is supported by the dedicated <a class="reference internal" href="../../generated/datafusion.functions.html#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-func docutils literal notranslate"><span class="pre">window()</span></code></a> function.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">urllib.request</span>
 
@@ -397,7 +397,7 @@ produce a result for each individual row, unlike an aggregate function that prov
    <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fa454dc3250</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f16744952d0</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -433,7 +433,7 @@ produce a result for each individual row, unlike an aggregate function that prov
 </pre></div>
 </div>
 <p>You can also control the order in which rows are processed by window functions by providing
-a list of <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.order_by" title="datafusion.functions.functions.order_by"><code class="xref py py-func docutils literal notranslate"><span class="pre">order_by()</span></code></a> functions for the <code class="code docutils literal notranslate"><span class="pre">order_by</span></code> parameter.</p>
+a list of <a class="reference internal" href="../../generated/datafusion.functions.html#datafusion.functions.order_by" title="datafusion.functions.order_by"><code class="xref py py-func docutils literal notranslate"><span class="pre">order_by()</span></code></a> functions for the <code class="code docutils literal notranslate"><span class="pre">order_by</span></code> parameter.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
@@ -543,7 +543,7 @@ a list of <a class="reference internal" href="../../generated/datafusion.functio
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     

@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>datafusion.context &#8212; Apache Arrow DataFusion  documentation</title>
+    
+    <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
+    
+    <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../../index.html">
+  <img src="../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/configuration.html">
+   Configuration
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/expressions.html">
+     Expressions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/udf-and-udfa.html">
+     User Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../api.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/dataframe.html">
+     DataFrame
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.DataFrame.html">
+       datafusion.DataFrame
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/execution_context.html">
+     SessionContext
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.SessionConfig.html">
+       datafusion.SessionConfig
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.RuntimeConfig.html">
+       datafusion.RuntimeConfig
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.SessionContext.html">
+       datafusion.SessionContext
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/expression.html">
+     Expr
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+    <label for="toctree-checkbox-6">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.Expr.html">
+       datafusion.Expr
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/functions.html">
+     Functions
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
+    <label for="toctree-checkbox-7">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.functions.html">
+       datafusion.functions
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../../api/object_store.html">
+     ObjectStore
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
+    <label for="toctree-checkbox-8">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../generated/datafusion.object_store.object_store.html">
+       datafusion.object_store.object_store
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <h1>Source code for datafusion.context</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Licensed to the Apache Software Foundation (ASF) under one</span>
+<span class="c1"># or more contributor license agreements.  See the NOTICE file</span>
+<span class="c1"># distributed with this work for additional information</span>
+<span class="c1"># regarding copyright ownership.  The ASF licenses this file</span>
+<span class="c1"># to you under the Apache License, Version 2.0 (the</span>
+<span class="c1"># &quot;License&quot;); you may not use this file except in compliance</span>
+<span class="c1"># with the License.  You may obtain a copy of the License at</span>
+<span class="c1">#</span>
+<span class="c1">#   http://www.apache.org/licenses/LICENSE-2.0</span>
+<span class="c1">#</span>
+<span class="c1"># Unless required by applicable law or agreed to in writing,</span>
+<span class="c1"># software distributed under the License is distributed on an</span>
+<span class="c1"># &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY</span>
+<span class="c1"># KIND, either express or implied.  See the License for the</span>
+<span class="c1"># specific language governing permissions and limitations</span>
+<span class="c1"># under the License.</span>
+
+<span class="sd">&quot;&quot;&quot;Session Context and it&#39;s associated configuration.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">._internal</span> <span class="kn">import</span> <span class="n">SessionConfig</span> <span class="k">as</span> <span class="n">SessionConfigInternal</span>
+<span class="kn">from</span> <span class="nn">._internal</span> <span class="kn">import</span> <span class="n">RuntimeConfig</span> <span class="k">as</span> <span class="n">RuntimeConfigInternal</span>
+<span class="kn">from</span> <span class="nn">._internal</span> <span class="kn">import</span> <span class="n">SQLOptions</span> <span class="k">as</span> <span class="n">SQLOptionsInternal</span>
+<span class="kn">from</span> <span class="nn">._internal</span> <span class="kn">import</span> <span class="n">SessionContext</span> <span class="k">as</span> <span class="n">SessionContextInternal</span>
+<span class="kn">from</span> <span class="nn">._internal</span> <span class="kn">import</span> <span class="n">LogicalPlan</span><span class="p">,</span> <span class="n">ExecutionPlan</span>
+
+<span class="kn">from</span> <span class="nn">datafusion._internal</span> <span class="kn">import</span> <span class="n">AggregateUDF</span>
+<span class="kn">from</span> <span class="nn">datafusion.catalog</span> <span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">Table</span>
+<span class="kn">from</span> <span class="nn">datafusion.dataframe</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">datafusion.expr</span> <span class="kn">import</span> <span class="n">Expr</span>
+<span class="kn">from</span> <span class="nn">datafusion.record_batch</span> <span class="kn">import</span> <span class="n">RecordBatchStream</span>
+<span class="kn">from</span> <span class="nn">datafusion.udf</span> <span class="kn">import</span> <span class="n">ScalarUDF</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">deprecated</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pyarrow</span>
+    <span class="kn">import</span> <span class="nn">pandas</span>
+    <span class="kn">import</span> <span class="nn">polars</span>
+    <span class="kn">import</span> <span class="nn">pathlib</span>
+
+
+<div class="viewcode-block" id="SessionConfig">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig">[docs]</a>
+<span class="k">class</span> <span class="nc">SessionConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Session configuration options.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SessionConfig.__init__">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_options</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new `SessionConfig` with the given configuration options.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_options: Configuration options.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="n">SessionConfigInternal</span><span class="p">(</span><span class="n">config_options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_create_default_catalog_and_schema">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_create_default_catalog_and_schema">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_create_default_catalog_and_schema</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Control if the default catalog and schema will be automatically created.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether the default catalog and schema will be</span>
+<span class="sd">                automatically created.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_create_default_catalog_and_schema</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_default_catalog_and_schema">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_default_catalog_and_schema">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_default_catalog_and_schema</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">catalog</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Select a name for the default catalog and shcema.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            catalog: Catalog name.</span>
+<span class="sd">            schema: Schema name.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_default_catalog_and_schema</span><span class="p">(</span>
+            <span class="n">catalog</span><span class="p">,</span> <span class="n">schema</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_information_schema">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_information_schema">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_information_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the inclusion of `information_schema` virtual tables.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to include `information_schema` virtual tables.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_information_schema</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_batch_size">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_batch_size">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_batch_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Customize batch size.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            batch_size: Batch size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_batch_size</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_target_partitions">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_target_partitions">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_target_partitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_partitions</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Customize the number of target partitions for query execution.</span>
+
+<span class="sd">        Increasing partitions can increase concurrency.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            target_partitions: Number of target partitions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span>
+            <span class="n">target_partitions</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_aggregations">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_aggregations">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_aggregations</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of repartitioning for aggregations.</span>
+
+<span class="sd">        Enabling this improves parallelism.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use repartitioning for aggregations.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_aggregations</span><span class="p">(</span>
+            <span class="n">enabled</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_joins">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_joins">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_joins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of repartitioning for joins to improve parallelism.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use repartitioning for joins.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_joins</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_windows">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_windows">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_windows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of repartitioning for window functions.</span>
+
+<span class="sd">        This may improve parallelism.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use repartitioning for window functions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_windows</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_sorts">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_sorts">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_sorts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of repartitioning for window functions.</span>
+
+<span class="sd">        This may improve parallelism.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use repartitioning for window functions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_sorts</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_file_scans">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_scans">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_file_scans</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of repartitioning for file scans.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use repartitioning for file scans.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_file_scans</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_repartition_file_min_size">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_min_size">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_repartition_file_min_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set minimum file range size for repartitioning scans.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            size: Minimum file range size.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_repartition_file_min_size</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.with_parquet_pruning">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_parquet_pruning">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_parquet_pruning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Enable or disable the use of pruning predicate for parquet readers.</span>
+
+<span class="sd">        Pruning predicates will enable the reader to skip row groups.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            enabled: Whether to use pruning predicate for parquet readers.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_parquet_pruning</span><span class="p">(</span><span class="n">enabled</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="SessionConfig.set">
+<a class="viewcode-back" href="../../generated/datafusion.SessionConfig.html#datafusion.SessionConfig.set">[docs]</a>
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SessionConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a configuration option.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">        key: Option key.</span>
+<span class="sd">        value: Option value.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SessionConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RuntimeConfig">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig">[docs]</a>
+<span class="k">class</span> <span class="nc">RuntimeConfig</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runtime configuration options.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="RuntimeConfig.__init__">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new `RuntimeConfig` with default values.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="n">RuntimeConfigInternal</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_disk_manager_disabled">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_disabled">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_disk_manager_disabled</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Disable the disk manager, attempts to create temporary files will error.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_disk_manager_disabled</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_disk_manager_os">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_os">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_disk_manager_os</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the operating system&#39;s temporary directory for disk manager.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_disk_manager_os</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_disk_manager_specified">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_specified">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_disk_manager_specified</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">paths</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the specified paths for the disk manager&#39;s temporary files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            paths: Paths to use for the disk manager&#39;s temporary files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_disk_manager_specified</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_unbounded_memory_pool">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_unbounded_memory_pool">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_unbounded_memory_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use an unbounded memory pool.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_unbounded_memory_pool</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_fair_spill_pool">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_fair_spill_pool">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_fair_spill_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use a fair spill pool with the specified size.</span>
+
+<span class="sd">        This pool works best when you know beforehand the query has multiple spillable</span>
+<span class="sd">        operators that will likely all need to spill. Sometimes it will cause spills</span>
+<span class="sd">        even when there was sufficient memory (reserved for other operators) to avoid</span>
+<span class="sd">        doing so::</span>
+
+<span class="sd">            ┌───────────────────────z──────────────────────z───────────────┐</span>
+<span class="sd">            │                       z                      z               │</span>
+<span class="sd">            │                       z                      z               │</span>
+<span class="sd">            │       Spillable       z       Unspillable    z     Free      │</span>
+<span class="sd">            │        Memory         z        Memory        z    Memory     │</span>
+<span class="sd">            │                       z                      z               │</span>
+<span class="sd">            │                       z                      z               │</span>
+<span class="sd">            └───────────────────────z──────────────────────z───────────────┘</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            size: Size of the memory pool in bytes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new ``RuntimeConfig`` object with the updated setting.</span>
+
+<span class="sd">        Examples usage::</span>
+
+<span class="sd">            config = RuntimeConfig().with_fair_spill_pool(1024)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_greedy_memory_pool">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_greedy_memory_pool">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_greedy_memory_pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use a greedy memory pool with the specified size.</span>
+
+<span class="sd">        This pool works well for queries that do not need to spill or have a single</span>
+<span class="sd">        spillable operator. See `RuntimeConfig.with_fair_spill_pool` if there are</span>
+<span class="sd">        multiple spillable operators that all will spill.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            size: Size of the memory pool in bytes.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+
+<span class="sd">        Example usage::</span>
+
+<span class="sd">            config = RuntimeConfig().with_greedy_memory_pool(1024)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+
+<div class="viewcode-block" id="RuntimeConfig.with_temp_file_path">
+<a class="viewcode-back" href="../../generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_temp_file_path">[docs]</a>
+    <span class="k">def</span> <span class="nf">with_temp_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RuntimeConfig</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use the specified path to create any needed temporary files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to use for temporary files.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `RuntimeConfig` object with the updated setting.</span>
+
+<span class="sd">        Example usage::</span>
+
+<span class="sd">            config = RuntimeConfig().with_temp_file_path(&quot;/tmp&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_internal</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+</div>
+
+
+
+<span class="k">class</span> <span class="nc">SQLOptions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Options to be used when performing SQL queries on the ``SessionContext``.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a new `SQLOptions` with default values.</span>
+
+<span class="sd">        The default values are:</span>
+<span class="sd">        - DDL commands are allowed</span>
+<span class="sd">        - DML commands are allowed</span>
+<span class="sd">        - Statements are allowed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span> <span class="o">=</span> <span class="n">SQLOptionsInternal</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">with_allow_ddl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLOptions</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Should DDL (Data Definition Language) commands be run?</span>
+
+<span class="sd">        Examples of DDL commands include `CREATE TABLE` and `DROP TABLE`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            allow: Allow DDL commands to be run.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SQLOptions` object with the updated setting.</span>
+
+<span class="sd">        Example usage::</span>
+
+<span class="sd">            options = SQLOptions().with_allow_ddl(True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span><span class="o">.</span><span class="n">with_allow_ddl</span><span class="p">(</span><span class="n">allow</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">with_allow_dml</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLOptions</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Should DML (Data Manipulation Language) commands be run?</span>
+
+<span class="sd">        Examples of DML commands include `INSERT INTO` and `DELETE`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            allow: Allow DML commands to be run.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SQLOptions` object with the updated setting.</span>
+
+<span class="sd">        Example usage::</span>
+
+<span class="sd">            options = SQLOptions().with_allow_dml(True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span><span class="o">.</span><span class="n">with_allow_dml</span><span class="p">(</span><span class="n">allow</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">with_allow_statements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">allow</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SQLOptions</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Should statements such as `SET VARIABLE` and `BEGIN TRANSACTION` be run?</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            allow: Allow statements to be run.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A new `SQLOptions` object with the updated setting.</span>
+
+<span class="sd">        Example usage::</span>
+
+<span class="sd">            options = SQLOptions().with_allow_statements(True)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options_internal</span><span class="o">.</span><span class="n">with_allow_statements</span><span class="p">(</span><span class="n">allow</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+<div class="viewcode-block" id="SessionContext">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext">[docs]</a>
+<span class="k">class</span> <span class="nc">SessionContext</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is the main interface for executing queries and creating DataFrames.</span>
+
+<span class="sd">    See https://datafusion.apache.org/python/user-guide/basics.html for</span>
+<span class="sd">    additional information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SessionContext.__init__">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.__init__">[docs]</a>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">SessionConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">runtime</span><span class="p">:</span> <span class="n">RuntimeConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Main interface for executing queries with DataFusion.</span>
+
+<span class="sd">        Maintains the state of the connection between a user and an instance</span>
+<span class="sd">        of the connection between a user and an instance of the DataFusion</span>
+<span class="sd">        engine.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config: Session configuration options.</span>
+<span class="sd">            runtime: Runtime configuration options.</span>
+
+<span class="sd">        Example usage:</span>
+
+<span class="sd">        The following example demostrates how to use the context to execute</span>
+<span class="sd">        a query against a CSV data source using the ``DataFrame`` API::</span>
+
+<span class="sd">            from datafusion import SessionContext</span>
+
+<span class="sd">            ctx = SessionContext()</span>
+<span class="sd">            df = ctx.read_csv(&quot;data.csv&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">config_internal</span> <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">runtime</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">config_internal</span> <span class="k">if</span> <span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContextInternal</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">runtime</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_object_store">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_object_store">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_object_store</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">store</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a new object store into the session.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            store: The `ObjectStore` to register.</span>
+<span class="sd">            host: URL for the host.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_object_store</span><span class="p">(</span><span class="n">schema</span><span class="p">,</span> <span class="n">store</span><span class="p">,</span> <span class="n">host</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_listing_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_listing_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_listing_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.parquet&quot;</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_sort_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register multiple files as a single table.</span>
+
+<span class="sd">        Registers a `Table` that can assemble multiple files from locations in</span>
+<span class="sd">        an `ObjectStore` instance.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the resultant table.</span>
+<span class="sd">            path: Path to the file to register.</span>
+<span class="sd">            table_partition_cols: Partition columns.</span>
+<span class="sd">            file_extension: File extension of the provided table.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            file_sort_order: Sort order for the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">file_sort_order</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">file_sort_order</span> <span class="o">=</span> <span class="p">[[</span><span class="n">x</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">]</span> <span class="k">for</span> <span class="n">xs</span> <span class="ow">in</span> <span class="n">file_sort_order</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_listing_table</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+            <span class="n">table_partition_cols</span><span class="p">,</span>
+            <span class="n">file_extension</span><span class="p">,</span>
+            <span class="n">schema</span><span class="p">,</span>
+            <span class="n">file_sort_order</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.sql">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.sql">[docs]</a>
+    <span class="k">def</span> <span class="nf">sql</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">SQLOptions</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from SQL query text.</span>
+
+<span class="sd">        Note: This API implements DDL statements such as `CREATE TABLE` and</span>
+<span class="sd">        `CREATE VIEW` and DML statements such as `INSERT INTO` with in-memory</span>
+<span class="sd">        default implementation. See `SessionContext.sql_with_options`.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: SQL query text.</span>
+<span class="sd">            options: If provided, the query will be validated against these options.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">query</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">sql_with_options</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">options</span><span class="o">.</span><span class="n">options_internal</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.sql_with_options">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.sql_with_options">[docs]</a>
+    <span class="k">def</span> <span class="nf">sql_with_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">options</span><span class="p">:</span> <span class="n">SQLOptions</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from SQL query text.</span>
+
+<span class="sd">        This function will first validating that the query is allowed by the</span>
+<span class="sd">        provided options.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            query: SQL query text.</span>
+<span class="sd">            options: SQL options.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.create_dataframe">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_dataframe</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">partitions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">]],</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create and return a dataframe using the provided partitions.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            partitions: `RecordBatch` partitions to register.</span>
+<span class="sd">            name: Resultant dataframe name.</span>
+<span class="sd">            schema: Schema for the partitions.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the SQL query.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">(</span><span class="n">partitions</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">schema</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.create_dataframe_from_logical_plan">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe_from_logical_plan">[docs]</a>
+    <span class="k">def</span> <span class="nf">create_dataframe_from_logical_plan</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan</span><span class="p">:</span> <span class="n">LogicalPlan</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from an existing logical plan.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plan: Logical plan.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the logical plan.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe_from_logical_plan</span><span class="p">(</span><span class="n">plan</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.from_pylist">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pylist">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_pylist</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from a list of dictionaries.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: List of dictionaries.</span>
+<span class="sd">            name: Name of the DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the list of dictionaries.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.from_pydict">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pydict">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_pydict</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from a dictionary of lists.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Dictionary of lists.</span>
+<span class="sd">            name: Name of the DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the dictionary of lists.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.from_arrow_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.from_arrow_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_arrow_table</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Table</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from an Arrow table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Arrow table.</span>
+<span class="sd">            name: Name of the DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the Arrow table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">from_arrow_table</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.from_pandas">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pandas">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_pandas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">pandas</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from a Pandas DataFrame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Pandas DataFrame.</span>
+<span class="sd">            name: Name of the DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the Pandas DataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.from_polars">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.from_polars">[docs]</a>
+    <span class="k">def</span> <span class="nf">from_polars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">polars</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` from a Polars DataFrame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: Polars DataFrame.</span>
+<span class="sd">            name: Name of the DataFrame.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the Polars DataFrame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">from_polars</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a table with the given name into the session.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the resultant table.</span>
+<span class="sd">            table: PyArrow table to add to the session context.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">table</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.deregister_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.deregister_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">deregister_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove a table from the session.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">deregister_table</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_record_batches">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_record_batches">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_record_batches</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">partitions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="p">]]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register record batches as a table.</span>
+
+<span class="sd">        This function will convert the provided partitions into a table and</span>
+<span class="sd">        register it into the session using the given name.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the resultant table.</span>
+<span class="sd">            partitions: Record batches to register as a table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_record_batches</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">partitions</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_parquet">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_parquet">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_parquet</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parquet_pruning</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.parquet&quot;</span><span class="p">,</span>
+        <span class="n">skip_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_sort_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a Parquet file as a table.</span>
+
+<span class="sd">        The registered table can be referenced from SQL statement executed</span>
+<span class="sd">        against this context.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the table to register.</span>
+<span class="sd">            path: Path to the Parquet file.</span>
+<span class="sd">            table_partition_cols: Partition columns.</span>
+<span class="sd">            parquet_pruning: Whether the parquet reader should use the</span>
+<span class="sd">                predicate to prune row groups.</span>
+<span class="sd">            file_extension: File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            skip_metadata: Whether the parquet reader should skip any metadata</span>
+<span class="sd">                that may be in the file schema. This can help avoid schema</span>
+<span class="sd">                conflicts due to metadata.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            file_sort_order: Sort order for the file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_parquet</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+            <span class="n">table_partition_cols</span><span class="p">,</span>
+            <span class="n">parquet_pruning</span><span class="p">,</span>
+            <span class="n">file_extension</span><span class="p">,</span>
+            <span class="n">skip_metadata</span><span class="p">,</span>
+            <span class="n">schema</span><span class="p">,</span>
+            <span class="n">file_sort_order</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_csv">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_csv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">has_header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+        <span class="n">schema_infer_max_records</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+        <span class="n">file_compression_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a CSV file as a table.</span>
+
+<span class="sd">        The registered table can be referenced from SQL statement executed against.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the table to register.</span>
+<span class="sd">            path: Path to the CSV file.</span>
+<span class="sd">            schema: An optional schema representing the CSV file. If None, the</span>
+<span class="sd">                CSV reader will try to infer it based on data in file.</span>
+<span class="sd">            has_header: Whether the CSV file have a header. If schema inference</span>
+<span class="sd">                is run on a file with no headers, default column names are</span>
+<span class="sd">                created.</span>
+<span class="sd">            delimiter: An optional column delimiter.</span>
+<span class="sd">            schema_infer_max_records: Maximum number of rows to read from CSV</span>
+<span class="sd">                files for schema inference if needed.</span>
+<span class="sd">            file_extension: File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            file_compression_type: File compression type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_csv</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+            <span class="n">schema</span><span class="p">,</span>
+            <span class="n">has_header</span><span class="p">,</span>
+            <span class="n">delimiter</span><span class="p">,</span>
+            <span class="n">schema_infer_max_records</span><span class="p">,</span>
+            <span class="n">file_extension</span><span class="p">,</span>
+            <span class="n">file_compression_type</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_json">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_json</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema_infer_max_records</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_compression_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a JSON file as a table.</span>
+
+<span class="sd">        The registered table can be referenced from SQL statement executed</span>
+<span class="sd">        against this context.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the table to register.</span>
+<span class="sd">            path: Path to the JSON file.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            schema_infer_max_records: Maximum number of rows to read from JSON</span>
+<span class="sd">                files for schema inference if needed.</span>
+<span class="sd">            file_extension: File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            table_partition_cols: Partition columns.</span>
+<span class="sd">            file_compression_type: File compression type.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_json</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+            <span class="n">schema</span><span class="p">,</span>
+            <span class="n">schema_infer_max_records</span><span class="p">,</span>
+            <span class="n">file_extension</span><span class="p">,</span>
+            <span class="n">table_partition_cols</span><span class="p">,</span>
+            <span class="n">file_compression_type</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_avro">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_avro">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_avro</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.avro&quot;</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register an Avro file as a table.</span>
+
+<span class="sd">        The registered table can be referenced from SQL statement executed against</span>
+<span class="sd">        this context.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the table to register.</span>
+<span class="sd">            path: Path to the Avro file.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            file_extension: File extension to select.</span>
+<span class="sd">            table_partition_cols:  Partition columns.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_avro</span><span class="p">(</span>
+            <span class="n">name</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">schema</span><span class="p">,</span> <span class="n">file_extension</span><span class="p">,</span> <span class="n">table_partition_cols</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_dataset">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_dataset">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">dataset</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">dataset</span><span class="o">.</span><span class="n">Dataset</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a `pyarrow.dataset.Dataset` as a table.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: Name of the table to register.</span>
+<span class="sd">            dataset: PyArrow dataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_dataset</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">dataset</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_udf">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_udf">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_udf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">udf</span><span class="p">:</span> <span class="n">ScalarUDF</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a user-defined function (UDF) with the context.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_udf</span><span class="p">(</span><span class="n">udf</span><span class="o">.</span><span class="n">udf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.register_udaf">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.register_udaf">[docs]</a>
+    <span class="k">def</span> <span class="nf">register_udaf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">udaf</span><span class="p">:</span> <span class="n">AggregateUDF</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Register a user-defined aggregation function (UDAF) with the context.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">register_udaf</span><span class="p">(</span><span class="n">udaf</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.catalog">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.catalog">[docs]</a>
+    <span class="k">def</span> <span class="nf">catalog</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;datafusion&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Catalog</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a catalog by name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">catalog</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.tables">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.tables">[docs]</a>
+    <span class="nd">@deprecated</span><span class="p">(</span>
+        <span class="s2">&quot;Use the catalog provider interface `SessionContext.catalog` to &quot;</span>
+        <span class="s2">&quot;examine available catalogs, schemas and tables&quot;</span>
+    <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">tables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">tables</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.table">[docs]</a>
+    <span class="k">def</span> <span class="nf">table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrieve a `DataFrame` representing a previously registered table.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.table_exist">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.table_exist">[docs]</a>
+    <span class="k">def</span> <span class="nf">table_exist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether a table with the given name exists.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">table_exist</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.empty_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.empty_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">empty_table</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create an empty `DataFrame`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">empty_table</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.session_id">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.session_id">[docs]</a>
+    <span class="k">def</span> <span class="nf">session_id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Retrun an id that uniquely identifies this `SessionContext`.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">session_id</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.read_json">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.read_json">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_json</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">schema_infer_max_records</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.json&quot;</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_compression_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` for reading a line-delimited JSON data source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the JSON file.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            schema_infer_max_records: Maximum number of rows to read from JSON</span>
+<span class="sd">                files for schema inference if needed.</span>
+<span class="sd">            file_extension: File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            table_partition_cols: Partition columns.</span>
+<span class="sd">            file_compression_type: File compression type.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the read JSON files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                <span class="n">schema</span><span class="p">,</span>
+                <span class="n">schema_infer_max_records</span><span class="p">,</span>
+                <span class="n">file_extension</span><span class="p">,</span>
+                <span class="n">table_partition_cols</span><span class="p">,</span>
+                <span class="n">file_compression_type</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.read_csv">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.read_csv">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_csv</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">has_header</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">delimiter</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span>
+        <span class="n">schema_infer_max_records</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.csv&quot;</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_compression_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` for reading a CSV data source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the CSV file</span>
+<span class="sd">            schema: An optional schema representing the CSV files. If None, the</span>
+<span class="sd">                CSV reader will try to infer it based on data in file.</span>
+<span class="sd">            has_header: Whether the CSV file have a header. If schema inference</span>
+<span class="sd">                is run on a file with no headers, default column names are</span>
+<span class="sd">                created.</span>
+<span class="sd">            delimiter: An optional column delimiter.</span>
+<span class="sd">            schema_infer_max_records: Maximum number of rows to read from CSV</span>
+<span class="sd">                files for schema inference if needed.</span>
+<span class="sd">            file_extension:  File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            table_partition_cols:  Partition columns.</span>
+<span class="sd">            file_compression_type:  File compression type.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the read CSV files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                <span class="n">schema</span><span class="p">,</span>
+                <span class="n">has_header</span><span class="p">,</span>
+                <span class="n">delimiter</span><span class="p">,</span>
+                <span class="n">schema_infer_max_records</span><span class="p">,</span>
+                <span class="n">file_extension</span><span class="p">,</span>
+                <span class="n">table_partition_cols</span><span class="p">,</span>
+                <span class="n">file_compression_type</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.read_parquet">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.read_parquet">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_parquet</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">table_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">parquet_pruning</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.parquet&quot;</span><span class="p">,</span>
+        <span class="n">skip_metadata</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_sort_order</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a `DataFrame` for reading Parquet data source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the Parquet file.</span>
+<span class="sd">            table_partition_cols: Partition columns.</span>
+<span class="sd">            parquet_pruning: Whether the parquet reader should use the predicate</span>
+<span class="sd">                to prune row groups.</span>
+<span class="sd">            file_extension: File extension; only files with this extension are</span>
+<span class="sd">                selected for data input.</span>
+<span class="sd">            skip_metadata: Whether the parquet reader should skip any metadata</span>
+<span class="sd">                that may be in the file schema. This can help avoid schema</span>
+<span class="sd">                conflicts due to metadata.</span>
+<span class="sd">            schema: An optional schema representing the parquet files. If None,</span>
+<span class="sd">                the parquet reader will try to infer it based on data in the</span>
+<span class="sd">                file.</span>
+<span class="sd">            file_sort_order: Sort order for the file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the read Parquet files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">table_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">table_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span>
+                <span class="n">table_partition_cols</span><span class="p">,</span>
+                <span class="n">parquet_pruning</span><span class="p">,</span>
+                <span class="n">file_extension</span><span class="p">,</span>
+                <span class="n">skip_metadata</span><span class="p">,</span>
+                <span class="n">schema</span><span class="p">,</span>
+                <span class="n">file_sort_order</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.read_avro">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.read_avro">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_avro</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">,</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Schema</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_partition_cols</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">file_extension</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.avro&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a ``DataFrame`` for reading Avro data source.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path: Path to the Avro file.</span>
+<span class="sd">            schema: The data source schema.</span>
+<span class="sd">            file_partition_cols: Partition columns.</span>
+<span class="sd">            file_extension: File extension to select.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            DataFrame representation of the read Avro file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">file_partition_cols</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">file_partition_cols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">read_avro</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">schema</span><span class="p">,</span> <span class="n">file_partition_cols</span><span class="p">,</span> <span class="n">file_extension</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.read_table">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.read_table">[docs]</a>
+    <span class="k">def</span> <span class="nf">read_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates a ``DataFrame`` for a ``Table`` such as a ``ListingTable``.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">table</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="SessionContext.execute">
+<a class="viewcode-back" href="../../generated/datafusion.SessionContext.html#datafusion.SessionContext.execute">[docs]</a>
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plan</span><span class="p">:</span> <span class="n">ExecutionPlan</span><span class="p">,</span> <span class="n">partitions</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RecordBatchStream</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Execute the `plan` and return the results.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RecordBatchStream</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">plan</span><span class="p">,</span> <span class="n">partitions</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

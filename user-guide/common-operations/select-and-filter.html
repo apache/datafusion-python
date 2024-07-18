@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="../../generated/datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -390,7 +390,7 @@
 <span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="s2">&quot;https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span>                            <span class="s2">&quot;yellow_trip_data.parquet&quot;</span><span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;yellow_trip_data.parquet&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fa454d1cf50</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;yellow_trip_data.parquet&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f167882dd90</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -415,8 +415,8 @@
 <span class="o">+---------------+-----------------+</span>
 </pre></div>
 </div>
-<p>For mathematical or logical operations use <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.col" title="datafusion.functions.functions.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">col()</span></code></a> to select columns, and give meaningful names to the resulting
-operations using <a class="reference internal" href="../../generated/datafusion.functions.functions.html#datafusion.functions.functions.alias" title="datafusion.functions.functions.alias"><code class="xref py py-func docutils literal notranslate"><span class="pre">alias()</span></code></a></p>
+<p>For mathematical or logical operations use <a class="reference internal" href="../../generated/datafusion.functions.html#datafusion.functions.col" title="datafusion.functions.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">col()</span></code></a> to select columns, and give meaningful names to the resulting
+operations using <a class="reference internal" href="../../generated/datafusion.functions.html#datafusion.functions.alias" title="datafusion.functions.alias"><code class="xref py py-func docutils literal notranslate"><span class="pre">alias()</span></code></a></p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;tip_amount&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;tolls_amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tips_plus_tolls&quot;</span><span class="p">))</span>
@@ -532,7 +532,7 @@ column selection use <a class="reference internal" href="../../generated/datafus
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     

@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -524,125 +524,257 @@
 <h1>datafusion.SessionConfig<a class="headerlink" href="#datafusion-sessionconfig" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.SessionConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">SessionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">SessionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Configuration options for a SessionContext</p>
+<p>Session configuration options.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.__init__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new <cite>SessionConfig</cite> with the given configuration options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_options</strong> – Configuration options.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.__init__" title="datafusion.SessionConfig.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.__init__" title="datafusion.SessionConfig.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([config_options])</p></td>
+<td><p>Create a new <cite>SessionConfig</cite> with the given configuration options.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.set" title="datafusion.SessionConfig.set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a>(key, value)</p></td>
-<td><p></p></td>
+<td><p>Set a configuration option.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_batch_size" title="datafusion.SessionConfig.with_batch_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_batch_size</span></code></a>(batch_size)</p></td>
-<td><p></p></td>
+<td><p>Customize batch size.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema" title="datafusion.SessionConfig.with_create_default_catalog_and_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_create_default_catalog_and_schema</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema" title="datafusion.SessionConfig.with_create_default_catalog_and_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_create_default_catalog_and_schema</span></code></a>([enabled])</p></td>
+<td><p>Control if the default catalog and schema will be automatically created.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_default_catalog_and_schema" title="datafusion.SessionConfig.with_default_catalog_and_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_default_catalog_and_schema</span></code></a>(catalog, schema)</p></td>
-<td><p></p></td>
+<td><p>Select a name for the default catalog and shcema.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_information_schema" title="datafusion.SessionConfig.with_information_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_information_schema</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_information_schema" title="datafusion.SessionConfig.with_information_schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_information_schema</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the inclusion of <cite>information_schema</cite> virtual tables.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_parquet_pruning" title="datafusion.SessionConfig.with_parquet_pruning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_parquet_pruning</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_parquet_pruning" title="datafusion.SessionConfig.with_parquet_pruning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_parquet_pruning</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of pruning predicate for parquet readers.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_aggregations" title="datafusion.SessionConfig.with_repartition_aggregations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_aggregations</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_aggregations" title="datafusion.SessionConfig.with_repartition_aggregations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_aggregations</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of repartitioning for aggregations.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_file_min_size" title="datafusion.SessionConfig.with_repartition_file_min_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_file_min_size</span></code></a>(size)</p></td>
-<td><p></p></td>
+<td><p>Set minimum file range size for repartitioning scans.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_file_scans" title="datafusion.SessionConfig.with_repartition_file_scans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_file_scans</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_file_scans" title="datafusion.SessionConfig.with_repartition_file_scans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_file_scans</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of repartitioning for file scans.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_joins" title="datafusion.SessionConfig.with_repartition_joins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_joins</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_joins" title="datafusion.SessionConfig.with_repartition_joins"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_joins</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of repartitioning for joins to improve parallelism.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_sorts" title="datafusion.SessionConfig.with_repartition_sorts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_sorts</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_sorts" title="datafusion.SessionConfig.with_repartition_sorts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_sorts</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of repartitioning for window functions.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_windows" title="datafusion.SessionConfig.with_repartition_windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_windows</span></code></a>(enabled)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_repartition_windows" title="datafusion.SessionConfig.with_repartition_windows"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_repartition_windows</span></code></a>([enabled])</p></td>
+<td><p>Enable or disable the use of repartitioning for window functions.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.SessionConfig.with_target_partitions" title="datafusion.SessionConfig.with_target_partitions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_target_partitions</span></code></a>(target_partitions)</p></td>
-<td><p></p></td>
+<td><p>Customize the number of target partitions for query execution.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.set">
-<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.set" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.set"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.set" title="Link to this definition">¶</a></dt>
+<dd><p>Set a configuration option.</p>
+<p>Args:
+key: Option key.
+value: Option value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_batch_size">
-<span class="sig-name descname"><span class="pre">with_batch_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_batch_size" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_batch_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_batch_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_batch_size" title="Link to this definition">¶</a></dt>
+<dd><p>Customize batch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch_size</strong> – Batch size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_create_default_catalog_and_schema">
-<span class="sig-name descname"><span class="pre">with_create_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_create_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_create_default_catalog_and_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Control if the default catalog and schema will be automatically created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether the default catalog and schema will be
+automatically created.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_default_catalog_and_schema">
-<span class="sig-name descname"><span class="pre">with_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_default_catalog_and_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Select a name for the default catalog and shcema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>catalog</strong> – Catalog name.</p></li>
+<li><p><strong>schema</strong> – Schema name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_information_schema">
-<span class="sig-name descname"><span class="pre">with_information_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_information_schema" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_information_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_information_schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_information_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the inclusion of <cite>information_schema</cite> virtual tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to include <cite>information_schema</cite> virtual tables.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_parquet_pruning">
-<span class="sig-name descname"><span class="pre">with_parquet_pruning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_parquet_pruning" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_parquet_pruning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_parquet_pruning"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_parquet_pruning" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of pruning predicate for parquet readers.</p>
+<p>Pruning predicates will enable the reader to skip row groups.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use pruning predicate for parquet readers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_aggregations">
-<span class="sig-name descname"><span class="pre">with_repartition_aggregations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_aggregations" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_aggregations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_aggregations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_aggregations" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for aggregations.</p>
+<p>Enabling this improves parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for aggregations.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_file_min_size">
-<span class="sig-name descname"><span class="pre">with_repartition_file_min_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_min_size" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_file_min_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_file_min_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_min_size" title="Link to this definition">¶</a></dt>
+<dd><p>Set minimum file range size for repartitioning scans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Minimum file range size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_file_scans">
-<span class="sig-name descname"><span class="pre">with_repartition_file_scans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_scans" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_file_scans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_file_scans"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_scans" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for file scans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for file scans.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_joins">
-<span class="sig-name descname"><span class="pre">with_repartition_joins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_joins" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_joins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_joins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_joins" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for joins to improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for joins.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_sorts">
-<span class="sig-name descname"><span class="pre">with_repartition_sorts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_sorts" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_sorts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_sorts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_sorts" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for window functions.</p>
+<p>This may improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for window functions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_windows">
-<span class="sig-name descname"><span class="pre">with_repartition_windows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_windows" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_repartition_windows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_repartition_windows"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_windows" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for window functions.</p>
+<p>This may improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for window functions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.SessionConfig.with_target_partitions">
-<span class="sig-name descname"><span class="pre">with_target_partitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_partitions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig.with_target_partitions" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_target_partitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#SessionConfig.with_target_partitions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.SessionConfig.with_target_partitions" title="Link to this definition">¶</a></dt>
+<dd><p>Customize the number of target partitions for query execution.</p>
+<p>Increasing partitions can increase concurrency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>target_partitions</strong> – Number of target partitions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>SessionConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -690,7 +822,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     

@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -470,77 +470,161 @@
 <h1>datafusion.RuntimeConfig<a class="headerlink" href="#datafusion-runtimeconfig" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.RuntimeConfig" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Runtime options for a SessionContext</p>
+<p>Runtime configuration options.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.__init__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new <cite>RuntimeConfig</cite> with default values.</p>
+</dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.__init__" title="datafusion.RuntimeConfig.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Create a new <cite>RuntimeConfig</cite> with default values.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_disk_manager_disabled" title="datafusion.RuntimeConfig.with_disk_manager_disabled"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_disk_manager_disabled</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Disable the disk manager, attempts to create temporary files will error.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_disk_manager_os" title="datafusion.RuntimeConfig.with_disk_manager_os"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_disk_manager_os</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Use the operating system's temporary directory for disk manager.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="datafusion.RuntimeConfig.with_disk_manager_specified"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_disk_manager_specified</span></code></a>(paths)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="datafusion.RuntimeConfig.with_disk_manager_specified"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_disk_manager_specified</span></code></a>(*paths)</p></td>
+<td><p>Use the specified paths for the disk manager's temporary files.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="datafusion.RuntimeConfig.with_fair_spill_pool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_fair_spill_pool</span></code></a>(size)</p></td>
-<td><p></p></td>
+<td><p>Use a fair spill pool with the specified size.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_greedy_memory_pool" title="datafusion.RuntimeConfig.with_greedy_memory_pool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_greedy_memory_pool</span></code></a>(size)</p></td>
-<td><p></p></td>
+<td><p>Use a greedy memory pool with the specified size.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_temp_file_path" title="datafusion.RuntimeConfig.with_temp_file_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_temp_file_path</span></code></a>(path)</p></td>
-<td><p></p></td>
+<td><p>Use the specified path to create any needed temporary files.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool" title="datafusion.RuntimeConfig.with_unbounded_memory_pool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_unbounded_memory_pool</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Use an unbounded memory pool.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_disabled">
-<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_disk_manager_disabled"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
+<dd><p>Disable the disk manager, attempts to create temporary files will error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_os">
-<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_os" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_disk_manager_os"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_os" title="Link to this definition">¶</a></dt>
+<dd><p>Use the operating system’s temporary directory for disk manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_specified">
-<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">paths</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_disk_manager_specified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
+<dd><p>Use the specified paths for the disk manager’s temporary files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>paths</strong> – Paths to use for the disk manager’s temporary files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_fair_spill_pool">
-<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_fair_spill_pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use a fair spill pool with the specified size.</p>
+<p>This pool works best when you know beforehand the query has multiple spillable
+operators that will likely all need to spill. Sometimes it will cause spills
+even when there was sufficient memory (reserved for other operators) to avoid
+doing so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌───────────────────────z──────────────────────z───────────────┐
+│                       z                      z               │
+│                       z                      z               │
+│       Spillable       z       Unspillable    z     Free      │
+│        Memory         z        Memory        z    Memory     │
+│                       z                      z               │
+│                       z                      z               │
+└───────────────────────z──────────────────────z───────────────┘
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <code class="docutils literal notranslate"><span class="pre">RuntimeConfig</span></code> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Examples usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_greedy_memory_pool">
-<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_greedy_memory_pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use a greedy memory pool with the specified size.</p>
+<p>This pool works well for queries that do not need to spill or have a single
+spillable operator. See <cite>RuntimeConfig.with_fair_spill_pool</cite> if there are
+multiple spillable operators that all will spill.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_temp_file_path">
-<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_temp_file_path" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_temp_file_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_temp_file_path" title="Link to this definition">¶</a></dt>
+<dd><p>Use the specified path to create any needed temporary files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – Path to use for temporary files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_unbounded_memory_pool">
-<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="reference internal" href="../_modules/datafusion/context.html#RuntimeConfig.with_unbounded_memory_pool"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use an unbounded memory pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <cite>RuntimeConfig</cite> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -588,7 +672,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     

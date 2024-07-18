@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -671,6 +671,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrame.unnest_columns">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrame.unnest_columns()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.DataFrame.with_column">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -749,363 +758,689 @@
 <h1>datafusion.DataFrame<a class="headerlink" href="#datafusion-dataframe" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.DataFrame">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DataFrame</span></span><a class="headerlink" href="#datafusion.DataFrame" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DataFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A PyDataFrame is a representation of a logical plan and an API to compose statements.
-Use it to build a plan and <cite>.collect()</cite> to execute the plan and collect the result.
-The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.</p>
+<p>Two dimensional table representation of data.</p>
+<p>See <a class="reference external" href="https://datafusion.apache.org/python/user-guide/basics.html">https://datafusion.apache.org/python/user-guide/basics.html</a> for more
+information.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.__init__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>This constructor is not to be used by the end user.</p>
+<p>See <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> for methods to create DataFrames.</p>
+</dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.__init__" title="datafusion.DataFrame.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.aggregate" title="datafusion.DataFrame.aggregate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aggregate</span></code></a>(group_by, aggs)</p></td>
+<td><p>Aggregates the rows of the current DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.aggregate" title="datafusion.DataFrame.aggregate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aggregate</span></code></a>(group_by, aggs)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.cache" title="datafusion.DataFrame.cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache</span></code></a>()</p></td>
+<td><p>Cache the DataFrame as a memory table.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.cache" title="datafusion.DataFrame.cache"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache</span></code></a>()</p></td>
-<td><p>Cache DataFrame.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect" title="datafusion.DataFrame.collect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect</span></code></a>()</p></td>
+<td><p>Execute this <cite>DataFrame</cite> and collect results into memory.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect" title="datafusion.DataFrame.collect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect</span></code></a>()</p></td>
-<td><p>Executes the plan, returning a list of <a href="#id1"><span class="problematic" id="id2">`</span></a>RecordBatch`es. Unless some order is specified in the plan, there is no guarantee of the order of the result.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect_partitioned" title="datafusion.DataFrame.collect_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_partitioned</span></code></a>()</p></td>
+<td><p>Execute this DataFrame and collect all partitioned results.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.collect_partitioned" title="datafusion.DataFrame.collect_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">collect_partitioned</span></code></a>()</p></td>
-<td><p>Executes this DataFrame and collects all results into a vector of vector of RecordBatch maintaining the input partitioning.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.count" title="datafusion.DataFrame.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a>()</p></td>
+<td><p>Return the total number of rows in this <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.count" title="datafusion.DataFrame.count"><code class="xref py py-obj docutils literal notranslate"><span class="pre">count</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.describe" title="datafusion.DataFrame.describe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">describe</span></code></a>()</p></td>
+<td><p>Return a new <cite>DataFrame</cite> that has statistics for a DataFrame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.describe" title="datafusion.DataFrame.describe"><code class="xref py py-obj docutils literal notranslate"><span class="pre">describe</span></code></a>()</p></td>
-<td><p>Calculate summary statistics for a DataFrame</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.distinct" title="datafusion.DataFrame.distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distinct</span></code></a>()</p></td>
+<td><p>Return a new <cite>DataFrame</cite> with all duplicated rows removed.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.distinct" title="datafusion.DataFrame.distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">distinct</span></code></a>()</p></td>
-<td><p>Filter out duplicate rows</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.except_all" title="datafusion.DataFrame.except_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">except_all</span></code></a>(other)</p></td>
+<td><p>Calculate the exception of two <a href="#id1"><span class="problematic" id="id2">`</span></a>DataFrame`s.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.except_all" title="datafusion.DataFrame.except_all"><code class="xref py py-obj docutils literal notranslate"><span class="pre">except_all</span></code></a>(py_df)</p></td>
-<td><p>Calculate the exception of two <a href="#id3"><span class="problematic" id="id4">`</span></a>DataFrame`s. The two <a href="#id5"><span class="problematic" id="id6">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream" title="datafusion.DataFrame.execute_stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream</span></code></a>()</p></td>
+<td><p>Executes this DataFrame and returns a stream over a single partition.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream" title="datafusion.DataFrame.execute_stream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream_partitioned" title="datafusion.DataFrame.execute_stream_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream_partitioned</span></code></a>()</p></td>
+<td><p>Executes this DataFrame and returns a stream for each partition.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.execute_stream_partitioned" title="datafusion.DataFrame.execute_stream_partitioned"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execute_stream_partitioned</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.execution_plan" title="datafusion.DataFrame.execution_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execution_plan</span></code></a>()</p></td>
+<td><p>Return the execution/physical plan that comprises this <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.execution_plan" title="datafusion.DataFrame.execution_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">execution_plan</span></code></a>()</p></td>
-<td><p>Get the execution plan for this <cite>DataFrame</cite></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.explain" title="datafusion.DataFrame.explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explain</span></code></a>([verbose, analyze])</p></td>
+<td><p>Return a DataFrame with the explanation of its plan so far.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.explain" title="datafusion.DataFrame.explain"><code class="xref py py-obj docutils literal notranslate"><span class="pre">explain</span></code></a>([verbose, analyze])</p></td>
-<td><p>Print the query plan</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.filter" title="datafusion.DataFrame.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(*predicates)</p></td>
+<td><p>Return a DataFrame for which <cite>predicate</cite> evaluates to <cite>True</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.filter" title="datafusion.DataFrame.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>(predicate)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.intersect" title="datafusion.DataFrame.intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersect</span></code></a>(other)</p></td>
+<td><p>Calculate the intersection of two <a href="#id3"><span class="problematic" id="id4">`</span></a>DataFrame`s.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.intersect" title="datafusion.DataFrame.intersect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intersect</span></code></a>(py_df)</p></td>
-<td><p>Calculate the intersection of two <a href="#id7"><span class="problematic" id="id8">`</span></a>DataFrame`s. The two <a href="#id9"><span class="problematic" id="id10">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.join" title="datafusion.DataFrame.join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join</span></code></a>(right, join_keys, how)</p></td>
+<td><p>Join this <cite>DataFrame</cite> with another <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.join" title="datafusion.DataFrame.join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">join</span></code></a>(right, join_keys, how)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.limit" title="datafusion.DataFrame.limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limit</span></code></a>(count[, offset])</p></td>
+<td><p>Return a new <cite>DataFrame</cite> with a limited number of rows.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.limit" title="datafusion.DataFrame.limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">limit</span></code></a>(count[, offset])</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.logical_plan" title="datafusion.DataFrame.logical_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logical_plan</span></code></a>()</p></td>
+<td><p>Return the unoptimized <cite>LogicalPlan</cite> that comprises this <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.logical_plan" title="datafusion.DataFrame.logical_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logical_plan</span></code></a>()</p></td>
-<td><p>Get the logical plan for this <cite>DataFrame</cite></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.optimized_logical_plan" title="datafusion.DataFrame.optimized_logical_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimized_logical_plan</span></code></a>()</p></td>
+<td><p>Return the optimized <cite>LogicalPlan</cite> that comprises this <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.optimized_logical_plan" title="datafusion.DataFrame.optimized_logical_plan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optimized_logical_plan</span></code></a>()</p></td>
-<td><p>Get the optimized logical plan for this <cite>DataFrame</cite></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition" title="datafusion.DataFrame.repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition</span></code></a>(num)</p></td>
+<td><p>Repartition a DataFrame into <cite>num</cite> partitions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition" title="datafusion.DataFrame.repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition</span></code></a>(num)</p></td>
-<td><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition_by_hash" title="datafusion.DataFrame.repartition_by_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition_by_hash</span></code></a>(*exprs, num)</p></td>
+<td><p>Repartition a DataFrame using a hash partitioning scheme.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.repartition_by_hash" title="datafusion.DataFrame.repartition_by_hash"><code class="xref py py-obj docutils literal notranslate"><span class="pre">repartition_by_hash</span></code></a>(*args, num)</p></td>
-<td><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.schema" title="datafusion.DataFrame.schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></a>()</p></td>
+<td><p>Return the <cite>pyarrow.Schema</cite> describing the output of this DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.schema" title="datafusion.DataFrame.schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">schema</span></code></a>()</p></td>
-<td><p>Returns the schema from the logical plan</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.select" title="datafusion.DataFrame.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(*exprs)</p></td>
+<td><p>Project arbitrary expressions into a new <cite>DataFrame</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.select" title="datafusion.DataFrame.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(*args)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.select_columns" title="datafusion.DataFrame.select_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_columns</span></code></a>(*args)</p></td>
+<td><p>Filter the DataFrame by columns.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.select_columns" title="datafusion.DataFrame.select_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_columns</span></code></a>(*args)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.show" title="datafusion.DataFrame.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a>([num])</p></td>
+<td><p>Execute the DataFrame and print the result to the console.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.show" title="datafusion.DataFrame.show"><code class="xref py py-obj docutils literal notranslate"><span class="pre">show</span></code></a>([num])</p></td>
-<td><p>Print the result, 20 lines by default</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.sort" title="datafusion.DataFrame.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>(*exprs)</p></td>
+<td><p>Sort the DataFrame by the specified sorting expressions.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.sort" title="datafusion.DataFrame.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>(*exprs)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_arrow_table" title="datafusion.DataFrame.to_arrow_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_arrow_table</span></code></a>()</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and convert it into an Arrow Table.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_arrow_table" title="datafusion.DataFrame.to_arrow_table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_arrow_table</span></code></a>()</p></td>
-<td><p>Convert to Arrow Table Collect the batches and pass to Arrow Table</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pandas" title="datafusion.DataFrame.to_pandas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pandas</span></code></a>()</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and convert it into a Pandas DataFrame.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pandas" title="datafusion.DataFrame.to_pandas"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pandas</span></code></a>()</p></td>
-<td><p>Convert to pandas dataframe with pyarrow Collect the batches, pass to Arrow Table &amp; then convert to Pandas DataFrame</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_polars" title="datafusion.DataFrame.to_polars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_polars</span></code></a>()</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and convert it into a Polars DataFrame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_polars" title="datafusion.DataFrame.to_polars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_polars</span></code></a>()</p></td>
-<td><p>Convert to polars dataframe with pyarrow Collect the batches, pass to Arrow Table &amp; then convert to polars DataFrame</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pydict" title="datafusion.DataFrame.to_pydict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pydict</span></code></a>()</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and convert it into a dictionary of lists.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pydict" title="datafusion.DataFrame.to_pydict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pydict</span></code></a>()</p></td>
-<td><p>Convert to Python dictionary using pyarrow Each dictionary key is a column and the dictionary value represents the column values</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pylist" title="datafusion.DataFrame.to_pylist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pylist</span></code></a>()</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and convert it into a list of dictionaries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.to_pylist" title="datafusion.DataFrame.to_pylist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_pylist</span></code></a>()</p></td>
-<td><p>Convert to Python list using pyarrow Each list item represents one row encoded as dictionary</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.union" title="datafusion.DataFrame.union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union</span></code></a>(other[, distinct])</p></td>
+<td><p>Calculate the union of two <a href="#id5"><span class="problematic" id="id6">`</span></a>DataFrame`s.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.union" title="datafusion.DataFrame.union"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union</span></code></a>(py_df[, distinct])</p></td>
-<td><p>Calculate the union of two <a href="#id11"><span class="problematic" id="id12">`</span></a>DataFrame`s, preserving duplicate rows.The two <a href="#id13"><span class="problematic" id="id14">`</span></a>DataFrame`s must have exactly the same schema</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.union_distinct" title="datafusion.DataFrame.union_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union_distinct</span></code></a>(other)</p></td>
+<td><p>Calculate the distinct union of two <a href="#id7"><span class="problematic" id="id8">`</span></a>DataFrame`s.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.union_distinct" title="datafusion.DataFrame.union_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">union_distinct</span></code></a>(py_df)</p></td>
-<td><p>Calculate the distinct union of two <a href="#id15"><span class="problematic" id="id16">`</span></a>DataFrame`s. The two <a href="#id17"><span class="problematic" id="id18">`</span></a>DataFrame`s must have exactly the same schema.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.unnest_column" title="datafusion.DataFrame.unnest_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unnest_column</span></code></a>(column[, preserve_nulls])</p></td>
+<td><p>See <code class="docutils literal notranslate"><span class="pre">unnest_columns</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.unnest_column" title="datafusion.DataFrame.unnest_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unnest_column</span></code></a>(column[, preserve_nulls])</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.unnest_columns" title="datafusion.DataFrame.unnest_columns"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unnest_columns</span></code></a>(*columns[, preserve_nulls])</p></td>
+<td><p>Expand columns of arrays into a single row per array element.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column" title="datafusion.DataFrame.with_column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column</span></code></a>(name, expr)</p></td>
-<td><p></p></td>
+<td><p>Add an additional column to the DataFrame.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.with_column_renamed" title="datafusion.DataFrame.with_column_renamed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">with_column_renamed</span></code></a>(old_name, new_name)</p></td>
 <td><p>Rename one column by applying a new projection.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_csv" title="datafusion.DataFrame.write_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_csv</span></code></a>(path)</p></td>
-<td><p>Write a <cite>DataFrame</cite> to a CSV file.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_csv" title="datafusion.DataFrame.write_csv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_csv</span></code></a>(path[, with_header])</p></td>
+<td><p>Execute the <cite>DataFrame</cite>  and write the results to a CSV file.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_json" title="datafusion.DataFrame.write_json"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_json</span></code></a>(path)</p></td>
-<td><p>Executes a query and writes the results to a partitioned JSON file.</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and write the results to a JSON file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DataFrame.write_parquet" title="datafusion.DataFrame.write_parquet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_parquet</span></code></a>(path[, compression, ...])</p></td>
-<td><p>Write a <cite>DataFrame</cite> to a Parquet file.</p></td>
+<td><p>Execute the <cite>DataFrame</cite> and write the results to a Parquet file.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.aggregate">
-<span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.aggregate" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">aggregate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aggs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.aggregate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.aggregate" title="Link to this definition">¶</a></dt>
+<dd><p>Aggregates the rows of the current DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group_by</strong> – List of expressions to group by.</p></li>
+<li><p><strong>aggs</strong> – List of expressions to aggregate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after aggregation.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.cache">
-<span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.cache" title="Link to this definition">¶</a></dt>
-<dd><p>Cache DataFrame.</p>
+<span class="sig-name descname"><span class="pre">cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.cache" title="Link to this definition">¶</a></dt>
+<dd><p>Cache the DataFrame as a memory table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Cached DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.collect">
-<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.collect" title="Link to this definition">¶</a></dt>
-<dd><p>Executes the plan, returning a list of <a href="#id19"><span class="problematic" id="id20">`</span></a>RecordBatch`es.
-Unless some order is specified in the plan, there is no
-guarantee of the order of the result.</p>
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pa.RecordBatch</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.collect" title="Link to this definition">¶</a></dt>
+<dd><p>Execute this <cite>DataFrame</cite> and collect results into memory.</p>
+<p>Prior to calling <cite>collect</cite>, modifying a DataFrme simply updates a plan
+(no actual computation is performed). Calling <cite>collect</cite> triggers the
+computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of <a href="#id9"><span class="problematic" id="id10">`</span></a>pyarrow.RecordBatch`es collected from the DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.collect_partitioned">
-<span class="sig-name descname"><span class="pre">collect_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.collect_partitioned" title="Link to this definition">¶</a></dt>
-<dd><p>Executes this DataFrame and collects all results into a vector of vector of RecordBatch
-maintaining the input partitioning.</p>
+<span class="sig-name descname"><span class="pre">collect_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pa.RecordBatch</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.collect_partitioned"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.collect_partitioned" title="Link to this definition">¶</a></dt>
+<dd><p>Execute this DataFrame and collect all partitioned results.</p>
+<p>This operation returns <code class="docutils literal notranslate"><span class="pre">RecordBatch</span></code> maintaining the input
+partitioning.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>List of list of <code class="docutils literal notranslate"><span class="pre">RecordBatch</span></code> collected from the</dt><dd><p>DataFrame.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.count">
-<span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.count" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.count" title="Link to this definition">¶</a></dt>
+<dd><p>Return the total number of rows in this <cite>DataFrame</cite>.</p>
+<p>Note that this method will actually run a plan to calculate the
+count, which may be slow for large or complicated DataFrames.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Number of rows in the DataFrame.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.describe">
-<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.describe" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate summary statistics for a DataFrame</p>
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.describe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.describe" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new <cite>DataFrame</cite> that has statistics for a DataFrame.</p>
+<p>Only summarized numeric datatypes at the moments and returns nulls
+for non-numeric datatypes.</p>
+<p>The output format is modeled after pandas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A summary DataFrame containing statistics.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.distinct">
-<span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.distinct" title="Link to this definition">¶</a></dt>
-<dd><p>Filter out duplicate rows</p>
+<span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.distinct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.distinct" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new <cite>DataFrame</cite> with all duplicated rows removed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame after removing duplicates.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.except_all">
-<span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.except_all" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the exception of two <a href="#id21"><span class="problematic" id="id22">`</span></a>DataFrame`s.  The two <a href="#id23"><span class="problematic" id="id24">`</span></a>DataFrame`s must have exactly the same schema</p>
+<span class="sig-name descname"><span class="pre">except_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.except_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.except_all" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the exception of two <a href="#id11"><span class="problematic" id="id12">`</span></a>DataFrame`s.</p>
+<p>The two <a href="#id13"><span class="problematic" id="id14">`</span></a>DataFrame`s must have exactly the same schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> – DataFrame to calculate exception with.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after exception.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.execute_stream">
-<span class="sig-name descname"><span class="pre">execute_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.execute_stream" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">execute_stream</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RecordBatchStream</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.execute_stream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.execute_stream" title="Link to this definition">¶</a></dt>
+<dd><p>Executes this DataFrame and returns a stream over a single partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Record Batch Stream over a single partition.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.execute_stream_partitioned">
-<span class="sig-name descname"><span class="pre">execute_stream_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.execute_stream_partitioned" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">execute_stream_partitioned</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">RecordBatchStream</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.execute_stream_partitioned"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.execute_stream_partitioned" title="Link to this definition">¶</a></dt>
+<dd><p>Executes this DataFrame and returns a stream for each partition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>One record batch stream per partition.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.execution_plan">
-<span class="sig-name descname"><span class="pre">execution_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.execution_plan" title="Link to this definition">¶</a></dt>
-<dd><p>Get the execution plan for this <cite>DataFrame</cite></p>
+<span class="sig-name descname"><span class="pre">execution_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExecutionPlan</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.execution_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.execution_plan" title="Link to this definition">¶</a></dt>
+<dd><p>Return the execution/physical plan that comprises this <cite>DataFrame</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Execution plan.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.explain">
-<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.explain" title="Link to this definition">¶</a></dt>
-<dd><p>Print the query plan</p>
+<span class="sig-name descname"><span class="pre">explain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analyze</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.explain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.explain" title="Link to this definition">¶</a></dt>
+<dd><p>Return a DataFrame with the explanation of its plan so far.</p>
+<p>If <cite>analyze</cite> is specified, runs the plan and reports metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>verbose</strong> – If <cite>True</cite>, more details will be included.</p></li>
+<li><p><strong>analyze</strong> – If <cite>True</cite>, the plan will run and metrics reported.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with the explanation of its plan.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.filter">
-<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">predicate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.filter" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">predicates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Return a DataFrame for which <cite>predicate</cite> evaluates to <cite>True</cite>.</p>
+<p>Rows for which <cite>predicate</cite> evaluates to <cite>False</cite> or <cite>None</cite> are filtered
+out.  If more than one predicate is provided, these predicates will be
+combined as a logical AND. If more complex logic is required, see the
+logical operations in <cite>datafusion.functions</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>predicates</strong> – Predicate expression(s) to filter the DataFrame.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after filtering.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.intersect">
-<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.intersect" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the intersection of two <a href="#id25"><span class="problematic" id="id26">`</span></a>DataFrame`s.  The two <a href="#id27"><span class="problematic" id="id28">`</span></a>DataFrame`s must have exactly the same schema</p>
+<span class="sig-name descname"><span class="pre">intersect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.intersect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.intersect" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the intersection of two <a href="#id15"><span class="problematic" id="id16">`</span></a>DataFrame`s.</p>
+<p>The two <a href="#id17"><span class="problematic" id="id18">`</span></a>DataFrame`s must have exactly the same schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> – DataFrame to intersect with.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after intersection.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.join">
-<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">join_keys</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.join" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">join_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.join" title="Link to this definition">¶</a></dt>
+<dd><p>Join this <cite>DataFrame</cite> with another <cite>DataFrame</cite>.</p>
+<p>Join keys are a pair of lists of column names in the left and right
+dataframes, respectively. These lists must have the same length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>right</strong> – Other DataFrame to join with.</p></li>
+<li><p><strong>join_keys</strong> – Tuple of two lists of column names to join on.</p></li>
+<li><p><strong>how</strong> – Type of join to perform. Supported types are “inner”, “left”,
+“right”, “full”, “semi”, “anti”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after join.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.limit">
-<span class="sig-name descname"><span class="pre">limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.limit" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.limit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.limit" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new <cite>DataFrame</cite> with a limited number of rows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count</strong> – Number of rows to limit the DataFrame to.</p></li>
+<li><p><strong>offset</strong> – Number of rows to skip.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after limiting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.logical_plan">
-<span class="sig-name descname"><span class="pre">logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.logical_plan" title="Link to this definition">¶</a></dt>
-<dd><p>Get the logical plan for this <cite>DataFrame</cite></p>
+<span class="sig-name descname"><span class="pre">logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">LogicalPlan</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.logical_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.logical_plan" title="Link to this definition">¶</a></dt>
+<dd><p>Return the unoptimized <cite>LogicalPlan</cite> that comprises this <cite>DataFrame</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Unoptimized logical plan.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.optimized_logical_plan">
-<span class="sig-name descname"><span class="pre">optimized_logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.optimized_logical_plan" title="Link to this definition">¶</a></dt>
-<dd><p>Get the optimized logical plan for this <cite>DataFrame</cite></p>
+<span class="sig-name descname"><span class="pre">optimized_logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">LogicalPlan</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.optimized_logical_plan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.optimized_logical_plan" title="Link to this definition">¶</a></dt>
+<dd><p>Return the optimized <cite>LogicalPlan</cite> that comprises this <cite>DataFrame</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimized logical plan.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.repartition">
-<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.repartition" title="Link to this definition">¶</a></dt>
-<dd><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p>
+<span class="sig-name descname"><span class="pre">repartition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.repartition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.repartition" title="Link to this definition">¶</a></dt>
+<dd><p>Repartition a DataFrame into <cite>num</cite> partitions.</p>
+<p>The batches allocation uses a round-robin algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num</strong> – Number of partitions to repartition the DataFrame into.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Repartitioned DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.repartition_by_hash">
-<span class="sig-name descname"><span class="pre">repartition_by_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.repartition_by_hash" title="Link to this definition">¶</a></dt>
-<dd><p>Repartition a <cite>DataFrame</cite> based on a logical partitioning scheme.</p>
+<span class="sig-name descname"><span class="pre">repartition_by_hash</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.repartition_by_hash"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.repartition_by_hash" title="Link to this definition">¶</a></dt>
+<dd><p>Repartition a DataFrame using a hash partitioning scheme.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exprs</strong> – Expressions to evaluate and perform hashing on.</p></li>
+<li><p><strong>num</strong> – Number of partitions to repartition the DataFrame into.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Repartitioned DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.schema">
-<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.schema" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the schema from the logical plan</p>
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pa.Schema</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.schema"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Return the <cite>pyarrow.Schema</cite> describing the output of this DataFrame.</p>
+<p>The output schema contains information on the name, data type, and
+nullability for each column.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Describing schema of the DataFrame</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.select">
-<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.select" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">select</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.select"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.select" title="Link to this definition">¶</a></dt>
+<dd><p>Project arbitrary expressions into a new <cite>DataFrame</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exprs</strong> – Either column names or <cite>Expr</cite> to select.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after projection. It has one column for each expression.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<p>The following example will return 3 columns from the original dataframe.
+The first two columns will be the original column <cite>a</cite> and <cite>b</cite> since the
+string “a” is assumed to refer to column selection. Also a duplicate of
+column <cite>a</cite> will be returned with the column name <cite>alternate_a</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;alternate_a&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.select_columns">
-<span class="sig-name descname"><span class="pre">select_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.select_columns" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">select_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.select_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.select_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Filter the DataFrame by columns.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame only containing the specified columns.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.show">
-<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.show" title="Link to this definition">¶</a></dt>
-<dd><p>Print the result, 20 lines by default</p>
+<span class="sig-name descname"><span class="pre">show</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.show"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.show" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the DataFrame and print the result to the console.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num</strong> – Number of lines to show.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.sort">
-<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.sort" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.sort" title="Link to this definition">¶</a></dt>
+<dd><p>Sort the DataFrame by the specified sorting expressions.</p>
+<p>Note that any expression can be turned into a sort expression by
+calling its <cite>sort</cite>  method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exprs</strong> – Sort expressions, applied in order.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after sorting.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.to_arrow_table">
-<span class="sig-name descname"><span class="pre">to_arrow_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.to_arrow_table" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to Arrow Table
-Collect the batches and pass to Arrow Table</p>
+<span class="sig-name descname"><span class="pre">to_arrow_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pa.Table</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.to_arrow_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.to_arrow_table" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and convert it into an Arrow Table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Arrow Table.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.to_pandas">
-<span class="sig-name descname"><span class="pre">to_pandas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.to_pandas" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to pandas dataframe with pyarrow
-Collect the batches, pass to Arrow Table &amp; then convert to Pandas DataFrame</p>
+<span class="sig-name descname"><span class="pre">to_pandas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pd.DataFrame</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.to_pandas"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.to_pandas" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and convert it into a Pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Pandas DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.to_polars">
-<span class="sig-name descname"><span class="pre">to_polars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.to_polars" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to polars dataframe with pyarrow
-Collect the batches, pass to Arrow Table &amp; then convert to polars DataFrame</p>
+<span class="sig-name descname"><span class="pre">to_polars</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pl.DataFrame</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.to_polars"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.to_polars" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and convert it into a Polars DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Polars DataFrame.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.to_pydict">
-<span class="sig-name descname"><span class="pre">to_pydict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.to_pydict" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to Python dictionary using pyarrow
-Each dictionary key is a column and the dictionary value represents the column values</p>
+<span class="sig-name descname"><span class="pre">to_pydict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.to_pydict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.to_pydict" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and convert it into a dictionary of lists.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dictionary of lists.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.to_pylist">
-<span class="sig-name descname"><span class="pre">to_pylist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.to_pylist" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to Python list using pyarrow
-Each list item represents one row encoded as dictionary</p>
+<span class="sig-name descname"><span class="pre">to_pylist</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.to_pylist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.to_pylist" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and convert it into a list of dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of dictionaries.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.union">
-<span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the union of two <a href="#id29"><span class="problematic" id="id30">`</span></a>DataFrame`s, preserving duplicate rows.The
-two <a href="#id31"><span class="problematic" id="id32">`</span></a>DataFrame`s must have exactly the same schema</p>
+<span class="sig-name descname"><span class="pre">union</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">distinct</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.union"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.union" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the union of two <a href="#id19"><span class="problematic" id="id20">`</span></a>DataFrame`s.</p>
+<p>The two <a href="#id21"><span class="problematic" id="id22">`</span></a>DataFrame`s must have exactly the same schema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>other</strong> – DataFrame to union with.</p></li>
+<li><p><strong>distinct</strong> – If <cite>True</cite>, duplicate rows will be removed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after union.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.union_distinct">
-<span class="sig-name descname"><span class="pre">union_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">py_df</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.union_distinct" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the distinct union of two <a href="#id33"><span class="problematic" id="id34">`</span></a>DataFrame`s.  The
-two <a href="#id35"><span class="problematic" id="id36">`</span></a>DataFrame`s must have exactly the same schema</p>
+<span class="sig-name descname"><span class="pre">union_distinct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.union_distinct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.union_distinct" title="Link to this definition">¶</a></dt>
+<dd><p>Calculate the distinct union of two <a href="#id23"><span class="problematic" id="id24">`</span></a>DataFrame`s.</p>
+<p>The two <a href="#id25"><span class="problematic" id="id26">`</span></a>DataFrame`s must have exactly the same schema.
+Any duplicate rows are discarded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>other</strong> – DataFrame to union with.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame after union.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.unnest_column">
-<span class="sig-name descname"><span class="pre">unnest_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.unnest_column" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">unnest_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.unnest_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.unnest_column" title="Link to this definition">¶</a></dt>
+<dd><p>See <code class="docutils literal notranslate"><span class="pre">unnest_columns</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.DataFrame.unnest_columns">
+<span class="sig-name descname"><span class="pre">unnest_columns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preserve_nulls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.unnest_columns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.unnest_columns" title="Link to this definition">¶</a></dt>
+<dd><p>Expand columns of arrays into a single row per array element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – Column names to perform unnest operation on.</p></li>
+<li><p><strong>preserve_nulls</strong> – If False, rows with null entries will not be
+returned.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A DataFrame with the columns expanded.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.with_column">
-<span class="sig-name descname"><span class="pre">with_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.with_column" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">with_column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.with_column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.with_column" title="Link to this definition">¶</a></dt>
+<dd><p>Add an additional column to the DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – Name of the column to add.</p></li>
+<li><p><strong>expr</strong> – Expression to compute the column.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with the new column.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.with_column_renamed">
-<span class="sig-name descname"><span class="pre">with_column_renamed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.with_column_renamed" title="Link to this definition">¶</a></dt>
-<dd><p>Rename one column by applying a new projection. This is a no-op if the column to be
-renamed does not exist.</p>
+<span class="sig-name descname"><span class="pre">with_column_renamed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">old_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.with_column_renamed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.with_column_renamed" title="Link to this definition">¶</a></dt>
+<dd><p>Rename one column by applying a new projection.</p>
+<p>This is a no-op if the column to be renamed does not exist.</p>
+<p>The method supports case sensitive rename with wrapping column name
+into one the following symbols (” or ‘ or <a href="#id27"><span class="problematic" id="id28">`</span></a>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>old_name</strong> – Old column name.</p></li>
+<li><p><strong>new_name</strong> – New column name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DataFrame with the column renamed.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.write_csv">
-<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_csv" title="Link to this definition">¶</a></dt>
-<dd><p>Write a <cite>DataFrame</cite> to a CSV file.</p>
+<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.write_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.write_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite>  and write the results to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – Path of the CSV file to write.</p></li>
+<li><p><strong>with_header</strong> – If true, output the CSV header row.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.write_json">
-<span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_json" title="Link to this definition">¶</a></dt>
-<dd><p>Executes a query and writes the results to a partitioned JSON file.</p>
+<span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.write_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.write_json" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and write the results to a JSON file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – Path of the JSON file to write.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.DataFrame.write_parquet">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'uncompressed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
-<dd><p>Write a <cite>DataFrame</cite> to a Parquet file.</p>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'uncompressed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/dataframe.html#DataFrame.write_parquet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <cite>DataFrame</cite> and write the results to a Parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – Path of the Parquet file to write.</p></li>
+<li><p><strong>compression</strong> – Compression type to use.</p></li>
+<li><p><strong>compression_level</strong> – Compression level to use.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -1154,7 +1489,7 @@ renamed does not exist.</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     

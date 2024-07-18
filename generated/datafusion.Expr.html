@@ -306,8 +306,8 @@
     </label>
     <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="datafusion.functions.html">
+       datafusion.functions
       </a>
      </li>
     </ul>
@@ -551,166 +551,195 @@
 <h1>datafusion.Expr<a class="headerlink" href="#datafusion-expr" title="Link to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Expr">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><a class="headerlink" href="#datafusion.Expr" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>A PyExpr that can be used on a DataFrame</p>
+<p>Expression object.</p>
+<p>Expressions are one of the core concepts in DataFusion. See
+<a class="reference external" href="https://datafusion.apache.org/python/user-guide/common-operations/expressions.html">https://datafusion.apache.org/python/user-guide/common-operations/expressions.html</a>
+for more information.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.__init__" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.__init__" title="Link to this definition">¶</a></dt>
+<dd><p>This constructor should not be called by the end user.</p>
+</dd></dl>
 
 <p class="rubric">Methods</p>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.__init__" title="datafusion.Expr.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.alias" title="datafusion.Expr.alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alias</span></code></a>(name)</p></td>
+<td><p>Assign a name to the expression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.alias" title="datafusion.Expr.alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alias</span></code></a>(name)</p></td>
-<td><p>assign a name to the PyExpr</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.canonical_name" title="datafusion.Expr.canonical_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">canonical_name</span></code></a>()</p></td>
+<td><p>Returns a complete string representation of this expression.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.canonical_name" title="datafusion.Expr.canonical_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">canonical_name</span></code></a>()</p></td>
-<td><p>Returns a full and complete string representation of this expression.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.cast" title="datafusion.Expr.cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast</span></code></a>(to)</p></td>
+<td><p>Cast to a new data type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.cast" title="datafusion.Expr.cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cast</span></code></a>(to)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.column" title="datafusion.Expr.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
+<td><p>Creates a new expression representing a column in a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.column" title="datafusion.Expr.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.column_name" title="datafusion.Expr.column_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column_name</span></code></a>(plan)</p></td>
+<td><p>Compute the output column name based on the provided logical plan.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.column_name" title="datafusion.Expr.column_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column_name</span></code></a>(plan)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.display_name" title="datafusion.Expr.display_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_name</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.display_name" title="datafusion.Expr.display_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">display_name</span></code></a>()</p></td>
 <td><p>Returns the name of this expression as it should appear in a schema.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.is_null" title="datafusion.Expr.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a>()</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.is_null" title="datafusion.Expr.is_null"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_null</span></code></a>()</p></td>
+<td><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is null.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.literal" title="datafusion.Expr.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
+<td><p>Creates a new expression representing a scalar value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.python_value" title="datafusion.Expr.python_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">python_value</span></code></a>()</p></td>
-<td><p>Extracts the Expr value into a PyObject that can be shared with Python</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.python_value" title="datafusion.Expr.python_value"><code class="xref py py-obj docutils literal notranslate"><span class="pre">python_value</span></code></a>()</p></td>
+<td><p>Extracts the Expr value into a PyObject.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operands" title="datafusion.Expr.rex_call_operands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operands</span></code></a>()</p></td>
-<td><p>Row expressions, Rex(s), operate on the concept of operands.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operands" title="datafusion.Expr.rex_call_operands"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operands</span></code></a>()</p></td>
+<td><p>Return the operands of the expression based on it's variant type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operator" title="datafusion.Expr.rex_call_operator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operator</span></code></a>()</p></td>
-<td><p>Extracts the operator associated with a RexType::Call</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_call_operator" title="datafusion.Expr.rex_call_operator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_call_operator</span></code></a>()</p></td>
+<td><p>Extracts the operator associated with a row expression type call.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.rex_type" title="datafusion.Expr.rex_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_type</span></code></a>()</p></td>
-<td><p>A Rex (Row Expression) specifies a single row of data.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.rex_type" title="datafusion.Expr.rex_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rex_type</span></code></a>()</p></td>
+<td><p>Return the Rex Type of this expression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.sort" title="datafusion.Expr.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>([ascending, nulls_first])</p></td>
-<td><p>Create a sort PyExpr from an existing PyExpr.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.sort" title="datafusion.Expr.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>([ascending, nulls_first])</p></td>
+<td><p>Creates a sort <code class="docutils literal notranslate"><span class="pre">Expr</span></code> from an existing <code class="docutils literal notranslate"><span class="pre">Expr</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
-<td><p>Return the specific expression</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.to_variant" title="datafusion.Expr.to_variant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_variant</span></code></a>()</p></td>
+<td><p>Convert this expression into a python object if possible.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.types" title="datafusion.Expr.types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">types</span></code></a>()</p></td>
-<td><p>Given the current <cite>Expr</cite> return the DataTypeMap which represents the PythonType, Arrow DataType, and SqlType Enum which represents</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.types" title="datafusion.Expr.types"><code class="xref py py-obj docutils literal notranslate"><span class="pre">types</span></code></a>()</p></td>
+<td><p>Return the <code class="docutils literal notranslate"><span class="pre">DataTypeMap</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr.variant_name" title="datafusion.Expr.variant_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variant_name</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr.variant_name" title="datafusion.Expr.variant_name"><code class="xref py py-obj docutils literal notranslate"><span class="pre">variant_name</span></code></a>()</p></td>
 <td><p>Returns the name of the Expr variant.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.alias">
-<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.alias" title="Link to this definition">¶</a></dt>
-<dd><p>assign a name to the PyExpr</p>
+<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.alias"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.alias" title="Link to this definition">¶</a></dt>
+<dd><p>Assign a name to the expression.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.canonical_name">
-<span class="sig-name descname"><span class="pre">canonical_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.canonical_name" title="Link to this definition">¶</a></dt>
-<dd><p>Returns a full and complete string representation of this expression.</p>
+<span class="sig-name descname"><span class="pre">canonical_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.canonical_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.canonical_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a complete string representation of this expression.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.cast" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pa.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.cast"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.cast" title="Link to this definition">¶</a></dt>
+<dd><p>Cast to a new data type.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.column">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.column" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.column"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.column" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a column in a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.column_name">
-<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.column_name" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LogicalPlan</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.column_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.column_name" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the output column name based on the provided logical plan.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.display_name">
-<span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.display_name" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the name of this expression as it should appear in a schema. This name
-will not include any CAST expressions.</p>
+<span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.display_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.display_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of this expression as it should appear in a schema.</p>
+<p>This name will not include any CAST expressions.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.is_null">
-<span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.is_null" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.is_null"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.is_null" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is null.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.literal">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.literal" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.literal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.literal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a scalar value.</p>
+<p><cite>value</cite> must be a valid PyArrow scalar value or easily castable to one.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.python_value">
-<span class="sig-name descname"><span class="pre">python_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.python_value" title="Link to this definition">¶</a></dt>
-<dd><p>Extracts the Expr value into a PyObject that can be shared with Python</p>
+<span class="sig-name descname"><span class="pre">python_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.python_value"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.python_value" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts the Expr value into a PyObject.</p>
+<p>This is only valid for literal expressions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Python object representing literal value of the expression.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.rex_call_operands">
-<span class="sig-name descname"><span class="pre">rex_call_operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_call_operands" title="Link to this definition">¶</a></dt>
-<dd><p>Row expressions, Rex(s), operate on the concept of operands. Different variants of Expressions, Expr(s),
-store those operands in different datastructures. This function examines the Expr variant and returns
-the operands to the calling logic as a Vec of PyExpr instances.</p>
+<span class="sig-name descname"><span class="pre">rex_call_operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.rex_call_operands"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.rex_call_operands" title="Link to this definition">¶</a></dt>
+<dd><p>Return the operands of the expression based on it’s variant type.</p>
+<p>Row expressions, Rex(s), operate on the concept of operands. Different
+variants of Expressions, Expr(s), store those operands in different
+datastructures. This function examines the Expr variant and returns
+the operands to the calling logic.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.rex_call_operator">
-<span class="sig-name descname"><span class="pre">rex_call_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_call_operator" title="Link to this definition">¶</a></dt>
-<dd><p>Extracts the operator associated with a RexType::Call</p>
+<span class="sig-name descname"><span class="pre">rex_call_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.rex_call_operator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.rex_call_operator" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts the operator associated with a row expression type call.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.rex_type">
-<span class="sig-name descname"><span class="pre">rex_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.rex_type" title="Link to this definition">¶</a></dt>
-<dd><p>A Rex (Row Expression) specifies a single row of data. That specification
-could include user defined functions or types. RexType identifies the row
-as one of the possible valid <cite>RexTypes</cite>.</p>
+<span class="sig-name descname"><span class="pre">rex_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RexType</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.rex_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.rex_type" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Rex Type of this expression.</p>
+<p>A Rex (Row Expression) specifies a single row of data.That specification
+could include user defined functions or types. RexType identifies the
+row as one of the possible valid <a href="#id1"><span class="problematic" id="id2">``</span></a>RexType``(s).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.sort">
-<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.sort" title="Link to this definition">¶</a></dt>
-<dd><p>Create a sort PyExpr from an existing PyExpr.</p>
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.sort"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.sort" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a sort <code class="docutils literal notranslate"><span class="pre">Expr</span></code> from an existing <code class="docutils literal notranslate"><span class="pre">Expr</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ascending</strong> – If true, sort in ascending order.</p></li>
+<li><p><strong>nulls_first</strong> – Return null values first.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.to_variant">
-<span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.to_variant" title="Link to this definition">¶</a></dt>
-<dd><p>Return the specific expression</p>
+<span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.to_variant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.to_variant" title="Link to this definition">¶</a></dt>
+<dd><p>Convert this expression into a python object if possible.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.types">
-<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.types" title="Link to this definition">¶</a></dt>
-<dd><p>Given the current <cite>Expr</cite> return the DataTypeMap which represents the
-PythonType, Arrow DataType, and SqlType Enum which represents</p>
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataTypeMap</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.types"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.types" title="Link to this definition">¶</a></dt>
+<dd><p>Return the <code class="docutils literal notranslate"><span class="pre">DataTypeMap</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataTypeMap which represents the PythonType, Arrow DataType, and
+SqlType Enum which this expression represents.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.variant_name">
-<span class="sig-name descname"><span class="pre">variant_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr.variant_name" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the name of the Expr variant.
-Ex: ‘IsNotNull’, ‘Literal’, ‘BinaryExpr’, etc</p>
+<span class="sig-name descname"><span class="pre">variant_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datafusion/expr.html#Expr.variant_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.Expr.variant_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of the Expr variant.</p>
+<p>Ex: <code class="docutils literal notranslate"><span class="pre">IsNotNull</span></code>, <code class="docutils literal notranslate"><span class="pre">Literal</span></code>, <code class="docutils literal notranslate"><span class="pre">BinaryExpr</span></code>, etc</p>
 </dd></dl>
 
 </dd></dl>
@@ -759,7 +788,7 @@ Ex: ‘IsNotNull’, ‘Literal’, ‘BinaryExpr’, etc</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
 </p>
     </div>
     
