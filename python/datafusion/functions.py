@@ -1126,6 +1126,28 @@ def list_replace_all(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
     return array_replace_all(array, from_val, to_val)
 
 
+def array_sort(array: Expr, descending: bool = False, null_first: bool = False) -> Expr:
+    """Sort an array.
+
+    Args:
+        array: The input array to sort.
+        descending: If True, sorts in descending order.
+        null_first: If True, nulls will be returned at the beginning of the array.
+    """
+    desc = "DESC" if descending else "ASC"
+    nulls_first = "NULLS FIRST" if null_first else "NULLS LAST"
+    return Expr(
+        f.array_sort(
+            array.expr, Expr.literal(desc).expr, Expr.literal(nulls_first).expr
+        )
+    )
+
+
+def list_sort(array: Expr, descending: bool = False, null_first: bool = False) -> Expr:
+    """This is an alias for ``array_sort``."""
+    return array_sort(array, descending=descending, null_first=null_first)
+
+
 def array_slice(
     array: Expr, begin: Expr, end: Expr, stride: Expr | None = None
 ) -> Expr:

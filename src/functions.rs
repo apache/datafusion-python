@@ -673,6 +673,8 @@ array_fn!(array_replace_n, array from to max);
 array_fn!(list_replace_n, array_replace_n, array from to max);
 array_fn!(array_replace_all, array from to);
 array_fn!(list_replace_all, array_replace_all, array from to);
+array_fn!(array_sort, array desc null_first);
+array_fn!(list_sort, array_sort, array desc null_first);
 array_fn!(array_intersect, first_array second_array);
 array_fn!(list_intersect, array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
@@ -936,6 +938,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(list_replace_n))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(list_replace_all))?;
+    m.add_wrapped(wrap_pyfunction!(array_sort))?;
+    m.add_wrapped(wrap_pyfunction!(list_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(list_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
