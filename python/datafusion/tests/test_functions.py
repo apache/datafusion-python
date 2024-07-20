@@ -454,6 +454,14 @@ def py_flatten(arr):
             lambda data: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
         ],
         [
+            lambda col: f.array_sort(col, descending=True, null_first=True),
+            lambda data: [np.sort(arr)[::-1] for arr in data],
+        ],
+        [
+            lambda col: f.list_sort(col, descending=False, null_first=False),
+            lambda data: [np.sort(arr) for arr in data],
+        ],
+        [
             lambda col: f.array_slice(col, literal(2), literal(4)),
             lambda data: [arr[1:4] for arr in data],
         ],
