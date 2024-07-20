@@ -50,6 +50,7 @@
       array_replace_n
       array_resize
       array_slice
+      array_sort
       array_to_string
       array_union
       arrow_typeof
@@ -141,6 +142,7 @@
       list_replace_n
       list_resize
       list_slice
+      list_sort
       list_to_string
       list_union
       ln

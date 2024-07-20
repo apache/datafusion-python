@@ -1990,6 +1990,34 @@
 
 
 
+<div class="viewcode-block" id="array_sort">
+<a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.array_sort">[docs]</a>
+<span class="k">def</span> <span class="nf">array_sort</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">descending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">null_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sort an array.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        array: The input array to sort.</span>
+<span class="sd">        descending: If True, sorts in descending order.</span>
+<span class="sd">        null_first: If True, nulls will be returned at the beginning of the array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">desc</span> <span class="o">=</span> <span class="s2">&quot;DESC&quot;</span> <span class="k">if</span> <span class="n">descending</span> <span class="k">else</span> <span class="s2">&quot;ASC&quot;</span>
+    <span class="n">nulls_first</span> <span class="o">=</span> <span class="s2">&quot;NULLS FIRST&quot;</span> <span class="k">if</span> <span class="n">null_first</span> <span class="k">else</span> <span class="s2">&quot;NULLS LAST&quot;</span>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">array_sort</span><span class="p">(</span>
+            <span class="n">array</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">Expr</span><span class="o">.</span><span class="n">literal</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">Expr</span><span class="o">.</span><span class="n">literal</span><span class="p">(</span><span class="n">nulls_first</span><span class="p">)</span><span class="o">.</span><span class="n">expr</span>
+        <span class="p">)</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="list_sort">
+<a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.list_sort">[docs]</a>
+<span class="k">def</span> <span class="nf">list_sort</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">descending</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">null_first</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;This is an alias for ``array_sort``.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">array_sort</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">descending</span><span class="o">=</span><span class="n">descending</span><span class="p">,</span> <span class="n">null_first</span><span class="o">=</span><span class="n">null_first</span><span class="p">)</span></div>
+
+
+
 <div class="viewcode-block" id="array_slice">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.array_slice">[docs]</a>
 <span class="k">def</span> <span class="nf">array_slice</span><span class="p">(</span>
@@ -2529,7 +2557,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.6.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.4.7.<br>
 </p>
     </div>
     
