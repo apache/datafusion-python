@@ -1254,12 +1254,12 @@ def approx_percentile_cont(
     num_centroids = None
     if num_centroids is None:
         return Expr(
-            f.approx_percentile_cont(expr.expr, percentile.expr, distinct=distinct)
+            f.approx_percentile_cont(expression.expr, percentile.expr, distinct=distinct)
         )
 
     return Expr(
         f.approx_percentile_cont(
-            expr.expr, percentile.expr, distinct=distinct
+            expression.expr, percentile.expr, distinct=distinct
         )
     )
 
