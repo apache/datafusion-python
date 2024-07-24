@@ -604,8 +604,13 @@ fn col(name: &str) -> PyResult<PyExpr> {
 /// Wrapper for [`functions_aggregate::expr_fn::count`]
 /// Count the number of non-null values in the column
 #[pyfunction]
-fn count(expr: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::count(expr.expr).into()
+fn count(expr: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::count(expr.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
 }
 
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
