@@ -1233,9 +1233,9 @@ def flatten(array: Expr) -> Expr:
 
 
 # aggregate functions
-def approx_distinct(arg: Expr) -> Expr:
+def approx_distinct(expression: Expr) -> Expr:
     """Returns the approximate number of distinct values."""
-    return Expr(f.approx_distinct(arg.expr, distinct=True))
+    return Expr(f.approx_distinct(expression.expr))
 
 
 def approx_median(arg: Expr, distinct: bool = False) -> Expr:
@@ -1244,12 +1244,14 @@ def approx_median(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def approx_percentile_cont(
-    expr: Expr,
+    expression: Expr,
     percentile: Expr,
-    num_centroids: int | None = None,
+    # num_centroids: int | None = None,
     distinct: bool = False,
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of ``expr``."""
+    # TODO: enable num_centroids
+    num_centroids = None
     if num_centroids is None:
         return Expr(
             f.approx_percentile_cont(expr.expr, percentile.expr, distinct=distinct)
@@ -1257,7 +1259,7 @@ def approx_percentile_cont(
 
     return Expr(
         f.approx_percentile_cont(
-            expr.expr, percentile.expr, num_centroids, distinct=distinct
+            expr.expr, percentile.expr, distinct=distinct
         )
     )
 

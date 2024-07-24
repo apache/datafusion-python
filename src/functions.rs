@@ -38,6 +38,57 @@ use datafusion_expr::{
 };
 
 #[pyfunction]
+pub fn approx_distinct(expression: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::approx_distinct::approx_distinct(expression.expr).into()
+}
+
+#[pyfunction]
+pub fn approx_median(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    // TODO: better builder pattern
+    let expr = functions_aggregate::expr_fn::approx_median(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont(
+    expression: PyExpr,
+    percentile: PyExpr,
+    distinct: bool,
+) -> PyResult<PyExpr> {
+    // TODO: better builder pattern
+    let expr =
+        functions_aggregate::expr_fn::approx_percentile_cont(expression.expr, percentile.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont_with_weight(
+    expression: PyExpr,
+    weight: PyExpr,
+    percentile: PyExpr,
+    distinct: bool,
+) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
+        expression.expr,
+        weight.expr,
+        percentile.expr,
+    );
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn sum(args: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::sum(args.expr).into()
 }
@@ -727,13 +778,6 @@ array_fn!(list_resize, array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(approx_distinct, ApproxDistinct);
-aggregate_function!(approx_median, ApproxMedian);
-aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
-aggregate_function!(
-    approx_percentile_cont_with_weight,
-    ApproxPercentileContWithWeight
-);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
