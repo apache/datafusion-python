@@ -583,23 +583,13 @@ fn col(name: &str) -> PyResult<PyExpr> {
     })
 }
 
-// TODO: do we want to create an equivalent?
-// /// Create a COUNT(1) aggregate expression
-// #[pyfunction]
-// fn count_star() -> PyResult<PyExpr> {
-//     Ok(PyExpr {
-//         expr: Expr::AggregateFunction(AggregateFunction {
-//             func_def: datafusion_expr::expr::AggregateFunctionDefinition::BuiltIn(
-//                 aggregate_function::AggregateFunction::Count,
-//             ),
-//             args: vec![lit(1)],
-//             distinct: false,
-//             filter: None,
-//             order_by: None,
-//             null_treatment: None,
-//         }),
-//     })
-// }
+// TODO: should we just expose this in python?
+/// Create a COUNT(1) aggregate expression
+#[pyfunction]
+fn count_star() -> PyExpr {
+    functions_aggregate::expr_fn::count(lit(1)).into()
+
+}
 
 /// Wrapper for [`functions_aggregate::expr_fn::count`]
 /// Count the number of non-null values in the column
@@ -1030,7 +1020,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cosh))?;
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
-    // m.add_wrapped(wrap_pyfunction!(count_star))?;
+    m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
