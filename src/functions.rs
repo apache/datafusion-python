@@ -31,7 +31,6 @@ use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
-    aggregate_function,
     expr::{
         find_df_window_func, AggregateFunction, AggregateFunctionDefinition, Sort, WindowFunction,
     },
@@ -327,21 +326,29 @@ fn col(name: &str) -> PyResult<PyExpr> {
     })
 }
 
-/// Create a COUNT(1) aggregate expression
+// TODO: do we want to create an equivalent?
+// /// Create a COUNT(1) aggregate expression
+// #[pyfunction]
+// fn count_star() -> PyResult<PyExpr> {
+//     Ok(PyExpr {
+//         expr: Expr::AggregateFunction(AggregateFunction {
+//             func_def: datafusion_expr::expr::AggregateFunctionDefinition::BuiltIn(
+//                 aggregate_function::AggregateFunction::Count,
+//             ),
+//             args: vec![lit(1)],
+//             distinct: false,
+//             filter: None,
+//             order_by: None,
+//             null_treatment: None,
+//         }),
+//     })
+// }
+
+/// Wrapper for [`functions_aggregate::expr_fn::count`]
+/// Count the number of non-null values in the column
 #[pyfunction]
-fn count_star() -> PyResult<PyExpr> {
-    Ok(PyExpr {
-        expr: Expr::AggregateFunction(AggregateFunction {
-            func_def: datafusion_expr::expr::AggregateFunctionDefinition::BuiltIn(
-                aggregate_function::AggregateFunction::Count,
-            ),
-            args: vec![lit(1)],
-            distinct: false,
-            filter: None,
-            order_by: None,
-            null_treatment: None,
-        }),
-    })
+fn count(expr: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::count(expr.expr).into()
 }
 
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
@@ -730,7 +737,6 @@ aggregate_function!(
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
-aggregate_function!(count, Count);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
@@ -791,7 +797,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cosh))?;
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
-    m.add_wrapped(wrap_pyfunction!(count_star))?;
+    // m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
