@@ -151,6 +151,26 @@ pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::stddev(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn stddev_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::stddev_pop(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn var_samp(expression: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::var_sample(expression.expr).into()
 }
@@ -817,8 +837,6 @@ array_fn!(range, start stop step);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
 aggregate_function!(min, Min);
-aggregate_function!(stddev, Stddev);
-aggregate_function!(stddev_pop, StddevPop);
 aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(regr_avgx, RegrAvgx);
