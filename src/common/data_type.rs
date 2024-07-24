@@ -248,6 +248,7 @@ impl DataTypeMap {
     }
 
     /// Maps a `ScalarValue` to an Arrow `DataType`
+    /// TODO: Why not just use `ScalarValue::data_type`?
     pub fn map_from_scalar_to_arrow(scalar_val: &ScalarValue) -> Result<DataType, PyErr> {
         match scalar_val {
             ScalarValue::Boolean(_) => Ok(DataType::Boolean),
@@ -326,9 +327,11 @@ impl DataTypeMap {
             ScalarValue::Union(_, _, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 "ScalarValue::LargeList".to_string(),
             ))),
-            ScalarValue::Utf8View(_) => todo!(),
-            ScalarValue::BinaryView(_) => todo!(),
-            ScalarValue::Map(_) => todo!(),
+            ScalarValue::Utf8View(_) => Ok(DataType::Utf8View),
+            ScalarValue::BinaryView(_) => Ok(DataType::BinaryView),
+            ScalarValue::Map(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
+                "ScalarValue::Map".to_string(),
+            ))),
         }
     }
 }
