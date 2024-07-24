@@ -99,6 +99,12 @@ pub fn avg(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
+pub fn mean(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    // alias for avg
+    avg(expression, distinct)
+}
+
+#[pyfunction]
 pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
     if distinct {
@@ -810,7 +816,6 @@ array_fn!(range, start stop step);
 
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
-aggregate_function!(mean, Avg);
 aggregate_function!(min, Min);
 aggregate_function!(stddev, Stddev);
 aggregate_function!(stddev_pop, StddevPop);
