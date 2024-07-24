@@ -434,13 +434,13 @@ def test_explain(df):
 def test_logical_plan(aggregate_df):
     plan = aggregate_df.logical_plan()
 
-    expected = "Projection: test.c1, SUM(test.c2)"
+    expected = "Projection: test.c1, sum(test.c2)"
 
     assert expected == plan.display()
 
     expected = (
-        "Projection: test.c1, SUM(test.c2)\n"
-        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "Projection: test.c1, sum(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
         "    TableScan: test"
     )
 
@@ -450,12 +450,12 @@ def test_logical_plan(aggregate_df):
 def test_optimized_logical_plan(aggregate_df):
     plan = aggregate_df.optimized_logical_plan()
 
-    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]"
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]"
 
     assert expected == plan.display()
 
     expected = (
-        "Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
         "  TableScan: test projection=[c1, c2]"
     )
 
@@ -466,7 +466,7 @@ def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
     expected = (
-        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[SUM(test.c2)]\n"  # noqa: E501
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"  # noqa: E501
     )
 
     assert expected == plan.display()
