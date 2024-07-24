@@ -1294,6 +1294,8 @@ def corr(value1: Expr, value2: Expr, distinct: bool = False) -> Expr:
 
 def count(args: Expr | list[Expr] | None = None, distinct: bool = False) -> Expr:
     """Returns the number of rows that match the given arguments."""
+    if args is None:
+        return Expr(f.count_star())
     if isinstance(args, list):
         args = [arg.expr for arg in args]
     elif isinstance(args, Expr):
