@@ -837,7 +837,6 @@ array_fn!(range, start stop step);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
 aggregate_function!(min, Min);
-aggregate_function!(stddev_samp, Stddev);
 aggregate_function!(var_pop, VariancePop);
 aggregate_function!(regr_avgx, RegrAvgx);
 aggregate_function!(regr_avgy, RegrAvgy);
@@ -967,7 +966,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
     m.add_wrapped(wrap_pyfunction!(stddev))?;
     m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
-    m.add_wrapped(wrap_pyfunction!(stddev_samp))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
     m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
