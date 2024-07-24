@@ -182,6 +182,16 @@ pub fn var(y: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
+pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::var_pop(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 #[pyo3(signature = (expr, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn first_value(
     expr: PyExpr,
@@ -837,7 +847,6 @@ array_fn!(range, start stop step);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
 aggregate_function!(min, Min);
-aggregate_function!(var_pop, VariancePop);
 aggregate_function!(regr_avgx, RegrAvgx);
 aggregate_function!(regr_avgy, RegrAvgy);
 aggregate_function!(regr_count, RegrCount);
