@@ -1482,31 +1482,26 @@ def last_value(
     )
 
 
-def bit_and(*args: Expr, distinct: bool = False) -> Expr:
+def bit_and(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise AND of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_and(*args, distinct=distinct))
+    return Expr(f.bit_and(arg.expr, distinct=distinct))
 
 
-def bit_or(*args: Expr, distinct: bool = False) -> Expr:
+def bit_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise OR of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_or(*args, distinct=distinct))
+    return Expr(f.bit_or(arg.expr, distinct=distinct))
 
 
-def bit_xor(*args: Expr, distinct: bool = False) -> Expr:
+def bit_xor(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise XOR of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_xor(*args, distinct=distinct))
+    return Expr(f.bit_xor(arg.expr, distinct=distinct))
 
 
-def bool_and(*args: Expr, distinct: bool = False) -> Expr:
+def bool_and(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean AND of the arugment."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bool_and(*args, distinct=distinct))
+    return Expr(f.bool_and(arg.expr, distinct=distinct))
 
 
-def bool_or(*args: Expr, distinct: bool = False) -> Expr:
+def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean OR of the arguement."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bool_or(*args, distinct=distinct))
+    return Expr(f.bool_or(arg.expr, distinct=distinct))

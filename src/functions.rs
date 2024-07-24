@@ -99,6 +99,56 @@ pub fn avg(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
+pub fn bit_and(expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_and(expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bit_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_or(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bit_xor(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_xor(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bool_and(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bool_and(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bool_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bool_or(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn mean(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     // alias for avg
     avg(expression, distinct)
@@ -937,11 +987,6 @@ array_fn!(range, start stop step);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
 aggregate_function!(min, Min);
-aggregate_function!(bit_and, BitAnd);
-aggregate_function!(bit_or, BitOr);
-aggregate_function!(bit_xor, BitXor);
-aggregate_function!(bool_and, BoolAnd);
-aggregate_function!(bool_or, BoolOr);
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
