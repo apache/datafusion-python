@@ -1398,7 +1398,7 @@ def regr_avgx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 
     Only non-null pairs of the inputs are evaluated.
     """
-    return Expr(f.regr_avgx[y.expr, x.expr], distinct)
+    return Expr(f.regr_avgx(y.expr, x.expr, distinct))
 
 
 def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
@@ -1406,42 +1406,42 @@ def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 
     Only non-null pairs of the inputs are evaluated.
     """
-    return Expr(f.regr_avgy[y.expr, x.expr], distinct)
+    return Expr(f.regr_avgy(y.expr, x.expr, distinct))
 
 
 def regr_count(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Counts the number of rows in which both expressions are not null."""
-    return Expr(f.regr_count[y.expr, x.expr], distinct)
+    return Expr(f.regr_count(y.expr, x.expr, distinct))
 
 
 def regr_intercept(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the intercept from the linear regression."""
-    return Expr(f.regr_intercept[y.expr, x.expr], distinct)
+    return Expr(f.regr_intercept(y.expr, x.expr, distinct))
 
 
 def regr_r2(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the R-squared value from linear regression."""
-    return Expr(f.regr_r2[y.expr, x.expr], distinct)
+    return Expr(f.regr_r2(y.expr, x.expr, distinct))
 
 
 def regr_slope(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the slope from linear regression."""
-    return Expr(f.regr_slope[y.expr, x.expr], distinct)
+    return Expr(f.regr_slope(y.expr, x.expr, distinct))
 
 
 def regr_sxx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of squares of the independent variable `x`."""
-    return Expr(f.regr_sxx[y.expr, x.expr], distinct)
+    return Expr(f.regr_sxx(y.expr, x.expr, distinct))
 
 
 def regr_sxy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of products of pairs of numbers."""
-    return Expr(f.regr_sxy[y.expr, x.expr], distinct)
+    return Expr(f.regr_sxy(y.expr, x.expr, distinct))
 
 
 def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of squares of the dependent variable `y`."""
-    return Expr(f.regr_syy[y.expr, x.expr], distinct)
+    return Expr(f.regr_syy(y.expr, x.expr, distinct))
 
 
 def first_value(

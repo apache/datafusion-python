@@ -192,6 +192,96 @@ pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
+pub fn regr_avgx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_avgx(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_avgy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_avgy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_count(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_count(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_intercept(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_intercept(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_r2(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_r2(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_slope(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_slope(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_sxx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_sxx(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_sxy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_sxy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_syy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 #[pyo3(signature = (expr, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn first_value(
     expr: PyExpr,
@@ -847,15 +937,6 @@ array_fn!(range, start stop step);
 aggregate_function!(array_agg, ArrayAgg);
 aggregate_function!(max, Max);
 aggregate_function!(min, Min);
-aggregate_function!(regr_avgx, RegrAvgx);
-aggregate_function!(regr_avgy, RegrAvgy);
-aggregate_function!(regr_count, RegrCount);
-aggregate_function!(regr_intercept, RegrIntercept);
-aggregate_function!(regr_r2, RegrR2);
-aggregate_function!(regr_slope, RegrSlope);
-aggregate_function!(regr_sxx, RegrSXX);
-aggregate_function!(regr_sxy, RegrSXY);
-aggregate_function!(regr_syy, RegrSYY);
 aggregate_function!(bit_and, BitAnd);
 aggregate_function!(bit_or, BitOr);
 aggregate_function!(bit_xor, BitXor);
