@@ -89,6 +89,16 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
+pub fn avg(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::avg(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn sum(args: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::sum(args.expr).into()
 }
@@ -779,7 +789,6 @@ array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
 aggregate_function!(array_agg, ArrayAgg);
-aggregate_function!(avg, Avg);
 aggregate_function!(corr, Correlation);
 aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
