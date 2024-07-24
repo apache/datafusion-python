@@ -1326,7 +1326,7 @@ def grouping(arg: Expr, distinct: bool = False) -> Expr:
 
     Returns 1 if the value of the argument is aggregated, 0 if not.
     """
-    return Expr(f.grouping([arg.expr], distinct=distinct))
+    return Expr(f.grouping(arg.expr, distinct=distinct))
 
 
 def max(arg: Expr, distinct: bool = False) -> Expr:

@@ -109,6 +109,16 @@ pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
+pub fn grouping(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::grouping(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn sum(args: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::sum(args.expr).into()
 }
@@ -799,7 +809,6 @@ array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
 aggregate_function!(array_agg, ArrayAgg);
-aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
 aggregate_function!(mean, Avg);
 aggregate_function!(min, Min);
