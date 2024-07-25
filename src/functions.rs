@@ -614,9 +614,9 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
 ///
 /// Search procedure:
 /// 1) If a session context is provided:
-///   a) search User Defined Aggregate Functions (UDAFs)
-///   b) search registered window functions
-///   c) search registered aggregate functions
+///      1) search User Defined Aggregate Functions (UDAFs)
+///      2) search registered window functions
+///      3) search registered aggregate functions
 /// 2) If no function has been found, search default aggregate functions.
 /// 3) Lastly, as a fall back attempt, search built in window functions, which are being deprecated.
 fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
