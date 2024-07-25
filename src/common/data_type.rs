@@ -248,7 +248,6 @@ impl DataTypeMap {
     }
 
     /// Maps a `ScalarValue` to an Arrow `DataType`
-    /// TODO: Why not just use `ScalarValue::data_type`?
     pub fn map_from_scalar_to_arrow(scalar_val: &ScalarValue) -> Result<DataType, PyErr> {
         match scalar_val {
             ScalarValue::Boolean(_) => Ok(DataType::Boolean),

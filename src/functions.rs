@@ -44,7 +44,6 @@ pub fn approx_distinct(expression: PyExpr) -> PyExpr {
 
 #[pyfunction]
 pub fn approx_median(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    // TODO: better builder pattern
     let expr = functions_aggregate::expr_fn::approx_median(expression.expr);
     if distinct {
         Ok(expr.distinct().build()?.into())
@@ -59,7 +58,6 @@ pub fn approx_percentile_cont(
     percentile: PyExpr,
     distinct: bool,
 ) -> PyResult<PyExpr> {
-    // TODO: better builder pattern
     let expr =
         functions_aggregate::expr_fn::approx_percentile_cont(expression.expr, percentile.expr);
     if distinct {
