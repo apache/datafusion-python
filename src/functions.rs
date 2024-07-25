@@ -651,7 +651,7 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
         });
     }
 
-    maybe_fn.ok_or(DataFusionError::Common("window function not found".to_string()).into())
+    maybe_fn.ok_or(DataFusionError::Common(format!("window function `{name}` not found")).into())
 }
 
 /// Creates a new Window function expression
