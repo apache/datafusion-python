@@ -378,17 +378,18 @@ _null_mask = np.array([False, True, False])
         # C data interface missing
         pytest.param(
             pa.array([b"1111", b"2222", b"3333"], pa.binary(4), _null_mask),
+            id="binary4",
             marks=pytest.mark.xfail,
         ),
-        pytest.param(helpers.data_datetime("s"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_datetime("ms"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_datetime("us"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_datetime("ns"), marks=pytest.mark.xfail),
+        pytest.param(helpers.data_datetime("s"), id="datetime_s", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_datetime("ms"), id="datetime_ms", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_datetime("us"), id="datetime_us", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_datetime("ns"), id="datetime_ns", marks=pytest.mark.xfail),
         # Not writtable to parquet
-        pytest.param(helpers.data_timedelta("s"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_timedelta("ms"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_timedelta("us"), marks=pytest.mark.xfail),
-        pytest.param(helpers.data_timedelta("ns"), marks=pytest.mark.xfail),
+        pytest.param(helpers.data_timedelta("s"), id="timedelta_s", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_timedelta("ms"), id="timedelta_ms", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_timedelta("us"), id="timedelta_us", marks=pytest.mark.xfail),
+        pytest.param(helpers.data_timedelta("ns"), id="timedelta_ns", marks=pytest.mark.xfail),
     ],
 )
 def test_simple_select(ctx, tmp_path, arr):
