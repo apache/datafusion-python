@@ -340,31 +340,28 @@ pub fn first_value(
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
-    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
 
-    // TODO: add `builder()` to `AggregateExt` to avoid this boilerplate
-    let builder = functions_aggregate::expr_fn::first_value(expr.expr, order_by);
+    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    let order_by = order_by
+        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
+        .unwrap_or_default();
+    let mut builder = agg_fn.order_by(order_by);
 
-    let builder = if let Some(filter) = filter {
-        let filter = filter.expr;
-        builder.filter(filter).build()?
-    } else {
-        builder
-    };
+    if distinct {
+        builder = builder.distinct();
+    }
 
-    let builder = if distinct {
-        builder.distinct().build()?
-    } else {
-        builder
-    };
+    if let Some(filter) = filter {
+        builder = builder.filter(filter.expr);
+    }
 
-    let builder = if let Some(null_treatment) = null_treatment {
-        builder.null_treatment(null_treatment.into()).build()?
-    } else {
-        builder
-    };
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(null_treatment.into())
+    }
 
-    Ok(builder.into())
+    Ok(builder.build()?.into())
 }
 
 #[pyfunction]
@@ -376,36 +373,27 @@ pub fn last_value(
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
-    // TODO: add `builder()` to `AggregateExt` to avoid this boilerplate
-    let builder = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
+    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
 
-    let builder = if distinct {
-        builder.distinct().build()?
-    } else {
-        builder
-    };
+    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    let order_by = order_by
+        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
+        .unwrap_or_default();
+    let mut builder = agg_fn.order_by(order_by);
 
-    let builder = if let Some(filter) = filter {
-        let filter = filter.expr;
-        builder.filter(filter).build()?
-    } else {
-        builder
-    };
+    if distinct {
+        builder = builder.distinct();
+    }
 
-    let builder = if let Some(order_by) = order_by {
-        let order_by = order_by.into_iter().map(|x| x.expr).collect::<Vec<_>>();
-        builder.order_by(order_by).build()?
-    } else {
-        builder
-    };
+    if let Some(filter) = filter {
+        builder = builder.filter(filter.expr);
+    }
 
-    let builder = if let Some(null_treatment) = null_treatment {
-        builder.null_treatment(null_treatment.into()).build()?
-    } else {
-        builder
-    };
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(null_treatment.into())
+    }
 
-    Ok(builder.into())
+    Ok(builder.build()?.into())
 }
 
 #[pyfunction]
