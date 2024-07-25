@@ -79,7 +79,8 @@ def test_built_in_aggregation(df):
     assert result.column(0) == pa.array([2], type=pa.uint64())
     assert result.column(1) == pa.array([4])
     assert result.column(2) == pa.array([4])
-    # assert result.column(3) == pa.array([6]) # TODO: new approx_percentile_cont is returning a DoubleArray instead of Int64Array
+    # TODO: new approx_percentile_cont is returning a DoubleArray instead of Int64Array
+    # assert result.column(3) == pa.array([6])
     assert result.column(4) == pa.array([[4, 4, 6]])
     np.testing.assert_array_almost_equal(result.column(5), np.average(values_a))
     np.testing.assert_array_almost_equal(
