@@ -610,48 +610,68 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     })
 }
 
-/// Helper function to find the appropriate window function. First, if a session
-/// context is defined check it's registered functions. If no context is defined,
-/// attempt to find from all default functions. Lastly, as a fall back attempt
-/// to use built in window functions, which are being deprecated.
+/// Helper function to find the appropriate window function.
+///
+/// Search procedure:
+/// 1) If a session context is provided:
+///   a) search User Defined Aggregate Functions (UDAFs)
+///   b) search registered window functions
+///   c) search registered aggregate functions
+/// 2) If no function has been found, search default aggregate functions.
+/// 3) Lastly, as a fall back attempt, search built in window functions, which are being deprecated.
 fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
-    let mut maybe_fn = match &ctx {
-        Some(ctx) => {
-            let session_state = ctx.ctx.state();
+    if let Some(ctx) = ctx {
+        // search UDAFs
+        let udaf = ctx
+            .ctx
+            .udaf(name)
+            .map(WindowFunctionDefinition::AggregateUDF)
+            .ok();
 
-            match session_state.window_functions().contains_key(name) {
-                true => session_state
-                    .window_functions()
-                    .get(name)
-                    .map(|f| WindowFunctionDefinition::WindowUDF(f.clone())),
-                false => session_state
-                    .aggregate_functions()
-                    .get(name)
-                    .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone())),
-            }
+        if let Some(udaf) = udaf {
+            return Ok(udaf);
         }
-        None => {
-            let default_aggregate_fns = all_default_aggregate_functions();
 
-            default_aggregate_fns
-                .iter()
-                .find(|v| v.aliases().contains(&name.to_string()))
-                .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()))
+        let session_state = ctx.ctx.state();
+
+        // search registered window functions
+        let window_fn = session_state
+            .window_functions()
+            .get(name)
+            .map(|f| WindowFunctionDefinition::WindowUDF(f.clone()));
+
+        if let Some(window_fn) = window_fn {
+            return Ok(window_fn);
         }
-    };
 
-    if maybe_fn.is_none() {
-        maybe_fn = find_df_window_func(name).or_else(|| {
-            ctx.and_then(|ctx| {
-                ctx.ctx
-                    .udaf(name)
-                    .map(WindowFunctionDefinition::AggregateUDF)
-                    .ok()
-            })
-        });
+        // search registered aggregate functions
+        let agg_fn = session_state
+            .aggregate_functions()
+            .get(name)
+            .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
+
+        if let Some(agg_fn) = agg_fn {
+            return Ok(agg_fn);
+        }
     }
 
-    maybe_fn.ok_or(DataFusionError::Common(format!("window function `{name}` not found")).into())
+    // search default aggregate functions
+    let agg_fn = all_default_aggregate_functions()
+        .iter()
+        .find(|v| v.aliases().contains(&name.to_string()))
+        .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
+
+    if let Some(agg_fn) = agg_fn {
+        return Ok(agg_fn);
+    }
+
+    // search built in window functions (soon to be deprecated)
+    let df_window_func = find_df_window_func(name);
+    if let Some(df_window_func) = df_window_func {
+        return Ok(df_window_func);
+    }
+
+    Err(DataFusionError::Common(format!("window function `{name}` not found")).into())
 }
 
 /// Creates a new Window function expression
