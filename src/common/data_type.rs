@@ -132,7 +132,7 @@ impl DataTypeMap {
                 SqlType::FLOAT,
             )),
             DataType::Timestamp(unit, tz) => Ok(DataTypeMap::new(
-                DataType::Timestamp(unit.clone(), tz.clone()),
+                DataType::Timestamp(*unit, tz.clone()),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
@@ -147,12 +147,12 @@ impl DataTypeMap {
                 SqlType::DATE,
             )),
             DataType::Time32(unit) => Ok(DataTypeMap::new(
-                DataType::Time32(unit.clone()),
+                DataType::Time32(*unit),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
             DataType::Time64(unit) => Ok(DataTypeMap::new(
-                DataType::Time64(unit.clone()),
+                DataType::Time64(*unit),
                 PythonType::Datetime,
                 SqlType::DATE,
             )),
@@ -160,7 +160,7 @@ impl DataTypeMap {
                 format!("{:?}", arrow_type),
             ))),
             DataType::Interval(interval_unit) => Ok(DataTypeMap::new(
-                DataType::Interval(interval_unit.clone()),
+                DataType::Interval(*interval_unit),
                 PythonType::Datetime,
                 match interval_unit {
                     IntervalUnit::DayTime => SqlType::INTERVAL_DAY,
