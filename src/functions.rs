@@ -658,7 +658,7 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
     // search default aggregate functions
     let agg_fn = all_default_aggregate_functions()
         .iter()
-        .find(|v| v.aliases().contains(&name.to_string()))
+        .find(|v| v.name() == name || v.aliases().contains(&name.to_string()))
         .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
 
     if let Some(agg_fn) = agg_fn {
