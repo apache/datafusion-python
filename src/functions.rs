@@ -588,7 +588,6 @@ fn col(name: &str) -> PyResult<PyExpr> {
 #[pyfunction]
 fn count_star() -> PyExpr {
     functions_aggregate::expr_fn::count(lit(1)).into()
-
 }
 
 /// Wrapper for [`functions_aggregate::expr_fn::count`]
