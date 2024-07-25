@@ -295,13 +295,11 @@ data_test_window_functions = [
         order_by=[f.order_by(column("b"))]
     ),
     [1, 1, 1],
-    marks=pytest.mark.xfail,
  ),
  pytest.param(
     "last_value",
     f.window("last_value", [column("b")], order_by=[f.order_by(column("b"))]),
     [4, 5, 6],
-    marks=pytest.mark.xfail,
  ),
  pytest.param(
     "2nd_value",

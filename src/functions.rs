@@ -613,13 +613,21 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
 /// Helper function to find the appropriate window function.
 ///
 /// Search procedure:
+/// 1) Search built in window functions, which are being deprecated.
 /// 1) If a session context is provided:
 ///      1) search User Defined Aggregate Functions (UDAFs)
-///      2) search registered window functions
-///      3) search registered aggregate functions
-/// 2) If no function has been found, search default aggregate functions.
-/// 3) Lastly, as a fall back attempt, search built in window functions, which are being deprecated.
+///      1) search registered window functions
+///      1) search registered aggregate functions
+/// 1) If no function has been found, search default aggregate functions.
+///
+/// NOTE: we search the built-ins first because the `UDAF` versions currently do not have the same behavior.
 fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
+    // search built in window functions (soon to be deprecated)
+    let df_window_func = find_df_window_func(name);
+    if let Some(df_window_func) = df_window_func {
+        return Ok(df_window_func);
+    }
+
     if let Some(ctx) = ctx {
         // search UDAFs
         let udaf = ctx
@@ -663,12 +671,6 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
 
     if let Some(agg_fn) = agg_fn {
         return Ok(agg_fn);
-    }
-
-    // search built in window functions (soon to be deprecated)
-    let df_window_func = find_df_window_func(name);
-    if let Some(df_window_func) = df_window_func {
-        return Ok(df_window_func);
     }
 
     Err(DataFusionError::Common(format!("window function `{name}` not found")).into())
