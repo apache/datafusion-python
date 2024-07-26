@@ -1307,7 +1307,7 @@ def covar(y: Expr, x: Expr) -> Expr:
 
     This is an alias for `covar_samp`.
     """
-    return Expr(f.covar(y.expr, x.expr))
+    return Expr(f.covar_samp(y.expr, x.expr))
 
 
 def covar_pop(y: Expr, x: Expr) -> Expr:

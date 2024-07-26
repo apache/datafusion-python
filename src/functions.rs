@@ -147,12 +147,6 @@ pub fn bool_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
-pub fn mean(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    // alias for avg
-    avg(expression, distinct)
-}
-
-#[pyfunction]
 pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
     if distinct {
@@ -192,11 +186,6 @@ pub fn median(arg: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::median(arg.expr).into()
 }
 
-#[pyfunction]
-pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
-    // alias for covar_samp
-    covar_samp(y, x)
-}
 
 #[pyfunction]
 pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
@@ -223,11 +212,6 @@ pub fn var_samp(expression: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::var_sample(expression.expr).into()
 }
 
-#[pyfunction]
-/// Alias for [`var_samp`]
-pub fn var(y: PyExpr) -> PyExpr {
-    var_samp(y)
-}
 
 #[pyfunction]
 pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
@@ -413,13 +397,6 @@ fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
 
 #[pyfunction]
 #[pyo3(signature = (*exprs))]
-fn array(exprs: Vec<PyExpr>) -> PyExpr {
-    // alias for make_array
-    make_array(exprs)
-}
-
-#[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
     datafusion_functions_array::expr_fn::array_concat(exprs).into()
@@ -440,27 +417,6 @@ fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr 
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn array_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn list_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
 #[pyo3(signature = (array, begin, end, stride = None))]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::array_slice(
@@ -470,13 +426,6 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
         stride.map(Into::into),
     )
     .into()
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = None))]
-fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
-    // alias of array_slice
-    array_slice(array, begin, end, stride)
 }
 
 /// Computes a binary hash of the given data. type is the algorithm to use.
@@ -999,7 +948,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(approx_median))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont_with_weight))?;
-    m.add_wrapped(wrap_pyfunction!(array))?;
     m.add_wrapped(wrap_pyfunction!(range))?;
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
@@ -1028,7 +976,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
     m.add_wrapped(wrap_pyfunction!(count_star))?;
-    m.add_wrapped(wrap_pyfunction!(covar))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
@@ -1066,7 +1013,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(max))?;
     m.add_wrapped(wrap_pyfunction!(make_array))?;
     m.add_wrapped(wrap_pyfunction!(md5))?;
-    m.add_wrapped(wrap_pyfunction!(mean))?;
     m.add_wrapped(wrap_pyfunction!(median))?;
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(named_struct))?;
@@ -1123,7 +1069,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
-    m.add_wrapped(wrap_pyfunction!(var))?;
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
@@ -1169,9 +1114,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
     m.add_wrapped(wrap_pyfunction!(array_has_any))?;
     m.add_wrapped(wrap_pyfunction!(array_position))?;
-    m.add_wrapped(wrap_pyfunction!(array_indexof))?;
-    m.add_wrapped(wrap_pyfunction!(list_position))?;
-    m.add_wrapped(wrap_pyfunction!(list_indexof))?;
     m.add_wrapped(wrap_pyfunction!(array_positions))?;
     m.add_wrapped(wrap_pyfunction!(list_positions))?;
     m.add_wrapped(wrap_pyfunction!(array_to_string))?;
@@ -1210,7 +1152,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(list_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
-    m.add_wrapped(wrap_pyfunction!(list_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
 
     Ok(())
