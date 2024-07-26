@@ -186,7 +186,6 @@ pub fn median(arg: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::median(arg.expr).into()
 }
 
-
 #[pyfunction]
 pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::stddev(expression.expr);
@@ -211,7 +210,6 @@ pub fn stddev_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 pub fn var_samp(expression: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::var_sample(expression.expr).into()
 }
-
 
 #[pyfunction]
 pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
@@ -722,22 +720,19 @@ macro_rules! expr_fn_vec {
 ///
 /// These functions have explicit named arguments.
 macro_rules! array_fn {
-    ($NAME: ident) => {
-        array_fn!($NAME, $NAME, , stringify!($NAME));
+    ($FUNC: ident) => {
+        array_fn!($FUNC, , stringify!($FUNC));
     };
-    ($NAME:ident,  $($arg:ident)*) => {
-        array_fn!($NAME, $NAME, $($arg)*, stringify!($FUNC));
+    ($FUNC:ident,  $($arg:ident)*) => {
+        array_fn!($FUNC, $($arg)*, stringify!($FUNC));
     };
-    ($NAME: ident, $FUNC:ident, $($arg:ident)*) => {
-        array_fn!($NAME, $FUNC, $($arg)*, stringify!($FUNC));
+    ($FUNC: ident, $DOC: expr) => {
+        array_fn!($FUNC, , $DOC);
     };
-    ($NAME: ident, $DOC: expr) => {
-        array_fn!($NAME, $NAME, , $DOC);
-    };
-    ($NAME: ident, $FUNC:ident,  $($arg:ident)*, $DOC:expr) => {
+    ($FUNC: ident, $($arg:ident)*, $DOC:expr) => {
         #[doc = $DOC]
         #[pyfunction]
-        fn $NAME($($arg: PyExpr),*) -> PyExpr {
+        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
             datafusion_functions_array::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
@@ -879,59 +874,31 @@ expr_fn!(random);
 
 // Array Functions
 array_fn!(array_append, array element);
-array_fn!(array_push_back, array_append, array element);
 array_fn!(array_to_string, array delimiter);
-array_fn!(array_join, array_to_string, array delimiter);
-array_fn!(list_to_string, array_to_string, array delimiter);
-array_fn!(list_join, array_to_string, array delimiter);
-array_fn!(list_append, array_append, array element);
-array_fn!(list_push_back, array_append, array element);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
-array_fn!(list_distinct, array_distinct, array);
-array_fn!(list_dims, array_dims, array);
 array_fn!(array_element, array element);
-array_fn!(array_extract, array_element, array element);
-array_fn!(list_element, array_element, array element);
-array_fn!(list_extract, array_element, array element);
 array_fn!(array_length, array);
-array_fn!(list_length, array_length, array);
 array_fn!(array_has, first_array second_array);
 array_fn!(array_has_all, first_array second_array);
 array_fn!(array_has_any, first_array second_array);
-array_fn!(array_positions, array_positions, array element);
-array_fn!(list_positions, array_positions, array element);
+array_fn!(array_positions, array element);
 array_fn!(array_ndims, array);
-array_fn!(list_ndims, array_ndims, array);
 array_fn!(array_prepend, element array);
-array_fn!(array_push_front, array_prepend, element array);
-array_fn!(list_prepend, array_prepend, element array);
-array_fn!(list_push_front, array_prepend, element array);
 array_fn!(array_pop_back, array);
 array_fn!(array_pop_front, array);
 array_fn!(array_remove, array element);
-array_fn!(list_remove, array_remove, array element);
 array_fn!(array_remove_n, array element max);
-array_fn!(list_remove_n, array_remove_n, array element max);
 array_fn!(array_remove_all, array element);
-array_fn!(list_remove_all, array_remove_all, array element);
 array_fn!(array_repeat, element count);
 array_fn!(array_replace, array from to);
-array_fn!(list_replace, array_replace, array from to);
 array_fn!(array_replace_n, array from to max);
-array_fn!(list_replace_n, array_replace_n, array from to max);
 array_fn!(array_replace_all, array from to);
-array_fn!(list_replace_all, array_replace_all, array from to);
 array_fn!(array_sort, array desc null_first);
-array_fn!(list_sort, array_sort, array desc null_first);
 array_fn!(array_intersect, first_array second_array);
-array_fn!(list_intersect, array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
-array_fn!(list_union, array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
-array_fn!(list_except, array_except, first_array second_array);
 array_fn!(array_resize, array size value);
-array_fn!(list_resize, array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
@@ -1095,62 +1062,34 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
-    m.add_wrapped(wrap_pyfunction!(array_push_back))?;
-    m.add_wrapped(wrap_pyfunction!(list_append))?;
-    m.add_wrapped(wrap_pyfunction!(list_push_back))?;
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_distinct))?;
-    m.add_wrapped(wrap_pyfunction!(list_distinct))?;
-    m.add_wrapped(wrap_pyfunction!(list_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
-    m.add_wrapped(wrap_pyfunction!(array_extract))?;
-    m.add_wrapped(wrap_pyfunction!(list_element))?;
-    m.add_wrapped(wrap_pyfunction!(list_extract))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
-    m.add_wrapped(wrap_pyfunction!(list_length))?;
     m.add_wrapped(wrap_pyfunction!(array_has))?;
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
     m.add_wrapped(wrap_pyfunction!(array_has_any))?;
     m.add_wrapped(wrap_pyfunction!(array_position))?;
     m.add_wrapped(wrap_pyfunction!(array_positions))?;
-    m.add_wrapped(wrap_pyfunction!(list_positions))?;
     m.add_wrapped(wrap_pyfunction!(array_to_string))?;
     m.add_wrapped(wrap_pyfunction!(array_intersect))?;
-    m.add_wrapped(wrap_pyfunction!(list_intersect))?;
     m.add_wrapped(wrap_pyfunction!(array_union))?;
-    m.add_wrapped(wrap_pyfunction!(list_union))?;
     m.add_wrapped(wrap_pyfunction!(array_except))?;
-    m.add_wrapped(wrap_pyfunction!(list_except))?;
     m.add_wrapped(wrap_pyfunction!(array_resize))?;
-    m.add_wrapped(wrap_pyfunction!(list_resize))?;
-    m.add_wrapped(wrap_pyfunction!(array_join))?;
-    m.add_wrapped(wrap_pyfunction!(list_to_string))?;
-    m.add_wrapped(wrap_pyfunction!(list_join))?;
     m.add_wrapped(wrap_pyfunction!(array_ndims))?;
-    m.add_wrapped(wrap_pyfunction!(list_ndims))?;
     m.add_wrapped(wrap_pyfunction!(array_prepend))?;
-    m.add_wrapped(wrap_pyfunction!(array_push_front))?;
-    m.add_wrapped(wrap_pyfunction!(list_prepend))?;
-    m.add_wrapped(wrap_pyfunction!(list_push_front))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_back))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_front))?;
     m.add_wrapped(wrap_pyfunction!(array_remove))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove))?;
     m.add_wrapped(wrap_pyfunction!(array_remove_n))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove_n))?;
     m.add_wrapped(wrap_pyfunction!(array_remove_all))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove_all))?;
     m.add_wrapped(wrap_pyfunction!(array_repeat))?;
     m.add_wrapped(wrap_pyfunction!(array_replace))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_n))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace_n))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
-    m.add_wrapped(wrap_pyfunction!(list_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
 
