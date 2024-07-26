@@ -671,25 +671,19 @@ macro_rules! aggregate_function {
 ///
 /// These functions have explicit named arguments.
 macro_rules! expr_fn {
-    ($NAME: ident) => {
-        expr_fn!($NAME, $NAME, , stringify!($NAME));
+    ($FUNC: ident) => {
+        expr_fn!($FUNC, , stringify!($FUNC));
     };
-    ($NAME:ident, $($arg:ident)*) => {
-        expr_fn!($NAME, $NAME, $($arg)*, stringify!($FUNC));
+    ($FUNC:ident, $($arg:ident)*) => {
+        expr_fn!($FUNC, $($arg)*, stringify!($FUNC));
     };
-    ($NAME:ident, $FUNC:ident, $($arg:ident)*) => {
-        expr_fn!($NAME, $FUNC, $($arg)*, stringify!($FUNC));
+    ($FUNC: ident, $DOC: expr) => {
+        expr_fn!($FUNC, ,$DOC);
     };
-    ($NAME: ident, $DOC: expr) => {
-        expr_fn!($NAME, $NAME, ,$DOC);
-    };
-    ($NAME: ident, $($arg:ident)*, $DOC: expr) => {
-        expr_fn!($NAME, $NAME, $($arg)* ,$DOC);
-    };
-    ($NAME: ident, $FUNC: ident, $($arg:ident)*, $DOC: expr) => {
+    ($FUNC: ident, $($arg:ident)*, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
-        fn $NAME($($arg: PyExpr),*) -> PyExpr {
+        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
             functions::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
@@ -800,7 +794,6 @@ expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this 
 expr_fn_vec!(overlay);
 expr_fn!(pi);
 expr_fn!(power, base exponent);
-expr_fn!(pow, power, base exponent);
 expr_fn!(radians, num);
 expr_fn!(repeat, string n, "Repeats string the specified number of times.");
 expr_fn!(
@@ -852,9 +845,7 @@ expr_fn_vec!(to_unixtime);
 expr_fn!(current_date);
 expr_fn!(current_time);
 expr_fn!(date_part, part date);
-expr_fn!(datepart, date_part, part date);
 expr_fn!(date_trunc, part date);
-expr_fn!(datetrunc, date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
 expr_fn!(make_date, year month day);
 
@@ -946,9 +937,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(current_time))?;
     m.add_wrapped(wrap_pyfunction!(degrees))?;
     m.add_wrapped(wrap_pyfunction!(date_bin))?;
-    m.add_wrapped(wrap_pyfunction!(datepart))?;
     m.add_wrapped(wrap_pyfunction!(date_part))?;
-    m.add_wrapped(wrap_pyfunction!(datetrunc))?;
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
     m.add_wrapped(wrap_pyfunction!(make_date))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
@@ -988,7 +977,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(overlay))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
     m.add_wrapped(wrap_pyfunction!(power))?;
-    m.add_wrapped(wrap_pyfunction!(pow))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;
