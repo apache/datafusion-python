@@ -699,17 +699,14 @@ macro_rules! expr_fn {
 ///
 /// These functions take a single `Vec<PyExpr>` argument using `pyo3(signature = (*args))`.
 macro_rules! expr_fn_vec {
-    ($NAME: ident) => {
-        expr_fn_vec!($NAME, $NAME, stringify!($NAME));
+    ($FUNC: ident) => {
+        expr_fn_vec!($FUNC, stringify!($FUNC));
     };
-    ($NAME: ident, $DOC: expr) => {
-        expr_fn_vec!($NAME, $NAME, $DOC);
-    };
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
+    ($FUNC: ident, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
         #[pyo3(signature = (*args))]
-        fn $NAME(args: Vec<PyExpr>) -> PyExpr {
+        fn $FUNC(args: Vec<PyExpr>) -> PyExpr {
             let args = args.into_iter().map(|e| e.into()).collect::<Vec<_>>();
             functions::expr_fn::$FUNC(args).into()
         }
