@@ -18,7 +18,7 @@
 CSV
 ===
 
-Reading a csv is very straightforward with :meth:`.SessionContext.read_csv`
+Reading a csv is very straightforward with :py:func:`~datafusion.context.SessionContext.read_csv`
 
 .. code-block:: python
 
@@ -28,7 +28,7 @@ Reading a csv is very straightforward with :meth:`.SessionContext.read_csv`
     ctx = SessionContext()
     df = ctx.read_csv("file.csv")
 
-An alternative is to use :meth:`.SessionContext.register_csv`
+An alternative is to use :py:func:`~datafusion.context.SessionContext.register_csv`
 
 .. code-block:: python
 

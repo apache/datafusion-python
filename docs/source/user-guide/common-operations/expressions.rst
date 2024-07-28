@@ -28,16 +28,16 @@ concept shared across most compilers and databases.
 Column
 ------
 
-The first expression most new users will interact with is the Column, which is created by calling :func:`col`.
-This expression represents a column within a DataFrame. The function :func:`col` takes as in input a string
+The first expression most new users will interact with is the Column, which is created by calling :py:func:`~datafusion.col`.
+This expression represents a column within a DataFrame. The function :py:func:`~datafusion.col` takes as in input a string
 and returns an expression as it's output.
 
 Literal
 -------
 
 Literal expressions represent a single value. These are helpful in a wide range of operations where
-a specific, known value is of interest. You can create a literal expression using the function :func:`lit`.
-The type of the object passed to the :func:`lit` function will be used to convert it to a known data type.
+a specific, known value is of interest. You can create a literal expression using the function :py:func:`~datafusion.lit`.
+The type of the object passed to the :py:func:`~datafusion.lit` function will be used to convert it to a known data type.
 
 In the following example we create expressions for the column named `color` and the literal scalar string `red`.
 The resultant variable `red_units` is itself also an expression.
@@ -64,7 +64,7 @@ Functions
 ---------
 
 As mentioned before, most functions in DataFusion return an expression at their output. This allows us to create
-a wide variety of expressions built up from other expressions. For example, :func:`.alias` is a function that takes
+a wide variety of expressions built up from other expressions. For example, :py:func:`~datafusion.expr.Expr.alias` is a function that takes
 as it input a single expression and returns an expression in which the name of the expression has changed.
 
 The following example shows a series of expressions that are built up from functions operating on expressions.

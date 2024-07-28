@@ -280,7 +280,7 @@ def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
 def array_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :func:`array_to_string`.
+    This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -288,7 +288,7 @@ def array_join(expr: Expr, delimiter: Expr) -> Expr:
 def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :func:`array_to_string`.
+    This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -296,7 +296,7 @@ def list_to_string(expr: Expr, delimiter: Expr) -> Expr:
 def list_join(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation.
 
-    This is an alias for :func:`array_to_string`.
+    This is an alias for :py:func:`array_to_string`.
     """
     return array_to_string(expr, delimiter)
 
@@ -654,7 +654,7 @@ def pi() -> Expr:
 def position(string: Expr, substring: Expr) -> Expr:
     """Finds the position from where the ``substring`` matches the ``string``.
 
-    This is an alias for :func:`strpos`.
+    This is an alias for :py:func:`strpos`.
     """
     return strpos(string, substring)
 

@@ -94,7 +94,7 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
-        self.udf = df_internal.ScalarUDF(
+        self._udf = df_internal.ScalarUDF(
             name, func, input_types, return_type, str(volatility)
         )
 
@@ -105,7 +105,7 @@ class ScalarUDF:
         occur during the evaluation of the dataframe.
         """
         args = [arg.expr for arg in args]
-        return Expr(self.udf.__call__(*args))
+        return Expr(self._udf.__call__(*args))
 
     @staticmethod
     def udf(
@@ -192,7 +192,7 @@ class AggregateUDF:
         See :py:func:`udaf` for a convenience function and arugment
         descriptions.
         """
-        self.udf = df_internal.AggregateUDF(
+        self._udf = df_internal.AggregateUDF(
             name, accumulator, input_types, return_type, state_type, str(volatility)
         )
 
@@ -203,7 +203,7 @@ class AggregateUDF:
         occur during the evaluation of the dataframe.
         """
         args = [arg.expr for arg in args]
-        return Expr(self.udf.__call__(*args))
+        return Expr(self._udf.__call__(*args))
 
     @staticmethod
     def udaf(

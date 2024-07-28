@@ -21,7 +21,7 @@ Window Functions
 In this section you will learn about window functions. A window function utilizes values from one or multiple rows to
 produce a result for each individual row, unlike an aggregate function that provides a single value for multiple rows.
 
-The functionality of window functions in DataFusion is supported by the dedicated :func:`.window` function.
+The functionality of window functions in DataFusion is supported by the dedicated :py:func:`~datafusion.functions.window` function.
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
@@ -40,7 +40,7 @@ We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
     ctx = SessionContext()
     df = ctx.read_csv("pokemon.csv")
 
-Here is an example that shows how to compare each pokemons’s attack power with the average attack power in its :code:`"Type 1"`
+Here is an example that shows how to compare each pokemons’s attack power with the average attack power in its ``"Type 1"``
 
 .. ipython:: python
 
@@ -54,7 +54,7 @@ Here is an example that shows how to compare each pokemons’s attack power with
     )
 
 You can also control the order in which rows are processed by window functions by providing
-a list of :func:`.order_by` functions for the :code:`order_by` parameter.
+a list of ``order_by`` functions for the ``order_by`` parameter.
 
 .. ipython:: python
 

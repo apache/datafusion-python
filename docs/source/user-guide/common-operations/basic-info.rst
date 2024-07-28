@@ -34,26 +34,26 @@ In this section, you will learn how to display essential details of DataFrames u
     })
     df
 
-Use :meth:`.DataFrame.limit` to view the top rows of the frame:
+Use :py:func:`~datafusion.dataframe.DataFrame.limit` to view the top rows of the frame:
 
 .. ipython:: python
 
     df.limit(2)
 
-Display the columns of the DataFrame using :meth:`.DataFrame.schema`:
+Display the columns of the DataFrame using :py:func:`~datafusion.dataframe.DataFrame.schema`:
 
 .. ipython:: python
 
     df.schema()
 
-The method :meth:`.DataFrame.to_pandas` uses pyarrow to convert to pandas DataFrame, by collecting the batches,
+The method :py:func:`~datafusion.dataframe.DataFrame.to_pandas` uses pyarrow to convert to pandas DataFrame, by collecting the batches,
 passing them to an Arrow table, and then converting them to a pandas DataFrame.
 
 .. ipython:: python
 
     df.to_pandas()
 
-:meth:`.DataFrame.describe` shows a quick statistic summary of your data:
+:py:func:`~datafusion.dataframe.DataFrame.describe` shows a quick statistic summary of your data:
 
 .. ipython:: python
 

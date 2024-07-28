@@ -506,7 +506,7 @@ class DataFrame:
         """
         return self.df.count()
 
-    @deprecated("Use :func:`unnest_columns` instead.")
+    @deprecated("Use :py:func:`unnest_columns` instead.")
     def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
         """See :py:func:`unnest_columns`."""
         return DataFrame(self.df.unnest_column(column, preserve_nulls=preserve_nulls))
