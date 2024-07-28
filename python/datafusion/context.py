@@ -810,11 +810,11 @@ class SessionContext:
 
     def register_udf(self, udf: ScalarUDF) -> None:
         """Register a user-defined function (UDF) with the context."""
-        self.ctx.register_udf(udf.udf)
+        self.ctx.register_udf(udf._udf)
 
     def register_udaf(self, udaf: AggregateUDF) -> None:
         """Register a user-defined aggregation function (UDAF) with the context."""
-        self.ctx.register_udaf(udaf)
+        self.ctx.register_udaf(udaf._udaf)
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
