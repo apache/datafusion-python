@@ -39,7 +39,7 @@ class Catalog:
         return self.catalog.names()
 
     def database(self, name: str = "public") -> Database:
-        """Returns the database with the given `name` from this catalog."""
+        """Returns the database with the given ``name`` from this catalog."""
         return Database(self.catalog.database(name))
 
 
@@ -55,7 +55,7 @@ class Database:
         return self.db.names()
 
     def table(self, name: str) -> Table:
-        """Return the table with the given `name` from this database."""
+        """Return the table with the given ``name`` from this database."""
         return Table(self.db.table(name))
 
 

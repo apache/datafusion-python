@@ -19,7 +19,7 @@ Functions
 =========
 
 DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
-In here we will cover some of the more popular use cases. If you want to view all the functions go to the :ref:`Functions` API Reference.
+In here we will cover some of the more popular use cases. If you want to view all the functions go to the :py:mod:`Functions <datafusion.functions>` API Reference.
 
 We'll use the pokemon dataset in the following examples.
 

@@ -17,7 +17,7 @@
 
 """This module supports expressions, one of the core concepts in DataFusion.
 
-See ``Expr`` for more details.
+See :ref:`Expressions` in the online documentation for more details.
 """
 
 from __future__ import annotations
@@ -155,8 +155,7 @@ class Expr:
     """Expression object.
 
     Expressions are one of the core concepts in DataFusion. See
-    https://datafusion.apache.org/python/user-guide/common-operations/expressions.html
-    for more information.
+    :ref:`Expressions` in the online documentation for more information.
     """
 
     def __init__(self, expr: expr_internal.Expr) -> None:
@@ -324,7 +323,7 @@ class Expr:
     def literal(value: Any) -> Expr:
         """Creates a new expression representing a scalar value.
 
-        `value` must be a valid PyArrow scalar value or easily castable to one.
+        ``value`` must be a valid PyArrow scalar value or easily castable to one.
         """
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
@@ -332,7 +331,7 @@ class Expr:
 
     @staticmethod
     def column(value: str) -> Expr:
-        """Creates a new expression representing a column in a ``DataFrame``."""
+        """Creates a new expression representing a column."""
         return Expr(expr_internal.Expr.column(value))
 
     def alias(self, name: str) -> Expr:
@@ -340,7 +339,7 @@ class Expr:
         return Expr(self.expr.alias(name))
 
     def sort(self, ascending: bool = True, nulls_first: bool = True) -> Expr:
-        """Creates a sort ``Expr`` from an existing ``Expr``.
+        """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
         Args:
             ascending: If true, sort in ascending order.
@@ -361,7 +360,7 @@ class Expr:
 
         A Rex (Row Expression) specifies a single row of data.That specification
         could include user defined functions or types. RexType identifies the
-        row as one of the possible valid ``RexType``(s).
+        row as one of the possible valid ``RexType``.
         """
         return self.expr.rex_type()
 
@@ -412,12 +411,12 @@ class WindowFrame:
         """Construct a window frame using the given parameters.
 
         Args:
-            units: Should be one of `rows`, `range`, or `groups`.
+            units: Should be one of ``rows``, ``range``, or ``groups``.
             start_bound: Sets the preceeding bound. Must be >= 0. If none, this
-                will be set to unbounded. If unit type is `groups`, this
+                will be set to unbounded. If unit type is ``groups``, this
                 parameter must be set.
             end_bound: Sets the following bound. Must be >= 0. If none, this
-                will be set to unbounded. If unit type is `groups`, this
+                will be set to unbounded. If unit type is ``groups``, this
                 parameter must be set.
         """
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
@@ -438,7 +437,7 @@ class WindowFrame:
 class WindowFrameBound:
     """Defines a single window frame bound.
 
-    ``WindowFrame`` typically requires a start and end bound.
+    :py:class:`WindowFrame` typically requires a start and end bound.
     """
 
     def __init__(self, frame_bound: expr_internal.WindowFrameBound) -> None:
@@ -485,7 +484,7 @@ class CaseBuilder:
         """Constructs a case builder.
 
         This is not typically called by the end user directly. See
-        ``datafusion.functions.case`` instead.
+        :py:func:`datafusion.functions.case` instead.
         """
         self.case_builder = case_builder
 
