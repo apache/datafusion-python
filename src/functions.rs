@@ -312,7 +312,6 @@ pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyEx
 }
 
 #[pyfunction]
-#[pyo3(signature = (expr, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn first_value(
     expr: PyExpr,
     distinct: bool,
@@ -345,7 +344,6 @@ pub fn first_value(
 }
 
 #[pyfunction]
-#[pyo3(signature = (expr, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn last_value(
     expr: PyExpr,
     distinct: bool,
