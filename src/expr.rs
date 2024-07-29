@@ -154,7 +154,7 @@ impl PyExpr {
             },
             Expr::ScalarFunction(_) => todo!(),
             Expr::WindowFunction(_) => todo!(),
-            Expr::InList(_) => todo!(),
+            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py))   ,
             Expr::Exists(_) => todo!(),
             Expr::InSubquery(_) => todo!(),
             Expr::ScalarSubquery(value) => Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py)),
