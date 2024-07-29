@@ -147,22 +147,28 @@ impl PyExpr {
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
             Expr::Sort(_value) => {
-                todo!("upstream has two different Sort classes, need to figure out which one to use")
+                todo!(
+                    "upstream has two different Sort classes, need to figure out which one to use"
+                )
                 // let py_sort = PySort::from(value.clone());
                 // let py_object = py_sort.into_py(py);
                 // Ok(py_object)
-            },
+            }
             Expr::ScalarFunction(_) => todo!(),
             Expr::WindowFunction(_) => todo!(),
-            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py))   ,
-            Expr::Exists(_) => todo!(),
+            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
+            Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_py(py)),
             Expr::InSubquery(_) => todo!(),
-            Expr::ScalarSubquery(value) => Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py)),
+            Expr::ScalarSubquery(value) => {
+                Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
+            }
             Expr::Wildcard { qualifier } => {
                 let _ = qualifier;
                 todo!()
-            },
-            Expr::GroupingSet(value) => Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py)),
+            }
+            Expr::GroupingSet(value) => {
+                Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
+            }
             Expr::Placeholder(_) => todo!(),
             Expr::OuterReferenceColumn(_, _) => todo!(),
             Expr::Unnest(_) => todo!(),

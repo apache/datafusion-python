@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::Subquery;
+use datafusion_expr::expr::Exists;
 use pyo3::prelude::*;
 
 use super::subquery::PySubquery;
@@ -23,23 +23,22 @@ use super::subquery::PySubquery;
 #[pyclass(name = "Exists", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyExists {
-    subquery: Subquery,
-    negated: bool,
+    exists: Exists,
 }
 
-impl PyExists {
-    pub fn new(subquery: Subquery, negated: bool) -> Self {
-        Self { subquery, negated }
+impl From<Exists> for PyExists {
+    fn from(exists: Exists) -> Self {
+        PyExists { exists }
     }
 }
 
 #[pymethods]
 impl PyExists {
     fn subquery(&self) -> PySubquery {
-        self.subquery.clone().into()
+        self.exists.subquery.clone().into()
     }
 
     fn negated(&self) -> bool {
-        self.negated
+        self.exists.negated
     }
 }
