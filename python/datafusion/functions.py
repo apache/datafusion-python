@@ -101,7 +101,7 @@ def concat(*args: Expr) -> Expr:
     NULL arguments are ignored.
     """
     args = [arg.expr for arg in args]
-    return Expr(f.concat(*args))
+    return Expr(f.concat(args))
 
 
 def concat_ws(separator: str, *args: Expr) -> Expr:
@@ -110,7 +110,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
     `NULL` arugments are ignored. `separator` should not be `NULL`.
     """
     args = [arg.expr for arg in args]
-    return Expr(f.concat_ws(separator, *args))
+    return Expr(f.concat_ws(separator, args))
 
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> Expr:
@@ -757,7 +757,7 @@ def upper(arg: Expr) -> Expr:
 def make_array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions."""
     args = [arg.expr for arg in args]
-    return Expr(f.make_array(*args))
+    return Expr(f.make_array(args))
 
 
 def array(*args: Expr) -> Expr:
@@ -840,7 +840,7 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
 def array_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays."""
     args = [arg.expr for arg in args]
-    return Expr(f.array_concat(*args))
+    return Expr(f.array_concat(args))
 
 
 def array_cat(*args: Expr) -> Expr:

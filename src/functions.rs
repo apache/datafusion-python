@@ -387,27 +387,23 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
         .into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
     datafusion_functions_array::expr_fn::array_concat(exprs).into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
     array_concat(exprs)
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
@@ -415,7 +411,6 @@ fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr 
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = None))]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::array_slice(
         array.into(),
@@ -430,7 +425,6 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
 #[pyfunction]
-#[pyo3(signature = (value, method))]
 fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
     PyExpr {
         expr: functions::expr_fn::digest(value.expr, method.expr),
@@ -440,7 +434,6 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 /// Concatenates the text representations of all the arguments.
 /// NULL arguments are ignored.
 #[pyfunction]
-#[pyo3(signature = (*args))]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat(args).into())
@@ -450,20 +443,17 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 /// The first argument is used as the separator string, and should not be NULL.
 /// Other NULL arguments are ignored.
 #[pyfunction]
-#[pyo3(signature = (sep, *args))]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
 #[pyfunction]
-#[pyo3(signature = (values, regex, flags = None))]
 fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_like(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
 
 #[pyfunction]
-#[pyo3(signature = (values, regex, flags = None))]
 fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
