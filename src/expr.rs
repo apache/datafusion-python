@@ -141,10 +141,31 @@ impl PyExpr {
             Expr::AggregateFunction(expr) => {
                 Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
             }
-            other => Err(py_runtime_err(format!(
-                "Cannot convert this Expr to a Python object: {:?}",
-                other
-            ))),
+            Expr::SimilarTo(value) => Ok(PySimilarTo::from(value.clone()).into_py(py)),
+            Expr::Between(value) => Ok(between::PyBetween::from(value.clone()).into_py(py)),
+            Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
+            Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
+            Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
+            Expr::Sort(_value) => {
+                todo!("upstream has two different Sort classes, need to figure out which one to use")
+                // let py_sort = PySort::from(value.clone());
+                // let py_object = py_sort.into_py(py);
+                // Ok(py_object)
+            },
+            Expr::ScalarFunction(_) => todo!(),
+            Expr::WindowFunction(_) => todo!(),
+            Expr::InList(_) => todo!(),
+            Expr::Exists(_) => todo!(),
+            Expr::InSubquery(_) => todo!(),
+            Expr::ScalarSubquery(value) => Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py)),
+            Expr::Wildcard { qualifier } => {
+                let _ = qualifier;
+                todo!()
+            },
+            Expr::GroupingSet(value) => Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py)),
+            Expr::Placeholder(_) => todo!(),
+            Expr::OuterReferenceColumn(_, _) => todo!(),
+            Expr::Unnest(_) => todo!(),
         })
     }
 
