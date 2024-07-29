@@ -84,6 +84,7 @@ pub mod scalar_subquery;
 pub mod scalar_variable;
 pub mod signature;
 pub mod sort;
+pub mod sort_expr;
 pub mod subquery;
 pub mod subquery_alias;
 pub mod table_scan;
@@ -146,14 +147,7 @@ impl PyExpr {
             Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
-            Expr::Sort(_value) => {
-                todo!(
-                    "upstream has two different Sort classes, need to figure out which one to use"
-                )
-                // let py_sort = PySort::from(value.clone());
-                // let py_object = py_sort.into_py(py);
-                // Ok(py_object)
-            }
+            Expr::Sort(value) => Ok(sort_expr::PySortExpr::from(value.clone()).into_py(py)),
             Expr::ScalarFunction(_) => todo!(),
             Expr::WindowFunction(_) => todo!(),
             Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
@@ -637,6 +631,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<create_memory_table::PyCreateMemoryTable>()?;
     m.add_class::<create_view::PyCreateView>()?;
     m.add_class::<distinct::PyDistinct>()?;
+    m.add_class::<sort_expr::PySortExpr>()?;
     m.add_class::<subquery_alias::PySubqueryAlias>()?;
     m.add_class::<drop_table::PyDropTable>()?;
     m.add_class::<repartition::PyPartitioning>()?;
