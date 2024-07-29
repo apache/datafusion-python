@@ -158,7 +158,7 @@ impl PyExpr {
             Expr::WindowFunction(_) => todo!(),
             Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
             Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_py(py)),
-            Expr::InSubquery(_) => todo!(),
+            Expr::InSubquery(value) => Ok(in_subquery::PyInSubquery::from(value.clone()).into_py(py)),
             Expr::ScalarSubquery(value) => {
                 Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
             }
