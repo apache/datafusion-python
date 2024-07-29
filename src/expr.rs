@@ -90,6 +90,7 @@ pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
 pub mod unnest;
+pub mod unnest_expr;
 pub mod window;
 
 /// A PyExpr that can be used on a DataFrame
@@ -169,7 +170,7 @@ impl PyExpr {
                 Ok(placeholder::PyPlaceholder::from(value.clone()).into_py(py))
             }
             Expr::OuterReferenceColumn(_, _) => todo!(),
-            Expr::Unnest(_) => todo!(),
+            Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_py(py)),
         })
     }
 
@@ -624,6 +625,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
     m.add_class::<unnest::PyUnnest>()?;
+    m.add_class::<unnest_expr::PyUnnestExpr>()?;
     m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
