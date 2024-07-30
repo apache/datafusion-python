@@ -19,13 +19,24 @@ use crate::expr::PyExpr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::Expr;
+use datafusion_expr::expr::Alias;
 
 #[pyclass(name = "Alias", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyAlias {
-    expr: PyExpr,
-    alias_name: String,
+    alias: Alias,
+}
+
+impl From<Alias> for PyAlias {
+    fn from(alias: Alias) -> Self {
+        Self { alias }
+    }
+}
+
+impl From<PyAlias> for Alias {
+    fn from(py_alias: PyAlias) -> Self {
+        py_alias.alias
+    }
 }
 
 impl Display for PyAlias {
@@ -35,17 +46,8 @@ impl Display for PyAlias {
             "Alias
             \nExpr: `{:?}`
             \nAlias Name: `{}`",
-            &self.expr, &self.alias_name
+            &self.alias.expr, &self.alias.name
         )
-    }
-}
-
-impl PyAlias {
-    pub fn new(expr: &Expr, alias_name: &String) -> Self {
-        Self {
-            expr: expr.clone().into(),
-            alias_name: alias_name.to_owned(),
-        }
     }
 }
 
@@ -53,11 +55,11 @@ impl PyAlias {
 impl PyAlias {
     /// Retrieve the "name" of the alias
     fn alias(&self) -> PyResult<String> {
-        Ok(self.alias_name.clone())
+        Ok(self.alias.name.clone())
     }
 
     fn expr(&self) -> PyResult<PyExpr> {
-        Ok(self.expr.clone())
+        Ok((*self.alias.expr.clone()).into())
     }
 
     /// Get a String representation of this column

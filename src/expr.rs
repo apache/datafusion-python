@@ -122,7 +122,7 @@ impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Python::with_gil(|_| match &self.expr {
-            Expr::Alias(alias) => Ok(PyAlias::new(&alias.expr, &alias.name).into_py(py)),
+            Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_py(py)),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::ScalarVariable(data_type, variables) => {
                 Ok(PyScalarVariable::new(data_type, variables).into_py(py))
