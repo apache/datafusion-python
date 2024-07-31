@@ -17,7 +17,6 @@
 
 use std::sync::Arc;
 
-use crate::errors::py_unsupported_variant_err;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
 use crate::expr::cross_join::PyCrossJoin;
