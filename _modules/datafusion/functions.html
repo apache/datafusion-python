@@ -490,7 +490,7 @@
 <span class="sd">    NULL arguments are ignored.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">args</span><span class="p">))</span></div>
 
 
 
@@ -502,7 +502,7 @@
 <span class="sd">    `NULL` arugments are ignored. `separator` should not be `NULL`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">concat_ws</span><span class="p">(</span><span class="n">separator</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">concat_ws</span><span class="p">(</span><span class="n">separator</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span></div>
 
 
 
@@ -1458,7 +1458,7 @@
 <span class="k">def</span> <span class="nf">make_array</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an array using the specified input expressions.&quot;&quot;&quot;</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">make_array</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">make_array</span><span class="p">(</span><span class="n">args</span><span class="p">))</span></div>
 
 
 
@@ -1580,7 +1580,7 @@
 <span class="k">def</span> <span class="nf">array_concat</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Concatenates the input arrays.&quot;&quot;&quot;</span>
     <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_concat</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">array_concat</span><span class="p">(</span><span class="n">args</span><span class="p">))</span></div>
 
 
 
@@ -2138,9 +2138,9 @@
 <span class="c1"># aggregate functions</span>
 <div class="viewcode-block" id="approx_distinct">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.approx_distinct">[docs]</a>
-<span class="k">def</span> <span class="nf">approx_distinct</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">approx_distinct</span><span class="p">(</span><span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the approximate number of distinct values.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">approx_distinct</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">approx_distinct</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">expr</span><span class="p">))</span></div>
 
 
 
@@ -2155,20 +2155,21 @@
 <div class="viewcode-block" id="approx_percentile_cont">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.approx_percentile_cont">[docs]</a>
 <span class="k">def</span> <span class="nf">approx_percentile_cont</span><span class="p">(</span>
-    <span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span>
+    <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span>
     <span class="n">percentile</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span>
-    <span class="n">num_centroids</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the value that is approximately at a given percentile of ``expr``.&quot;&quot;&quot;</span>
+    <span class="c1"># Re-enable num_centroids: https://github.com/apache/datafusion-python/issues/777</span>
+    <span class="n">num_centroids</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">num_centroids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">percentile</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">)</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">approx_percentile_cont</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">percentile</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">)</span>
         <span class="p">)</span>
 
     <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span>
         <span class="n">f</span><span class="o">.</span><span class="n">approx_percentile_cont</span><span class="p">(</span>
-            <span class="n">expr</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">percentile</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">num_centroids</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span>
+            <span class="n">expression</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">percentile</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span>
         <span class="p">)</span>
     <span class="p">)</span></div>
 
@@ -2235,7 +2236,7 @@
 
 <span class="sd">    This is an alias for `covar_samp`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">covar</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">covar_samp</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span></div>
 
 
 
@@ -2262,7 +2263,7 @@
 
 <span class="sd">    Returns 1 if the value of the argument is aggregated, 0 if not.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">grouping</span><span class="p">([</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">grouping</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2370,7 +2371,7 @@
 
 <span class="sd">    Only non-null pairs of the inputs are evaluated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_avgx</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_avgx</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2381,7 +2382,7 @@
 
 <span class="sd">    Only non-null pairs of the inputs are evaluated.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_avgy</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_avgy</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2389,7 +2390,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_count">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_count</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Counts the number of rows in which both expressions are not null.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_count</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_count</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2397,7 +2398,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_intercept">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_intercept</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the intercept from the linear regression.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_intercept</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_intercept</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2405,7 +2406,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_r2">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_r2</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the R-squared value from linear regression.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_r2</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_r2</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2413,7 +2414,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_slope">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_slope</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the slope from linear regression.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_slope</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_slope</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2421,7 +2422,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_sxx">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_sxx</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the sum of squares of the independent variable `x`.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_sxx</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_sxx</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2429,7 +2430,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_sxy">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_sxy</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the sum of products of pairs of numbers.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_sxy</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_sxy</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2437,7 +2438,7 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.regr_syy">[docs]</a>
 <span class="k">def</span> <span class="nf">regr_syy</span><span class="p">(</span><span class="n">y</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the sum of squares of the dependent variable `y`.&quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_syy</span><span class="p">[</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">],</span> <span class="n">distinct</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">regr_syy</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">))</span></div>
 
 
 
@@ -2487,46 +2488,41 @@
 
 <div class="viewcode-block" id="bit_and">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.bit_and">[docs]</a>
-<span class="k">def</span> <span class="nf">bit_and</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">bit_and</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the bitwise AND of the argument.&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_and</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="bit_or">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.bit_or">[docs]</a>
-<span class="k">def</span> <span class="nf">bit_or</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">bit_or</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the bitwise OR of the argument.&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_or</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_or</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="bit_xor">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.bit_xor">[docs]</a>
-<span class="k">def</span> <span class="nf">bit_xor</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">bit_xor</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the bitwise XOR of the argument.&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_xor</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bit_xor</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="bool_and">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.bool_and">[docs]</a>
-<span class="k">def</span> <span class="nf">bool_and</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">bool_and</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the boolean AND of the arugment.&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bool_and</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bool_and</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="bool_or">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.bool_or">[docs]</a>
-<span class="k">def</span> <span class="nf">bool_or</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">bool_or</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the boolean OR of the arguement.&quot;&quot;&quot;</span>
-    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bool_or</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">bool_or</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">))</span></div>
 
 </pre></div>
 
