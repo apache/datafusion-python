@@ -33,7 +33,7 @@ use datafusion_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
-use crate::errors::{py_runtime_err, py_type_err, DataFusionError};
+use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -121,7 +121,8 @@ pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
 impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Python::with_gil(|_| match &self.expr {
+        Python::with_gil(|_| {
+            match &self.expr {
             Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_py(py)),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::ScalarVariable(data_type, variables) => {
@@ -149,8 +150,14 @@ impl PyExpr {
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
             Expr::Sort(value) => Ok(sort_expr::PySortExpr::from(value.clone()).into_py(py)),
-            Expr::ScalarFunction(_) => todo!(),
-            Expr::WindowFunction(_) => todo!(),
+            Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
+                value
+            ))),
+            Expr::WindowFunction(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::WindowFunction to a Python object is not implemented: {:?}",
+                value
+            ))),
             Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
             Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_py(py)),
             Expr::InSubquery(value) => {
@@ -159,18 +166,22 @@ impl PyExpr {
             Expr::ScalarSubquery(value) => {
                 Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
             }
-            Expr::Wildcard { qualifier } => {
-                let _ = qualifier;
-                todo!()
-            }
+            Expr::Wildcard { qualifier } => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::Wildcard to a Python object is not implemented : {:?}",
+                qualifier
+            ))),
             Expr::GroupingSet(value) => {
                 Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
             }
             Expr::Placeholder(value) => {
                 Ok(placeholder::PyPlaceholder::from(value.clone()).into_py(py))
             }
-            Expr::OuterReferenceColumn(_, _) => todo!(),
+            Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {:?} - {:?}",
+                data_type, column
+            ))),
             Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_py(py)),
+        }
         })
     }
 
