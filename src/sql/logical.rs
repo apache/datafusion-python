@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+use crate::errors::py_unsupported_variant_err;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
 use crate::expr::cross_join::PyCrossJoin;
@@ -80,16 +81,19 @@ impl PyLogicalPlan {
             LogicalPlan::SubqueryAlias(plan) => PySubqueryAlias::from(plan.clone()).to_variant(py),
             LogicalPlan::Unnest(plan) => PyUnnest::from(plan.clone()).to_variant(py),
             LogicalPlan::Window(plan) => PyWindow::from(plan.clone()).to_variant(py),
-            LogicalPlan::Repartition(_) => todo!(),
-            LogicalPlan::Union(_) => todo!(),
-            LogicalPlan::Statement(_) => todo!(),
-            LogicalPlan::Values(_) => todo!(),
-            LogicalPlan::Prepare(_) => todo!(),
-            LogicalPlan::Dml(_) => todo!(),
-            LogicalPlan::Ddl(_) => todo!(),
-            LogicalPlan::Copy(_) => todo!(),
-            LogicalPlan::DescribeTable(_) => todo!(),
-            LogicalPlan::RecursiveQuery(_) => todo!(),
+            LogicalPlan::Repartition(_)
+            | LogicalPlan::Union(_)
+            | LogicalPlan::Statement(_)
+            | LogicalPlan::Values(_)
+            | LogicalPlan::Prepare(_)
+            | LogicalPlan::Dml(_)
+            | LogicalPlan::Ddl(_)
+            | LogicalPlan::Copy(_)
+            | LogicalPlan::DescribeTable(_)
+            | LogicalPlan::RecursiveQuery(_) => Err(py_unsupported_variant_err(format!(
+                "Conversion of variant not implemented: {:?}",
+                self.plan
+            ))),
         }
     }
 
