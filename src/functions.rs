@@ -16,6 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
+use datafusion_expr::AggregateExt;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -30,12 +31,140 @@ use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
-    aggregate_function,
     expr::{
         find_df_window_func, AggregateFunction, AggregateFunctionDefinition, Sort, WindowFunction,
     },
     lit, Expr, WindowFunctionDefinition,
 };
+
+#[pyfunction]
+pub fn approx_distinct(expression: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::approx_distinct::approx_distinct(expression.expr).into()
+}
+
+#[pyfunction]
+pub fn approx_median(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::approx_median(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont(
+    expression: PyExpr,
+    percentile: PyExpr,
+    distinct: bool,
+) -> PyResult<PyExpr> {
+    let expr =
+        functions_aggregate::expr_fn::approx_percentile_cont(expression.expr, percentile.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont_with_weight(
+    expression: PyExpr,
+    weight: PyExpr,
+    percentile: PyExpr,
+    distinct: bool,
+) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
+        expression.expr,
+        weight.expr,
+        percentile.expr,
+    );
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn avg(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::avg(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bit_and(expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_and(expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bit_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_or(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bit_xor(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bit_xor(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bool_and(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bool_and(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn bool_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::bool_or(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn grouping(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::grouping(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
 
 #[pyfunction]
 pub fn sum(args: PyExpr) -> PyExpr {
@@ -58,9 +187,23 @@ pub fn median(arg: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-pub fn covar(y: PyExpr, x: PyExpr) -> PyExpr {
-    // alias for covar_samp
-    covar_samp(y, x)
+pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::stddev(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn stddev_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::stddev_pop(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
 }
 
 #[pyfunction]
@@ -69,53 +212,166 @@ pub fn var_samp(expression: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-/// Alias for [`var_samp`]
-pub fn var(y: PyExpr) -> PyExpr {
-    var_samp(y)
+pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::var_pop(expression.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
 }
 
 #[pyfunction]
-#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None, null_treatment = None))]
+pub fn regr_avgx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_avgx(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_avgy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_avgy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_count(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_count(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_intercept(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_intercept(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_r2(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_r2(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_slope(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_slope(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_sxx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_sxx(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_sxy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_sxy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
+pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::regr_syy(expr_y.expr, expr_x.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
+}
+
+#[pyfunction]
 pub fn first_value(
-    args: Vec<PyExpr>,
+    expr: PyExpr,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyExpr {
-    let null_treatment = null_treatment.map(Into::into);
-    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
-    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
-    functions_aggregate::expr_fn::first_value(
-        args,
-        distinct,
-        filter.map(|x| Box::new(x.expr)),
-        order_by,
-        null_treatment,
-    )
-    .into()
+) -> PyResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+
+    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    let order_by = order_by
+        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
+        .unwrap_or_default();
+    let mut builder = agg_fn.order_by(order_by);
+
+    if distinct {
+        builder = builder.distinct();
+    }
+
+    if let Some(filter) = filter {
+        builder = builder.filter(filter.expr);
+    }
+
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(null_treatment.into())
+    }
+
+    Ok(builder.build()?.into())
 }
 
 #[pyfunction]
-#[pyo3(signature = (*args, distinct = false, filter = None, order_by = None, null_treatment = None))]
 pub fn last_value(
-    args: Vec<PyExpr>,
+    expr: PyExpr,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyExpr {
-    let null_treatment = null_treatment.map(Into::into);
-    let args = args.into_iter().map(|x| x.expr).collect::<Vec<_>>();
-    let order_by = order_by.map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>());
-    functions_aggregate::expr_fn::last_value(
-        args,
-        distinct,
-        filter.map(|x| Box::new(x.expr)),
-        order_by,
-        null_treatment,
-    )
-    .into()
+) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
+
+    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    let order_by = order_by
+        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
+        .unwrap_or_default();
+    let mut builder = agg_fn.order_by(order_by);
+
+    if distinct {
+        builder = builder.distinct();
+    }
+
+    if let Some(filter) = filter {
+        builder = builder.filter(filter.expr);
+    }
+
+    if let Some(null_treatment) = null_treatment {
+        builder = builder.null_treatment(null_treatment.into())
+    }
+
+    Ok(builder.build()?.into())
 }
 
 #[pyfunction]
@@ -129,34 +385,23 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
         .into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
-fn array(exprs: Vec<PyExpr>) -> PyExpr {
-    // alias for make_array
-    make_array(exprs)
-}
-
-#[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
     datafusion_functions_array::expr_fn::array_concat(exprs).into()
 }
 
 #[pyfunction]
-#[pyo3(signature = (*exprs))]
 fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
     array_concat(exprs)
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
@@ -164,28 +409,6 @@ fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr 
 }
 
 #[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn array_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn list_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, element, index = 1))]
-fn list_indexof(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
-    // alias of array_position
-    array_position(array, element, index)
-}
-
-#[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = None))]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     datafusion_functions_array::expr_fn::array_slice(
         array.into(),
@@ -196,18 +419,10 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
     .into()
 }
 
-#[pyfunction]
-#[pyo3(signature = (array, begin, end, stride = None))]
-fn list_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
-    // alias of array_slice
-    array_slice(array, begin, end, stride)
-}
-
 /// Computes a binary hash of the given data. type is the algorithm to use.
 /// Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s, blake2b, and blake3.
 // #[pyfunction(value, method)]
 #[pyfunction]
-#[pyo3(signature = (value, method))]
 fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
     PyExpr {
         expr: functions::expr_fn::digest(value.expr, method.expr),
@@ -217,7 +432,6 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 /// Concatenates the text representations of all the arguments.
 /// NULL arguments are ignored.
 #[pyfunction]
-#[pyo3(signature = (*args))]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat(args).into())
@@ -227,20 +441,17 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 /// The first argument is used as the separator string, and should not be NULL.
 /// Other NULL arguments are ignored.
 #[pyfunction]
-#[pyo3(signature = (sep, *args))]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
 #[pyfunction]
-#[pyo3(signature = (values, regex, flags = None))]
 fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_like(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
 
 #[pyfunction]
-#[pyo3(signature = (values, regex, flags = None))]
 fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
@@ -293,21 +504,23 @@ fn col(name: &str) -> PyResult<PyExpr> {
     })
 }
 
+// TODO: should we just expose this in python?
 /// Create a COUNT(1) aggregate expression
 #[pyfunction]
-fn count_star() -> PyResult<PyExpr> {
-    Ok(PyExpr {
-        expr: Expr::AggregateFunction(AggregateFunction {
-            func_def: datafusion_expr::expr::AggregateFunctionDefinition::BuiltIn(
-                aggregate_function::AggregateFunction::Count,
-            ),
-            args: vec![lit(1)],
-            distinct: false,
-            filter: None,
-            order_by: None,
-            null_treatment: None,
-        }),
-    })
+fn count_star() -> PyExpr {
+    functions_aggregate::expr_fn::count(lit(1)).into()
+}
+
+/// Wrapper for [`functions_aggregate::expr_fn::count`]
+/// Count the number of non-null values in the column
+#[pyfunction]
+fn count(expr: PyExpr, distinct: bool) -> PyResult<PyExpr> {
+    let expr = functions_aggregate::expr_fn::count(expr.expr);
+    if distinct {
+        Ok(expr.distinct().build()?.into())
+    } else {
+        Ok(expr.into())
+    }
 }
 
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
@@ -318,48 +531,70 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     })
 }
 
-/// Helper function to find the appropriate window function. First, if a session
-/// context is defined check it's registered functions. If no context is defined,
-/// attempt to find from all default functions. Lastly, as a fall back attempt
-/// to use built in window functions, which are being deprecated.
+/// Helper function to find the appropriate window function.
+///
+/// Search procedure:
+/// 1) Search built in window functions, which are being deprecated.
+/// 1) If a session context is provided:
+///      1) search User Defined Aggregate Functions (UDAFs)
+///      1) search registered window functions
+///      1) search registered aggregate functions
+/// 1) If no function has been found, search default aggregate functions.
+///
+/// NOTE: we search the built-ins first because the `UDAF` versions currently do not have the same behavior.
 fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
-    let mut maybe_fn = match &ctx {
-        Some(ctx) => {
-            let session_state = ctx.ctx.state();
-
-            match session_state.window_functions().contains_key(name) {
-                true => session_state
-                    .window_functions()
-                    .get(name)
-                    .map(|f| WindowFunctionDefinition::WindowUDF(f.clone())),
-                false => session_state
-                    .aggregate_functions()
-                    .get(name)
-                    .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone())),
-            }
-        }
-        None => {
-            let default_aggregate_fns = all_default_aggregate_functions();
-
-            default_aggregate_fns
-                .iter()
-                .find(|v| v.aliases().contains(&name.to_string()))
-                .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()))
-        }
-    };
-
-    if maybe_fn.is_none() {
-        maybe_fn = find_df_window_func(name).or_else(|| {
-            ctx.and_then(|ctx| {
-                ctx.ctx
-                    .udaf(name)
-                    .map(WindowFunctionDefinition::AggregateUDF)
-                    .ok()
-            })
-        });
+    // search built in window functions (soon to be deprecated)
+    let df_window_func = find_df_window_func(name);
+    if let Some(df_window_func) = df_window_func {
+        return Ok(df_window_func);
     }
 
-    maybe_fn.ok_or(DataFusionError::Common("window function not found".to_string()).into())
+    if let Some(ctx) = ctx {
+        // search UDAFs
+        let udaf = ctx
+            .ctx
+            .udaf(name)
+            .map(WindowFunctionDefinition::AggregateUDF)
+            .ok();
+
+        if let Some(udaf) = udaf {
+            return Ok(udaf);
+        }
+
+        let session_state = ctx.ctx.state();
+
+        // search registered window functions
+        let window_fn = session_state
+            .window_functions()
+            .get(name)
+            .map(|f| WindowFunctionDefinition::WindowUDF(f.clone()));
+
+        if let Some(window_fn) = window_fn {
+            return Ok(window_fn);
+        }
+
+        // search registered aggregate functions
+        let agg_fn = session_state
+            .aggregate_functions()
+            .get(name)
+            .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
+
+        if let Some(agg_fn) = agg_fn {
+            return Ok(agg_fn);
+        }
+    }
+
+    // search default aggregate functions
+    let agg_fn = all_default_aggregate_functions()
+        .iter()
+        .find(|v| v.name() == name || v.aliases().contains(&name.to_string()))
+        .map(|f| WindowFunctionDefinition::AggregateUDF(f.clone()));
+
+    if let Some(agg_fn) = agg_fn {
+        return Ok(agg_fn);
+    }
+
+    Err(DataFusionError::Common(format!("window function `{name}` not found")).into())
 }
 
 /// Creates a new Window function expression
@@ -424,25 +659,19 @@ macro_rules! aggregate_function {
 ///
 /// These functions have explicit named arguments.
 macro_rules! expr_fn {
-    ($NAME: ident) => {
-        expr_fn!($NAME, $NAME, , stringify!($NAME));
+    ($FUNC: ident) => {
+        expr_fn!($FUNC, , stringify!($FUNC));
     };
-    ($NAME:ident, $($arg:ident)*) => {
-        expr_fn!($NAME, $NAME, $($arg)*, stringify!($FUNC));
+    ($FUNC:ident, $($arg:ident)*) => {
+        expr_fn!($FUNC, $($arg)*, stringify!($FUNC));
     };
-    ($NAME:ident, $FUNC:ident, $($arg:ident)*) => {
-        expr_fn!($NAME, $FUNC, $($arg)*, stringify!($FUNC));
+    ($FUNC: ident, $DOC: expr) => {
+        expr_fn!($FUNC, ,$DOC);
     };
-    ($NAME: ident, $DOC: expr) => {
-        expr_fn!($NAME, $NAME, ,$DOC);
-    };
-    ($NAME: ident, $($arg:ident)*, $DOC: expr) => {
-        expr_fn!($NAME, $NAME, $($arg)* ,$DOC);
-    };
-    ($NAME: ident, $FUNC: ident, $($arg:ident)*, $DOC: expr) => {
+    ($FUNC: ident, $($arg:ident)*, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
-        fn $NAME($($arg: PyExpr),*) -> PyExpr {
+        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
             functions::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
@@ -452,17 +681,14 @@ macro_rules! expr_fn {
 ///
 /// These functions take a single `Vec<PyExpr>` argument using `pyo3(signature = (*args))`.
 macro_rules! expr_fn_vec {
-    ($NAME: ident) => {
-        expr_fn_vec!($NAME, $NAME, stringify!($NAME));
+    ($FUNC: ident) => {
+        expr_fn_vec!($FUNC, stringify!($FUNC));
     };
-    ($NAME: ident, $DOC: expr) => {
-        expr_fn_vec!($NAME, $NAME, $DOC);
-    };
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
+    ($FUNC: ident, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
         #[pyo3(signature = (*args))]
-        fn $NAME(args: Vec<PyExpr>) -> PyExpr {
+        fn $FUNC(args: Vec<PyExpr>) -> PyExpr {
             let args = args.into_iter().map(|e| e.into()).collect::<Vec<_>>();
             functions::expr_fn::$FUNC(args).into()
         }
@@ -473,22 +699,19 @@ macro_rules! expr_fn_vec {
 ///
 /// These functions have explicit named arguments.
 macro_rules! array_fn {
-    ($NAME: ident) => {
-        array_fn!($NAME, $NAME, , stringify!($NAME));
+    ($FUNC: ident) => {
+        array_fn!($FUNC, , stringify!($FUNC));
     };
-    ($NAME:ident,  $($arg:ident)*) => {
-        array_fn!($NAME, $NAME, $($arg)*, stringify!($FUNC));
+    ($FUNC:ident,  $($arg:ident)*) => {
+        array_fn!($FUNC, $($arg)*, stringify!($FUNC));
     };
-    ($NAME: ident, $FUNC:ident, $($arg:ident)*) => {
-        array_fn!($NAME, $FUNC, $($arg)*, stringify!($FUNC));
+    ($FUNC: ident, $DOC: expr) => {
+        array_fn!($FUNC, , $DOC);
     };
-    ($NAME: ident, $DOC: expr) => {
-        array_fn!($NAME, $NAME, , $DOC);
-    };
-    ($NAME: ident, $FUNC:ident,  $($arg:ident)*, $DOC:expr) => {
+    ($FUNC: ident, $($arg:ident)*, $DOC:expr) => {
         #[doc = $DOC]
         #[pyfunction]
-        fn $NAME($($arg: PyExpr),*) -> PyExpr {
+        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
             datafusion_functions_array::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
@@ -559,7 +782,6 @@ expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this 
 expr_fn_vec!(overlay);
 expr_fn!(pi);
 expr_fn!(power, base exponent);
-expr_fn!(pow, power, base exponent);
 expr_fn!(radians, num);
 expr_fn!(repeat, string n, "Repeats string the specified number of times.");
 expr_fn!(
@@ -611,9 +833,7 @@ expr_fn_vec!(to_unixtime);
 expr_fn!(current_date);
 expr_fn!(current_time);
 expr_fn!(date_part, part date);
-expr_fn!(datepart, date_part, part date);
 expr_fn!(date_trunc, part date);
-expr_fn!(datetrunc, date_trunc, part date);
 expr_fn!(date_bin, stride source origin);
 expr_fn!(make_date, year month day);
 
@@ -630,95 +850,37 @@ expr_fn!(random);
 
 // Array Functions
 array_fn!(array_append, array element);
-array_fn!(array_push_back, array_append, array element);
 array_fn!(array_to_string, array delimiter);
-array_fn!(array_join, array_to_string, array delimiter);
-array_fn!(list_to_string, array_to_string, array delimiter);
-array_fn!(list_join, array_to_string, array delimiter);
-array_fn!(list_append, array_append, array element);
-array_fn!(list_push_back, array_append, array element);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
-array_fn!(list_distinct, array_distinct, array);
-array_fn!(list_dims, array_dims, array);
 array_fn!(array_element, array element);
-array_fn!(array_extract, array_element, array element);
-array_fn!(list_element, array_element, array element);
-array_fn!(list_extract, array_element, array element);
 array_fn!(array_length, array);
-array_fn!(list_length, array_length, array);
 array_fn!(array_has, first_array second_array);
 array_fn!(array_has_all, first_array second_array);
 array_fn!(array_has_any, first_array second_array);
-array_fn!(array_positions, array_positions, array element);
-array_fn!(list_positions, array_positions, array element);
+array_fn!(array_positions, array element);
 array_fn!(array_ndims, array);
-array_fn!(list_ndims, array_ndims, array);
 array_fn!(array_prepend, element array);
-array_fn!(array_push_front, array_prepend, element array);
-array_fn!(list_prepend, array_prepend, element array);
-array_fn!(list_push_front, array_prepend, element array);
 array_fn!(array_pop_back, array);
 array_fn!(array_pop_front, array);
 array_fn!(array_remove, array element);
-array_fn!(list_remove, array_remove, array element);
 array_fn!(array_remove_n, array element max);
-array_fn!(list_remove_n, array_remove_n, array element max);
 array_fn!(array_remove_all, array element);
-array_fn!(list_remove_all, array_remove_all, array element);
 array_fn!(array_repeat, element count);
 array_fn!(array_replace, array from to);
-array_fn!(list_replace, array_replace, array from to);
 array_fn!(array_replace_n, array from to max);
-array_fn!(list_replace_n, array_replace_n, array from to max);
 array_fn!(array_replace_all, array from to);
-array_fn!(list_replace_all, array_replace_all, array from to);
 array_fn!(array_sort, array desc null_first);
-array_fn!(list_sort, array_sort, array desc null_first);
 array_fn!(array_intersect, first_array second_array);
-array_fn!(list_intersect, array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
-array_fn!(list_union, array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
-array_fn!(list_except, array_except, first_array second_array);
 array_fn!(array_resize, array size value);
-array_fn!(list_resize, array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(approx_distinct, ApproxDistinct);
-aggregate_function!(approx_median, ApproxMedian);
-aggregate_function!(approx_percentile_cont, ApproxPercentileCont);
-aggregate_function!(
-    approx_percentile_cont_with_weight,
-    ApproxPercentileContWithWeight
-);
 aggregate_function!(array_agg, ArrayAgg);
-aggregate_function!(avg, Avg);
-aggregate_function!(corr, Correlation);
-aggregate_function!(count, Count);
-aggregate_function!(grouping, Grouping);
 aggregate_function!(max, Max);
-aggregate_function!(mean, Avg);
 aggregate_function!(min, Min);
-aggregate_function!(stddev, Stddev);
-aggregate_function!(stddev_pop, StddevPop);
-aggregate_function!(stddev_samp, Stddev);
-aggregate_function!(var_pop, VariancePop);
-aggregate_function!(regr_avgx, RegrAvgx);
-aggregate_function!(regr_avgy, RegrAvgy);
-aggregate_function!(regr_count, RegrCount);
-aggregate_function!(regr_intercept, RegrIntercept);
-aggregate_function!(regr_r2, RegrR2);
-aggregate_function!(regr_slope, RegrSlope);
-aggregate_function!(regr_sxx, RegrSXX);
-aggregate_function!(regr_sxy, RegrSXY);
-aggregate_function!(regr_syy, RegrSYY);
-aggregate_function!(bit_and, BitAnd);
-aggregate_function!(bit_or, BitOr);
-aggregate_function!(bit_xor, BitXor);
-aggregate_function!(bool_and, BoolAnd);
-aggregate_function!(bool_or, BoolOr);
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
@@ -729,7 +891,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(approx_median))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont))?;
     m.add_wrapped(wrap_pyfunction!(approx_percentile_cont_with_weight))?;
-    m.add_wrapped(wrap_pyfunction!(array))?;
     m.add_wrapped(wrap_pyfunction!(range))?;
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
@@ -758,16 +919,13 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
     m.add_wrapped(wrap_pyfunction!(count_star))?;
-    m.add_wrapped(wrap_pyfunction!(covar))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
     m.add_wrapped(wrap_pyfunction!(current_time))?;
     m.add_wrapped(wrap_pyfunction!(degrees))?;
     m.add_wrapped(wrap_pyfunction!(date_bin))?;
-    m.add_wrapped(wrap_pyfunction!(datepart))?;
     m.add_wrapped(wrap_pyfunction!(date_part))?;
-    m.add_wrapped(wrap_pyfunction!(datetrunc))?;
     m.add_wrapped(wrap_pyfunction!(date_trunc))?;
     m.add_wrapped(wrap_pyfunction!(make_date))?;
     m.add_wrapped(wrap_pyfunction!(digest))?;
@@ -796,7 +954,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(max))?;
     m.add_wrapped(wrap_pyfunction!(make_array))?;
     m.add_wrapped(wrap_pyfunction!(md5))?;
-    m.add_wrapped(wrap_pyfunction!(mean))?;
     m.add_wrapped(wrap_pyfunction!(median))?;
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(named_struct))?;
@@ -808,7 +965,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(overlay))?;
     m.add_wrapped(wrap_pyfunction!(pi))?;
     m.add_wrapped(wrap_pyfunction!(power))?;
-    m.add_wrapped(wrap_pyfunction!(pow))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;
@@ -833,7 +989,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
     m.add_wrapped(wrap_pyfunction!(stddev))?;
     m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
-    m.add_wrapped(wrap_pyfunction!(stddev_samp))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
     m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
@@ -854,7 +1009,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(trunc))?;
     m.add_wrapped(wrap_pyfunction!(upper))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
-    m.add_wrapped(wrap_pyfunction!(var))?;
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
     m.add_wrapped(wrap_pyfunction!(var_samp))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
@@ -881,67 +1035,35 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // Array Functions
     m.add_wrapped(wrap_pyfunction!(array_append))?;
-    m.add_wrapped(wrap_pyfunction!(array_push_back))?;
-    m.add_wrapped(wrap_pyfunction!(list_append))?;
-    m.add_wrapped(wrap_pyfunction!(list_push_back))?;
     m.add_wrapped(wrap_pyfunction!(array_concat))?;
     m.add_wrapped(wrap_pyfunction!(array_cat))?;
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_distinct))?;
-    m.add_wrapped(wrap_pyfunction!(list_distinct))?;
-    m.add_wrapped(wrap_pyfunction!(list_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
-    m.add_wrapped(wrap_pyfunction!(array_extract))?;
-    m.add_wrapped(wrap_pyfunction!(list_element))?;
-    m.add_wrapped(wrap_pyfunction!(list_extract))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
-    m.add_wrapped(wrap_pyfunction!(list_length))?;
     m.add_wrapped(wrap_pyfunction!(array_has))?;
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
     m.add_wrapped(wrap_pyfunction!(array_has_any))?;
     m.add_wrapped(wrap_pyfunction!(array_position))?;
-    m.add_wrapped(wrap_pyfunction!(array_indexof))?;
-    m.add_wrapped(wrap_pyfunction!(list_position))?;
-    m.add_wrapped(wrap_pyfunction!(list_indexof))?;
     m.add_wrapped(wrap_pyfunction!(array_positions))?;
-    m.add_wrapped(wrap_pyfunction!(list_positions))?;
     m.add_wrapped(wrap_pyfunction!(array_to_string))?;
     m.add_wrapped(wrap_pyfunction!(array_intersect))?;
-    m.add_wrapped(wrap_pyfunction!(list_intersect))?;
     m.add_wrapped(wrap_pyfunction!(array_union))?;
-    m.add_wrapped(wrap_pyfunction!(list_union))?;
     m.add_wrapped(wrap_pyfunction!(array_except))?;
-    m.add_wrapped(wrap_pyfunction!(list_except))?;
     m.add_wrapped(wrap_pyfunction!(array_resize))?;
-    m.add_wrapped(wrap_pyfunction!(list_resize))?;
-    m.add_wrapped(wrap_pyfunction!(array_join))?;
-    m.add_wrapped(wrap_pyfunction!(list_to_string))?;
-    m.add_wrapped(wrap_pyfunction!(list_join))?;
     m.add_wrapped(wrap_pyfunction!(array_ndims))?;
-    m.add_wrapped(wrap_pyfunction!(list_ndims))?;
     m.add_wrapped(wrap_pyfunction!(array_prepend))?;
-    m.add_wrapped(wrap_pyfunction!(array_push_front))?;
-    m.add_wrapped(wrap_pyfunction!(list_prepend))?;
-    m.add_wrapped(wrap_pyfunction!(list_push_front))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_back))?;
     m.add_wrapped(wrap_pyfunction!(array_pop_front))?;
     m.add_wrapped(wrap_pyfunction!(array_remove))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove))?;
     m.add_wrapped(wrap_pyfunction!(array_remove_n))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove_n))?;
     m.add_wrapped(wrap_pyfunction!(array_remove_all))?;
-    m.add_wrapped(wrap_pyfunction!(list_remove_all))?;
     m.add_wrapped(wrap_pyfunction!(array_repeat))?;
     m.add_wrapped(wrap_pyfunction!(array_replace))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_n))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace_n))?;
     m.add_wrapped(wrap_pyfunction!(array_replace_all))?;
-    m.add_wrapped(wrap_pyfunction!(list_replace_all))?;
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
-    m.add_wrapped(wrap_pyfunction!(list_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
-    m.add_wrapped(wrap_pyfunction!(list_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
 
     Ok(())

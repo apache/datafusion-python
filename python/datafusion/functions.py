@@ -101,7 +101,7 @@ def concat(*args: Expr) -> Expr:
     NULL arguments are ignored.
     """
     args = [arg.expr for arg in args]
-    return Expr(f.concat(*args))
+    return Expr(f.concat(args))
 
 
 def concat_ws(separator: str, *args: Expr) -> Expr:
@@ -110,7 +110,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
     `NULL` arugments are ignored. `separator` should not be `NULL`.
     """
     args = [arg.expr for arg in args]
-    return Expr(f.concat_ws(separator, *args))
+    return Expr(f.concat_ws(separator, args))
 
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> Expr:
@@ -757,7 +757,7 @@ def upper(arg: Expr) -> Expr:
 def make_array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions."""
     args = [arg.expr for arg in args]
-    return Expr(f.make_array(*args))
+    return Expr(f.make_array(args))
 
 
 def array(*args: Expr) -> Expr:
@@ -840,7 +840,7 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
 def array_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays."""
     args = [arg.expr for arg in args]
-    return Expr(f.array_concat(*args))
+    return Expr(f.array_concat(args))
 
 
 def array_cat(*args: Expr) -> Expr:
@@ -1233,9 +1233,9 @@ def flatten(array: Expr) -> Expr:
 
 
 # aggregate functions
-def approx_distinct(arg: Expr) -> Expr:
+def approx_distinct(expression: Expr) -> Expr:
     """Returns the approximate number of distinct values."""
-    return Expr(f.approx_distinct(arg.expr, distinct=True))
+    return Expr(f.approx_distinct(expression.expr))
 
 
 def approx_median(arg: Expr, distinct: bool = False) -> Expr:
@@ -1244,20 +1244,21 @@ def approx_median(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def approx_percentile_cont(
-    expr: Expr,
+    expression: Expr,
     percentile: Expr,
-    num_centroids: int | None = None,
     distinct: bool = False,
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of ``expr``."""
+    # Re-enable num_centroids: https://github.com/apache/datafusion-python/issues/777
+    num_centroids = None
     if num_centroids is None:
         return Expr(
-            f.approx_percentile_cont(expr.expr, percentile.expr, distinct=distinct)
+            f.approx_percentile_cont(expression.expr, percentile.expr, distinct=distinct)
         )
 
     return Expr(
         f.approx_percentile_cont(
-            expr.expr, percentile.expr, num_centroids, distinct=distinct
+            expression.expr, percentile.expr, distinct=distinct
         )
     )
 
@@ -1306,7 +1307,7 @@ def covar(y: Expr, x: Expr) -> Expr:
 
     This is an alias for `covar_samp`.
     """
-    return Expr(f.covar(y.expr, x.expr))
+    return covar_samp(y, x)
 
 
 def covar_pop(y: Expr, x: Expr) -> Expr:
@@ -1324,7 +1325,7 @@ def grouping(arg: Expr, distinct: bool = False) -> Expr:
 
     Returns 1 if the value of the argument is aggregated, 0 if not.
     """
-    return Expr(f.grouping([arg.expr], distinct=distinct))
+    return Expr(f.grouping(arg.expr, distinct=distinct))
 
 
 def max(arg: Expr, distinct: bool = False) -> Expr:
@@ -1396,7 +1397,7 @@ def regr_avgx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 
     Only non-null pairs of the inputs are evaluated.
     """
-    return Expr(f.regr_avgx[y.expr, x.expr], distinct)
+    return Expr(f.regr_avgx(y.expr, x.expr, distinct))
 
 
 def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
@@ -1404,42 +1405,42 @@ def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 
     Only non-null pairs of the inputs are evaluated.
     """
-    return Expr(f.regr_avgy[y.expr, x.expr], distinct)
+    return Expr(f.regr_avgy(y.expr, x.expr, distinct))
 
 
 def regr_count(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Counts the number of rows in which both expressions are not null."""
-    return Expr(f.regr_count[y.expr, x.expr], distinct)
+    return Expr(f.regr_count(y.expr, x.expr, distinct))
 
 
 def regr_intercept(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the intercept from the linear regression."""
-    return Expr(f.regr_intercept[y.expr, x.expr], distinct)
+    return Expr(f.regr_intercept(y.expr, x.expr, distinct))
 
 
 def regr_r2(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the R-squared value from linear regression."""
-    return Expr(f.regr_r2[y.expr, x.expr], distinct)
+    return Expr(f.regr_r2(y.expr, x.expr, distinct))
 
 
 def regr_slope(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the slope from linear regression."""
-    return Expr(f.regr_slope[y.expr, x.expr], distinct)
+    return Expr(f.regr_slope(y.expr, x.expr, distinct))
 
 
 def regr_sxx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of squares of the independent variable `x`."""
-    return Expr(f.regr_sxx[y.expr, x.expr], distinct)
+    return Expr(f.regr_sxx(y.expr, x.expr, distinct))
 
 
 def regr_sxy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of products of pairs of numbers."""
-    return Expr(f.regr_sxy[y.expr, x.expr], distinct)
+    return Expr(f.regr_sxy(y.expr, x.expr, distinct))
 
 
 def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
     """Computes the sum of squares of the dependent variable `y`."""
-    return Expr(f.regr_syy[y.expr, x.expr], distinct)
+    return Expr(f.regr_syy(y.expr, x.expr, distinct))
 
 
 def first_value(
@@ -1480,31 +1481,26 @@ def last_value(
     )
 
 
-def bit_and(*args: Expr, distinct: bool = False) -> Expr:
+def bit_and(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise AND of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_and(*args, distinct=distinct))
+    return Expr(f.bit_and(arg.expr, distinct=distinct))
 
 
-def bit_or(*args: Expr, distinct: bool = False) -> Expr:
+def bit_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise OR of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_or(*args, distinct=distinct))
+    return Expr(f.bit_or(arg.expr, distinct=distinct))
 
 
-def bit_xor(*args: Expr, distinct: bool = False) -> Expr:
+def bit_xor(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the bitwise XOR of the argument."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bit_xor(*args, distinct=distinct))
+    return Expr(f.bit_xor(arg.expr, distinct=distinct))
 
 
-def bool_and(*args: Expr, distinct: bool = False) -> Expr:
+def bool_and(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean AND of the arugment."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bool_and(*args, distinct=distinct))
+    return Expr(f.bool_and(arg.expr, distinct=distinct))
 
 
-def bool_or(*args: Expr, distinct: bool = False) -> Expr:
+def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean OR of the arguement."""
-    args = [arg.expr for arg in args]
-    return Expr(f.bool_or(*args, distinct=distinct))
+    return Expr(f.bool_or(arg.expr, distinct=distinct))

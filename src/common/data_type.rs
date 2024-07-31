@@ -326,6 +326,11 @@ impl DataTypeMap {
             ScalarValue::Union(_, _, _) => Err(py_datafusion_err(DataFusionError::NotImplemented(
                 "ScalarValue::LargeList".to_string(),
             ))),
+            ScalarValue::Utf8View(_) => Ok(DataType::Utf8View),
+            ScalarValue::BinaryView(_) => Ok(DataType::BinaryView),
+            ScalarValue::Map(_) => Err(py_datafusion_err(DataFusionError::NotImplemented(
+                "ScalarValue::Map".to_string(),
+            ))),
         }
     }
 }
