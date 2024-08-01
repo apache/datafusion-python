@@ -16,8 +16,34 @@
 # under the License.
 """Common data types used throughout the DataFusion project."""
 
-from ._internal import common
+from ._internal import common as common_internal
 
+# TODO these should all have proper wrapper classes
 
-def __getattr__(name):
-    return getattr(common, name)
+DFSchema = common_internal.DFSchema
+DataType = common_internal.DataType
+DataTypeMap = common_internal.DataTypeMap
+NullTreatment = common_internal.NullTreatment
+PythonType = common_internal.PythonType
+RexType = common_internal.RexType
+SqlFunction = common_internal.SqlFunction
+SqlSchema = common_internal.SqlSchema
+SqlStatistics = common_internal.SqlStatistics
+SqlTable = common_internal.SqlTable
+SqlType = common_internal.SqlType
+SqlView = common_internal.SqlView
+
+__all__ = [
+    "DFSchema",
+    "DataType",
+    "DataTypeMap",
+    "RexType",
+    "PythonType",
+    "SqlType",
+    "NullTreatment",
+    "SqlTable",
+    "SqlSchema",
+    "SqlView",
+    "SqlStatistics",
+    "SqlFunction",
+]

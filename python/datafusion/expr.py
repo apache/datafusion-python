@@ -47,6 +47,7 @@ CreateView = expr_internal.CreateView
 CrossJoin = expr_internal.CrossJoin
 Distinct = expr_internal.Distinct
 DropTable = expr_internal.DropTable
+EmptyRelation = expr_internal.EmptyRelation
 Exists = expr_internal.Exists
 Explain = expr_internal.Explain
 Extension = expr_internal.Extension
@@ -58,6 +59,7 @@ InList = expr_internal.InList
 InSubquery = expr_internal.InSubquery
 IsFalse = expr_internal.IsFalse
 IsNotTrue = expr_internal.IsNotTrue
+IsNull = expr_internal.IsNull
 IsTrue = expr_internal.IsTrue
 IsUnknown = expr_internal.IsUnknown
 IsNotFalse = expr_internal.IsNotFalse
@@ -83,6 +85,70 @@ SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
 TryCast = expr_internal.TryCast
 Union = expr_internal.Union
+Unnest = expr_internal.Unnest
+Window = expr_internal.Window
+
+__all__ = [
+    "Expr",
+    "Column",
+    "Literal",
+    "BinaryExpr",
+    "Literal",
+    "AggregateFunction",
+    "Not",
+    "IsNotNull",
+    "IsNull",
+    "IsTrue",
+    "IsFalse",
+    "IsUnknown",
+    "IsNotTrue",
+    "IsNotFalse",
+    "IsNotUnknown",
+    "Negative",
+    "Like",
+    "ILike",
+    "SimilarTo",
+    "ScalarVariable",
+    "Alias",
+    "InList",
+    "Exists",
+    "Subquery",
+    "InSubquery",
+    "ScalarSubquery",
+    "Placeholder",
+    "GroupingSet",
+    "Case",
+    "CaseBuilder",
+    "Cast",
+    "TryCast",
+    "Between",
+    "Explain",
+    "Limit",
+    "Aggregate",
+    "Sort",
+    "Analyze",
+    "EmptyRelation",
+    "Join",
+    "JoinType",
+    "JoinConstraint",
+    "CrossJoin",
+    "Union",
+    "Unnest",
+    "Extension",
+    "Filter",
+    "Projection",
+    "TableScan",
+    "CreateMemoryTable",
+    "CreateView",
+    "Distinct",
+    "SubqueryAlias",
+    "DropTable",
+    "Partitioning",
+    "Repartition",
+    "Window",
+    "WindowFrame",
+    "WindowFrameBound",
+]
 
 
 class Expr:
@@ -245,6 +311,14 @@ class Expr:
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__lt__(rhs.expr))
+
+    __radd__ = __add__
+    __rand__ = __and__
+    __rmod__ = __mod__
+    __rmul__ = __mul__
+    __ror__ = __or__
+    __rsub__ = __sub__
+    __rtruediv__ = __truediv__
 
     @staticmethod
     def literal(value: Any) -> Expr:

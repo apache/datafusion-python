@@ -33,6 +33,13 @@ if TYPE_CHECKING:
     from datafusion.context import SessionContext
     from datafusion._internal import LogicalPlan
 
+__all__ = [
+    "Plan",
+    "Consumer",
+    "Producer",
+    "Serde",
+]
+
 
 class Plan:
     """A class representing an encodable substrait plan."""
@@ -73,7 +80,7 @@ class Serde:
             ctx: SessionContext to use.
             path: Path to write the Substrait plan to.
         """
-        return substrait_internal.serde.serialize(sql, ctx.ctx, str(path))
+        return substrait_internal.Serde.serialize(sql, ctx.ctx, str(path))
 
     @staticmethod
     def serialize_to_plan(sql: str, ctx: SessionContext) -> Plan:
@@ -86,7 +93,7 @@ class Serde:
         Returns:
             Substrait plan.
         """
-        return Plan(substrait_internal.serde.serialize_to_plan(sql, ctx.ctx))
+        return Plan(substrait_internal.Serde.serialize_to_plan(sql, ctx.ctx))
 
     @staticmethod
     def serialize_bytes(sql: str, ctx: SessionContext) -> bytes:
@@ -99,7 +106,7 @@ class Serde:
         Returns:
             Substrait plan as bytes.
         """
-        return substrait_internal.serde.serialize_bytes(sql, ctx.ctx)
+        return substrait_internal.Serde.serialize_bytes(sql, ctx.ctx)
 
     @staticmethod
     def deserialize(path: str | pathlib.Path) -> Plan:
@@ -111,7 +118,7 @@ class Serde:
         Returns:
             Substrait plan.
         """
-        return Plan(substrait_internal.serde.deserialize(str(path)))
+        return Plan(substrait_internal.Serde.deserialize(str(path)))
 
     @staticmethod
     def deserialize_bytes(proto_bytes: bytes) -> Plan:
@@ -123,7 +130,7 @@ class Serde:
         Returns:
             Substrait plan.
         """
-        return Plan(substrait_internal.serde.deserialize_bytes(proto_bytes))
+        return Plan(substrait_internal.Serde.deserialize_bytes(proto_bytes))
 
 
 @deprecated("Use `Serde` instead.")
@@ -148,7 +155,7 @@ class Producer:
             Substrait plan.
         """
         return Plan(
-            substrait_internal.producer.to_substrait_plan(logical_plan, ctx.ctx)
+            substrait_internal.Producer.to_substrait_plan(logical_plan, ctx.ctx)
         )
 
 
@@ -173,7 +180,7 @@ class Consumer:
         Returns:
             LogicalPlan.
         """
-        return substrait_internal.consumer.from_substrait_plan(
+        return substrait_internal.Consumer.from_substrait_plan(
             ctx.ctx, plan.plan_internal
         )
 

@@ -59,7 +59,7 @@ impl From<Plan> for PyPlan {
 /// A PySubstraitSerializer is a representation of a Serializer that is capable of both serializing
 /// a `LogicalPlan` instance to Substrait Protobuf bytes and also deserialize Substrait Protobuf bytes
 /// to a valid `LogicalPlan` instance.
-#[pyclass(name = "serde", module = "datafusion.substrait", subclass)]
+#[pyclass(name = "Serde", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitSerializer;
 
@@ -105,7 +105,7 @@ impl PySubstraitSerializer {
     }
 }
 
-#[pyclass(name = "producer", module = "datafusion.substrait", subclass)]
+#[pyclass(name = "Producer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitProducer;
 
@@ -121,7 +121,7 @@ impl PySubstraitProducer {
     }
 }
 
-#[pyclass(name = "consumer", module = "datafusion.substrait", subclass)]
+#[pyclass(name = "Consumer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitConsumer;
 

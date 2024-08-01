@@ -33,8 +33,12 @@ from .context import (
     SQLOptions,
 )
 
+from .catalog import Catalog, Database, Table
+
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
+from ._internal import Config, LogicalPlan, ExecutionPlan, runtime
+
+from .record_batch import RecordBatchStream, RecordBatch
 
 from .udf import ScalarUDF, AggregateUDF, Accumulator
 
@@ -48,6 +52,8 @@ from .expr import (
     Expr,
     WindowFrame,
 )
+
+from . import functions, object_store, substrait
 
 __version__ = importlib_metadata.version(__name__)
 
@@ -65,6 +71,20 @@ __all__ = [
     "column",
     "literal",
     "DFSchema",
+    "runtime",
+    "Catalog",
+    "Database",
+    "Table",
+    "AggregateUDF",
+    "LogicalPlan",
+    "ExecutionPlan",
+    "RecordBatch",
+    "RecordBatchStream",
+    "common",
+    "expr",
+    "functions",
+    "object_store",
+    "substrait",
 ]
 
 
