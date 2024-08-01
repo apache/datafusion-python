@@ -1274,15 +1274,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#datafusion.functions.instr">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     instr()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.isnan">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -1787,15 +1778,6 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#datafusion.functions.position">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     position()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#datafusion.functions.pow">
    <code class="docutils literal notranslate">
     <span class="pre">
@@ -2232,15 +2214,6 @@
    <code class="docutils literal notranslate">
     <span class="pre">
      to_timestamp_millis()
-    </span>
-   </code>
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#datafusion.functions.to_timestamp_nanos">
-   <code class="docutils literal notranslate">
-    <span class="pre">
-     to_timestamp_nanos()
     </span>
    </code>
   </a>
@@ -2684,7 +2657,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.initcap" title="datafusion.functions.initcap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">initcap</span></code></a>(string)</p></td>
 <td><p>Set the initial letter of each word to capital.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.instr" title="datafusion.functions.instr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">instr</span></code></a>(string, substring)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">instr</span></code>(string, substring)</p></td>
 <td><p>Finds the position from where the <cite>substring</cite> matches the <cite>string</cite>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.isnan" title="datafusion.functions.isnan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">isnan</span></code></a>(expr)</p></td>
@@ -2855,7 +2828,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.pi" title="datafusion.functions.pi"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pi</span></code></a>()</p></td>
 <td><p>Returns an approximate value of π.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.position" title="datafusion.functions.position"><code class="xref py py-obj docutils literal notranslate"><span class="pre">position</span></code></a>(string, substring)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">position</span></code>(string, substring)</p></td>
 <td><p>Finds the position from where the <cite>substring</cite> matches the <cite>string</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.pow" title="datafusion.functions.pow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pow</span></code></a>(base, exponent)</p></td>
@@ -3005,7 +2978,7 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_millis" title="datafusion.functions.to_timestamp_millis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_millis</span></code></a>(arg, *formatters)</p></td>
 <td><p>Converts a string and optional formats to a <cite>Timestamp</cite> in milliseconds.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_nanos" title="datafusion.functions.to_timestamp_nanos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_nanos</span></code></a>(arg, *formatters)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_nanos</span></code>(arg, *formatters)</p></td>
 <td><p>Converts a string and optional formats to a <cite>Timestamp</cite> in nanoseconds.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_seconds" title="datafusion.functions.to_timestamp_seconds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_seconds</span></code></a>(arg, *formatters)</p></td>
@@ -3711,13 +3684,6 @@ characters to lowercase.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="datafusion.functions.instr">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">instr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">substring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#instr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.instr" title="Link to this definition">¶</a></dt>
-<dd><p>Finds the position from where the <cite>substring</cite> matches the <cite>string</cite>.</p>
-<p>This is an alias for <a class="reference internal" href="#datafusion.functions.strpos" title="datafusion.functions.strpos"><code class="xref py py-func docutils literal notranslate"><span class="pre">strpos()</span></code></a>.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.isnan">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">isnan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#isnan"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.isnan" title="Link to this definition">¶</a></dt>
 <dd><p>Returns true if a given number is +NaN or -NaN otherwise returns false.</p>
@@ -4092,13 +4058,6 @@ extends for <cite>length</cite> characters with new substring.</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="datafusion.functions.position">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">position</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">substring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#position"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.position" title="Link to this definition">¶</a></dt>
-<dd><p>Finds the position from where the <cite>substring</cite> matches the <cite>string</cite>.</p>
-<p>This is an alias for <a class="reference internal" href="#datafusion.functions.strpos" title="datafusion.functions.strpos"><code class="xref py py-func docutils literal notranslate"><span class="pre">strpos()</span></code></a>.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.pow">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">pow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">exponent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#pow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.pow" title="Link to this definition">¶</a></dt>
 <dd><p>Returns <cite>base</cite> raised to the power of <cite>exponent</cite>.</p>
@@ -4412,13 +4371,6 @@ on the index.</p>
 <dt class="sig sig-object py" id="datafusion.functions.to_timestamp_millis">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_millis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#to_timestamp_millis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.to_timestamp_millis" title="Link to this definition">¶</a></dt>
 <dd><p>Converts a string and optional formats to a <cite>Timestamp</cite> in milliseconds.</p>
-<p>See <cite>to_timestamp</cite> for a description on how to use formatters.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="datafusion.functions.to_timestamp_nanos">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_nanos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="datafusion.Expr.html#datafusion.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="reference internal" href="../_modules/datafusion/functions.html#to_timestamp_nanos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datafusion.functions.to_timestamp_nanos" title="Link to this definition">¶</a></dt>
-<dd><p>Converts a string and optional formats to a <cite>Timestamp</cite> in nanoseconds.</p>
 <p>See <cite>to_timestamp</cite> for a description on how to use formatters.</p>
 </dd></dl>
 

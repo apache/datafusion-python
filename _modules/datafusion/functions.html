@@ -384,6 +384,227 @@
 <span class="kn">from</span> <span class="nn">datafusion.expr</span> <span class="kn">import</span> <span class="n">CaseBuilder</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">WindowFrame</span>
 <span class="kn">from</span> <span class="nn">datafusion.context</span> <span class="kn">import</span> <span class="n">SessionContext</span>
 
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;abs&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;acos&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;acosh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;alias&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;approx_distinct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;approx_median&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;approx_percentile_cont&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;approx_percentile_cont_with_weight&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_agg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_append&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_cat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_concat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_dims&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_distinct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_element&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_except&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_extract&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_has&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_has_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_has_any&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_indexof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_intersect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_ndims&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_pop_back&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_pop_front&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_position&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_positions&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_prepend&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_push_back&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_push_front&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_remove&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_remove_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_remove_n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_repeat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_replace&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_replace_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_replace_n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_resize&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_slice&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_sort&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_to_string&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;array_union&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;arrow_typeof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ascii&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;asin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;asinh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;atan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;atan2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;atanh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;avg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bit_and&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bit_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bit_or&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bit_xor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bool_and&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bool_or&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;btrim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;case&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cbrt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ceil&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;char_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;character_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;chr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;coalesce&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;col&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;concat_ws&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;corr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cos&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cosh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cot&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;count_star&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;covar&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;covar_pop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;covar_samp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;current_date&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;current_time&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;date_bin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;date_part&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;date_trunc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;datepart&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;datetrunc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;decode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;degrees&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;digest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;encode&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ends_with&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;exp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;factorial&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;find_in_set&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;first_value&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;flatten&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;floor&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;from_unixtime&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gcd&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;grouping&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;in_list&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;initcap&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;isnan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;iszero&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;last_value&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lcm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;levenshtein&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_append&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_dims&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_distinct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_element&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_except&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_extract&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_indexof&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_intersect&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_ndims&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_position&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_positions&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_prepend&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_push_back&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_push_front&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_remove&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_remove_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_remove_n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_replace&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_replace_all&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_replace_n&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_resize&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_slice&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_sort&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_to_string&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;list_union&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ln&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;log&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;log10&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;log2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lower&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;lpad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ltrim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;make_array&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;make_date&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;max&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;md5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;median&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;min&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;named_struct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nanvl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;now&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nullif&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;octet_length&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;order_by&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;overlay&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pow&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;power&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;radians&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;random&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;range&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regexp_like&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regexp_match&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regexp_replace&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_avgx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_avgy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_count&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_intercept&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_r2&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_slope&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_sxx&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_sxy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;regr_syy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;repeat&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;replace&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;reverse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;right&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;round&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rpad&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;rtrim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sha224&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sha256&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sha384&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sha512&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;signum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sinh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;split_part&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sqrt&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;starts_with&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stddev&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stddev_pop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stddev_samp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;strpos&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;struct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;substr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;substr_index&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;substring&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;tanh&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_hex&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_timestamp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_timestamp_micros&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_timestamp_millis&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_timestamp_seconds&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;to_unixtime&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;translate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trim&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;trunc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;upper&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;var&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;var_pop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;var_samp&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;window&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
 
 <div class="viewcode-block" id="isnan">
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.isnan">[docs]</a>
@@ -824,15 +1045,12 @@
 
 
 
-<div class="viewcode-block" id="instr">
-<a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.instr">[docs]</a>
 <span class="k">def</span> <span class="nf">instr</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">substring</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Finds the position from where the `substring` matches the `string`.</span>
 
 <span class="sd">    This is an alias for :func:`strpos`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">strpos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">substring</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">strpos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">substring</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="iszero">
@@ -977,15 +1195,12 @@
 
 
 
-<div class="viewcode-block" id="position">
-<a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.position">[docs]</a>
 <span class="k">def</span> <span class="nf">position</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">substring</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Finds the position from where the `substring` matches the `string`.</span>
 
 <span class="sd">    This is an alias for :func:`strpos`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">strpos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">substring</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">strpos</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="n">substring</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="power">
@@ -1318,15 +1533,12 @@
 
 
 
-<div class="viewcode-block" id="to_timestamp_nanos">
-<a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.to_timestamp_nanos">[docs]</a>
 <span class="k">def</span> <span class="nf">to_timestamp_nanos</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span> <span class="o">*</span><span class="n">formatters</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a string and optional formats to a `Timestamp` in nanoseconds.</span>
 
 <span class="sd">    See `to_timestamp` for a description on how to use formatters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">to_timestamp_nanos</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="o">*</span><span class="n">formatters</span><span class="p">))</span></div>
-
+    <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">to_timestamp_nanos</span><span class="p">(</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="o">*</span><span class="n">formatters</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="to_timestamp_seconds">
@@ -2221,6 +2433,8 @@
 <a class="viewcode-back" href="../../generated/datafusion.functions.html#datafusion.functions.count">[docs]</a>
 <span class="k">def</span> <span class="nf">count</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">distinct</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the number of rows that match the given arguments.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">count</span><span class="p">(</span><span class="n">Expr</span><span class="o">.</span><span class="n">literal</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">distinct</span><span class="o">=</span><span class="n">distinct</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">arg</span><span class="o">.</span><span class="n">expr</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">Expr</span><span class="p">):</span>

@@ -404,6 +404,7 @@
 <span class="n">CrossJoin</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">CrossJoin</span>
 <span class="n">Distinct</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Distinct</span>
 <span class="n">DropTable</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">DropTable</span>
+<span class="n">EmptyRelation</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">EmptyRelation</span>
 <span class="n">Exists</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Exists</span>
 <span class="n">Explain</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Explain</span>
 <span class="n">Extension</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Extension</span>
@@ -415,6 +416,7 @@
 <span class="n">InSubquery</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">InSubquery</span>
 <span class="n">IsFalse</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsFalse</span>
 <span class="n">IsNotTrue</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsNotTrue</span>
+<span class="n">IsNull</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsNull</span>
 <span class="n">IsTrue</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsTrue</span>
 <span class="n">IsUnknown</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsUnknown</span>
 <span class="n">IsNotFalse</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">IsNotFalse</span>
@@ -440,6 +442,70 @@
 <span class="n">TableScan</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">TableScan</span>
 <span class="n">TryCast</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">TryCast</span>
 <span class="n">Union</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Union</span>
+<span class="n">Unnest</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Unnest</span>
+<span class="n">Window</span> <span class="o">=</span> <span class="n">expr_internal</span><span class="o">.</span><span class="n">Window</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;Expr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Column&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Literal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;BinaryExpr&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Literal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AggregateFunction&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Not&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsNotNull&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsNull&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsTrue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsFalse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsUnknown&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsNotTrue&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsNotFalse&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;IsNotUnknown&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Negative&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Like&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ILike&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SimilarTo&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ScalarVariable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Alias&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InList&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Exists&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Subquery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;InSubquery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ScalarSubquery&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Placeholder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;GroupingSet&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Case&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CaseBuilder&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Cast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TryCast&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Between&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Explain&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Limit&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Aggregate&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sort&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Analyze&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EmptyRelation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Join&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JoinType&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;JoinConstraint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CrossJoin&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Union&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Unnest&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Extension&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Filter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Projection&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;TableScan&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CreateMemoryTable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CreateView&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Distinct&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SubqueryAlias&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DropTable&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Partitioning&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Repartition&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Window&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WindowFrame&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WindowFrameBound&quot;</span><span class="p">,</span>
+<span class="p">]</span>
 
 
 <div class="viewcode-block" id="Expr">
@@ -619,6 +685,14 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">Expr</span><span class="p">):</span>
             <span class="n">rhs</span> <span class="o">=</span> <span class="n">Expr</span><span class="o">.</span><span class="n">literal</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Expr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="fm">__lt__</span><span class="p">(</span><span class="n">rhs</span><span class="o">.</span><span class="n">expr</span><span class="p">))</span>
+
+    <span class="fm">__radd__</span> <span class="o">=</span> <span class="fm">__add__</span>
+    <span class="fm">__rand__</span> <span class="o">=</span> <span class="fm">__and__</span>
+    <span class="fm">__rmod__</span> <span class="o">=</span> <span class="fm">__mod__</span>
+    <span class="fm">__rmul__</span> <span class="o">=</span> <span class="fm">__mul__</span>
+    <span class="fm">__ror__</span> <span class="o">=</span> <span class="fm">__or__</span>
+    <span class="fm">__rsub__</span> <span class="o">=</span> <span class="fm">__sub__</span>
+    <span class="fm">__rtruediv__</span> <span class="o">=</span> <span class="fm">__truediv__</span>
 
 <div class="viewcode-block" id="Expr.literal">
 <a class="viewcode-back" href="../../generated/datafusion.Expr.html#datafusion.Expr.literal">[docs]</a>
