@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::arrow::datatypes::DataType;
+use datafusion_expr::expr::Placeholder;
 use pyo3::prelude::*;
 
 use crate::common::data_type::PyDataType;
@@ -23,26 +23,25 @@ use crate::common::data_type::PyDataType;
 #[pyclass(name = "Placeholder", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyPlaceholder {
-    id: String,
-    data_type: Option<DataType>,
+    placeholder: Placeholder,
 }
 
-impl PyPlaceholder {
-    pub fn new(id: String, data_type: DataType) -> Self {
-        Self {
-            id,
-            data_type: Some(data_type),
-        }
+impl From<Placeholder> for PyPlaceholder {
+    fn from(placeholder: Placeholder) -> Self {
+        PyPlaceholder { placeholder }
     }
 }
 
 #[pymethods]
 impl PyPlaceholder {
     fn id(&self) -> String {
-        self.id.clone()
+        self.placeholder.id.clone()
     }
 
     fn data_type(&self) -> Option<PyDataType> {
-        self.data_type.as_ref().map(|e| e.clone().into())
+        self.placeholder
+            .data_type
+            .as_ref()
+            .map(|e| e.clone().into())
     }
 }

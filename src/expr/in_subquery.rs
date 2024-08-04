@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::{Expr, Subquery};
+use datafusion_expr::expr::InSubquery;
 use pyo3::prelude::*;
 
 use super::{subquery::PySubquery, PyExpr};
@@ -23,32 +23,26 @@ use super::{subquery::PySubquery, PyExpr};
 #[pyclass(name = "InSubquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyInSubquery {
-    expr: Box<Expr>,
-    subquery: Subquery,
-    negated: bool,
+    in_subquery: InSubquery,
 }
 
-impl PyInSubquery {
-    pub fn new(expr: Box<Expr>, subquery: Subquery, negated: bool) -> Self {
-        Self {
-            expr,
-            subquery,
-            negated,
-        }
+impl From<InSubquery> for PyInSubquery {
+    fn from(in_subquery: InSubquery) -> Self {
+        PyInSubquery { in_subquery }
     }
 }
 
 #[pymethods]
 impl PyInSubquery {
     fn expr(&self) -> PyExpr {
-        (*self.expr).clone().into()
+        (*self.in_subquery.expr).clone().into()
     }
 
     fn subquery(&self) -> PySubquery {
-        self.subquery.clone().into()
+        self.in_subquery.subquery.clone().into()
     }
 
     fn negated(&self) -> bool {
-        self.negated
+        self.in_subquery.negated
     }
 }

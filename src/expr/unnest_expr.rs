@@ -15,55 +15,53 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
+use datafusion_expr::expr::Unnest;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::expr::Alias;
+use super::PyExpr;
 
-#[pyclass(name = "Alias", module = "datafusion.expr", subclass)]
+#[pyclass(name = "UnnestExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyAlias {
-    alias: Alias,
+pub struct PyUnnestExpr {
+    unnest: Unnest,
 }
 
-impl From<Alias> for PyAlias {
-    fn from(alias: Alias) -> Self {
-        Self { alias }
+impl From<Unnest> for PyUnnestExpr {
+    fn from(unnest: Unnest) -> PyUnnestExpr {
+        PyUnnestExpr { unnest }
     }
 }
 
-impl From<PyAlias> for Alias {
-    fn from(py_alias: PyAlias) -> Self {
-        py_alias.alias
+impl From<PyUnnestExpr> for Unnest {
+    fn from(unnest: PyUnnestExpr) -> Self {
+        unnest.unnest
     }
 }
 
-impl Display for PyAlias {
+impl Display for PyUnnestExpr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Alias
-            \nExpr: `{:?}`
-            \nAlias Name: `{}`",
-            &self.alias.expr, &self.alias.name
+            "Unnest
+            Expr: {:?}",
+            &self.unnest.expr,
         )
     }
 }
 
 #[pymethods]
-impl PyAlias {
-    /// Retrieve the "name" of the alias
-    fn alias(&self) -> PyResult<String> {
-        Ok(self.alias.name.clone())
-    }
-
+impl PyUnnestExpr {
+    /// Retrieves the expression that is being unnested
     fn expr(&self) -> PyResult<PyExpr> {
-        Ok((*self.alias.expr.clone()).into())
+        Ok((*self.unnest.expr).clone().into())
     }
 
-    /// Get a String representation of this column
-    fn __repr__(&self) -> String {
-        format!("{}", self)
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("UnnestExpr({})", self))
+    }
+
+    fn __name__(&self) -> PyResult<String> {
+        Ok("UnnestExpr".to_string())
     }
 }

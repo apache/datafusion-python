@@ -16,53 +16,55 @@
 // under the License.
 
 use crate::expr::PyExpr;
+use datafusion_expr::SortExpr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::expr::Alias;
-
-#[pyclass(name = "Alias", module = "datafusion.expr", subclass)]
+#[pyclass(name = "SortExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyAlias {
-    alias: Alias,
+pub struct PySortExpr {
+    sort: SortExpr,
 }
 
-impl From<Alias> for PyAlias {
-    fn from(alias: Alias) -> Self {
-        Self { alias }
+impl From<PySortExpr> for SortExpr {
+    fn from(sort: PySortExpr) -> Self {
+        sort.sort
     }
 }
 
-impl From<PyAlias> for Alias {
-    fn from(py_alias: PyAlias) -> Self {
-        py_alias.alias
+impl From<SortExpr> for PySortExpr {
+    fn from(sort: SortExpr) -> PySortExpr {
+        PySortExpr { sort }
     }
 }
 
-impl Display for PyAlias {
+impl Display for PySortExpr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
-            "Alias
-            \nExpr: `{:?}`
-            \nAlias Name: `{}`",
-            &self.alias.expr, &self.alias.name
+            "Sort
+            Expr: {:?}
+            Asc: {:?}
+            NullsFirst: {:?}",
+            &self.sort.expr, &self.sort.asc, &self.sort.nulls_first
         )
     }
 }
 
 #[pymethods]
-impl PyAlias {
-    /// Retrieve the "name" of the alias
-    fn alias(&self) -> PyResult<String> {
-        Ok(self.alias.name.clone())
-    }
-
+impl PySortExpr {
     fn expr(&self) -> PyResult<PyExpr> {
-        Ok((*self.alias.expr.clone()).into())
+        Ok((*self.sort.expr).clone().into())
     }
 
-    /// Get a String representation of this column
+    fn ascending(&self) -> PyResult<bool> {
+        Ok(self.sort.asc)
+    }
+
+    fn nulls_first(&self) -> PyResult<bool> {
+        Ok(self.sort.nulls_first)
+    }
+
     fn __repr__(&self) -> String {
         format!("{}", self)
     }

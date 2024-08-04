@@ -16,38 +16,32 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::Expr;
+use datafusion_expr::expr::InList;
 use pyo3::prelude::*;
 
 #[pyclass(name = "InList", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyInList {
-    expr: Box<Expr>,
-    list: Vec<Expr>,
-    negated: bool,
+    in_list: InList,
 }
 
-impl PyInList {
-    pub fn new(expr: Box<Expr>, list: Vec<Expr>, negated: bool) -> Self {
-        Self {
-            expr,
-            list,
-            negated,
-        }
+impl From<InList> for PyInList {
+    fn from(in_list: InList) -> Self {
+        PyInList { in_list }
     }
 }
 
 #[pymethods]
 impl PyInList {
     fn expr(&self) -> PyExpr {
-        (*self.expr).clone().into()
+        (*self.in_list.expr).clone().into()
     }
 
     fn list(&self) -> Vec<PyExpr> {
-        self.list.iter().map(|e| e.clone().into()).collect()
+        self.in_list.list.iter().map(|e| e.clone().into()).collect()
     }
 
     fn negated(&self) -> bool {
-        self.negated
+        self.in_list.negated
     }
 }

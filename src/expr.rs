@@ -33,7 +33,7 @@ use datafusion_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, RexType};
-use crate::errors::{py_runtime_err, py_type_err, DataFusionError};
+use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -84,11 +84,13 @@ pub mod scalar_subquery;
 pub mod scalar_variable;
 pub mod signature;
 pub mod sort;
+pub mod sort_expr;
 pub mod subquery;
 pub mod subquery_alias;
 pub mod table_scan;
 pub mod union;
 pub mod unnest;
+pub mod unnest_expr;
 pub mod window;
 
 /// A PyExpr that can be used on a DataFrame
@@ -119,8 +121,9 @@ pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
 impl PyExpr {
     /// Return the specific expression
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Python::with_gil(|_| match &self.expr {
-            Expr::Alias(alias) => Ok(PyAlias::new(&alias.expr, &alias.name).into_py(py)),
+        Python::with_gil(|_| {
+            match &self.expr {
+            Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_py(py)),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
             Expr::ScalarVariable(data_type, variables) => {
                 Ok(PyScalarVariable::new(data_type, variables).into_py(py))
@@ -141,10 +144,44 @@ impl PyExpr {
             Expr::AggregateFunction(expr) => {
                 Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
             }
-            other => Err(py_runtime_err(format!(
-                "Cannot convert this Expr to a Python object: {:?}",
-                other
+            Expr::SimilarTo(value) => Ok(PySimilarTo::from(value.clone()).into_py(py)),
+            Expr::Between(value) => Ok(between::PyBetween::from(value.clone()).into_py(py)),
+            Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
+            Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
+            Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
+            Expr::Sort(value) => Ok(sort_expr::PySortExpr::from(value.clone()).into_py(py)),
+            Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
+                value
             ))),
+            Expr::WindowFunction(value) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::WindowFunction to a Python object is not implemented: {:?}",
+                value
+            ))),
+            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
+            Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_py(py)),
+            Expr::InSubquery(value) => {
+                Ok(in_subquery::PyInSubquery::from(value.clone()).into_py(py))
+            }
+            Expr::ScalarSubquery(value) => {
+                Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
+            }
+            Expr::Wildcard { qualifier } => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::Wildcard to a Python object is not implemented : {:?}",
+                qualifier
+            ))),
+            Expr::GroupingSet(value) => {
+                Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
+            }
+            Expr::Placeholder(value) => {
+                Ok(placeholder::PyPlaceholder::from(value.clone()).into_py(py))
+            }
+            Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {:?} - {:?}",
+                data_type, column
+            ))),
+            Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_py(py)),
+        }
         })
     }
 
@@ -599,6 +636,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<cross_join::PyCrossJoin>()?;
     m.add_class::<union::PyUnion>()?;
     m.add_class::<unnest::PyUnnest>()?;
+    m.add_class::<unnest_expr::PyUnnestExpr>()?;
     m.add_class::<extension::PyExtension>()?;
     m.add_class::<filter::PyFilter>()?;
     m.add_class::<projection::PyProjection>()?;
@@ -606,6 +644,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<create_memory_table::PyCreateMemoryTable>()?;
     m.add_class::<create_view::PyCreateView>()?;
     m.add_class::<distinct::PyDistinct>()?;
+    m.add_class::<sort_expr::PySortExpr>()?;
     m.add_class::<subquery_alias::PySubqueryAlias>()?;
     m.add_class::<drop_table::PyDropTable>()?;
     m.add_class::<repartition::PyPartitioning>()?;

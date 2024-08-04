@@ -81,9 +81,18 @@ impl PyLogicalPlan {
             LogicalPlan::SubqueryAlias(plan) => PySubqueryAlias::from(plan.clone()).to_variant(py),
             LogicalPlan::Unnest(plan) => PyUnnest::from(plan.clone()).to_variant(py),
             LogicalPlan::Window(plan) => PyWindow::from(plan.clone()).to_variant(py),
-            other => Err(py_unsupported_variant_err(format!(
-                "Cannot convert this plan to a LogicalNode: {:?}",
-                other
+            LogicalPlan::Repartition(_)
+            | LogicalPlan::Union(_)
+            | LogicalPlan::Statement(_)
+            | LogicalPlan::Values(_)
+            | LogicalPlan::Prepare(_)
+            | LogicalPlan::Dml(_)
+            | LogicalPlan::Ddl(_)
+            | LogicalPlan::Copy(_)
+            | LogicalPlan::DescribeTable(_)
+            | LogicalPlan::RecursiveQuery(_) => Err(py_unsupported_variant_err(format!(
+                "Conversion of variant not implemented: {:?}",
+                self.plan
             ))),
         }
     }
