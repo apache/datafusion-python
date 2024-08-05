@@ -22,7 +22,7 @@ import pyarrow.compute as pc
 import time
 
 path = os.path.dirname(os.path.abspath(__file__))
-filepath = os.path.join(path, "../tpch/data/lineitem.parquet")
+filepath = os.path.join(path, "./tpch/data/lineitem.parquet")
 
 # This example serves to demonstrate alternate approaches to answering the
 # question "return all of the rows that have a specific combination of these
@@ -122,7 +122,7 @@ def is_of_interest_impl(
 
 is_of_interest = udf(
     is_of_interest_impl,
-    [pa.int32(), pa.int32(), pa.utf8()],
+    [pa.int64(), pa.int64(), pa.utf8()],
     pa.bool_(),
     "stable",
 )
@@ -170,7 +170,7 @@ def udf_using_pyarrow_compute_impl(
 
 udf_using_pyarrow_compute = udf(
     udf_using_pyarrow_compute_impl,
-    [pa.int32(), pa.int32(), pa.utf8()],
+    [pa.int64(), pa.int64(), pa.utf8()],
     pa.bool_(),
     "stable",
 )
