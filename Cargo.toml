@@ -55,7 +55,7 @@ object_store = { version = "0.10.1", features = ["aws", "gcp", "azure"] }
 parking_lot = "0.12"
 regex-syntax = "0.8.1"
 syn = "2.0.68"
-url = "2.2"
+url = "2.5"
 sqlparser = "0.47.0"
 
 [build-dependencies]
