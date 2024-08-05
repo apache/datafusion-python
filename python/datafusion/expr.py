@@ -80,12 +80,14 @@ ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
+SortExpr = expr_internal.SortExpr
 Subquery = expr_internal.Subquery
 SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
 TryCast = expr_internal.TryCast
 Union = expr_internal.Union
 Unnest = expr_internal.Unnest
+UnnestExpr = expr_internal.UnnestExpr
 Window = expr_internal.Window
 
 __all__ = [
@@ -126,6 +128,7 @@ __all__ = [
     "Limit",
     "Aggregate",
     "Sort",
+    "SortExpr",
     "Analyze",
     "EmptyRelation",
     "Join",
@@ -134,6 +137,7 @@ __all__ = [
     "CrossJoin",
     "Union",
     "Unnest",
+    "UnnestExpr",
     "Extension",
     "Filter",
     "Projection",
