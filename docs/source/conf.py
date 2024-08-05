@@ -46,12 +46,7 @@ author = "Apache Software Foundation"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    # "sphinx.ext.autodoc",
-    # "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.ifconfig",
     "sphinx.ext.mathjax",
-    "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "myst_parser",
     "IPython.sphinxext.ipython_directive",
@@ -71,21 +66,10 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
-# Show members for classes in .. autosummary
-autodoc_default_options = {
-    "members": None,
-    "undoc-members": None,
-    "show-inheritance": None,
-    "inherited-members": None,
-}
-
-autosummary_generate = True
-
 autoapi_dirs = ["../../python"]
 autoapi_ignore = ["*tests*"]
 autoapi_member_order = "groupwise"
 suppress_warnings = ["autoapi.python_import_resolution"]
-autoapi_keep_files = True
 autoapi_python_class_content = "both"
 
 
