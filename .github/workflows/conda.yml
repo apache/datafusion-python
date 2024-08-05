@@ -101,7 +101,7 @@ jobs:
         run: |
           conda mambabuild --test packages/${{ matrix.arch }}/*.tar.bz2
       - name: Upload conda packages as artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "conda nightlies (python - ${{ matrix.python }}, arch - ${{ matrix.arch }})"
           # need to install all conda channel metadata to properly install locally
