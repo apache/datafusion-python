@@ -57,9 +57,15 @@ pub fn approx_percentile_cont(
     expression: PyExpr,
     percentile: PyExpr,
     distinct: bool,
+    num_centroids: Option<PyExpr>, // enforces optional arguments at the end, currently
 ) -> PyResult<PyExpr> {
-    let expr =
-        functions_aggregate::expr_fn::approx_percentile_cont(expression.expr, percentile.expr);
+    let args = if let Some(num_centroids) = num_centroids {
+        vec![expression.expr, percentile.expr, num_centroids.expr]
+    } else {
+        vec![expression.expr, percentile.expr]
+    };
+    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
+    let expr = udaf.call(args);
     if distinct {
         Ok(expr.distinct().build()?.into())
     } else {
