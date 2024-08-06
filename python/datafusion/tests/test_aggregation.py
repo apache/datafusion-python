@@ -39,6 +39,13 @@ def df():
     )
     return ctx.create_dataframe([[batch]])
 
+@pytest.fixture
+def df_aggregate_100():
+    ctx = SessionContext()
+    ctx.register_csv("aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv")
+    return ctx.table("aggregate_test_data")
+
+
 @pytest.mark.parametrize("agg_expr, calc_expected", [
     (f.avg(column("a")), lambda a, b, c, d: np.array(np.average(a))),
     (f.corr(column("a"), column("b")), lambda a, b, c, d: np.array(np.corrcoef(a, b)[0][1])),
@@ -87,6 +94,23 @@ def test_aggregation(df, agg_expr, expected):
     result = agg_df.collect()[0]
     assert result.column(0) == expected
 
+
+def test_aggregate_100(df_aggregate_100):
+    # https://github.com/apache/datafusion/blob/bddb6415a50746d2803dd908d19c3758952d74f9/datafusion/sqllogictest/test_files/aggregate.slt#L1490-L1498
+
+    result = df_aggregate_100.aggregate(
+        [
+            column("c1")
+        ],
+        [
+            f.approx_percentile_cont(column("c3"), lit(0.95), lit(200)).alias("c3")
+        ]
+    ).sort(column("c1").sort(ascending=True)).collect()
+
+    assert len(result) == 1
+    result = result[0]
+    assert result.column("c1") == pa.array(["a", "b", "c", "d", "e"])
+    assert result.column("c3") == pa.array([73, 68, 122, 124, 115])
 
 def test_bit_add_or_xor(df):
     df = df.aggregate(
