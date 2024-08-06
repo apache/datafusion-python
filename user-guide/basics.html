@@ -24,6 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -225,7 +226,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../api.html">
+  <a class="reference internal" href="../autoapi/index.html">
    API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -235,8 +236,8 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/dataframe.html">
-     DataFrame
+    <a class="reference internal" href="../autoapi/datafusion/index.html">
+     datafusion
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
     <label for="toctree-checkbox-4">
@@ -244,87 +245,71 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.DataFrame.html">
-       datafusion.DataFrame
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
+       datafusion.input
       </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/execution_context.html">
-     SessionContext
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.SessionConfig.html">
-       datafusion.SessionConfig
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.RuntimeConfig.html">
-       datafusion.RuntimeConfig
-      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.SessionContext.html">
-       datafusion.SessionContext
+      <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/expression.html">
-     Expr
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.Expr.html">
-       datafusion.Expr
+      <a class="reference internal" href="../autoapi/datafusion/context/index.html">
+       datafusion.context
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/functions.html">
-     Functions
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-    <label for="toctree-checkbox-7">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.functions.html">
+      <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/object_store.html">
-     ObjectStore
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
-    <label for="toctree-checkbox-8">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.object_store.object_store.html">
-       datafusion.object_store.object_store
+      <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/udf/index.html">
+       datafusion.udf
       </a>
      </li>
     </ul>
@@ -357,13 +342,6 @@
               
               <div class="toc-item">
                 
-
-<div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/user-guide/basics.rst">
-        <i class="fas fa-pencil-alt"></i> Edit this page
-    </a>
-</div>
-
               </div>
               
             
@@ -379,7 +357,7 @@
               <div>
                 
   <section id="concepts">
-<h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">¶</a></h1>
+<span id="user-guide-concepts"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">¶</a></h1>
 <p>In this section, we will cover a basic example to introduce a few key concepts.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datafusion</span>
 <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span>
@@ -410,7 +388,7 @@
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>creates a <code class="code docutils literal notranslate"><span class="pre">SessionContext</span></code>, that is, the main interface for executing queries with DataFusion. It maintains the state
+<p>creates a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, that is, the main interface for executing queries with DataFusion. It maintains the state
 of the connection between a user and an instance of the DataFusion engine. Additionally it provides the following functionality:</p>
 <ul class="simple">
 <li><p>Create a DataFrame from a CSV or Parquet data source.</p></li>
@@ -428,9 +406,9 @@ of the connection between a user and an instance of the DataFusion engine. Addit
 </pre></div>
 </div>
 <p>A DataFrame refers to a (logical) set of rows that share the same column names, similar to a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html">Pandas DataFrame</a>.
-DataFrames are typically created by calling a method on <code class="code docutils literal notranslate"><span class="pre">SessionContext</span></code>, such as <code class="code docutils literal notranslate"><span class="pre">read_csv</span></code>, and can then be modified by
-calling the transformation methods, such as <a class="reference internal" href="../generated/datafusion.DataFrame.html#datafusion.DataFrame.filter" title="datafusion.DataFrame.filter"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.filter()</span></code></a>, <a class="reference internal" href="../generated/datafusion.DataFrame.html#datafusion.DataFrame.select" title="datafusion.DataFrame.select"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.select()</span></code></a>, <a class="reference internal" href="../generated/datafusion.DataFrame.html#datafusion.DataFrame.aggregate" title="datafusion.DataFrame.aggregate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.aggregate()</span></code></a>,
-and <a class="reference internal" href="../generated/datafusion.DataFrame.html#datafusion.DataFrame.limit" title="datafusion.DataFrame.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.limit()</span></code></a> to build up a query definition.</p>
+DataFrames are typically created by calling a method on <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, such as <code class="code docutils literal notranslate"><span class="pre">read_csv</span></code>, and can then be modified by
+calling the transformation methods, such as <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-func docutils literal notranslate"><span class="pre">select()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">aggregate()</span></code></a>,
+and <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit" title="datafusion.dataframe.DataFrame.limit"><code class="xref py py-func docutils literal notranslate"><span class="pre">limit()</span></code></a> to build up a query definition.</p>
 <p>The third statement uses <code class="code docutils literal notranslate"><span class="pre">Expressions</span></code> to build up a query definition.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
@@ -438,7 +416,7 @@ and <a class="reference internal" href="../generated/datafusion.DataFrame.html#d
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally the <code class="code docutils literal notranslate"><span class="pre">collect</span></code> method converts the logical plan represented by the DataFrame into a physical plan and execute it,
+<p>Finally the <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-func docutils literal notranslate"><span class="pre">collect()</span></code></a> method converts the logical plan represented by the DataFrame into a physical plan and execute it,
 collecting all results into a list of <a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html">RecordBatch</a>.</p>
 </section>
 

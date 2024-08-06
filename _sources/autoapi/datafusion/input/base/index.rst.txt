@@ -1,0 +1,55 @@
+datafusion.input.base
+=====================
+
+.. py:module:: datafusion.input.base
+
+.. autoapi-nested-parse::
+
+   This module provides ``BaseInputSource``.
+
+   A user can extend this to provide a custom input source.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.input.base.BaseInputSource
+
+
+Module Contents
+---------------
+
+.. py:class:: BaseInputSource
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Base Input Source class.
+
+   If a consuming library would like to provider their own InputSource this is
+   the class they should extend to write their own.
+
+   Once completed the Plugin InputSource can be registered with the
+   SessionContext to ensure that it will be used in order
+   to obtain the SqlTable information from the custom datasource.
+
+
+   .. py:method:: build_table(input_item: Any, table_name: str, **kwarg) -> datafusion.common.SqlTable
+      :abstractmethod:
+
+
+      Create a table from the input source.
+
+
+
+   .. py:method:: is_correct_input(input_item: Any, table_name: str, **kwargs) -> bool
+      :abstractmethod:
+
+
+      Returns `True` if the input is valid.
+
+
+

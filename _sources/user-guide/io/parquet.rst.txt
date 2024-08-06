@@ -18,7 +18,7 @@
 Parquet
 =======
 
-It is quite simple to read a parquet file using the :meth:`.SessionContext.read_parquet` function.
+It is quite simple to read a parquet file using the :py:func:`~datafusion.context.SessionContext.read_parquet` function.
 
 .. code-block:: python
 
@@ -28,7 +28,7 @@ It is quite simple to read a parquet file using the :meth:`.SessionContext.read_
     ctx = SessionContext()
     df = ctx.read_parquet("file.parquet")
 
-An alternative is to use :meth:`.SessionContext.register_parquet`
+An alternative is to use :py:func:`~datafusion.context.SessionContext.register_parquet`
 
 .. code-block:: python
 

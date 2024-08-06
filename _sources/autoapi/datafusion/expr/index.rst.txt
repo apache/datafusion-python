@@ -1,0 +1,607 @@
+datafusion.expr
+===============
+
+.. py:module:: datafusion.expr
+
+.. autoapi-nested-parse::
+
+   This module supports expressions, one of the core concepts in DataFusion.
+
+   See :ref:`Expressions` in the online documentation for more details.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   datafusion.expr.Aggregate
+   datafusion.expr.AggregateFunction
+   datafusion.expr.Alias
+   datafusion.expr.Analyze
+   datafusion.expr.Between
+   datafusion.expr.BinaryExpr
+   datafusion.expr.Case
+   datafusion.expr.Cast
+   datafusion.expr.Column
+   datafusion.expr.CreateMemoryTable
+   datafusion.expr.CreateView
+   datafusion.expr.CrossJoin
+   datafusion.expr.Distinct
+   datafusion.expr.DropTable
+   datafusion.expr.EmptyRelation
+   datafusion.expr.Exists
+   datafusion.expr.Explain
+   datafusion.expr.Extension
+   datafusion.expr.Filter
+   datafusion.expr.GroupingSet
+   datafusion.expr.ILike
+   datafusion.expr.InList
+   datafusion.expr.InSubquery
+   datafusion.expr.IsFalse
+   datafusion.expr.IsNotFalse
+   datafusion.expr.IsNotNull
+   datafusion.expr.IsNotTrue
+   datafusion.expr.IsNotUnknown
+   datafusion.expr.IsNull
+   datafusion.expr.IsTrue
+   datafusion.expr.IsUnknown
+   datafusion.expr.Join
+   datafusion.expr.JoinConstraint
+   datafusion.expr.JoinType
+   datafusion.expr.Like
+   datafusion.expr.Limit
+   datafusion.expr.Literal
+   datafusion.expr.Negative
+   datafusion.expr.Not
+   datafusion.expr.Partitioning
+   datafusion.expr.Placeholder
+   datafusion.expr.Projection
+   datafusion.expr.Repartition
+   datafusion.expr.ScalarSubquery
+   datafusion.expr.ScalarVariable
+   datafusion.expr.SimilarTo
+   datafusion.expr.Sort
+   datafusion.expr.SortExpr
+   datafusion.expr.Subquery
+   datafusion.expr.SubqueryAlias
+   datafusion.expr.TableScan
+   datafusion.expr.TryCast
+   datafusion.expr.Union
+   datafusion.expr.Unnest
+   datafusion.expr.UnnestExpr
+   datafusion.expr.Window
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.expr.CaseBuilder
+   datafusion.expr.Expr
+   datafusion.expr.WindowFrame
+   datafusion.expr.WindowFrameBound
+
+
+Module Contents
+---------------
+
+.. py:class:: CaseBuilder(case_builder: datafusion._internal.expr.CaseBuilder)
+
+   Builder class for constructing case statements.
+
+   An example usage would be as follows::
+
+       import datafusion.functions as f
+       from datafusion import lit, col
+       df.select(
+           f.case(col("column_a")
+           .when(lit(1), lit("One"))
+           .when(lit(2), lit("Two"))
+           .otherwise(lit("Unknown"))
+       )
+
+   Constructs a case builder.
+
+   This is not typically called by the end user directly. See
+   :py:func:`datafusion.functions.case` instead.
+
+
+   .. py:method:: end() -> Expr
+
+      Finish building a case statement.
+
+      Any non-matching cases will end in a `null` value.
+
+
+
+   .. py:method:: otherwise(else_expr: Expr) -> Expr
+
+      Set a default value for the case statement.
+
+
+
+   .. py:method:: when(when_expr: Expr, then_expr: Expr) -> CaseBuilder
+
+      Add a case to match against.
+
+
+
+   .. py:attribute:: case_builder
+
+
+.. py:class:: Expr(expr: datafusion._internal.expr.Expr)
+
+   Expression object.
+
+   Expressions are one of the core concepts in DataFusion. See
+   :ref:`Expressions` in the online documentation for more information.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __add__(rhs: Any) -> Expr
+
+      Addition operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __and__(rhs: Expr) -> Expr
+
+      Logical AND.
+
+
+
+   .. py:method:: __eq__(rhs: Any) -> Expr
+
+      Equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __ge__(rhs: Any) -> Expr
+
+      Greater than or equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __getitem__(key: str) -> Expr
+
+      For struct data types, return the field indicated by ``key``.
+
+
+
+   .. py:method:: __gt__(rhs: Any) -> Expr
+
+      Greater than.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __invert__() -> Expr
+
+      Binary not (~).
+
+
+
+   .. py:method:: __le__(rhs: Any) -> Expr
+
+      Less than or equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __lt__(rhs: Any) -> Expr
+
+      Less than.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __mod__(rhs: Any) -> Expr
+
+      Modulo operator (%).
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __mul__(rhs: Any) -> Expr
+
+      Multiplication operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __ne__(rhs: Any) -> Expr
+
+      Not equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __or__(rhs: Expr) -> Expr
+
+      Logical OR.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Generate a string representation of this expression.
+
+
+
+   .. py:method:: __richcmp__(other: Expr, op: int) -> Expr
+
+      Comparison operator.
+
+
+
+   .. py:method:: __sub__(rhs: Any) -> Expr
+
+      Subtraction operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __truediv__(rhs: Any) -> Expr
+
+      Division operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: alias(name: str) -> Expr
+
+      Assign a name to the expression.
+
+
+
+   .. py:method:: canonical_name() -> str
+
+      Returns a complete string representation of this expression.
+
+
+
+   .. py:method:: cast(to: pyarrow.DataType[Any]) -> Expr
+
+      Cast to a new data type.
+
+
+
+   .. py:method:: column(value: str) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a column.
+
+
+
+   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+
+      Compute the output column name based on the provided logical plan.
+
+
+
+   .. py:method:: display_name() -> str
+
+      Returns the name of this expression as it should appear in a schema.
+
+      This name will not include any CAST expressions.
+
+
+
+   .. py:method:: is_null() -> Expr
+
+      Returns ``True`` if this expression is null.
+
+
+
+   .. py:method:: literal(value: Any) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a scalar value.
+
+      ``value`` must be a valid PyArrow scalar value or easily castable to one.
+
+
+
+   .. py:method:: python_value() -> Any
+
+      Extracts the Expr value into a PyObject.
+
+      This is only valid for literal expressions.
+
+      :returns: Python object representing literal value of the expression.
+
+
+
+   .. py:method:: rex_call_operands() -> list[Expr]
+
+      Return the operands of the expression based on it's variant type.
+
+      Row expressions, Rex(s), operate on the concept of operands. Different
+      variants of Expressions, Expr(s), store those operands in different
+      datastructures. This function examines the Expr variant and returns
+      the operands to the calling logic.
+
+
+
+   .. py:method:: rex_call_operator() -> str
+
+      Extracts the operator associated with a row expression type call.
+
+
+
+   .. py:method:: rex_type() -> datafusion.common.RexType
+
+      Return the Rex Type of this expression.
+
+      A Rex (Row Expression) specifies a single row of data.That specification
+      could include user defined functions or types. RexType identifies the
+      row as one of the possible valid ``RexType``.
+
+
+
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> Expr
+
+      Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
+
+      :param ascending: If true, sort in ascending order.
+      :param nulls_first: Return null values first.
+
+
+
+   .. py:method:: to_variant() -> Any
+
+      Convert this expression into a python object if possible.
+
+
+
+   .. py:method:: types() -> datafusion.common.DataTypeMap
+
+      Return the ``DataTypeMap``.
+
+      :returns: DataTypeMap which represents the PythonType, Arrow DataType, and
+                SqlType Enum which this expression represents.
+
+
+
+   .. py:method:: variant_name() -> str
+
+      Returns the name of the Expr variant.
+
+      Ex: ``IsNotNull``, ``Literal``, ``BinaryExpr``, etc
+
+
+
+   .. py:attribute:: __radd__
+
+
+   .. py:attribute:: __rand__
+
+
+   .. py:attribute:: __rmod__
+
+
+   .. py:attribute:: __rmul__
+
+
+   .. py:attribute:: __ror__
+
+
+   .. py:attribute:: __rsub__
+
+
+   .. py:attribute:: __rtruediv__
+
+
+   .. py:attribute:: expr
+
+
+.. py:class:: WindowFrame(units: str, start_bound: int | None, end_bound: int | None)
+
+   Defines a window frame for performing window operations.
+
+   Construct a window frame using the given parameters.
+
+   :param units: Should be one of ``rows``, ``range``, or ``groups``.
+   :param start_bound: Sets the preceeding bound. Must be >= 0. If none, this
+                       will be set to unbounded. If unit type is ``groups``, this
+                       parameter must be set.
+   :param end_bound: Sets the following bound. Must be >= 0. If none, this
+                     will be set to unbounded. If unit type is ``groups``, this
+                     parameter must be set.
+
+
+   .. py:method:: get_frame_units() -> str
+
+      Returns the window frame units for the bounds.
+
+
+
+   .. py:method:: get_lower_bound() -> WindowFrameBound
+
+      Returns starting bound.
+
+
+
+   .. py:method:: get_upper_bound()
+
+      Returns end bound.
+
+
+
+   .. py:attribute:: window_frame
+
+
+.. py:class:: WindowFrameBound(frame_bound: datafusion._internal.expr.WindowFrameBound)
+
+   Defines a single window frame bound.
+
+   :py:class:`WindowFrame` typically requires a start and end bound.
+
+   Constructs a window frame bound.
+
+
+   .. py:method:: get_offset() -> int | None
+
+      Returns the offset of the window frame.
+
+
+
+   .. py:method:: is_current_row() -> bool
+
+      Returns if the frame bound is current row.
+
+
+
+   .. py:method:: is_following() -> bool
+
+      Returns if the frame bound is following.
+
+
+
+   .. py:method:: is_preceding() -> bool
+
+      Returns if the frame bound is preceding.
+
+
+
+   .. py:method:: is_unbounded() -> bool
+
+      Returns if the frame bound is unbounded.
+
+
+
+   .. py:attribute:: frame_bound
+
+
+.. py:data:: Aggregate
+
+.. py:data:: AggregateFunction
+
+.. py:data:: Alias
+
+.. py:data:: Analyze
+
+.. py:data:: Between
+
+.. py:data:: BinaryExpr
+
+.. py:data:: Case
+
+.. py:data:: Cast
+
+.. py:data:: Column
+
+.. py:data:: CreateMemoryTable
+
+.. py:data:: CreateView
+
+.. py:data:: CrossJoin
+
+.. py:data:: Distinct
+
+.. py:data:: DropTable
+
+.. py:data:: EmptyRelation
+
+.. py:data:: Exists
+
+.. py:data:: Explain
+
+.. py:data:: Extension
+
+.. py:data:: Filter
+
+.. py:data:: GroupingSet
+
+.. py:data:: ILike
+
+.. py:data:: InList
+
+.. py:data:: InSubquery
+
+.. py:data:: IsFalse
+
+.. py:data:: IsNotFalse
+
+.. py:data:: IsNotNull
+
+.. py:data:: IsNotTrue
+
+.. py:data:: IsNotUnknown
+
+.. py:data:: IsNull
+
+.. py:data:: IsTrue
+
+.. py:data:: IsUnknown
+
+.. py:data:: Join
+
+.. py:data:: JoinConstraint
+
+.. py:data:: JoinType
+
+.. py:data:: Like
+
+.. py:data:: Limit
+
+.. py:data:: Literal
+
+.. py:data:: Negative
+
+.. py:data:: Not
+
+.. py:data:: Partitioning
+
+.. py:data:: Placeholder
+
+.. py:data:: Projection
+
+.. py:data:: Repartition
+
+.. py:data:: ScalarSubquery
+
+.. py:data:: ScalarVariable
+
+.. py:data:: SimilarTo
+
+.. py:data:: Sort
+
+.. py:data:: SortExpr
+
+.. py:data:: Subquery
+
+.. py:data:: SubqueryAlias
+
+.. py:data:: TableScan
+
+.. py:data:: TryCast
+
+.. py:data:: Union
+
+.. py:data:: Unnest
+
+.. py:data:: UnnestExpr
+
+.. py:data:: Window
+

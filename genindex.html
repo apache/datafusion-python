@@ -23,6 +23,7 @@
     
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -222,7 +223,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="api.html">
+  <a class="reference internal" href="autoapi/index.html">
    API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -232,8 +233,8 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/dataframe.html">
-     DataFrame
+    <a class="reference internal" href="autoapi/datafusion/index.html">
+     datafusion
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
     <label for="toctree-checkbox-4">
@@ -241,87 +242,71 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.DataFrame.html">
-       datafusion.DataFrame
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="autoapi/datafusion/input/index.html">
+       datafusion.input
       </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/execution_context.html">
-     SessionContext
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.SessionConfig.html">
-       datafusion.SessionConfig
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.RuntimeConfig.html">
-       datafusion.RuntimeConfig
-      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.SessionContext.html">
-       datafusion.SessionContext
+      <a class="reference internal" href="autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/expression.html">
-     Expr
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.Expr.html">
-       datafusion.Expr
+      <a class="reference internal" href="autoapi/datafusion/context/index.html">
+       datafusion.context
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/functions.html">
-     Functions
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-    <label for="toctree-checkbox-7">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.functions.html">
+      <a class="reference internal" href="autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="api/object_store.html">
-     ObjectStore
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
-    <label for="toctree-checkbox-8">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="generated/datafusion.object_store.object_store.html">
-       datafusion.object_store.object_store
+      <a class="reference internal" href="autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/udf/index.html">
+       datafusion.udf
       </a>
      </li>
     </ul>
@@ -368,6 +353,7 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#J"><strong>J</strong></a>
+ | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -384,16 +370,192 @@
 <h2 id="_">_</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.__init__">__init__() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__add__">__add__() (datafusion.Expr method)</a>
 
       <ul>
-        <li><a href="generated/datafusion.Expr.html#datafusion.Expr.__init__">(datafusion.Expr method)</a>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__add__">(datafusion.expr.Expr method)</a>
 </li>
-        <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.__init__">(datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__and__">__and__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__and__">(datafusion.expr.Expr method)</a>
 </li>
-        <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.__init__">(datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.__call__">__call__() (datafusion.AggregateUDF method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.__call__">(datafusion.ScalarUDF method)</a>
 </li>
-        <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.__init__">(datafusion.SessionContext method)</a>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.AggregateUDF.__call__">(datafusion.udf.AggregateUDF method)</a>
+</li>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.ScalarUDF.__call__">(datafusion.udf.ScalarUDF method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__eq__">__eq__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__eq__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__ge__">__ge__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__ge__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.__getitem__">__getitem__() (datafusion.dataframe.DataFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__getitem__">(datafusion.Expr method)</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__getitem__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__gt__">__gt__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__gt__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__invert__">__invert__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__invert__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatchStream.__iter__">__iter__() (datafusion.record_batch.RecordBatchStream method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream.__iter__">(datafusion.RecordBatchStream method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__le__">__le__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__le__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__lt__">__lt__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__lt__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__mod__">__mod__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__mod__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__mul__">__mul__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__mul__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__ne__">__ne__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__ne__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatchStream.__next__">__next__() (datafusion.record_batch.RecordBatchStream method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream.__next__">(datafusion.RecordBatchStream method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__or__">__or__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__or__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__radd__">__radd__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__radd__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rand__">__rand__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rand__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.__repr__">__repr__() (datafusion.dataframe.DataFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__repr__">(datafusion.Expr method)</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__repr__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__richcmp__">__richcmp__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__richcmp__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rmod__">__rmod__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rmod__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rmul__">__rmul__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rmul__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__ror__">__ror__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__ror__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rsub__">__rsub__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rsub__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rtruediv__">__rtruediv__ (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rtruediv__">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Volatility.__str__">__str__() (datafusion.udf.Volatility method)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__sub__">__sub__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__sub__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__truediv__">__truediv__() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__truediv__">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf._A">_A (in module datafusion.udf)</a>
+</li>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf._R">_R (in module datafusion.udf)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF._udf">_udf (datafusion.AggregateUDF attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF._udf">(datafusion.ScalarUDF attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.AggregateUDF._udf">(datafusion.udf.AggregateUDF attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.ScalarUDF._udf">(datafusion.udf.ScalarUDF attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -402,121 +564,143 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.abs">abs() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.abs">abs() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.acos">acos() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.acosh">acosh() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.aggregate">aggregate() (datafusion.DataFrame method)</a>
-</li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.alias">alias() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator">Accumulator (class in datafusion)</a>
 
       <ul>
-        <li><a href="generated/datafusion.functions.html#datafusion.functions.alias">(in module datafusion.functions)</a>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Accumulator">(class in datafusion.udf)</a>
 </li>
       </ul></li>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.AmazonS3">AmazonS3 (class in datafusion.object_store.object_store)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.acos">acos() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.approx_distinct">approx_distinct() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.acosh">acosh() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.approx_median">approx_median() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Aggregate">Aggregate (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.approx_percentile_cont">approx_percentile_cont() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate">aggregate() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.approx_percentile_cont_with_weight">approx_percentile_cont_with_weight() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.AggregateFunction">AggregateFunction (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array">array() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF">AggregateUDF (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.AggregateUDF">(class in datafusion.udf)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_agg">array_agg() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Alias">Alias (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_append">array_append() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.alias">alias() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.alias">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_cat">array_cat() (in module datafusion.functions)</a>
+        <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.alias">(in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_concat">array_concat() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.AmazonS3">AmazonS3 (in module datafusion.object_store)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_dims">array_dims() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Analyze">Analyze (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_distinct">array_distinct() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.approx_distinct">approx_distinct() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_element">array_element() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.approx_median">approx_median() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_except">array_except() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont">approx_percentile_cont() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_extract">array_extract() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.approx_percentile_cont_with_weight">approx_percentile_cont_with_weight() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_has">array_has() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array">array() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_has_all">array_has_all() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_agg">array_agg() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_has_any">array_has_any() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_append">array_append() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_indexof">array_indexof() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_cat">array_cat() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_intersect">array_intersect() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_concat">array_concat() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_join">array_join() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_dims">array_dims() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_length">array_length() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_distinct">array_distinct() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_element">array_element() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_except">array_except() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_extract">array_extract() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_has">array_has() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_has_all">array_has_all() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_ndims">array_ndims() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_has_any">array_has_any() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_pop_back">array_pop_back() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_indexof">array_indexof() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_pop_front">array_pop_front() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_intersect">array_intersect() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_position">array_position() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_join">array_join() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_positions">array_positions() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_length">array_length() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_prepend">array_prepend() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_ndims">array_ndims() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_push_back">array_push_back() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_pop_back">array_pop_back() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_push_front">array_push_front() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_pop_front">array_pop_front() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_remove">array_remove() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_position">array_position() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_remove_all">array_remove_all() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_positions">array_positions() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_remove_n">array_remove_n() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_prepend">array_prepend() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_repeat">array_repeat() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_push_back">array_push_back() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_replace">array_replace() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_push_front">array_push_front() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_replace_all">array_replace_all() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_remove">array_remove() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_replace_n">array_replace_n() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_remove_all">array_remove_all() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_resize">array_resize() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_remove_n">array_remove_n() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_slice">array_slice() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_repeat">array_repeat() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_sort">array_sort() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_replace">array_replace() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_to_string">array_to_string() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_replace_all">array_replace_all() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.array_union">array_union() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_replace_n">array_replace_n() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.arrow_typeof">arrow_typeof() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_resize">array_resize() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.ascii">ascii() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_slice">array_slice() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.asin">asin() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_sort">array_sort() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.asinh">asinh() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_to_string">array_to_string() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.atan">atan() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_union">array_union() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.atan2">atan2() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.arrow_typeof">arrow_typeof() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.atanh">atanh() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ascii">ascii() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.avg">avg() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.asin">asin() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.asinh">asinh() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.atan">atan() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.atan2">atan2() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.atanh">atanh() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.avg">avg() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -524,95 +708,173 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bit_and">bit_and() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/input/base/index.html#datafusion.input.base.BaseInputSource">BaseInputSource (class in datafusion.input.base)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bit_length">bit_length() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Between">Between (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bit_or">bit_or() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.BinaryExpr">BinaryExpr (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_and">bit_and() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_length">bit_length() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_or">bit_or() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bit_xor">bit_xor() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bit_xor">bit_xor() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bool_and">bool_and() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bool_and">bool_and() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.bool_or">bool_or() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.bool_or">bool_or() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.btrim">btrim() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.btrim">btrim() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/input/base/index.html#datafusion.input.base.BaseInputSource.build_table">build_table() (datafusion.input.base.BaseInputSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/input/location/index.html#datafusion.input.location.LocationInputPlugin.build_table">(datafusion.input.location.LocationInputPlugin method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.cache">cache() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.cache">cache() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.canonical_name">canonical_name() (datafusion.Expr method)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.case">case() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.cast">cast() (datafusion.Expr method)</a>
-</li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.catalog">catalog() (datafusion.SessionContext method)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.cbrt">cbrt() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.ceil">ceil() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.char_length">char_length() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.character_length">character_length() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.chr">chr() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.coalesce">coalesce() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.col">col() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.collect">collect() (datafusion.DataFrame method)</a>
-</li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.collect_partitioned">collect_partitioned() (datafusion.DataFrame method)</a>
-</li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.column">column() (datafusion.Expr static method)</a>
-</li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.column_name">column_name() (datafusion.Expr method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.concat">concat() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.concat_ws">concat_ws() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.corr">corr() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.cos">cos() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.cosh">cosh() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.cot">cot() (in module datafusion.functions)</a>
-</li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.count">count() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.canonical_name">canonical_name() (datafusion.Expr method)</a>
 
       <ul>
-        <li><a href="generated/datafusion.functions.html#datafusion.functions.count">(in module datafusion.functions)</a>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.canonical_name">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.count_star">count_star() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Case">Case (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.covar">covar() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.case">case() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.covar_pop">covar_pop() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder.case_builder">case_builder (datafusion.expr.CaseBuilder attribute)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.covar_samp">covar_samp() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder">CaseBuilder (class in datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe">create_dataframe() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Cast">Cast (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.create_dataframe_from_logical_plan">create_dataframe_from_logical_plan() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.cast">cast() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.cast">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.current_date">current_date() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog">Catalog (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog">(class in datafusion.catalog)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.current_time">current_time() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.catalog">catalog (datafusion.Catalog attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.catalog">(datafusion.catalog.Catalog attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.catalog">catalog() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cbrt">cbrt() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ceil">ceil() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.char_length">char_length() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.character_length">character_length() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.chr">chr() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.coalesce">coalesce() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.col">col() (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.col">(in module datafusion.functions)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect">collect() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect_partitioned">collect_partitioned() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Column">Column (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.column">column() (datafusion.Expr static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.column">(datafusion.expr.Expr static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.column">(in module datafusion)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.column_name">column_name() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.column_name">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.concat">concat() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.concat_ws">concat_ws() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.config">config (datafusion.context.SessionContext attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.config_internal">config_internal (datafusion.context.RuntimeConfig attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.config_internal">(datafusion.context.SessionConfig attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.config_internal">(datafusion.RuntimeConfig attribute)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.config_internal">(datafusion.SessionConfig attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Consumer">Consumer (class in datafusion.substrait)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.corr">corr() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cos">cos() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cosh">cosh() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.cot">cot() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.count">count() (datafusion.dataframe.DataFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.count">(in module datafusion.functions)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.count_star">count_star() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.covar">covar() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.covar_pop">covar_pop() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.covar_samp">covar_samp() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.create_dataframe">create_dataframe() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.create_dataframe_from_logical_plan">create_dataframe_from_logical_plan() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CreateMemoryTable">CreateMemoryTable (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CreateView">CreateView (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CrossJoin">CrossJoin (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.ctx">ctx (datafusion.context.SessionContext attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.current_date">current_date() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.current_time">current_time() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -620,47 +882,158 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame">DataFrame (class in datafusion)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Database">Database (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database">(class in datafusion.catalog)</a>
 </li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.database">database() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.database">(datafusion.catalog.Catalog method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame">DataFrame (class in datafusion.dataframe)</a>
+</li>
+      <li>
+    datafusion
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#module-datafusion">module</a>
+</li>
+      </ul></li>
+      <li>
+    datafusion.catalog
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#module-datafusion.catalog">module</a>
+</li>
+      </ul></li>
+      <li>
+    datafusion.context
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#module-datafusion.context">module</a>
+</li>
+      </ul></li>
+      <li>
+    datafusion.dataframe
+
+      <ul>
+        <li><a href="autoapi/datafusion/dataframe/index.html#module-datafusion.dataframe">module</a>
+</li>
+      </ul></li>
+      <li>
+    datafusion.expr
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#module-datafusion.expr">module</a>
+</li>
+      </ul></li>
       <li>
     datafusion.functions
 
       <ul>
-        <li><a href="generated/datafusion.functions.html#module-datafusion.functions">module</a>
+        <li><a href="autoapi/datafusion/functions/index.html#module-datafusion.functions">module</a>
 </li>
       </ul></li>
       <li>
-    datafusion.object_store.object_store
+    datafusion.input
 
       <ul>
-        <li><a href="generated/datafusion.object_store.object_store.html#module-datafusion.object_store.object_store">module</a>
+        <li><a href="autoapi/datafusion/input/index.html#module-datafusion.input">module</a>
 </li>
       </ul></li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.date_bin">date_bin() (in module datafusion.functions)</a>
+      <li>
+    datafusion.input.base
+
+      <ul>
+        <li><a href="autoapi/datafusion/input/base/index.html#module-datafusion.input.base">module</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.date_part">date_part() (in module datafusion.functions)</a>
+      </ul></li>
+      <li>
+    datafusion.input.location
+
+      <ul>
+        <li><a href="autoapi/datafusion/input/location/index.html#module-datafusion.input.location">module</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.date_trunc">date_trunc() (in module datafusion.functions)</a>
+      </ul></li>
+      <li>
+    datafusion.object_store
+
+      <ul>
+        <li><a href="autoapi/datafusion/object_store/index.html#module-datafusion.object_store">module</a>
 </li>
+      </ul></li>
+      <li>
+    datafusion.record_batch
+
+      <ul>
+        <li><a href="autoapi/datafusion/record_batch/index.html#module-datafusion.record_batch">module</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.datepart">datepart() (in module datafusion.functions)</a>
+      <li>
+    datafusion.substrait
+
+      <ul>
+        <li><a href="autoapi/datafusion/substrait/index.html#module-datafusion.substrait">module</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
+      </ul></li>
+      <li>
+    datafusion.udf
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#module-datafusion.udf">module</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_bin">date_bin() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.degrees">degrees() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_part">date_part() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.deregister_table">deregister_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_trunc">date_trunc() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.describe">describe() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datepart">datepart() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.digest">digest() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.display_name">display_name() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.db">db (datafusion.catalog.Database attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Database.db">(datafusion.Database attribute)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.distinct">distinct() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.degrees">degrees() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.deregister_table">deregister_table() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.describe">describe() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.deserialize">deserialize() (datafusion.substrait.Serde static method)</a>
+</li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.deserialize_bytes">deserialize_bytes() (datafusion.substrait.Serde static method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.df">df (datafusion.dataframe.DataFrame attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.DFSchema">DFSchema (in module datafusion)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.digest">digest() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.display_name">display_name() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.display_name">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Distinct">Distinct (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.distinct">distinct() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.DropTable">DropTable (in module datafusion.expr)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -668,29 +1041,59 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.empty_table">empty_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.empty_table">empty_table() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.encode">encode() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.EmptyRelation">EmptyRelation (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.ends_with">ends_with() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan.encode">encode() (datafusion.substrait.Plan method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.encode">(in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.except_all">except_all() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder.end">end() (datafusion.expr.CaseBuilder method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.execute">execute() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ends_with">ends_with() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.evaluate">evaluate() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Accumulator.evaluate">(datafusion.udf.Accumulator method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.except_all">except_all() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.execute">execute() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream">execute_stream() (datafusion.dataframe.DataFrame method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.execute_stream">execute_stream() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream_partitioned">execute_stream_partitioned() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.execute_stream_partitioned">execute_stream_partitioned() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.execution_plan">execution_plan() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.execution_plan">execution_plan() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Exists">Exists (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.exp">exp() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.exp">exp() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.explain">explain() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Explain">Explain (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr">Expr (class in datafusion)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.explain">explain() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr">Expr (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr">(class in datafusion.expr)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.expr">expr (datafusion.Expr attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.expr">(datafusion.expr.Expr attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Extension">Extension (in module datafusion.expr)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -698,31 +1101,37 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.factorial">factorial() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.factorial">factorial() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.filter">filter() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Filter">Filter (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.find_in_set">find_in_set() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.filter">filter() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.first_value">first_value() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.find_in_set">find_in_set() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.flatten">flatten() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.first_value">first_value() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.floor">floor() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.flatten">flatten() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.floor">floor() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_arrow_table">from_arrow_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.frame_bound">frame_bound (datafusion.expr.WindowFrameBound attribute)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pandas">from_pandas() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow_table">from_arrow_table() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_polars">from_polars() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pandas">from_pandas() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pydict">from_pydict() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_polars">from_polars() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.from_pylist">from_pylist() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pydict">from_pydict() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.from_unixtime">from_unixtime() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pylist">from_pylist() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Consumer.from_substrait_plan">from_substrait_plan() (datafusion.substrait.Consumer static method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.from_unixtime">from_unixtime() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -730,13 +1139,35 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.gcd">gcd() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.gcd">gcd() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame.get_frame_units">get_frame_units() (datafusion.expr.WindowFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.get_frame_units">(datafusion.WindowFrame method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame.get_lower_bound">get_lower_bound() (datafusion.expr.WindowFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.get_lower_bound">(datafusion.WindowFrame method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.GoogleCloud">GoogleCloud (class in datafusion.object_store.object_store)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.get_offset">get_offset() (datafusion.expr.WindowFrameBound method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.grouping">grouping() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame.get_upper_bound">get_upper_bound() (datafusion.expr.WindowFrame method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.get_upper_bound">(datafusion.WindowFrame method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.GoogleCloud">GoogleCloud (in module datafusion.object_store)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.grouping">grouping() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.GroupingSet">GroupingSet (in module datafusion.expr)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -744,19 +1175,61 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.in_list">in_list() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ILike">ILike (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.initcap">initcap() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Volatility.Immutable">Immutable (datafusion.udf.Volatility attribute)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.intersect">intersect() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.in_list">in_list() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.initcap">initcap() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.InList">InList (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.InSubquery">InSubquery (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.intersect">intersect() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/input/base/index.html#datafusion.input.base.BaseInputSource.is_correct_input">is_correct_input() (datafusion.input.base.BaseInputSource method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/input/location/index.html#datafusion.input.location.LocationInputPlugin.is_correct_input">(datafusion.input.location.LocationInputPlugin method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_current_row">is_current_row() (datafusion.expr.WindowFrameBound method)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_following">is_following() (datafusion.expr.WindowFrameBound method)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.is_null">is_null() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.is_null">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.is_null">is_null() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_preceding">is_preceding() (datafusion.expr.WindowFrameBound method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.isnan">isnan() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.is_unbounded">is_unbounded() (datafusion.expr.WindowFrameBound method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.iszero">iszero() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsFalse">IsFalse (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.isnan">isnan() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsNotFalse">IsNotFalse (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsNotNull">IsNotNull (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsNotTrue">IsNotTrue (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsNotUnknown">IsNotUnknown (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsNull">IsNull (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsTrue">IsTrue (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.IsUnknown">IsUnknown (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.iszero">iszero() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -764,101 +1237,137 @@
 <h2 id="J">J</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.join">join() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Join">Join (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.join">join() (datafusion.dataframe.DataFrame method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.JoinConstraint">JoinConstraint (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.JoinType">JoinType (in module datafusion.expr)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="K">K</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.kind">kind (datafusion.catalog.Table property)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Table.kind">(datafusion.Table property)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.last_value">last_value() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.last_value">last_value() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.lcm">lcm() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lcm">lcm() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.left">left() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.left">left() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.length">length() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.length">length() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.levenshtein">levenshtein() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.levenshtein">levenshtein() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.limit">limit() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Like">Like (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_append">list_append() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Limit">Limit (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_dims">list_dims() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit">limit() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_distinct">list_distinct() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_append">list_append() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_element">list_element() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_dims">list_dims() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_except">list_except() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_distinct">list_distinct() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_extract">list_extract() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_element">list_element() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_indexof">list_indexof() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_except">list_except() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_intersect">list_intersect() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_extract">list_extract() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_join">list_join() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_indexof">list_indexof() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_length">list_length() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_intersect">list_intersect() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_ndims">list_ndims() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_join">list_join() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_position">list_position() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_length">list_length() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_positions">list_positions() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_ndims">list_ndims() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_prepend">list_prepend() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_position">list_position() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_push_back">list_push_back() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_positions">list_positions() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_prepend">list_prepend() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_push_back">list_push_back() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_push_front">list_push_front() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_remove">list_remove() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_push_front">list_push_front() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_remove_all">list_remove_all() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_remove">list_remove() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_remove_n">list_remove_n() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_remove_all">list_remove_all() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_replace">list_replace() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_remove_n">list_remove_n() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_replace_all">list_replace_all() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_replace">list_replace() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_replace_n">list_replace_n() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_replace_all">list_replace_all() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_resize">list_resize() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_replace_n">list_replace_n() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_slice">list_slice() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_resize">list_resize() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_sort">list_sort() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_slice">list_slice() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_to_string">list_to_string() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_sort">list_sort() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.list_union">list_union() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_to_string">list_to_string() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.lit">lit() (in module datafusion)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.list_union">list_union() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Literal">Literal (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.literal">literal() (datafusion.Expr static method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.literal">literal() (datafusion.Expr static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.literal">(datafusion.expr.Expr static method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.ln">ln() (in module datafusion.functions)</a>
+        <li><a href="autoapi/datafusion/index.html#datafusion.literal">(in module datafusion)</a>
 </li>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.LocalFileSystem">LocalFileSystem (class in datafusion.object_store.object_store)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ln">ln() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.log">log() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.LocalFileSystem">LocalFileSystem (in module datafusion.object_store)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.log10">log10() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/input/location/index.html#datafusion.input.location.LocationInputPlugin">LocationInputPlugin (class in datafusion.input.location)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.log2">log2() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.log">log() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.logical_plan">logical_plan() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.log10">log10() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.lower">lower() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.log2">log2() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.lpad">lpad() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.logical_plan">logical_plan() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.ltrim">ltrim() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lower">lower() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.lpad">lpad() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.ltrim">ltrim() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -866,31 +1375,57 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.make_array">make_array() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_array">make_array() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.make_date">make_date() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.make_date">make_date() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.max">max() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.max">max() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.md5">md5() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.md5">md5() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.mean">mean() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.mean">mean() (in module datafusion.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.median">median() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.median">median() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.object_store.object_store.html#datafusion.object_store.object_store.MicrosoftAzure">MicrosoftAzure (class in datafusion.object_store.object_store)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.merge">merge() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Accumulator.merge">(datafusion.udf.Accumulator method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.min">min() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/object_store/index.html#datafusion.object_store.MicrosoftAzure">MicrosoftAzure (in module datafusion.object_store)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.min">min() (in module datafusion.functions)</a>
 </li>
       <li>
     module
 
       <ul>
-        <li><a href="generated/datafusion.functions.html#module-datafusion.functions">datafusion.functions</a>
+        <li><a href="autoapi/datafusion/index.html#module-datafusion">datafusion</a>
 </li>
-        <li><a href="generated/datafusion.object_store.object_store.html#module-datafusion.object_store.object_store">datafusion.object_store.object_store</a>
+        <li><a href="autoapi/datafusion/catalog/index.html#module-datafusion.catalog">datafusion.catalog</a>
+</li>
+        <li><a href="autoapi/datafusion/context/index.html#module-datafusion.context">datafusion.context</a>
+</li>
+        <li><a href="autoapi/datafusion/dataframe/index.html#module-datafusion.dataframe">datafusion.dataframe</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#module-datafusion.expr">datafusion.expr</a>
+</li>
+        <li><a href="autoapi/datafusion/functions/index.html#module-datafusion.functions">datafusion.functions</a>
+</li>
+        <li><a href="autoapi/datafusion/input/index.html#module-datafusion.input">datafusion.input</a>
+</li>
+        <li><a href="autoapi/datafusion/input/base/index.html#module-datafusion.input.base">datafusion.input.base</a>
+</li>
+        <li><a href="autoapi/datafusion/input/location/index.html#module-datafusion.input.location">datafusion.input.location</a>
+</li>
+        <li><a href="autoapi/datafusion/object_store/index.html#module-datafusion.object_store">datafusion.object_store</a>
+</li>
+        <li><a href="autoapi/datafusion/record_batch/index.html#module-datafusion.record_batch">datafusion.record_batch</a>
+</li>
+        <li><a href="autoapi/datafusion/substrait/index.html#module-datafusion.substrait">datafusion.substrait</a>
+</li>
+        <li><a href="autoapi/datafusion/udf/index.html#module-datafusion.udf">datafusion.udf</a>
 </li>
       </ul></li>
   </ul></td>
@@ -899,15 +1434,35 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.named_struct">named_struct() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.named_struct">named_struct() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.nanvl">nanvl() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.names">names() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.names">(datafusion.catalog.Catalog method)</a>
+</li>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.names">(datafusion.catalog.Database method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Database.names">(datafusion.Database method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.nanvl">nanvl() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.now">now() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Negative">Negative (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.nullif">nullif() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatchStream.next">next() (datafusion.record_batch.RecordBatchStream method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream.next">(datafusion.RecordBatchStream method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Not">Not (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.now">now() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.nullif">nullif() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -915,15 +1470,23 @@
 <h2 id="O">O</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.octet_length">octet_length() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.octet_length">octet_length() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.optimized_logical_plan">optimized_logical_plan() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.optimized_logical_plan">optimized_logical_plan() (datafusion.dataframe.DataFrame method)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.options_internal">options_internal (datafusion.context.SQLOptions attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions.options_internal">(datafusion.SQLOptions attribute)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.order_by">order_by() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.order_by">order_by() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.overlay">overlay() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder.otherwise">otherwise() (datafusion.expr.CaseBuilder method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.overlay">overlay() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -931,183 +1494,301 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.pi">pi() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Partitioning">Partitioning (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.pow">pow() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.pi">pi() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Placeholder">Placeholder (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan">Plan (class in datafusion.substrait)</a>
+</li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan.plan_internal">plan_internal (datafusion.substrait.Plan attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.power">power() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.pow">pow() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.python_value">python_value() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.power">power() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Producer">Producer (class in datafusion.substrait)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Projection">Projection (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.python_value">python_value() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.python_value">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.radians">radians() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.radians">radians() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.random">random() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.random">random() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.range">range() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.range">range() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.read_avro">read_avro() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatchStream.rbs">rbs (datafusion.record_batch.RecordBatchStream attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream.rbs">(datafusion.RecordBatchStream attribute)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.read_csv">read_csv() (datafusion.SessionContext method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_avro">read_avro() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.read_json">read_json() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_csv">read_csv() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.read_parquet">read_parquet() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_json">read_json() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.read_table">read_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_parquet">read_parquet() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regexp_like">regexp_like() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_table">read_table() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regexp_match">regexp_match() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch.record_batch">record_batch (datafusion.record_batch.RecordBatch attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatch.record_batch">(datafusion.RecordBatch attribute)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regexp_replace">regexp_replace() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatch">RecordBatch (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch">(class in datafusion.record_batch)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_avro">register_avro() (datafusion.SessionContext method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatchStream">RecordBatchStream (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatchStream">(class in datafusion.record_batch)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_csv">register_csv() (datafusion.SessionContext method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regexp_like">regexp_like() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_dataset">register_dataset() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regexp_match">regexp_match() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_json">register_json() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regexp_replace">regexp_replace() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_listing_table">register_listing_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_avro">register_avro() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_object_store">register_object_store() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_csv">register_csv() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_parquet">register_parquet() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_dataset">register_dataset() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_record_batches">register_record_batches() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_json">register_json() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_table">register_table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_listing_table">register_listing_table() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_udaf">register_udaf() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_object_store">register_object_store() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.register_udf">register_udf() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_parquet">register_parquet() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_record_batches">register_record_batches() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_table">register_table() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udaf">register_udaf() (datafusion.context.SessionContext method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_avgx">regr_avgx() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udf">register_udf() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_avgy">regr_avgy() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_avgx">regr_avgx() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_count">regr_count() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_avgy">regr_avgy() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_intercept">regr_intercept() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_count">regr_count() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_r2">regr_r2() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_intercept">regr_intercept() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_slope">regr_slope() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_r2">regr_r2() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_sxx">regr_sxx() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_slope">regr_slope() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_sxy">regr_sxy() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_sxx">regr_sxx() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.regr_syy">regr_syy() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_sxy">regr_sxy() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.repartition">repartition() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.regr_syy">regr_syy() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.repartition_by_hash">repartition_by_hash() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Repartition">Repartition (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.repeat">repeat() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.repartition">repartition() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.replace">replace() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.repartition_by_hash">repartition_by_hash() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.reverse">reverse() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.repeat">repeat() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.rex_call_operands">rex_call_operands() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.replace">replace() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.rex_call_operator">rex_call_operator() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.reverse">reverse() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.rex_type">rex_type() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.rex_call_operands">rex_call_operands() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.rex_call_operands">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.right">right() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.rex_call_operator">rex_call_operator() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.rex_call_operator">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.round">round() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.rex_type">rex_type() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.rex_type">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.rpad">rpad() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.right">right() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.rtrim">rtrim() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.round">round() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig">RuntimeConfig (class in datafusion)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.rpad">rpad() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.rtrim">rtrim() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.runtime">runtime (datafusion.context.SessionContext attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig">RuntimeConfig (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig">(class in datafusion.context)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.schema">schema() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarSubquery">ScalarSubquery (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.select">select() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF">ScalarUDF (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.ScalarUDF">(class in datafusion.udf)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.select_columns">select_columns() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarVariable">ScalarVariable (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.session_id">session_id() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.schema">schema() (datafusion.catalog.Table method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.schema">(datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig">SessionConfig (class in datafusion)</a>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Table.schema">(datafusion.Table method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext">SessionContext (class in datafusion)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select">select() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.set">set() (datafusion.SessionConfig method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select_columns">select_columns() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sha224">sha224() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde">Serde (class in datafusion.substrait)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sha256">sha256() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.serialize">serialize() (datafusion.substrait.Serde static method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sha384">sha384() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.serialize_bytes">serialize_bytes() (datafusion.substrait.Serde static method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sha512">sha512() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Serde.serialize_to_plan">serialize_to_plan() (datafusion.substrait.Serde static method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.show">show() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.session_id">session_id() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.signum">signum() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig">SessionConfig (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig">(class in datafusion.context)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sin">sin() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext">SessionContext (class in datafusion.context)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sinh">sinh() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.set">set() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.set">(datafusion.SessionConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sha224">sha224() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sha256">sha256() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sha384">sha384() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sha512">sha512() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.show">show() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.signum">signum() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SimilarTo">SimilarTo (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sin">sin() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.sort">sort() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sinh">sinh() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Sort">Sort (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.sort">sort() (datafusion.dataframe.DataFrame method)</a>
 
       <ul>
-        <li><a href="generated/datafusion.Expr.html#datafusion.Expr.sort">(datafusion.Expr method)</a>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sort">(datafusion.Expr method)</a>
+</li>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.sort">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.split_part">split_part() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SortExpr">SortExpr (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.sql">sql() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.split_part">split_part() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.sql_with_options">sql_with_options() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.sql">sql() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sqrt">sqrt() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.sql_with_options">sql_with_options() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.starts_with">starts_with() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions">SQLOptions (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions">(class in datafusion.context)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.stddev">stddev() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sqrt">sqrt() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.stddev_pop">stddev_pop() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Volatility.Stable">Stable (datafusion.udf.Volatility attribute)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.stddev_samp">stddev_samp() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.starts_with">starts_with() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.strpos">strpos() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.state">state() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Accumulator.state">(datafusion.udf.Accumulator method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.struct">struct() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.stddev">stddev() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.substr">substr() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.stddev_pop">stddev_pop() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.substr_index">substr_index() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.stddev_samp">stddev_samp() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.substring">substring() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.strpos">strpos() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.sum">sum() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.struct">struct() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Subquery">Subquery (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SubqueryAlias">SubqueryAlias (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.substr">substr() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.substr_index">substr_index() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.substring">substring() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sum">sum() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1115,69 +1796,127 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.table">table() (datafusion.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Table">Table (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table">(class in datafusion.catalog)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.table_exist">table_exist() (datafusion.SessionContext method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.table">table (datafusion.catalog.Table attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Table.table">(datafusion.Table attribute)</a>
 </li>
-      <li><a href="generated/datafusion.SessionContext.html#datafusion.SessionContext.tables">tables() (datafusion.SessionContext method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.table">table() (datafusion.catalog.Database method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table">(datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.tan">tan() (in module datafusion.functions)</a>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Database.table">(datafusion.Database method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.tanh">tanh() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_exist">table_exist() (datafusion.context.SessionContext method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_arrow_table">to_arrow_table() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.TableScan">TableScan (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_hex">to_hex() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.tan">tan() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pandas">to_pandas() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.tanh">tanh() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_polars">to_polars() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_arrow_table">to_arrow_table() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pydict">to_pydict() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_hex">to_hex() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pandas">to_pandas() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_polars">to_polars() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch.to_pyarrow">to_pyarrow() (datafusion.record_batch.RecordBatch method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatch.to_pyarrow">(datafusion.RecordBatch method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pylist">to_pylist() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pydict">to_pydict() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_timestamp">to_timestamp() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pylist">to_pylist() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_timestamp_micros">to_timestamp_micros() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Producer.to_substrait_plan">to_substrait_plan() (datafusion.substrait.Producer static method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_timestamp_millis">to_timestamp_millis() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp">to_timestamp() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_timestamp_seconds">to_timestamp_seconds() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp_micros">to_timestamp_micros() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.to_unixtime">to_unixtime() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp_millis">to_timestamp_millis() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.to_variant">to_variant() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_timestamp_seconds">to_timestamp_seconds() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.translate">translate() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.to_unixtime">to_unixtime() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.trim">trim() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.to_variant">to_variant() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.to_variant">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.trunc">trunc() (in module datafusion.functions)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.translate">translate() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.types">types() (datafusion.Expr method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.trim">trim() (in module datafusion.functions)</a>
 </li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.trunc">trunc() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.TryCast">TryCast (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.types">types() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.types">(datafusion.expr.Expr method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.union">union() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.udaf">udaf() (datafusion.AggregateUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.AggregateUDF.udaf">(datafusion.udf.AggregateUDF static method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.union_distinct">union_distinct() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.udf">udf() (datafusion.ScalarUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.ScalarUDF.udf">(datafusion.udf.ScalarUDF static method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.unnest_column">unnest_column() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Union">Union (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union">union() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union_distinct">union_distinct() (datafusion.dataframe.DataFrame method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.unnest_columns">unnest_columns() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Unnest">Unnest (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.upper">upper() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.unnest_columns">unnest_columns() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.uuid">uuid() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.UnnestExpr">UnnestExpr (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.update">update() (datafusion.Accumulator method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Accumulator.update">(datafusion.udf.Accumulator method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.upper">upper() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.uuid">uuid() (in module datafusion.functions)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1185,15 +1924,23 @@
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.var">var() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var">var() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.var_pop">var_pop() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_pop">var_pop() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.var_samp">var_samp() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.var_samp">var_samp() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Expr.variant_name">variant_name() (datafusion.Expr method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.variant_name">(datafusion.expr.Expr method)</a>
 </li>
-      <li><a href="generated/datafusion.Expr.html#datafusion.Expr.variant_name">variant_name() (datafusion.Expr method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Volatility.Volatile">Volatile (datafusion.udf.Volatility attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/udf/index.html#datafusion.udf.Volatility">Volatility (class in datafusion.udf)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1201,57 +1948,169 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.functions.html#datafusion.functions.window">window() (in module datafusion.functions)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.CaseBuilder.when">when() (datafusion.expr.CaseBuilder method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_batch_size">with_batch_size() (datafusion.SessionConfig method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Window">Window (in module datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.with_column">with_column() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.window">window() (in module datafusion.functions)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.with_column_renamed">with_column_renamed() (datafusion.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame.window_frame">window_frame (datafusion.expr.WindowFrame attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame.window_frame">(datafusion.WindowFrame attribute)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_create_default_catalog_and_schema">with_create_default_catalog_and_schema() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.WindowFrame">WindowFrame (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrame">(class in datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_default_catalog_and_schema">with_default_catalog_and_schema() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound">WindowFrameBound (class in datafusion.expr)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_disabled">with_disk_manager_disabled() (datafusion.RuntimeConfig method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.with_allow_ddl">with_allow_ddl() (datafusion.context.SQLOptions method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions.with_allow_ddl">(datafusion.SQLOptions method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_os">with_disk_manager_os() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.with_allow_dml">with_allow_dml() (datafusion.context.SQLOptions method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions.with_allow_dml">(datafusion.SQLOptions method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_disk_manager_specified">with_disk_manager_specified() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.with_allow_statements">with_allow_statements() (datafusion.context.SQLOptions method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions.with_allow_statements">(datafusion.SQLOptions method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_fair_spill_pool">with_fair_spill_pool() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_batch_size">with_batch_size() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_batch_size">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_greedy_memory_pool">with_greedy_memory_pool() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.with_column">with_column() (datafusion.dataframe.DataFrame method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_information_schema">with_information_schema() (datafusion.SessionConfig method)</a>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.with_column_renamed">with_column_renamed() (datafusion.dataframe.DataFrame method)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_create_default_catalog_and_schema">with_create_default_catalog_and_schema() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_create_default_catalog_and_schema">(datafusion.SessionConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_default_catalog_and_schema">with_default_catalog_and_schema() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_default_catalog_and_schema">(datafusion.SessionConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_disk_manager_disabled">with_disk_manager_disabled() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_disk_manager_disabled">(datafusion.RuntimeConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_disk_manager_os">with_disk_manager_os() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_disk_manager_os">(datafusion.RuntimeConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_disk_manager_specified">with_disk_manager_specified() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_disk_manager_specified">(datafusion.RuntimeConfig method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_parquet_pruning">with_parquet_pruning() (datafusion.SessionConfig method)</a>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_fair_spill_pool">with_fair_spill_pool() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_fair_spill_pool">(datafusion.RuntimeConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_aggregations">with_repartition_aggregations() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_greedy_memory_pool">with_greedy_memory_pool() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_greedy_memory_pool">(datafusion.RuntimeConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_min_size">with_repartition_file_min_size() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_information_schema">with_information_schema() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_information_schema">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_file_scans">with_repartition_file_scans() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_parquet_pruning">with_parquet_pruning() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_parquet_pruning">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_joins">with_repartition_joins() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_aggregations">with_repartition_aggregations() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_aggregations">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_sorts">with_repartition_sorts() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_file_min_size">with_repartition_file_min_size() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_file_min_size">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_repartition_windows">with_repartition_windows() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_file_scans">with_repartition_file_scans() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_file_scans">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.SessionConfig.html#datafusion.SessionConfig.with_target_partitions">with_target_partitions() (datafusion.SessionConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_joins">with_repartition_joins() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_joins">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_temp_file_path">with_temp_file_path() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_sorts">with_repartition_sorts() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_sorts">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.RuntimeConfig.html#datafusion.RuntimeConfig.with_unbounded_memory_pool">with_unbounded_memory_pool() (datafusion.RuntimeConfig method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_windows">with_repartition_windows() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_repartition_windows">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.write_csv">write_csv() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_target_partitions">with_target_partitions() (datafusion.context.SessionConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_target_partitions">(datafusion.SessionConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.write_json">write_json() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_temp_file_path">with_temp_file_path() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_temp_file_path">(datafusion.RuntimeConfig method)</a>
 </li>
-      <li><a href="generated/datafusion.DataFrame.html#datafusion.DataFrame.write_parquet">write_parquet() (datafusion.DataFrame method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig.with_unbounded_memory_pool">with_unbounded_memory_pool() (datafusion.context.RuntimeConfig method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeConfig.with_unbounded_memory_pool">(datafusion.RuntimeConfig method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.write_csv">write_csv() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.write_json">write_json() (datafusion.dataframe.DataFrame method)</a>
+</li>
+      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.write_parquet">write_parquet() (datafusion.dataframe.DataFrame method)</a>
 </li>
   </ul></td>
 </tr></table>

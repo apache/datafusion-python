@@ -19,7 +19,7 @@ User Defined Functions
 ======================
 
 DataFusion provides powerful expressions and functions, reducing the need for custom Python functions.
-However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs), with the :func:`.udf` function.
+However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs), with the :py:func:`~datafusion.udf.ScalarUDF.udf` function.
 
 .. ipython:: python
 
@@ -42,7 +42,7 @@ However you can still incorporate your own functions, i.e. User-Defined Function
 
     df.select(is_null_arr(col("a"))).to_pandas()
 
-Additionally the :func:`.udaf` function allows you to define User-Defined Aggregate Functions (UDAFs)
+Additionally the :py:func:`~datafusion.udf.AggregateUDF.udaf` function allows you to define User-Defined Aggregate Functions (UDAFs)
 
 .. code-block:: python
 

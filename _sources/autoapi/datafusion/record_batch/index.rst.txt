@@ -1,0 +1,75 @@
+datafusion.record_batch
+=======================
+
+.. py:module:: datafusion.record_batch
+
+.. autoapi-nested-parse::
+
+   This module provides the classes for handling record batches.
+
+   These are typically the result of dataframe
+   :py:func:`datafusion.dataframe.execute_stream` operations.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.record_batch.RecordBatch
+   datafusion.record_batch.RecordBatchStream
+
+
+Module Contents
+---------------
+
+.. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
+
+   This class is essentially a wrapper for :py:class:`pyarrow.RecordBatch`.
+
+   This constructor is generally not called by the end user.
+
+   See the :py:class:`RecordBatchStream` iterator for generating this class.
+
+
+   .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
+
+      Convert to :py:class:`pyarrow.RecordBatch`.
+
+
+
+   .. py:attribute:: record_batch
+
+
+.. py:class:: RecordBatchStream(record_batch_stream: datafusion._internal.RecordBatchStream)
+
+   This class represents a stream of record batches.
+
+   These are typically the result of a
+   :py:func:`~datafusion.dataframe.DataFrame.execute_stream` operation.
+
+   This constructor is typically not called by the end user.
+
+
+   .. py:method:: __iter__() -> typing_extensions.Self
+
+      Iterator function.
+
+
+
+   .. py:method:: __next__() -> RecordBatch
+
+      Iterator function.
+
+
+
+   .. py:method:: next() -> RecordBatch | None
+
+      See :py:func:`__next__` for the iterator function.
+
+
+
+   .. py:attribute:: rbs
+
+

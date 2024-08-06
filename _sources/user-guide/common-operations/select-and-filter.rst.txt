@@ -18,7 +18,7 @@
 Column Selections
 =================
 
-Use :meth:`.DataFrame.select_columns`  for basic column selection.
+Use :py:func:`~datafusion.dataframe.DataFrame.select`  for basic column selection.
 
 DataFusion can work with several file types, to start simple we can use a subset of the 
 `TLC Trip Record Data <https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page>`_
@@ -35,8 +35,8 @@ DataFusion can work with several file types, to start simple we can use a subset
     df = ctx.read_parquet("yellow_trip_data.parquet")
     df.select_columns("trip_distance", "passenger_count")
 
-For mathematical or logical operations use :func:`.col` to select columns, and give meaningful names to the resulting
-operations using :func:`.alias`
+For mathematical or logical operations use :py:func:`~datafusion.col` to select columns, and give meaningful names to the resulting
+operations using :py:func:`~datafusion.expr.Expr.alias`
 
 
 .. ipython:: python
@@ -48,7 +48,7 @@ operations using :func:`.alias`
 
     Please be aware that all identifiers are effectively made lower-case in SQL, so if your file has capital letters
     (ex: Name) you must put your column name in double quotes or the selection won’t work. As an alternative for simple
-    column selection use :meth:`.DataFrame.select_columns` without double quotes
+    column selection use :py:func:`~datafusion.dataframe.DataFrame.select_columns` without double quotes
 
 For selecting columns with capital letters use ``'"VendorID"'``
 
@@ -57,7 +57,7 @@ For selecting columns with capital letters use ``'"VendorID"'``
     df.select(col('"VendorID"'))
 
 
-To combine it with literal values use the :func:`.lit`
+To combine it with literal values use the :py:func:`~datafusion.lit`
 
 .. ipython:: python
 

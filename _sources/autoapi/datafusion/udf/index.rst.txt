@@ -1,0 +1,222 @@
+datafusion.udf
+==============
+
+.. py:module:: datafusion.udf
+
+.. autoapi-nested-parse::
+
+   Provides the user defined functions for evaluation of dataframes.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   datafusion.udf._A
+   datafusion.udf._R
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.udf.Accumulator
+   datafusion.udf.AggregateUDF
+   datafusion.udf.ScalarUDF
+   datafusion.udf.Volatility
+
+
+Module Contents
+---------------
+
+.. py:class:: Accumulator
+
+   Defines how an :py:class:`AggregateUDF` accumulates values.
+
+
+   .. py:method:: evaluate() -> pyarrow.Scalar
+      :abstractmethod:
+
+
+      Return the resultant value.
+
+
+
+   .. py:method:: merge(states: pyarrow.Array) -> None
+      :abstractmethod:
+
+
+      Merge a set of states.
+
+
+
+   .. py:method:: state() -> List[pyarrow.Scalar]
+      :abstractmethod:
+
+
+      Return the current state.
+
+
+
+   .. py:method:: update(values: pyarrow.Array) -> None
+      :abstractmethod:
+
+
+      Evalute an array of values and update state.
+
+
+
+.. py:class:: AggregateUDF(name: str | None, accumulator: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+
+   Class for performing scalar user defined functions (UDF).
+
+   Aggregate UDFs operate on a group of rows and return a single value. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user defined aggregate function (UDAF).
+
+   See :py:func:`udaf` for a convenience function and arugment
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDAF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udaf(accum: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+      :staticmethod:
+
+
+      Create a new User Defined Aggregate Function.
+
+      The accumulator function must be callable and implement :py:class:`Accumulator`.
+
+      :param accum: The accumulator python function.
+      :param input_types: The data types of the arguments to ``accum``.
+      :param return_type: The data type of the return value.
+      :param state_type: The data types of the intermediate accumulation.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user defined aggregate function, which can be used in either data
+                aggregation or window function calls.
+
+
+
+   .. py:attribute:: _udf
+
+
+.. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+
+   Class for performing scalar user defined functions (UDF).
+
+   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
+   operating on a group of rows.
+
+   Instantiate a scalar user defined function (UDF).
+
+   See helper method :py:func:`udf` for argument details.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
+      :staticmethod:
+
+
+      Create a new User Defined Function.
+
+      :param func: A callable python function.
+      :param input_types: The data types of the arguments to ``func``. This list
+                          must be of the same length as the number of arguments.
+      :param return_type: The data type of the return value from the python
+                          function.
+      :param volatility: See ``Volatility`` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns:
+
+                A user defined aggregate function, which can be used in either data
+                    aggregation or window function calls.
+
+
+
+   .. py:attribute:: _udf
+
+
+.. py:class:: Volatility(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Defines how stable or volatile a function is.
+
+   When setting the volatility of a function, you can either pass this
+   enumeration or a ``str``. The ``str`` equivalent is the lower case value of the
+   name (`"immutable"`, `"stable"`, or `"volatile"`).
+
+
+   .. py:method:: __str__()
+
+      Returns the string equivalent.
+
+
+
+   .. py:attribute:: Immutable
+      :value: 1
+
+
+      An immutable function will always return the same output when given the
+      same input.
+
+      DataFusion will attempt to inline immutable functions during planning.
+
+
+   .. py:attribute:: Stable
+      :value: 2
+
+
+      Returns the same value for a given input within a single queries.
+
+      A stable function may return different values given the same input across
+      different queries but must return the same value for a given input within a
+      query. An example of this is the ``Now`` function. DataFusion will attempt to
+      inline ``Stable`` functions during planning, when possible. For query
+      ``select col1, now() from t1``, it might take a while to execute but ``now()``
+      column will be the same for each output row, which is evaluated during
+      planning.
+
+
+   .. py:attribute:: Volatile
+      :value: 3
+
+
+      A volatile function may change the return value from evaluation to
+      evaluation.
+
+      Multiple invocations of a volatile function may return different results
+      when used in the same query. An example of this is the random() function.
+      DataFusion can not evaluate such functions during planning. In the query
+      ``select col1, random() from t1``, ``random()`` function will be evaluated
+      for each output row, resulting in a unique random value for each row.
+
+
+.. py:data:: _A
+
+.. py:data:: _R
+

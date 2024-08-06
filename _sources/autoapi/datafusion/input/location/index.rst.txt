@@ -1,0 +1,44 @@
+datafusion.input.location
+=========================
+
+.. py:module:: datafusion.input.location
+
+.. autoapi-nested-parse::
+
+   The default input source for DataFusion.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.input.location.LocationInputPlugin
+
+
+Module Contents
+---------------
+
+.. py:class:: LocationInputPlugin
+
+   Bases: :py:obj:`datafusion.input.base.BaseInputSource`
+
+
+   Input Plugin for everything.
+
+   This can be read in from a file (on disk, remote etc.).
+
+
+   .. py:method:: build_table(input_file: str, table_name: str, **kwargs) -> datafusion.common.SqlTable
+
+      Create a table from the input source.
+
+
+
+   .. py:method:: is_correct_input(input_item: Any, table_name: str, **kwargs)
+
+      Returns `True` if the input is valid.
+
+
+
