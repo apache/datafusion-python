@@ -46,7 +46,7 @@ class SessionConfig:
     """Session configuration options."""
 
     def __init__(self, config_options: dict[str, str] | None = None) -> None:
-        """Create a new `SessionConfig` with the given configuration options.
+        """Create a new :py:class:`SessionConfig` with the given configuration options.
 
         Args:
             config_options: Configuration options.
@@ -63,7 +63,7 @@ class SessionConfig:
                 automatically created.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = (
             self.config_internal.with_create_default_catalog_and_schema(enabled)
@@ -80,7 +80,7 @@ class SessionConfig:
             schema: Schema name.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_default_catalog_and_schema(
             catalog, schema
@@ -88,13 +88,13 @@ class SessionConfig:
         return self
 
     def with_information_schema(self, enabled: bool = True) -> SessionConfig:
-        """Enable or disable the inclusion of `information_schema` virtual tables.
+        """Enable or disable the inclusion of ``information_schema`` virtual tables.
 
         Args:
-            enabled: Whether to include `information_schema` virtual tables.
+            enabled: Whether to include ``information_schema`` virtual tables.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_information_schema(enabled)
         return self
@@ -106,7 +106,7 @@ class SessionConfig:
             batch_size: Batch size.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_batch_size(batch_size)
         return self
@@ -120,7 +120,7 @@ class SessionConfig:
             target_partitions: Number of target partitions.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_target_partitions(
             target_partitions
@@ -136,7 +136,7 @@ class SessionConfig:
             enabled: Whether to use repartitioning for aggregations.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_aggregations(
             enabled
@@ -150,7 +150,7 @@ class SessionConfig:
             enabled: Whether to use repartitioning for joins.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_joins(enabled)
         return self
@@ -164,7 +164,7 @@ class SessionConfig:
             enabled: Whether to use repartitioning for window functions.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_windows(enabled)
         return self
@@ -178,7 +178,7 @@ class SessionConfig:
             enabled: Whether to use repartitioning for window functions.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_sorts(enabled)
         return self
@@ -190,7 +190,7 @@ class SessionConfig:
             enabled: Whether to use repartitioning for file scans.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_file_scans(enabled)
         return self
@@ -202,7 +202,7 @@ class SessionConfig:
             size: Minimum file range size.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_repartition_file_min_size(size)
         return self
@@ -216,7 +216,7 @@ class SessionConfig:
             enabled: Whether to use pruning predicate for parquet readers.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_parquet_pruning(enabled)
         return self
@@ -229,7 +229,7 @@ class SessionConfig:
         value: Option value.
 
         Returns:
-            A new `SessionConfig` object with the updated setting.
+            A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.set(key, value)
         return self
@@ -239,14 +239,14 @@ class RuntimeConfig:
     """Runtime configuration options."""
 
     def __init__(self) -> None:
-        """Create a new `RuntimeConfig` with default values."""
+        """Create a new :py:class:`RuntimeConfig` with default values."""
         self.config_internal = RuntimeConfigInternal()
 
     def with_disk_manager_disabled(self) -> RuntimeConfig:
         """Disable the disk manager, attempts to create temporary files will error.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_disk_manager_disabled()
         return self
@@ -255,7 +255,7 @@ class RuntimeConfig:
         """Use the operating system's temporary directory for disk manager.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_disk_manager_os()
         return self
@@ -267,7 +267,7 @@ class RuntimeConfig:
             paths: Paths to use for the disk manager's temporary files.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
         """
         paths = [str(p) for p in paths]
         self.config_internal = self.config_internal.with_disk_manager_specified(paths)
@@ -277,7 +277,7 @@ class RuntimeConfig:
         """Use an unbounded memory pool.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_unbounded_memory_pool()
         return self
@@ -303,7 +303,7 @@ class RuntimeConfig:
             size: Size of the memory pool in bytes.
 
         Returns:
-            A new ``RuntimeConfig`` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
 
         Examples usage::
 
@@ -316,14 +316,14 @@ class RuntimeConfig:
         """Use a greedy memory pool with the specified size.
 
         This pool works well for queries that do not need to spill or have a single
-        spillable operator. See `RuntimeConfig.with_fair_spill_pool` if there are
+        spillable operator. See :py:func:`with_fair_spill_pool` if there are
         multiple spillable operators that all will spill.
 
         Args:
             size: Size of the memory pool in bytes.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
 
         Example usage::
 
@@ -339,7 +339,7 @@ class RuntimeConfig:
             path: Path to use for temporary files.
 
         Returns:
-            A new `RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeConfig` object with the updated setting.
 
         Example usage::
 
@@ -350,10 +350,10 @@ class RuntimeConfig:
 
 
 class SQLOptions:
-    """Options to be used when performing SQL queries on the ``SessionContext``."""
+    """Options to be used when performing SQL queries."""
 
     def __init__(self) -> None:
-        """Create a new `SQLOptions` with default values.
+        """Create a new :py:class:`SQLOptions` with default values.
 
         The default values are:
         - DDL commands are allowed
@@ -365,13 +365,13 @@ class SQLOptions:
     def with_allow_ddl(self, allow: bool = True) -> SQLOptions:
         """Should DDL (Data Definition Language) commands be run?
 
-        Examples of DDL commands include `CREATE TABLE` and `DROP TABLE`.
+        Examples of DDL commands include ``CREATE TABLE`` and ``DROP TABLE``.
 
         Args:
             allow: Allow DDL commands to be run.
 
         Returns:
-            A new `SQLOptions` object with the updated setting.
+            A new :py:class:`SQLOptions` object with the updated setting.
 
         Example usage::
 
@@ -383,13 +383,13 @@ class SQLOptions:
     def with_allow_dml(self, allow: bool = True) -> SQLOptions:
         """Should DML (Data Manipulation Language) commands be run?
 
-        Examples of DML commands include `INSERT INTO` and `DELETE`.
+        Examples of DML commands include ``INSERT INTO`` and ``DELETE``.
 
         Args:
             allow: Allow DML commands to be run.
 
         Returns:
-            A new `SQLOptions` object with the updated setting.
+            A new :py:class:`SQLOptions` object with the updated setting.
 
         Example usage::
 
@@ -399,13 +399,13 @@ class SQLOptions:
         return self
 
     def with_allow_statements(self, allow: bool = True) -> SQLOptions:
-        """Should statements such as `SET VARIABLE` and `BEGIN TRANSACTION` be run?
+        """Should statements such as ``SET VARIABLE`` and ``BEGIN TRANSACTION`` be run?
 
         Args:
             allow: Allow statements to be run.
 
         Returns:
-            A new `SQLOptions` object with the updated setting.
+            A new :py:class:SQLOptions` object with the updated setting.
 
         Example usage::
 
@@ -418,8 +418,7 @@ class SQLOptions:
 class SessionContext:
     """This is the main interface for executing queries and creating DataFrames.
 
-    See https://datafusion.apache.org/python/user-guide/basics.html for
-    additional information.
+    See :ref:`user_guide_concepts` in the online documentation for more information.
     """
 
     def __init__(
@@ -438,7 +437,7 @@ class SessionContext:
         Example usage:
 
         The following example demostrates how to use the context to execute
-        a query against a CSV data source using the ``DataFrame`` API::
+        a query against a CSV data source using the :py:class:`DataFrame` API::
 
             from datafusion import SessionContext
 
@@ -455,7 +454,7 @@ class SessionContext:
 
         Args:
             schema: The data source schema.
-            store: The `ObjectStore` to register.
+            store: The :py:class:`~datafusion.object_store.ObjectStore` to register.
             host: URL for the host.
         """
         self.ctx.register_object_store(schema, store, host)
@@ -471,8 +470,9 @@ class SessionContext:
     ) -> None:
         """Register multiple files as a single table.
 
-        Registers a `Table` that can assemble multiple files from locations in
-        an `ObjectStore` instance.
+        Registers a :py:class:`~datafusion.catalog.Table` that can assemble multiple
+        files from locations in an :py:class:`~datafusion.object_store.ObjectStore`
+        instance.
 
         Args:
             name: Name of the resultant table.
@@ -496,11 +496,12 @@ class SessionContext:
         )
 
     def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
-        """Create a `DataFrame` from SQL query text.
+        """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
 
-        Note: This API implements DDL statements such as `CREATE TABLE` and
-        `CREATE VIEW` and DML statements such as `INSERT INTO` with in-memory
-        default implementation. See `SessionContext.sql_with_options`.
+        Note: This API implements DDL statements such as ``CREATE TABLE`` and
+        ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
+        default implementation.See
+        :py:func:`~datafusion.context.SessionContext.sql_with_options`.
 
         Args:
             query: SQL query text.
@@ -514,7 +515,7 @@ class SessionContext:
         return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
-        """Create a `DataFrame` from SQL query text.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
         This function will first validating that the query is allowed by the
         provided options.
@@ -537,7 +538,7 @@ class SessionContext:
         """Create and return a dataframe using the provided partitions.
 
         Args:
-            partitions: `RecordBatch` partitions to register.
+            partitions: :py:class:`pyarrow.RecordBatch` partitions to register.
             name: Resultant dataframe name.
             schema: Schema for the partitions.
 
@@ -547,7 +548,7 @@ class SessionContext:
         return DataFrame(self.ctx.create_dataframe(partitions, name, schema))
 
     def create_dataframe_from_logical_plan(self, plan: LogicalPlan) -> DataFrame:
-        """Create a `DataFrame` from an existing logical plan.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an existing plan.
 
         Args:
             plan: Logical plan.
@@ -560,7 +561,7 @@ class SessionContext:
     def from_pylist(
         self, data: list[dict[str, Any]], name: str | None = None
     ) -> DataFrame:
-        """Create a `DataFrame` from a list of dictionaries.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from a list.
 
         Args:
             data: List of dictionaries.
@@ -574,7 +575,7 @@ class SessionContext:
     def from_pydict(
         self, data: dict[str, list[Any]], name: str | None = None
     ) -> DataFrame:
-        """Create a `DataFrame` from a dictionary of lists.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from a dictionary.
 
         Args:
             data: Dictionary of lists.
@@ -588,7 +589,7 @@ class SessionContext:
     def from_arrow_table(
         self, data: pyarrow.Table, name: str | None = None
     ) -> DataFrame:
-        """Create a `DataFrame` from an Arrow table.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
 
         Args:
             data: Arrow table.
@@ -600,7 +601,7 @@ class SessionContext:
         return DataFrame(self.ctx.from_arrow_table(data, name))
 
     def from_pandas(self, data: pandas.DataFrame, name: str | None = None) -> DataFrame:
-        """Create a `DataFrame` from a Pandas DataFrame.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Pandas DataFrame.
 
         Args:
             data: Pandas DataFrame.
@@ -612,7 +613,7 @@ class SessionContext:
         return DataFrame(self.ctx.from_pandas(data, name))
 
     def from_polars(self, data: polars.DataFrame, name: str | None = None) -> DataFrame:
-        """Create a `DataFrame` from a Polars DataFrame.
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Polars DataFrame.
 
         Args:
             data: Polars DataFrame.
@@ -799,7 +800,7 @@ class SessionContext:
         )
 
     def register_dataset(self, name: str, dataset: pyarrow.dataset.Dataset) -> None:
-        """Register a `pyarrow.dataset.Dataset` as a table.
+        """Register a :py:class:`pyarrow.dataset.Dataset` as a table.
 
         Args:
             name: Name of the table to register.
@@ -809,18 +810,18 @@ class SessionContext:
 
     def register_udf(self, udf: ScalarUDF) -> None:
         """Register a user-defined function (UDF) with the context."""
-        self.ctx.register_udf(udf.udf)
+        self.ctx.register_udf(udf._udf)
 
     def register_udaf(self, udaf: AggregateUDF) -> None:
         """Register a user-defined aggregation function (UDAF) with the context."""
-        self.ctx.register_udaf(udaf)
+        self.ctx.register_udaf(udaf._udaf)
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
         return self.ctx.catalog(name)
 
     @deprecated(
-        "Use the catalog provider interface `SessionContext.catalog` to "
+        "Use the catalog provider interface ``SessionContext.Catalog`` to "
         "examine available catalogs, schemas and tables"
     )
     def tables(self) -> set[str]:
@@ -828,7 +829,7 @@ class SessionContext:
         return self.ctx.tables()
 
     def table(self, name: str) -> DataFrame:
-        """Retrieve a `DataFrame` representing a previously registered table."""
+        """Retrieve a previously registered table by name."""
         return DataFrame(self.ctx.table(name))
 
     def table_exist(self, name: str) -> bool:
@@ -836,11 +837,11 @@ class SessionContext:
         return self.ctx.table_exist(name)
 
     def empty_table(self) -> DataFrame:
-        """Create an empty `DataFrame`."""
+        """Create an empty :py:class:`~datafusion.dataframe.DataFrame`."""
         return DataFrame(self.ctx.empty_table())
 
     def session_id(self) -> str:
-        """Retrun an id that uniquely identifies this `SessionContext`."""
+        """Retrun an id that uniquely identifies this :py:class:`SessionContext`."""
         return self.ctx.session_id()
 
     def read_json(
@@ -852,7 +853,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
-        """Create a `DataFrame` for reading a line-delimited JSON data source.
+        """Read a line-delimited JSON data source.
 
         Args:
             path: Path to the JSON file.
@@ -891,7 +892,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
-        """Create a `DataFrame` for reading a CSV data source.
+        """Read a CSV data source.
 
         Args:
             path: Path to the CSV file
@@ -936,7 +937,7 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         file_sort_order: list[list[Expr]] | None = None,
     ) -> DataFrame:
-        """Create a `DataFrame` for reading Parquet data source.
+        """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
         Args:
             path: Path to the Parquet file.
@@ -977,7 +978,7 @@ class SessionContext:
         file_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
-        """Create a ``DataFrame`` for reading Avro data source.
+        """Create a :py:class:`DataFrame` for reading Avro data source.
 
         Args:
             path: Path to the Avro file.
@@ -995,9 +996,14 @@ class SessionContext:
         )
 
     def read_table(self, table: Table) -> DataFrame:
-        """Creates a ``DataFrame`` for a ``Table`` such as a ``ListingTable``."""
+        """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
+
+        For a :py:class:`~datafusion.catalog.Table` such as a
+        :py:class:`~datafusion.catalog.ListingTable`, create a
+        :py:class:`~datafusion.dataframe.DataFrame`.
+        """
         return DataFrame(self.ctx.read_table(table))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
-        """Execute the `plan` and return the results."""
+        """Execute the ``plan`` and return the results."""
         return RecordBatchStream(self.ctx.execute(plan, partitions))

@@ -18,7 +18,7 @@
 Joins
 =====
 
-DataFusion supports the following join variants via the method :meth:`.DataFrame.join`
+DataFusion supports the following join variants via the method :py:func:`~datafusion.dataframe.DataFrame.join`
 
 - Inner Join
 - Left Join
@@ -58,7 +58,7 @@ will be included in the resulting DataFrame.
 
     left.join(right, join_keys=(["customer_id"], ["id"]), how="inner")
 
-The parameter :code:`join_keys` specifies the columns from the left DataFrame and right DataFrame that contains the values
+The parameter ``join_keys`` specifies the columns from the left DataFrame and right DataFrame that contains the values
 that should match.
 
 Left Join

@@ -48,7 +48,8 @@ class Plan:
         """Create a substrait plan.
 
         The user should not have to call this constructor directly. Rather, it
-        should be created via `Serde` or `Producer` classes in this module.
+        should be created via :py:class:`Serde` or py:class:`Producer` classes
+        in this module.
         """
         self.plan_internal = plan
 

@@ -35,7 +35,7 @@ class Volatility(Enum):
     """Defines how stable or volatile a function is.
 
     When setting the volatility of a function, you can either pass this
-    enumeration or a `str`. The `str` equivalent is the lower case value of the
+    enumeration or a ``str``. The ``str`` equivalent is the lower case value of the
     name (`"immutable"`, `"stable"`, or `"volatile"`).
     """
 
@@ -52,9 +52,9 @@ class Volatility(Enum):
 
     A stable function may return different values given the same input across
     different queries but must return the same value for a given input within a
-    query. An example of this is the `Now` function. DataFusion will attempt to
-    inline `Stable` functions during planning, when possible. For query
-    `select col1, now() from t1`, it might take a while to execute but `now()`
+    query. An example of this is the ``Now`` function. DataFusion will attempt to
+    inline ``Stable`` functions during planning, when possible. For query
+    ``select col1, now() from t1``, it might take a while to execute but ``now()``
     column will be the same for each output row, which is evaluated during
     planning.
     """
@@ -66,7 +66,7 @@ class Volatility(Enum):
     Multiple invocations of a volatile function may return different results
     when used in the same query. An example of this is the random() function.
     DataFusion can not evaluate such functions during planning. In the query
-    `select col1, random() from t1`, `random()` function will be evaluated
+    ``select col1, random() from t1``, ``random()`` function will be evaluated
     for each output row, resulting in a unique random value for each row.
     """
 
@@ -78,7 +78,7 @@ class Volatility(Enum):
 class ScalarUDF:
     """Class for performing scalar user defined functions (UDF).
 
-    Scalar UDFs operate on a row by row basis. See also ``AggregateUDF`` for
+    Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
     operating on a group of rows.
     """
 
@@ -92,9 +92,9 @@ class ScalarUDF:
     ) -> None:
         """Instantiate a scalar user defined function (UDF).
 
-        See helper method ``udf`` for argument details.
+        See helper method :py:func:`udf` for argument details.
         """
-        self.udf = df_internal.ScalarUDF(
+        self._udf = df_internal.ScalarUDF(
             name, func, input_types, return_type, str(volatility)
         )
 
@@ -105,7 +105,7 @@ class ScalarUDF:
         occur during the evaluation of the dataframe.
         """
         args = [arg.expr for arg in args]
-        return Expr(self.udf.__call__(*args))
+        return Expr(self._udf.__call__(*args))
 
     @staticmethod
     def udf(
@@ -119,7 +119,7 @@ class ScalarUDF:
 
         Args:
             func: A callable python function.
-            input_types: The data types of the arguments to `func`. This list
+            input_types: The data types of the arguments to ``func``. This list
                 must be of the same length as the number of arguments.
             return_type: The data type of the return value from the python
                 function.
@@ -144,7 +144,7 @@ class ScalarUDF:
 
 
 class Accumulator(metaclass=ABCMeta):
-    """Defines how an `AggregateUDF` accumulates values during an evaluation."""
+    """Defines how an :py:class:`AggregateUDF` accumulates values."""
 
     @abstractmethod
     def state(self) -> List[pyarrow.Scalar]:
@@ -175,7 +175,7 @@ class AggregateUDF:
     """Class for performing scalar user defined functions (UDF).
 
     Aggregate UDFs operate on a group of rows and return a single value. See
-    also ``ScalarUDF`` for operating on a row by row basis.
+    also :py:class:`ScalarUDF` for operating on a row by row basis.
     """
 
     def __init__(
@@ -189,10 +189,10 @@ class AggregateUDF:
     ) -> None:
         """Instantiate a user defined aggregate function (UDAF).
 
-        See ``Aggregate::udaf`` for a convenience function and arugment
+        See :py:func:`udaf` for a convenience function and arugment
         descriptions.
         """
-        self.udf = df_internal.AggregateUDF(
+        self._udf = df_internal.AggregateUDF(
             name, accumulator, input_types, return_type, state_type, str(volatility)
         )
 
@@ -203,7 +203,7 @@ class AggregateUDF:
         occur during the evaluation of the dataframe.
         """
         args = [arg.expr for arg in args]
-        return Expr(self.udf.__call__(*args))
+        return Expr(self._udf.__call__(*args))
 
     @staticmethod
     def udaf(
@@ -216,14 +216,14 @@ class AggregateUDF:
     ) -> AggregateUDF:
         """Create a new User Defined Aggregate Function.
 
-        The accumulator function must be callable and implement `Accumulator`.
+        The accumulator function must be callable and implement :py:class:`Accumulator`.
 
         Args:
             accum: The accumulator python function.
-            input_types: The data types of the arguments to `accum`.
+            input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
-            volatility: See `Volatility` for allowed values.
+            volatility: See :py:class:`Volatility` for allowed values.
             name: A descriptive name for the function.
 
         Returns:

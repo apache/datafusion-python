@@ -69,7 +69,9 @@ __all__ = [
     "ScalarUDF",
     "WindowFrame",
     "column",
+    "col",
     "literal",
+    "lit",
     "DFSchema",
     "runtime",
     "Catalog",
@@ -93,7 +95,9 @@ def column(value: str):
     return Expr.column(value)
 
 
-col = column
+def col(value: str):
+    """Create a column expression."""
+    return Expr.column(value)
 
 
 def literal(value):
@@ -101,7 +105,10 @@ def literal(value):
     return Expr.literal(value)
 
 
-lit = literal
+def lit(value):
+    """Create a literal expression."""
+    return Expr.literal(value)
+
 
 udf = ScalarUDF.udf
 
