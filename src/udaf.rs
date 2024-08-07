@@ -72,13 +72,7 @@ impl Accumulator for RustAccumulator {
 
     fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
         Python::with_gil(|py| {
-            // let state = &states[0];
-
-            // // 1. cast states to Pyarrow array
-            // let state = state
-            //     .into_data()
-            //     .to_pyarrow(py)
-            //     .map_err(|e| DataFusionError::Execution(format!("{e}")))?;
+            // // 1. cast states to Pyarrow arrays
             let py_states: Result<Vec<PyObject>> = states
                 .iter()
                 .map(|state| {
@@ -88,8 +82,6 @@ impl Accumulator for RustAccumulator {
                         .map_err(|e| DataFusionError::Execution(format!("{e}")))
                 })
                 .collect();
-
-            // let py_states = PyTuple::new_bound(py, py_states?.iter());
 
             // 2. call merge
             self.accum
