@@ -1473,19 +1473,18 @@ def approx_median(arg: Expr, distinct: bool = False) -> Expr:
 def approx_percentile_cont(
     expression: Expr,
     percentile: Expr,
+    num_centroids: Expr | None = None,
     distinct: bool = False,
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of ``expr``."""
-    # Re-enable num_centroids: https://github.com/apache/datafusion-python/issues/777
-    num_centroids = None
     if num_centroids is None:
         return Expr(
-            f.approx_percentile_cont(expression.expr, percentile.expr, distinct=distinct)
+            f.approx_percentile_cont(expression.expr, percentile.expr, distinct=distinct, num_centroids=None)
         )
 
     return Expr(
         f.approx_percentile_cont(
-            expression.expr, percentile.expr, distinct=distinct
+            expression.expr, percentile.expr, distinct=distinct, num_centroids=num_centroids.expr
         )
     )
 
