@@ -277,7 +277,7 @@ Module Contents
    Returns the approximate median value.
 
 
-.. py:function:: approx_percentile_cont(expression: datafusion.expr.Expr, percentile: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: approx_percentile_cont(expression: datafusion.expr.Expr, percentile: datafusion.expr.Expr, num_centroids: datafusion.expr.Expr | None = None, distinct: bool = False) -> datafusion.expr.Expr
 
    Returns the value that is approximately at a given percentile of ``expr``.
 

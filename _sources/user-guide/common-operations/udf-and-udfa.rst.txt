@@ -50,6 +50,7 @@ Additionally the :py:func:`~datafusion.udf.AggregateUDF.udaf` function allows yo
     import pyarrow.compute
     import datafusion
     from datafusion import col, udaf, Accumulator
+    from typing import List
 
     class MyAccumulator(Accumulator):
         """
@@ -62,9 +63,9 @@ Additionally the :py:func:`~datafusion.udf.AggregateUDF.udaf` function allows yo
             # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
             self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(values).as_py())
 
-        def merge(self, states: pyarrow.Array) -> None:
+        def merge(self, states: List[pyarrow.Array]) -> None:
             # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
+            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states[0]).as_py())
 
         def state(self) -> pyarrow.Array:
             return pyarrow.array([self._sum.as_py()])

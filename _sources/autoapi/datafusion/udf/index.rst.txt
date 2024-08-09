@@ -45,7 +45,7 @@ Module Contents
 
 
 
-   .. py:method:: merge(states: pyarrow.Array) -> None
+   .. py:method:: merge(states: List[pyarrow.Array]) -> None
       :abstractmethod:
 
 
