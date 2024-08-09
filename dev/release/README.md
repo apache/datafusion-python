@@ -63,7 +63,7 @@ We maintain a `CHANGELOG.md` so our users know what has been changed between rel
 The changelog is generated using a Python script:
 
 ```bash
-$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py apache/datafusion-python 24.0.0 HEAD > dev/changelog/25.0.0.md
+$ GITHUB_TOKEN=<TOKEN> ./dev/release/generate-changelog.py 24.0.0 HEAD 25.0.0 > dev/changelog/25.0.0.md
 ```
 
 This script creates a changelog from GitHub PRs based on the labels associated with them as well as looking for

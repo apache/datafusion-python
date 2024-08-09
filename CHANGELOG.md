@@ -19,6 +19,41 @@
 
 # DataFusion Python Changelog
 
+## [40.0.0](https://github.com/apache/datafusion-python/tree/40.0.0) (2024-08-09)
+
+This release consists of 18 commits from 4 contributors. See credits at the end of this changelog for more information.
+
+- Update changelog for 39.0.0 [#742](https://github.com/apache/datafusion-python/pull/742) (andygrove)
+- build(deps): bump uuid from 1.8.0 to 1.9.1 [#744](https://github.com/apache/datafusion-python/pull/744) (dependabot[bot])
+- build(deps): bump mimalloc from 0.1.42 to 0.1.43 [#745](https://github.com/apache/datafusion-python/pull/745) (dependabot[bot])
+- build(deps): bump syn from 2.0.67 to 2.0.68 [#746](https://github.com/apache/datafusion-python/pull/746) (dependabot[bot])
+- Tsaucer/find window fn [#747](https://github.com/apache/datafusion-python/pull/747) (timsaucer)
+- Python wrapper classes for all user interfaces [#750](https://github.com/apache/datafusion-python/pull/750) (timsaucer)
+- Expose array sort [#764](https://github.com/apache/datafusion-python/pull/764) (timsaucer)
+- Upgrade protobuf and remove GH Action googletest-installer [#773](https://github.com/apache/datafusion-python/pull/773) (Michael-J-Ward)
+- Upgrade Datafusion 40 [#771](https://github.com/apache/datafusion-python/pull/771) (Michael-J-Ward)
+- Bugfix: Calling count with None arguments [#768](https://github.com/apache/datafusion-python/pull/768) (timsaucer)
+- Add in user example that compares a two different approaches to UDFs [#770](https://github.com/apache/datafusion-python/pull/770) (timsaucer)
+- Add missing exports for wrapper modules [#782](https://github.com/apache/datafusion-python/pull/782) (timsaucer)
+- Add PyExpr to_variant conversions [#793](https://github.com/apache/datafusion-python/pull/793) (Michael-J-Ward)
+- Add missing expressions to wrapper export [#795](https://github.com/apache/datafusion-python/pull/795) (timsaucer)
+- Doc/cross reference [#791](https://github.com/apache/datafusion-python/pull/791) (timsaucer)
+- Re-Enable `num_centroids` to `approx_percentile_cont` [#798](https://github.com/apache/datafusion-python/pull/798) (Michael-J-Ward)
+- UDAF process all state variables [#799](https://github.com/apache/datafusion-python/pull/799) (timsaucer)
+
+## Credits
+
+Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) per contributor.
+
+```
+     9	Tim Saucer
+     4	Michael J Ward
+     3	dependabot[bot]
+     2	Andy Grove
+```
+
+Thank you also to everyone who contributed in other ways such as filing issues, reviewing PRs, and providing feedback on this release.
+
 ## [39.0.0](https://github.com/apache/datafusion-python/tree/39.0.0) (2024-06-25)
 
 **Merged pull requests:**
