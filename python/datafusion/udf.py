@@ -157,7 +157,7 @@ class Accumulator(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def merge(self, states: pyarrow.Array) -> None:
+    def merge(self, states: List[pyarrow.Array]) -> None:
         """Merge a set of states."""
         pass
 
