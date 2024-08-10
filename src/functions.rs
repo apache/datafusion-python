@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion_expr::ExprFunctionExt as AggregateExt;
+use datafusion_expr::ExprFunctionExt;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -30,6 +30,7 @@ use datafusion::functions;
 use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
+use datafusion_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion_expr::{
     expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
@@ -340,9 +341,8 @@ pub fn first_value(
         builder = builder.filter(filter.expr);
     }
 
-    if let Some(null_treatment) = null_treatment {
-        builder = builder.null_treatment(null_treatment.into())
-    }
+    // would be nice if all the options builder methods accepted Option<T> ...
+    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
 }
@@ -371,9 +371,7 @@ pub fn last_value(
         builder = builder.filter(filter.expr);
     }
 
-    if let Some(null_treatment) = null_treatment {
-        builder = builder.null_treatment(null_treatment.into())
-    }
+    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
 }
