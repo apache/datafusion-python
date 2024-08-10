@@ -41,8 +41,10 @@ arrow = { version = "52", feature = ["pyarrow"] }
 datafusion = { git = "https://github.com/apache/datafusion.git", features = ["pyarrow", "avro", "unicode_expressions"] }
 datafusion-common = { git = "https://github.com/apache/datafusion.git", features = ["pyarrow"] }
 datafusion-expr = { git = "https://github.com/apache/datafusion.git" }
-datafusion-functions-array = { git = "https://github.com/apache/datafusion.git", package = "datafusion-functions-nested" }
+datafusion-functions-nested = { git = "https://github.com/apache/datafusion.git" }
+# TODO: is this just re-exported?
 datafusion-optimizer = { git = "https://github.com/apache/datafusion.git" }
+# TODO: is this just re-exported?
 datafusion-sql = { git = "https://github.com/apache/datafusion.git" }
 datafusion-substrait = { git = "https://github.com/apache/datafusion.git", optional = true }
 prost = "0.12" # keep in line with `datafusion-substrait`

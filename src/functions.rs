@@ -388,14 +388,14 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 
 #[pyfunction]
 fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
-    datafusion_functions_array::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
+    datafusion_functions_nested::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
         .into()
 }
 
 #[pyfunction]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
-    datafusion_functions_array::expr_fn::array_concat(exprs).into()
+    datafusion_functions_nested::expr_fn::array_concat(exprs).into()
 }
 
 #[pyfunction]
@@ -407,12 +407,12 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
-    datafusion_functions_array::expr_fn::array_position(array.into(), element.into(), index).into()
+    datafusion_functions_nested::expr_fn::array_position(array.into(), element.into(), index).into()
 }
 
 #[pyfunction]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
-    datafusion_functions_array::expr_fn::array_slice(
+    datafusion_functions_nested::expr_fn::array_slice(
         array.into(),
         begin.into(),
         end.into(),
@@ -695,7 +695,7 @@ macro_rules! expr_fn_vec {
     };
 }
 
-/// Generates a [pyo3] wrapper for [datafusion_functions_array::expr_fn]
+/// Generates a [pyo3] wrapper for [datafusion_functions_nested::expr_fn]
 ///
 /// These functions have explicit named arguments.
 macro_rules! array_fn {
@@ -712,7 +712,7 @@ macro_rules! array_fn {
         #[doc = $DOC]
         #[pyfunction]
         fn $FUNC($($arg: PyExpr),*) -> PyExpr {
-            datafusion_functions_array::expr_fn::$FUNC($($arg.into()),*).into()
+            datafusion_functions_nested::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
 }
