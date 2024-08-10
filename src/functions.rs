@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion_expr::AggregateExt;
+use datafusion_expr::ExprFunctionExt as AggregateExt;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -31,9 +31,7 @@ use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
 use datafusion_expr::{
-    expr::{
-        find_df_window_func, AggregateFunction, AggregateFunctionDefinition, Sort, WindowFunction,
-    },
+    expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
 
@@ -638,18 +636,16 @@ fn window(
 }
 
 macro_rules! aggregate_function {
-    ($NAME: ident, $FUNC: ident) => {
+    ($NAME: ident, $FUNC: path) => {
         aggregate_function!($NAME, $FUNC, stringify!($NAME));
     };
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
+    ($NAME: ident, $FUNC: path, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
         #[pyo3(signature = (*args, distinct=false))]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
             let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
-                func_def: AggregateFunctionDefinition::BuiltIn(
-                    datafusion_expr::aggregate_function::AggregateFunction::$FUNC,
-                ),
+                func: $FUNC(),
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,
@@ -884,9 +880,9 @@ array_fn!(array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(array_agg, ArrayAgg);
-aggregate_function!(max, Max);
-aggregate_function!(min, Min);
+aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg_udaf);
+aggregate_function!(max, functions_aggregate::min_max::max_udaf);
+aggregate_function!(min, functions_aggregate::min_max::min_udaf);
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;

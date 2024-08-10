@@ -41,7 +41,7 @@ impl From<AggregateFunction> for PyAggregateFunction {
 impl Display for PyAggregateFunction {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
         let args: Vec<String> = self.aggr.args.iter().map(|expr| expr.to_string()).collect();
-        write!(f, "{}({})", self.aggr.func_def.name(), args.join(", "))
+        write!(f, "{}({})", self.aggr.func.name(), args.join(", "))
     }
 }
 
@@ -49,7 +49,7 @@ impl Display for PyAggregateFunction {
 impl PyAggregateFunction {
     /// Get the aggregate type, such as "MIN", or "MAX"
     fn aggregate_type(&self) -> String {
-        self.aggr.func_def.name().to_string()
+        self.aggr.func.name().to_string()
     }
 
     /// is this a distinct aggregate such as `COUNT(DISTINCT expr)`
