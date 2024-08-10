@@ -37,7 +37,7 @@ use datafusion_expr::{
 
 #[pyfunction]
 pub fn approx_distinct(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::approx_distinct::approx_distinct(expression.expr).into()
+    functions_aggregate::expr_fn::approx_distinct(expression.expr).into()
 }
 
 #[pyfunction]
