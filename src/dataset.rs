@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::catalog::Session;
 use pyo3::exceptions::PyValueError;
 /// Implements a Datafusion TableProvider that delegates to a PyArrow Dataset
 /// This allows us to use PyArrow Datasets as Datafusion tables while pushing down projections and filters
@@ -30,7 +31,6 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::error::{DataFusionError, Result as DFResult};
-use datafusion::execution::context::SessionState;
 use datafusion::logical_expr::TableProviderFilterPushDown;
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion_expr::Expr;
@@ -98,7 +98,7 @@ impl TableProvider for Dataset {
     /// parallelized or distributed.
     async fn scan(
         &self,
-        _ctx: &SessionState,
+        _ctx: &dyn Session,
         projection: Option<&Vec<usize>>,
         filters: &[Expr],
         // limit can be used to reduce the amount scanned
