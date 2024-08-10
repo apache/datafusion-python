@@ -29,6 +29,7 @@ from ._internal import (
 )
 from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any, Optional, Type
+from typing_extensions import deprecated
 import pyarrow as pa
 
 # The following are imported from the internal representation. We may choose to
@@ -195,12 +196,20 @@ class Expr:
         """Convert this expression into a python object if possible."""
         return self.expr.to_variant()
 
+    @deprecated("display_name() is deprecated. Use :py:meth:`~Expr.schema_name` instead")
     def display_name(self) -> str:
         """Returns the name of this expression as it should appear in a schema.
 
         This name will not include any CAST expressions.
         """
-        return self.expr.display_name()
+        return self.schema_name()
+
+    def schema_name(self) -> str:
+        """Returns the name of this expression as it should appear in a schema.
+
+        This name will not include any CAST expressions.
+        """
+        return self.expr.schema_name()
 
     def canonical_name(self) -> str:
         """Returns a complete string representation of this expression."""
