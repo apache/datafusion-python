@@ -776,7 +776,6 @@ pub enum NullTreatment {
     RESPECT_NULLS,
 }
 
-
 impl From<NullTreatment> for DFNullTreatment {
     fn from(null_treatment: NullTreatment) -> DFNullTreatment {
         match null_treatment {

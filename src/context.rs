@@ -50,9 +50,7 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{
-    SQLOptions, SessionConfig, SessionContext, TaskContext,
-};
+use datafusion::execution::context::{SQLOptions, SessionConfig, SessionContext, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
