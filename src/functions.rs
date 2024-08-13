@@ -16,6 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
+use datafusion_expr::window_function;
 use datafusion_expr::ExprFunctionExt;
 use pyo3::{prelude::*, wrap_pyfunction};
 
@@ -890,6 +891,11 @@ aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg_udaf);
 aggregate_function!(max, functions_aggregate::min_max::max_udaf);
 aggregate_function!(min, functions_aggregate::min_max::min_udaf);
 
+#[pyfunction]
+pub fn lead(arg: PyExpr, shift_offset: i64, default_value: Option<ScalarValue>) -> PyExpr {
+    window_function::lead(arg.expr, Some(shift_offset), default_value).into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1074,6 +1080,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
+
+    m.add_wrapped(wrap_pyfunction!(lead))?;
 
     Ok(())
 }

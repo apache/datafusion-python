@@ -306,6 +306,7 @@ data_test_window_functions = [
         f.window("lead", [column("b")], order_by=[f.order_by(column("b"))]),
         [5, 6, None],
     ),
+    ("lead", f.lead(column("b")).order_by(column("b").sort()).build(), [5, 6, None]),
     (
         "previous",
         f.window("lag", [column("b")], order_by=[f.order_by(column("b"))]),

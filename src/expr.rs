@@ -16,10 +16,11 @@
 // under the License.
 
 use datafusion_expr::utils::exprlist_to_fields;
-use datafusion_expr::LogicalPlan;
+use datafusion_expr::{ExprFuncBuilder, ExprFunctionExt, LogicalPlan};
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 use std::sync::Arc;
+use window::PyWindowFrame;
 
 use arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::datatypes::{DataType, Field};
@@ -32,7 +33,7 @@ use datafusion_expr::{
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
 
-use crate::common::data_type::{DataTypeMap, RexType};
+use crate::common::data_type::{DataTypeMap, NullTreatment, RexType};
 use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
@@ -281,6 +282,10 @@ impl PyExpr {
         self.expr.clone().is_null().into()
     }
 
+    pub fn is_not_null(&self) -> PyExpr {
+        self.expr.clone().is_not_null().into()
+    }
+
     pub fn cast(&self, to: PyArrowType<DataType>) -> PyExpr {
         // self.expr.cast_to() requires DFSchema to validate that the cast
         // is supported, omit that for now
@@ -509,6 +514,92 @@ impl PyExpr {
 
     pub fn column_name(&self, plan: PyLogicalPlan) -> PyResult<String> {
         self._column_name(&plan.plan()).map_err(py_runtime_err)
+    }
+
+    // Expression Function Builder functions
+
+    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+        let order_by = order_by.iter().map(|e| e.expr.clone()).collect();
+        self.expr.clone().order_by(order_by).into()
+    }
+
+    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
+        self.expr.clone().filter(filter.expr.clone()).into()
+    }
+
+    pub fn distinct(&self) -> PyExprFuncBuilder {
+        self.expr.clone().distinct().into()
+    }
+
+    pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
+        self.expr
+            .clone()
+            .null_treatment(Some(null_treatment.into()))
+            .into()
+    }
+
+    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
+        self.expr.clone().partition_by(partition_by).into()
+    }
+
+    pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
+        self.expr.clone().window_frame(window_frame.into()).into()
+    }
+}
+
+#[pyclass(name = "ExprFuncBuilder", module = "datafusion.expr", subclass)]
+#[derive(Debug, Clone)]
+pub struct PyExprFuncBuilder {
+    pub builder: ExprFuncBuilder,
+}
+
+impl From<ExprFuncBuilder> for PyExprFuncBuilder {
+    fn from(builder: ExprFuncBuilder) -> Self {
+        Self { builder }
+    }
+}
+
+#[pymethods]
+impl PyExprFuncBuilder {
+    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+        let order_by = order_by.iter().map(|e| e.expr.clone()).collect();
+        self.builder.clone().order_by(order_by).into()
+    }
+
+    pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
+        self.builder.clone().filter(filter.expr.clone()).into()
+    }
+
+    pub fn distinct(&self) -> PyExprFuncBuilder {
+        self.builder.clone().distinct().into()
+    }
+
+    pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
+        self.builder
+            .clone()
+            .null_treatment(Some(null_treatment.into()))
+            .into()
+    }
+
+    pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
+        self.builder.clone().partition_by(partition_by).into()
+    }
+
+    pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
+        self.builder
+            .clone()
+            .window_frame(window_frame.into())
+            .into()
+    }
+
+    pub fn build(&self) -> PyResult<PyExpr> {
+        self.builder
+            .clone()
+            .build()
+            .map(|expr| expr.into())
+            .map_err(|err| err.into())
     }
 }
 

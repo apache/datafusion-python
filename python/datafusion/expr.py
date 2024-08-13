@@ -355,6 +355,10 @@ class Expr:
         """Returns ``True`` if this expression is null."""
         return Expr(self.expr.is_null())
 
+    def is_not_null(self) -> Expr:
+        """Returns ``True`` if this expression is not null."""
+        return Expr(self.expr.is_not_null())
+
     def cast(self, to: pa.DataType[Any]) -> Expr:
         """Cast to a new data type."""
         return Expr(self.expr.cast(to))
@@ -404,6 +408,17 @@ class Expr:
     def column_name(self, plan: LogicalPlan) -> str:
         """Compute the output column name based on the provided logical plan."""
         return self.expr.column_name(plan)
+
+    def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
+        return ExprFuncBuilder(self.expr.order_by(list(e.expr for e in exprs)))
+
+
+class ExprFuncBuilder:
+    def __init__(self, builder: expr_internal.ExprFuncBuilder):
+        self.builder = builder
+
+    def build(self) -> Expr:
+        return Expr(self.builder.build())
 
 
 class WindowFrame:

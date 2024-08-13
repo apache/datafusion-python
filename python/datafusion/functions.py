@@ -27,6 +27,11 @@ from datafusion._internal import functions as f, common
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pyarrow as pa
+
 __all__ = [
     "abs",
     "acos",
@@ -247,6 +252,7 @@ __all__ = [
     "var_samp",
     "when",
     "window",
+    "lead",
 ]
 
 
@@ -1022,12 +1028,12 @@ def struct(*args: Expr) -> Expr:
     return Expr(f.struct(*args))
 
 
-def named_struct(name_pairs: list[(str, Expr)]) -> Expr:
+def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
     """Returns a struct with the given names and arguments pairs."""
-    name_pairs = [[Expr.literal(pair[0]), pair[1]] for pair in name_pairs]
+    name_pair_exprs = [[Expr.literal(pair[0]), pair[1]] for pair in name_pairs]
 
     # flatten
-    name_pairs = [x.expr for xs in name_pairs for x in xs]
+    name_pairs = [x.expr for xs in name_pair_exprs for x in xs]
     return Expr(f.named_struct(*name_pairs))
 
 
@@ -1748,3 +1754,7 @@ def bool_and(arg: Expr, distinct: bool = False) -> Expr:
 def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean OR of the arguement."""
     return Expr(f.bool_or(arg.expr, distinct=distinct))
+
+
+def lead(arg: Expr, shift_offset: int = 1, default_value: pa.Scalar | None = None):
+    return Expr(f.lead(arg.expr, shift_offset, default_value))
