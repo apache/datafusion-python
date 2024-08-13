@@ -533,6 +533,14 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     })
 }
 
+/// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
+#[pyfunction]
+fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
+    Ok(PyCaseBuilder {
+        case_builder: datafusion_expr::when(when.expr, then.expr),
+    })
+}
+
 /// Helper function to find the appropriate window function.
 ///
 /// Search procedure:
@@ -910,6 +918,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(char_length))?;
     m.add_wrapped(wrap_pyfunction!(coalesce))?;
     m.add_wrapped(wrap_pyfunction!(case))?;
+    m.add_wrapped(wrap_pyfunction!(when))?;
     m.add_wrapped(wrap_pyfunction!(col))?;
     m.add_wrapped(wrap_pyfunction!(concat_ws))?;
     m.add_wrapped(wrap_pyfunction!(concat))?;
