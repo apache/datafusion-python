@@ -44,6 +44,7 @@ classifier = [
 ]
 dependencies = [
     "pyarrow>=11.0.0",
+    "typing-extensions",
 ]
 
 [project.urls]
