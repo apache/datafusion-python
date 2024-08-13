@@ -23,7 +23,7 @@ See :ref:`Expressions` in the online documentation for more details.
 from __future__ import annotations
 
 from ._internal import expr as expr_internal, LogicalPlan
-from datafusion.common import RexType, DataTypeMap
+from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any
 import pyarrow as pa
 
@@ -410,14 +410,98 @@ class Expr:
         return self.expr.column_name(plan)
 
     def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
+        """Set the ordering for a window or aggregate function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
         return ExprFuncBuilder(self.expr.order_by(list(e.expr for e in exprs)))
+
+    def filter(self, filter: Expr) -> ExprFuncBuilder:
+        """Filter an aggregate function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
+        return ExprFuncBuilder(self.expr.filter(filter.expr))
+
+    def distinct(self) -> ExprFuncBuilder:
+        """Only evaluate distinct values for an aggregate function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
+        return ExprFuncBuilder(self.expr.distinct())
+
+    def null_treatment(self, null_treatment: NullTreatment) -> ExprFuncBuilder:
+        """Set the treatment for ``null`` values for a window or aggregate function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
+        return ExprFuncBuilder(self.expr.null_treatment(null_treatment))
+
+    def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
+        """Set the partitioning for a window function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
+        return ExprFuncBuilder(
+            self.expr.partition_by(list(e.expr for e in partition_by))
+        )
+
+    def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
+        """Set the frame fora  window function.
+
+        This function will create an :py:class:`ExprFuncBuilder` that can be used to
+        set parameters for either window or aggregate functions. If used on any other
+        type of expression, an error will be generated when ``build()`` is called.
+        """
+        return ExprFuncBuilder(self.expr.window_frame(window_frame))
 
 
 class ExprFuncBuilder:
     def __init__(self, builder: expr_internal.ExprFuncBuilder):
         self.builder = builder
 
+    def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
+        """Set the ordering for a window or aggregate function.
+
+        Values given in ``exprs`` must be sort expressions. You can convert any other
+        expression to a sort expression using `.sort()`.
+        """
+        return ExprFuncBuilder(self.builder.order_by(list(e.expr for e in exprs)))
+
+    def filter(self, filter: Expr) -> ExprFuncBuilder:
+        """Filter values during aggregation."""
+        return ExprFuncBuilder(self.builder.filter(filter.expr))
+
+    def distinct(self) -> ExprFuncBuilder:
+        """Only evaluate distinct values during aggregation."""
+        return ExprFuncBuilder(self.builder.distinct())
+
+    def null_treatment(self, null_treatment: NullTreatment) -> ExprFuncBuilder:
+        """Set how nulls are treated for either window or aggregate functions."""
+        return ExprFuncBuilder(self.builder.null_treatment(null_treatment))
+
+    def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
+        """Set partitioning for window functions."""
+        return ExprFuncBuilder(
+            self.builder.partition_by(list(e.expr for e in partition_by))
+        )
+
+    def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
+        """Set window frame for window functions."""
+        return ExprFuncBuilder(self.builder.window_frame(window_frame))
+
     def build(self) -> Expr:
+        """Create an expression from a Function Builder."""
         return Expr(self.builder.build())
 
 
