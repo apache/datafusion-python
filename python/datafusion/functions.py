@@ -1712,23 +1712,13 @@ def first_value(
     )
 
 
-def last_value(
-    arg: Expr,
-    distinct: bool = False,
-    filter: bool = None,
-    order_by: Expr | None = None,
-    null_treatment: common.NullTreatment | None = None,
-) -> Expr:
-    """Returns the last value in a group of values."""
-    return Expr(
-        f.last_value(
-            arg.expr,
-            distinct=distinct,
-            filter=filter,
-            order_by=order_by,
-            null_treatment=null_treatment,
-        )
-    )
+def last_value(arg: Expr) -> Expr:
+    """Returns the last value in a group of values.
+
+    To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
+    ``.filter()``, or ``.null_treatment()``.
+    """
+    return Expr(f.last_value(arg.expr))
 
 
 def bit_and(arg: Expr, distinct: bool = False) -> Expr:
@@ -1757,4 +1747,5 @@ def bool_or(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def lead(arg: Expr, shift_offset: int = 1, default_value: pa.Scalar | None = None):
+    """Create a lead window function."""
     return Expr(f.lead(arg.expr, shift_offset, default_value))

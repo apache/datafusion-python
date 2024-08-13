@@ -349,32 +349,8 @@ pub fn first_value(
 }
 
 #[pyfunction]
-pub fn last_value(
-    expr: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
-
-    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
-    let order_by = order_by
-        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let mut builder = agg_fn.order_by(order_by);
-
-    if distinct {
-        builder = builder.distinct();
-    }
-
-    if let Some(filter) = filter {
-        builder = builder.filter(filter.expr);
-    }
-
-    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
-
-    Ok(builder.build()?.into())
+pub fn last_value(expr: PyExpr) -> PyExpr {
+    functions_aggregate::expr_fn::last_value(vec![expr.expr]).into()
 }
 
 #[pyfunction]
