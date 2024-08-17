@@ -39,7 +39,7 @@ rand = "0.8"
 pyo3 = { version = "0.21", features = ["extension-module", "abi3", "abi3-py38"] }
 arrow = { version = "52", feature = ["pyarrow"] }
 datafusion = { version = "40.0.0", features = ["pyarrow", "avro", "unicode_expressions"] }
-datafusion-common = { version = "40.0.0", features = ["pyarrow"] }
+datafusion-common = { version = "41.0.0", features = ["pyarrow"] }
 datafusion-expr = "40.0.0"
 datafusion-functions-array = "40.0.0"
 datafusion-optimizer = "40.0.0"
