@@ -169,3 +169,26 @@ def test_expr_to_variant():
         == '[Expr(Utf8("dfa")), Expr(Utf8("ad")), Expr(Utf8("dfre")), Expr(Utf8("vsa"))]'
     )
     assert not variant.negated()
+
+
+def test_expr_getitem() -> None:
+    ctx = SessionContext()
+    data = {
+        "array_values": [[1, 2, 3], [4, 5], [6], []],
+        "struct_values": [
+            {"name": "Alice", "age": 15},
+            {"name": "Bob", "age": 14},
+            {"name": "Charlie", "age": 13},
+            {"name": None, "age": 12},
+        ],
+    }
+    df = ctx.from_pydict(data, name="table1")
+
+    names = df.select(col("struct_values")["name"].alias("name")).collect()
+    names = [r.as_py() for rs in names for r in rs["name"]]
+
+    array_values = df.select(col("array_values")[2].alias("value")).collect()
+    array_values = [r.as_py() for rs in array_values for r in rs["value"]]
+
+    assert names == ["Alice", "Bob", "Charlie", None]
+    assert array_values == [2, 5, None, None]
