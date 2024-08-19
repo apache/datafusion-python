@@ -883,7 +883,7 @@ class SessionContext:
 
     def read_csv(
         self,
-        path: str | pathlib.Path,
+        path: str | pathlib.Path | list[str] | list[pathlib.Path],
         schema: pyarrow.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
@@ -914,9 +914,12 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+
+        path = [str(p) for p in path] if isinstance(path, list) else str(path)
+
         return DataFrame(
             self.ctx.read_csv(
-                str(path),
+                path,
                 schema,
                 has_header,
                 delimiter,
