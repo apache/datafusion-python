@@ -1003,7 +1003,7 @@ def array(*args: Expr) -> Expr:
 
     This is an alias for :py:func:`make_array`.
     """
-    return make_array(args)
+    return make_array(*args)
 
 
 def range(start: Expr, stop: Expr, step: Expr) -> Expr:
