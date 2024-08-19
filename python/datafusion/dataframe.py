@@ -72,6 +72,9 @@ class DataFrame:
         """
         return self.df.__repr__()
 
+    def _repr_html_(self) -> str:
+        return self.df._repr_html_()
+
     def describe(self) -> DataFrame:
         """Return the statistics for this DataFrame.
 

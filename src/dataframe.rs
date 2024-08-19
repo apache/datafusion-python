@@ -23,6 +23,7 @@ use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
+use arrow::util::display::{ArrayFormatter, FormatOptions};
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -92,6 +93,51 @@ impl PyDataFrame {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
+    }
+
+    fn _repr_html_(&self, py: Python) -> PyResult<String> {
+        let mut html_str = "<table border='1'>\n".to_string();
+
+        let df = self.df.as_ref().clone().limit(0, Some(10))?;
+        let batches = wait_for_future(py, df.collect())?;
+
+        if batches.is_empty() {
+            html_str.push_str("</table>\n");
+            return Ok(html_str);
+        }
+
+        let schema = batches[0].schema();
+
+        let mut header = Vec::new();
+        for field in schema.fields() {
+            header.push(format!("<th>{}</td>", field.name()));
+        }
+        let header_str = header.join("");
+        html_str.push_str(&format!("<tr>{}</tr>\n", header_str));
+
+        for batch in batches {
+            let formatters = batch
+                .columns()
+                .iter()
+                .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
+                .map(|c| {
+                    c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
+            for row in 0..batch.num_rows() {
+                let mut cells = Vec::new();
+                for formatter in &formatters {
+                    cells.push(format!("<td>{}</td>", formatter.value(row)));
+                }
+                let row_str = cells.join("");
+                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
+            }
+        }
+
+        html_str.push_str("</table>\n");
+
+        Ok(html_str)
     }
 
     /// Calculate summary statistics for a DataFrame
