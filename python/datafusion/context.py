@@ -445,7 +445,7 @@ class SessionContext:
             df = ctx.read_csv("data.csv")
         """
         config = config.config_internal if config is not None else None
-        runtime = runtime.config_internal if config is not None else None
+        runtime = runtime.config_internal if runtime is not None else None
 
         self.ctx = SessionContextInternal(config, runtime)
 
