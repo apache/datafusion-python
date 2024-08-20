@@ -18,8 +18,8 @@
 Configuration
 =============
 
-Let's look at how we can configure DataFusion. When creating a :code:`SessionContext`, you can pass in
-a :code:`SessionConfig` and :code:`RuntimeConfig` object. These two cover a wide range of options.
+Let's look at how we can configure DataFusion. When creating a :py:class:`~datafusion.context.SessionContext`, you can pass in
+a :py:class:`~datafusion.context.SessionConfig` and :py:class:`~datafusion.context.RuntimeConfig` object. These two cover a wide range of options.
 
 .. code-block:: python
 
@@ -47,5 +47,5 @@ a :code:`SessionConfig` and :code:`RuntimeConfig` object. These two cover a wide
     print(ctx)
 
 
-You can read more about available :code:`SessionConfig` options `here <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
-and about :code:`RuntimeConfig` options `here <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html>`_.
+You can read more about available :py:class:`~datafusion.context.SessionConfig` options in the `rust DataFusion Configuration guide <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
+and about :code:`RuntimeConfig` options in the rust `online API documentation <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html>`_.

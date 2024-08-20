@@ -15,6 +15,8 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _user_guide_concepts:
+
 Concepts
 ========
 
@@ -52,7 +54,7 @@ The first statement group:
     # create a context
     ctx = datafusion.SessionContext()
 
-creates a :code:`SessionContext`, that is, the main interface for executing queries with DataFusion. It maintains the state
+creates a :py:class:`~datafusion.context.SessionContext`, that is, the main interface for executing queries with DataFusion. It maintains the state
 of the connection between a user and an instance of the DataFusion engine. Additionally it provides the following functionality:
 
 - Create a DataFrame from a CSV or Parquet data source.
@@ -72,9 +74,9 @@ The second statement group creates a :code:`DataFrame`,
     df = ctx.create_dataframe([[batch]])
 
 A DataFrame refers to a (logical) set of rows that share the same column names, similar to a `Pandas DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_.
-DataFrames are typically created by calling a method on :code:`SessionContext`, such as :code:`read_csv`, and can then be modified by
-calling the transformation methods, such as :meth:`.DataFrame.filter`, :meth:`.DataFrame.select`, :meth:`.DataFrame.aggregate`,
-and :meth:`.DataFrame.limit` to build up a query definition.
+DataFrames are typically created by calling a method on :py:class:`~datafusion.context.SessionContext`, such as :code:`read_csv`, and can then be modified by
+calling the transformation methods, such as :py:func:`~datafusion.dataframe.DataFrame.filter`, :py:func:`~datafusion.dataframe.DataFrame.select`, :py:func:`~datafusion.dataframe.DataFrame.aggregate`,
+and :py:func:`~datafusion.dataframe.DataFrame.limit` to build up a query definition.
 
 The third statement uses :code:`Expressions` to build up a query definition.
 
@@ -85,5 +87,5 @@ The third statement uses :code:`Expressions` to build up a query definition.
         col("a") - col("b"),
     )
 
-Finally the :code:`collect` method converts the logical plan represented by the DataFrame into a physical plan and execute it,
+Finally the :py:func:`~datafusion.dataframe.DataFrame.collect` method converts the logical plan represented by the DataFrame into a physical plan and execute it,
 collecting all results into a list of `RecordBatch <https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html>`_.

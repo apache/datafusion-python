@@ -1,0 +1,987 @@
+datafusion
+==========
+
+.. py:module:: datafusion
+
+.. autoapi-nested-parse::
+
+   DataFusion python package.
+
+   This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
+   See https://datafusion.apache.org/python for more information.
+
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/datafusion/input/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/datafusion/catalog/index
+   /autoapi/datafusion/context/index
+   /autoapi/datafusion/dataframe/index
+   /autoapi/datafusion/expr/index
+   /autoapi/datafusion/functions/index
+   /autoapi/datafusion/object_store/index
+   /autoapi/datafusion/record_batch/index
+   /autoapi/datafusion/substrait/index
+   /autoapi/datafusion/udf/index
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   datafusion.DFSchema
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.Accumulator
+   datafusion.AggregateUDF
+   datafusion.Catalog
+   datafusion.Database
+   datafusion.Expr
+   datafusion.RecordBatch
+   datafusion.RecordBatchStream
+   datafusion.RuntimeConfig
+   datafusion.SQLOptions
+   datafusion.ScalarUDF
+   datafusion.SessionConfig
+   datafusion.Table
+   datafusion.WindowFrame
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   datafusion.col
+   datafusion.column
+   datafusion.lit
+   datafusion.literal
+
+
+Package Contents
+----------------
+
+.. py:class:: Accumulator
+
+   Defines how an :py:class:`AggregateUDF` accumulates values.
+
+
+   .. py:method:: evaluate() -> pyarrow.Scalar
+      :abstractmethod:
+
+
+      Return the resultant value.
+
+
+
+   .. py:method:: merge(states: List[pyarrow.Array]) -> None
+      :abstractmethod:
+
+
+      Merge a set of states.
+
+
+
+   .. py:method:: state() -> List[pyarrow.Scalar]
+      :abstractmethod:
+
+
+      Return the current state.
+
+
+
+   .. py:method:: update(values: pyarrow.Array) -> None
+      :abstractmethod:
+
+
+      Evalute an array of values and update state.
+
+
+
+.. py:class:: AggregateUDF(name: str | None, accumulator: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+
+   Class for performing scalar user defined functions (UDF).
+
+   Aggregate UDFs operate on a group of rows and return a single value. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user defined aggregate function (UDAF).
+
+   See :py:func:`udaf` for a convenience function and arugment
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDAF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udaf(accum: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+      :staticmethod:
+
+
+      Create a new User Defined Aggregate Function.
+
+      The accumulator function must be callable and implement :py:class:`Accumulator`.
+
+      :param accum: The accumulator python function.
+      :param input_types: The data types of the arguments to ``accum``.
+      :param return_type: The data type of the return value.
+      :param state_type: The data types of the intermediate accumulation.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user defined aggregate function, which can be used in either data
+                aggregation or window function calls.
+
+
+
+   .. py:attribute:: _udf
+
+
+.. py:class:: Catalog(catalog: datafusion._internal.Catalog)
+
+   DataFusion data catalog.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: database(name: str = 'public') -> Database
+
+      Returns the database with the given ``name`` from this catalog.
+
+
+
+   .. py:method:: names() -> list[str]
+
+      Returns the list of databases in this catalog.
+
+
+
+   .. py:attribute:: catalog
+
+
+.. py:class:: Database(db: datafusion._internal.Database)
+
+   DataFusion Database.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: names() -> set[str]
+
+      Returns the list of all tables in this database.
+
+
+
+   .. py:method:: table(name: str) -> Table
+
+      Return the table with the given ``name`` from this database.
+
+
+
+   .. py:attribute:: db
+
+
+.. py:class:: Expr(expr: datafusion._internal.expr.Expr)
+
+   Expression object.
+
+   Expressions are one of the core concepts in DataFusion. See
+   :ref:`Expressions` in the online documentation for more information.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __add__(rhs: Any) -> Expr
+
+      Addition operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __and__(rhs: Expr) -> Expr
+
+      Logical AND.
+
+
+
+   .. py:method:: __eq__(rhs: Any) -> Expr
+
+      Equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __ge__(rhs: Any) -> Expr
+
+      Greater than or equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __getitem__(key: str) -> Expr
+
+      For struct data types, return the field indicated by ``key``.
+
+
+
+   .. py:method:: __gt__(rhs: Any) -> Expr
+
+      Greater than.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __invert__() -> Expr
+
+      Binary not (~).
+
+
+
+   .. py:method:: __le__(rhs: Any) -> Expr
+
+      Less than or equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __lt__(rhs: Any) -> Expr
+
+      Less than.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __mod__(rhs: Any) -> Expr
+
+      Modulo operator (%).
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __mul__(rhs: Any) -> Expr
+
+      Multiplication operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __ne__(rhs: Any) -> Expr
+
+      Not equal to.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __or__(rhs: Expr) -> Expr
+
+      Logical OR.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Generate a string representation of this expression.
+
+
+
+   .. py:method:: __richcmp__(other: Expr, op: int) -> Expr
+
+      Comparison operator.
+
+
+
+   .. py:method:: __sub__(rhs: Any) -> Expr
+
+      Subtraction operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: __truediv__(rhs: Any) -> Expr
+
+      Division operator.
+
+      Accepts either an expression or any valid PyArrow scalar literal value.
+
+
+
+   .. py:method:: alias(name: str) -> Expr
+
+      Assign a name to the expression.
+
+
+
+   .. py:method:: canonical_name() -> str
+
+      Returns a complete string representation of this expression.
+
+
+
+   .. py:method:: cast(to: pyarrow.DataType[Any]) -> Expr
+
+      Cast to a new data type.
+
+
+
+   .. py:method:: column(value: str) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a column.
+
+
+
+   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+
+      Compute the output column name based on the provided logical plan.
+
+
+
+   .. py:method:: display_name() -> str
+
+      Returns the name of this expression as it should appear in a schema.
+
+      This name will not include any CAST expressions.
+
+
+
+   .. py:method:: is_null() -> Expr
+
+      Returns ``True`` if this expression is null.
+
+
+
+   .. py:method:: literal(value: Any) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a scalar value.
+
+      ``value`` must be a valid PyArrow scalar value or easily castable to one.
+
+
+
+   .. py:method:: python_value() -> Any
+
+      Extracts the Expr value into a PyObject.
+
+      This is only valid for literal expressions.
+
+      :returns: Python object representing literal value of the expression.
+
+
+
+   .. py:method:: rex_call_operands() -> list[Expr]
+
+      Return the operands of the expression based on it's variant type.
+
+      Row expressions, Rex(s), operate on the concept of operands. Different
+      variants of Expressions, Expr(s), store those operands in different
+      datastructures. This function examines the Expr variant and returns
+      the operands to the calling logic.
+
+
+
+   .. py:method:: rex_call_operator() -> str
+
+      Extracts the operator associated with a row expression type call.
+
+
+
+   .. py:method:: rex_type() -> datafusion.common.RexType
+
+      Return the Rex Type of this expression.
+
+      A Rex (Row Expression) specifies a single row of data.That specification
+      could include user defined functions or types. RexType identifies the
+      row as one of the possible valid ``RexType``.
+
+
+
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> Expr
+
+      Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
+
+      :param ascending: If true, sort in ascending order.
+      :param nulls_first: Return null values first.
+
+
+
+   .. py:method:: to_variant() -> Any
+
+      Convert this expression into a python object if possible.
+
+
+
+   .. py:method:: types() -> datafusion.common.DataTypeMap
+
+      Return the ``DataTypeMap``.
+
+      :returns: DataTypeMap which represents the PythonType, Arrow DataType, and
+                SqlType Enum which this expression represents.
+
+
+
+   .. py:method:: variant_name() -> str
+
+      Returns the name of the Expr variant.
+
+      Ex: ``IsNotNull``, ``Literal``, ``BinaryExpr``, etc
+
+
+
+   .. py:attribute:: __radd__
+
+
+   .. py:attribute:: __rand__
+
+
+   .. py:attribute:: __rmod__
+
+
+   .. py:attribute:: __rmul__
+
+
+   .. py:attribute:: __ror__
+
+
+   .. py:attribute:: __rsub__
+
+
+   .. py:attribute:: __rtruediv__
+
+
+   .. py:attribute:: expr
+
+
+.. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
+
+   This class is essentially a wrapper for :py:class:`pyarrow.RecordBatch`.
+
+   This constructor is generally not called by the end user.
+
+   See the :py:class:`RecordBatchStream` iterator for generating this class.
+
+
+   .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
+
+      Convert to :py:class:`pyarrow.RecordBatch`.
+
+
+
+   .. py:attribute:: record_batch
+
+
+.. py:class:: RecordBatchStream(record_batch_stream: datafusion._internal.RecordBatchStream)
+
+   This class represents a stream of record batches.
+
+   These are typically the result of a
+   :py:func:`~datafusion.dataframe.DataFrame.execute_stream` operation.
+
+   This constructor is typically not called by the end user.
+
+
+   .. py:method:: __iter__() -> typing_extensions.Self
+
+      Iterator function.
+
+
+
+   .. py:method:: __next__() -> RecordBatch
+
+      Iterator function.
+
+
+
+   .. py:method:: next() -> RecordBatch | None
+
+      See :py:func:`__next__` for the iterator function.
+
+
+
+   .. py:attribute:: rbs
+
+
+.. py:class:: RuntimeConfig
+
+   Runtime configuration options.
+
+   Create a new :py:class:`RuntimeConfig` with default values.
+
+
+   .. py:method:: with_disk_manager_disabled() -> RuntimeConfig
+
+      Disable the disk manager, attempts to create temporary files will error.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_disk_manager_os() -> RuntimeConfig
+
+      Use the operating system's temporary directory for disk manager.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_disk_manager_specified(*paths: str | pathlib.Path) -> RuntimeConfig
+
+      Use the specified paths for the disk manager's temporary files.
+
+      :param paths: Paths to use for the disk manager's temporary files.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_fair_spill_pool(size: int) -> RuntimeConfig
+
+      Use a fair spill pool with the specified size.
+
+      This pool works best when you know beforehand the query has multiple spillable
+      operators that will likely all need to spill. Sometimes it will cause spills
+      even when there was sufficient memory (reserved for other operators) to avoid
+      doing so::
+
+          ┌───────────────────────z──────────────────────z───────────────┐
+          │                       z                      z               │
+          │                       z                      z               │
+          │       Spillable       z       Unspillable    z     Free      │
+          │        Memory         z        Memory        z    Memory     │
+          │                       z                      z               │
+          │                       z                      z               │
+          └───────────────────────z──────────────────────z───────────────┘
+
+      :param size: Size of the memory pool in bytes.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+      Examples usage::
+
+          config = RuntimeConfig().with_fair_spill_pool(1024)
+
+
+
+   .. py:method:: with_greedy_memory_pool(size: int) -> RuntimeConfig
+
+      Use a greedy memory pool with the specified size.
+
+      This pool works well for queries that do not need to spill or have a single
+      spillable operator. See :py:func:`with_fair_spill_pool` if there are
+      multiple spillable operators that all will spill.
+
+      :param size: Size of the memory pool in bytes.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+      Example usage::
+
+          config = RuntimeConfig().with_greedy_memory_pool(1024)
+
+
+
+   .. py:method:: with_temp_file_path(path: str | pathlib.Path) -> RuntimeConfig
+
+      Use the specified path to create any needed temporary files.
+
+      :param path: Path to use for temporary files.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+      Example usage::
+
+          config = RuntimeConfig().with_temp_file_path("/tmp")
+
+
+
+   .. py:method:: with_unbounded_memory_pool() -> RuntimeConfig
+
+      Use an unbounded memory pool.
+
+      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+
+
+
+   .. py:attribute:: config_internal
+
+
+.. py:class:: SQLOptions
+
+   Options to be used when performing SQL queries.
+
+   Create a new :py:class:`SQLOptions` with default values.
+
+   The default values are:
+   - DDL commands are allowed
+   - DML commands are allowed
+   - Statements are allowed
+
+
+   .. py:method:: with_allow_ddl(allow: bool = True) -> SQLOptions
+
+      Should DDL (Data Definition Language) commands be run?
+
+      Examples of DDL commands include ``CREATE TABLE`` and ``DROP TABLE``.
+
+      :param allow: Allow DDL commands to be run.
+
+      :returns: A new :py:class:`SQLOptions` object with the updated setting.
+
+      Example usage::
+
+          options = SQLOptions().with_allow_ddl(True)
+
+
+
+   .. py:method:: with_allow_dml(allow: bool = True) -> SQLOptions
+
+      Should DML (Data Manipulation Language) commands be run?
+
+      Examples of DML commands include ``INSERT INTO`` and ``DELETE``.
+
+      :param allow: Allow DML commands to be run.
+
+      :returns: A new :py:class:`SQLOptions` object with the updated setting.
+
+      Example usage::
+
+          options = SQLOptions().with_allow_dml(True)
+
+
+
+   .. py:method:: with_allow_statements(allow: bool = True) -> SQLOptions
+
+      Should statements such as ``SET VARIABLE`` and ``BEGIN TRANSACTION`` be run?
+
+      :param allow: Allow statements to be run.
+
+      :returns: py:class:SQLOptions` object with the updated setting.
+      :rtype: A new
+
+      Example usage::
+
+          options = SQLOptions().with_allow_statements(True)
+
+
+
+   .. py:attribute:: options_internal
+
+
+.. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+
+   Class for performing scalar user defined functions (UDF).
+
+   Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
+   operating on a group of rows.
+
+   Instantiate a scalar user defined function (UDF).
+
+   See helper method :py:func:`udf` for argument details.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
+      :staticmethod:
+
+
+      Create a new User Defined Function.
+
+      :param func: A callable python function.
+      :param input_types: The data types of the arguments to ``func``. This list
+                          must be of the same length as the number of arguments.
+      :param return_type: The data type of the return value from the python
+                          function.
+      :param volatility: See ``Volatility`` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns:
+
+                A user defined aggregate function, which can be used in either data
+                    aggregation or window function calls.
+
+
+
+   .. py:attribute:: _udf
+
+
+.. py:class:: SessionConfig(config_options: dict[str, str] | None = None)
+
+   Session configuration options.
+
+   Create a new :py:class:`SessionConfig` with the given configuration options.
+
+   :param config_options: Configuration options.
+
+
+   .. py:method:: set(key: str, value: str) -> SessionConfig
+
+      Set a configuration option.
+
+      Args:
+      key: Option key.
+      value: Option value.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_batch_size(batch_size: int) -> SessionConfig
+
+      Customize batch size.
+
+      :param batch_size: Batch size.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_create_default_catalog_and_schema(enabled: bool = True) -> SessionConfig
+
+      Control if the default catalog and schema will be automatically created.
+
+      :param enabled: Whether the default catalog and schema will be
+                      automatically created.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_default_catalog_and_schema(catalog: str, schema: str) -> SessionConfig
+
+      Select a name for the default catalog and shcema.
+
+      :param catalog: Catalog name.
+      :param schema: Schema name.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_information_schema(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the inclusion of ``information_schema`` virtual tables.
+
+      :param enabled: Whether to include ``information_schema`` virtual tables.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_parquet_pruning(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of pruning predicate for parquet readers.
+
+      Pruning predicates will enable the reader to skip row groups.
+
+      :param enabled: Whether to use pruning predicate for parquet readers.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_aggregations(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of repartitioning for aggregations.
+
+      Enabling this improves parallelism.
+
+      :param enabled: Whether to use repartitioning for aggregations.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_file_min_size(size: int) -> SessionConfig
+
+      Set minimum file range size for repartitioning scans.
+
+      :param size: Minimum file range size.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_file_scans(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of repartitioning for file scans.
+
+      :param enabled: Whether to use repartitioning for file scans.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_joins(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of repartitioning for joins to improve parallelism.
+
+      :param enabled: Whether to use repartitioning for joins.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_sorts(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of repartitioning for window functions.
+
+      This may improve parallelism.
+
+      :param enabled: Whether to use repartitioning for window functions.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_repartition_windows(enabled: bool = True) -> SessionConfig
+
+      Enable or disable the use of repartitioning for window functions.
+
+      This may improve parallelism.
+
+      :param enabled: Whether to use repartitioning for window functions.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:method:: with_target_partitions(target_partitions: int) -> SessionConfig
+
+      Customize the number of target partitions for query execution.
+
+      Increasing partitions can increase concurrency.
+
+      :param target_partitions: Number of target partitions.
+
+      :returns: A new :py:class:`SessionConfig` object with the updated setting.
+
+
+
+   .. py:attribute:: config_internal
+
+
+.. py:class:: Table(table: datafusion._internal.Table)
+
+   DataFusion table.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: schema() -> pyarrow.Schema
+
+      Returns the schema associated with this table.
+
+
+
+   .. py:property:: kind
+      :type: str
+
+      Returns the kind of table.
+
+
+   .. py:attribute:: table
+
+
+.. py:class:: WindowFrame(units: str, start_bound: int | None, end_bound: int | None)
+
+   Defines a window frame for performing window operations.
+
+   Construct a window frame using the given parameters.
+
+   :param units: Should be one of ``rows``, ``range``, or ``groups``.
+   :param start_bound: Sets the preceeding bound. Must be >= 0. If none, this
+                       will be set to unbounded. If unit type is ``groups``, this
+                       parameter must be set.
+   :param end_bound: Sets the following bound. Must be >= 0. If none, this
+                     will be set to unbounded. If unit type is ``groups``, this
+                     parameter must be set.
+
+
+   .. py:method:: get_frame_units() -> str
+
+      Returns the window frame units for the bounds.
+
+
+
+   .. py:method:: get_lower_bound() -> WindowFrameBound
+
+      Returns starting bound.
+
+
+
+   .. py:method:: get_upper_bound()
+
+      Returns end bound.
+
+
+
+   .. py:attribute:: window_frame
+
+
+.. py:function:: col(value: str)
+
+   Create a column expression.
+
+
+.. py:function:: column(value: str)
+
+   Create a column expression.
+
+
+.. py:function:: lit(value)
+
+   Create a literal expression.
+
+
+.. py:function:: literal(value)
+
+   Create a literal expression.
+
+
+.. py:data:: DFSchema
+

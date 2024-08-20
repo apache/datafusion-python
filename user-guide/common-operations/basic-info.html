@@ -24,6 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -225,7 +226,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../api.html">
+  <a class="reference internal" href="../../autoapi/index.html">
    API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -235,8 +236,8 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../api/dataframe.html">
-     DataFrame
+    <a class="reference internal" href="../../autoapi/datafusion/index.html">
+     datafusion
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
     <label for="toctree-checkbox-4">
@@ -244,87 +245,71 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.DataFrame.html">
-       datafusion.DataFrame
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
+       datafusion.input
       </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../api/execution_context.html">
-     SessionContext
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.SessionConfig.html">
-       datafusion.SessionConfig
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.RuntimeConfig.html">
-       datafusion.RuntimeConfig
-      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.SessionContext.html">
-       datafusion.SessionContext
+      <a class="reference internal" href="../../autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../api/expression.html">
-     Expr
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.Expr.html">
-       datafusion.Expr
+      <a class="reference internal" href="../../autoapi/datafusion/context/index.html">
+       datafusion.context
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../api/functions.html">
-     Functions
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-    <label for="toctree-checkbox-7">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../../api/object_store.html">
-     ObjectStore
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
-    <label for="toctree-checkbox-8">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../../generated/datafusion.object_store.object_store.html">
-       datafusion.object_store.object_store
+      <a class="reference internal" href="../../autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/udf/index.html">
+       datafusion.udf
       </a>
      </li>
     </ul>
@@ -357,13 +342,6 @@
               
               <div class="toc-item">
                 
-
-<div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/user-guide/common-operations/basic-info.rst">
-        <i class="fas fa-pencil-alt"></i> Edit this page
-    </a>
-</div>
-
               </div>
               
             
@@ -401,27 +379,27 @@
 <span class="o">+-----+---------+--------+--------+</span>
 <span class="o">|</span> <span class="n">nrs</span> <span class="o">|</span> <span class="n">names</span>   <span class="o">|</span> <span class="n">random</span> <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
 <span class="o">+-----+---------+--------+--------+</span>
-<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span>  <span class="o">|</span> <span class="mi">490</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>    <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>   <span class="o">|</span> <span class="n">java</span>    <span class="o">|</span> <span class="mi">963</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">4</span>   <span class="o">|</span> <span class="n">haskell</span> <span class="o">|</span> <span class="mi">734</span>    <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">5</span>   <span class="o">|</span> <span class="n">go</span>      <span class="o">|</span> <span class="mi">322</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span>  <span class="o">|</span> <span class="mi">97</span>     <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>    <span class="o">|</span> <span class="mi">46</span>     <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">3</span>   <span class="o">|</span> <span class="n">java</span>    <span class="o">|</span> <span class="mi">344</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">4</span>   <span class="o">|</span> <span class="n">haskell</span> <span class="o">|</span> <span class="mi">855</span>    <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">5</span>   <span class="o">|</span> <span class="n">go</span>      <span class="o">|</span> <span class="mi">11</span>     <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
 <span class="o">+-----+---------+--------+--------+</span>
 </pre></div>
 </div>
-<p>Use <a class="reference internal" href="../../generated/datafusion.DataFrame.html#datafusion.DataFrame.limit" title="datafusion.DataFrame.limit"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.limit()</span></code></a> to view the top rows of the frame:</p>
+<p>Use <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit" title="datafusion.dataframe.DataFrame.limit"><code class="xref py py-func docutils literal notranslate"><span class="pre">limit()</span></code></a> to view the top rows of the frame:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+-----+--------+--------+--------+</span>
 <span class="o">|</span> <span class="n">nrs</span> <span class="o">|</span> <span class="n">names</span>  <span class="o">|</span> <span class="n">random</span> <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
 <span class="o">+-----+--------+--------+--------+</span>
-<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span> <span class="o">|</span> <span class="mi">490</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>   <span class="o">|</span> <span class="mi">1</span>      <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span> <span class="o">|</span> <span class="mi">97</span>     <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>   <span class="o">|</span> <span class="mi">46</span>     <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
 <span class="o">+-----+--------+--------+--------+</span>
 </pre></div>
 </div>
-<p>Display the columns of the DataFrame using <a class="reference internal" href="../../generated/datafusion.DataFrame.html#datafusion.DataFrame.schema" title="datafusion.DataFrame.schema"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.schema()</span></code></a>:</p>
+<p>Display the columns of the DataFrame using <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.schema" title="datafusion.dataframe.DataFrame.schema"><code class="xref py py-func docutils literal notranslate"><span class="pre">schema()</span></code></a>:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">schema</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
 <span class="n">nrs</span><span class="p">:</span> <span class="n">int64</span>
@@ -430,33 +408,33 @@
 <span class="n">groups</span><span class="p">:</span> <span class="n">string</span>
 </pre></div>
 </div>
-<p>The method <a class="reference internal" href="../../generated/datafusion.DataFrame.html#datafusion.DataFrame.to_pandas" title="datafusion.DataFrame.to_pandas"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.to_pandas()</span></code></a> uses pyarrow to convert to pandas DataFrame, by collecting the batches,
+<p>The method <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pandas" title="datafusion.dataframe.DataFrame.to_pandas"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_pandas()</span></code></a> uses pyarrow to convert to pandas DataFrame, by collecting the batches,
 passing them to an Arrow table, and then converting them to a pandas DataFrame.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
    <span class="n">nrs</span>    <span class="n">names</span>  <span class="n">random</span> <span class="n">groups</span>
-<span class="mi">0</span>    <span class="mi">1</span>   <span class="n">python</span>     <span class="mi">490</span>      <span class="n">A</span>
-<span class="mi">1</span>    <span class="mi">2</span>     <span class="n">ruby</span>       <span class="mi">1</span>      <span class="n">A</span>
-<span class="mi">2</span>    <span class="mi">3</span>     <span class="n">java</span>     <span class="mi">963</span>      <span class="n">B</span>
-<span class="mi">3</span>    <span class="mi">4</span>  <span class="n">haskell</span>     <span class="mi">734</span>      <span class="n">C</span>
-<span class="mi">4</span>    <span class="mi">5</span>       <span class="n">go</span>     <span class="mi">322</span>      <span class="n">B</span>
+<span class="mi">0</span>    <span class="mi">1</span>   <span class="n">python</span>      <span class="mi">97</span>      <span class="n">A</span>
+<span class="mi">1</span>    <span class="mi">2</span>     <span class="n">ruby</span>      <span class="mi">46</span>      <span class="n">A</span>
+<span class="mi">2</span>    <span class="mi">3</span>     <span class="n">java</span>     <span class="mi">344</span>      <span class="n">B</span>
+<span class="mi">3</span>    <span class="mi">4</span>  <span class="n">haskell</span>     <span class="mi">855</span>      <span class="n">C</span>
+<span class="mi">4</span>    <span class="mi">5</span>       <span class="n">go</span>      <span class="mi">11</span>      <span class="n">B</span>
 </pre></div>
 </div>
-<p><a class="reference internal" href="../../generated/datafusion.DataFrame.html#datafusion.DataFrame.describe" title="datafusion.DataFrame.describe"><code class="xref py py-meth docutils literal notranslate"><span class="pre">DataFrame.describe()</span></code></a> shows a quick statistic summary of your data:</p>
+<p><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.describe" title="datafusion.dataframe.DataFrame.describe"><code class="xref py py-func docutils literal notranslate"><span class="pre">describe()</span></code></a> shows a quick statistic summary of your data:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
-<span class="o">|</span> <span class="n">describe</span>   <span class="o">|</span> <span class="n">nrs</span>                <span class="o">|</span> <span class="n">names</span> <span class="o">|</span> <span class="n">random</span>            <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
-<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
-<span class="o">|</span> <span class="n">count</span>      <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>     <span class="o">|</span> <span class="mf">5.0</span>               <span class="o">|</span> <span class="mi">5</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">null_count</span> <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>     <span class="o">|</span> <span class="mf">0.0</span>               <span class="o">|</span> <span class="mi">0</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">mean</span>       <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">502.0</span>             <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">std</span>        <span class="o">|</span> <span class="mf">1.5811388300841898</span> <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">370.7728415081126</span> <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="nb">min</span>        <span class="o">|</span> <span class="mf">1.0</span>                <span class="o">|</span> <span class="n">go</span>    <span class="o">|</span> <span class="mf">1.0</span>               <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="nb">max</span>        <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="n">ruby</span>  <span class="o">|</span> <span class="mf">963.0</span>             <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">median</span>     <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">490.0</span>             <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
+<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
+<span class="o">|</span> <span class="n">describe</span>   <span class="o">|</span> <span class="n">nrs</span>                <span class="o">|</span> <span class="n">names</span> <span class="o">|</span> <span class="n">random</span>             <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
+<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
+<span class="o">|</span> <span class="n">count</span>      <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>     <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">null_count</span> <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>     <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">mean</span>       <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">270.6</span>              <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">std</span>        <span class="o">|</span> <span class="mf">1.5811388300841898</span> <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">351.74038721761826</span> <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="nb">min</span>        <span class="o">|</span> <span class="mf">1.0</span>                <span class="o">|</span> <span class="n">go</span>    <span class="o">|</span> <span class="mf">11.0</span>               <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="nb">max</span>        <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="n">ruby</span>  <span class="o">|</span> <span class="mf">855.0</span>              <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">median</span>     <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">97.0</span>               <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
 </pre></div>
 </div>
 </section>
@@ -503,7 +481,7 @@ passing them to an Arrow table, and then converting them to a pandas DataFrame.<
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.0.2.<br>
 </p>
     </div>
     

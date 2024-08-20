@@ -1,0 +1,23 @@
+datafusion.input
+================
+
+.. py:module:: datafusion.input
+
+.. autoapi-nested-parse::
+
+   This package provides for input sources.
+
+   The primary class used within DataFusion is ``LocationInputPlugin``.
+
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/datafusion/input/base/index
+   /autoapi/datafusion/input/location/index
+
+

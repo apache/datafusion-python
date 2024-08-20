@@ -1,0 +1,90 @@
+datafusion.catalog
+==================
+
+.. py:module:: datafusion.catalog
+
+.. autoapi-nested-parse::
+
+   Data catalog providers.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.catalog.Catalog
+   datafusion.catalog.Database
+   datafusion.catalog.Table
+
+
+Module Contents
+---------------
+
+.. py:class:: Catalog(catalog: datafusion._internal.Catalog)
+
+   DataFusion data catalog.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: database(name: str = 'public') -> Database
+
+      Returns the database with the given ``name`` from this catalog.
+
+
+
+   .. py:method:: names() -> list[str]
+
+      Returns the list of databases in this catalog.
+
+
+
+   .. py:attribute:: catalog
+
+
+.. py:class:: Database(db: datafusion._internal.Database)
+
+   DataFusion Database.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: names() -> set[str]
+
+      Returns the list of all tables in this database.
+
+
+
+   .. py:method:: table(name: str) -> Table
+
+      Return the table with the given ``name`` from this database.
+
+
+
+   .. py:attribute:: db
+
+
+.. py:class:: Table(table: datafusion._internal.Table)
+
+   DataFusion table.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: schema() -> pyarrow.Schema
+
+      Returns the schema associated with this table.
+
+
+
+   .. py:property:: kind
+      :type: str
+
+      Returns the kind of table.
+
+
+   .. py:attribute:: table
+
+

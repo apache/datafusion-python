@@ -19,7 +19,7 @@ Functions
 =========
 
 DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
-In here we will cover some of the more popular use cases. If you want to view all the functions go to the :ref:`Functions` API Reference.
+In here we will cover some of the more popular use cases. If you want to view all the functions go to the :py:mod:`Functions <datafusion.functions>` API Reference.
 
 We'll use the pokemon dataset in the following examples.
 
@@ -40,7 +40,7 @@ We'll use the pokemon dataset in the following examples.
 Mathematical
 ------------
 
-DataFusion offers mathematical functions such as :func:`.pow` or :func:`.log`
+DataFusion offers mathematical functions such as :py:func:`~datafusion.functions.pow` or :py:func:`~datafusion.functions.log`
 
 .. ipython:: python
 
@@ -55,7 +55,7 @@ DataFusion offers mathematical functions such as :func:`.pow` or :func:`.log`
 Conditional
 -----------
 
-There 3 conditional functions in DataFusion :func:`.coalesce`, :func:`.nullif` and :func:`.case` (not available in Python)
+There 3 conditional functions in DataFusion :py:func:`~datafusion.functions.coalesce`, :py:func:`~datafusion.functions.nullif` and :py:func:`~datafusion.functions.case`.
 
 .. ipython:: python
 
@@ -66,13 +66,13 @@ There 3 conditional functions in DataFusion :func:`.coalesce`, :func:`.nullif` a
 Temporal
 --------
 
-For selecting the current time use :func:`.now`
+For selecting the current time use :py:func:`~datafusion.functions.now`
 
 .. ipython:: python
 
     df.select(f.now())
 
-Convert to timestamps using :func:`.to_timestamp`
+Convert to timestamps using :py:func:`~datafusion.functions.to_timestamp`
 
 .. ipython:: python
 
@@ -92,7 +92,7 @@ DataFusion offers a range of helpful options.
         f.left(col('"Name"'), literal(4)).alias("code")
     )
 
-This also includes the functions for regular expressions like :func:`.regexp_replace` and :func:`.regexp_match`
+This also includes the functions for regular expressions like :py:func:`~datafusion.functions.regexp_replace` and :py:func:`~datafusion.functions.regexp_match`
 
 .. ipython:: python
 
@@ -105,7 +105,7 @@ This also includes the functions for regular expressions like :func:`.regexp_rep
 Other
 -----
 
-The function :func:`.in_list` allows to check a column for the presence of multiple values:
+The function :py:func:`~datafusion.functions.in_list` allows to check a column for the presence of multiple values:
 
 .. ipython:: python
 

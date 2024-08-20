@@ -1,0 +1,154 @@
+datafusion.substrait
+====================
+
+.. py:module:: datafusion.substrait
+
+.. autoapi-nested-parse::
+
+   This module provides support for using substrait with datafusion.
+
+   For additional information about substrait, see https://substrait.io/ for more
+   information about substrait.
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.substrait.Consumer
+   datafusion.substrait.Plan
+   datafusion.substrait.Producer
+   datafusion.substrait.Serde
+
+
+Module Contents
+---------------
+
+.. py:class:: Consumer
+
+   Generates a logical plan from a substrait plan.
+
+
+   .. py:method:: from_substrait_plan(ctx: datafusion.context.SessionContext, plan: Plan) -> datafusion._internal.LogicalPlan
+      :staticmethod:
+
+
+      Convert a Substrait plan to a DataFusion LogicalPlan.
+
+      :param ctx: SessionContext to use.
+      :param plan: Substrait plan to convert.
+
+      :returns: LogicalPlan.
+
+
+
+.. py:class:: Plan(plan: datafusion._internal.substrait.Plan)
+
+   A class representing an encodable substrait plan.
+
+   Create a substrait plan.
+
+   The user should not have to call this constructor directly. Rather, it
+   should be created via :py:class:`Serde` or py:class:`Producer` classes
+   in this module.
+
+
+   .. py:method:: encode() -> bytes
+
+      Encode the plan to bytes.
+
+      :returns: Encoded plan.
+
+
+
+   .. py:attribute:: plan_internal
+
+
+.. py:class:: Producer
+
+   Generates substrait plans from a logical plan.
+
+
+   .. py:method:: to_substrait_plan(logical_plan: datafusion._internal.LogicalPlan, ctx: datafusion.context.SessionContext) -> Plan
+      :staticmethod:
+
+
+      Convert a DataFusion LogicalPlan to a Substrait plan.
+
+      :param logical_plan: LogicalPlan to convert.
+      :param ctx: SessionContext to use.
+
+      :returns: Substrait plan.
+
+
+
+.. py:class:: Serde
+
+   Provides the ``Substrait`` serialization and deserialization.
+
+
+   .. py:method:: deserialize(path: str | pathlib.Path) -> Plan
+      :staticmethod:
+
+
+      Deserialize a Substrait plan from a file.
+
+      :param path: Path to read the Substrait plan from.
+
+      :returns: Substrait plan.
+
+
+
+   .. py:method:: deserialize_bytes(proto_bytes: bytes) -> Plan
+      :staticmethod:
+
+
+      Deserialize a Substrait plan from bytes.
+
+      :param proto_bytes: Bytes to read the Substrait plan from.
+
+      :returns: Substrait plan.
+
+
+
+   .. py:method:: serialize(sql: str, ctx: datafusion.context.SessionContext, path: str | pathlib.Path) -> None
+      :staticmethod:
+
+
+      Serialize a SQL query to a Substrait plan and write it to a file.
+
+      :param sql: SQL query to serialize.
+      :param ctx: SessionContext to use.
+      :param path: Path to write the Substrait plan to.
+
+
+
+   .. py:method:: serialize_bytes(sql: str, ctx: datafusion.context.SessionContext) -> bytes
+      :staticmethod:
+
+
+      Serialize a SQL query to a Substrait plan as bytes.
+
+      :param sql: SQL query to serialize.
+      :param ctx: SessionContext to use.
+
+      :returns: Substrait plan as bytes.
+
+
+
+   .. py:method:: serialize_to_plan(sql: str, ctx: datafusion.context.SessionContext) -> Plan
+      :staticmethod:
+
+
+      Serialize a SQL query to a Substrait plan.
+
+      Args:
+      sql: SQL query to serialize.
+      ctx: SessionContext to use.
+
+      :returns: Substrait plan.
+
+
+

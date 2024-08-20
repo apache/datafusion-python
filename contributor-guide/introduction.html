@@ -24,6 +24,7 @@
     
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=ef9fea58" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
@@ -33,7 +34,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="API Reference" href="../api.html" />
+    <link rel="next" title="API Reference" href="../autoapi/index.html" />
     <link rel="prev" title="SQL" href="../user-guide/sql.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -225,7 +226,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../api.html">
+  <a class="reference internal" href="../autoapi/index.html">
    API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -235,8 +236,8 @@
   </label>
   <ul>
    <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/dataframe.html">
-     DataFrame
+    <a class="reference internal" href="../autoapi/datafusion/index.html">
+     datafusion
     </a>
     <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
     <label for="toctree-checkbox-4">
@@ -244,87 +245,71 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.DataFrame.html">
-       datafusion.DataFrame
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
+       datafusion.input
       </a>
-     </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/execution_context.html">
-     SessionContext
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-    <label for="toctree-checkbox-5">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.SessionConfig.html">
-       datafusion.SessionConfig
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.RuntimeConfig.html">
-       datafusion.RuntimeConfig
-      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.SessionContext.html">
-       datafusion.SessionContext
+      <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/expression.html">
-     Expr
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
-    <label for="toctree-checkbox-6">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.Expr.html">
-       datafusion.Expr
+      <a class="reference internal" href="../autoapi/datafusion/context/index.html">
+       datafusion.context
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/functions.html">
-     Functions
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" type="checkbox"/>
-    <label for="toctree-checkbox-7">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.functions.functions.html">
-       datafusion.functions.functions
+      <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
       </a>
      </li>
-    </ul>
-   </li>
-   <li class="toctree-l2 has-children">
-    <a class="reference internal" href="../api/object_store.html">
-     ObjectStore
-    </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" type="checkbox"/>
-    <label for="toctree-checkbox-8">
-     <i class="fas fa-chevron-down">
-     </i>
-    </label>
-    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../generated/datafusion.object_store.object_store.html">
-       datafusion.object_store.object_store
+      <a class="reference internal" href="../autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/udf/index.html">
+       datafusion.udf
       </a>
      </li>
     </ul>
@@ -377,13 +362,6 @@
               
               <div class="toc-item">
                 
-
-<div class="tocsection editthispage">
-    <a href="https://github.com/apache/arrow-datafusion-python/edit/main/docs/source/contributor-guide/introduction.rst">
-        <i class="fas fa-pencil-alt"></i> Edit this page
-    </a>
-</div>
-
               </div>
               
             
@@ -471,7 +449,7 @@ python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w">
             <p class="prev-next-title">SQL</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../api.html" title="next page">
+    <a class='right-next' id="next-link" href="../autoapi/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">API Reference</p>
@@ -500,7 +478,7 @@ python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w">
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 7.3.7.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.0.2.<br>
 </p>
     </div>
     

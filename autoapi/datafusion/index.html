@@ -1,0 +1,2634 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>datafusion &#8212; Apache Arrow DataFusion  documentation</title>
+    
+    <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
+    
+    <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script src="../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="datafusion.input" href="input/index.html" />
+    <link rel="prev" title="API Reference" href="../index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../../index.html">
+  <img src="../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/configuration.html">
+   Configuration
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/expressions.html">
+     Expressions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/common-operations/udf-and-udfa.html">
+     User Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../index.html">
+   API Reference
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active has-children">
+    <a class="current reference internal" href="#">
+     datafusion
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="catalog/index.html">
+       datafusion.catalog
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="context/index.html">
+       datafusion.context
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="udf/index.html">
+       datafusion.udf
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#subpackages">
+   Subpackages
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#submodules">
+   Submodules
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#attributes">
+   Attributes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#classes">
+   Classes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#functions">
+   Functions
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#package-contents">
+   Package Contents
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Accumulator">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Accumulator
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Accumulator.evaluate">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.evaluate()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Accumulator.merge">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.merge()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Accumulator.state">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.state()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Accumulator.update">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.update()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.AggregateUDF">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AggregateUDF
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.udaf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.udaf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF._udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF._udf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Catalog">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Catalog
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.database">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.database()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.catalog
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Database">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Database
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Database.names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Database.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Database.table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Database.table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Database.db">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Database.db
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Expr">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Expr
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__add__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__add__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__and__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__and__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__eq__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__eq__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__ge__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__ge__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__getitem__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__getitem__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__gt__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__gt__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__invert__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__invert__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__le__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__le__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__lt__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__lt__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__mod__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__mod__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__mul__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__mul__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__ne__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__ne__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__or__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__or__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__richcmp__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__richcmp__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__sub__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__sub__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__truediv__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__truediv__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.alias">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.alias()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.canonical_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.canonical_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.cast">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cast()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.column">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.column()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.column_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.column_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.display_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.display_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.is_null">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.is_null()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.literal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.literal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.python_value">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.python_value()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.rex_call_operands">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.rex_call_operands()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.rex_call_operator">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.rex_call_operator()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.rex_type">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.rex_type()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.sort">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sort()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.to_variant">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.to_variant()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.types">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.types()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.variant_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.variant_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__radd__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__radd__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__rand__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__rand__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__rmod__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__rmod__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__rmul__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__rmul__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__ror__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__ror__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__rsub__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__rsub__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.__rtruediv__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.__rtruediv__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.expr">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.expr
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.RecordBatch">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RecordBatch
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatch.to_pyarrow">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatch.to_pyarrow()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatch.record_batch">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatch.record_batch
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.RecordBatchStream">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RecordBatchStream
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__iter__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__iter__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__next__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__next__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.next">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.next()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.rbs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.rbs
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.RuntimeConfig">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RuntimeConfig
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_disabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_disk_manager_disabled()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_os">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_disk_manager_os()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_specified">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_disk_manager_specified()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_fair_spill_pool">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_fair_spill_pool()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_greedy_memory_pool">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_greedy_memory_pool()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_temp_file_path">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_temp_file_path()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.with_unbounded_memory_pool()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.config_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RuntimeConfig.config_internal
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SQLOptions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SQLOptions
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SQLOptions.with_allow_ddl">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SQLOptions.with_allow_ddl()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SQLOptions.with_allow_dml">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SQLOptions.with_allow_dml()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SQLOptions.with_allow_statements">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SQLOptions.with_allow_statements()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SQLOptions.options_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SQLOptions.options_internal
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ScalarUDF">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ScalarUDF
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF.udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF._udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF._udf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.SessionConfig">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SessionConfig
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.set">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.set()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_batch_size">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_batch_size()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_create_default_catalog_and_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_default_catalog_and_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_default_catalog_and_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_information_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_information_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_parquet_pruning">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_parquet_pruning()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_aggregations">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_aggregations()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_file_min_size">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_file_min_size()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_file_scans">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_file_scans()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_joins">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_joins()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_sorts">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_sorts()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_repartition_windows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_repartition_windows()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.with_target_partitions">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.with_target_partitions()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.SessionConfig.config_internal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionConfig.config_internal
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.Table">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Table
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.kind">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.kind
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.table
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.WindowFrame">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WindowFrame
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowFrame.get_frame_units">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.get_frame_units()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowFrame.get_lower_bound">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.get_lower_bound()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowFrame.get_upper_bound">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.get_upper_bound()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowFrame.window_frame">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.window_frame
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.col">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       col()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.column">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       column()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.lit">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       lit()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.literal">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       literal()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DFSchema">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DFSchema
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="module-datafusion">
+<span id="datafusion"></span><h1>datafusion<a class="headerlink" href="#module-datafusion" title="Link to this heading">¶</a></h1>
+<p>DataFusion python package.</p>
+<p>This is a Python library that binds to Apache Arrow in-memory query engine DataFusion.
+See <a class="reference external" href="https://datafusion.apache.org/python">https://datafusion.apache.org/python</a> for more information.</p>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="input/index.html">datafusion.input</a></li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="context/index.html">datafusion.context</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions/index.html">datafusion.functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="record_batch/index.html">datafusion.record_batch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="substrait/index.html">datafusion.substrait</a></li>
+<li class="toctree-l1"><a class="reference internal" href="udf/index.html">datafusion.udf</a></li>
+</ul>
+</div>
+</section>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DFSchema" title="datafusion.DFSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFSchema</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Accumulator" title="datafusion.Accumulator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Accumulator</span></code></a></p></td>
+<td><p>Defines how an <a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> accumulates values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a></p></td>
+<td><p>Class for performing scalar user defined functions (UDF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Catalog" title="datafusion.Catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Catalog</span></code></a></p></td>
+<td><p>DataFusion data catalog.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
+<td><p>DataFusion Database.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
+<td><p>Expression object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
+<td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
+<td><p>This class represents a stream of record batches.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a></p></td>
+<td><p>Runtime configuration options.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<td><p>Options to be used when performing SQL queries.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a></p></td>
+<td><p>Class for performing scalar user defined functions (UDF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<td><p>Session configuration options.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
+<td><p>DataFusion table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.WindowFrame" title="datafusion.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
+<td><p>Defines a window frame for performing window operations.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a>(value)</p></td>
+<td><p>Create a column expression.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.column" title="datafusion.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
+<td><p>Create a column expression.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.lit" title="datafusion.lit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lit</span></code></a>(value)</p></td>
+<td><p>Create a literal expression.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.literal" title="datafusion.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
+<td><p>Create a literal expression.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.Accumulator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Accumulator</span></span><a class="headerlink" href="#datafusion.Accumulator" title="Link to this definition">¶</a></dt>
+<dd><p>Defines how an <a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> accumulates values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Accumulator.evaluate">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Scalar</span></span></span><a class="headerlink" href="#datafusion.Accumulator.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resultant value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Accumulator.merge">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Array</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Accumulator.merge" title="Link to this definition">¶</a></dt>
+<dd><p>Merge a set of states.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Accumulator.state">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Scalar</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Accumulator.state" title="Link to this definition">¶</a></dt>
+<dd><p>Return the current state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Accumulator.update">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Accumulator.update" title="Link to this definition">¶</a></dt>
+<dd><p>Evalute an array of values and update state.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">AggregateUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accumulator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="udf/index.html#datafusion.udf.Volatility" title="datafusion.udf.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.AggregateUDF" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing scalar user defined functions (UDF).</p>
+<p>Aggregate UDFs operate on a group of rows and return a single value. See
+also <a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a> for operating on a row by row basis.</p>
+<p>Instantiate a user defined aggregate function (UDAF).</p>
+<p>See <a class="reference internal" href="#datafusion.AggregateUDF.udaf" title="datafusion.AggregateUDF.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a> for a convenience function and arugment
+descriptions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.AggregateUDF.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDAF.</p>
+<p>This function is not typically called by an end user. These calls will
+occur during the evaluation of the dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.udaf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_A</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="udf/index.html#datafusion.udf.Volatility" title="datafusion.udf.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><span class="pre">AggregateUDF</span></a></span></span><a class="headerlink" href="#datafusion.AggregateUDF.udaf" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new User Defined Aggregate Function.</p>
+<p>The accumulator function must be callable and implement <a class="reference internal" href="#datafusion.Accumulator" title="datafusion.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accum</strong> – The accumulator python function.</p></li>
+<li><p><strong>input_types</strong> – The data types of the arguments to <code class="docutils literal notranslate"><span class="pre">accum</span></code>.</p></li>
+<li><p><strong>return_type</strong> – The data type of the return value.</p></li>
+<li><p><strong>state_type</strong> – The data types of the intermediate accumulation.</p></li>
+<li><p><strong>volatility</strong> – See <code class="xref py py-class docutils literal notranslate"><span class="pre">Volatility</span></code> for allowed values.</p></li>
+<li><p><strong>name</strong> – A descriptive name for the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A user defined aggregate function, which can be used in either data
+aggregation or window function calls.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF._udf">
+<span class="sig-name descname"><span class="pre">_udf</span></span><a class="headerlink" href="#datafusion.AggregateUDF._udf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.Catalog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Catalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Catalog" title="Link to this definition">¶</a></dt>
+<dd><p>DataFusion data catalog.</p>
+<p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.database">
+<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><span class="pre">Database</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.database" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of databases in this catalog.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Catalog.catalog">
+<span class="sig-name descname"><span class="pre">catalog</span></span><a class="headerlink" href="#datafusion.Catalog.catalog" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.Database">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Database</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Database" title="Link to this definition">¶</a></dt>
+<dd><p>DataFusion Database.</p>
+<p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Database.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Database.names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of all tables in this database.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Database.table">
+<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Database.table" title="Link to this definition">¶</a></dt>
+<dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this database.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Database.db">
+<span class="sig-name descname"><span class="pre">db</span></span><a class="headerlink" href="#datafusion.Database.db" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.Expr">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.expr.Expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr" title="Link to this definition">¶</a></dt>
+<dd><p>Expression object.</p>
+<p>Expressions are one of the core concepts in DataFusion. See
+<a class="reference internal" href="../../user-guide/common-operations/expressions.html#expressions"><span class="std std-ref">Expressions</span></a> in the online documentation for more information.</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__add__">
+<span class="sig-name descname"><span class="pre">__add__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__add__" title="Link to this definition">¶</a></dt>
+<dd><p>Addition operator.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__and__">
+<span class="sig-name descname"><span class="pre">__and__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__and__" title="Link to this definition">¶</a></dt>
+<dd><p>Logical AND.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__eq__">
+<span class="sig-name descname"><span class="pre">__eq__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__eq__" title="Link to this definition">¶</a></dt>
+<dd><p>Equal to.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__ge__">
+<span class="sig-name descname"><span class="pre">__ge__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__ge__" title="Link to this definition">¶</a></dt>
+<dd><p>Greater than or equal to.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__getitem__">
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__getitem__" title="Link to this definition">¶</a></dt>
+<dd><p>For struct data types, return the field indicated by <code class="docutils literal notranslate"><span class="pre">key</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__gt__">
+<span class="sig-name descname"><span class="pre">__gt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__gt__" title="Link to this definition">¶</a></dt>
+<dd><p>Greater than.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__invert__">
+<span class="sig-name descname"><span class="pre">__invert__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__invert__" title="Link to this definition">¶</a></dt>
+<dd><p>Binary not (~).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__le__">
+<span class="sig-name descname"><span class="pre">__le__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__le__" title="Link to this definition">¶</a></dt>
+<dd><p>Less than or equal to.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__lt__">
+<span class="sig-name descname"><span class="pre">__lt__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__lt__" title="Link to this definition">¶</a></dt>
+<dd><p>Less than.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__mod__">
+<span class="sig-name descname"><span class="pre">__mod__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__mod__" title="Link to this definition">¶</a></dt>
+<dd><p>Modulo operator (%).</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__mul__">
+<span class="sig-name descname"><span class="pre">__mul__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__mul__" title="Link to this definition">¶</a></dt>
+<dd><p>Multiplication operator.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__ne__">
+<span class="sig-name descname"><span class="pre">__ne__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__ne__" title="Link to this definition">¶</a></dt>
+<dd><p>Not equal to.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__or__">
+<span class="sig-name descname"><span class="pre">__or__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__or__" title="Link to this definition">¶</a></dt>
+<dd><p>Logical OR.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a string representation of this expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__richcmp__">
+<span class="sig-name descname"><span class="pre">__richcmp__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__richcmp__" title="Link to this definition">¶</a></dt>
+<dd><p>Comparison operator.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__sub__">
+<span class="sig-name descname"><span class="pre">__sub__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__sub__" title="Link to this definition">¶</a></dt>
+<dd><p>Subtraction operator.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.__truediv__">
+<span class="sig-name descname"><span class="pre">__truediv__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rhs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__truediv__" title="Link to this definition">¶</a></dt>
+<dd><p>Division operator.</p>
+<p>Accepts either an expression or any valid PyArrow scalar literal value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.alias">
+<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.alias" title="Link to this definition">¶</a></dt>
+<dd><p>Assign a name to the expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.canonical_name">
+<span class="sig-name descname"><span class="pre">canonical_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.canonical_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a complete string representation of this expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.cast">
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.cast" title="Link to this definition">¶</a></dt>
+<dd><p>Cast to a new data type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.column">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.column" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a column.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.LogicalPlan</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.column_name" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the output column name based on the provided logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.display_name">
+<span class="sig-name descname"><span class="pre">display_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.display_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of this expression as it should appear in a schema.</p>
+<p>This name will not include any CAST expressions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.is_null">
+<span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.is_null" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is null.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.literal">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.literal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a scalar value.</p>
+<p><code class="docutils literal notranslate"><span class="pre">value</span></code> must be a valid PyArrow scalar value or easily castable to one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.python_value">
+<span class="sig-name descname"><span class="pre">python_value</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.Expr.python_value" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts the Expr value into a PyObject.</p>
+<p>This is only valid for literal expressions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Python object representing literal value of the expression.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_call_operands">
+<span class="sig-name descname"><span class="pre">rex_call_operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Expr.rex_call_operands" title="Link to this definition">¶</a></dt>
+<dd><p>Return the operands of the expression based on it’s variant type.</p>
+<p>Row expressions, Rex(s), operate on the concept of operands. Different
+variants of Expressions, Expr(s), store those operands in different
+datastructures. This function examines the Expr variant and returns
+the operands to the calling logic.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_call_operator">
+<span class="sig-name descname"><span class="pre">rex_call_operator</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.rex_call_operator" title="Link to this definition">¶</a></dt>
+<dd><p>Extracts the operator associated with a row expression type call.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.rex_type">
+<span class="sig-name descname"><span class="pre">rex_type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion.common.RexType</span></span></span><a class="headerlink" href="#datafusion.Expr.rex_type" title="Link to this definition">¶</a></dt>
+<dd><p>Return the Rex Type of this expression.</p>
+<p>A Rex (Row Expression) specifies a single row of data.That specification
+could include user defined functions or types. RexType identifies the
+row as one of the possible valid <code class="docutils literal notranslate"><span class="pre">RexType</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.sort">
+<span class="sig-name descname"><span class="pre">sort</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ascending</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nulls_first</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.sort" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a sort <a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a> from an existing <a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-class docutils literal notranslate"><span class="pre">Expr</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ascending</strong> – If true, sort in ascending order.</p></li>
+<li><p><strong>nulls_first</strong> – Return null values first.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.to_variant">
+<span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.Expr.to_variant" title="Link to this definition">¶</a></dt>
+<dd><p>Convert this expression into a python object if possible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.types">
+<span class="sig-name descname"><span class="pre">types</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion.common.DataTypeMap</span></span></span><a class="headerlink" href="#datafusion.Expr.types" title="Link to this definition">¶</a></dt>
+<dd><p>Return the <code class="docutils literal notranslate"><span class="pre">DataTypeMap</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataTypeMap which represents the PythonType, Arrow DataType, and
+SqlType Enum which this expression represents.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.variant_name">
+<span class="sig-name descname"><span class="pre">variant_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.variant_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the name of the Expr variant.</p>
+<p>Ex: <code class="docutils literal notranslate"><span class="pre">IsNotNull</span></code>, <code class="docutils literal notranslate"><span class="pre">Literal</span></code>, <code class="docutils literal notranslate"><span class="pre">BinaryExpr</span></code>, etc</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__radd__">
+<span class="sig-name descname"><span class="pre">__radd__</span></span><a class="headerlink" href="#datafusion.Expr.__radd__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__rand__">
+<span class="sig-name descname"><span class="pre">__rand__</span></span><a class="headerlink" href="#datafusion.Expr.__rand__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__rmod__">
+<span class="sig-name descname"><span class="pre">__rmod__</span></span><a class="headerlink" href="#datafusion.Expr.__rmod__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__rmul__">
+<span class="sig-name descname"><span class="pre">__rmul__</span></span><a class="headerlink" href="#datafusion.Expr.__rmul__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__ror__">
+<span class="sig-name descname"><span class="pre">__ror__</span></span><a class="headerlink" href="#datafusion.Expr.__ror__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__rsub__">
+<span class="sig-name descname"><span class="pre">__rsub__</span></span><a class="headerlink" href="#datafusion.Expr.__rsub__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.__rtruediv__">
+<span class="sig-name descname"><span class="pre">__rtruediv__</span></span><a class="headerlink" href="#datafusion.Expr.__rtruediv__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Expr.expr">
+<span class="sig-name descname"><span class="pre">expr</span></span><a class="headerlink" href="#datafusion.Expr.expr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.RecordBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RecordBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.RecordBatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RecordBatch" title="Link to this definition">¶</a></dt>
+<dd><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p>
+<p>This constructor is generally not called by the end user.</p>
+<p>See the <a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a> iterator for generating this class.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatch.to_pyarrow">
+<span class="sig-name descname"><span class="pre">to_pyarrow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="headerlink" href="#datafusion.RecordBatch.to_pyarrow" title="Link to this definition">¶</a></dt>
+<dd><p>Convert to <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.RecordBatch.record_batch">
+<span class="sig-name descname"><span class="pre">record_batch</span></span><a class="headerlink" href="#datafusion.RecordBatch.record_batch" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RecordBatchStream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_batch_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.RecordBatchStream</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RecordBatchStream" title="Link to this definition">¶</a></dt>
+<dd><p>This class represents a stream of record batches.</p>
+<p>These are typically the result of a
+<a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream" title="datafusion.dataframe.DataFrame.execute_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute_stream()</span></code></a> operation.</p>
+<p>This constructor is typically not called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__iter__" title="Link to this definition">¶</a></dt>
+<dd><p>Iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__next__">
+<span class="sig-name descname"><span class="pre">__next__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__next__" title="Link to this definition">¶</a></dt>
+<dd><p>Iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.next">
+<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.next" title="Link to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#datafusion.RecordBatchStream.__next__" title="datafusion.RecordBatchStream.__next__"><code class="xref py py-func docutils literal notranslate"><span class="pre">__next__()</span></code></a> for the iterator function.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.rbs">
+<span class="sig-name descname"><span class="pre">rbs</span></span><a class="headerlink" href="#datafusion.RecordBatchStream.rbs" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.RuntimeConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Runtime configuration options.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> with default values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_disabled">
+<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
+<dd><p>Disable the disk manager, attempts to create temporary files will error.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_os">
+<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_os" title="Link to this definition">¶</a></dt>
+<dd><p>Use the operating system’s temporary directory for disk manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_specified">
+<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
+<dd><p>Use the specified paths for the disk manager’s temporary files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>paths</strong> – Paths to use for the disk manager’s temporary files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_fair_spill_pool">
+<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use a fair spill pool with the specified size.</p>
+<p>This pool works best when you know beforehand the query has multiple spillable
+operators that will likely all need to spill. Sometimes it will cause spills
+even when there was sufficient memory (reserved for other operators) to avoid
+doing so:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌───────────────────────z──────────────────────z───────────────┐
+│                       z                      z               │
+│                       z                      z               │
+│       Spillable       z       Unspillable    z     Free      │
+│        Memory         z        Memory        z    Memory     │
+│                       z                      z               │
+│                       z                      z               │
+└───────────────────────z──────────────────────z───────────────┘
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Examples usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_greedy_memory_pool">
+<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use a greedy memory pool with the specified size.</p>
+<p>This pool works well for queries that do not need to spill or have a single
+spillable operator. See <a class="reference internal" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="datafusion.RuntimeConfig.with_fair_spill_pool"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fair_spill_pool()</span></code></a> if there are
+multiple spillable operators that all will spill.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_temp_file_path">
+<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_temp_file_path" title="Link to this definition">¶</a></dt>
+<dd><p>Use the specified path to create any needed temporary files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> – Path to use for temporary files.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_unbounded_memory_pool">
+<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
+<dd><p>Use an unbounded memory pool.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.RuntimeConfig.config_internal">
+<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.RuntimeConfig.config_internal" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.SQLOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">SQLOptions</span></span><a class="headerlink" href="#datafusion.SQLOptions" title="Link to this definition">¶</a></dt>
+<dd><p>Options to be used when performing SQL queries.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a> with default values.</p>
+<p>The default values are:
+- DDL commands are allowed
+- DML commands are allowed
+- Statements are allowed</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SQLOptions.with_allow_ddl">
+<span class="sig-name descname"><span class="pre">with_allow_ddl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><span class="pre">SQLOptions</span></a></span></span><a class="headerlink" href="#datafusion.SQLOptions.with_allow_ddl" title="Link to this definition">¶</a></dt>
+<dd><p>Should DDL (Data Definition Language) commands be run?</p>
+<p>Examples of DDL commands include <code class="docutils literal notranslate"><span class="pre">CREATE</span> <span class="pre">TABLE</span></code> and <code class="docutils literal notranslate"><span class="pre">DROP</span> <span class="pre">TABLE</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>allow</strong> – Allow DDL commands to be run.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_ddl</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SQLOptions.with_allow_dml">
+<span class="sig-name descname"><span class="pre">with_allow_dml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><span class="pre">SQLOptions</span></a></span></span><a class="headerlink" href="#datafusion.SQLOptions.with_allow_dml" title="Link to this definition">¶</a></dt>
+<dd><p>Should DML (Data Manipulation Language) commands be run?</p>
+<p>Examples of DML commands include <code class="docutils literal notranslate"><span class="pre">INSERT</span> <span class="pre">INTO</span></code> and <code class="docutils literal notranslate"><span class="pre">DELETE</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>allow</strong> – Allow DML commands to be run.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-class docutils literal notranslate"><span class="pre">SQLOptions</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_dml</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SQLOptions.with_allow_statements">
+<span class="sig-name descname"><span class="pre">with_allow_statements</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">allow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><span class="pre">SQLOptions</span></a></span></span><a class="headerlink" href="#datafusion.SQLOptions.with_allow_statements" title="Link to this definition">¶</a></dt>
+<dd><p>Should statements such as <code class="docutils literal notranslate"><span class="pre">SET</span> <span class="pre">VARIABLE</span></code> and <code class="docutils literal notranslate"><span class="pre">BEGIN</span> <span class="pre">TRANSACTION</span></code> be run?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>allow</strong> – Allow statements to be run.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>py:class:SQLOptions` object with the updated setting.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new</p>
+</dd>
+</dl>
+<p>Example usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">options</span> <span class="o">=</span> <span class="n">SQLOptions</span><span class="p">()</span><span class="o">.</span><span class="n">with_allow_statements</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.SQLOptions.options_internal">
+<span class="sig-name descname"><span class="pre">options_internal</span></span><a class="headerlink" href="#datafusion.SQLOptions.options_internal" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">ScalarUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="udf/index.html#datafusion.udf.Volatility" title="datafusion.udf.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.ScalarUDF" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing scalar user defined functions (UDF).</p>
+<p>Scalar UDFs operate on a row by row basis. See also <a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> for
+operating on a group of rows.</p>
+<p>Instantiate a scalar user defined function (UDF).</p>
+<p>See helper method <a class="reference internal" href="udf/index.html#module-datafusion.udf" title="datafusion.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDF.</p>
+<p>This function is not typically called by an end user. These calls will
+occur during the evaluation of the dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF.udf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="udf/index.html#datafusion.udf.Volatility" title="datafusion.udf.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.udf" title="Link to this definition">¶</a></dt>
+<dd><p>Create a new User Defined Function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – A callable python function.</p></li>
+<li><p><strong>input_types</strong> – The data types of the arguments to <code class="docutils literal notranslate"><span class="pre">func</span></code>. This list
+must be of the same length as the number of arguments.</p></li>
+<li><p><strong>return_type</strong> – The data type of the return value from the python
+function.</p></li>
+<li><p><strong>volatility</strong> – See <code class="docutils literal notranslate"><span class="pre">Volatility</span></code> for allowed values.</p></li>
+<li><p><strong>name</strong> – A descriptive name for the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A user defined aggregate function, which can be used in either data</dt><dd><p>aggregation or window function calls.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF._udf">
+<span class="sig-name descname"><span class="pre">_udf</span></span><a class="headerlink" href="#datafusion.ScalarUDF._udf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.SessionConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">SessionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.SessionConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Session configuration options.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> with the given configuration options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_options</strong> – Configuration options.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.set" title="Link to this definition">¶</a></dt>
+<dd><p>Set a configuration option.</p>
+<p>Args:
+key: Option key.
+value: Option value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_batch_size">
+<span class="sig-name descname"><span class="pre">with_batch_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_batch_size" title="Link to this definition">¶</a></dt>
+<dd><p>Customize batch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch_size</strong> – Batch size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_create_default_catalog_and_schema">
+<span class="sig-name descname"><span class="pre">with_create_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_create_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Control if the default catalog and schema will be automatically created.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether the default catalog and schema will be
+automatically created.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_default_catalog_and_schema">
+<span class="sig-name descname"><span class="pre">with_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Select a name for the default catalog and shcema.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>catalog</strong> – Catalog name.</p></li>
+<li><p><strong>schema</strong> – Schema name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_information_schema">
+<span class="sig-name descname"><span class="pre">with_information_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_information_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the inclusion of <code class="docutils literal notranslate"><span class="pre">information_schema</span></code> virtual tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to include <code class="docutils literal notranslate"><span class="pre">information_schema</span></code> virtual tables.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_parquet_pruning">
+<span class="sig-name descname"><span class="pre">with_parquet_pruning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_parquet_pruning" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of pruning predicate for parquet readers.</p>
+<p>Pruning predicates will enable the reader to skip row groups.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use pruning predicate for parquet readers.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_aggregations">
+<span class="sig-name descname"><span class="pre">with_repartition_aggregations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_aggregations" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for aggregations.</p>
+<p>Enabling this improves parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for aggregations.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_file_min_size">
+<span class="sig-name descname"><span class="pre">with_repartition_file_min_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_min_size" title="Link to this definition">¶</a></dt>
+<dd><p>Set minimum file range size for repartitioning scans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>size</strong> – Minimum file range size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_file_scans">
+<span class="sig-name descname"><span class="pre">with_repartition_file_scans</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_file_scans" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for file scans.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for file scans.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_joins">
+<span class="sig-name descname"><span class="pre">with_repartition_joins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_joins" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for joins to improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for joins.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_sorts">
+<span class="sig-name descname"><span class="pre">with_repartition_sorts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_sorts" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for window functions.</p>
+<p>This may improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for window functions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_repartition_windows">
+<span class="sig-name descname"><span class="pre">with_repartition_windows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_repartition_windows" title="Link to this definition">¶</a></dt>
+<dd><p>Enable or disable the use of repartitioning for window functions.</p>
+<p>This may improve parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>enabled</strong> – Whether to use repartitioning for window functions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.with_target_partitions">
+<span class="sig-name descname"><span class="pre">with_target_partitions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target_partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.SessionConfig.with_target_partitions" title="Link to this definition">¶</a></dt>
+<dd><p>Customize the number of target partitions for query execution.</p>
+<p>Increasing partitions can increase concurrency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>target_partitions</strong> – Number of target partitions.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.SessionConfig" title="datafusion.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> object with the updated setting.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.SessionConfig.config_internal">
+<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.SessionConfig.config_internal" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.Table">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
+<dd><p>DataFusion table.</p>
+<p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Table.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Schema</span></span></span><a class="headerlink" href="#datafusion.Table.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the schema associated with this table.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.Table.kind">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kind</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.Table.kind" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the kind of table.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Table.table">
+<span class="sig-name descname"><span class="pre">table</span></span><a class="headerlink" href="#datafusion.Table.table" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.WindowFrame">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">WindowFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.WindowFrame" title="Link to this definition">¶</a></dt>
+<dd><p>Defines a window frame for performing window operations.</p>
+<p>Construct a window frame using the given parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>units</strong> – Should be one of <code class="docutils literal notranslate"><span class="pre">rows</span></code>, <code class="docutils literal notranslate"><span class="pre">range</span></code>, or <code class="docutils literal notranslate"><span class="pre">groups</span></code>.</p></li>
+<li><p><strong>start_bound</strong> – Sets the preceeding bound. Must be &gt;= 0. If none, this
+will be set to unbounded. If unit type is <code class="docutils literal notranslate"><span class="pre">groups</span></code>, this
+parameter must be set.</p></li>
+<li><p><strong>end_bound</strong> – Sets the following bound. Must be &gt;= 0. If none, this
+will be set to unbounded. If unit type is <code class="docutils literal notranslate"><span class="pre">groups</span></code>, this
+parameter must be set.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowFrame.get_frame_units">
+<span class="sig-name descname"><span class="pre">get_frame_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.WindowFrame.get_frame_units" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the window frame units for the bounds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowFrame.get_lower_bound">
+<span class="sig-name descname"><span class="pre">get_lower_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.WindowFrameBound" title="datafusion.expr.WindowFrameBound"><span class="pre">WindowFrameBound</span></a></span></span><a class="headerlink" href="#datafusion.WindowFrame.get_lower_bound" title="Link to this definition">¶</a></dt>
+<dd><p>Returns starting bound.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowFrame.get_upper_bound">
+<span class="sig-name descname"><span class="pre">get_upper_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.WindowFrame.get_upper_bound" title="Link to this definition">¶</a></dt>
+<dd><p>Returns end bound.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.WindowFrame.window_frame">
+<span class="sig-name descname"><span class="pre">window_frame</span></span><a class="headerlink" href="#datafusion.WindowFrame.window_frame" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.col">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.col" title="Link to this definition">¶</a></dt>
+<dd><p>Create a column expression.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.column">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.column" title="Link to this definition">¶</a></dt>
+<dd><p>Create a column expression.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.lit">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">lit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.lit" title="Link to this definition">¶</a></dt>
+<dd><p>Create a literal expression.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.literal">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.literal" title="Link to this definition">¶</a></dt>
+<dd><p>Create a literal expression.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.DFSchema">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DFSchema</span></span><a class="headerlink" href="#datafusion.DFSchema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../index.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">API Reference</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="input/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">datafusion.input</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.0.2.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

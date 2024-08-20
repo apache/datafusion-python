@@ -19,7 +19,7 @@ User Defined Functions
 ======================
 
 DataFusion provides powerful expressions and functions, reducing the need for custom Python functions.
-However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs), with the :func:`.udf` function.
+However you can still incorporate your own functions, i.e. User-Defined Functions (UDFs), with the :py:func:`~datafusion.udf.ScalarUDF.udf` function.
 
 .. ipython:: python
 
@@ -42,7 +42,7 @@ However you can still incorporate your own functions, i.e. User-Defined Function
 
     df.select(is_null_arr(col("a"))).to_pandas()
 
-Additionally the :func:`.udaf` function allows you to define User-Defined Aggregate Functions (UDAFs)
+Additionally the :py:func:`~datafusion.udf.AggregateUDF.udaf` function allows you to define User-Defined Aggregate Functions (UDAFs)
 
 .. code-block:: python
 
@@ -50,6 +50,7 @@ Additionally the :func:`.udaf` function allows you to define User-Defined Aggreg
     import pyarrow.compute
     import datafusion
     from datafusion import col, udaf, Accumulator
+    from typing import List
 
     class MyAccumulator(Accumulator):
         """
@@ -62,9 +63,9 @@ Additionally the :func:`.udaf` function allows you to define User-Defined Aggreg
             # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
             self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(values).as_py())
 
-        def merge(self, states: pyarrow.Array) -> None:
+        def merge(self, states: List[pyarrow.Array]) -> None:
             # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states).as_py())
+            self._sum = pyarrow.scalar(self._sum.as_py() + pyarrow.compute.sum(states[0]).as_py())
 
         def state(self) -> pyarrow.Array:
             return pyarrow.array([self._sum.as_py()])

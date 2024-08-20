@@ -1,0 +1,1517 @@
+datafusion.functions
+====================
+
+.. py:module:: datafusion.functions
+
+.. autoapi-nested-parse::
+
+   User functions for operating on :py:class:`~datafusion.expr.Expr`.
+
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   datafusion.functions.abs
+   datafusion.functions.acos
+   datafusion.functions.acosh
+   datafusion.functions.alias
+   datafusion.functions.approx_distinct
+   datafusion.functions.approx_median
+   datafusion.functions.approx_percentile_cont
+   datafusion.functions.approx_percentile_cont_with_weight
+   datafusion.functions.array
+   datafusion.functions.array_agg
+   datafusion.functions.array_append
+   datafusion.functions.array_cat
+   datafusion.functions.array_concat
+   datafusion.functions.array_dims
+   datafusion.functions.array_distinct
+   datafusion.functions.array_element
+   datafusion.functions.array_except
+   datafusion.functions.array_extract
+   datafusion.functions.array_has
+   datafusion.functions.array_has_all
+   datafusion.functions.array_has_any
+   datafusion.functions.array_indexof
+   datafusion.functions.array_intersect
+   datafusion.functions.array_join
+   datafusion.functions.array_length
+   datafusion.functions.array_ndims
+   datafusion.functions.array_pop_back
+   datafusion.functions.array_pop_front
+   datafusion.functions.array_position
+   datafusion.functions.array_positions
+   datafusion.functions.array_prepend
+   datafusion.functions.array_push_back
+   datafusion.functions.array_push_front
+   datafusion.functions.array_remove
+   datafusion.functions.array_remove_all
+   datafusion.functions.array_remove_n
+   datafusion.functions.array_repeat
+   datafusion.functions.array_replace
+   datafusion.functions.array_replace_all
+   datafusion.functions.array_replace_n
+   datafusion.functions.array_resize
+   datafusion.functions.array_slice
+   datafusion.functions.array_sort
+   datafusion.functions.array_to_string
+   datafusion.functions.array_union
+   datafusion.functions.arrow_typeof
+   datafusion.functions.ascii
+   datafusion.functions.asin
+   datafusion.functions.asinh
+   datafusion.functions.atan
+   datafusion.functions.atan2
+   datafusion.functions.atanh
+   datafusion.functions.avg
+   datafusion.functions.bit_and
+   datafusion.functions.bit_length
+   datafusion.functions.bit_or
+   datafusion.functions.bit_xor
+   datafusion.functions.bool_and
+   datafusion.functions.bool_or
+   datafusion.functions.btrim
+   datafusion.functions.case
+   datafusion.functions.cbrt
+   datafusion.functions.ceil
+   datafusion.functions.char_length
+   datafusion.functions.character_length
+   datafusion.functions.chr
+   datafusion.functions.coalesce
+   datafusion.functions.col
+   datafusion.functions.concat
+   datafusion.functions.concat_ws
+   datafusion.functions.corr
+   datafusion.functions.cos
+   datafusion.functions.cosh
+   datafusion.functions.cot
+   datafusion.functions.count
+   datafusion.functions.count_star
+   datafusion.functions.covar
+   datafusion.functions.covar_pop
+   datafusion.functions.covar_samp
+   datafusion.functions.current_date
+   datafusion.functions.current_time
+   datafusion.functions.date_bin
+   datafusion.functions.date_part
+   datafusion.functions.date_trunc
+   datafusion.functions.datepart
+   datafusion.functions.datetrunc
+   datafusion.functions.decode
+   datafusion.functions.degrees
+   datafusion.functions.digest
+   datafusion.functions.encode
+   datafusion.functions.ends_with
+   datafusion.functions.exp
+   datafusion.functions.factorial
+   datafusion.functions.find_in_set
+   datafusion.functions.first_value
+   datafusion.functions.flatten
+   datafusion.functions.floor
+   datafusion.functions.from_unixtime
+   datafusion.functions.gcd
+   datafusion.functions.grouping
+   datafusion.functions.in_list
+   datafusion.functions.initcap
+   datafusion.functions.isnan
+   datafusion.functions.iszero
+   datafusion.functions.last_value
+   datafusion.functions.lcm
+   datafusion.functions.left
+   datafusion.functions.length
+   datafusion.functions.levenshtein
+   datafusion.functions.list_append
+   datafusion.functions.list_dims
+   datafusion.functions.list_distinct
+   datafusion.functions.list_element
+   datafusion.functions.list_except
+   datafusion.functions.list_extract
+   datafusion.functions.list_indexof
+   datafusion.functions.list_intersect
+   datafusion.functions.list_join
+   datafusion.functions.list_length
+   datafusion.functions.list_ndims
+   datafusion.functions.list_position
+   datafusion.functions.list_positions
+   datafusion.functions.list_prepend
+   datafusion.functions.list_push_back
+   datafusion.functions.list_push_front
+   datafusion.functions.list_remove
+   datafusion.functions.list_remove_all
+   datafusion.functions.list_remove_n
+   datafusion.functions.list_replace
+   datafusion.functions.list_replace_all
+   datafusion.functions.list_replace_n
+   datafusion.functions.list_resize
+   datafusion.functions.list_slice
+   datafusion.functions.list_sort
+   datafusion.functions.list_to_string
+   datafusion.functions.list_union
+   datafusion.functions.ln
+   datafusion.functions.log
+   datafusion.functions.log10
+   datafusion.functions.log2
+   datafusion.functions.lower
+   datafusion.functions.lpad
+   datafusion.functions.ltrim
+   datafusion.functions.make_array
+   datafusion.functions.make_date
+   datafusion.functions.max
+   datafusion.functions.md5
+   datafusion.functions.mean
+   datafusion.functions.median
+   datafusion.functions.min
+   datafusion.functions.named_struct
+   datafusion.functions.nanvl
+   datafusion.functions.now
+   datafusion.functions.nullif
+   datafusion.functions.octet_length
+   datafusion.functions.order_by
+   datafusion.functions.overlay
+   datafusion.functions.pi
+   datafusion.functions.pow
+   datafusion.functions.power
+   datafusion.functions.radians
+   datafusion.functions.random
+   datafusion.functions.range
+   datafusion.functions.regexp_like
+   datafusion.functions.regexp_match
+   datafusion.functions.regexp_replace
+   datafusion.functions.regr_avgx
+   datafusion.functions.regr_avgy
+   datafusion.functions.regr_count
+   datafusion.functions.regr_intercept
+   datafusion.functions.regr_r2
+   datafusion.functions.regr_slope
+   datafusion.functions.regr_sxx
+   datafusion.functions.regr_sxy
+   datafusion.functions.regr_syy
+   datafusion.functions.repeat
+   datafusion.functions.replace
+   datafusion.functions.reverse
+   datafusion.functions.right
+   datafusion.functions.round
+   datafusion.functions.rpad
+   datafusion.functions.rtrim
+   datafusion.functions.sha224
+   datafusion.functions.sha256
+   datafusion.functions.sha384
+   datafusion.functions.sha512
+   datafusion.functions.signum
+   datafusion.functions.sin
+   datafusion.functions.sinh
+   datafusion.functions.split_part
+   datafusion.functions.sqrt
+   datafusion.functions.starts_with
+   datafusion.functions.stddev
+   datafusion.functions.stddev_pop
+   datafusion.functions.stddev_samp
+   datafusion.functions.strpos
+   datafusion.functions.struct
+   datafusion.functions.substr
+   datafusion.functions.substr_index
+   datafusion.functions.substring
+   datafusion.functions.sum
+   datafusion.functions.tan
+   datafusion.functions.tanh
+   datafusion.functions.to_hex
+   datafusion.functions.to_timestamp
+   datafusion.functions.to_timestamp_micros
+   datafusion.functions.to_timestamp_millis
+   datafusion.functions.to_timestamp_seconds
+   datafusion.functions.to_unixtime
+   datafusion.functions.translate
+   datafusion.functions.trim
+   datafusion.functions.trunc
+   datafusion.functions.upper
+   datafusion.functions.uuid
+   datafusion.functions.var
+   datafusion.functions.var_pop
+   datafusion.functions.var_samp
+   datafusion.functions.window
+
+
+Module Contents
+---------------
+
+.. py:function:: abs(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Return the absolute value of a given number.
+
+   Returns:
+   --------
+   Expr
+       A new expression representing the absolute value of the input expression.
+
+
+.. py:function:: acos(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the arc cosine or inverse cosine of a number.
+
+   Returns:
+   --------
+   Expr
+       A new expression representing the arc cosine of the input expression.
+
+
+.. py:function:: acosh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns inverse hyperbolic cosine.
+
+
+.. py:function:: alias(expr: datafusion.expr.Expr, name: str) -> datafusion.expr.Expr
+
+   Creates an alias expression.
+
+
+.. py:function:: approx_distinct(expression: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the approximate number of distinct values.
+
+
+.. py:function:: approx_median(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the approximate median value.
+
+
+.. py:function:: approx_percentile_cont(expression: datafusion.expr.Expr, percentile: datafusion.expr.Expr, num_centroids: datafusion.expr.Expr | None = None, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the value that is approximately at a given percentile of ``expr``.
+
+
+.. py:function:: approx_percentile_cont_with_weight(arg: datafusion.expr.Expr, weight: datafusion.expr.Expr, percentile: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the value of the approximate percentile.
+
+   This function is similar to :py:func:`approx_percentile_cont` except that it uses
+   the associated associated weights.
+
+
+.. py:function:: array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array using the specified input expressions.
+
+   This is an alias for :py:func:`make_array`.
+
+
+.. py:function:: array_agg(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Aggregate values into an array.
+
+
+.. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Appends an element to the end of an array.
+
+
+.. py:function:: array_cat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the input arrays.
+
+   This is an alias for :py:func:`array_concat`.
+
+
+.. py:function:: array_concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the input arrays.
+
+
+.. py:function:: array_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array of the array's dimensions.
+
+
+.. py:function:: array_distinct(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns distinct values from the array after removing duplicates.
+
+
+.. py:function:: array_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts the element with the index n from the array.
+
+
+.. py:function:: array_except(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the elements that appear in ``array1`` but not in ``array2``.
+
+
+.. py:function:: array_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts the element with the index n from the array.
+
+   This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: array_has(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if the element appears in the first array, otherwise false.
+
+
+.. py:function:: array_has_all(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Determines if there is complete overlap ``second_array`` in ``first_array``.
+
+   Returns true if each element of the second array appears in the first array.
+   Otherwise, it returns false.
+
+
+.. py:function:: array_has_any(first_array: datafusion.expr.Expr, second_array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Determine if there is an overlap between ``first_array`` and ``second_array``.
+
+   Returns true if at least one element of the second array appears in the first
+   array. Otherwise, it returns false.
+
+
+.. py:function:: array_indexof(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
+
+   Return the position of the first occurrence of ``element`` in ``array``.
+
+   This is an alias for :py:func:`array_position`.
+
+
+.. py:function:: array_intersect(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the intersection of ``array1`` and ``array2``.
+
+
+.. py:function:: array_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts each element to its text representation.
+
+   This is an alias for :py:func:`array_to_string`.
+
+
+.. py:function:: array_length(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the length of the array.
+
+
+.. py:function:: array_ndims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the number of dimensions of the array.
+
+
+.. py:function:: array_pop_back(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the array without the last element.
+
+
+.. py:function:: array_pop_front(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the array without the first element.
+
+
+.. py:function:: array_position(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
+
+   Return the position of the first occurrence of ``element`` in ``array``.
+
+
+.. py:function:: array_positions(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Searches for an element in the array and returns all occurrences.
+
+
+.. py:function:: array_prepend(element: datafusion.expr.Expr, array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Prepends an element to the beginning of an array.
+
+
+.. py:function:: array_push_back(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Appends an element to the end of an array.
+
+   This is an alias for :py:func:`array_append`.
+
+
+.. py:function:: array_push_front(element: datafusion.expr.Expr, array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Prepends an element to the beginning of an array.
+
+   This is an alias for :py:func:`array_prepend`.
+
+
+.. py:function:: array_remove(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes the first element from the array equal to the given value.
+
+
+.. py:function:: array_remove_all(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all elements from the array equal to the given value.
+
+
+.. py:function:: array_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes the first ``max`` elements from the array equal to the given value.
+
+
+.. py:function:: array_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array containing ``element`` ``count`` times.
+
+
+.. py:function:: array_replace(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces the first occurrence of ``from_val`` with ``to_val``.
+
+
+.. py:function:: array_replace_all(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces all occurrences of ``from_val`` with ``to_val``.
+
+
+.. py:function:: array_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replace ``n`` occurrences of ``from_val`` with ``to_val``.
+
+   Replaces the first ``max`` occurrences of the specified element with another
+   specified element.
+
+
+.. py:function:: array_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr, value: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array with the specified size filled.
+
+   If ``size`` is greater than the ``array`` length, the additional entries will
+   be filled with the given ``value``.
+
+
+.. py:function:: array_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns a slice of the array.
+
+
+.. py:function:: array_sort(array: datafusion.expr.Expr, descending: bool = False, null_first: bool = False) -> datafusion.expr.Expr
+
+   Sort an array.
+
+   :param array: The input array to sort.
+   :param descending: If True, sorts in descending order.
+   :param null_first: If True, nulls will be returned at the beginning of the array.
+
+
+.. py:function:: array_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts each element to its text representation.
+
+
+.. py:function:: array_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array of the elements in the union of array1 and array2.
+
+   Duplicate rows will not be returned.
+
+
+.. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Arrow type of the expression.
+
+
+.. py:function:: ascii(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the numeric code of the first character of the argument.
+
+
+.. py:function:: asin(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the arc sine or inverse sine of a number.
+
+
+.. py:function:: asinh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns inverse hyperbolic sine.
+
+
+.. py:function:: atan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns inverse tangent of a number.
+
+
+.. py:function:: atan2(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns inverse tangent of a division given in the argument.
+
+
+.. py:function:: atanh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns inverse hyperbolic tangent.
+
+
+.. py:function:: avg(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the average value.
+
+
+.. py:function:: bit_and(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the bitwise AND of the argument.
+
+
+.. py:function:: bit_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the number of bits in the string argument.
+
+
+.. py:function:: bit_or(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the bitwise OR of the argument.
+
+
+.. py:function:: bit_xor(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the bitwise XOR of the argument.
+
+
+.. py:function:: bool_and(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the boolean AND of the arugment.
+
+
+.. py:function:: bool_or(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the boolean OR of the arguement.
+
+
+.. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all characters, spaces by default, from both sides of a string.
+
+
+.. py:function:: case(expr: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
+
+   Create a case expression.
+
+   Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
+   expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+   detailed usage.
+
+
+.. py:function:: cbrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the cube root of a number.
+
+
+.. py:function:: ceil(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the nearest integer greater than or equal to argument.
+
+
+.. py:function:: char_length(string: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   The number of characters in the ``string``.
+
+
+.. py:function:: character_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the number of characters in the argument.
+
+
+.. py:function:: chr(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts the Unicode code point to a UTF8 character.
+
+
+.. py:function:: coalesce(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the value of the first expr in ``args`` which is not NULL.
+
+
+.. py:function:: col(name: str) -> datafusion.expr.Expr
+
+   Creates a column reference expression.
+
+
+.. py:function:: concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the text representations of all the arguments.
+
+   NULL arguments are ignored.
+
+
+.. py:function:: concat_ws(separator: str, *args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the list ``args`` with the separator.
+
+   ``NULL`` arugments are ignored. ``separator`` should not be ``NULL``.
+
+
+.. py:function:: corr(value1: datafusion.expr.Expr, value2: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the correlation coefficient between ``value1`` and ``value2``.
+
+
+.. py:function:: cos(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the cosine of the argument.
+
+
+.. py:function:: cosh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the hyperbolic cosine of the argument.
+
+
+.. py:function:: cot(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the cotangent of the argument.
+
+
+.. py:function:: count(args: datafusion.expr.Expr | list[datafusion.expr.Expr] | None = None, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the number of rows that match the given arguments.
+
+
+.. py:function:: count_star() -> datafusion.expr.Expr
+
+   Create a COUNT(1) aggregate expression.
+
+
+.. py:function:: covar(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the sample covariance.
+
+   This is an alias for :py:func:`covar_samp`.
+
+
+.. py:function:: covar_pop(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the population covariance.
+
+
+.. py:function:: covar_samp(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the sample covariance.
+
+
+.. py:function:: current_date() -> datafusion.expr.Expr
+
+   Returns current UTC date as a Date32 value.
+
+
+.. py:function:: current_time() -> datafusion.expr.Expr
+
+   Returns current UTC time as a Time64 value.
+
+
+.. py:function:: date_bin(stride: datafusion.expr.Expr, source: datafusion.expr.Expr, origin: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Coerces an arbitrary timestamp to the start of the nearest specified interval.
+
+
+.. py:function:: date_part(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts a subfield from the date.
+
+
+.. py:function:: date_trunc(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Truncates the date to a specified level of precision.
+
+
+.. py:function:: datepart(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Return a specified part of a date.
+
+   This is an alias for :py:func:`date_part`.
+
+
+.. py:function:: datetrunc(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Truncates the date to a specified level of precision.
+
+   This is an alias for :py:func:`date_trunc`.
+
+
+.. py:function:: decode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
+
+
+.. py:function:: degrees(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts the argument from radians to degrees.
+
+
+.. py:function:: digest(value: datafusion.expr.Expr, method: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the binary hash of an expression using the specified algorithm.
+
+   Standard algorithms are md5, sha224, sha256, sha384, sha512, blake2s,
+   blake2b, and blake3.
+
+
+.. py:function:: encode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
+
+
+.. py:function:: ends_with(arg: datafusion.expr.Expr, suffix: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if the ``string`` ends with the ``suffix``, false otherwise.
+
+
+.. py:function:: exp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the exponential of the arugment.
+
+
+.. py:function:: factorial(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the factorial of the argument.
+
+
+.. py:function:: find_in_set(string: datafusion.expr.Expr, string_list: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Find a string in a list of strings.
+
+   Returns a value in the range of 1 to N if the string is in the string list
+   ``string_list`` consisting of N substrings.
+
+   The string list is a string composed of substrings separated by ``,`` characters.
+
+
+.. py:function:: first_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Returns the first value in a group of values.
+
+
+.. py:function:: flatten(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Flattens an array of arrays into a single array.
+
+
+.. py:function:: floor(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the nearest integer less than or equal to the argument.
+
+
+.. py:function:: from_unixtime(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts an integer to RFC3339 timestamp format string.
+
+
+.. py:function:: gcd(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the greatest common divisor.
+
+
+.. py:function:: grouping(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Indicates if the expression is aggregated or not.
+
+   Returns 1 if the value of the argument is aggregated, 0 if not.
+
+
+.. py:function:: in_list(arg: datafusion.expr.Expr, values: list[datafusion.expr.Expr], negated: bool = False) -> datafusion.expr.Expr
+
+   Returns whether the argument is contained within the list ``values``.
+
+
+.. py:function:: initcap(string: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Set the initial letter of each word to capital.
+
+   Converts the first letter of each word in ``string`` to uppercase and the remaining
+   characters to lowercase.
+
+
+.. py:function:: isnan(expr: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if a given number is +NaN or -NaN otherwise returns false.
+
+
+.. py:function:: iszero(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if a given number is +0.0 or -0.0 otherwise returns false.
+
+
+.. py:function:: last_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+
+   Returns the last value in a group of values.
+
+
+.. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the least common multiple.
+
+
+.. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the first ``n`` characters in the ``string``.
+
+
+.. py:function:: length(string: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   The number of characters in the ``string``.
+
+
+.. py:function:: levenshtein(string1: datafusion.expr.Expr, string2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the Levenshtein distance between the two given strings.
+
+
+.. py:function:: list_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Appends an element to the end of an array.
+
+   This is an alias for :py:func:`array_append`.
+
+
+.. py:function:: list_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array of the array's dimensions.
+
+   This is an alias for :py:func:`array_dims`.
+
+
+.. py:function:: list_distinct(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns distinct values from the array after removing duplicates.
+
+   This is an alias for :py:func:`array_distinct`.
+
+
+.. py:function:: list_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts the element with the index n from the array.
+
+   This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: list_except(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the elements that appear in ``array1`` but not in the ``array2``.
+
+   This is an alias for :py:func:`array_except`.
+
+
+.. py:function:: list_extract(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts the element with the index n from the array.
+
+   This is an alias for :py:func:`array_element`.
+
+
+.. py:function:: list_indexof(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
+
+   Return the position of the first occurrence of ``element`` in ``array``.
+
+   This is an alias for :py:func:`array_position`.
+
+
+.. py:function:: list_intersect(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an the intersection of ``array1`` and ``array2``.
+
+   This is an alias for :py:func:`array_intersect`.
+
+
+.. py:function:: list_join(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts each element to its text representation.
+
+   This is an alias for :py:func:`array_to_string`.
+
+
+.. py:function:: list_length(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the length of the array.
+
+   This is an alias for :py:func:`array_length`.
+
+
+.. py:function:: list_ndims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the number of dimensions of the array.
+
+   This is an alias for :py:func:`array_ndims`.
+
+
+.. py:function:: list_position(array: datafusion.expr.Expr, element: datafusion.expr.Expr, index: int | None = 1) -> datafusion.expr.Expr
+
+   Return the position of the first occurrence of ``element`` in ``array``.
+
+   This is an alias for :py:func:`array_position`.
+
+
+.. py:function:: list_positions(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Searches for an element in the array and returns all occurrences.
+
+   This is an alias for :py:func:`array_positions`.
+
+
+.. py:function:: list_prepend(element: datafusion.expr.Expr, array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Prepends an element to the beginning of an array.
+
+   This is an alias for :py:func:`array_prepend`.
+
+
+.. py:function:: list_push_back(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Appends an element to the end of an array.
+
+   This is an alias for :py:func:`array_append`.
+
+
+.. py:function:: list_push_front(element: datafusion.expr.Expr, array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Prepends an element to the beginning of an array.
+
+   This is an alias for :py:func:`array_prepend`.
+
+
+.. py:function:: list_remove(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes the first element from the array equal to the given value.
+
+   This is an alias for :py:func:`array_remove`.
+
+
+.. py:function:: list_remove_all(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all elements from the array equal to the given value.
+
+   This is an alias for :py:func:`array_remove_all`.
+
+
+.. py:function:: list_remove_n(array: datafusion.expr.Expr, element: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes the first ``max`` elements from the array equal to the given value.
+
+   This is an alias for :py:func:`array_remove_n`.
+
+
+.. py:function:: list_replace(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces the first occurrence of ``from_val`` with ``to_val``.
+
+   This is an alias for :py:func:`array_replace`.
+
+
+.. py:function:: list_replace_all(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces all occurrences of ``from_val`` with ``to_val``.
+
+   This is an alias for :py:func:`array_replace_all`.
+
+
+.. py:function:: list_replace_n(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr, max: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replace ``n`` occurrences of ``from_val`` with ``to_val``.
+
+   Replaces the first ``max`` occurrences of the specified element with another
+   specified element.
+
+   This is an alias for :py:func:`array_replace_n`.
+
+
+.. py:function:: list_resize(array: datafusion.expr.Expr, size: datafusion.expr.Expr, value: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array with the specified size filled.
+
+   If ``size`` is greater than the ``array`` length, the additional entries will be
+   filled with the given ``value``. This is an alias for :py:func:`array_resize`.
+
+
+.. py:function:: list_slice(array: datafusion.expr.Expr, begin: datafusion.expr.Expr, end: datafusion.expr.Expr, stride: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns a slice of the array.
+
+   This is an alias for :py:func:`array_slice`.
+
+
+.. py:function:: list_sort(array: datafusion.expr.Expr, descending: bool = False, null_first: bool = False) -> datafusion.expr.Expr
+
+   This is an alias for :py:func:`array_sort`.
+
+
+.. py:function:: list_to_string(expr: datafusion.expr.Expr, delimiter: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts each element to its text representation.
+
+   This is an alias for :py:func:`array_to_string`.
+
+
+.. py:function:: list_union(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array of the elements in the union of array1 and array2.
+
+   Duplicate rows will not be returned.
+
+   This is an alias for :py:func:`array_union`.
+
+
+.. py:function:: ln(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the natural logarithm (base e) of the argument.
+
+
+.. py:function:: log(base: datafusion.expr.Expr, num: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the logarithm of a number for a particular ``base``.
+
+
+.. py:function:: log10(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Base 10 logarithm of the argument.
+
+
+.. py:function:: log2(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Base 2 logarithm of the argument.
+
+
+.. py:function:: lower(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string to lowercase.
+
+
+.. py:function:: lpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Add left padding to a string.
+
+   Extends the string to length length by prepending the characters fill (a
+   space by default). If the string is already longer than length then it is
+   truncated (on the right).
+
+
+.. py:function:: ltrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all characters, spaces by default, from the beginning of a string.
+
+
+.. py:function:: make_array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array using the specified input expressions.
+
+
+.. py:function:: make_date(year: datafusion.expr.Expr, month: datafusion.expr.Expr, day: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Make a date from year, month and day component parts.
+
+
+.. py:function:: max(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the maximum value of the arugment.
+
+
+.. py:function:: md5(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes an MD5 128-bit checksum for a string expression.
+
+
+.. py:function:: mean(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the average (mean) value of the argument.
+
+   This is an alias for :py:func:`avg`.
+
+
+.. py:function:: median(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the median of a set of numbers.
+
+
+.. py:function:: min(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Returns the minimum value of the argument.
+
+
+.. py:function:: named_struct(name_pairs: list[str, datafusion.expr.Expr]) -> datafusion.expr.Expr
+
+   Returns a struct with the given names and arguments pairs.
+
+
+.. py:function:: nanvl(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``.
+
+
+.. py:function:: now() -> datafusion.expr.Expr
+
+   Returns the current timestamp in nanoseconds.
+
+   This will use the same value for all instances of now() in same statement.
+
+
+.. py:function:: nullif(expr1: datafusion.expr.Expr, expr2: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns NULL if expr1 equals expr2; otherwise it returns expr1.
+
+   This can be used to perform the inverse operation of the COALESCE expression.
+
+
+.. py:function:: octet_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the number of bytes of a string.
+
+
+.. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.Expr
+
+   Creates a new sort expression.
+
+
+.. py:function:: overlay(string: datafusion.expr.Expr, substring: datafusion.expr.Expr, start: datafusion.expr.Expr, length: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Replace a substring with a new substring.
+
+   Replace the substring of string that starts at the ``start``'th character and
+   extends for ``length`` characters with new substring.
+
+
+.. py:function:: pi() -> datafusion.expr.Expr
+
+   Returns an approximate value of π.
+
+
+.. py:function:: pow(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``base`` raised to the power of ``exponent``.
+
+   This is an alias of :py:func:`power`.
+
+
+.. py:function:: power(base: datafusion.expr.Expr, exponent: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``base`` raised to the power of ``exponent``.
+
+
+.. py:function:: radians(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts the argument from degrees to radians.
+
+
+.. py:function:: random() -> datafusion.expr.Expr
+
+   Returns a random value in the range ``0.0 <= x < 1.0``.
+
+
+.. py:function:: range(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Create a list of values in the range between start and stop.
+
+
+.. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Find if any regular expression (regex) matches exist.
+
+   Tests a string using a regular expression returning true if at least one match,
+   false otherwise.
+
+
+.. py:function:: regexp_match(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Perform regular expression (regex) matching.
+
+   Returns an array with each element containing the leftmost-first match of the
+   corresponding index in ``regex`` to string in ``string``.
+
+
+.. py:function:: regexp_replace(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, replacement: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Replaces substring(s) matching a PCRE-like regular expression.
+
+   The full list of supported features and syntax can be found at
+   <https://docs.rs/regex/latest/regex/#syntax>
+
+   Supported flags with the addition of 'g' can be found at
+   <https://docs.rs/regex/latest/regex/#grouping-and-flags>
+
+
+.. py:function:: regr_avgx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the average of the independent variable ``x``.
+
+   Only non-null pairs of the inputs are evaluated.
+
+
+.. py:function:: regr_avgy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the average of the dependent variable ``y``.
+
+   Only non-null pairs of the inputs are evaluated.
+
+
+.. py:function:: regr_count(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Counts the number of rows in which both expressions are not null.
+
+
+.. py:function:: regr_intercept(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the intercept from the linear regression.
+
+
+.. py:function:: regr_r2(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the R-squared value from linear regression.
+
+
+.. py:function:: regr_slope(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the slope from linear regression.
+
+
+.. py:function:: regr_sxx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the sum of squares of the independent variable ``x``.
+
+
+.. py:function:: regr_sxy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the sum of products of pairs of numbers.
+
+
+.. py:function:: regr_syy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the sum of squares of the dependent variable ``y``.
+
+
+.. py:function:: repeat(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Repeats the ``string`` to ``n`` times.
+
+
+.. py:function:: replace(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces all occurrences of ``from_val`` with ``to_val`` in the ``string``.
+
+
+.. py:function:: reverse(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Reverse the string argument.
+
+
+.. py:function:: right(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the last ``n`` characters in the ``string``.
+
+
+.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr = Expr.literal(0)) -> datafusion.expr.Expr
+
+   Round the argument to the nearest integer.
+
+   If the optional ``decimal_places`` is specified, round to the nearest number of
+   decimal places. You can specify a negative number of decimal places. For example
+   ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+
+
+.. py:function:: rpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Add right padding to a string.
+
+   Extends the string to length length by appending the characters fill (a space
+   by default). If the string is already longer than length then it is truncated.
+
+
+.. py:function:: rtrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all characters, spaces by default, from the end of a string.
+
+
+.. py:function:: sha224(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the SHA-224 hash of a binary string.
+
+
+.. py:function:: sha256(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the SHA-256 hash of a binary string.
+
+
+.. py:function:: sha384(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the SHA-384 hash of a binary string.
+
+
+.. py:function:: sha512(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the SHA-512 hash of a binary string.
+
+
+.. py:function:: signum(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the sign of the argument (-1, 0, +1).
+
+
+.. py:function:: sin(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the sine of the argument.
+
+
+.. py:function:: sinh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the hyperbolic sine of the argument.
+
+
+.. py:function:: split_part(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, index: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Split a string and return one part.
+
+   Splits a string based on a delimiter and picks out the desired field based
+   on the index.
+
+
+.. py:function:: sqrt(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the square root of the argument.
+
+
+.. py:function:: starts_with(string: datafusion.expr.Expr, prefix: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns true if string starts with prefix.
+
+
+.. py:function:: stddev(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the standard deviation of the argument.
+
+
+.. py:function:: stddev_pop(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the population standard deviation of the argument.
+
+
+.. py:function:: stddev_samp(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the sample standard deviation of the argument.
+
+   This is an alias for :py:func:`stddev`.
+
+
+.. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Finds the position from where the ``substring`` matches the ``string``.
+
+
+.. py:function:: struct(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a struct with the given arguments.
+
+
+.. py:function:: substr(string: datafusion.expr.Expr, position: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Substring from the ``position`` to the end.
+
+
+.. py:function:: substr_index(string: datafusion.expr.Expr, delimiter: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an indexed substring.
+
+   The return will be the ``string`` from before ``count`` occurrences of
+   ``delimiter``.
+
+
+.. py:function:: substring(string: datafusion.expr.Expr, position: datafusion.expr.Expr, length: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Substring from the ``position`` with ``length`` characters.
+
+
+.. py:function:: sum(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the sum of a set of numbers.
+
+
+.. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the tangent of the argument.
+
+
+.. py:function:: tanh(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the hyperbolic tangent of the argument.
+
+
+.. py:function:: to_hex(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts an integer to a hexadecimal string.
+
+
+.. py:function:: to_timestamp(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
+
+   For usage of ``formatters`` see the rust chrono package ``strftime`` package.
+
+   [Documentation here.](https://docs.rs/chrono/latest/chrono/format/strftime/index.html)
+
+
+.. py:function:: to_timestamp_micros(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in microseconds.
+
+   See :py:func:`to_timestamp` for a description on how to use formatters.
+
+
+.. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in milliseconds.
+
+   See :py:func:`to_timestamp` for a description on how to use formatters.
+
+
+.. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in seconds.
+
+   See :py:func:`to_timestamp` for a description on how to use formatters.
+
+
+.. py:function:: to_unixtime(string: datafusion.expr.Expr, *format_arguments: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a Unixtime.
+
+
+.. py:function:: translate(string: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Replaces the characters in ``from_val`` with the counterpart in ``to_val``.
+
+
+.. py:function:: trim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Removes all characters, spaces by default, from both sides of a string.
+
+
+.. py:function:: trunc(num: datafusion.expr.Expr, precision: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Truncate the number toward zero with optional precision.
+
+
+.. py:function:: upper(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string to uppercase.
+
+
+.. py:function:: uuid(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns uuid v4 as a string value.
+
+
+.. py:function:: var(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the sample variance of the argument.
+
+   This is an alias for :py:func:`var_samp`.
+
+
+.. py:function:: var_pop(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+
+   Computes the population variance of the argument.
+
+
+.. py:function:: var_samp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Computes the sample variance of the argument.
+
+
+.. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
+
+   Creates a new Window function expression.
+
+
