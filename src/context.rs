@@ -21,11 +21,14 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use datafusion::execution::session_state::SessionStateBuilder;
+use arrow::array::RecordBatchReader;
+use arrow::ffi_stream::ArrowArrayStreamReader;
+use arrow::pyarrow::FromPyArrow;
 use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
 
-use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -474,18 +477,35 @@ impl PySessionContext {
         name: Option<&str>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
-        // Instantiate pyarrow Table object & convert to batches
-        let table = data.call_method0("to_batches")?;
+        let mut batches = None;
+        let mut schema = None;
 
-        let schema = data.getattr("schema")?;
-        let schema = schema.extract::<PyArrowType<Schema>>()?;
+        if let Ok(stream_reader) = ArrowArrayStreamReader::from_pyarrow_bound(&data) {
+            // Works for any object that implements __arrow_c_stream__ in pycapsule.
 
-        // Cast PyAny to RecordBatch type
+            schema = Some(stream_reader.schema().as_ref().to_owned());
+            batches = Some(stream_reader.filter_map(|v| v.ok()).collect());
+        } else if let Ok(array) = RecordBatch::from_pyarrow_bound(&data) {
+            // While this says RecordBatch, it will work for any object that implements
+            // __arrow_c_array__ in pycapsule.
+
+            schema = Some(array.schema().as_ref().to_owned());
+            batches = Some(vec![array]);
+        }
+
+        if batches.is_none() || schema.is_none() {
+            return Err(PyTypeError::new_err(
+                "Expected either a Arrow Array or Arrow Stream in from_arrow_table().",
+            ));
+        }
+
+        let batches = batches.unwrap();
+        let schema = schema.unwrap();
+
         // Because create_dataframe() expects a vector of vectors of record batches
         // here we need to wrap the vector of record batches in an additional vector
-        let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>()?;
-        let list_of_batches = PyArrowType::from(vec![batches.0]);
-        self.create_dataframe(list_of_batches, name, Some(schema), py)
+        let list_of_batches = PyArrowType::from(vec![batches]);
+        self.create_dataframe(list_of_batches, name, Some(schema.into()), py)
     }
 
     /// Construct datafusion dataframe from pandas

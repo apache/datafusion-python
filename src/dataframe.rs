@@ -15,8 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ffi::CString;
 use std::sync::Arc;
 
+use arrow::array::{RecordBatchIterator, RecordBatchReader};
+use arrow::ffi_stream::FFI_ArrowArrayStream;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -29,7 +32,7 @@ use datafusion_common::UnnestOptions;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyCapsule, PyTuple};
 use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
@@ -449,6 +452,26 @@ impl PyDataFrame {
         let args = PyTuple::new_bound(py, &[batches, schema]);
         let table: PyObject = table_class.call_method1("from_batches", args)?.into();
         Ok(table)
+    }
+
+    #[allow(unused_variables)]
+    fn __arrow_c_stream__<'py>(
+        &'py mut self,
+        py: Python<'py>,
+        requested_schema: Option<Bound<'py, PyCapsule>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
+            .into_iter()
+            .map(|r| Ok(r));
+        let schema = self.df.schema().to_owned().into();
+
+        // let reader = RecordBatchIterator::new(vec![Ok(self.clone())], self.schema());
+        let reader = RecordBatchIterator::new(batches, schema);
+        let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
+
+        let ffi_stream = FFI_ArrowArrayStream::new(reader);
+        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+        PyCapsule::new_bound(py, ffi_stream, Some(stream_capsule_name))
     }
 
     fn execute_stream(&self, py: Python) -> PyResult<PyRecordBatchStream> {
