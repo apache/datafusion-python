@@ -15,13 +15,16 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _window_functions:
+
 Window Functions
 ================
 
-In this section you will learn about window functions. A window function utilizes values from one or multiple rows to
-produce a result for each individual row, unlike an aggregate function that provides a single value for multiple rows.
+In this section you will learn about window functions. A window function utilizes values from one or
+multiple rows to produce a result for each individual row, unlike an aggregate function that
+provides a single value for multiple rows.
 
-The functionality of window functions in DataFusion is supported by the dedicated :py:func:`~datafusion.functions.window` function.
+The window functions are availble in the :py:mod:`~datafusion.functions` module.
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
@@ -40,17 +43,18 @@ We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
     ctx = SessionContext()
     df = ctx.read_csv("pokemon.csv")
 
-Here is an example that shows how to compare each pokemons’s attack power with the average attack power in its ``"Type 1"``
+Here is an example that shows how to compare each pokemons’s attack power with the average attack
+power in its ``"Type 1"``
 
 .. ipython:: python
 
     df.select(
         col('"Name"'),
         col('"Attack"'),
-        f.alias(
-            f.window("avg", [col('"Attack"')], partition_by=[col('"Type 1"')]),
-            "Average Attack",
-        )
+        #f.alias(
+        #    f.window("avg", [col('"Attack"')], partition_by=[col('"Type 1"')]),
+        #    "Average Attack",
+        #)
     )
 
 You can also control the order in which rows are processed by window functions by providing
@@ -61,15 +65,15 @@ a list of ``order_by`` functions for the ``order_by`` parameter.
     df.select(
         col('"Name"'),
         col('"Attack"'),
-        f.alias(
-            f.window(
-                "rank",
-                [],
-                partition_by=[col('"Type 1"')],
-                order_by=[f.order_by(col('"Attack"'))],
-            ),
-            "rank",
-        ),
+        #f.alias(
+        #    f.window(
+        #        "rank",
+        #        [],
+        #        partition_by=[col('"Type 1"')],
+        #        order_by=[f.order_by(col('"Attack"'))],
+        #    ),
+        #    "rank",
+        #),
     )
 
 The possible window functions are:
