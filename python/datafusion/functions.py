@@ -27,10 +27,10 @@ from datafusion._internal import functions as f, common
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
 
-from typing import TYPE_CHECKING
+from typing import Any, Optional
+from typing_extensions import deprecated
 
-if TYPE_CHECKING:
-    import pyarrow as pa
+import pyarrow as pa
 
 __all__ = [
     "abs",
@@ -389,7 +389,15 @@ def window(
     window_frame: WindowFrame | None = None,
     ctx: SessionContext | None = None,
 ) -> Expr:
-    """Creates a new Window function expression."""
+    """Creates a new Window function expression.
+
+    This interface is deprecateted. Instead of using this interface, users should call
+    the window functions directly. For example, to perform a lag use
+
+    ```
+    df.select(functions.lag(col("a")).partition_by(col("b")).build())
+    ```
+    """
     args = [a.expr for a in args]
     partition_by = [e.expr for e in partition_by] if partition_by is not None else None
     order_by = [o.expr for o in order_by] if order_by is not None else None
@@ -1746,6 +1754,20 @@ def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     return Expr(f.bool_or(arg.expr, distinct=distinct))
 
 
-def lead(arg: Expr, shift_offset: int = 1, default_value: pa.Scalar | None = None):
-    """Create a lead window function."""
+def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -> Expr:
+    """Create a lead window function.
+
+    Lead operation will return the argument that is in the next shift_offset-th row in
+    the partition. For example ``lead(col("b"), shift_offset=3, default_value=5)`` will
+    return the 3rd following value in column ``b``. At the end of the partition, where
+    no futher values can be returned it will return the default value of 5.
+
+    Args:
+        arg: Value to return
+        shift_offset: Number of rows following the current row.
+        default_value: Value to return if shift_offet row does not exist.
+    """
+    if not isinstance(default_value, pa.Scalar):
+        default_value = pa.scalar(default_value)
+
     return Expr(f.lead(arg.expr, shift_offset, default_value))

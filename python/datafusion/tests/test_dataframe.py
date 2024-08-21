@@ -301,12 +301,14 @@ data_test_window_functions = [
         f.window("ntile", [literal(2)], order_by=[f.order_by(column("c"))]),
         [1, 1, 2],
     ),
-    (
-        "next",
-        f.window("lead", [column("b")], order_by=[f.order_by(column("b"))]),
-        [5, 6, None],
-    ),
     ("lead", f.lead(column("b")).order_by(column("b").sort()).build(), [5, 6, None]),
+    (
+        "lead_by_2",
+        f.lead(column("b"), shift_offset=2, default_value=-1)
+        .order_by(column("b").sort())
+        .build(),
+        [6, -1, -1],
+    ),
     (
         "previous",
         f.window("lag", [column("b")], order_by=[f.order_by(column("b"))]),
