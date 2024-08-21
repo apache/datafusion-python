@@ -280,7 +280,7 @@ def test_distinct():
 
 data_test_window_functions = [
     ("row", f.row_number().order_by(column("c").sort()).build(), [2, 1, 3]),
-    ("rank", f.window("rank", [], order_by=[f.order_by(column("c"))]), [2, 1, 2]),
+    ("rank", f.rank().order_by(column("c").sort()).build(), [2, 1, 2]),
     (
         "dense_rank",
         f.window("dense_rank", [], order_by=[f.order_by(column("c"))]),

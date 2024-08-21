@@ -882,6 +882,11 @@ pub fn row_number() -> PyExpr {
     window_function::row_number().into()
 }
 
+#[pyfunction]
+pub fn rank() -> PyExpr {
+    window_function::rank().into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1070,6 +1075,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(lead))?;
     m.add_wrapped(wrap_pyfunction!(lag))?;
     m.add_wrapped(wrap_pyfunction!(row_number))?;
+    m.add_wrapped(wrap_pyfunction!(rank))?;
 
     Ok(())
 }

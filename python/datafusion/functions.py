@@ -1763,6 +1763,9 @@ def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) 
     return the 3rd following value in column ``b``. At the end of the partition, where
     no futher values can be returned it will return the default value of 5.
 
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+
     Args:
         arg: Value to return
         shift_offset: Number of rows following the current row.
@@ -1782,6 +1785,9 @@ def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -
     will return the 3rd previous value in column ``b``. At the beginnig of the
     partition, where no values can be returned it will return the default value of 5.
 
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+
     Args:
         arg: Value to return
         shift_offset: Number of rows before the current row.
@@ -1796,8 +1802,35 @@ def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -
 def row_number() -> Expr:
     """Create a row number window function.
 
-    Returns the row number of the window function. To set window function parameters
-    use the window builder approach described in the ref:`_window_functions` online
-    documentation.
+    Returns the row number of the window function.
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
     """
     return Expr(f.row_number())
+
+
+def rank() -> Expr:
+    """Create a rank window function.
+
+    Returns the rank based upon the window order. Consecutive equal values will receive
+    the same rank, but the next different value will not be consecutive but rather the
+    number of rows that preceed it plus one. This is similar to Olympic medals. If two
+    people tie for gold, the next place is bronze. There would be no silver medal. Here
+    is an example of a dataframe with a window ordered by descending ``points`` and the
+    associated rank.
+
+    ```
+    +--------+------+
+    | points | rank |
+    +--------+------+
+    | 100    | 1    |
+    | 100    | 1    |
+    | 50     | 3    |
+    +--------+------+
+    ```
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+    """
+    return Expr(f.rank())
