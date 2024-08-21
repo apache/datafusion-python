@@ -1791,3 +1791,13 @@ def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -
         default_value = pa.scalar(default_value)
 
     return Expr(f.lag(arg.expr, shift_offset, default_value))
+
+
+def row_number() -> Expr:
+    """Create a row number window function.
+
+    Returns the row number of the window function. To set window function parameters
+    use the window builder approach described in the ref:`_window_functions` online
+    documentation.
+    """
+    return Expr(f.row_number())

@@ -877,6 +877,11 @@ pub fn lag(arg: PyExpr, shift_offset: i64, default_value: Option<ScalarValue>) -
     window_function::lag(arg.expr, Some(shift_offset), default_value).into()
 }
 
+#[pyfunction]
+pub fn row_number() -> PyExpr {
+    window_function::row_number().into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1064,6 +1069,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     m.add_wrapped(wrap_pyfunction!(lead))?;
     m.add_wrapped(wrap_pyfunction!(lag))?;
+    m.add_wrapped(wrap_pyfunction!(row_number))?;
 
     Ok(())
 }
