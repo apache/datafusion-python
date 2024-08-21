@@ -253,6 +253,7 @@ __all__ = [
     "when",
     "window",
     "lead",
+    "lag",
 ]
 
 
@@ -1771,3 +1772,22 @@ def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) 
         default_value = pa.scalar(default_value)
 
     return Expr(f.lead(arg.expr, shift_offset, default_value))
+
+
+def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -> Expr:
+    """Create a lag window function.
+
+    Lag operation will return the argument that is in the previous shift_offset-th row
+    in the partition. For example ``lag(col("b"), shift_offset=3, default_value=5)``
+    will return the 3rd previous value in column ``b``. At the beginnig of the
+    partition, where no values can be returned it will return the default value of 5.
+
+    Args:
+        arg: Value to return
+        shift_offset: Number of rows before the current row.
+        default_value: Value to return if shift_offet row does not exist.
+    """
+    if not isinstance(default_value, pa.Scalar):
+        default_value = pa.scalar(default_value)
+
+    return Expr(f.lag(arg.expr, shift_offset, default_value))

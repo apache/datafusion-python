@@ -309,10 +309,13 @@ data_test_window_functions = [
         .build(),
         [6, -1, -1],
     ),
+    ("lag", f.lag(column("b")).order_by(column("b").sort()).build(), [None, 4, 5]),
     (
-        "previous",
-        f.window("lag", [column("b")], order_by=[f.order_by(column("b"))]),
-        [None, 4, 5],
+        "lag_by_2",
+        f.lag(column("b"), shift_offset=2, default_value=-1)
+        .order_by(column("b").sort())
+        .build(),
+        [-1, -1, 4],
     ),
     pytest.param(
         "first_value",

@@ -872,6 +872,11 @@ pub fn lead(arg: PyExpr, shift_offset: i64, default_value: Option<ScalarValue>) 
     window_function::lead(arg.expr, Some(shift_offset), default_value).into()
 }
 
+#[pyfunction]
+pub fn lag(arg: PyExpr, shift_offset: i64, default_value: Option<ScalarValue>) -> PyExpr {
+    window_function::lag(arg.expr, Some(shift_offset), default_value).into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1058,6 +1063,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(flatten))?;
 
     m.add_wrapped(wrap_pyfunction!(lead))?;
+    m.add_wrapped(wrap_pyfunction!(lag))?;
 
     Ok(())
 }
