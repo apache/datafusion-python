@@ -805,7 +805,7 @@ impl PySessionContext {
         file_compression_type=None))]
     pub fn read_csv(
         &self,
-        path: PathBuf,
+        path: &Bound<'_, PyAny>,
         schema: Option<PyArrowType<Schema>>,
         has_header: bool,
         delimiter: &str,
@@ -815,10 +815,6 @@ impl PySessionContext {
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
-        let path = path
-            .to_str()
-            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
             return Err(PyValueError::new_err(
@@ -833,13 +829,16 @@ impl PySessionContext {
             .file_extension(file_extension)
             .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
+        options.schema = schema.as_ref().map(|x| &x.0);
 
-        if let Some(py_schema) = schema {
-            options.schema = Some(&py_schema.0);
-            let result = self.ctx.read_csv(path, options);
+        if path.is_instance_of::<PyList>() {
+            let paths = path.extract::<Vec<String>>()?;
+            let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
+            let result = self.ctx.read_csv(paths, options);
             let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
             Ok(df)
         } else {
+            let path = path.extract::<String>()?;
             let result = self.ctx.read_csv(path, options);
             let df = PyDataFrame::new(wait_for_future(py, result).map_err(DataFusionError::from)?);
             Ok(df)

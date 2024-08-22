@@ -484,6 +484,22 @@ def test_read_csv(ctx):
     csv_df.select(column("c1")).show()
 
 
+def test_read_csv_list(ctx):
+    csv_df = ctx.read_csv(path=["testing/data/csv/aggregate_test_100.csv"])
+    expected = csv_df.count() * 2
+
+    double_csv_df = ctx.read_csv(
+        path=[
+            "testing/data/csv/aggregate_test_100.csv",
+            "testing/data/csv/aggregate_test_100.csv",
+        ]
+    )
+    actual = double_csv_df.count()
+
+    double_csv_df.select(column("c1")).show()
+    assert actual == expected
+
+
 def test_read_csv_compressed(ctx, tmp_path):
     test_data_path = "testing/data/csv/aggregate_test_100.csv"
 
