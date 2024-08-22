@@ -897,6 +897,11 @@ pub fn percent_rank() -> PyExpr {
     window_function::percent_rank().into()
 }
 
+#[pyfunction]
+pub fn cume_dist() -> PyExpr {
+    window_function::cume_dist().into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1088,6 +1093,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(rank))?;
     m.add_wrapped(wrap_pyfunction!(dense_rank))?;
     m.add_wrapped(wrap_pyfunction!(percent_rank))?;
+    m.add_wrapped(wrap_pyfunction!(cume_dist))?;
 
     Ok(())
 }

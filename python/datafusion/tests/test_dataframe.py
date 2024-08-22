@@ -288,12 +288,12 @@ data_test_window_functions = [
     ),
     (
         "percent_rank",
-        f.window("percent_rank", [], order_by=[f.order_by(column("c"))]),
+        f.percent_rank().order_by(column("c").sort()).build(),
         [0.5, 0, 0.5],
     ),
     (
         "cume_dist",
-        f.window("cume_dist", [], order_by=[f.order_by(column("b"))]),
+        f.cume_dist().order_by(column("b").sort()).build(),
         [0.3333333333333333, 0.6666666666666666, 1.0],
     ),
     (

@@ -259,6 +259,7 @@ __all__ = [
     "rank",
     "dense_rank",
     "percent_rank",
+    "cume_dist",
 ]
 
 
@@ -1865,28 +1866,54 @@ def dense_rank() -> Expr:
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
     """
-    return Expr(f.rank())
+    return Expr(f.dense_rank())
 
 
 def percent_rank() -> Expr:
     """Create a percent_rank window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
-    will be consecutive. Here is an example of a dataframe with a window ordered by
-    descending ``points`` and the associated dense rank.
+    are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
+    dataframe with a window ordered by descending ``points`` and the associated percent
+    rank.
 
     ```
-    +--------+------+
-    | points | rank |
-    +--------+------+
-    | 100    | 1    |
-    | 100    | 1    |
-    | 50     | 2    |
-    | 25     | 3    |
-    +--------+------+
+    +--------+--------------+
+    | points | percent_rank |
+    +--------+--------------+
+    | 100    | 0.0          |
+    | 100    | 0.0          |
+    | 50     | 0.666667     |
+    | 25     | 1.0          |
+    +--------+--------------+
     ```
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
     """
-    return Expr(f.rank())
+    return Expr(f.percent_rank())
+
+
+def cume_dist() -> Expr:
+    """Create a cumulative distribution window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    are the ratio of the row number to the total numebr of rows. Here is an example of a
+    dataframe with a window ordered by descending ``points`` and the associated
+    cumulative distribution.
+
+    ```
+    +--------+-----------+
+    | points | cume_dist |
+    +--------+-----------+
+    | 100    | 0.5       |
+    | 100    | 0.5       |
+    | 50     | 0.75      |
+    | 25     | 1.0       |
+    +--------+-----------+
+    ```
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+    """
+    return Expr(f.cume_dist())
