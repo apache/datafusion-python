@@ -485,7 +485,7 @@ Module Contents
 
 
 
-   .. py:method:: read_csv(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
 
