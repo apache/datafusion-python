@@ -1917,3 +1917,31 @@ def cume_dist() -> Expr:
     ref:`_window_functions` online documentation.
     """
     return Expr(f.cume_dist())
+
+
+def ntile(groups: int) -> Expr:
+    """Create a n-tile window function.
+
+    This window function orders the window frame into a give number of groups based on
+    the ordering criteria. It then returns which group the current row is assigned to.
+    Here is an example of a dataframe with a window ordered by descending ``points``
+    and the associated n-tile function.
+
+    ```
+    +--------+-------+
+    | points | ntile |
+    +--------+-------+
+    | 120    | 1     |
+    | 100    | 1     |
+    | 80     | 2     |
+    | 60     | 2     |
+    | 40     | 3     |
+    | 20     | 3     |
+    +--------+-------+
+    ```
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+    """
+    # Developer note: ntile only accepts literal values.
+    return Expr(f.ntile(Expr.literal(groups).expr))

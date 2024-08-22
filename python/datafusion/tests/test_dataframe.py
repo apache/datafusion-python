@@ -298,7 +298,7 @@ data_test_window_functions = [
     ),
     (
         "ntile",
-        f.window("ntile", [literal(2)], order_by=[f.order_by(column("c"))]),
+        f.ntile(2).order_by(column("c").sort()).build(),
         [1, 1, 2],
     ),
     ("lead", f.lead(column("b")).order_by(column("b").sort()).build(), [5, 6, None]),

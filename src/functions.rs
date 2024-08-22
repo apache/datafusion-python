@@ -902,6 +902,11 @@ pub fn cume_dist() -> PyExpr {
     window_function::cume_dist().into()
 }
 
+#[pyfunction]
+pub fn ntile(arg: PyExpr) -> PyExpr {
+    window_function::ntile(arg.into()).into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1087,6 +1092,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
 
+    // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;
     m.add_wrapped(wrap_pyfunction!(lag))?;
     m.add_wrapped(wrap_pyfunction!(row_number))?;
@@ -1094,6 +1100,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(dense_rank))?;
     m.add_wrapped(wrap_pyfunction!(percent_rank))?;
     m.add_wrapped(wrap_pyfunction!(cume_dist))?;
+    m.add_wrapped(wrap_pyfunction!(ntile))?;
 
     Ok(())
 }
