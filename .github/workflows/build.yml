@@ -84,7 +84,7 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheel-license
           path: .
@@ -145,7 +145,7 @@ jobs:
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheel-license
           path: .
@@ -175,7 +175,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheel-license
           path: .
@@ -204,7 +204,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheel-license
           path: .
@@ -234,7 +234,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-wheel-license
           path: .
@@ -258,7 +258,7 @@ jobs:
   #   needs: [build-manylinux, build-python-mac-win]
   #   runs-on: ubuntu-latest
   #   steps:
-  #     - uses: actions/download-artifact@v3
+  #     - uses: actions/download-artifact@v4
   #     - name: Publish to PyPI
   #       uses: pypa/gh-action-pypi-publish@master
   #       with:
