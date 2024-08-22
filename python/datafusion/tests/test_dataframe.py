@@ -283,7 +283,7 @@ data_test_window_functions = [
     ("rank", f.rank().order_by(column("c").sort()).build(), [2, 1, 2]),
     (
         "dense_rank",
-        f.window("dense_rank", [], order_by=[f.order_by(column("c"))]),
+        f.dense_rank().order_by((column("c").sort())).build(),
         [2, 1, 2],
     ),
     (

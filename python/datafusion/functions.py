@@ -251,9 +251,14 @@ __all__ = [
     "var_pop",
     "var_samp",
     "when",
+    # Window Functions
     "window",
     "lead",
     "lag",
+    "row_number",
+    "rank",
+    "dense_rank",
+    "percent_rank",
 ]
 
 
@@ -1820,6 +1825,8 @@ def rank() -> Expr:
     is an example of a dataframe with a window ordered by descending ``points`` and the
     associated rank.
 
+    You should set ``order_by`` to produce meaningful results.
+
     ```
     +--------+------+
     | points | rank |
@@ -1827,6 +1834,55 @@ def rank() -> Expr:
     | 100    | 1    |
     | 100    | 1    |
     | 50     | 3    |
+    | 25     | 4    |
+    +--------+------+
+    ```
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+    """
+    return Expr(f.rank())
+
+
+def dense_rank() -> Expr:
+    """Create a dense_rank window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    will be consecutive. Here is an example of a dataframe with a window ordered by
+    descending ``points`` and the associated dense rank.
+
+    ```
+    +--------+------------+
+    | points | dense_rank |
+    +--------+------------+
+    | 100    | 1          |
+    | 100    | 1          |
+    | 50     | 2          |
+    | 25     | 3          |
+    +--------+------------+
+    ```
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+    """
+    return Expr(f.rank())
+
+
+def percent_rank() -> Expr:
+    """Create a percent_rank window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    will be consecutive. Here is an example of a dataframe with a window ordered by
+    descending ``points`` and the associated dense rank.
+
+    ```
+    +--------+------+
+    | points | rank |
+    +--------+------+
+    | 100    | 1    |
+    | 100    | 1    |
+    | 50     | 2    |
+    | 25     | 3    |
     +--------+------+
     ```
 

@@ -887,6 +887,16 @@ pub fn rank() -> PyExpr {
     window_function::rank().into()
 }
 
+#[pyfunction]
+pub fn dense_rank() -> PyExpr {
+    window_function::dense_rank().into()
+}
+
+#[pyfunction]
+pub fn percent_rank() -> PyExpr {
+    window_function::percent_rank().into()
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1076,6 +1086,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(lag))?;
     m.add_wrapped(wrap_pyfunction!(row_number))?;
     m.add_wrapped(wrap_pyfunction!(rank))?;
+    m.add_wrapped(wrap_pyfunction!(dense_rank))?;
+    m.add_wrapped(wrap_pyfunction!(percent_rank))?;
 
     Ok(())
 }
