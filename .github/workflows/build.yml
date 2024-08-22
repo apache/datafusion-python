@@ -51,7 +51,7 @@ jobs:
           override: true
       - name: Generate license file
         run: python ./dev/create_license.py
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: python-wheel-license
           path: LICENSE.txt
@@ -110,7 +110,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: target/wheels/*
@@ -162,7 +162,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: target/wheels/*
@@ -191,7 +191,7 @@ jobs:
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --manylinux 2014 --features protoc,substrait
       - name: Archive wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: target/wheels/*
@@ -221,7 +221,7 @@ jobs:
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --features protoc,substrait
       - name: Archive wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: target/wheels/*
@@ -247,7 +247,7 @@ jobs:
           rustup-components: rust-std rustfmt
           args: --release --sdist --out dist --features protoc,substrait
       - name: Archive wheels
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dist
           path: target/wheels/*
