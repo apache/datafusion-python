@@ -317,6 +317,7 @@ data_test_window_functions = [
         .build(),
         [-1, -1, 4],
     ),
+    # TODO update once upstream merges https://github.com/apache/datafusion-python/issues/833
     pytest.param(
         "first_value",
         f.window("first_value", [column("a")], order_by=[f.order_by(column("b"))]),
