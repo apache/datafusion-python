@@ -38,6 +38,14 @@ def test_create_context_no_args():
     SessionContext()
 
 
+def test_create_context_session_config_only():
+    SessionContext(config=SessionConfig())
+
+
+def test_create_context_runtime_config_only():
+    SessionContext(runtime=RuntimeConfig())
+
+
 @pytest.mark.parametrize("path_to_str", (True, False))
 def test_runtime_configs(tmp_path, path_to_str):
     path1 = tmp_path / "dir1"
