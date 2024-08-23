@@ -167,7 +167,7 @@ jobs:
           name: dist-macos-aarch64
           path: target/wheels/*
 
-  build-manylinux:
+  build-manylinux-x86_64:
     needs: [generate-license]
     name: Manylinux
     runs-on: ubuntu-latest
@@ -193,7 +193,7 @@ jobs:
       - name: Archive wheels
         uses: actions/upload-artifact@v4
         with:
-          name: dist-manylinux
+          name: dist-manylinux-x86_64
           path: target/wheels/*
 
   build-manylinux-aarch64:
@@ -246,18 +246,22 @@ jobs:
           manylinux: auto
           rustup-components: rust-std rustfmt
           args: --release --sdist --out dist --features protoc,substrait
-      - name: Archive wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-sdist
-          path: target/wheels/*
+      - name: Assert sdist build does not generate wheels
+        run: |
+            if [ "$(ls -A target/wheels)" ]; then
+              echo "Error: Sdist build generated wheels"
+              exit 1
+            else
+              echo "Directory is clean"
+            fi
+        shell: bash
   
   merge-build-artifacts:
     runs-on: ubuntu-latest
     needs:
       - build-python-mac-win
       - build-macos-aarch64
-      - build-manylinux
+      - build-manylinux-x86_64
       - build-manylinux-aarch64
       - build-sdist
     steps:
