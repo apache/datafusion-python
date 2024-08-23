@@ -260,6 +260,7 @@ __all__ = [
     "dense_rank",
     "percent_rank",
     "cume_dist",
+    "ntile",
 ]
 
 
@@ -1826,18 +1827,16 @@ def rank() -> Expr:
     is an example of a dataframe with a window ordered by descending ``points`` and the
     associated rank.
 
-    You should set ``order_by`` to produce meaningful results.
+    You should set ``order_by`` to produce meaningful results::
 
-    ```
-    +--------+------+
-    | points | rank |
-    +--------+------+
-    | 100    | 1    |
-    | 100    | 1    |
-    | 50     | 3    |
-    | 25     | 4    |
-    +--------+------+
-    ```
+        +--------+------+
+        | points | rank |
+        +--------+------+
+        | 100    | 1    |
+        | 100    | 1    |
+        | 50     | 3    |
+        | 25     | 4    |
+        +--------+------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
@@ -1850,18 +1849,16 @@ def dense_rank() -> Expr:
 
     This window function is similar to :py:func:`rank` except that the returned values
     will be consecutive. Here is an example of a dataframe with a window ordered by
-    descending ``points`` and the associated dense rank.
+    descending ``points`` and the associated dense rank::
 
-    ```
-    +--------+------------+
-    | points | dense_rank |
-    +--------+------------+
-    | 100    | 1          |
-    | 100    | 1          |
-    | 50     | 2          |
-    | 25     | 3          |
-    +--------+------------+
-    ```
+        +--------+------------+
+        | points | dense_rank |
+        +--------+------------+
+        | 100    | 1          |
+        | 100    | 1          |
+        | 50     | 2          |
+        | 25     | 3          |
+        +--------+------------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
@@ -1875,18 +1872,16 @@ def percent_rank() -> Expr:
     This window function is similar to :py:func:`rank` except that the returned values
     are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated percent
-    rank.
+    rank::
 
-    ```
-    +--------+--------------+
-    | points | percent_rank |
-    +--------+--------------+
-    | 100    | 0.0          |
-    | 100    | 0.0          |
-    | 50     | 0.666667     |
-    | 25     | 1.0          |
-    +--------+--------------+
-    ```
+        +--------+--------------+
+        | points | percent_rank |
+        +--------+--------------+
+        | 100    | 0.0          |
+        | 100    | 0.0          |
+        | 50     | 0.666667     |
+        | 25     | 1.0          |
+        +--------+--------------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
@@ -1900,18 +1895,16 @@ def cume_dist() -> Expr:
     This window function is similar to :py:func:`rank` except that the returned values
     are the ratio of the row number to the total numebr of rows. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated
-    cumulative distribution.
+    cumulative distribution::
 
-    ```
-    +--------+-----------+
-    | points | cume_dist |
-    +--------+-----------+
-    | 100    | 0.5       |
-    | 100    | 0.5       |
-    | 50     | 0.75      |
-    | 25     | 1.0       |
-    +--------+-----------+
-    ```
+        +--------+-----------+
+        | points | cume_dist |
+        +--------+-----------+
+        | 100    | 0.5       |
+        | 100    | 0.5       |
+        | 50     | 0.75      |
+        | 25     | 1.0       |
+        +--------+-----------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
@@ -1925,23 +1918,20 @@ def ntile(groups: int) -> Expr:
     This window function orders the window frame into a give number of groups based on
     the ordering criteria. It then returns which group the current row is assigned to.
     Here is an example of a dataframe with a window ordered by descending ``points``
-    and the associated n-tile function.
+    and the associated n-tile function::
 
-    ```
-    +--------+-------+
-    | points | ntile |
-    +--------+-------+
-    | 120    | 1     |
-    | 100    | 1     |
-    | 80     | 2     |
-    | 60     | 2     |
-    | 40     | 3     |
-    | 20     | 3     |
-    +--------+-------+
-    ```
+        +--------+-------+
+        | points | ntile |
+        +--------+-------+
+        | 120    | 1     |
+        | 100    | 1     |
+        | 80     | 2     |
+        | 60     | 2     |
+        | 40     | 3     |
+        | 20     | 3     |
+        +--------+-------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
     """
-    # Developer note: ntile only accepts literal values.
     return Expr(f.ntile(Expr.literal(groups).expr))
