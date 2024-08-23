@@ -463,7 +463,7 @@ class Expr:
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(self.expr.window_frame(window_frame))
+        return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
 
 class ExprFuncBuilder:
@@ -498,7 +498,7 @@ class ExprFuncBuilder:
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
         """Set window frame for window functions."""
-        return ExprFuncBuilder(self.builder.window_frame(window_frame))
+        return ExprFuncBuilder(self.builder.window_frame(window_frame.window_frame))
 
     def build(self) -> Expr:
         """Create an expression from a Function Builder."""
