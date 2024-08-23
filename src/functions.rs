@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion_expr::AggregateExt;
+use datafusion_expr::ExprFunctionExt;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -30,16 +30,15 @@ use datafusion::functions;
 use datafusion::functions_aggregate;
 use datafusion_common::{Column, ScalarValue, TableReference};
 use datafusion_expr::expr::Alias;
+use datafusion_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion_expr::{
-    expr::{
-        find_df_window_func, AggregateFunction, AggregateFunctionDefinition, Sort, WindowFunction,
-    },
+    expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
 
 #[pyfunction]
 pub fn approx_distinct(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::approx_distinct::approx_distinct(expression.expr).into()
+    functions_aggregate::expr_fn::approx_distinct(expression.expr).into()
 }
 
 #[pyfunction]
@@ -342,9 +341,8 @@ pub fn first_value(
         builder = builder.filter(filter.expr);
     }
 
-    if let Some(null_treatment) = null_treatment {
-        builder = builder.null_treatment(null_treatment.into())
-    }
+    // would be nice if all the options builder methods accepted Option<T> ...
+    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
 }
@@ -373,9 +371,7 @@ pub fn last_value(
         builder = builder.filter(filter.expr);
     }
 
-    if let Some(null_treatment) = null_treatment {
-        builder = builder.null_treatment(null_treatment.into())
-    }
+    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
 }
@@ -392,14 +388,14 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 
 #[pyfunction]
 fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
-    datafusion_functions_array::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
+    datafusion_functions_nested::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
         .into()
 }
 
 #[pyfunction]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
-    datafusion_functions_array::expr_fn::array_concat(exprs).into()
+    datafusion_functions_nested::expr_fn::array_concat(exprs).into()
 }
 
 #[pyfunction]
@@ -411,12 +407,12 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
-    datafusion_functions_array::expr_fn::array_position(array.into(), element.into(), index).into()
+    datafusion_functions_nested::expr_fn::array_position(array.into(), element.into(), index).into()
 }
 
 #[pyfunction]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
-    datafusion_functions_array::expr_fn::array_slice(
+    datafusion_functions_nested::expr_fn::array_slice(
         array.into(),
         begin.into(),
         end.into(),
@@ -638,18 +634,16 @@ fn window(
 }
 
 macro_rules! aggregate_function {
-    ($NAME: ident, $FUNC: ident) => {
+    ($NAME: ident, $FUNC: path) => {
         aggregate_function!($NAME, $FUNC, stringify!($NAME));
     };
-    ($NAME: ident, $FUNC: ident, $DOC: expr) => {
+    ($NAME: ident, $FUNC: path, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
         #[pyo3(signature = (*args, distinct=false))]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
             let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
-                func_def: AggregateFunctionDefinition::BuiltIn(
-                    datafusion_expr::aggregate_function::AggregateFunction::$FUNC,
-                ),
+                func: $FUNC(),
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
                 filter: None,
@@ -701,7 +695,7 @@ macro_rules! expr_fn_vec {
     };
 }
 
-/// Generates a [pyo3] wrapper for [datafusion_functions_array::expr_fn]
+/// Generates a [pyo3] wrapper for [datafusion_functions_nested::expr_fn]
 ///
 /// These functions have explicit named arguments.
 macro_rules! array_fn {
@@ -718,7 +712,7 @@ macro_rules! array_fn {
         #[doc = $DOC]
         #[pyfunction]
         fn $FUNC($($arg: PyExpr),*) -> PyExpr {
-            datafusion_functions_array::expr_fn::$FUNC($($arg.into()),*).into()
+            datafusion_functions_nested::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
 }
@@ -884,9 +878,9 @@ array_fn!(array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(array_agg, ArrayAgg);
-aggregate_function!(max, Max);
-aggregate_function!(min, Min);
+aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg_udaf);
+aggregate_function!(max, functions_aggregate::min_max::max_udaf);
+aggregate_function!(min, functions_aggregate::min_max::min_udaf);
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;

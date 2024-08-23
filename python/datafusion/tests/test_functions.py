@@ -808,7 +808,7 @@ def test_regr_funcs_sql(df):
 
     assert result[0].column(0) == pa.array([None], type=pa.float64())
     assert result[0].column(1) == pa.array([None], type=pa.float64())
-    assert result[0].column(2) == pa.array([1], type=pa.float64())
+    assert result[0].column(2) == pa.array([1], type=pa.uint64())
     assert result[0].column(3) == pa.array([None], type=pa.float64())
     assert result[0].column(4) == pa.array([1], type=pa.float64())
     assert result[0].column(5) == pa.array([1], type=pa.float64())
@@ -840,7 +840,7 @@ def test_regr_funcs_sql_2():
     # Assertions for SQL results
     assert result_sql[0].column(0) == pa.array([2], type=pa.float64())
     assert result_sql[0].column(1) == pa.array([0], type=pa.float64())
-    assert result_sql[0].column(2) == pa.array([3], type=pa.float64()) # todo: i would not expect this to be float
+    assert result_sql[0].column(2) == pa.array([3], type=pa.uint64())
     assert result_sql[0].column(3) == pa.array([1], type=pa.float64())
     assert result_sql[0].column(4) == pa.array([2], type=pa.float64())
     assert result_sql[0].column(5) == pa.array([4], type=pa.float64())
@@ -852,7 +852,7 @@ def test_regr_funcs_sql_2():
 @pytest.mark.parametrize("func, expected", [
     pytest.param(f.regr_slope, pa.array([2], type=pa.float64()), id="regr_slope"),
     pytest.param(f.regr_intercept, pa.array([0], type=pa.float64()), id="regr_intercept"),
-    pytest.param(f.regr_count, pa.array([3], type=pa.float64()), id="regr_count"), # TODO: I would expect this to return an int array
+    pytest.param(f.regr_count, pa.array([3], type=pa.uint64()), id="regr_count"),
     pytest.param(f.regr_r2, pa.array([1], type=pa.float64()), id="regr_r2"),
     pytest.param(f.regr_avgx, pa.array([2], type=pa.float64()), id="regr_avgx"),
     pytest.param(f.regr_avgy, pa.array([4], type=pa.float64()), id="regr_avgy"),

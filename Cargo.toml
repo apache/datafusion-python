@@ -38,13 +38,13 @@ tokio = { version = "1.39", features = ["macros", "rt", "rt-multi-thread", "sync
 rand = "0.8"
 pyo3 = { version = "0.21", features = ["extension-module", "abi3", "abi3-py38"] }
 arrow = { version = "52", feature = ["pyarrow"] }
-datafusion = { version = "40.0.0", features = ["pyarrow", "avro", "unicode_expressions"] }
-datafusion-common = { version = "40.0.0", features = ["pyarrow"] }
-datafusion-expr = "40.0.0"
-datafusion-functions-array = "40.0.0"
-datafusion-optimizer = "40.0.0"
-datafusion-sql = "40.0.0"
-datafusion-substrait = { version = "40.0.0", optional = true }
+datafusion = { version = "41.0.0", features = ["pyarrow", "avro", "unicode_expressions"] }
+datafusion-common = { version = "41.0.0", features = ["pyarrow"] }
+datafusion-expr = { version = "41.0.0" }
+datafusion-functions-nested = { version = "41.0.0" }
+datafusion-optimizer = { version = "41.0.0" }
+datafusion-sql = { version = "41.0.0" }
+datafusion-substrait = { version = "41.0.0", optional = true }
 prost = "0.12" # keep in line with `datafusion-substrait`
 prost-types = "0.12" # keep in line with `datafusion-substrait`
 uuid = { version = "1.9", features = ["v4"] }
@@ -56,7 +56,6 @@ parking_lot = "0.12"
 regex-syntax = "0.8"
 syn = "2.0.68"
 url = "2"
-sqlparser = "0.47.0"
 
 [build-dependencies]
 pyo3-build-config = "0.21"

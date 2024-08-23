@@ -18,6 +18,7 @@
 use datafusion::arrow::array::Array;
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
 use datafusion_common::{DataFusionError, ScalarValue};
+use datafusion_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::errors::py_datafusion_err;
@@ -775,20 +776,20 @@ pub enum NullTreatment {
     RESPECT_NULLS,
 }
 
-impl From<NullTreatment> for sqlparser::ast::NullTreatment {
-    fn from(null_treatment: NullTreatment) -> sqlparser::ast::NullTreatment {
+impl From<NullTreatment> for DFNullTreatment {
+    fn from(null_treatment: NullTreatment) -> DFNullTreatment {
         match null_treatment {
-            NullTreatment::IGNORE_NULLS => sqlparser::ast::NullTreatment::IgnoreNulls,
-            NullTreatment::RESPECT_NULLS => sqlparser::ast::NullTreatment::RespectNulls,
+            NullTreatment::IGNORE_NULLS => DFNullTreatment::IgnoreNulls,
+            NullTreatment::RESPECT_NULLS => DFNullTreatment::RespectNulls,
         }
     }
 }
 
-impl From<sqlparser::ast::NullTreatment> for NullTreatment {
-    fn from(null_treatment: sqlparser::ast::NullTreatment) -> NullTreatment {
+impl From<DFNullTreatment> for NullTreatment {
+    fn from(null_treatment: DFNullTreatment) -> NullTreatment {
         match null_treatment {
-            sqlparser::ast::NullTreatment::IgnoreNulls => NullTreatment::IGNORE_NULLS,
-            sqlparser::ast::NullTreatment::RespectNulls => NullTreatment::RESPECT_NULLS,
+            DFNullTreatment::IgnoreNulls => NullTreatment::IGNORE_NULLS,
+            DFNullTreatment::RespectNulls => NullTreatment::RESPECT_NULLS,
         }
     }
 }

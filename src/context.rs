@@ -20,6 +20,7 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use datafusion::execution::session_state::SessionStateBuilder;
 use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
@@ -49,9 +50,7 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{
-    SQLOptions, SessionConfig, SessionContext, SessionState, TaskContext,
-};
+use datafusion::execution::context::{SQLOptions, SessionConfig, SessionContext, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
@@ -281,7 +280,11 @@ impl PySessionContext {
             RuntimeConfig::default()
         };
         let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
-        let session_state = SessionState::new_with_config_rt(config, runtime);
+        let session_state = SessionStateBuilder::new()
+            .with_config(config)
+            .with_runtime_env(runtime)
+            .with_default_features()
+            .build();
         Ok(PySessionContext {
             ctx: SessionContext::new_with_state(session_state),
         })

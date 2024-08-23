@@ -126,9 +126,9 @@ impl PyAggregate {
         match expr {
             // TODO: This Alias logic seems to be returning some strange results that we should investigate
             Expr::Alias(Alias { expr, .. }) => self._aggregation_arguments(expr.as_ref()),
-            Expr::AggregateFunction(AggregateFunction {
-                func_def: _, args, ..
-            }) => Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect()),
+            Expr::AggregateFunction(AggregateFunction { func: _, args, .. }) => {
+                Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect())
+            }
             _ => Err(py_type_err(
                 "Encountered a non Aggregate type in aggregation_arguments",
             )),
@@ -138,9 +138,7 @@ impl PyAggregate {
     fn _agg_func_name(expr: &Expr) -> PyResult<String> {
         match expr {
             Expr::Alias(Alias { expr, .. }) => Self::_agg_func_name(expr.as_ref()),
-            Expr::AggregateFunction(AggregateFunction { func_def, .. }) => {
-                Ok(func_def.name().to_owned())
-            }
+            Expr::AggregateFunction(AggregateFunction { func, .. }) => Ok(func.name().to_owned()),
             _ => Err(py_type_err(
                 "Encountered a non Aggregate type in agg_func_name",
             )),
