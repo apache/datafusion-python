@@ -1770,6 +1770,18 @@ def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) 
     return the 3rd following value in column ``b``. At the end of the partition, where
     no futher values can be returned it will return the default value of 5.
 
+    Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
+    functions on a simple DataFrame::
+
+        +--------+------+-----+
+        | points | lead | lag |
+        +--------+------+-----+
+        | 100    | 100  |     |
+        | 100    | 50   | 100 |
+        | 50     | 25   | 100 |
+        | 25     |      | 50  |
+        +--------+------+-----+
+
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
 
@@ -1792,6 +1804,18 @@ def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -
     will return the 3rd previous value in column ``b``. At the beginnig of the
     partition, where no values can be returned it will return the default value of 5.
 
+    Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
+    functions on a simple DataFrame::
+
+        +--------+------+-----+
+        | points | lead | lag |
+        +--------+------+-----+
+        | 100    | 100  |     |
+        | 100    | 50   | 100 |
+        | 50     | 25   | 100 |
+        | 25     |      | 50  |
+        +--------+------+-----+
+
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
 
@@ -1810,6 +1834,17 @@ def row_number() -> Expr:
     """Create a row number window function.
 
     Returns the row number of the window function.
+
+    Here is an example of the ``row_number`` on a simple DataFrame::
+
+        +--------+------------+
+        | points | row number |
+        +--------+------------+
+        | 100    | 1          |
+        | 100    | 2          |
+        | 50     | 3          |
+        | 25     | 4          |
+        +--------+------------+
 
     To set window function parameters use the window builder approach described in the
     ref:`_window_functions` online documentation.
