@@ -31,3 +31,6 @@ apache-rat-*.jar
 CHANGELOG.md.bak
 
 docs/mdbook/book
+
+.pyo3_build_config
+
