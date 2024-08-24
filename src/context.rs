@@ -489,7 +489,7 @@ impl PySessionContext {
                 (schema, batches)
             } else if let Ok(array) = RecordBatch::from_pyarrow_bound(&data) {
                 // While this says RecordBatch, it will work for any object that implements
-                // __arrow_c_array__ in pycapsule.
+                // __arrow_c_array__ and returns a StructArray.
 
                 (array.schema().as_ref().to_owned(), vec![array])
             } else {
