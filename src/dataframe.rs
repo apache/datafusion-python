@@ -18,8 +18,11 @@
 use std::ffi::CString;
 use std::sync::Arc;
 
-use arrow::array::{RecordBatchIterator, RecordBatchReader};
+use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
+use arrow::compute::can_cast_types;
+use arrow::error::ArrowError;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
+use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -454,19 +457,29 @@ impl PyDataFrame {
         Ok(table)
     }
 
-    #[allow(unused_variables)]
     fn __arrow_c_stream__<'py>(
         &'py mut self,
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
-            .into_iter()
-            .map(|r| Ok(r));
-        let schema = self.df.schema().to_owned().into();
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut schema: Schema = self.df.schema().to_owned().into();
 
-        // let reader = RecordBatchIterator::new(vec![Ok(self.clone())], self.schema());
-        let reader = RecordBatchIterator::new(batches, schema);
+        if let Some(schema_capsule) = requested_schema {
+            let desired_schema: Schema = Schema::from_pyarrow_bound(&schema_capsule)?;
+            schema = project_schema(schema, desired_schema)
+                .map_err(|e| DataFusionError::ArrowError(e))?;
+
+            batches = batches
+                .into_iter()
+                .map(|record_batch| record_batch_into_schema(record_batch, &schema))
+                .collect::<Result<Vec<RecordBatch>, ArrowError>>()
+                .map_err(|e| DataFusionError::ArrowError(e))?;
+        }
+
+        let batches_wrapped = batches.into_iter().map(|r| Ok(r));
+
+        let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
         let ffi_stream = FFI_ArrowArrayStream::new(reader);
@@ -561,4 +574,60 @@ fn print_dataframe(py: Python, df: DataFrame) -> PyResult<()> {
     let print = py.import_bound("builtins")?.getattr("print")?;
     print.call1((result,))?;
     Ok(())
+}
+
+fn project_schema(from_schema: Schema, to_schema: Schema) -> Result<Schema, ArrowError> {
+    let merged_schema = Schema::try_merge(vec![from_schema, to_schema.clone()])?;
+
+    let project_indices: Vec<usize> = to_schema
+        .fields
+        .iter()
+        .map(|field| field.name())
+        .filter_map(|field_name| merged_schema.index_of(field_name).ok())
+        .collect();
+
+    merged_schema.project(&project_indices)
+}
+
+fn record_batch_into_schema(
+    record_batch: RecordBatch,
+    schema: &Schema,
+) -> Result<RecordBatch, ArrowError> {
+    let schema = Arc::new(schema.clone());
+    let base_schema = record_batch.schema();
+    if base_schema.fields().len() == 0 {
+        // Nothing to project
+        return Ok(RecordBatch::new_empty(schema));
+    }
+
+    let array_size = record_batch.column(0).len();
+    let mut data_arrays = Vec::with_capacity(schema.fields().len());
+
+    for field in schema.fields() {
+        let desired_data_type = field.data_type();
+        if let Some(original_data) = record_batch.column_by_name(field.name()) {
+            let original_data_type = original_data.data_type();
+
+            if can_cast_types(original_data_type, desired_data_type) {
+                data_arrays.push(arrow::compute::kernels::cast(
+                    original_data,
+                    desired_data_type,
+                )?);
+            } else if field.is_nullable() {
+                data_arrays.push(new_null_array(desired_data_type, array_size));
+            } else {
+                return Err(ArrowError::CastError(format!("Attempting to cast to non-nullable and non-castable field {} during schema projection.", field.name())));
+            }
+        } else {
+            if !field.is_nullable() {
+                return Err(ArrowError::CastError(format!(
+                    "Attempting to set null to non-nullable field {} during schema projection.",
+                    field.name()
+                )));
+            }
+            data_arrays.push(new_null_array(desired_data_type, array_size));
+        }
+    }
+
+    RecordBatch::try_new(schema, data_arrays)
 }
