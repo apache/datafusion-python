@@ -477,30 +477,26 @@ impl PySessionContext {
         name: Option<&str>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
-        let mut batches = None;
-        let mut schema = None;
+        let (schema, batches) =
+            if let Ok(stream_reader) = ArrowArrayStreamReader::from_pyarrow_bound(&data) {
+                // Works for any object that implements __arrow_c_stream__ in pycapsule.
 
-        if let Ok(stream_reader) = ArrowArrayStreamReader::from_pyarrow_bound(&data) {
-            // Works for any object that implements __arrow_c_stream__ in pycapsule.
+                let schema = stream_reader.schema().as_ref().to_owned();
+                let batches = stream_reader
+                    .collect::<std::result::Result<Vec<RecordBatch>, arrow::error::ArrowError>>()
+                    .map_err(DataFusionError::from)?;
 
-            schema = Some(stream_reader.schema().as_ref().to_owned());
-            batches = Some(stream_reader.filter_map(|v| v.ok()).collect());
-        } else if let Ok(array) = RecordBatch::from_pyarrow_bound(&data) {
-            // While this says RecordBatch, it will work for any object that implements
-            // __arrow_c_array__ in pycapsule.
+                (schema, batches)
+            } else if let Ok(array) = RecordBatch::from_pyarrow_bound(&data) {
+                // While this says RecordBatch, it will work for any object that implements
+                // __arrow_c_array__ in pycapsule.
 
-            schema = Some(array.schema().as_ref().to_owned());
-            batches = Some(vec![array]);
-        }
-
-        if batches.is_none() || schema.is_none() {
-            return Err(PyTypeError::new_err(
-                "Expected either a Arrow Array or Arrow Stream in from_arrow_table().",
-            ));
-        }
-
-        let batches = batches.unwrap();
-        let schema = schema.unwrap();
+                (array.schema().as_ref().to_owned(), vec![array])
+            } else {
+                return Err(PyTypeError::new_err(
+                    "Expected either a Arrow Array or Arrow Stream in from_arrow_table().",
+                ));
+            };
 
         // Because create_dataframe() expects a vector of vectors of record batches
         // here we need to wrap the vector of record batches in an additional vector
