@@ -21,6 +21,7 @@ use std::sync::Arc;
 use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
+use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
 use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::Schema;
@@ -466,7 +467,11 @@ impl PyDataFrame {
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
-            let desired_schema: Schema = Schema::from_pyarrow_bound(&schema_capsule)?;
+            validate_pycapsule(&schema_capsule, "arrow_schema")?;
+
+            let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
+            let desired_schema = Schema::try_from(schema_ptr).map_err(DataFusionError::from)?;
+
             schema = project_schema(schema, desired_schema)
                 .map_err(|e| DataFusionError::ArrowError(e))?;
 
@@ -630,4 +635,23 @@ fn record_batch_into_schema(
     }
 
     RecordBatch::try_new(schema, data_arrays)
+}
+
+fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
+    let capsule_name = capsule.name()?;
+    if capsule_name.is_none() {
+        return Err(PyValueError::new_err(
+            "Expected schema PyCapsule to have name set.",
+        ));
+    }
+
+    let capsule_name = capsule_name.unwrap().to_str()?;
+    if capsule_name != name {
+        return Err(PyValueError::new_err(format!(
+            "Expected name '{}' in PyCapsule, instead got '{}'",
+            name, capsule_name
+        )));
+    }
+
+    Ok(())
 }
