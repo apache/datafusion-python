@@ -40,7 +40,7 @@ jobs:
       - name: Run Ruff
         run: |
           ruff check --output-format=github python/
-          ruff format python/
+          ruff format --check python/
 
   generate-license:
     runs-on: ubuntu-latest
