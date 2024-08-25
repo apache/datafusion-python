@@ -166,19 +166,34 @@ def test_from_arrow_table(ctx):
     assert df.collect()[0].num_rows == 3
 
 
-def test_from_arrow_record_batch_reader(ctx) -> None:
-    schema = pa.schema([("a", pa.int64())])
+@pytest.mark.skip
+def record_batch_generator(num_batches: int):
+    schema = pa.schema([("a", pa.int64()), ("b", pa.int64())])
+    for i in range(num_batches):
+        yield pa.RecordBatch.from_arrays(
+            [pa.array([1, 2, 3]), pa.array([4, 5, 6])], schema=schema
+        )
 
-    def iter_record_batches():
-        for i in range(2):
-            yield pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], schema=schema)
 
-    reader = pa.RecordBatchReader.from_batches(schema, iter_record_batches())
-    df = ctx.from_arrow_table(reader)
+@pytest.mark.parametrize(
+    "source",
+    [
+        # __arrow_c_array__ sources
+        pa.array([{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]),
+        # __arrow_c_stream__ sources
+        pa.RecordBatch.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]}),
+        pa.RecordBatchReader.from_batches(
+            pa.schema([("a", pa.int64()), ("b", pa.int64())]), record_batch_generator(1)
+        ),
+        pa.Table.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]}),
+    ],
+)
+def test_from_arrow_sources(ctx, source) -> None:
+    df = ctx.from_arrow(source)
     assert df
     assert isinstance(df, DataFrame)
-    assert df.schema().names == ["a"]
-    assert df.count() == 6
+    assert df.schema().names == ["a", "b"]
+    assert df.count() == 3
 
 
 def test_from_arrow_table_with_name(ctx):
