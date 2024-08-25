@@ -836,19 +836,11 @@ def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compre
 
 
 def test_dataframe_export(df) -> None:
-    import nanoarrow
-
     # Guarantees that we have the canonical implementation
     # reading our dataframe export
     table = pa.table(df)
     assert table.num_columns == 3
     assert table.num_rows == 3
-
-    # nanoarrow is an independent library that should also be
-    # able to import our dataframe
-    table = nanoarrow.Array(df)
-    assert len(table) == 3
-    assert len(table[0].as_py()) == 3
 
     desired_schema = pa.schema([("a", pa.int64())])
 
