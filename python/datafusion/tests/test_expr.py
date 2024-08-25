@@ -187,7 +187,7 @@ def test_expr_getitem() -> None:
     names = df.select(col("struct_values")["name"].alias("name")).collect()
     names = [r.as_py() for rs in names for r in rs["name"]]
 
-    array_values = df.select(col("array_values")[2].alias("value")).collect()
+    array_values = df.select(col("array_values")[1].alias("value")).collect()
     array_values = [r.as_py() for rs in array_values for r in rs["value"]]
 
     assert names == ["Alice", "Bob", "Charlie", None]
