@@ -47,7 +47,7 @@ def df():
         names=["a", "b", "c"],
     )
 
-    return ctx.create_dataframe([[batch]])
+    return ctx.from_arrow(batch)
 
 
 @pytest.fixture
