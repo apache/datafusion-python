@@ -483,7 +483,7 @@ impl PySessionContext {
 
                 let schema = stream_reader.schema().as_ref().to_owned();
                 let batches = stream_reader
-                    .collect::<std::result::Result<Vec<RecordBatch>, arrow::error::ArrowError>>()
+                    .collect::<Result<Vec<RecordBatch>, arrow::error::ArrowError>>()
                     .map_err(DataFusionError::from)?;
 
                 (schema, batches)
