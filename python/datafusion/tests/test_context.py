@@ -166,6 +166,21 @@ def test_from_arrow_table(ctx):
     assert df.collect()[0].num_rows == 3
 
 
+def test_from_arrow_record_batch_reader(ctx) -> None:
+    schema = pa.schema([("a", pa.int64())])
+
+    def iter_record_batches():
+        for i in range(2):
+            yield pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], schema=schema)
+
+    reader = pa.RecordBatchReader.from_batches(schema, iter_record_batches())
+    df = ctx.from_arrow_table(reader)
+    assert df
+    assert isinstance(df, DataFrame)
+    assert df.schema().names == ["a"]
+    assert df.count() == 6
+
+
 def test_from_arrow_table_with_name(ctx):
     # create a PyArrow table
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
