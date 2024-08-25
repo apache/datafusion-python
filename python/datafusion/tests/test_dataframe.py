@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import os
+from typing import Any
 
 import pyarrow as pa
 from pyarrow.csv import write_csv
@@ -874,3 +875,18 @@ def test_dataframe_export(df) -> None:
     except Exception:
         failed_convert = True
     assert failed_convert
+
+def test_dataframe_transform(df):
+    def add_string_col(df_internal) -> DataFrame:
+        return df_internal.with_column("string_col", literal("string data"))
+
+    def add_with_parameter(df_internal, value: Any) -> DataFrame:
+        return df_internal.with_column("new_col", literal(value))
+
+    df = df.transform(add_string_col).transform(add_with_parameter, 3)
+
+    result = df.to_pydict()
+
+    assert result["a"] == [1, 2, 3]
+    assert result["string_col"] == ["string data" for _i in range(0, 3)]
+    assert result["new_col"] == [3 for _i in range(0, 3)]
