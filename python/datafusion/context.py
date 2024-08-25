@@ -586,19 +586,30 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_pydict(data, name))
 
-    def from_arrow_table(
-        self, data: pyarrow.Table, name: str | None = None
-    ) -> DataFrame:
-        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
+    def from_arrow(self, data: Any, name: str | None = None) -> DataFrame:
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
+
+        The Arrow data source can be any object that implements either
+        ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
+        a struct array. Common examples of sources from pyarrow include
 
         Args:
-            data: Arrow table.
+            data: Arrow data source.
             name: Name of the DataFrame.
 
         Returns:
             DataFrame representation of the Arrow table.
         """
-        return DataFrame(self.ctx.from_arrow_table(data, name))
+        return DataFrame(self.ctx.from_arrow(data, name))
+
+    def from_arrow_table(
+        self, data: pyarrow.Table, name: str | None = None
+    ) -> DataFrame:
+        """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
+
+        This is an alias for :py:func:`from_arrow`.
+        """
+        return self.from_arrow(data, name)
 
     def from_pandas(self, data: pandas.DataFrame, name: str | None = None) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Pandas DataFrame.

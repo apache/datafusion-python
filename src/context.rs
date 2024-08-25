@@ -447,7 +447,7 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pylist", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
@@ -466,12 +466,12 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pydict", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
     /// Construct datafusion dataframe from Arrow Table
-    pub fn from_arrow_table(
+    pub fn from_arrow(
         &mut self,
         data: Bound<'_, PyAny>,
         name: Option<&str>,
@@ -520,7 +520,7 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pandas", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
@@ -534,7 +534,7 @@ impl PySessionContext {
         let table = data.call_method0("to_arrow")?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, data.py())?;
+        let df = self.from_arrow(table, name, data.py())?;
         Ok(df)
     }
 
