@@ -166,7 +166,7 @@ jobs:
 
   build-manylinux-x86_64:
     needs: [generate-license]
-    name: Manylinux
+    name: Manylinux x86_64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
