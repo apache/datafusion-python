@@ -117,7 +117,7 @@ jobs:
 
   build-macos-x86_64:
     needs: [generate-license]
-    name: Mac arm64
+    name: Mac x86_64
     runs-on: macos-13
     strategy:
       fail-fast: false
