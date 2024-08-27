@@ -166,7 +166,6 @@ def test_from_arrow_table(ctx):
     assert df.collect()[0].num_rows == 3
 
 
-@pytest.mark.skip
 def record_batch_generator(num_batches: int):
     schema = pa.schema([("a", pa.int64()), ("b", pa.int64())])
     for i in range(num_batches):
