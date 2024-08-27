@@ -156,7 +156,7 @@ def test_from_arrow_table(ctx):
     table = pa.Table.from_pydict(data)
 
     # convert to DataFrame
-    df = ctx.from_arrow_table(table)
+    df = ctx.from_arrow(table)
     tables = list(ctx.catalog().database().names())
 
     assert df
@@ -202,7 +202,7 @@ def test_from_arrow_table_with_name(ctx):
     table = pa.Table.from_pydict(data)
 
     # convert to DataFrame with optional name
-    df = ctx.from_arrow_table(table, name="tbl")
+    df = ctx.from_arrow(table, name="tbl")
     tables = list(ctx.catalog().database().names())
 
     assert df
@@ -215,7 +215,7 @@ def test_from_arrow_table_empty(ctx):
     table = pa.Table.from_pydict(data, schema=schema)
 
     # convert to DataFrame
-    df = ctx.from_arrow_table(table)
+    df = ctx.from_arrow(table)
     tables = list(ctx.catalog().database().names())
 
     assert df
@@ -230,7 +230,7 @@ def test_from_arrow_table_empty_no_schema(ctx):
     table = pa.Table.from_pydict(data)
 
     # convert to DataFrame
-    df = ctx.from_arrow_table(table)
+    df = ctx.from_arrow(table)
     tables = list(ctx.catalog().database().names())
 
     assert df

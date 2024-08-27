@@ -494,7 +494,7 @@ impl PySessionContext {
                 (array.schema().as_ref().to_owned(), vec![array])
             } else {
                 return Err(PyTypeError::new_err(
-                    "Expected either a Arrow Array or Arrow Stream in from_arrow_table().",
+                    "Expected either a Arrow Array or Arrow Stream in from_arrow().",
                 ));
             };
 

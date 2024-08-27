@@ -602,6 +602,7 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_arrow(data, name))
 
+    @deprecated("Use ``from_arrow`` instead.")
     def from_arrow_table(
         self, data: pyarrow.Table, name: str | None = None
     ) -> DataFrame:
