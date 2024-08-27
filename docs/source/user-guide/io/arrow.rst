@@ -18,7 +18,7 @@
 Arrow
 =====
 
-DataFusion implements the 
+DataFusion implements the
 `Apache Arrow PyCapsule interface <https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html>`_
 for importing and exporting DataFrames with zero copy. With this feature, any Python
 project that implements this interface can share data back and forth with DataFusion
@@ -58,10 +58,12 @@ Exporting from DataFusion
 -------------------------
 
 DataFusion DataFrames implement ``__arrow_c_stream__`` PyCapsule interface, so any
-Python library that accepts these can import a DataFusion DataFrame directly. It is
-important to note that this will cause the DataFrame execution to happen, which may be
-a time consuming task. That is, you will cause a :py:func:`datafusion.dataframe.DataFrame.collect`
-operation call to occur.
+Python library that accepts these can import a DataFusion DataFrame directly.
+
+.. warning::
+    It is important to note that this will cause the DataFrame execution to happen, which may be
+    a time consuming task. That is, you will cause a
+    :py:func:`datafusion.dataframe.DataFrame.collect` operation call to occur.
 
 
 .. ipython:: python
