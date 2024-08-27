@@ -548,17 +548,15 @@ class DataFrame:
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.
 
-        This is useful for chaining together multiple functions. For example
+        This is useful for chaining together multiple functions. For example::
 
-        ```python
-        def add_3(df: DataFrame) -> DataFrame:
-            return df.with_column("modified", lit(3))
+            def add_3(df: DataFrame) -> DataFrame:
+                return df.with_column("modified", lit(3))
 
-        def within_limit(df: DataFrame, limit: int) -> DataFrame:
-            return df.filter(col("a") < lit(limit)).distinct()
+            def within_limit(df: DataFrame, limit: int) -> DataFrame:
+                return df.filter(col("a") < lit(limit)).distinct()
 
-        df = df.transform(modify_df).transform(within_limit, 4)
-        ```
+            df = df.transform(modify_df).transform(within_limit, 4)
 
         Args:
             func: A callable function that takes a DataFrame as it's first argument

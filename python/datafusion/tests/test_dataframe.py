@@ -876,6 +876,7 @@ def test_dataframe_export(df) -> None:
         failed_convert = True
     assert failed_convert
 
+
 def test_dataframe_transform(df):
     def add_string_col(df_internal) -> DataFrame:
         return df_internal.with_column("string_col", literal("string data"))

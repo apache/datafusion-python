@@ -60,6 +60,43 @@ examples for the and, or, and not operations.
     heavy_red_units = (col("color") == lit("red")) & (col("weight") > lit(42))
     not_red_units = ~(col("color") == lit("red"))
 
+Arrays
+------
+
+For columns that contain arrays of values, you can access individual elements of the array by index
+using bracket indexing. This is similar to callling the function
+:py:func:`datafusion.functions.array_element`, except that array indexing using brackets is 0 based,
+similar to Python arrays and ``array_element`` is 1 based indexing to be compatible with other SQL
+approaches.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+    df.select(col("a")[0].alias("a0"))
+
+
+.. warning::
+
+    Indexing an element of an array via ``[]`` starts at index 0 whereas
+    :py:func:`~datafusion.functions.array_element` starts at index 1.
+
+Structs
+-------
+
+Columns that contain struct elements can be accessed using the bracket notation as if they were
+Python dictionary style objects. This expects a string key as the parameter passed.
+
+.. ipython:: python
+
+    ctx = SessionContext()
+    data = {"a": [{"size": 15, "color": "green"}, {"size": 10, "color": "blue"}]}
+    df = ctx.from_pydict(data)
+    df.select(col("a")["size"].alias("a_size"))
+
+
 Functions
 ---------
 
