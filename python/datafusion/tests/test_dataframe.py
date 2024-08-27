@@ -890,3 +890,18 @@ def test_dataframe_transform(df):
     assert result["a"] == [1, 2, 3]
     assert result["string_col"] == ["string data" for _i in range(0, 3)]
     assert result["new_col"] == [3 for _i in range(0, 3)]
+
+
+def test_dataframe_repr_html(df) -> None:
+    output = df._repr_html_()
+
+    ref_html = """<table border='1'>
+        <tr><th>a</td><th>b</td><th>c</td></tr>
+        <tr><td>1</td><td>4</td><td>8</td></tr>
+        <tr><td>2</td><td>5</td><td>5</td></tr>
+        <tr><td>3</td><td>6</td><td>8</td></tr>
+        </table>
+        """
+
+    # Ignore whitespace just to make this test look cleaner
+    assert output.replace(" ", "") == ref_html.replace(" ", "")
