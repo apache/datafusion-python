@@ -471,17 +471,16 @@ impl PyDataFrame {
             let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
             let desired_schema = Schema::try_from(schema_ptr).map_err(DataFusionError::from)?;
 
-            schema = project_schema(schema, desired_schema)
-                .map_err(|e| DataFusionError::ArrowError(e))?;
+            schema = project_schema(schema, desired_schema).map_err(DataFusionError::ArrowError)?;
 
             batches = batches
                 .into_iter()
                 .map(|record_batch| record_batch_into_schema(record_batch, &schema))
                 .collect::<Result<Vec<RecordBatch>, ArrowError>>()
-                .map_err(|e| DataFusionError::ArrowError(e))?;
+                .map_err(DataFusionError::ArrowError)?;
         }
 
-        let batches_wrapped = batches.into_iter().map(|r| Ok(r));
+        let batches_wrapped = batches.into_iter().map(Ok);
 
         let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
