@@ -1479,12 +1479,17 @@ def approx_percentile_cont(
     """Returns the value that is approximately at a given percentile of ``expr``."""
     if num_centroids is None:
         return Expr(
-            f.approx_percentile_cont(expression.expr, percentile.expr, distinct=distinct, num_centroids=None)
+            f.approx_percentile_cont(
+                expression.expr, percentile.expr, distinct=distinct, num_centroids=None
+            )
         )
 
     return Expr(
         f.approx_percentile_cont(
-            expression.expr, percentile.expr, distinct=distinct, num_centroids=num_centroids.expr
+            expression.expr,
+            percentile.expr,
+            distinct=distinct,
+            num_centroids=num_centroids.expr,
         )
     )
 
