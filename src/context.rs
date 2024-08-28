@@ -20,10 +20,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use datafusion::execution::session_state::SessionStateBuilder;
 use arrow::array::RecordBatchReader;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
+use datafusion::execution::session_state::SessionStateBuilder;
 use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
