@@ -63,7 +63,7 @@ df = df.with_column("value", col("ps_supplycost") * col("ps_availqty"))
 # Compute total value of specific parts
 df = df.aggregate([col("ps_partkey")], [F.sum(col("value")).alias("value")])
 
-# By default window functions go from unbounded preceeding to current row, but we want
+# By default window functions go from unbounded preceding to current row, but we want
 # to compute this sum across all rows
 window_frame = WindowFrame("rows", None, None)
 

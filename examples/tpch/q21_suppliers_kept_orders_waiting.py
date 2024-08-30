@@ -74,7 +74,7 @@ df = df.with_column(
 # only orders where this array is larger than one for multiple supplier orders. The second column
 # is all of the suppliers who failed to make their commitment. We can filter the second column for
 # arrays with size one. That combination will give us orders that had multiple suppliers where only
-# one failed. Use distinct=True in the blow aggregation so we don't get multipe line items from the
+# one failed. Use distinct=True in the blow aggregation so we don't get multiple line items from the
 # same supplier reported in either array.
 df = df.aggregate(
     [col("o_orderkey")],

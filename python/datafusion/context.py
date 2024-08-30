@@ -436,7 +436,7 @@ class SessionContext:
 
         Example usage:
 
-        The following example demostrates how to use the context to execute
+        The following example demonstrates how to use the context to execute
         a query against a CSV data source using the :py:class:`DataFrame` API::
 
             from datafusion import SessionContext
@@ -853,7 +853,7 @@ class SessionContext:
         return DataFrame(self.ctx.empty_table())
 
     def session_id(self) -> str:
-        """Retrun an id that uniquely identifies this :py:class:`SessionContext`."""
+        """Return an id that uniquely identifies this :py:class:`SessionContext`."""
         return self.ctx.session_id()
 
     def read_json(

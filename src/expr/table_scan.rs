@@ -94,7 +94,7 @@ impl PyTableScan {
 
     /// The column indexes that should be. Note if this is empty then
     /// all columns should be read by the `TableProvider`. This function
-    /// provides a Tuple of the (index, column_name) to make things simplier
+    /// provides a Tuple of the (index, column_name) to make things simpler
     /// for the calling code since often times the name is preferred to
     /// the index which is a lower level abstraction.
     #[pyo3(name = "projection")]

@@ -66,7 +66,7 @@ class LocationInputPlugin(BaseInputSource):
             # Consume header row and count number of rows for statistics.
             # TODO: Possibly makes sense to have the eager number of rows
             # calculated as a configuration since you must read the entire file
-            # to get that information. However, this should only be occuring
+            # to get that information. However, this should only be occurring
             # at table creation time and therefore shouldn't
             # slow down query performance.
             with open(input_file, "r") as file:
@@ -75,7 +75,7 @@ class LocationInputPlugin(BaseInputSource):
                 print(header_row)
                 for _ in reader:
                     num_rows += 1
-            # TODO: Need to actually consume this row into resonable columns
+            # TODO: Need to actually consume this row into reasonable columns
             raise RuntimeError("TODO: Currently unable to support CSV input files.")
         else:
             raise RuntimeError(
