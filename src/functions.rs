@@ -24,6 +24,7 @@ use crate::common::data_type::NullTreatment;
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::to_sort_expressions;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
@@ -888,17 +889,7 @@ fn add_builder_fns_to_window(
     }
 
     if let Some(order_by_cols) = order_by {
-        let order_by_cols = order_by_cols
-            .into_iter()
-            .map(|col| {
-                let order_by_expr: Expr = col.into();
-                if let Expr::Sort(_) = order_by_expr {
-                    order_by_expr
-                } else {
-                    order_by_expr.sort(true, true)
-                }
-            })
-            .collect();
+        let order_by_cols = to_sort_expressions(order_by_cols);
         builder = builder.order_by(order_by_cols);
     }
 

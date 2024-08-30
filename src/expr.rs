@@ -519,8 +519,10 @@ impl PyExpr {
     // Expression Function Builder functions
 
     pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let order_by = order_by.iter().map(|e| e.expr.clone()).collect();
-        self.expr.clone().order_by(order_by).into()
+        self.expr
+            .clone()
+            .order_by(to_sort_expressions(order_by))
+            .into()
     }
 
     pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
@@ -560,11 +562,24 @@ impl From<ExprFuncBuilder> for PyExprFuncBuilder {
     }
 }
 
+pub fn to_sort_expressions(order_by: Vec<PyExpr>) -> Vec<Expr> {
+    order_by
+        .iter()
+        .map(|e| e.expr.clone())
+        .map(|e| match e {
+            Expr::Sort(_) => e,
+            _ => e.sort(true, true),
+        })
+        .collect()
+}
+
 #[pymethods]
 impl PyExprFuncBuilder {
     pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let order_by = order_by.iter().map(|e| e.expr.clone()).collect();
-        self.builder.clone().order_by(order_by).into()
+        self.builder
+            .clone()
+            .order_by(to_sort_expressions(order_by))
+            .into()
     }
 
     pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
