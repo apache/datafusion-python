@@ -1762,7 +1762,15 @@ def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     return Expr(f.bool_or(arg.expr, distinct=distinct))
 
 
-def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -> Expr:
+def lead(
+    arg: Expr,
+    shift_offset: int = 1,
+    default_value: Optional[Any] = None,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a lead window function.
 
     Lead operation will return the argument that is in the next shift_offset-th row in
@@ -1789,14 +1797,42 @@ def lead(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) 
         arg: Value to return
         shift_offset: Number of rows following the current row.
         default_value: Value to return if shift_offet row does not exist.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    if not isinstance(default_value, pa.Scalar):
+    if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
 
-    return Expr(f.lead(arg.expr, shift_offset, default_value))
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.lead(
+            arg.expr,
+            shift_offset,
+            default_value,
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -> Expr:
+def lag(
+    arg: Expr,
+    shift_offset: int = 1,
+    default_value: Optional[Any] = None,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a lag window function.
 
     Lag operation will return the argument that is in the previous shift_offset-th row
@@ -1816,21 +1852,43 @@ def lag(arg: Expr, shift_offset: int = 1, default_value: Optional[Any] = None) -
         | 25     |      | 50  |
         +--------+------+-----+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
-
     Args:
         arg: Value to return
         shift_offset: Number of rows before the current row.
         default_value: Value to return if shift_offet row does not exist.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
 
-    return Expr(f.lag(arg.expr, shift_offset, default_value))
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.lag(
+            arg.expr,
+            shift_offset,
+            default_value,
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def row_number() -> Expr:
+def row_number(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a row number window function.
 
     Returns the row number of the window function.
@@ -1846,13 +1904,34 @@ def row_number() -> Expr:
         | 25     | 4          |
         +--------+------------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.row_number())
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.row_number(
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def rank() -> Expr:
+def rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a rank window function.
 
     Returns the rank based upon the window order. Consecutive equal values will receive
@@ -1873,13 +1952,34 @@ def rank() -> Expr:
         | 25     | 4    |
         +--------+------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.rank())
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def dense_rank() -> Expr:
+def dense_rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a dense_rank window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
@@ -1895,13 +1995,34 @@ def dense_rank() -> Expr:
         | 25     | 3          |
         +--------+------------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.dense_rank())
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.dense_rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def percent_rank() -> Expr:
+def percent_rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a percent_rank window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
@@ -1918,13 +2039,34 @@ def percent_rank() -> Expr:
         | 25     | 1.0          |
         +--------+--------------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.percent_rank())
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.percent_rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def cume_dist() -> Expr:
+def cume_dist(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a cumulative distribution window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
@@ -1941,13 +2083,35 @@ def cume_dist() -> Expr:
         | 25     | 1.0       |
         +--------+-----------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.cume_dist())
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.cume_dist(
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
 
 
-def ntile(groups: int) -> Expr:
+def ntile(
+    groups: int,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+    window_frame: Optional[WindowFrame] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Create a n-tile window function.
 
     This window function orders the window frame into a give number of groups based on
@@ -1966,7 +2130,25 @@ def ntile(groups: int) -> Expr:
         | 20     | 3     |
         +--------+-------+
 
-    To set window function parameters use the window builder approach described in the
-    ref:`_window_functions` online documentation.
+    Args:
+        groups: Number of groups for the n-tile to be divided into.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+        window_frame: Override default window frame.
+        null_treatment: Specify how nulls are to be treated.
     """
-    return Expr(f.ntile(Expr.literal(groups).expr))
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+    window_val = window_frame.window_frame if window_frame is not None else None
+
+    return Expr(
+        f.ntile(
+            Expr.literal(groups).expr,
+            partition_by=partition_cols,
+            order_by=order_cols,
+            window_frame=window_val,
+            null_treatment=null_treatment,
+        )
+    )
