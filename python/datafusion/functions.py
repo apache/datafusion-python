@@ -245,6 +245,7 @@ __all__ = [
     "var",
     "var_pop",
     "var_samp",
+    "when",
     "window",
 ]
 
@@ -362,6 +363,16 @@ def case(expr: Expr) -> CaseBuilder:
     detailed usage.
     """
     return CaseBuilder(f.case(expr.expr))
+
+
+def when(when: Expr, then: Expr) -> CaseBuilder:
+    """Create a case expression that has no base expression.
+
+    Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
+    expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+    detailed usage.
+    """
+    return CaseBuilder(f.when(when.expr, then.expr))
 
 
 def window(

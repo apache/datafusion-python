@@ -836,6 +836,25 @@ def test_case(df):
     assert result.column(2) == pa.array(["Hola", "Mundo", None])
 
 
+def test_when_with_no_base(df):
+    df.show()
+    df = df.select(
+        column("b"),
+        f.when(column("b") > literal(5), literal("too big"))
+        .when(column("b") < literal(5), literal("too small"))
+        .otherwise(literal("just right"))
+        .alias("goldilocks"),
+        f.when(column("a") == literal("Hello"), column("a")).end().alias("greeting"),
+    )
+    df.show()
+
+    result = df.collect()
+    result = result[0]
+    assert result.column(0) == pa.array([4, 5, 6])
+    assert result.column(1) == pa.array(["too small", "just right", "too big"])
+    assert result.column(2) == pa.array(["Hello", None, None])
+
+
 def test_regr_funcs_sql(df):
     # test case base on
     # https://github.com/apache/arrow-datafusion/blob/d1361d56b9a9e0c165d3d71a8df6795d2a5f51dd/datafusion/core/tests/sqllogictests/test_files/aggregate.slt#L2330
