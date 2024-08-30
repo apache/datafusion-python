@@ -180,13 +180,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
-     CSV
+    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -195,8 +200,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
-     Avro
+    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -2304,6 +2309,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.when">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       when()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.functions.window">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -2993,7 +3007,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.var_samp" title="datafusion.functions.var_samp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_samp</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the sample variance of the argument.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.when" title="datafusion.functions.when"><code class="xref py py-obj docutils literal notranslate"><span class="pre">when</span></code></a>(→ datafusion.expr.CaseBuilder)</p></td>
+<td><p>Create a case expression that has no base expression.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Creates a new Window function expression.</p></td>
 </tr>
 </tbody>
@@ -4423,6 +4440,15 @@ on the index.</p>
 <dt class="sig sig-object py" id="datafusion.functions.var_samp">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">var_samp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.var_samp" title="Link to this definition">¶</a></dt>
 <dd><p>Computes the sample variance of the argument.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.when">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">when</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">when</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">then</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.CaseBuilder" title="datafusion.expr.CaseBuilder"><span class="pre">datafusion.expr.CaseBuilder</span></a></span></span><a class="headerlink" href="#datafusion.functions.when" title="Link to this definition">¶</a></dt>
+<dd><p>Create a case expression that has no base expression.</p>
+<p>Create a <a class="reference internal" href="../expr/index.html#datafusion.expr.CaseBuilder" title="datafusion.expr.CaseBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaseBuilder</span></code></a> to match cases for the
+expression <code class="docutils literal notranslate"><span class="pre">expr</span></code>. See <a class="reference internal" href="../expr/index.html#datafusion.expr.CaseBuilder" title="datafusion.expr.CaseBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">CaseBuilder</span></code></a> for
+detailed usage.</p>
 </dd></dl>
 
 <dl class="py function">

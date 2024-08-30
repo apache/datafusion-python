@@ -231,6 +231,7 @@ Functions
    datafusion.functions.var
    datafusion.functions.var_pop
    datafusion.functions.var_samp
+   datafusion.functions.when
    datafusion.functions.window
 
 
@@ -1508,6 +1509,15 @@ Module Contents
 .. py:function:: var_samp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the sample variance of the argument.
+
+
+.. py:function:: when(when: datafusion.expr.Expr, then: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
+
+   Create a case expression that has no base expression.
+
+   Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
+   expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+   detailed usage.
 
 
 .. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr

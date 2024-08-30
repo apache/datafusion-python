@@ -180,13 +180,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
-     CSV
+    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -195,8 +200,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
-     Avro
+    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -676,6 +681,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.execute()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.from_arrow">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.from_arrow()
         </span>
        </code>
       </a>
@@ -1486,13 +1500,16 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.SessionContext.from_arrow_table">
-<span class="sig-name descname"><span class="pre">from_arrow_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow_table" title="Link to this definition">¶</a></dt>
-<dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an Arrow table.</p>
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.from_arrow">
+<span class="sig-name descname"><span class="pre">from_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow" title="Link to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an Arrow source.</p>
+<p>The Arrow data source can be any object that implements either
+<code class="docutils literal notranslate"><span class="pre">__arrow_c_stream__</span></code> or <code class="docutils literal notranslate"><span class="pre">__arrow_c_array__</span></code>. For the latter, it must return
+a struct array. Common examples of sources from pyarrow include</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> – Arrow table.</p></li>
+<li><p><strong>data</strong> – Arrow data source.</p></li>
 <li><p><strong>name</strong> – Name of the DataFrame.</p></li>
 </ul>
 </dd>
@@ -1500,6 +1517,13 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dd class="field-even"><p>DataFrame representation of the Arrow table.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.from_arrow_table">
+<span class="sig-name descname"><span class="pre">from_arrow_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow_table" title="Link to this definition">¶</a></dt>
+<dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an Arrow table.</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_arrow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py method">

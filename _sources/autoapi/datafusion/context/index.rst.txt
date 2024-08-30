@@ -417,14 +417,26 @@ Module Contents
 
 
 
+   .. py:method:: from_arrow(data: Any, name: str | None = None) -> datafusion.dataframe.DataFrame
+
+      Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
+
+      The Arrow data source can be any object that implements either
+      ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
+      a struct array. Common examples of sources from pyarrow include
+
+      :param data: Arrow data source.
+      :param name: Name of the DataFrame.
+
+      :returns: DataFrame representation of the Arrow table.
+
+
+
    .. py:method:: from_arrow_table(data: pyarrow.Table, name: str | None = None) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
 
-      :param data: Arrow table.
-      :param name: Name of the DataFrame.
-
-      :returns: DataFrame representation of the Arrow table.
+      This is an alias for :py:func:`from_arrow`.
 
 
 
