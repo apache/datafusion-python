@@ -267,7 +267,7 @@ def test_join():
 
     df = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
     df.show()
-    df = df.sort(column("l.a").sort(ascending=True))
+    df = df.sort(column("l.a"))
     table = pa.Table.from_batches(df.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -281,17 +281,13 @@ def test_distinct():
         [pa.array([1, 2, 3, 1, 2, 3]), pa.array([4, 5, 6, 4, 5, 6])],
         names=["a", "b"],
     )
-    df_a = (
-        ctx.create_dataframe([[batch]])
-        .distinct()
-        .sort(column("a").sort(ascending=True))
-    )
+    df_a = ctx.create_dataframe([[batch]]).distinct().sort(column("a"))
 
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df_b = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_b = ctx.create_dataframe([[batch]]).sort(column("a"))
 
     assert df_a.collect() == df_b.collect()
 
@@ -409,7 +405,7 @@ data_test_window_functions = [
         "last_value",
         f.window("last_value", [column("a")])
         .window_frame(WindowFrame("rows", 0, None))
-        .order_by(column("b").sort())
+        .order_by(column("b"))
         .partition_by(column("c"))
         .build(),
         [3, 3, 3, 3, 6, 6, 6],
@@ -436,7 +432,7 @@ def test_window_functions(partitioned_df, name, expr, result):
     df = partitioned_df.select(
         column("a"), column("b"), column("c"), f.alias(expr, name)
     )
-    df.sort(column("a").sort()).show()
+    df.sort(column("a")).show()
     table = pa.Table.from_batches(df.collect())
 
     expected = {
@@ -617,9 +613,9 @@ def test_intersect():
         [pa.array([3]), pa.array([6])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_i_b = df_a.intersect(df_b).sort(column("a").sort(ascending=True))
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_i_b.collect()
 
@@ -643,9 +639,9 @@ def test_except_all():
         [pa.array([1, 2]), pa.array([4, 5])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_e_b.collect()
 
@@ -678,9 +674,9 @@ def test_union(ctx):
         [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_u_b = df_a.union(df_b).sort(column("a").sort(ascending=True))
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_u_b.collect()
 
@@ -702,9 +698,9 @@ def test_union_distinct(ctx):
         [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_u_b = df_a.union(df_b, True).sort(column("a").sort(ascending=True))
+    df_a_u_b = df_a.union(df_b, True).sort(column("a"))
 
     assert df_c.collect() == df_a_u_b.collect()
     assert df_c.collect() == df_a_u_b.collect()
