@@ -20,12 +20,15 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
 
+use arrow::array::RecordBatchReader;
+use arrow::ffi_stream::ArrowArrayStreamReader;
+use arrow::pyarrow::FromPyArrow;
 use datafusion::execution::session_state::SessionStateBuilder;
 use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
 
-use pyo3::exceptions::{PyKeyError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -444,7 +447,7 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pylist", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
@@ -463,29 +466,42 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pydict", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
     /// Construct datafusion dataframe from Arrow Table
-    pub fn from_arrow_table(
+    pub fn from_arrow(
         &mut self,
         data: Bound<'_, PyAny>,
         name: Option<&str>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
-        // Instantiate pyarrow Table object & convert to batches
-        let table = data.call_method0("to_batches")?;
+        let (schema, batches) =
+            if let Ok(stream_reader) = ArrowArrayStreamReader::from_pyarrow_bound(&data) {
+                // Works for any object that implements __arrow_c_stream__ in pycapsule.
 
-        let schema = data.getattr("schema")?;
-        let schema = schema.extract::<PyArrowType<Schema>>()?;
+                let schema = stream_reader.schema().as_ref().to_owned();
+                let batches = stream_reader
+                    .collect::<Result<Vec<RecordBatch>, arrow::error::ArrowError>>()
+                    .map_err(DataFusionError::from)?;
 
-        // Cast PyAny to RecordBatch type
+                (schema, batches)
+            } else if let Ok(array) = RecordBatch::from_pyarrow_bound(&data) {
+                // While this says RecordBatch, it will work for any object that implements
+                // __arrow_c_array__ and returns a StructArray.
+
+                (array.schema().as_ref().to_owned(), vec![array])
+            } else {
+                return Err(PyTypeError::new_err(
+                    "Expected either a Arrow Array or Arrow Stream in from_arrow().",
+                ));
+            };
+
         // Because create_dataframe() expects a vector of vectors of record batches
         // here we need to wrap the vector of record batches in an additional vector
-        let batches = table.extract::<PyArrowType<Vec<RecordBatch>>>()?;
-        let list_of_batches = PyArrowType::from(vec![batches.0]);
-        self.create_dataframe(list_of_batches, name, Some(schema), py)
+        let list_of_batches = PyArrowType::from(vec![batches]);
+        self.create_dataframe(list_of_batches, name, Some(schema.into()), py)
     }
 
     /// Construct datafusion dataframe from pandas
@@ -504,7 +520,7 @@ impl PySessionContext {
         let table = table_class.call_method1("from_pandas", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, py)?;
+        let df = self.from_arrow(table, name, py)?;
         Ok(df)
     }
 
@@ -518,7 +534,7 @@ impl PySessionContext {
         let table = data.call_method0("to_arrow")?;
 
         // Convert Arrow Table to datafusion DataFrame
-        let df = self.from_arrow_table(table, name, data.py())?;
+        let df = self.from_arrow(table, name, data.py())?;
         Ok(df)
     }
 

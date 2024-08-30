@@ -47,7 +47,7 @@ def df():
         names=["a", "b", "c"],
     )
 
-    return ctx.create_dataframe([[batch]])
+    return ctx.from_arrow(batch)
 
 
 @pytest.fixture
@@ -835,13 +835,42 @@ def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compre
         df.write_parquet(str(path), compression=compression)
 
 
-# ctx = SessionContext()
+def test_dataframe_export(df) -> None:
+    # Guarantees that we have the canonical implementation
+    # reading our dataframe export
+    table = pa.table(df)
+    assert table.num_columns == 3
+    assert table.num_rows == 3
 
-# # create a RecordBatch and a new DataFrame from it
-# batch = pa.RecordBatch.from_arrays(
-#     [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
-#     names=["a", "b", "c"],
-# )
+    desired_schema = pa.schema([("a", pa.int64())])
 
-# df = ctx.create_dataframe([[batch]])
-# test_execute_stream(df)
+    # Verify we can request a schema
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+
+    # Expect a table of nulls if the schema don't overlap
+    desired_schema = pa.schema([("g", pa.string())])
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+    for i in range(0, 3):
+        assert table[0][i].as_py() is None
+
+    # Expect an error when we cannot convert schema
+    desired_schema = pa.schema([("a", pa.float32())])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+    # Expect an error when we have a not set non-nullable
+    desired_schema = pa.schema([("g", pa.string(), False)])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert

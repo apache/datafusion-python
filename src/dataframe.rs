@@ -15,8 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ffi::CString;
 use std::sync::Arc;
 
+use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
+use arrow::compute::can_cast_types;
+use arrow::error::ArrowError;
+use arrow::ffi::FFI_ArrowSchema;
+use arrow::ffi_stream::FFI_ArrowArrayStream;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -29,7 +35,7 @@ use datafusion_common::UnnestOptions;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::PyTuple;
+use pyo3::types::{PyCapsule, PyTuple};
 use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
@@ -451,6 +457,39 @@ impl PyDataFrame {
         Ok(table)
     }
 
+    fn __arrow_c_stream__<'py>(
+        &'py mut self,
+        py: Python<'py>,
+        requested_schema: Option<Bound<'py, PyCapsule>>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut schema: Schema = self.df.schema().to_owned().into();
+
+        if let Some(schema_capsule) = requested_schema {
+            validate_pycapsule(&schema_capsule, "arrow_schema")?;
+
+            let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
+            let desired_schema = Schema::try_from(schema_ptr).map_err(DataFusionError::from)?;
+
+            schema = project_schema(schema, desired_schema).map_err(DataFusionError::ArrowError)?;
+
+            batches = batches
+                .into_iter()
+                .map(|record_batch| record_batch_into_schema(record_batch, &schema))
+                .collect::<Result<Vec<RecordBatch>, ArrowError>>()
+                .map_err(DataFusionError::ArrowError)?;
+        }
+
+        let batches_wrapped = batches.into_iter().map(Ok);
+
+        let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
+        let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
+
+        let ffi_stream = FFI_ArrowArrayStream::new(reader);
+        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+        PyCapsule::new_bound(py, ffi_stream, Some(stream_capsule_name))
+    }
+
     fn execute_stream(&self, py: Python) -> PyResult<PyRecordBatchStream> {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
@@ -537,5 +576,80 @@ fn print_dataframe(py: Python, df: DataFrame) -> PyResult<()> {
     // Note that println! does not print to the Python debug console and is not visible in notebooks for instance
     let print = py.import_bound("builtins")?.getattr("print")?;
     print.call1((result,))?;
+    Ok(())
+}
+
+fn project_schema(from_schema: Schema, to_schema: Schema) -> Result<Schema, ArrowError> {
+    let merged_schema = Schema::try_merge(vec![from_schema, to_schema.clone()])?;
+
+    let project_indices: Vec<usize> = to_schema
+        .fields
+        .iter()
+        .map(|field| field.name())
+        .filter_map(|field_name| merged_schema.index_of(field_name).ok())
+        .collect();
+
+    merged_schema.project(&project_indices)
+}
+
+fn record_batch_into_schema(
+    record_batch: RecordBatch,
+    schema: &Schema,
+) -> Result<RecordBatch, ArrowError> {
+    let schema = Arc::new(schema.clone());
+    let base_schema = record_batch.schema();
+    if base_schema.fields().len() == 0 {
+        // Nothing to project
+        return Ok(RecordBatch::new_empty(schema));
+    }
+
+    let array_size = record_batch.column(0).len();
+    let mut data_arrays = Vec::with_capacity(schema.fields().len());
+
+    for field in schema.fields() {
+        let desired_data_type = field.data_type();
+        if let Some(original_data) = record_batch.column_by_name(field.name()) {
+            let original_data_type = original_data.data_type();
+
+            if can_cast_types(original_data_type, desired_data_type) {
+                data_arrays.push(arrow::compute::kernels::cast(
+                    original_data,
+                    desired_data_type,
+                )?);
+            } else if field.is_nullable() {
+                data_arrays.push(new_null_array(desired_data_type, array_size));
+            } else {
+                return Err(ArrowError::CastError(format!("Attempting to cast to non-nullable and non-castable field {} during schema projection.", field.name())));
+            }
+        } else {
+            if !field.is_nullable() {
+                return Err(ArrowError::CastError(format!(
+                    "Attempting to set null to non-nullable field {} during schema projection.",
+                    field.name()
+                )));
+            }
+            data_arrays.push(new_null_array(desired_data_type, array_size));
+        }
+    }
+
+    RecordBatch::try_new(schema, data_arrays)
+}
+
+fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
+    let capsule_name = capsule.name()?;
+    if capsule_name.is_none() {
+        return Err(PyValueError::new_err(
+            "Expected schema PyCapsule to have name set.",
+        ));
+    }
+
+    let capsule_name = capsule_name.unwrap().to_str()?;
+    if capsule_name != name {
+        return Err(PyValueError::new_err(format!(
+            "Expected name '{}' in PyCapsule, instead got '{}'",
+            name, capsule_name
+        )));
+    }
+
     Ok(())
 }

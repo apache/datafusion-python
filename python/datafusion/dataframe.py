@@ -524,3 +524,19 @@ class DataFrame:
         """
         columns = [c for c in columns]
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
+
+    def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:
+        """Export an Arrow PyCapsule Stream.
+
+        This will execute and collect the DataFrame. We will attempt to respect the
+        requested schema, but only trivial transformations will be applied such as only
+        returning the fields listed in the requested schema if their data types match
+        those in the DataFrame.
+
+        Args:
+            requested_schema: Attempt to provide the DataFrame using this schema.
+
+        Returns:
+            Arrow PyCapsule object.
+        """
+        return self.df.__arrow_c_stream__(requested_schema)

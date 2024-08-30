@@ -54,5 +54,5 @@ assert type(df) == datafusion.DataFrame
 
 # Convert Arrow Table to datafusion DataFrame
 arrow_table = pa.Table.from_pydict({"a": [1, 2, 3], "b": [4, 5, 6]})
-df = ctx.from_arrow_table(arrow_table)
+df = ctx.from_arrow(arrow_table)
 assert type(df) == datafusion.DataFrame
