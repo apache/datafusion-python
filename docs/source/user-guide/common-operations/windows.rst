@@ -57,6 +57,10 @@ previous row in the DataFrame.
 Setting Parameters
 ------------------
 
+
+Ordering
+^^^^^^^^
+
 You can control the order in which rows are processed by window functions by providing
 a list of ``order_by`` functions for the ``order_by`` parameter.
 
@@ -66,28 +70,114 @@ a list of ``order_by`` functions for the ``order_by`` parameter.
         col('"Name"'),
         col('"Attack"'),
         col('"Type 1"'),
-        f.rank()
-            .partition_by(col('"Type 1"'))
-            .order_by(col('"Attack"').sort(ascending=True))
+        f.rank(
+            partition_by=[col('"Type 1"')],
+            order_by=[col('"Attack"').sort(ascending=True)],
+        ).alias("rank"),
+    ).sort(col('"Type 1"'), col('"Attack"'))
+
+Partitions
+^^^^^^^^^^
+
+A window function can take a list of ``partition_by`` columns similar to an
+:ref:`Aggregation Function<aggregation>`. This will cause the window values to be evaluated
+independently for each of the partitions. In the example above, we found the rank of each
+Pokemon per ``Type 1`` partitions. We can see the first couple of each partition if we do
+the following:
+
+.. ipython:: python
+
+    df.select(
+        col('"Name"'),
+        col('"Attack"'),
+        col('"Type 1"'),
+        f.rank(
+            partition_by=[col('"Type 1"')],
+            order_by=[col('"Attack"').sort(ascending=True)],
+        ).alias("rank"),
+    ).filter(col("rank") < lit(3)).sort(col('"Type 1"'), col("rank"))
+
+Window Frame
+^^^^^^^^^^^^
+
+When using aggregate functions, the Window Frame of defines the rows over which it operates.
+If you do not specify a Window Frame, the frame will be set depending on the following
+criteria.
+
+* If an ``order_by`` clause is set, the default window frame is defined as the rows between
+  unbounded preceeding and the current row.
+* If an ``order_by`` is not set, the default frame is defined as the rows betwene unbounded
+  and unbounded following (the entire partition).
+
+Window Frames are defined by three parameters: unit type, starting bound, and ending bound.
+
+The unit types available are:
+
+* Rows: The starting and ending boundaries are defined by the number of rows relative to the
+  current row.
+* Range: When using Range, the ``order_by`` clause must have exactly one term. The boundaries
+  are defined bow how close the rows are to the value of the expression in the ``order_by``
+  parameter.
+* Groups: A "group" is the set of all rows that have equivalent values for all terms in the
+  ``order_by`` clause.
+
+In this example we perform a "rolling average" of the speed of the current Pokemon and the
+two preceeding rows.
+
+.. ipython:: python
+
+    from datafusion.expr import WindowFrame
+
+    df.select(
+        col('"Name"'),
+        col('"Speed"'),
+        f.window("avg",
+            [col('"Speed"')],
+            order_by=[col('"Speed"')],
+            window_frame=WindowFrame("rows", 2, 0)
+        ).alias("Previous Speed")
+    )
+
+Null Treatment
+^^^^^^^^^^^^^^
+
+When using aggregate functions as window functions, it is often useful to specify how null values
+should be treated. In order to do this you need to use the builder function. In future releases
+we expect this to be simplified in the interface.
+
+One common usage for handling nulls is the case where you want to find the last value up to the
+current row. In the following example we demonstrate how setting the null treatment to ignore
+nulls will fill in with the value of the most recent non-null row. To do this, we also will set
+the window frame so that we only process up to the current row.
+
+In this example, we filter down to one specific type of Pokemon that does have some entries in
+it's ``Type 2`` column that are null.
+
+.. ipython:: python
+
+    from datafusion.common import NullTreatment
+
+    df.filter(col('"Type 1"') ==  lit("Bug")).select(
+        '"Name"',
+        '"Type 2"',
+        f.window("last_value", [col('"Type 2"')])
+            .window_frame(WindowFrame("rows", None, 0))
+            .order_by(col('"Speed"'))
+            .null_treatment(NullTreatment.IGNORE_NULLS)
             .build()
-            .alias("rank"),
-    ).sort(col('"Type 1"').sort(), col('"Attack"').sort())
-
-Window Functions can be configured using a builder approach to set a few parameters.
-To create a builder you simply need to call any one of these functions
-
-- :py:func:`datafusion.expr.Expr.order_by` to set the window ordering.
-- :py:func:`datafusion.expr.Expr.null_treatment` to set how ``null`` values should be handled.
-- :py:func:`datafusion.expr.Expr.partition_by` to set the partitions for processing.
-- :py:func:`datafusion.expr.Expr.window_frame` to set boundary of operation.
-
-After these parameters are set, you must call ``build()`` on the resultant object to get an
-expression as shown in the example above.
+            .alias("last_wo_null"),
+        f.window("last_value", [col('"Type 2"')])
+            .window_frame(WindowFrame("rows", None, 0))
+            .order_by(col('"Speed"'))
+            .null_treatment(NullTreatment.RESPECT_NULLS)
+            .build()
+            .alias("last_with_null")
+    )
 
 Aggregate Functions
 -------------------
 
-You can use any  :ref:`Aggregation Function<aggregation>` as a window function. Currently
+You can use any :ref:`Aggregation Function<aggregation>` as a window function. Currently
 aggregate functions must use the deprecated
 :py:func:`datafusion.functions.window` API but this should be resolved in
 DataFusion 42.0 (`Issue Link <https://github.com/apache/datafusion-python/issues/833>`_). Here
