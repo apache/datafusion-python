@@ -1710,29 +1710,47 @@ def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 def first_value(
     arg: Expr,
     distinct: bool = False,
-    filter: bool = None,
-    order_by: Expr | None = None,
-    null_treatment: common.NullTreatment | None = None,
+    filter: Optional[bool] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
 ) -> Expr:
     """Returns the first value in a group of values."""
+    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+
     return Expr(
         f.first_value(
             arg.expr,
             distinct=distinct,
             filter=filter,
-            order_by=order_by,
+            order_by=order_by_cols,
             null_treatment=null_treatment,
         )
     )
 
 
-def last_value(arg: Expr) -> Expr:
+def last_value(
+    arg: Expr,
+    distinct: bool = False,
+    filter: Optional[bool] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
+) -> Expr:
     """Returns the last value in a group of values.
 
     To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
     ``.filter()``, or ``.null_treatment()``.
     """
-    return Expr(f.last_value(arg.expr))
+    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+
+    return Expr(
+        f.last_value(
+            arg.expr,
+            distinct=distinct,
+            filter=filter,
+            order_by=order_by_cols,
+            null_treatment=null_treatment,
+        )
+    )
 
 
 def bit_and(arg: Expr, distinct: bool = False) -> Expr:

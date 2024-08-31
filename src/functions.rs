@@ -319,18 +319,15 @@ pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyEx
     }
 }
 
-#[pyfunction]
-pub fn first_value(
-    expr: PyExpr,
+fn add_builder_fns_to_aggregate(
+    agg_fn: Expr,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
-    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
-
-    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    // Since ExprFuncBuilder::new() is private, we can guarantee initializing
+    // a builder with an `order_by` default of empty vec
     let order_by = order_by
         .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
         .unwrap_or_default();
@@ -351,8 +348,30 @@ pub fn first_value(
 }
 
 #[pyfunction]
-pub fn last_value(expr: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::last_value(vec![expr.expr]).into()
+pub fn first_value(
+    expr: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
+
+#[pyfunction]
+pub fn last_value(
+    expr: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
 #[pyfunction]
