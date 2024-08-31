@@ -28,7 +28,6 @@ from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
 
 from typing import Any, Optional
-from typing_extensions import deprecated
 
 import pyarrow as pa
 
