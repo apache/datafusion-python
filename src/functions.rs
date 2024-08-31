@@ -18,6 +18,7 @@
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion_expr::window_function;
 use datafusion_expr::ExprFunctionExt;
+use datafusion_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -596,9 +597,11 @@ fn window(
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
     let fun = find_window_fn(name, ctx)?;
+
     let window_frame = window_frame
-        .unwrap_or_else(|| PyWindowFrame::new("rows", None, Some(0)).unwrap())
-        .into();
+        .map(|w| w.into())
+        .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
+
     Ok(PyExpr {
         expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
             fun,
@@ -612,6 +615,10 @@ fn window(
                 .unwrap_or_default()
                 .into_iter()
                 .map(|x| x.expr)
+                .map(|e| match e {
+                    Expr::Sort(_) => e,
+                    _ => e.sort(true, true),
+                })
                 .collect::<Vec<_>>(),
             window_frame,
             null_treatment: None,
@@ -872,7 +879,6 @@ fn add_builder_fns_to_window(
     window_fn: Expr,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, set an empty partition and then
@@ -893,10 +899,6 @@ fn add_builder_fns_to_window(
         builder = builder.order_by(order_by_cols);
     }
 
-    if let Some(window_frame_vals) = window_frame {
-        builder = builder.window_frame(window_frame_vals.into());
-    }
-
     if let Some(null_treatment_val) = null_treatment {
         builder = builder.null_treatment(Some(null_treatment_val.into()));
     }
@@ -911,18 +913,11 @@ pub fn lead(
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lead(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -932,108 +927,66 @@ pub fn lag(
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lag(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
 pub fn row_number(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::row_number();
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
 pub fn rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
 pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::dense_rank();
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
 pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::percent_rank();
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
 pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::cume_dist();
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -1041,18 +994,11 @@ pub fn ntile(
     arg: PyExpr,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    window_frame: Option<PyWindowFrame>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::ntile(arg.into());
 
-    add_builder_fns_to_window(
-        window_fn,
-        partition_by,
-        order_by,
-        window_frame,
-        null_treatment,
-    )
+    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

@@ -303,7 +303,6 @@ data_test_window_functions = [
         f.row_number(
             order_by=[column("b"), column("a")],
             partition_by=[column("c")],
-            window_frame=WindowFrame("rows", 1, 0),
             null_treatment=NullTreatment.RESPECT_NULLS,
         ),
         [2, 1, 3, 4, 2, 1, 3],
@@ -373,7 +372,6 @@ data_test_window_functions = [
             default_value=-1,
             order_by=[column("b"), column("a")],
             partition_by=[column("c")],
-            window_frame=WindowFrame("rows", 3, 0),
         ),
         [8, 7, -1, -1, -1, 9, -1],
     ),
@@ -386,7 +384,6 @@ data_test_window_functions = [
             default_value=-1,
             order_by=[column("b"), column("a")],
             partition_by=[column("c")],
-            window_frame=WindowFrame("rows", 3, 0),
         ),
         [-1, -1, None, 7, -1, -1, None],
     ),
@@ -421,7 +418,7 @@ data_test_window_functions = [
     ),
     pytest.param(
         "avg",
-        f.round(f.window("avg", [column("b")]), literal(3)),
+        f.round(f.window("avg", [column("b")], order_by=[column("a")]), literal(3)),
         [7.0, 7.0, 7.0, 7.333, 7.75, 7.75, 8.0],
     ),
 ]
