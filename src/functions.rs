@@ -879,7 +879,6 @@ fn add_builder_fns_to_window(
     window_fn: Expr,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, set an empty partition and then
     // override later if appropriate.
@@ -899,10 +898,6 @@ fn add_builder_fns_to_window(
         builder = builder.order_by(order_by_cols);
     }
 
-    if let Some(null_treatment_val) = null_treatment {
-        builder = builder.null_treatment(Some(null_treatment_val.into()));
-    }
-
     builder.build().map(|e| e.into()).map_err(|err| err.into())
 }
 
@@ -913,11 +908,10 @@ pub fn lead(
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lead(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
@@ -927,66 +921,57 @@ pub fn lag(
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lag(arg.expr, Some(shift_offset), default_value);
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
 pub fn row_number(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::row_number();
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
-pub fn rank(
-    partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
 pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::dense_rank();
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
 pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::percent_rank();
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
 pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::cume_dist();
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 #[pyfunction]
@@ -994,11 +979,10 @@ pub fn ntile(
     arg: PyExpr,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::ntile(arg.into());
 
-    add_builder_fns_to_window(window_fn, partition_by, order_by, null_treatment)
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
 }
 
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {

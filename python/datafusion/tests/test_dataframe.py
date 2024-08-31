@@ -30,7 +30,6 @@ from datafusion import (
     literal,
     udf,
 )
-from datafusion.common import NullTreatment
 
 
 @pytest.fixture
@@ -303,7 +302,6 @@ data_test_window_functions = [
         f.row_number(
             order_by=[column("b"), column("a")],
             partition_by=[column("c")],
-            null_treatment=NullTreatment.RESPECT_NULLS,
         ),
         [2, 1, 3, 4, 2, 1, 3],
     ),
