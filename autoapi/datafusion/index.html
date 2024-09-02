@@ -1780,8 +1780,11 @@ aggregation or window function calls.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__getitem__" title="Link to this definition">¶</a></dt>
-<dd><p>For struct data types, return the field indicated by <code class="docutils literal notranslate"><span class="pre">key</span></code>.</p>
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.__getitem__" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve sub-object.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">key</span></code> is a string, returns the subfield of the struct.
+If <code class="docutils literal notranslate"><span class="pre">key</span></code> is an integer, retrieves the element in the array. Note that the
+element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike <cite>array_element</cite> which begines at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">

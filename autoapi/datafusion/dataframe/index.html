@@ -392,6 +392,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame._repr_html_">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame._repr_html_()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.aggregate">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -662,6 +671,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.transform">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.transform()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.union">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -833,6 +851,11 @@ those in the DataFrame.</p>
 </dd>
 </dl>
 </dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame._repr_html_">
+<span class="sig-name descname"><span class="pre">_repr_html_</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame._repr_html_" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.aggregate">
@@ -1246,6 +1269,36 @@ calling its` <code class="docutils literal notranslate"><span class="pre">sort</
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List of dictionaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.transform">
+<span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.transform" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a function to the current DataFrame which returns another DataFrame.</p>
+<p>This is useful for chaining together multiple functions. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_3</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;modified&quot;</span><span class="p">,</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">within_limit</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="n">limit</span><span class="p">))</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">modify_df</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">within_limit</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – A callable function that takes a DataFrame as it’s first argument</p></li>
+<li><p><strong>args</strong> – Zero or more arguments to pass to <cite>func</cite></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>After applying func to the original dataframe.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame">DataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>

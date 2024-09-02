@@ -67,6 +67,9 @@ Module Contents
 
 
 
+   .. py:method:: _repr_html_() -> str
+
+
    .. py:method:: aggregate(group_by: list[datafusion.expr.Expr], aggs: list[datafusion.expr.Expr]) -> DataFrame
 
       Aggregates the rows of the current DataFrame.
@@ -383,6 +386,28 @@ Module Contents
       Execute the :py:class:`DataFrame` and convert it into a list of dictionaries.
 
       :returns: List of dictionaries.
+
+
+
+   .. py:method:: transform(func: Callable[Ellipsis, DataFrame], *args: Any) -> DataFrame
+
+      Apply a function to the current DataFrame which returns another DataFrame.
+
+      This is useful for chaining together multiple functions. For example::
+
+          def add_3(df: DataFrame) -> DataFrame:
+              return df.with_column("modified", lit(3))
+
+          def within_limit(df: DataFrame, limit: int) -> DataFrame:
+              return df.filter(col("a") < lit(limit)).distinct()
+
+          df = df.transform(modify_df).transform(within_limit, 4)
+
+      :param func: A callable function that takes a DataFrame as it's first argument
+      :param args: Zero or more arguments to pass to `func`
+
+      :returns: After applying func to the original dataframe.
+      :rtype: DataFrame
 
 
 

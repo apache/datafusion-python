@@ -172,9 +172,13 @@ Module Contents
 
 
 
-   .. py:method:: __getitem__(key: str) -> Expr
+   .. py:method:: __getitem__(key: str | int) -> Expr
 
-      For struct data types, return the field indicated by ``key``.
+      Retrieve sub-object.
+
+      If ``key`` is a string, returns the subfield of the struct.
+      If ``key`` is an integer, retrieves the element in the array. Note that the
+      element index begins at ``0``, unlike `array_element` which begines at ``1``.
 
 
 
