@@ -65,7 +65,7 @@ Module Contents
       :abstractmethod:
 
 
-      Evalute an array of values and update state.
+      Evaluate an array of values and update state.
 
 
 
@@ -78,7 +78,7 @@ Module Contents
 
    Instantiate a user defined aggregate function (UDAF).
 
-   See :py:func:`udaf` for a convenience function and arugment
+   See :py:func:`udaf` for a convenience function and argument
    descriptions.
 
 
@@ -159,7 +159,7 @@ Module Contents
    .. py:attribute:: _udf
 
 
-.. py:class:: Volatility
+.. py:class:: Volatility(*args, **kwds)
 
    Bases: :py:obj:`enum.Enum`
 

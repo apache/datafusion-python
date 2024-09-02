@@ -93,6 +93,7 @@ Functions
    datafusion.functions.covar
    datafusion.functions.covar_pop
    datafusion.functions.covar_samp
+   datafusion.functions.cume_dist
    datafusion.functions.current_date
    datafusion.functions.current_time
    datafusion.functions.date_bin
@@ -102,6 +103,7 @@ Functions
    datafusion.functions.datetrunc
    datafusion.functions.decode
    datafusion.functions.degrees
+   datafusion.functions.dense_rank
    datafusion.functions.digest
    datafusion.functions.encode
    datafusion.functions.ends_with
@@ -118,8 +120,10 @@ Functions
    datafusion.functions.initcap
    datafusion.functions.isnan
    datafusion.functions.iszero
+   datafusion.functions.lag
    datafusion.functions.last_value
    datafusion.functions.lcm
+   datafusion.functions.lead
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
@@ -167,16 +171,19 @@ Functions
    datafusion.functions.named_struct
    datafusion.functions.nanvl
    datafusion.functions.now
+   datafusion.functions.ntile
    datafusion.functions.nullif
    datafusion.functions.octet_length
    datafusion.functions.order_by
    datafusion.functions.overlay
+   datafusion.functions.percent_rank
    datafusion.functions.pi
    datafusion.functions.pow
    datafusion.functions.power
    datafusion.functions.radians
    datafusion.functions.random
    datafusion.functions.range
+   datafusion.functions.rank
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -194,6 +201,7 @@ Functions
    datafusion.functions.reverse
    datafusion.functions.right
    datafusion.functions.round
+   datafusion.functions.row_number
    datafusion.functions.rpad
    datafusion.functions.rtrim
    datafusion.functions.sha224
@@ -570,12 +578,12 @@ Module Contents
 
 .. py:function:: bool_and(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
 
-   Computes the boolean AND of the arugment.
+   Computes the boolean AND of the argument.
 
 
 .. py:function:: bool_or(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
 
-   Computes the boolean OR of the arguement.
+   Computes the boolean OR of the argument.
 
 
 .. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -638,7 +646,7 @@ Module Contents
 
    Concatenates the list ``args`` with the separator.
 
-   ``NULL`` arugments are ignored. ``separator`` should not be ``NULL``.
+   ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
 
 
 .. py:function:: corr(value1: datafusion.expr.Expr, value2: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
@@ -686,6 +694,28 @@ Module Contents
 .. py:function:: covar_samp(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the sample covariance.
+
+
+.. py:function:: cume_dist(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a cumulative distribution window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   are the ratio of the row number to the total numebr of rows. Here is an example of a
+   dataframe with a window ordered by descending ``points`` and the associated
+   cumulative distribution::
+
+       +--------+-----------+
+       | points | cume_dist |
+       +--------+-----------+
+       | 100    | 0.5       |
+       | 100    | 0.5       |
+       | 50     | 0.75      |
+       | 25     | 1.0       |
+       +--------+-----------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: current_date() -> datafusion.expr.Expr
@@ -737,6 +767,27 @@ Module Contents
    Converts the argument from radians to degrees.
 
 
+.. py:function:: dense_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a dense_rank window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   will be consecutive. Here is an example of a dataframe with a window ordered by
+   descending ``points`` and the associated dense rank::
+
+       +--------+------------+
+       | points | dense_rank |
+       +--------+------------+
+       | 100    | 1          |
+       | 100    | 1          |
+       | 50     | 2          |
+       | 25     | 3          |
+       +--------+------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
+
+
 .. py:function:: digest(value: datafusion.expr.Expr, method: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the binary hash of an expression using the specified algorithm.
@@ -757,7 +808,7 @@ Module Contents
 
 .. py:function:: exp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
-   Returns the exponential of the arugment.
+   Returns the exponential of the argument.
 
 
 .. py:function:: factorial(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -775,7 +826,7 @@ Module Contents
    The string list is a string composed of substrings separated by ``,`` characters.
 
 
-.. py:function:: first_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+.. py:function:: first_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: Optional[bool] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: Optional[datafusion._internal.common.NullTreatment] = None) -> datafusion.expr.Expr
 
    Returns the first value in a group of values.
 
@@ -830,14 +881,76 @@ Module Contents
    Returns true if a given number is +0.0 or -0.0 otherwise returns false.
 
 
-.. py:function:: last_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a lag window function.
+
+   Lag operation will return the argument that is in the previous shift_offset-th row
+   in the partition. For example ``lag(col("b"), shift_offset=3, default_value=5)``
+   will return the 3rd previous value in column ``b``. At the beginnig of the
+   partition, where no values can be returned it will return the default value of 5.
+
+   Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
+   functions on a simple DataFrame::
+
+       +--------+------+-----+
+       | points | lead | lag |
+       +--------+------+-----+
+       | 100    | 100  |     |
+       | 100    | 50   | 100 |
+       | 50     | 25   | 100 |
+       | 25     |      | 50  |
+       +--------+------+-----+
+
+   :param arg: Value to return
+   :param shift_offset: Number of rows before the current row.
+   :param default_value: Value to return if shift_offet row does not exist.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
+
+
+.. py:function:: last_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: Optional[bool] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: Optional[datafusion._internal.common.NullTreatment] = None) -> datafusion.expr.Expr
 
    Returns the last value in a group of values.
+
+   To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
+   ``.filter()``, or ``.null_treatment()``.
 
 
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the least common multiple.
+
+
+.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a lead window function.
+
+   Lead operation will return the argument that is in the next shift_offset-th row in
+   the partition. For example ``lead(col("b"), shift_offset=3, default_value=5)`` will
+   return the 3rd following value in column ``b``. At the end of the partition, where
+   no futher values can be returned it will return the default value of 5.
+
+   Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
+   functions on a simple DataFrame::
+
+       +--------+------+-----+
+       | points | lead | lag |
+       +--------+------+-----+
+       | 100    | 100  |     |
+       | 100    | 50   | 100 |
+       | 50     | 25   | 100 |
+       | 25     |      | 50  |
+       +--------+------+-----+
+
+   To set window function parameters use the window builder approach described in the
+   ref:`_window_functions` online documentation.
+
+   :param arg: Value to return
+   :param shift_offset: Number of rows following the current row.
+   :param default_value: Value to return if shift_offet row does not exist.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1099,7 +1212,7 @@ Module Contents
 
 .. py:function:: max(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
 
-   Returns the maximum value of the arugment.
+   Returns the maximum value of the argument.
 
 
 .. py:function:: md5(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1124,7 +1237,7 @@ Module Contents
    Returns the minimum value of the argument.
 
 
-.. py:function:: named_struct(name_pairs: list[str, datafusion.expr.Expr]) -> datafusion.expr.Expr
+.. py:function:: named_struct(name_pairs: list[tuple[str, datafusion.expr.Expr]]) -> datafusion.expr.Expr
 
    Returns a struct with the given names and arguments pairs.
 
@@ -1139,6 +1252,31 @@ Module Contents
    Returns the current timestamp in nanoseconds.
 
    This will use the same value for all instances of now() in same statement.
+
+
+.. py:function:: ntile(groups: int, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a n-tile window function.
+
+   This window function orders the window frame into a give number of groups based on
+   the ordering criteria. It then returns which group the current row is assigned to.
+   Here is an example of a dataframe with a window ordered by descending ``points``
+   and the associated n-tile function::
+
+       +--------+-------+
+       | points | ntile |
+       +--------+-------+
+       | 120    | 1     |
+       | 100    | 1     |
+       | 80     | 2     |
+       | 60     | 2     |
+       | 40     | 3     |
+       | 20     | 3     |
+       +--------+-------+
+
+   :param groups: Number of groups for the n-tile to be divided into.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: nullif(expr1: datafusion.expr.Expr, expr2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1164,6 +1302,28 @@ Module Contents
 
    Replace the substring of string that starts at the ``start``'th character and
    extends for ``length`` characters with new substring.
+
+
+.. py:function:: percent_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a percent_rank window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
+   dataframe with a window ordered by descending ``points`` and the associated percent
+   rank::
+
+       +--------+--------------+
+       | points | percent_rank |
+       +--------+--------------+
+       | 100    | 0.0          |
+       | 100    | 0.0          |
+       | 50     | 0.666667     |
+       | 25     | 1.0          |
+       +--------+--------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: pi() -> datafusion.expr.Expr
@@ -1196,6 +1356,32 @@ Module Contents
 .. py:function:: range(start: datafusion.expr.Expr, stop: datafusion.expr.Expr, step: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Create a list of values in the range between start and stop.
+
+
+.. py:function:: rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a rank window function.
+
+   Returns the rank based upon the window order. Consecutive equal values will receive
+   the same rank, but the next different value will not be consecutive but rather the
+   number of rows that preceed it plus one. This is similar to Olympic medals. If two
+   people tie for gold, the next place is bronze. There would be no silver medal. Here
+   is an example of a dataframe with a window ordered by descending ``points`` and the
+   associated rank.
+
+   You should set ``order_by`` to produce meaningful results::
+
+       +--------+------+
+       | points | rank |
+       +--------+------+
+       | 100    | 1    |
+       | 100    | 1    |
+       | 50     | 3    |
+       | 25     | 4    |
+       +--------+------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1301,6 +1487,27 @@ Module Contents
    If the optional ``decimal_places`` is specified, round to the nearest number of
    decimal places. You can specify a negative number of decimal places. For example
    ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+
+
+.. py:function:: row_number(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a row number window function.
+
+   Returns the row number of the window function.
+
+   Here is an example of the ``row_number`` on a simple DataFrame::
+
+       +--------+------------+
+       | points | row number |
+       +--------+------------+
+       | 100    | 1          |
+       | 100    | 2          |
+       | 50     | 3          |
+       | 25     | 4          |
+       +--------+------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: rpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1523,5 +1730,11 @@ Module Contents
 .. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
 
    Creates a new Window function expression.
+
+   This interface will soon be deprecated. Instead of using this interface,
+   users should call the window functions directly. For example, to perform a
+   lag use::
+
+       df.select(functions.lag(col("a")).partition_by(col("b")).build())
 
 

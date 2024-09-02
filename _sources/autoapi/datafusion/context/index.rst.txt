@@ -362,7 +362,7 @@ Module Contents
 
    Example usage:
 
-   The following example demostrates how to use the context to execute
+   The following example demonstrates how to use the context to execute
    a query against a CSV data source using the :py:class:`DataFrame` API::
 
        from datafusion import SessionContext
@@ -717,7 +717,7 @@ Module Contents
 
    .. py:method:: session_id() -> str
 
-      Retrun an id that uniquely identifies this :py:class:`SessionContext`.
+      Return an id that uniquely identifies this :py:class:`SessionContext`.
 
 
 
