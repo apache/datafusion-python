@@ -40,7 +40,7 @@ pub enum RexType {
 /// Arrow types which represents the underlying arrow format
 /// Python types which represent the type in Python
 /// It is important to keep all of those types in a single
-/// and managable location. Therefore this structure exists
+/// and manageable location. Therefore this structure exists
 /// to map those types and provide a simple place for developers
 /// to map types from one system to another.
 #[derive(Debug, Clone)]

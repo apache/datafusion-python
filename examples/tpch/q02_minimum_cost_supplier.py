@@ -96,7 +96,7 @@ df = df_partsupp.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), how="inner")
 # create a column of that value. We can then filter down any rows for which the cost and
 # minimum do not match.
 
-# The default window frame as of 5/6/2024 is from unbounded preceeding to the current row.
+# The default window frame as of 5/6/2024 is from unbounded preceding to the current row.
 # We want to evaluate the entire data frame, so we specify this.
 window_frame = datafusion.WindowFrame("rows", None, None)
 df = df.with_column(

@@ -342,7 +342,7 @@ def concat(*args: Expr) -> Expr:
 def concat_ws(separator: str, *args: Expr) -> Expr:
     """Concatenates the list ``args`` with the separator.
 
-    ``NULL`` arugments are ignored. ``separator`` should not be ``NULL``.
+    ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
     """
     args = [arg.expr for arg in args]
     return Expr(f.concat_ws(separator, args))
@@ -541,7 +541,7 @@ def ends_with(arg: Expr, suffix: Expr) -> Expr:
 
 
 def exp(arg: Expr) -> Expr:
-    """Returns the exponential of the arugment."""
+    """Returns the exponential of the argument."""
     return Expr(f.exp(arg.expr))
 
 
@@ -1593,7 +1593,7 @@ def grouping(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def max(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the maximum value of the arugment."""
+    """Returns the maximum value of the argument."""
     return Expr(f.max(arg.expr, distinct=distinct))
 
 
@@ -1769,12 +1769,12 @@ def bit_xor(arg: Expr, distinct: bool = False) -> Expr:
 
 
 def bool_and(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean AND of the arugment."""
+    """Computes the boolean AND of the argument."""
     return Expr(f.bool_and(arg.expr, distinct=distinct))
 
 
 def bool_or(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean OR of the arguement."""
+    """Computes the boolean OR of the argument."""
     return Expr(f.bool_or(arg.expr, distinct=distinct))
 
 

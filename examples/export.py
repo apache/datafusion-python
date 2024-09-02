@@ -48,6 +48,6 @@ assert polars_df.shape == (3, 2)
 pylist = df.to_pylist()
 assert pylist == [{"a": 1, "b": 4}, {"a": 2, "b": 5}, {"a": 3, "b": 6}]
 
-# export to Pyton dictionary of columns
+# export to Python dictionary of columns
 pydict = df.to_pydict()
 assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6]}

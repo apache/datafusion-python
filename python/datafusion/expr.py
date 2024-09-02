@@ -515,7 +515,7 @@ class WindowFrame:
 
         Args:
             units: Should be one of ``rows``, ``range``, or ``groups``.
-            start_bound: Sets the preceeding bound. Must be >= 0. If none, this
+            start_bound: Sets the preceding bound. Must be >= 0. If none, this
                 will be set to unbounded. If unit type is ``groups``, this
                 parameter must be set.
             end_bound: Sets the following bound. Must be >= 0. If none, this

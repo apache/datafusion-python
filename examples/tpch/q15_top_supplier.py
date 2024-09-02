@@ -78,7 +78,7 @@ df = df.filter(col("total_revenue") == col("max_revenue"))
 # from the supplier table
 df = df.join(df_supplier, (["l_suppkey"], ["s_suppkey"]), "inner")
 
-# Return only the colums requested
+# Return only the columns requested
 df = df.select_columns("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
 
 # If we have more than one, sort by supplier number (suppkey)
