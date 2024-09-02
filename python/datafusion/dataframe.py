@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl
     import pathlib
+    from typing import Callable
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr
@@ -71,6 +72,9 @@ class DataFrame:
             String representation of the DataFrame.
         """
         return self.df.__repr__()
+
+    def _repr_html_(self) -> str:
+        return self.df._repr_html_()
 
     def describe(self) -> DataFrame:
         """Return the statistics for this DataFrame.
@@ -539,3 +543,25 @@ class DataFrame:
             Arrow PyCapsule object.
         """
         return self.df.__arrow_c_stream__(requested_schema)
+
+    def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
+        """Apply a function to the current DataFrame which returns another DataFrame.
+
+        This is useful for chaining together multiple functions. For example::
+
+            def add_3(df: DataFrame) -> DataFrame:
+                return df.with_column("modified", lit(3))
+
+            def within_limit(df: DataFrame, limit: int) -> DataFrame:
+                return df.filter(col("a") < lit(limit)).distinct()
+
+            df = df.transform(modify_df).transform(within_limit, 4)
+
+        Args:
+            func: A callable function that takes a DataFrame as it's first argument
+            args: Zero or more arguments to pass to `func`
+
+        Returns:
+            DataFrame: After applying func to the original dataframe.
+        """
+        return func(self, *args)

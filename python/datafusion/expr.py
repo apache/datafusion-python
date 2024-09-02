@@ -22,7 +22,11 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from ._internal import expr as expr_internal, LogicalPlan
+from ._internal import (
+    expr as expr_internal,
+    LogicalPlan,
+    functions as functions_internal,
+)
 from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any, Optional
 import pyarrow as pa
@@ -257,8 +261,17 @@ class Expr:
         """Binary not (~)."""
         return Expr(self.expr.__invert__())
 
-    def __getitem__(self, key: str) -> Expr:
-        """For struct data types, return the field indicated by ``key``."""
+    def __getitem__(self, key: str | int) -> Expr:
+        """Retrieve sub-object.
+
+        If ``key`` is a string, returns the subfield of the struct.
+        If ``key`` is an integer, retrieves the element in the array. Note that the
+        element index begins at ``0``, unlike `array_element` which begines at ``1``.
+        """
+        if isinstance(key, int):
+            return Expr(
+                functions_internal.array_element(self.expr, Expr.literal(key + 1).expr)
+            )
         return Expr(self.expr.__getitem__(key))
 
     def __eq__(self, rhs: Any) -> Expr:
