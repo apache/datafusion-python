@@ -27,7 +27,7 @@ from ._internal import (
     LogicalPlan,
     functions as functions_internal,
 )
-from datafusion.common import NullTreatment, , RexType, DataTypeMap
+from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any, Optional
 import pyarrow as pa
 
