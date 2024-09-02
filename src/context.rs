@@ -765,7 +765,8 @@ impl PySessionContext {
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
-        let x = wait_for_future(py, self.ctx.table(name)).map_err(DataFusionError::from)?;
+        let x = wait_for_future(py, self.ctx.table(name))
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?;
         Ok(PyDataFrame::new(x))
     }
 

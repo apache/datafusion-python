@@ -466,6 +466,13 @@ def test_table_exist(ctx):
     assert ctx.table_exist("t") is True
 
 
+def test_table_not_found(ctx):
+    from uuid import uuid4
+
+    with pytest.raises(KeyError):
+        ctx.table(f"not-found-{uuid4()}")
+
+
 def test_read_json(ctx):
     path = os.path.dirname(os.path.abspath(__file__))
 
