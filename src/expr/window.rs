@@ -168,7 +168,11 @@ fn not_window_function_err(expr: Expr) -> PyErr {
 impl PyWindowFrame {
     #[new]
     #[pyo3(signature=(unit, start_bound, end_bound))]
-    pub fn new(unit: &str, start_bound: Option<u64>, end_bound: Option<u64>) -> PyResult<Self> {
+    pub fn new(
+        unit: &str,
+        start_bound: Option<ScalarValue>,
+        end_bound: Option<ScalarValue>,
+    ) -> PyResult<Self> {
         let units = unit.to_ascii_lowercase();
         let units = match units.as_str() {
             "rows" => WindowFrameUnits::Rows,
@@ -182,9 +186,7 @@ impl PyWindowFrame {
             }
         };
         let start_bound = match start_bound {
-            Some(start_bound) => {
-                WindowFrameBound::Preceding(ScalarValue::UInt64(Some(start_bound)))
-            }
+            Some(start_bound) => WindowFrameBound::Preceding(start_bound),
             None => match units {
                 WindowFrameUnits::Range => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Rows => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
@@ -197,7 +199,7 @@ impl PyWindowFrame {
             },
         };
         let end_bound = match end_bound {
-            Some(end_bound) => WindowFrameBound::Following(ScalarValue::UInt64(Some(end_bound))),
+            Some(end_bound) => WindowFrameBound::Following(end_bound),
             None => match units {
                 WindowFrameUnits::Rows => WindowFrameBound::Following(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Range => WindowFrameBound::Following(ScalarValue::UInt64(None)),

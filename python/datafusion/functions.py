@@ -27,6 +27,10 @@ from datafusion._internal import functions as f, common
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
 
+from typing import Any, Optional
+
+import pyarrow as pa
+
 __all__ = [
     "abs",
     "acos",
@@ -246,7 +250,16 @@ __all__ = [
     "var_pop",
     "var_samp",
     "when",
+    # Window Functions
     "window",
+    "lead",
+    "lag",
+    "row_number",
+    "rank",
+    "dense_rank",
+    "percent_rank",
+    "cume_dist",
+    "ntile",
 ]
 
 
@@ -383,7 +396,14 @@ def window(
     window_frame: WindowFrame | None = None,
     ctx: SessionContext | None = None,
 ) -> Expr:
-    """Creates a new Window function expression."""
+    """Creates a new Window function expression.
+
+    This interface will soon be deprecated. Instead of using this interface,
+    users should call the window functions directly. For example, to perform a
+    lag use::
+
+        df.select(functions.lag(col("a")).partition_by(col("b")).build())
+    """
     args = [a.expr for a in args]
     partition_by = [e.expr for e in partition_by] if partition_by is not None else None
     order_by = [o.expr for o in order_by] if order_by is not None else None
@@ -1022,12 +1042,12 @@ def struct(*args: Expr) -> Expr:
     return Expr(f.struct(*args))
 
 
-def named_struct(name_pairs: list[(str, Expr)]) -> Expr:
+def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
     """Returns a struct with the given names and arguments pairs."""
-    name_pairs = [[Expr.literal(pair[0]), pair[1]] for pair in name_pairs]
+    name_pair_exprs = [[Expr.literal(pair[0]), pair[1]] for pair in name_pairs]
 
     # flatten
-    name_pairs = [x.expr for xs in name_pairs for x in xs]
+    name_pairs = [x.expr for xs in name_pair_exprs for x in xs]
     return Expr(f.named_struct(*name_pairs))
 
 
@@ -1690,17 +1710,19 @@ def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 def first_value(
     arg: Expr,
     distinct: bool = False,
-    filter: bool = None,
-    order_by: Expr | None = None,
-    null_treatment: common.NullTreatment | None = None,
+    filter: Optional[bool] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
 ) -> Expr:
     """Returns the first value in a group of values."""
+    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+
     return Expr(
         f.first_value(
             arg.expr,
             distinct=distinct,
             filter=filter,
-            order_by=order_by,
+            order_by=order_by_cols,
             null_treatment=null_treatment,
         )
     )
@@ -1709,17 +1731,23 @@ def first_value(
 def last_value(
     arg: Expr,
     distinct: bool = False,
-    filter: bool = None,
-    order_by: Expr | None = None,
-    null_treatment: common.NullTreatment | None = None,
+    filter: Optional[bool] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: Optional[common.NullTreatment] = None,
 ) -> Expr:
-    """Returns the last value in a group of values."""
+    """Returns the last value in a group of values.
+
+    To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
+    ``.filter()``, or ``.null_treatment()``.
+    """
+    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+
     return Expr(
         f.last_value(
             arg.expr,
             distinct=distinct,
             filter=filter,
-            order_by=order_by,
+            order_by=order_by_cols,
             null_treatment=null_treatment,
         )
     )
@@ -1748,3 +1776,339 @@ def bool_and(arg: Expr, distinct: bool = False) -> Expr:
 def bool_or(arg: Expr, distinct: bool = False) -> Expr:
     """Computes the boolean OR of the arguement."""
     return Expr(f.bool_or(arg.expr, distinct=distinct))
+
+
+def lead(
+    arg: Expr,
+    shift_offset: int = 1,
+    default_value: Optional[Any] = None,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a lead window function.
+
+    Lead operation will return the argument that is in the next shift_offset-th row in
+    the partition. For example ``lead(col("b"), shift_offset=3, default_value=5)`` will
+    return the 3rd following value in column ``b``. At the end of the partition, where
+    no futher values can be returned it will return the default value of 5.
+
+    Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
+    functions on a simple DataFrame::
+
+        +--------+------+-----+
+        | points | lead | lag |
+        +--------+------+-----+
+        | 100    | 100  |     |
+        | 100    | 50   | 100 |
+        | 50     | 25   | 100 |
+        | 25     |      | 50  |
+        +--------+------+-----+
+
+    To set window function parameters use the window builder approach described in the
+    ref:`_window_functions` online documentation.
+
+    Args:
+        arg: Value to return
+        shift_offset: Number of rows following the current row.
+        default_value: Value to return if shift_offet row does not exist.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    if not isinstance(default_value, pa.Scalar) and default_value is not None:
+        default_value = pa.scalar(default_value)
+
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.lead(
+            arg.expr,
+            shift_offset,
+            default_value,
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def lag(
+    arg: Expr,
+    shift_offset: int = 1,
+    default_value: Optional[Any] = None,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a lag window function.
+
+    Lag operation will return the argument that is in the previous shift_offset-th row
+    in the partition. For example ``lag(col("b"), shift_offset=3, default_value=5)``
+    will return the 3rd previous value in column ``b``. At the beginnig of the
+    partition, where no values can be returned it will return the default value of 5.
+
+    Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
+    functions on a simple DataFrame::
+
+        +--------+------+-----+
+        | points | lead | lag |
+        +--------+------+-----+
+        | 100    | 100  |     |
+        | 100    | 50   | 100 |
+        | 50     | 25   | 100 |
+        | 25     |      | 50  |
+        +--------+------+-----+
+
+    Args:
+        arg: Value to return
+        shift_offset: Number of rows before the current row.
+        default_value: Value to return if shift_offet row does not exist.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    if not isinstance(default_value, pa.Scalar):
+        default_value = pa.scalar(default_value)
+
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.lag(
+            arg.expr,
+            shift_offset,
+            default_value,
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def row_number(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a row number window function.
+
+    Returns the row number of the window function.
+
+    Here is an example of the ``row_number`` on a simple DataFrame::
+
+        +--------+------------+
+        | points | row number |
+        +--------+------------+
+        | 100    | 1          |
+        | 100    | 2          |
+        | 50     | 3          |
+        | 25     | 4          |
+        +--------+------------+
+
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.row_number(
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a rank window function.
+
+    Returns the rank based upon the window order. Consecutive equal values will receive
+    the same rank, but the next different value will not be consecutive but rather the
+    number of rows that preceed it plus one. This is similar to Olympic medals. If two
+    people tie for gold, the next place is bronze. There would be no silver medal. Here
+    is an example of a dataframe with a window ordered by descending ``points`` and the
+    associated rank.
+
+    You should set ``order_by`` to produce meaningful results::
+
+        +--------+------+
+        | points | rank |
+        +--------+------+
+        | 100    | 1    |
+        | 100    | 1    |
+        | 50     | 3    |
+        | 25     | 4    |
+        +--------+------+
+
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def dense_rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a dense_rank window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    will be consecutive. Here is an example of a dataframe with a window ordered by
+    descending ``points`` and the associated dense rank::
+
+        +--------+------------+
+        | points | dense_rank |
+        +--------+------------+
+        | 100    | 1          |
+        | 100    | 1          |
+        | 50     | 2          |
+        | 25     | 3          |
+        +--------+------------+
+
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.dense_rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def percent_rank(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a percent_rank window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
+    dataframe with a window ordered by descending ``points`` and the associated percent
+    rank::
+
+        +--------+--------------+
+        | points | percent_rank |
+        +--------+--------------+
+        | 100    | 0.0          |
+        | 100    | 0.0          |
+        | 50     | 0.666667     |
+        | 25     | 1.0          |
+        +--------+--------------+
+
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.percent_rank(
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def cume_dist(
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a cumulative distribution window function.
+
+    This window function is similar to :py:func:`rank` except that the returned values
+    are the ratio of the row number to the total numebr of rows. Here is an example of a
+    dataframe with a window ordered by descending ``points`` and the associated
+    cumulative distribution::
+
+        +--------+-----------+
+        | points | cume_dist |
+        +--------+-----------+
+        | 100    | 0.5       |
+        | 100    | 0.5       |
+        | 50     | 0.75      |
+        | 25     | 1.0       |
+        +--------+-----------+
+
+    Args:
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.cume_dist(
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )
+
+
+def ntile(
+    groups: int,
+    partition_by: Optional[list[Expr]] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Create a n-tile window function.
+
+    This window function orders the window frame into a give number of groups based on
+    the ordering criteria. It then returns which group the current row is assigned to.
+    Here is an example of a dataframe with a window ordered by descending ``points``
+    and the associated n-tile function::
+
+        +--------+-------+
+        | points | ntile |
+        +--------+-------+
+        | 120    | 1     |
+        | 100    | 1     |
+        | 80     | 2     |
+        | 60     | 2     |
+        | 40     | 3     |
+        | 20     | 3     |
+        +--------+-------+
+
+    Args:
+        groups: Number of groups for the n-tile to be divided into.
+        partition_by: Expressions to partition the window frame on.
+        order_by: Set ordering within the window frame.
+    """
+    partition_cols = (
+        [col.expr for col in partition_by] if partition_by is not None else None
+    )
+    order_cols = [col.expr for col in order_by] if order_by is not None else None
+
+    return Expr(
+        f.ntile(
+            Expr.literal(groups).expr,
+            partition_by=partition_cols,
+            order_by=order_cols,
+        )
+    )

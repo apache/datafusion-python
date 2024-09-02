@@ -16,13 +16,16 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
+use datafusion_expr::window_function;
 use datafusion_expr::ExprFunctionExt;
+use datafusion_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::to_sort_expressions;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::execution::FunctionRegistry;
@@ -316,18 +319,15 @@ pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyEx
     }
 }
 
-#[pyfunction]
-pub fn first_value(
-    expr: PyExpr,
+fn add_builder_fns_to_aggregate(
+    agg_fn: Expr,
     distinct: bool,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
-    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
-
-    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
+    // Since ExprFuncBuilder::new() is private, we can guarantee initializing
+    // a builder with an `order_by` default of empty vec
     let order_by = order_by
         .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
         .unwrap_or_default();
@@ -348,6 +348,20 @@ pub fn first_value(
 }
 
 #[pyfunction]
+pub fn first_value(
+    expr: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
+
+#[pyfunction]
 pub fn last_value(
     expr: PyExpr,
     distinct: bool,
@@ -357,23 +371,7 @@ pub fn last_value(
 ) -> PyResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
 
-    // luckily, I can guarantee initializing a builder with an `order_by` default of empty vec
-    let order_by = order_by
-        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let mut builder = agg_fn.order_by(order_by);
-
-    if distinct {
-        builder = builder.distinct();
-    }
-
-    if let Some(filter) = filter {
-        builder = builder.filter(filter.expr);
-    }
-
-    builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
-
-    Ok(builder.build()?.into())
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -618,9 +616,11 @@ fn window(
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
     let fun = find_window_fn(name, ctx)?;
+
     let window_frame = window_frame
-        .unwrap_or_else(|| PyWindowFrame::new("rows", None, Some(0)).unwrap())
-        .into();
+        .map(|w| w.into())
+        .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
+
     Ok(PyExpr {
         expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
             fun,
@@ -634,6 +634,10 @@ fn window(
                 .unwrap_or_default()
                 .into_iter()
                 .map(|x| x.expr)
+                .map(|e| match e {
+                    Expr::Sort(_) => e,
+                    _ => e.sort(true, true),
+                })
                 .collect::<Vec<_>>(),
             window_frame,
             null_treatment: None,
@@ -890,6 +894,116 @@ aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg_udaf);
 aggregate_function!(max, functions_aggregate::min_max::max_udaf);
 aggregate_function!(min, functions_aggregate::min_max::min_udaf);
 
+fn add_builder_fns_to_window(
+    window_fn: Expr,
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    // Since ExprFuncBuilder::new() is private, set an empty partition and then
+    // override later if appropriate.
+    let mut builder = window_fn.partition_by(vec![]);
+
+    if let Some(partition_cols) = partition_by {
+        builder = builder.partition_by(
+            partition_cols
+                .into_iter()
+                .map(|col| col.clone().into())
+                .collect(),
+        );
+    }
+
+    if let Some(order_by_cols) = order_by {
+        let order_by_cols = to_sort_expressions(order_by_cols);
+        builder = builder.order_by(order_by_cols);
+    }
+
+    builder.build().map(|e| e.into()).map_err(|err| err.into())
+}
+
+#[pyfunction]
+pub fn lead(
+    arg: PyExpr,
+    shift_offset: i64,
+    default_value: Option<ScalarValue>,
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::lead(arg.expr, Some(shift_offset), default_value);
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn lag(
+    arg: PyExpr,
+    shift_offset: i64,
+    default_value: Option<ScalarValue>,
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::lag(arg.expr, Some(shift_offset), default_value);
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn row_number(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::row_number();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) -> PyResult<PyExpr> {
+    let window_fn = window_function::rank();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn dense_rank(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::dense_rank();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn percent_rank(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::percent_rank();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn cume_dist(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::cume_dist();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+pub fn ntile(
+    arg: PyExpr,
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PyExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = window_function::ntile(arg.into());
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(abs))?;
     m.add_wrapped(wrap_pyfunction!(acos))?;
@@ -1074,6 +1188,16 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
+
+    // Window Functions
+    m.add_wrapped(wrap_pyfunction!(lead))?;
+    m.add_wrapped(wrap_pyfunction!(lag))?;
+    m.add_wrapped(wrap_pyfunction!(row_number))?;
+    m.add_wrapped(wrap_pyfunction!(rank))?;
+    m.add_wrapped(wrap_pyfunction!(dense_rank))?;
+    m.add_wrapped(wrap_pyfunction!(percent_rank))?;
+    m.add_wrapped(wrap_pyfunction!(cume_dist))?;
+    m.add_wrapped(wrap_pyfunction!(ntile))?;
 
     Ok(())
 }

@@ -4,6 +4,7 @@ target
 /docs/temp
 /docs/build
 .DS_Store
+.vscode
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -31,3 +32,6 @@ apache-rat-*.jar
 CHANGELOG.md.bak
 
 docs/mdbook/book
+
+.pyo3_build_config
+
