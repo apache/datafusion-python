@@ -40,6 +40,7 @@ use pyo3::types::{PyCapsule, PyTuple};
 use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
+use crate::expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -196,7 +197,7 @@ impl PyDataFrame {
 
     #[pyo3(signature = (*exprs))]
     fn sort(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
-        let exprs = exprs.into_iter().map(|e| e.into()).collect();
+        let exprs = to_sort_expressions(exprs);
         let df = self.df.as_ref().clone().sort(exprs)?;
         Ok(Self::new(df))
     }

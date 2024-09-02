@@ -127,11 +127,10 @@ class DataFrame:
             df = df.select("a", col("b"), col("a").alias("alternate_a"))
 
         """
-        exprs = [
-            arg.expr if isinstance(arg, Expr) else Expr.column(arg).expr
-            for arg in exprs
+        exprs_internal = [
+            Expr.column(arg).expr if isinstance(arg, str) else arg.expr for arg in exprs
         ]
-        return DataFrame(self.df.select(*exprs))
+        return DataFrame(self.df.select(*exprs_internal))
 
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.

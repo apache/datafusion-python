@@ -963,6 +963,7 @@ def test_first_last_value(df):
     assert result.column(3) == pa.array(["!"])
     assert result.column(4) == pa.array([6])
     assert result.column(5) == pa.array([datetime(2020, 7, 2)])
+    df.show()
 
 
 def test_binary_string_functions(df):

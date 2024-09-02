@@ -85,6 +85,23 @@ def aggregate_df():
     return ctx.sql("select c1, sum(c2) from test group by c1")
 
 
+@pytest.fixture
+def partitioned_df():
+    ctx = SessionContext()
+
+    # create a RecordBatch and a new DataFrame from it
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([0, 1, 2, 3, 4, 5, 6]),
+            pa.array([7, None, 7, 8, 9, None, 9]),
+            pa.array(["A", "A", "A", "A", "B", "B", "B"]),
+        ],
+        names=["a", "b", "c"],
+    )
+
+    return ctx.create_dataframe([[batch]])
+
+
 def test_select(df):
     df = df.select(
         column("a") + column("b"),
@@ -250,7 +267,7 @@ def test_join():
 
     df = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
     df.show()
-    df = df.sort(column("l.a").sort(ascending=True))
+    df = df.sort(column("l.a"))
     table = pa.Table.from_batches(df.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
@@ -264,83 +281,162 @@ def test_distinct():
         [pa.array([1, 2, 3, 1, 2, 3]), pa.array([4, 5, 6, 4, 5, 6])],
         names=["a", "b"],
     )
-    df_a = (
-        ctx.create_dataframe([[batch]])
-        .distinct()
-        .sort(column("a").sort(ascending=True))
-    )
+    df_a = ctx.create_dataframe([[batch]]).distinct().sort(column("a"))
 
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    df_b = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_b = ctx.create_dataframe([[batch]]).sort(column("a"))
 
     assert df_a.collect() == df_b.collect()
 
 
 data_test_window_functions = [
-    ("row", f.window("row_number", [], order_by=[f.order_by(column("c"))]), [2, 1, 3]),
-    ("rank", f.window("rank", [], order_by=[f.order_by(column("c"))]), [2, 1, 2]),
+    (
+        "row",
+        f.row_number(order_by=[column("b"), column("a").sort(ascending=False)]),
+        [4, 2, 3, 5, 7, 1, 6],
+    ),
+    (
+        "row_w_params",
+        f.row_number(
+            order_by=[column("b"), column("a")],
+            partition_by=[column("c")],
+        ),
+        [2, 1, 3, 4, 2, 1, 3],
+    ),
+    ("rank", f.rank(order_by=[column("b")]), [3, 1, 3, 5, 6, 1, 6]),
+    (
+        "rank_w_params",
+        f.rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        [2, 1, 3, 4, 2, 1, 3],
+    ),
     (
         "dense_rank",
-        f.window("dense_rank", [], order_by=[f.order_by(column("c"))]),
-        [2, 1, 2],
+        f.dense_rank(order_by=[column("b")]),
+        [2, 1, 2, 3, 4, 1, 4],
+    ),
+    (
+        "dense_rank_w_params",
+        f.dense_rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        [2, 1, 3, 4, 2, 1, 3],
     ),
     (
         "percent_rank",
-        f.window("percent_rank", [], order_by=[f.order_by(column("c"))]),
-        [0.5, 0, 0.5],
+        f.round(f.percent_rank(order_by=[column("b")]), literal(3)),
+        [0.333, 0.0, 0.333, 0.667, 0.833, 0.0, 0.833],
+    ),
+    (
+        "percent_rank_w_params",
+        f.round(
+            f.percent_rank(
+                order_by=[column("b"), column("a")], partition_by=[column("c")]
+            ),
+            literal(3),
+        ),
+        [0.333, 0.0, 0.667, 1.0, 0.5, 0.0, 1.0],
     ),
     (
         "cume_dist",
-        f.window("cume_dist", [], order_by=[f.order_by(column("b"))]),
-        [0.3333333333333333, 0.6666666666666666, 1.0],
+        f.round(f.cume_dist(order_by=[column("b")]), literal(3)),
+        [0.571, 0.286, 0.571, 0.714, 1.0, 0.286, 1.0],
+    ),
+    (
+        "cume_dist_w_params",
+        f.round(
+            f.cume_dist(
+                order_by=[column("b"), column("a")], partition_by=[column("c")]
+            ),
+            literal(3),
+        ),
+        [0.5, 0.25, 0.75, 1.0, 0.667, 0.333, 1.0],
     ),
     (
         "ntile",
-        f.window("ntile", [literal(2)], order_by=[f.order_by(column("c"))]),
-        [1, 1, 2],
+        f.ntile(2, order_by=[column("b")]),
+        [1, 1, 1, 2, 2, 1, 2],
     ),
     (
-        "next",
-        f.window("lead", [column("b")], order_by=[f.order_by(column("b"))]),
-        [5, 6, None],
+        "ntile_w_params",
+        f.ntile(2, order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        [1, 1, 2, 2, 1, 1, 2],
     ),
+    ("lead", f.lead(column("b"), order_by=[column("b")]), [7, None, 8, 9, 9, 7, None]),
     (
-        "previous",
-        f.window("lag", [column("b")], order_by=[f.order_by(column("b"))]),
-        [None, 4, 5],
+        "lead_w_params",
+        f.lead(
+            column("b"),
+            shift_offset=2,
+            default_value=-1,
+            order_by=[column("b"), column("a")],
+            partition_by=[column("c")],
+        ),
+        [8, 7, -1, -1, -1, 9, -1],
     ),
+    ("lag", f.lag(column("b"), order_by=[column("b")]), [None, None, 7, 7, 8, None, 9]),
+    (
+        "lag_w_params",
+        f.lag(
+            column("b"),
+            shift_offset=2,
+            default_value=-1,
+            order_by=[column("b"), column("a")],
+            partition_by=[column("c")],
+        ),
+        [-1, -1, None, 7, -1, -1, None],
+    ),
+    # TODO update all aggregate functions as windows once upstream merges https://github.com/apache/datafusion-python/issues/833
     pytest.param(
         "first_value",
-        f.window("first_value", [column("a")], order_by=[f.order_by(column("b"))]),
-        [1, 1, 1],
+        f.window(
+            "first_value",
+            [column("a")],
+            order_by=[f.order_by(column("b"))],
+            partition_by=[column("c")],
+        ),
+        [1, 1, 1, 1, 5, 5, 5],
     ),
     pytest.param(
         "last_value",
-        f.window("last_value", [column("b")], order_by=[f.order_by(column("b"))]),
-        [4, 5, 6],
+        f.window("last_value", [column("a")])
+        .window_frame(WindowFrame("rows", 0, None))
+        .order_by(column("b"))
+        .partition_by(column("c"))
+        .build(),
+        [3, 3, 3, 3, 6, 6, 6],
     ),
     pytest.param(
-        "2nd_value",
+        "3rd_value",
         f.window(
             "nth_value",
-            [column("b"), literal(2)],
-            order_by=[f.order_by(column("b"))],
+            [column("b"), literal(3)],
+            order_by=[f.order_by(column("a"))],
         ),
-        [None, 5, 5],
+        [None, None, 7, 7, 7, 7, 7],
+    ),
+    pytest.param(
+        "avg",
+        f.round(f.window("avg", [column("b")], order_by=[column("a")]), literal(3)),
+        [7.0, 7.0, 7.0, 7.333, 7.75, 7.75, 8.0],
     ),
 ]
 
 
 @pytest.mark.parametrize("name,expr,result", data_test_window_functions)
-def test_window_functions(df, name, expr, result):
-    df = df.select(column("a"), column("b"), column("c"), f.alias(expr, name))
-
+def test_window_functions(partitioned_df, name, expr, result):
+    df = partitioned_df.select(
+        column("a"), column("b"), column("c"), f.alias(expr, name)
+    )
+    df.sort(column("a")).show()
     table = pa.Table.from_batches(df.collect())
 
-    expected = {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8], name: result}
+    expected = {
+        "a": [0, 1, 2, 3, 4, 5, 6],
+        "b": [7, None, 7, 8, 9, None, 9],
+        "c": ["A", "A", "A", "A", "B", "B", "B"],
+        name: result,
+    }
 
     assert table.sort_by("a").to_pydict() == expected
 
@@ -513,9 +609,9 @@ def test_intersect():
         [pa.array([3]), pa.array([6])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_i_b = df_a.intersect(df_b).sort(column("a").sort(ascending=True))
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_i_b.collect()
 
@@ -539,9 +635,9 @@ def test_except_all():
         [pa.array([1, 2]), pa.array([4, 5])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_e_b = df_a.except_all(df_b).sort(column("a").sort(ascending=True))
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_e_b.collect()
 
@@ -574,9 +670,9 @@ def test_union(ctx):
         [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_u_b = df_a.union(df_b).sort(column("a").sort(ascending=True))
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
 
     assert df_c.collect() == df_a_u_b.collect()
 
@@ -598,9 +694,9 @@ def test_union_distinct(ctx):
         [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
         names=["a", "b"],
     )
-    df_c = ctx.create_dataframe([[batch]]).sort(column("a").sort(ascending=True))
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_u_b = df_a.union(df_b, True).sort(column("a").sort(ascending=True))
+    df_a_u_b = df_a.union(df_b, True).sort(column("a"))
 
     assert df_c.collect() == df_a_u_b.collect()
     assert df_c.collect() == df_a_u_b.collect()

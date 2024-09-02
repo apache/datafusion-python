@@ -117,10 +117,10 @@ jobs:
           name: dist-${{ matrix.os  }}
           path: target/wheels/*
 
-  build-macos-aarch64:
+  build-macos-x86_64:
     needs: [generate-license]
-    name: Mac arm64
-    runs-on: macos-latest
+    name: Mac x86_64
+    runs-on: macos-13
     strategy:
       fail-fast: false
       matrix:
@@ -135,9 +135,6 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-
-      - name: Set up Rust targets
-        run: rustup target add aarch64-apple-darwin
 
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
@@ -159,7 +156,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip --target aarch64-apple-darwin --features substrait
+        run: maturin build --release --strip --features substrait
       - name: List Mac wheels
         run: find target/wheels/
 
@@ -171,7 +168,7 @@ jobs:
 
   build-manylinux-x86_64:
     needs: [generate-license]
-    name: Manylinux
+    name: Manylinux x86_64
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -262,7 +259,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-python-mac-win
-      - build-macos-aarch64
+      - build-macos-x86_64
       - build-manylinux-x86_64
       - build-manylinux-aarch64
       - build-sdist

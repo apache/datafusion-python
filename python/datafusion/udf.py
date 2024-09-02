@@ -153,7 +153,7 @@ class Accumulator(metaclass=ABCMeta):
 
     @abstractmethod
     def update(self, values: pyarrow.Array) -> None:
-        """Evalute an array of values and update state."""
+        """Evaluate an array of values and update state."""
         pass
 
     @abstractmethod
@@ -189,7 +189,7 @@ class AggregateUDF:
     ) -> None:
         """Instantiate a user defined aggregate function (UDAF).
 
-        See :py:func:`udaf` for a convenience function and arugment
+        See :py:func:`udaf` for a convenience function and argument
         descriptions.
         """
         self._udf = df_internal.AggregateUDF(

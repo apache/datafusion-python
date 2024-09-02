@@ -21,7 +21,7 @@ Expressions
 ===========
 
 In DataFusion an expression is an abstraction that represents a computation.
-Expressions are used as the primary inputs and ouputs for most functions within
+Expressions are used as the primary inputs and outputs for most functions within
 DataFusion. As such, expressions can be combined to create expression trees, a
 concept shared across most compilers and databases.
 

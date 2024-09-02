@@ -18,7 +18,7 @@
 
 DataFusion is a blazing fast query engine that lets you run data analyses quickly and reliably.
 
-DataFusion is written in Rust, but also exposes Python and SQL bindings, so you can easily query data in your langauge of choice.  You don't need to know any Rust to be a happy and productive user of DataFusion.
+DataFusion is written in Rust, but also exposes Python and SQL bindings, so you can easily query data in your language of choice.  You don't need to know any Rust to be a happy and productive user of DataFusion.
 
 DataFusion lets you run queries faster than pandas.  Let's compare query runtimes for a 5GB CSV file with 100 million rows of data.
 

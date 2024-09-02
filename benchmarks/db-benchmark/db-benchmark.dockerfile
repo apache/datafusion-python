@@ -58,7 +58,7 @@ RUN cd pandas && \
 RUN cd modin && \
   virtualenv py-modin --python=/usr/bin/python3.10
 
-RUN Rscript -e 'install.packages(c("jsonlite","bit64","devtools","rmarkdown"), dependecies=TRUE, repos="https://cloud.r-project.org")'
+RUN Rscript -e 'install.packages(c("jsonlite","bit64","devtools","rmarkdown"), dependencies=TRUE, repos="https://cloud.r-project.org")'
 
 SHELL ["/bin/bash", "-c"]
 

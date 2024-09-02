@@ -45,14 +45,14 @@ df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
 # The nation code is a two digit number, but we need to convert it to a string literal
 nation_codes = F.make_array(*[lit(str(n)) for n in NATION_CODES])
 
-# Use the substring operation to extract the first two charaters of the phone number
+# Use the substring operation to extract the first two characters of the phone number
 df = df_customer.with_column("cntrycode", F.substring(col("c_phone"), lit(0), lit(3)))
 
 # Limit our search to customers with some balance and in the country code above
 df = df.filter(col("c_acctbal") > lit(0.0))
 df = df.filter(~F.array_position(nation_codes, col("cntrycode")).is_null())
 
-# Compute the average balance. By default, the window frame is from unbounded preceeding to the
+# Compute the average balance. By default, the window frame is from unbounded preceding to the
 # current row. We want our frame to cover the entire data frame.
 window_frame = WindowFrame("rows", None, None)
 df = df.with_column(

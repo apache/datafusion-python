@@ -28,7 +28,7 @@ filepath = os.path.join(path, "./tpch/data/lineitem.parquet")
 # question "return all of the rows that have a specific combination of these
 # values". We have the combinations we care about provided as a python
 # list of tuples. There is no built in function that supports this operation,
-# but it can be explicilty specified via a single expression or we can
+# but it can be explicitly specified via a single expression or we can
 # use a user defined function.
 
 ctx = SessionContext()

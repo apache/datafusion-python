@@ -74,7 +74,7 @@ df = df_lineitem.filter(col("l_shipdate") >= lit(date)).filter(
 # This will filter down the line items to the parts of interest
 df = df.join(df_part, (["l_partkey"], ["p_partkey"]), "inner")
 
-# Compute the total sold and limit ourselves to indivdual supplier/part combinations
+# Compute the total sold and limit ourselves to individual supplier/part combinations
 df = df.aggregate(
     [col("l_partkey"), col("l_suppkey")], [F.sum(col("l_quantity")).alias("total_sold")]
 )
