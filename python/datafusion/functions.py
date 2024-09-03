@@ -18,11 +18,6 @@
 
 from __future__ import annotations
 
-# from datafusion._internal.context import SessionContext
-# from datafusion._internal.expr import Expr
-# from datafusion._internal.expr.conditional_expr import CaseBuilder
-# from datafusion._internal.expr.window import WindowFrame
-
 from datafusion._internal import functions as f, common
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext

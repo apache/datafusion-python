@@ -266,7 +266,7 @@ class Expr:
 
         If ``key`` is a string, returns the subfield of the struct.
         If ``key`` is an integer, retrieves the element in the array. Note that the
-        element index begins at ``0``, unlike `array_element` which begines at ``1``.
+        element index begins at ``0``, unlike `array_element` which begins at ``1``.
         """
         if isinstance(key, int):
             return Expr(
