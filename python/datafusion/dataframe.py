@@ -180,7 +180,9 @@ class DataFrame:
         """
         return DataFrame(self.df.with_column_renamed(old_name, new_name))
 
-    def aggregate(self, group_by: list[Expr], aggs: list[Expr]) -> DataFrame:
+    def aggregate(
+        self, group_by: list[Expr] | Expr, aggs: list[Expr] | Expr
+    ) -> DataFrame:
         """Aggregates the rows of the current DataFrame.
 
         Args:
@@ -190,6 +192,9 @@ class DataFrame:
         Returns:
             DataFrame after aggregation.
         """
+        group_by = group_by if isinstance(group_by, list) else [group_by]
+        aggs = aggs if isinstance(aggs, list) else [aggs]
+
         group_by = [e.expr for e in group_by]
         aggs = [e.expr for e in aggs]
         return DataFrame(self.df.aggregate(group_by, aggs))
