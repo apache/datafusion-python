@@ -40,8 +40,10 @@ use datafusion::logical_expr::{
 };
 
 #[pyfunction]
-pub fn approx_distinct(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::approx_distinct(expression.expr).into()
+pub fn approx_distinct(expression: PyExpr, filter: Option<PyExpr>) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::approx_distinct(expression.expr);
+
+    add_builder_fns_to_aggregate(agg_fn, false, filter, None, None)
 }
 
 #[pyfunction]

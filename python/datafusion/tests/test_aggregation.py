@@ -98,6 +98,13 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
     "agg_expr, expected",
     [
         (f.approx_distinct(column("b")), pa.array([2], type=pa.uint64())),
+        (
+            f.approx_distinct(
+                column("b"),
+                filter=column("a") != lit(3),
+            ),
+            pa.array([1], type=pa.uint64()),
+        ),
         (f.approx_median(column("b")), pa.array([4])),
         (f.approx_percentile_cont(column("b"), lit(0.5)), pa.array([4])),
         (

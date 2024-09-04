@@ -19,9 +19,15 @@ import datafusion
 import datafusion.functions
 import datafusion.object_store
 import datafusion.substrait
+from enum import EnumType
 
 
 def missing_exports(internal_obj, wrapped_obj) -> None:
+    # Special case enums - just make sure they exist since dir()
+    # and other functions get overridden.
+    if isinstance(wrapped_obj, EnumType):
+        return
+
     for attr in dir(internal_obj):
         assert attr in dir(wrapped_obj)
 

@@ -18,9 +18,10 @@
 
 from __future__ import annotations
 
-from datafusion._internal import functions as f, common
+from datafusion._internal import functions as f, expr as expr_internal
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
+from datafusion.common import NullTreatment
 
 from typing import Any, Optional
 
@@ -258,6 +259,12 @@ __all__ = [
 ]
 
 
+def expr_list_to_raw_expr_list(
+    expr_list: Optional[list[Expr]],
+) -> Optional[list[expr_internal.Expr]]:
+    return [e.expr for e in expr_list] if expr_list is not None else None
+
+
 def isnan(expr: Expr) -> Expr:
     """Returns true if a given number is +NaN or -NaN otherwise returns false."""
     return Expr(f.isnan(expr.expr))
@@ -400,8 +407,8 @@ def window(
         df.select(functions.lag(col("a")).partition_by(col("b")).build())
     """
     args = [a.expr for a in args]
-    partition_by = [e.expr for e in partition_by] if partition_by is not None else None
-    order_by = [o.expr for o in order_by] if order_by is not None else None
+    partition_by = expr_list_to_raw_expr_list(partition_by)
+    order_by = expr_list_to_raw_expr_list(order_by)
     window_frame = window_frame.window_frame if window_frame is not None else None
     return Expr(f.window(name, args, partition_by, order_by, window_frame, ctx))
 
@@ -1486,9 +1493,14 @@ def flatten(array: Expr) -> Expr:
 
 
 # aggregate functions
-def approx_distinct(expression: Expr) -> Expr:
+def approx_distinct(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
     """Returns the approximate number of distinct values."""
-    return Expr(f.approx_distinct(expression.expr))
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
 
 
 def approx_median(arg: Expr, distinct: bool = False) -> Expr:
@@ -1705,20 +1717,22 @@ def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 def first_value(
     arg: Expr,
     distinct: bool = False,
-    filter: Optional[bool] = None,
+    filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
-    null_treatment: Optional[common.NullTreatment] = None,
+    null_treatment: Optional[NullTreatment] = None,
 ) -> Expr:
     """Returns the first value in a group of values."""
-    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+    null_treatment_raw = null_treatment.value if null_treatment is not None else None
 
     return Expr(
         f.first_value(
             arg.expr,
             distinct=distinct,
-            filter=filter,
-            order_by=order_by_cols,
-            null_treatment=null_treatment,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment_raw,
         )
     )
 
@@ -1726,24 +1740,26 @@ def first_value(
 def last_value(
     arg: Expr,
     distinct: bool = False,
-    filter: Optional[bool] = None,
+    filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
-    null_treatment: Optional[common.NullTreatment] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
 
     To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
     ``.filter()``, or ``.null_treatment()``.
     """
-    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+    null_treatment_raw = null_treatment.value if null_treatment is not None else None
 
     return Expr(
         f.last_value(
             arg.expr,
             distinct=distinct,
-            filter=filter,
-            order_by=order_by_cols,
-            null_treatment=null_treatment,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment_raw,
         )
     )
 
