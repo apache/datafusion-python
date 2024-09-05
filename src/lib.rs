@@ -21,10 +21,16 @@ use pyo3::prelude::*;
 
 // Re-export Apache Arrow DataFusion dependencies
 pub use datafusion;
-pub use datafusion_common;
-pub use datafusion_expr;
-pub use datafusion_optimizer;
-pub use datafusion_sql;
+pub mod datafusion_expr {
+    pub use datafusion::logical_expr::*;
+}
+pub use datafusion::optimizer;
+pub mod datafusion_sql {
+    pub use datafusion::sql::*;
+}
+pub mod datafusion_common {
+    pub use datafusion::common::*;
+}
 
 #[cfg(feature = "substrait")]
 pub use datafusion_substrait;
@@ -32,6 +38,7 @@ pub use datafusion_substrait;
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;
 pub mod common;
+
 #[allow(clippy::borrow_deref_ref)]
 mod config;
 #[allow(clippy::borrow_deref_ref)]

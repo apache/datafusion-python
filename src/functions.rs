@@ -16,9 +16,9 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion_expr::window_function;
-use datafusion_expr::ExprFunctionExt;
-use datafusion_expr::WindowFrame;
+use datafusion::logical_expr::window_function;
+use datafusion::logical_expr::ExprFunctionExt;
+use datafusion::logical_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
@@ -28,13 +28,13 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::to_sort_expressions;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
+use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions;
 use datafusion::functions_aggregate;
-use datafusion_common::{Column, ScalarValue, TableReference};
-use datafusion_expr::expr::Alias;
-use datafusion_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
-use datafusion_expr::{
+use datafusion::logical_expr::expr::Alias;
+use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
+use datafusion::logical_expr::{
     expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
@@ -376,7 +376,7 @@ pub fn last_value(
 
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
-    datafusion_expr::in_list(
+    datafusion::logical_expr::in_list(
         expr.expr,
         value.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
         negated,
@@ -386,14 +386,14 @@ fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
 
 #[pyfunction]
 fn make_array(exprs: Vec<PyExpr>) -> PyExpr {
-    datafusion_functions_nested::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
+    datafusion::functions_nested::expr_fn::make_array(exprs.into_iter().map(|x| x.into()).collect())
         .into()
 }
 
 #[pyfunction]
 fn array_concat(exprs: Vec<PyExpr>) -> PyExpr {
     let exprs = exprs.into_iter().map(|x| x.into()).collect();
-    datafusion_functions_nested::expr_fn::array_concat(exprs).into()
+    datafusion::functions_nested::expr_fn::array_concat(exprs).into()
 }
 
 #[pyfunction]
@@ -405,12 +405,13 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
-    datafusion_functions_nested::expr_fn::array_position(array.into(), element.into(), index).into()
+    datafusion::functions_nested::expr_fn::array_position(array.into(), element.into(), index)
+        .into()
 }
 
 #[pyfunction]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
-    datafusion_functions_nested::expr_fn::array_slice(
+    datafusion::functions_nested::expr_fn::array_slice(
         array.into(),
         begin.into(),
         end.into(),
@@ -476,7 +477,7 @@ fn regexp_replace(
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Sort(Sort {
+        expr: datafusion::logical_expr::Expr::Sort(Sort {
             expr: Box::new(expr.expr),
             asc,
             nulls_first,
@@ -489,7 +490,7 @@ fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PyExpr> {
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     let relation: Option<TableReference> = None;
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Alias(Alias::new(expr.expr, relation, name)),
+        expr: datafusion::logical_expr::Expr::Alias(Alias::new(expr.expr, relation, name)),
     })
 }
 
@@ -497,7 +498,7 @@ fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
 #[pyfunction]
 fn col(name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::Column(Column {
+        expr: datafusion::logical_expr::Expr::Column(Column {
             relation: None,
             name: name.to_string(),
         }),
@@ -527,7 +528,7 @@ fn count(expr: PyExpr, distinct: bool) -> PyResult<PyExpr> {
 #[pyfunction]
 fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     Ok(PyCaseBuilder {
-        case_builder: datafusion_expr::case(expr.expr),
+        case_builder: datafusion::logical_expr::case(expr.expr),
     })
 }
 
@@ -535,7 +536,7 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
 #[pyfunction]
 fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
     Ok(PyCaseBuilder {
-        case_builder: datafusion_expr::when(when.expr, then.expr),
+        case_builder: datafusion::logical_expr::when(when.expr, then.expr),
     })
 }
 
@@ -622,7 +623,7 @@ fn window(
         .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
 
     Ok(PyExpr {
-        expr: datafusion_expr::Expr::WindowFunction(WindowFunction {
+        expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
             fun,
             args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
             partition_by: partition_by
@@ -654,7 +655,7 @@ macro_rules! aggregate_function {
         #[pyfunction]
         #[pyo3(signature = (*args, distinct=false))]
         fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
-            let expr = datafusion_expr::Expr::AggregateFunction(AggregateFunction {
+            let expr = datafusion::logical_expr::Expr::AggregateFunction(AggregateFunction {
                 func: $FUNC(),
                 args: args.into_iter().map(|e| e.into()).collect(),
                 distinct,
@@ -724,7 +725,7 @@ macro_rules! array_fn {
         #[doc = $DOC]
         #[pyfunction]
         fn $FUNC($($arg: PyExpr),*) -> PyExpr {
-            datafusion_functions_nested::expr_fn::$FUNC($($arg.into()),*).into()
+            datafusion::functions_nested::expr_fn::$FUNC($($arg.into()),*).into()
         }
     };
 }

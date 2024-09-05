@@ -24,7 +24,9 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::common::ScalarValue;
 use datafusion::error::{DataFusionError, Result};
-use datafusion_expr::{create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF};
+use datafusion::logical_expr::{
+    create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF,
+};
 
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;

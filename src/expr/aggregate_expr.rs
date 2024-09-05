@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::expr::AggregateFunction;
+use datafusion::logical_expr::expr::AggregateFunction;
 use pyo3::prelude::*;
 use std::fmt::{Display, Formatter};
 

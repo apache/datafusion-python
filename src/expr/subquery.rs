@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::Subquery;
+use datafusion::logical_expr::Subquery;
 use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;

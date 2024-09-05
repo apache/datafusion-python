@@ -17,8 +17,8 @@
 
 use datafusion::arrow::array::Array;
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
-use datafusion_common::{DataFusionError, ScalarValue};
-use datafusion_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
+use datafusion::common::{DataFusionError, ScalarValue};
+use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::errors::py_datafusion_err;

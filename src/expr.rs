@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::utils::exprlist_to_fields;
-use datafusion_expr::{ExprFuncBuilder, ExprFunctionExt, LogicalPlan};
+use datafusion::logical_expr::utils::exprlist_to_fields;
+use datafusion::logical_expr::{ExprFuncBuilder, ExprFunctionExt, LogicalPlan};
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 use std::sync::Arc;
@@ -26,12 +26,12 @@ use arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
-use datafusion::scalar::ScalarValue;
-use datafusion_expr::{
+use datafusion::logical_expr::{
     col,
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
+use datafusion::scalar::ScalarValue;
 
 use crate::common::data_type::{DataTypeMap, NullTreatment, RexType};
 use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};

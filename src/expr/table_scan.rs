@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::TableReference;
-use datafusion_expr::logical_plan::TableScan;
+use datafusion::common::TableReference;
+use datafusion::logical_expr::logical_plan::TableScan;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

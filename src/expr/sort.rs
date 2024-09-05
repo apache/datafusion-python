@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::DataFusionError;
-use datafusion_expr::logical_plan::Sort;
+use datafusion::common::DataFusionError;
+use datafusion::logical_expr::logical_plan::Sort;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

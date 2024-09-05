@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
-use datafusion_expr::EmptyRelation;
+use datafusion::logical_expr::EmptyRelation;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

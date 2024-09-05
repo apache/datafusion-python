@@ -17,7 +17,7 @@
 
 use crate::errors::DataFusionError;
 use crate::TokioRuntime;
-use datafusion_expr::Volatility;
+use datafusion::logical_expr::Volatility;
 use pyo3::prelude::*;
 use std::future::Future;
 use tokio::runtime::Runtime;

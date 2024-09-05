@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::logical_plan::DropTable;
+use datafusion::logical_expr::logical_plan::DropTable;
 use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;

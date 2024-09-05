@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::expr::InList;
+use datafusion::logical_expr::expr::InList;
 use pyo3::prelude::*;
 
 #[pyclass(name = "InList", module = "datafusion.expr", subclass)]

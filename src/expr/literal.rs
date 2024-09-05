@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::errors::DataFusionError;
-use datafusion_common::ScalarValue;
+use datafusion::common::ScalarValue;
 use pyo3::prelude::*;
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass)]

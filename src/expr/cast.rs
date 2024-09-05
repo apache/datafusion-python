@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::{common::data_type::PyDataType, expr::PyExpr};
-use datafusion_expr::{Cast, TryCast};
+use datafusion::logical_expr::{Cast, TryCast};
 use pyo3::prelude::*;
 
 #[pyclass(name = "Cast", module = "datafusion.expr", subclass)]

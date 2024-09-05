@@ -27,12 +27,12 @@ use arrow::util::display::{ArrayFormatter, FormatOptions};
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
+use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use datafusion_common::UnnestOptions;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -541,7 +541,7 @@ impl PyDataFrame {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
         let df = self.df.as_ref().clone();
-        let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
+        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
@@ -551,7 +551,7 @@ impl PyDataFrame {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
         let df = self.df.as_ref().clone();
-        let fut: JoinHandle<datafusion_common::Result<Vec<SendableRecordBatchStream>>> =
+        let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
 

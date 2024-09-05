@@ -19,7 +19,7 @@ use crate::expr::PyExpr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::expr::Alias;
+use datafusion::logical_expr::expr::Alias;
 
 #[pyclass(name = "Alias", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

@@ -15,9 +15,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::{DataFusionError, ScalarValue};
-use datafusion_expr::expr::WindowFunction;
-use datafusion_expr::{Expr, Window, WindowFrame, WindowFrameBound, WindowFrameUnits};
+use datafusion::common::{DataFusionError, ScalarValue};
+use datafusion::logical_expr::expr::WindowFunction;
+use datafusion::logical_expr::{Expr, Window, WindowFrame, WindowFrameBound, WindowFrameUnits};
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

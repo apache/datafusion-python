@@ -18,10 +18,10 @@
 use std::any::Any;
 
 use datafusion::arrow::datatypes::SchemaRef;
-use datafusion_expr::{Expr, TableProviderFilterPushDown, TableSource};
+use datafusion::logical_expr::{Expr, TableProviderFilterPushDown, TableSource};
 use pyo3::prelude::*;
 
-use datafusion_expr::utils::split_conjunction;
+use datafusion::logical_expr::utils::split_conjunction;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 
@@ -166,7 +166,7 @@ impl TableSource for SqlTableSource {
     fn supports_filter_pushdown(
         &self,
         filter: &Expr,
-    ) -> datafusion_common::Result<TableProviderFilterPushDown> {
+    ) -> datafusion::common::Result<TableProviderFilterPushDown> {
         let filters = split_conjunction(filter);
         if filters.iter().all(|f| is_supported_push_down_expr(f)) {
             // Push down filters to the tablescan operation if all are supported
@@ -180,22 +180,22 @@ impl TableSource for SqlTableSource {
         }
     }
 
-    fn table_type(&self) -> datafusion_expr::TableType {
-        datafusion_expr::TableType::Base
+    fn table_type(&self) -> datafusion::logical_expr::TableType {
+        datafusion::logical_expr::TableType::Base
     }
 
     #[allow(deprecated)]
     fn supports_filters_pushdown(
         &self,
         filters: &[&Expr],
-    ) -> datafusion_common::Result<Vec<TableProviderFilterPushDown>> {
+    ) -> datafusion::common::Result<Vec<TableProviderFilterPushDown>> {
         filters
             .iter()
             .map(|f| self.supports_filter_pushdown(f))
             .collect()
     }
 
-    fn get_logical_plan(&self) -> Option<&datafusion_expr::LogicalPlan> {
+    fn get_logical_plan(&self) -> Option<&datafusion::logical_expr::LogicalPlan> {
         None
     }
 }

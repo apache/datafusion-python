@@ -17,7 +17,7 @@
 
 use std::sync::Arc;
 
-use datafusion_common::DFSchema;
+use datafusion::common::DFSchema;
 use pyo3::prelude::*;
 
 #[derive(Debug, Clone)]

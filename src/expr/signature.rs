@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::{TypeSignature, Volatility};
+use datafusion::logical_expr::{TypeSignature, Volatility};
 use pyo3::prelude::*;
 
 #[allow(dead_code)]

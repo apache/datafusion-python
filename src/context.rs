@@ -46,6 +46,7 @@ use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::common::ScalarValue;
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -61,7 +62,6 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use datafusion_common::ScalarValue;
 use pyo3::types::{PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
@@ -962,7 +962,7 @@ impl PySessionContext {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime(py).0;
         let plan = plan.plan.clone();
-        let fut: JoinHandle<datafusion_common::Result<SendableRecordBatchStream>> =
+        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
         Ok(PyRecordBatchStream::new(stream?))
@@ -970,7 +970,7 @@ impl PySessionContext {
 }
 
 impl PySessionContext {
-    async fn _table(&self, name: &str) -> datafusion_common::Result<DataFrame> {
+    async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
     }
 }

@@ -15,10 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::DataFusionError;
-use datafusion_expr::expr::{AggregateFunction, Alias};
-use datafusion_expr::logical_plan::Aggregate;
-use datafusion_expr::Expr;
+use datafusion::common::DataFusionError;
+use datafusion::logical_expr::expr::{AggregateFunction, Alias};
+use datafusion::logical_expr::logical_plan::Aggregate;
+use datafusion::logical_expr::Expr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

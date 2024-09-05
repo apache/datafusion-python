@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::Distinct;
+use datafusion::logical_expr::Distinct;
 use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;

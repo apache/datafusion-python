@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_common::Column;
+use datafusion::common::Column;
 use pyo3::prelude::*;
 
 #[pyclass(name = "Column", module = "datafusion.expr", subclass)]
