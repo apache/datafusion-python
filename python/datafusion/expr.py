@@ -28,7 +28,7 @@ from ._internal import (
     functions as functions_internal,
 )
 from datafusion.common import NullTreatment, RexType, DataTypeMap
-from typing import Any, Optional
+from typing import Any, Optional, Type
 import pyarrow as pa
 
 # The following are imported from the internal representation. We may choose to
@@ -372,8 +372,25 @@ class Expr:
         """Returns ``True`` if this expression is not null."""
         return Expr(self.expr.is_not_null())
 
-    def cast(self, to: pa.DataType[Any]) -> Expr:
+    _to_pyarrow_types = {
+        float: pa.float64(),
+        int: pa.int64(),
+        str: pa.string(),
+        bool: pa.bool_(),
+    }
+
+    def cast(
+        self, to: pa.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]
+    ) -> Expr:
         """Cast to a new data type."""
+        if not isinstance(to, pa.DataType):
+            try:
+                to = self._to_pyarrow_types[to]
+            except KeyError:
+                raise TypeError(
+                    "Expected instance of pyarrow.DataType or builtins.type"
+                )
+
         return Expr(self.expr.cast(to))
 
     def rex_type(self) -> RexType:
