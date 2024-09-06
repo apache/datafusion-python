@@ -233,7 +233,7 @@ Module Contents
 
    .. py:method:: with_default_catalog_and_schema(catalog: str, schema: str) -> SessionConfig
 
-      Select a name for the default catalog and shcema.
+      Select a name for the default catalog and schema.
 
       :param catalog: Catalog name.
       :param schema: Schema name.
@@ -694,12 +694,14 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name: str, table: pyarrow.Table) -> None
+   .. py:method:: register_table(name: str, table: datafusion.catalog.Table) -> None
 
-      Register a table with the given name into the session.
+      Register a :py:class: `~datafusion.catalog.Table` as a table.
+
+      The registered table can be referenced from SQL statement executed against.
 
       :param name: Name of the resultant table.
-      :param table: PyArrow table to add to the session context.
+      :param table: DataFusion table to add to the session context.
 
 
 
@@ -741,7 +743,7 @@ Module Contents
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
-      This function will first validating that the query is allowed by the
+      This function will first validate that the query is allowed by the
       provided options.
 
       :param query: SQL query text.

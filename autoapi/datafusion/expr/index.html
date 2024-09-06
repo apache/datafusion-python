@@ -840,6 +840,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr._to_pyarrow_types">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr._to_pyarrow_types
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.expr">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1773,7 +1782,7 @@
 <dd><p>Retrieve sub-object.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">key</span></code> is a string, returns the subfield of the struct.
 If <code class="docutils literal notranslate"><span class="pre">key</span></code> is an integer, retrieves the element in the array. Note that the
-element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike <cite>array_element</cite> which begines at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
+element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike <cite>array_element</cite> which begins at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1870,7 +1879,7 @@ element index begins at <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
 <dd><p>Cast to a new data type.</p>
 </dd></dl>
 
@@ -2075,6 +2084,11 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.__rtruediv__">
 <span class="sig-name descname"><span class="pre">__rtruediv__</span></span><a class="headerlink" href="#datafusion.expr.Expr.__rtruediv__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Expr._to_pyarrow_types">
+<span class="sig-name descname"><span class="pre">_to_pyarrow_types</span></span><a class="headerlink" href="#datafusion.expr.Expr._to_pyarrow_types" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">

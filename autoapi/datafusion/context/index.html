@@ -1265,7 +1265,7 @@ automatically created.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionConfig.with_default_catalog_and_schema">
 <span class="sig-name descname"><span class="pre">with_default_catalog_and_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionConfig.with_default_catalog_and_schema" title="Link to this definition">¶</a></dt>
-<dd><p>Select a name for the default catalog and shcema.</p>
+<dd><p>Select a name for the default catalog and schema.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1863,13 +1863,14 @@ register it into the session using the given name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_table">
-<span class="sig-name descname"><span class="pre">register_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Table</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_table" title="Link to this definition">¶</a></dt>
-<dd><p>Register a table with the given name into the session.</p>
+<span class="sig-name descname"><span class="pre">register_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">datafusion.catalog.Table</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_table" title="Link to this definition">¶</a></dt>
+<dd><p>Register a :py:class: <cite>~datafusion.catalog.Table</cite> as a table.</p>
+<p>The registered table can be referenced from SQL statement executed against.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>name</strong> – Name of the resultant table.</p></li>
-<li><p><strong>table</strong> – PyArrow table to add to the session context.</p></li>
+<li><p><strong>table</strong> – DataFusion table to add to the session context.</p></li>
 </ul>
 </dd>
 </dl>
@@ -1918,7 +1919,7 @@ default implementation.See
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.sql_with_options">
 <span class="sig-name descname"><span class="pre">sql_with_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><span class="pre">SQLOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.sql_with_options" title="Link to this definition">¶</a></dt>
 <dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from SQL query text.</p>
-<p>This function will first validating that the query is allowed by the
+<p>This function will first validate that the query is allowed by the
 provided options.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

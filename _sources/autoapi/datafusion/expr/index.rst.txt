@@ -178,7 +178,7 @@ Module Contents
 
       If ``key`` is a string, returns the subfield of the struct.
       If ``key`` is an integer, retrieves the element in the array. Note that the
-      element index begins at ``0``, unlike `array_element` which begines at ``1``.
+      element index begins at ``0``, unlike `array_element` which begins at ``1``.
 
 
 
@@ -282,7 +282,7 @@ Module Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]) -> Expr
 
       Cast to a new data type.
 
@@ -480,6 +480,9 @@ Module Contents
 
 
    .. py:attribute:: __rtruediv__
+
+
+   .. py:attribute:: _to_pyarrow_types
 
 
    .. py:attribute:: expr
