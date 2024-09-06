@@ -110,7 +110,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.approx_median(column("b")), pa.array([4])),
         (f.approx_median(column("b"), distinct=True), pa.array([5])),
         (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5])),
-        (f.approx_percentile_cont(column("b"), lit(0.5)), pa.array([4])),
+        (f.approx_percentile_cont(column("b"), 0.5), pa.array([4])),
         (
             f.approx_percentile_cont_with_weight(column("b"), lit(0.6), lit(0.5)),
             pa.array([6], type=pa.float64()),
@@ -131,7 +131,17 @@ def test_aggregate_100(df_aggregate_100):
     result = (
         df_aggregate_100.aggregate(
             [column("c1")],
-            [f.approx_percentile_cont(column("c3"), lit(0.95), lit(200)).alias("c3")],
+            [
+                f.approx_percentile_cont(column("c3"), 0.95, num_centroids=200).alias(
+                    "c3"
+                ),
+                f.approx_percentile_cont(column("c3"), 0.95, num_centroids=5).alias(
+                    "c4"
+                ),
+                f.approx_percentile_cont(
+                    column("c3"), 0.95, num_centroids=200, filter=column("c3") > lit(0)
+                ).alias("c5"),
+            ],
         )
         .sort(column("c1").sort(ascending=True))
         .collect()
@@ -141,6 +151,8 @@ def test_aggregate_100(df_aggregate_100):
     result = result[0]
     assert result.column("c1") == pa.array(["a", "b", "c", "d", "e"])
     assert result.column("c3") == pa.array([73, 68, 122, 124, 115])
+    assert result.column("c4") == pa.array([72, 68, 119, 124, 115])
+    assert result.column("c5") == pa.array([83, 68, 122, 124, 117])
 
 
 def test_bit_add_or_xor(df):

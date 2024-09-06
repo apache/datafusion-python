@@ -60,22 +60,19 @@ pub fn approx_median(
 #[pyfunction]
 pub fn approx_percentile_cont(
     expression: PyExpr,
-    percentile: PyExpr,
-    distinct: bool,
-    num_centroids: Option<PyExpr>, // enforces optional arguments at the end, currently
+    percentile: f64,
+    num_centroids: Option<i64>, // enforces optional arguments at the end, currently
+    filter: Option<PyExpr>,
 ) -> PyResult<PyExpr> {
     let args = if let Some(num_centroids) = num_centroids {
-        vec![expression.expr, percentile.expr, num_centroids.expr]
+        vec![expression.expr, lit(percentile), lit(num_centroids)]
     } else {
-        vec![expression.expr, percentile.expr]
+        vec![expression.expr, lit(percentile)]
     };
     let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
-    let expr = udaf.call(args);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
+    let agg_fn = udaf.call(args);
+
+    add_builder_fns_to_aggregate(agg_fn, false, filter, None, None)
 }
 
 #[pyfunction]

@@ -1523,6 +1523,9 @@ def approx_median(
     This aggregate function is similar to :py:func:`median`, but it will only
     approximate the median. It may return significantly faster for some DataFrames.
 
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
     Args:
         expression: Values to find the median for
         distinct: If True, only return the median of distinct values
@@ -1534,24 +1537,35 @@ def approx_median(
 
 def approx_percentile_cont(
     expression: Expr,
-    percentile: Expr,
-    num_centroids: Expr | None = None,
-    distinct: bool = False,
+    percentile: float,
+    num_centroids: Optional[int] = None,
+    filter: Optional[Expr] = None,
 ) -> Expr:
-    """Returns the value that is approximately at a given percentile of ``expr``."""
-    if num_centroids is None:
-        return Expr(
-            f.approx_percentile_cont(
-                expression.expr, percentile.expr, distinct=distinct, num_centroids=None
-            )
-        )
+    """Returns the value that is approximately at a given percentile of ``expr``.
 
+    This aggregate function assumes the input values form a continuous distribution.
+    Suppose you have a DataFrame which consists of 100 different test scores. If you
+    called this function with a percentile of 0.9, it would return the value of the
+    test score that is above 90% of the other test scores. The returned value may be
+    between two of the values.
+
+    This function uses the [t-digest](https://arxiv.org/abs/1902.04023) algorithm to
+    compute the percentil. You can limit the number of bins used in this algorithm by
+    setting the ``num_centroids`` parameter.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values for which to find the approximate percentile
+        percentile: This must be between 0.0 and 1.0, inclusive
+        num_centroids: Max bin size for the t-digest algorithm
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont(
-            expression.expr,
-            percentile.expr,
-            distinct=distinct,
-            num_centroids=num_centroids.expr,
+            expression.expr, percentile, num_centroids=num_centroids, filter=filter_raw
         )
     )
 
