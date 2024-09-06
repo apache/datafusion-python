@@ -73,7 +73,7 @@ class SessionConfig:
     def with_default_catalog_and_schema(
         self, catalog: str, schema: str
     ) -> SessionConfig:
-        """Select a name for the default catalog and shcema.
+        """Select a name for the default catalog and schema.
 
         Args:
             catalog: Catalog name.
@@ -517,7 +517,7 @@ class SessionContext:
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
-        This function will first validating that the query is allowed by the
+        This function will first validate that the query is allowed by the
         provided options.
 
         Args:
@@ -636,12 +636,14 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_polars(data, name))
 
-    def register_table(self, name: str, table: pyarrow.Table) -> None:
-        """Register a table with the given name into the session.
+    def register_table(self, name: str, table: Table) -> None:
+        """Register a :py:class: `~datafusion.catalog.Table` as a table.
+
+        The registered table can be referenced from SQL statement executed against.
 
         Args:
             name: Name of the resultant table.
-            table: PyArrow table to add to the session context.
+            table: DataFusion table to add to the session context.
         """
         self.ctx.register_table(name, table)
 
