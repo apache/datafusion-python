@@ -21,16 +21,10 @@ use pyo3::prelude::*;
 
 // Re-export Apache Arrow DataFusion dependencies
 pub use datafusion;
-pub mod datafusion_expr {
-    pub use datafusion::logical_expr::*;
-}
+pub use datafusion::common as datafusion_common;
+pub use datafusion::logical_expr as datafusion_expr;
 pub use datafusion::optimizer;
-pub mod datafusion_sql {
-    pub use datafusion::sql::*;
-}
-pub mod datafusion_common {
-    pub use datafusion::common::*;
-}
+pub use datafusion::sql as datafusion_sql;
 
 #[cfg(feature = "substrait")]
 pub use datafusion_substrait;
