@@ -47,13 +47,14 @@ pub fn approx_distinct(expression: PyExpr, filter: Option<PyExpr>) -> PyResult<P
 }
 
 #[pyfunction]
-pub fn approx_median(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::approx_median(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
+pub fn approx_median(
+    expression: PyExpr,
+    distinct: bool,
+    filter: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::approx_median(expression.expr);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, None, None)
 }
 
 #[pyfunction]
@@ -330,10 +331,14 @@ fn add_builder_fns_to_aggregate(
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, we can guarantee initializing
     // a builder with an `order_by` default of empty vec
-    let order_by = order_by
-        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let mut builder = agg_fn.order_by(order_by);
+    // let order_by = order_by
+    //     .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
+    //     .unwrap_or_default();
+    let mut builder = agg_fn.null_treatment(None);
+
+    if let Some(ob) = order_by {
+        builder = builder.order_by(ob.into_iter().map(|e| e.expr).collect());
+    }
 
     if distinct {
         builder = builder.distinct();

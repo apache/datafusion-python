@@ -1497,15 +1497,39 @@ def approx_distinct(
     expression: Expr,
     filter: Optional[Expr] = None,
 ) -> Expr:
-    """Returns the approximate number of distinct values."""
+    """Returns the approximate number of distinct values.
+
+    This aggregate function is similar to :py:func:`count` with distinct set, but it
+    will approximate the number of distinct entries. It may return significantly faster
+    than :py:func:`count` for some DataFrames.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to check for distinct entries
+        filter: If provided, only compute against rows for which the filter is true
+    """
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
 
 
-def approx_median(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the approximate median value."""
-    return Expr(f.approx_median(arg.expr, distinct=distinct))
+def approx_median(
+    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+) -> Expr:
+    """Returns the approximate median value.
+
+    This aggregate function is similar to :py:func:`median`, but it will only
+    approximate the median. It may return significantly faster for some DataFrames.
+
+    Args:
+        expression: Values to find the median for
+        distinct: If True, only return the median of distinct values
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.approx_median(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def approx_percentile_cont(

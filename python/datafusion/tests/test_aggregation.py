@@ -34,8 +34,9 @@ def df():
             pa.array([4, 4, 6]),
             pa.array([9, 8, 5]),
             pa.array([True, True, False]),
+            pa.array([1, None, None]),
         ],
-        names=["a", "b", "c", "d"],
+        names=["a", "b", "c", "d", "e"],
     )
     return ctx.create_dataframe([[batch]])
 
@@ -87,6 +88,7 @@ def df_aggregate_100():
     ],
 )
 def test_aggregation_stats(df, agg_expr, calc_expected):
+    df = df.select("a", "b", "c", "d")
     agg_df = df.aggregate([], [agg_expr])
     result = agg_df.collect()[0]
     values_a, values_b, values_c, values_d = df.collect()[0]
@@ -106,6 +108,8 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             pa.array([1], type=pa.uint64()),
         ),
         (f.approx_median(column("b")), pa.array([4])),
+        (f.approx_median(column("b"), distinct=True), pa.array([5])),
+        (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5])),
         (f.approx_percentile_cont(column("b"), lit(0.5)), pa.array([4])),
         (
             f.approx_percentile_cont_with_weight(column("b"), lit(0.6), lit(0.5)),
@@ -116,6 +120,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
 )
 def test_aggregation(df, agg_expr, expected):
     agg_df = df.aggregate([], [agg_expr])
+    agg_df.show()
     result = agg_df.collect()[0]
     assert result.column(0) == expected
 
