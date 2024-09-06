@@ -112,15 +112,20 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5])),
         (f.approx_percentile_cont(column("b"), 0.5), pa.array([4])),
         (
-            f.approx_percentile_cont_with_weight(column("b"), lit(0.6), lit(0.5)),
+            f.approx_percentile_cont_with_weight(column("b"), lit(0.6), 0.5),
             pa.array([6], type=pa.float64()),
+        ),
+        (
+            f.approx_percentile_cont_with_weight(
+                column("b"), lit(0.6), 0.5, filter=column("a") != lit(3)
+            ),
+            pa.array([4], type=pa.float64()),
         ),
         (f.array_agg(column("b")), pa.array([[4, 4, 6]])),
     ],
 )
 def test_aggregation(df, agg_expr, expected):
     agg_df = df.aggregate([], [agg_expr])
-    agg_df.show()
     result = agg_df.collect()[0]
     assert result.column(0) == expected
 

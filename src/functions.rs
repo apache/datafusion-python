@@ -79,19 +79,16 @@ pub fn approx_percentile_cont(
 pub fn approx_percentile_cont_with_weight(
     expression: PyExpr,
     weight: PyExpr,
-    percentile: PyExpr,
-    distinct: bool,
+    percentile: f64,
+    filter: Option<PyExpr>,
 ) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
+    let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
         expression.expr,
         weight.expr,
-        percentile.expr,
+        lit(percentile),
     );
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
+
+    add_builder_fns_to_aggregate(agg_fn, false, filter, None, None)
 }
 
 #[pyfunction]

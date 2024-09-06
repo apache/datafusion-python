@@ -1571,16 +1571,27 @@ def approx_percentile_cont(
 
 
 def approx_percentile_cont_with_weight(
-    arg: Expr, weight: Expr, percentile: Expr, distinct: bool = False
+    expression: Expr, weight: Expr, percentile: float, filter: Optional[Expr] = None
 ) -> Expr:
-    """Returns the value of the approximate percentile.
+    """Returns the value of the weighted approximate percentile.
 
-    This function is similar to :py:func:`approx_percentile_cont` except that it uses
-    the associated associated weights.
+    This aggregate function is similar to :py:func:`approx_percentile_cont` except that
+    it uses the associated associated weights.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values for which to find the approximate percentile
+        weight: Relative weight for each of the values in ``expression``
+        percentile: This must be between 0.0 and 1.0, inclusive
+        filter: If provided, only compute against rows for which the filter is true
+
     """
+    filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont_with_weight(
-            arg.expr, weight.expr, percentile.expr, distinct=distinct
+            expression.expr, weight.expr, percentile, filter=filter_raw
         )
     )
 
