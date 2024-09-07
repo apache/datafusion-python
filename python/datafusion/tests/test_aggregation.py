@@ -34,7 +34,7 @@ def df():
             pa.array([4, 4, 6]),
             pa.array([9, 8, 5]),
             pa.array([True, True, False]),
-            pa.array([1, None, None]),
+            pa.array([1, 2, None]),
         ],
         names=["a", "b", "c", "d", "e"],
     )
@@ -127,7 +127,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.array_agg(column("b"), distinct=True), pa.array([[4, 6]]), True),
         (
             f.array_agg(column("e"), filter=column("e").is_not_null()),
-            pa.array([[1]]),
+            pa.array([[1, 2]]),
             False,
         ),
         (
@@ -135,6 +135,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             pa.array([[6, 4, 4]]),
             False,
         ),
+        (f.avg(column("b"), filter=column("a") != lit(1)), pa.array([5.0]), False),
     ],
 )
 def test_aggregation(df, agg_expr, expected, array_sort):

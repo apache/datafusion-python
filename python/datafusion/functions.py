@@ -1624,9 +1624,23 @@ def array_agg(
     )
 
 
-def avg(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the average value."""
-    return Expr(f.avg(arg.expr, distinct=distinct))
+def avg(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Returns the average value.
+
+    This aggregate function expects a numeric expression and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to combine into an array
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.avg(expression.expr, filter=filter_raw))
 
 
 def corr(value1: Expr, value2: Expr, distinct: bool = False) -> Expr:
@@ -1676,12 +1690,12 @@ def max(arg: Expr, distinct: bool = False) -> Expr:
     return Expr(f.max(arg.expr, distinct=distinct))
 
 
-def mean(arg: Expr, distinct: bool = False) -> Expr:
+def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     This is an alias for :py:func:`avg`.
     """
-    return avg(arg, distinct)
+    return avg(expression, filter)
 
 
 def median(arg: Expr) -> Expr:
