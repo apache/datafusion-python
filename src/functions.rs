@@ -88,26 +88,6 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-pub fn bool_and(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bool_and(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bool_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bool_or(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
 pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
     if distinct {
@@ -609,6 +589,9 @@ fn window(
 // function and we rely on the wrappers to only use those that
 // are appropriate.
 macro_rules! aggregate_function {
+    ($NAME: ident) => {
+        aggregate_function!($NAME, functions_aggregate::expr_fn::$NAME, expr);
+    };
     ($NAME: ident, $FUNC: path) => {
         aggregate_function!($NAME, $FUNC, expr);
     };
@@ -851,13 +834,15 @@ array_fn!(array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg);
-aggregate_function!(max, functions_aggregate::min_max::max);
-aggregate_function!(min, functions_aggregate::min_max::min);
-aggregate_function!(avg, functions_aggregate::expr_fn::avg);
-aggregate_function!(bit_and, functions_aggregate::expr_fn::bit_and);
-aggregate_function!(bit_or, functions_aggregate::expr_fn::bit_or);
-aggregate_function!(bit_xor, functions_aggregate::expr_fn::bit_xor);
+aggregate_function!(array_agg);
+aggregate_function!(max);
+aggregate_function!(min);
+aggregate_function!(avg);
+aggregate_function!(bit_and);
+aggregate_function!(bit_or);
+aggregate_function!(bit_xor);
+aggregate_function!(bool_and);
+aggregate_function!(bool_or);
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
