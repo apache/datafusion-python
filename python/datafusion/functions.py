@@ -1901,14 +1901,38 @@ def bit_xor(
     return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def bool_and(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean AND of the argument."""
-    return Expr(f.bool_and(arg.expr, distinct=distinct))
+def bool_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the boolean AND of the argument.
+
+    This aggregate function will compare every value in the input partition. These are
+    expected to be boolean values.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform calculation on
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bool_and(expression.expr, filter=filter_raw))
 
 
-def bool_or(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean OR of the argument."""
-    return Expr(f.bool_or(arg.expr, distinct=distinct))
+def bool_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the boolean OR of the argument.
+
+    This aggregate function will compare every value in the input partition. These are
+    expected to be boolean values.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform calculation on
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bool_or(expression.expr, filter=filter_raw))
 
 
 def lead(

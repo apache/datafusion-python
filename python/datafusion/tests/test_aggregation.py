@@ -179,7 +179,7 @@ def test_aggregate_100(df_aggregate_100):
     assert result.column("c5") == pa.array([83, 68, 122, 124, 117])
 
 
-data_test_bitwise_functions = [
+data_test_bitwise_and_boolean_functions = [
     ("bit_and", f.bit_and(column("a")), [0]),
     ("bit_and_filter", f.bit_and(column("a"), filter=column("a") != lit(2)), [1]),
     ("bit_or", f.bit_or(column("b")), [6]),
@@ -192,11 +192,15 @@ data_test_bitwise_functions = [
         f.bit_xor(column("b"), distinct=True, filter=column("a") != lit(3)),
         [4],
     ),
+    ("bool_and", f.bool_and(column("d")), [False]),
+    ("bool_and_filter", f.bool_and(column("d"), filter=column("a") != lit(3)), [True]),
+    ("bool_or", f.bool_or(column("d")), [True]),
+    ("bool_or_filter", f.bool_or(column("d"), filter=column("a") == lit(3)), [False]),
 ]
 
 
-@pytest.mark.parametrize("name,expr,result", data_test_bitwise_functions)
-def test_bit_add_or_xor(df, name, expr, result):
+@pytest.mark.parametrize("name,expr,result", data_test_bitwise_and_boolean_functions)
+def test_bit_and_bool_fns(df, name, expr, result):
     df = df.aggregate([], [expr.alias(name)])
 
     expected = {
@@ -204,17 +208,3 @@ def test_bit_add_or_xor(df, name, expr, result):
     }
 
     assert df.collect()[0].to_pydict() == expected
-
-
-def test_bool_and_or(df):
-    df = df.aggregate(
-        [],
-        [
-            f.bool_and(column("d")),
-            f.bool_or(column("d")),
-        ],
-    )
-    result = df.collect()
-    result = result[0]
-    assert result.column(0) == pa.array([False])
-    assert result.column(1) == pa.array([True])
