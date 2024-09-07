@@ -1698,22 +1698,46 @@ def count(
     return Expr(f.count(*args, distinct=distinct, filter=filter_raw))
 
 
-def covar(y: Expr, x: Expr) -> Expr:
+def covar_pop(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population covariance.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for covariance
+        value_x: The independent variable for covariance
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
+
+
+def covar_samp(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample covariance.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for covariance
+        value_x: The independent variable for covariance
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
+
+
+def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample covariance.
 
     This is an alias for :py:func:`covar_samp`.
     """
-    return covar_samp(y, x)
-
-
-def covar_pop(y: Expr, x: Expr) -> Expr:
-    """Computes the population covariance."""
-    return Expr(f.covar_pop(y.expr, x.expr))
-
-
-def covar_samp(y: Expr, x: Expr) -> Expr:
-    """Computes the sample covariance."""
-    return Expr(f.covar_samp(y.expr, x.expr))
+    return covar_samp(value_y, value_x, filter)
 
 
 def grouping(arg: Expr, distinct: bool = False) -> Expr:
