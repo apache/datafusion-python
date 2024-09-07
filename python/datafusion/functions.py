@@ -1752,9 +1752,24 @@ def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return avg(expression, filter)
 
 
-def median(arg: Expr) -> Expr:
-    """Computes the median of a set of numbers."""
-    return Expr(f.median(arg.expr))
+def median(
+    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+) -> Expr:
+    """Computes the median of a set of numbers.
+
+    This aggregate function returns the median value of the expression for the given
+    aggregate function.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expression: The value to compute the median of
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def min(arg: Expr, distinct: bool = False) -> Expr:

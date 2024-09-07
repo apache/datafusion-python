@@ -127,6 +127,8 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             False,
         ),
         (f.approx_median(column("b")), pa.array([4]), False),
+        (f.median(column("b"), distinct=True), pa.array([5]), False),
+        (f.median(column("b"), filter=column("a") != 2), pa.array([5]), False),
         (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5]), False),
         (f.approx_percentile_cont(column("b"), 0.5), pa.array([4]), False),
         (
