@@ -127,7 +127,6 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
-    "grouping",
     "in_list",
     "initcap",
     "isnan",
@@ -1738,14 +1737,6 @@ def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     This is an alias for :py:func:`covar_samp`.
     """
     return covar_samp(value_y, value_x, filter)
-
-
-def grouping(arg: Expr, distinct: bool = False) -> Expr:
-    """Indicates if the expression is aggregated or not.
-
-    Returns 1 if the value of the argument is aggregated, 0 if not.
-    """
-    return Expr(f.grouping(arg.expr, distinct=distinct))
 
 
 def max(arg: Expr, distinct: bool = False) -> Expr:

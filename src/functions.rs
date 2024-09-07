@@ -88,16 +88,6 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-pub fn grouping(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::grouping(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
 pub fn sum(args: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::sum(args.expr).into()
 }
@@ -798,6 +788,11 @@ aggregate_function!(corr, y x);
 aggregate_function!(count);
 aggregate_function!(covar_samp, y x);
 aggregate_function!(covar_pop, y x);
+
+// Code is commented out since grouping is not yet implemented
+// https://github.com/apache/datafusion-python/issues/861
+// aggregate_function!(grouping);
+
 aggregate_function_vec_args!(last_value);
 
 // We handle first_value explicitly because the signature expects an order_by
@@ -979,7 +974,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
-    m.add_wrapped(wrap_pyfunction!(grouping))?;
+    // m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(isnan))?;
