@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::expr::InSubquery;
+use datafusion::logical_expr::expr::InSubquery;
 use pyo3::prelude::*;
 
 use super::{subquery::PySubquery, PyExpr};

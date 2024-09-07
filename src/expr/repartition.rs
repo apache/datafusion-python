@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::{logical_plan::Repartition, Expr, Partitioning};
+use datafusion::logical_expr::{logical_plan::Repartition, Expr, Partitioning};
 use pyo3::prelude::*;
 
 use crate::{errors::py_type_err, sql::logical::PyLogicalPlan};

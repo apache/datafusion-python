@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::Case;
+use datafusion::logical_expr::Case;
 use pyo3::prelude::*;
 
 #[pyclass(name = "Case", module = "datafusion.expr", subclass)]

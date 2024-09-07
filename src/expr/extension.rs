@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion_expr::Extension;
+use datafusion::logical_expr::Extension;
 use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;

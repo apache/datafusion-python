@@ -18,8 +18,8 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+use datafusion::common::ScalarValue;
 use datafusion::config::ConfigOptions;
-use datafusion_common::ScalarValue;
 
 #[pyclass(name = "Config", module = "datafusion", subclass)]
 #[derive(Clone)]

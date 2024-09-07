@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::SortExpr;
+use datafusion::logical_expr::SortExpr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

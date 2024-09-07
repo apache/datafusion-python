@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::CreateMemoryTable;
+use datafusion::logical_expr::CreateMemoryTable;
 use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;

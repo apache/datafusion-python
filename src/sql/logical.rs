@@ -35,7 +35,7 @@ use crate::expr::subquery_alias::PySubqueryAlias;
 use crate::expr::table_scan::PyTableScan;
 use crate::expr::unnest::PyUnnest;
 use crate::expr::window::PyWindow;
-use datafusion_expr::LogicalPlan;
+use datafusion::logical_expr::LogicalPlan;
 use pyo3::prelude::*;
 
 use crate::expr::logical_node::LogicalNode;

@@ -25,6 +25,7 @@ dist
 #   intended to run in multiple environments; otherwise, check them in:
 .python-version
 venv
+.venv
 
 apache-rat-*.jar
 *rat.txt

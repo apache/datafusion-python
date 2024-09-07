@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::conditional_expressions::CaseBuilder;
+use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use pyo3::prelude::*;
 
 #[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass)]

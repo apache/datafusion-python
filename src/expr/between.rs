@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::expr::Between;
+use datafusion::logical_expr::expr::Between;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 

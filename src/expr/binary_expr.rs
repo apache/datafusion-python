@@ -16,7 +16,7 @@
 // under the License.
 
 use crate::expr::PyExpr;
-use datafusion_expr::BinaryExpr;
+use datafusion::logical_expr::BinaryExpr;
 use pyo3::prelude::*;
 
 #[pyclass(name = "BinaryExpr", module = "datafusion.expr", subclass)]

@@ -17,7 +17,7 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion_expr::{logical_plan::Explain, LogicalPlan};
+use datafusion::logical_expr::{logical_plan::Explain, LogicalPlan};
 use pyo3::prelude::*;
 
 use crate::{common::df_schema::PyDFSchema, errors::py_type_err, sql::logical::PyLogicalPlan};
