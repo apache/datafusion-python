@@ -1864,51 +1864,65 @@ def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
 
 
 def first_value(
-    arg: Expr,
-    distinct: bool = False,
+    expression: Expr,
     filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
-    null_treatment: Optional[NullTreatment] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
-    """Returns the first value in a group of values."""
+    """Returns the first value in a group of values.
+
+    This aggregate function will return the first value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is true
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
+    """
     order_by_raw = expr_list_to_raw_expr_list(order_by)
     filter_raw = filter.expr if filter is not None else None
-    null_treatment_raw = null_treatment.value if null_treatment is not None else None
 
     return Expr(
         f.first_value(
-            arg.expr,
-            distinct=distinct,
+            expression.expr,
             filter=filter_raw,
             order_by=order_by_raw,
-            null_treatment=null_treatment_raw,
+            null_treatment=null_treatment.value,
         )
     )
 
 
 def last_value(
-    arg: Expr,
-    distinct: bool = False,
+    expression: Expr,
     filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
 
-    To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
-    ``.filter()``, or ``.null_treatment()``.
+    This aggregate function will return the last value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is true
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
     """
     order_by_raw = expr_list_to_raw_expr_list(order_by)
     filter_raw = filter.expr if filter is not None else None
-    null_treatment_raw = null_treatment.value if null_treatment is not None else None
 
     return Expr(
         f.last_value(
-            arg.expr,
-            distinct=distinct,
+            expression.expr,
             filter=filter_raw,
             order_by=order_by_raw,
-            null_treatment=null_treatment_raw,
+            null_treatment=null_treatment.value,
         )
     )
 

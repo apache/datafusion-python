@@ -21,6 +21,7 @@ import pytest
 
 from datafusion import SessionContext, column, lit
 from datafusion import functions as f
+from datafusion.common import NullTreatment
 
 
 @pytest.fixture
@@ -38,6 +39,23 @@ def df():
         ],
         names=["a", "b", "c", "d", "e"],
     )
+    return ctx.create_dataframe([[batch]])
+
+
+@pytest.fixture
+def df_partitioned():
+    ctx = SessionContext()
+
+    # create a RecordBatch and a new DataFrame from it
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([0, 1, 2, 3, 4, 5, 6]),
+            pa.array([7, None, 7, 8, 9, None, 9]),
+            pa.array(["A", "A", "A", "A", "B", "B", "B"]),
+        ],
+        names=["a", "b", "c"],
+    )
+
     return ctx.create_dataframe([[batch]])
 
 
@@ -252,6 +270,71 @@ def test_bit_and_bool_fns(df, name, expr, result):
     df = df.aggregate([], [expr.alias(name)])
 
     expected = {
+        name: result,
+    }
+
+    assert df.collect()[0].to_pydict() == expected
+
+
+@pytest.mark.parametrize(
+    "name,expr,result",
+    [
+        ("first_value", f.first_value(column("a")), [0, 4]),
+        (
+            "first_value_ordered",
+            f.first_value(column("a"), order_by=[column("a").sort(ascending=False)]),
+            [3, 6],
+        ),
+        (
+            "first_value_with_null",
+            f.first_value(
+                column("b"),
+                order_by=[column("b").sort(ascending=True)],
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            ),
+            [None, None],
+        ),
+        (
+            "first_value_ignore_null",
+            f.first_value(
+                column("b"),
+                order_by=[column("b").sort(ascending=True)],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            ),
+            [7, 9],
+        ),
+        ("last_value", f.last_value(column("a")), [3, 6]),
+        (
+            "last_value_ordered",
+            f.last_value(column("a"), order_by=[column("a").sort(ascending=False)]),
+            [0, 4],
+        ),
+        (
+            "last_value_with_null",
+            f.last_value(
+                column("b"),
+                order_by=[column("b").sort(ascending=True, nulls_first=False)],
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            ),
+            [None, None],
+        ),
+        (
+            "last_value_ignore_null",
+            f.last_value(
+                column("b"),
+                order_by=[column("b").sort(ascending=True)],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            ),
+            [8, 9],
+        ),
+    ],
+)
+def test_first_last_value(df_partitioned, name, expr, result) -> None:
+    df = df_partitioned.aggregate([column("c")], [expr.alias(name)]).sort(column("c"))
+    df.show()
+
+    expected = {
+        "c": ["A", "B"],
         name: result,
     }
 
