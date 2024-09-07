@@ -433,25 +433,6 @@ fn col(name: &str) -> PyResult<PyExpr> {
     })
 }
 
-// TODO: should we just expose this in python?
-/// Create a COUNT(1) aggregate expression
-#[pyfunction]
-fn count_star() -> PyExpr {
-    functions_aggregate::expr_fn::count(lit(1)).into()
-}
-
-/// Wrapper for [`functions_aggregate::expr_fn::count`]
-/// Count the number of non-null values in the column
-#[pyfunction]
-fn count(expr: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::count(expr.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
 #[pyfunction]
 fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
@@ -831,6 +812,7 @@ aggregate_function!(bit_xor);
 aggregate_function!(bool_and);
 aggregate_function!(bool_or);
 aggregate_function!(corr, y x);
+aggregate_function!(count);
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
@@ -979,7 +961,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cosh))?;
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
-    m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;

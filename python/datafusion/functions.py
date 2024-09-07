@@ -367,7 +367,7 @@ def col(name: str) -> Expr:
 
 def count_star() -> Expr:
     """Create a COUNT(1) aggregate expression."""
-    return Expr(f.count_star())
+    return Expr(f.count(Expr.literal(1)))
 
 
 def case(expr: Expr) -> CaseBuilder:
