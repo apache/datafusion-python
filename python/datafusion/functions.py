@@ -365,9 +365,18 @@ def col(name: str) -> Expr:
     return Expr(f.col(name))
 
 
-def count_star() -> Expr:
-    """Create a COUNT(1) aggregate expression."""
-    return Expr(f.count(Expr.literal(1)))
+def count_star(filter: Optional[Expr] = None) -> Expr:
+    """Create a COUNT(1) aggregate expression.
+
+    This aggregate function will count all of the rows in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``distinct``, and ``null_treatment``.
+
+    Args:
+        filter: If provided, only count rows for which the filter is true
+    """
+    return count(Expr.literal(1), filter=filter)
 
 
 def case(expr: Expr) -> CaseBuilder:
@@ -1660,15 +1669,33 @@ def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
 
 
-def count(args: Expr | list[Expr] | None = None, distinct: bool = False) -> Expr:
-    """Returns the number of rows that match the given arguments."""
-    if args is None:
-        return count(Expr.literal(1), distinct=distinct)
-    if isinstance(args, list):
-        args = [arg.expr for arg in args]
-    elif isinstance(args, Expr):
-        args = [args.expr]
-    return Expr(f.count(*args, distinct=distinct))
+def count(
+    expressions: Expr | list[Expr] | None = None,
+    distinct: bool = False,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Returns the number of rows that match the given arguments.
+
+    This aggregate function will count the non-null rows provided in the expression.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expressions: Argument to perform bitwise calculation on
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    if expressions is None:
+        args = [Expr.literal(1).expr]
+    elif isinstance(expressions, list):
+        args = [arg.expr for arg in expressions]
+    else:
+        args = [expressions.expr]
+
+    return Expr(f.count(*args, distinct=distinct, filter=filter_raw))
 
 
 def covar(y: Expr, x: Expr) -> Expr:
