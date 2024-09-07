@@ -88,26 +88,6 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-pub fn bit_and(expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bit_and(expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bit_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bit_or(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
 pub fn bit_xor(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::bit_xor(expression.expr);
     if distinct {
@@ -885,6 +865,8 @@ aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg);
 aggregate_function!(max, functions_aggregate::min_max::max);
 aggregate_function!(min, functions_aggregate::min_max::min);
 aggregate_function!(avg, functions_aggregate::expr_fn::avg);
+aggregate_function!(bit_and, functions_aggregate::expr_fn::bit_and);
+aggregate_function!(bit_or, functions_aggregate::expr_fn::bit_or);
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
