@@ -71,6 +71,17 @@ Our pre-commit hooks can be installed by running :code:`pre-commit install`, whi
 
 The pre-commit hooks can also be run adhoc without installing them by simply running :code:`pre-commit run --all-files`
 
+Guidelines for Separating Python and Rust Code
+----------------------------------------------
+
+Version 40 of ``datafusion-python`` introduced ``python`` wrappers around the ``pyo3`` generated code to vastly improve the user experience. (See the `blog post <https://datafusion.apache.org/blog/2024/08/20/python-datafusion-40.0.0/>`_ and `pull request <https://github.com/apache/datafusion-python/pull/750>`_ for more details.)
+
+Mostly, the ``python`` code is limited to pure wrappers with type hints and good docstrings, but there are a few reasons for when the code does more:
+
+1. Trivial aliases like :py:func:`~datafusion.functions.array_append` and :py:func:`~datafusion.functions.list_append`.
+2. Simple type conversion, like from a ``path`` to a ``string`` of the path or from ``number`` to ``lit(number)``.
+3. The additional code makes an API **much** more pythonic, like we do for :py:func:`~datafusion.functions.named_struct` (see `source code <https://github.com/apache/datafusion-python/blob/a0913c728f5f323c1eb4913e614c9d996083e274/python/datafusion/functions.py#L1040-L1046>`_).
+
 
 Update Dependencies
 -------------------
