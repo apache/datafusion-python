@@ -35,7 +35,7 @@ use datafusion::functions_aggregate;
 use datafusion::logical_expr::expr::Alias;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion::logical_expr::{
-    expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
+    expr::{find_df_window_func, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
 
@@ -263,33 +263,6 @@ fn add_builder_fns_to_aggregate(
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
-}
-
-#[pyfunction]
-pub fn first_value(
-    expr: PyExpr,
-    distinct: Option<bool>,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
-
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
-}
-
-#[pyfunction]
-pub fn last_value(
-    expr: PyExpr,
-    distinct: Option<bool>,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
-
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -569,6 +542,26 @@ macro_rules! aggregate_function {
     };
 }
 
+macro_rules! aggregate_function_vec_args {
+    ($NAME: ident) => {
+        aggregate_function_vec_args!($NAME, expr);
+    };
+    ($NAME: ident, $($arg:ident)*) => {
+        #[pyfunction]
+        fn $NAME(
+            $($arg: PyExpr),*,
+            distinct: Option<bool>,
+            filter: Option<PyExpr>,
+            order_by: Option<Vec<PyExpr>>,
+            null_treatment: Option<NullTreatment>
+        ) -> PyResult<PyExpr> {
+            let agg_fn = functions_aggregate::expr_fn::$NAME(vec![$($arg.into()),*]);
+
+            add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+        }
+    };
+}
+
 /// Generates a [pyo3] wrapper for [datafusion::functions::expr_fn]
 ///
 /// These functions have explicit named arguments.
@@ -805,6 +798,23 @@ aggregate_function!(corr, y x);
 aggregate_function!(count);
 aggregate_function!(covar_samp, y x);
 aggregate_function!(covar_pop, y x);
+aggregate_function_vec_args!(last_value);
+
+// We handle first_value explicitly because the signature expects an order_by
+// https://github.com/apache/datafusion/issues/12376
+#[pyfunction]
+pub fn first_value(
+    expr: PyExpr,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
