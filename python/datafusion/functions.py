@@ -1850,19 +1850,55 @@ def last_value(
     )
 
 
-def bit_and(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise AND of the argument."""
-    return Expr(f.bit_and(arg.expr, distinct=distinct))
+def bit_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the bitwise AND of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_and(expression.expr, filter=filter_raw))
 
 
-def bit_or(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise OR of the argument."""
-    return Expr(f.bit_or(arg.expr, distinct=distinct))
+def bit_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the bitwise OR of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_or(expression.expr, filter=filter_raw))
 
 
-def bit_xor(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise XOR of the argument."""
-    return Expr(f.bit_xor(arg.expr, distinct=distinct))
+def bit_xor(
+    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+) -> Expr:
+    """Computes the bitwise XOR of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
 
 
 def bool_and(arg: Expr, distinct: bool = False) -> Expr:
