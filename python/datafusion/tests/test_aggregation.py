@@ -149,34 +149,47 @@ def test_aggregation(df, agg_expr, expected, array_sort):
     assert result.column(0) == expected
 
 
-def test_aggregate_100(df_aggregate_100):
+@pytest.mark.parametrize(
+    "name,expr,expected",
+    [
+        (
+            "approx_percentile_cont",
+            f.approx_percentile_cont(column("c3"), 0.95, num_centroids=200),
+            [73, 68, 122, 124, 115],
+        ),
+        (
+            "approx_perc_cont_few_centroids",
+            f.approx_percentile_cont(column("c3"), 0.95, num_centroids=5),
+            [72, 68, 119, 124, 115],
+        ),
+        (
+            "approx_perc_cont_filtered",
+            f.approx_percentile_cont(
+                column("c3"), 0.95, num_centroids=200, filter=column("c3") > lit(0)
+            ),
+            [83, 68, 122, 124, 117],
+        ),
+    ],
+)
+def test_aggregate_100(df_aggregate_100, name, expr, expected):
     # https://github.com/apache/datafusion/blob/bddb6415a50746d2803dd908d19c3758952d74f9/datafusion/sqllogictest/test_files/aggregate.slt#L1490-L1498
 
-    result = (
+    df = (
         df_aggregate_100.aggregate(
             [column("c1")],
-            [
-                f.approx_percentile_cont(column("c3"), 0.95, num_centroids=200).alias(
-                    "c3"
-                ),
-                f.approx_percentile_cont(column("c3"), 0.95, num_centroids=5).alias(
-                    "c4"
-                ),
-                f.approx_percentile_cont(
-                    column("c3"), 0.95, num_centroids=200, filter=column("c3") > lit(0)
-                ).alias("c5"),
-            ],
+            [expr.alias(name)],
         )
+        .select("c1", f.round(column(name), lit(4)).alias(name))
         .sort(column("c1").sort(ascending=True))
-        .collect()
     )
+    df.show()
 
-    assert len(result) == 1
-    result = result[0]
-    assert result.column("c1") == pa.array(["a", "b", "c", "d", "e"])
-    assert result.column("c3") == pa.array([73, 68, 122, 124, 115])
-    assert result.column("c4") == pa.array([72, 68, 119, 124, 115])
-    assert result.column("c5") == pa.array([83, 68, 122, 124, 117])
+    expected_dict = {
+        "c1": ["a", "b", "c", "d", "e"],
+        name: expected,
+    }
+
+    assert df.collect()[0].to_pydict() == expected_dict
 
 
 data_test_bitwise_and_boolean_functions = [
