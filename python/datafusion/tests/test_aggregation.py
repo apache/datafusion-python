@@ -169,6 +169,16 @@ def test_aggregation(df, agg_expr, expected, array_sort):
             ),
             [83, 68, 122, 124, 117],
         ),
+        (
+            "corr",
+            f.corr(column("c3"), column("c2")),
+            [-0.1056, -0.2808, 0.0023, 0.0022, -0.2473],
+        ),
+        (
+            "corr_w_filter",
+            f.corr(column("c3"), column("c2"), filter=column("c3") > lit(0)),
+            [-0.3298, 0.2925, 0.2467, -0.2269, 0.0358],
+        ),
     ],
 )
 def test_aggregate_100(df_aggregate_100, name, expr, expected):

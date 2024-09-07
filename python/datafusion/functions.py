@@ -1643,9 +1643,21 @@ def avg(
     return Expr(f.avg(expression.expr, filter=filter_raw))
 
 
-def corr(value1: Expr, value2: Expr, distinct: bool = False) -> Expr:
-    """Returns the correlation coefficient between ``value1`` and ``value2``."""
-    return Expr(f.corr(value1.expr, value2.expr, distinct=distinct))
+def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Returns the correlation coefficient between ``value1`` and ``value2``.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for correlation
+        value_x: The independent variable for correlation
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
 
 
 def count(args: Expr | list[Expr] | None = None, distinct: bool = False) -> Expr:
