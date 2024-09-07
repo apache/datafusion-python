@@ -103,16 +103,6 @@ pub fn sum(args: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr).into()
-}
-
-#[pyfunction]
-pub fn covar_pop(y: PyExpr, x: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::covar_pop(y.expr, x.expr).into()
-}
-
-#[pyfunction]
 pub fn median(arg: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::median(arg.expr).into()
 }
@@ -813,6 +803,8 @@ aggregate_function!(bool_and);
 aggregate_function!(bool_or);
 aggregate_function!(corr, y x);
 aggregate_function!(count);
+aggregate_function!(covar_samp, y x);
+aggregate_function!(covar_pop, y x);
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
