@@ -807,6 +807,20 @@ pub fn first_value(
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
+// nth_value requires a non-expr argument
+#[pyfunction]
+pub fn nth_value(
+    expr: PyExpr,
+    n: i64,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(vec![expr.expr, lit(n)]);
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
+
 fn add_builder_fns_to_window(
     window_fn: Expr,
     partition_by: Option<Vec<PyExpr>>,
@@ -1058,6 +1072,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(regr_syy))?;
     m.add_wrapped(wrap_pyfunction!(first_value))?;
     m.add_wrapped(wrap_pyfunction!(last_value))?;
+    m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;

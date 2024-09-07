@@ -180,6 +180,7 @@ __all__ = [
     "named_struct",
     "nanvl",
     "now",
+    "nth_value",
     "nullif",
     "octet_length",
     "order_by",
@@ -1739,9 +1740,18 @@ def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     return covar_samp(value_y, value_x, filter)
 
 
-def max(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the maximum value of the argument."""
-    return Expr(f.max(arg.expr, distinct=distinct))
+def max(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Aggregate function that returns the maximum value of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the maximum of
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.max(expression.expr, filter=filter_raw))
 
 
 def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
@@ -1772,9 +1782,18 @@ def median(
     return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def min(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the minimum value of the argument."""
-    return Expr(f.min(arg.expr, distinct=distinct))
+def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Returns the minimum value of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is true
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.min(expression.expr, filter=filter_raw))
 
 
 def sum(arg: Expr) -> Expr:
@@ -1926,6 +1945,41 @@ def last_value(
     return Expr(
         f.last_value(
             expression.expr,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment.value,
+        )
+    )
+
+
+def nth_value(
+    expression: Expr,
+    n: int,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
+) -> Expr:
+    """Returns the n-th value in a group of values.
+
+    This aggregate function will return the n-th value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        n: Index of value to return. Starts at 1.
+        filter: If provided, only compute against rows for which the filter is true
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.nth_value(
+            expression.expr,
+            n,
             filter=filter_raw,
             order_by=order_by_raw,
             null_treatment=null_treatment.value,

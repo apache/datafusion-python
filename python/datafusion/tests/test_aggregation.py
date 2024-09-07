@@ -161,6 +161,8 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.count(), pa.array([3]), False),
         (f.count(column("e")), pa.array([2]), False),
         (f.count_star(filter=column("a") != 3), pa.array([2]), False),
+        (f.max(column("a"), filter=column("a") != lit(3)), pa.array([2]), False),
+        (f.min(column("a"), filter=column("a") != lit(1)), pa.array([2]), False),
     ],
 )
 def test_aggregation(df, agg_expr, expected, array_sort):
@@ -328,6 +330,32 @@ def test_bit_and_bool_fns(df, name, expr, result):
                 null_treatment=NullTreatment.IGNORE_NULLS,
             ),
             [8, 9],
+        ),
+        ("first_value", f.first_value(column("a")), [0, 4]),
+        (
+            "nth_value_ordered",
+            f.nth_value(column("a"), 2, order_by=[column("a").sort(ascending=False)]),
+            [2, 5],
+        ),
+        (
+            "nth_value_with_null",
+            f.nth_value(
+                column("b"),
+                3,
+                order_by=[column("b").sort(ascending=True, nulls_first=False)],
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            ),
+            [8, None],
+        ),
+        (
+            "nth_value_ignore_null",
+            f.nth_value(
+                column("b"),
+                2,
+                order_by=[column("b").sort(ascending=True)],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            ),
+            [7, 9],
         ),
     ],
 )
