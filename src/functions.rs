@@ -88,16 +88,6 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
 pub fn grouping(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::grouping(expression.expr);
     if distinct {
@@ -590,12 +580,9 @@ fn window(
 // are appropriate.
 macro_rules! aggregate_function {
     ($NAME: ident) => {
-        aggregate_function!($NAME, functions_aggregate::expr_fn::$NAME, expr);
+        aggregate_function!($NAME, expr);
     };
-    ($NAME: ident, $FUNC: path) => {
-        aggregate_function!($NAME, $FUNC, expr);
-    };
-    ($NAME: ident, $FUNC: path, $($arg:ident)*) => {
+    ($NAME: ident, $($arg:ident)*) => {
         #[pyfunction]
         fn $NAME(
             $($arg: PyExpr),*,
@@ -604,7 +591,7 @@ macro_rules! aggregate_function {
             order_by: Option<Vec<PyExpr>>,
             null_treatment: Option<NullTreatment>
         ) -> PyResult<PyExpr> {
-            let agg_fn = $FUNC($($arg.into()),*);
+            let agg_fn = functions_aggregate::expr_fn::$NAME($($arg.into()),*);
 
             add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
         }
@@ -843,6 +830,7 @@ aggregate_function!(bit_or);
 aggregate_function!(bit_xor);
 aggregate_function!(bool_and);
 aggregate_function!(bool_or);
+aggregate_function!(corr, y x);
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
