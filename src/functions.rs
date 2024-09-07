@@ -93,11 +93,6 @@ pub fn sum(args: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-pub fn median(arg: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::median(arg.expr).into()
-}
-
-#[pyfunction]
 pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     let expr = functions_aggregate::expr_fn::stddev(expression.expr);
     if distinct {
@@ -788,6 +783,7 @@ aggregate_function!(corr, y x);
 aggregate_function!(count);
 aggregate_function!(covar_samp, y x);
 aggregate_function!(covar_pop, y x);
+aggregate_function!(median);
 
 // Code is commented out since grouping is not yet implemented
 // https://github.com/apache/datafusion-python/issues/861
