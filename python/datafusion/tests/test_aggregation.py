@@ -97,36 +97,54 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
 
 
 @pytest.mark.parametrize(
-    "agg_expr, expected",
+    "agg_expr, expected, array_sort",
     [
-        (f.approx_distinct(column("b")), pa.array([2], type=pa.uint64())),
+        (f.approx_distinct(column("b")), pa.array([2], type=pa.uint64()), False),
         (
             f.approx_distinct(
                 column("b"),
                 filter=column("a") != lit(3),
             ),
             pa.array([1], type=pa.uint64()),
+            False,
         ),
-        (f.approx_median(column("b")), pa.array([4])),
-        (f.approx_median(column("b"), distinct=True), pa.array([5])),
-        (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5])),
-        (f.approx_percentile_cont(column("b"), 0.5), pa.array([4])),
+        (f.approx_median(column("b")), pa.array([4]), False),
+        (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5]), False),
+        (f.approx_percentile_cont(column("b"), 0.5), pa.array([4]), False),
         (
             f.approx_percentile_cont_with_weight(column("b"), lit(0.6), 0.5),
             pa.array([6], type=pa.float64()),
+            False,
         ),
         (
             f.approx_percentile_cont_with_weight(
                 column("b"), lit(0.6), 0.5, filter=column("a") != lit(3)
             ),
             pa.array([4], type=pa.float64()),
+            False,
         ),
-        (f.array_agg(column("b")), pa.array([[4, 4, 6]])),
+        (f.array_agg(column("b")), pa.array([[4, 4, 6]]), False),
+        (f.array_agg(column("b"), distinct=True), pa.array([[4, 6]]), True),
+        (
+            f.array_agg(column("e"), filter=column("e").is_not_null()),
+            pa.array([[1]]),
+            False,
+        ),
+        (
+            f.array_agg(column("b"), order_by=[column("c")]),
+            pa.array([[6, 4, 4]]),
+            False,
+        ),
     ],
 )
-def test_aggregation(df, agg_expr, expected):
-    agg_df = df.aggregate([], [agg_expr])
+def test_aggregation(df, agg_expr, expected, array_sort):
+    agg_df = df.aggregate([], [agg_expr.alias("agg_expr")])
+    if array_sort:
+        agg_df = agg_df.select(f.array_sort(column("agg_expr")))
+    agg_df.show()
     result = agg_df.collect()[0]
+
+    print(result)
     assert result.column(0) == expected
 
 

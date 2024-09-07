@@ -1515,24 +1515,21 @@ def approx_distinct(
     return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
 
 
-def approx_median(
-    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
-) -> Expr:
+def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     """Returns the approximate median value.
 
     This aggregate function is similar to :py:func:`median`, but it will only
     approximate the median. It may return significantly faster for some DataFrames.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
-    the options ``order_by`` and ``null_treatment``.
+    the options ``order_by`` and ``null_treatment``, and ``distinct``.
 
     Args:
         expression: Values to find the median for
-        distinct: If True, only return the median of distinct values
         filter: If provided, only compute against rows for which the filter is true
     """
     filter_raw = filter.expr if filter is not None else None
-    return Expr(f.approx_median(expression.expr, distinct=distinct, filter=filter_raw))
+    return Expr(f.approx_median(expression.expr, filter=filter_raw))
 
 
 def approx_percentile_cont(
@@ -1596,9 +1593,35 @@ def approx_percentile_cont_with_weight(
     )
 
 
-def array_agg(arg: Expr, distinct: bool = False) -> Expr:
-    """Aggregate values into an array."""
-    return Expr(f.array_agg(arg.expr, distinct=distinct))
+def array_agg(
+    expression: Expr,
+    distinct: bool = False,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Aggregate values into an array.
+
+    Currently ``distinct`` and ``order_by`` cannot be used together. As a work around,
+    consider :py:func:`array_sort` after aggregation.
+    [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``null_treatment``.
+
+    Args:
+        expression: Values to combine into an array
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is true
+        order_by: Order the resultant array values
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.array_agg(
+            expression.expr, distinct=distinct, filter=filter_raw, order_by=order_by_raw
+        )
+    )
 
 
 def avg(arg: Expr, distinct: bool = False) -> Expr:
