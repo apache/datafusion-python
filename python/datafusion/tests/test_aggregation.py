@@ -237,6 +237,26 @@ def test_aggregation(df, agg_expr, expected, array_sort):
             f.covar_samp(column("c3"), column("c2"), filter=column("c3") > lit(0)),
             [-10.5714, 9.9636, 15.1273, -10.9636, 1.2417],
         ),
+        (
+            "var_samp",
+            f.var_samp(column("c2")),
+            [1.9286, 2.2047, 1.6333, 2.1438, 1.6],
+        ),
+        (
+            "var_samp_w_filter",
+            f.var_samp(column("c2"), filter=column("c3") > lit(0)),
+            [1.4286, 2.4182, 1.8545, 1.4727, 1.6292],
+        ),
+        (
+            "var_pop",
+            f.var_pop(column("c2")),
+            [1.8367, 2.0886, 1.5556, 2.0247, 1.5238],
+        ),
+        (
+            "var_pop_w_filter",
+            f.var_pop(column("c2"), filter=column("c3") > lit(0)),
+            [1.25, 2.1983, 1.686, 1.3388, 1.5273],
+        ),
     ],
 )
 def test_aggregate_100(df_aggregate_100, name, expr, expected):
