@@ -127,96 +127,6 @@ pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
     }
 }
 
-#[pyfunction]
-pub fn regr_avgx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_avgx(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_avgy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_avgy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_count(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_count(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_intercept(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_intercept(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_r2(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_r2(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_slope(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_slope(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_sxx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_sxx(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_sxy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_sxy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_syy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
     distinct: Option<bool>,
@@ -784,6 +694,15 @@ aggregate_function!(count);
 aggregate_function!(covar_samp, y x);
 aggregate_function!(covar_pop, y x);
 aggregate_function!(median);
+aggregate_function!(regr_slope, y x);
+aggregate_function!(regr_intercept, y x);
+aggregate_function!(regr_count, y x);
+aggregate_function!(regr_r2, y x);
+aggregate_function!(regr_avgx, y x);
+aggregate_function!(regr_avgy, y x);
+aggregate_function!(regr_sxx, y x);
+aggregate_function!(regr_syy, y x);
+aggregate_function!(regr_sxy, y x);
 
 // Code is commented out since grouping is not yet implemented
 // https://github.com/apache/datafusion-python/issues/861

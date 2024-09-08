@@ -361,7 +361,6 @@ def test_bit_and_bool_fns(df, name, expr, result):
 )
 def test_first_last_value(df_partitioned, name, expr, result) -> None:
     df = df_partitioned.aggregate([column("c")], [expr.alias(name)]).sort(column("c"))
-    df.show()
 
     expected = {
         "c": ["A", "B"],

@@ -374,7 +374,7 @@ def count_star(filter: Optional[Expr] = None) -> Expr:
     the options ``order_by``, ``distinct``, and ``null_treatment``.
 
     Args:
-        filter: If provided, only count rows for which the filter is true
+        filter: If provided, only count rows for which the filter is True
     """
     return count(Expr.literal(1), filter=filter)
 
@@ -1517,7 +1517,7 @@ def approx_distinct(
 
     Args:
         expression: Values to check for distinct entries
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -1535,7 +1535,7 @@ def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: Values to find the median for
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.approx_median(expression.expr, filter=filter_raw))
@@ -1566,7 +1566,7 @@ def approx_percentile_cont(
         expression: Values for which to find the approximate percentile
         percentile: This must be between 0.0 and 1.0, inclusive
         num_centroids: Max bin size for the t-digest algorithm
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(
@@ -1591,7 +1591,7 @@ def approx_percentile_cont_with_weight(
         expression: Values for which to find the approximate percentile
         weight: Relative weight for each of the values in ``expression``
         percentile: This must be between 0.0 and 1.0, inclusive
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
 
     """
     filter_raw = filter.expr if filter is not None else None
@@ -1620,7 +1620,7 @@ def array_agg(
     Args:
         expression: Values to combine into an array
         distinct: If True, a single entry for each distinct value will be in the result
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values
     """
     order_by_raw = expr_list_to_raw_expr_list(order_by)
@@ -1646,7 +1646,7 @@ def avg(
 
     Args:
         expression: Values to combine into an array
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.avg(expression.expr, filter=filter_raw))
@@ -1663,7 +1663,7 @@ def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     Args:
         value_y: The dependent variable for correlation
         value_x: The independent variable for correlation
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
@@ -1684,7 +1684,7 @@ def count(
     Args:
         expressions: Argument to perform bitwise calculation on
         distinct: If True, a single entry for each distinct value will be in the result
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
 
@@ -1709,7 +1709,7 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Ex
     Args:
         value_y: The dependent variable for covariance
         value_x: The independent variable for covariance
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
@@ -1726,7 +1726,7 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> E
     Args:
         value_y: The dependent variable for covariance
         value_x: The independent variable for covariance
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
@@ -1748,7 +1748,7 @@ def max(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: The value to find the maximum of
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.max(expression.expr, filter=filter_raw))
@@ -1776,7 +1776,7 @@ def median(
     Args:
         expression: The value to compute the median of
         distinct: If True, a single entry for each distinct value will be in the result
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
@@ -1790,7 +1790,7 @@ def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: The value to find the minimum of
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.min(expression.expr, filter=filter_raw))
@@ -1837,55 +1837,211 @@ def var_samp(arg: Expr) -> Expr:
     return Expr(f.var_samp(arg.expr))
 
 
-def regr_avgx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
+def regr_avgx(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
     """Computes the average of the independent variable ``x``.
 
-    Only non-null pairs of the inputs are evaluated.
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
     """
-    return Expr(f.regr_avgx(y.expr, x.expr, distinct))
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_avgx(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
+def regr_avgy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
     """Computes the average of the dependent variable ``y``.
 
-    Only non-null pairs of the inputs are evaluated.
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
     """
-    return Expr(f.regr_avgy(y.expr, x.expr, distinct))
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_avgy(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_count(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Counts the number of rows in which both expressions are not null."""
-    return Expr(f.regr_count(y.expr, x.expr, distinct))
+def regr_count(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Counts the number of rows in which both expressions are not null.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_count(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_intercept(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the intercept from the linear regression."""
-    return Expr(f.regr_intercept(y.expr, x.expr, distinct))
+def regr_intercept(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the intercept from the linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_intercept(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_r2(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the R-squared value from linear regression."""
-    return Expr(f.regr_r2(y.expr, x.expr, distinct))
+def regr_r2(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the R-squared value from linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_r2(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_slope(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the slope from linear regression."""
-    return Expr(f.regr_slope(y.expr, x.expr, distinct))
+def regr_slope(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the slope from linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_slope(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_sxx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of squares of the independent variable ``x``."""
-    return Expr(f.regr_sxx(y.expr, x.expr, distinct))
+def regr_sxx(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of squares of the independent variable ``x``.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_sxx(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_sxy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of products of pairs of numbers."""
-    return Expr(f.regr_sxy(y.expr, x.expr, distinct))
+def regr_sxy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of products of pairs of numbers.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_sxy(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of squares of the dependent variable ``y``."""
-    return Expr(f.regr_syy(y.expr, x.expr, distinct))
+def regr_syy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of squares of the dependent variable ``y``.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_syy(y.expr, x.expr, filter=filter_raw))
 
 
 def first_value(
@@ -1903,7 +2059,7 @@ def first_value(
 
     Args:
         expression: Argument to perform bitwise calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignull null values.
     """
@@ -1935,7 +2091,7 @@ def last_value(
 
     Args:
         expression: Argument to perform bitwise calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignull null values.
     """
@@ -1969,7 +2125,7 @@ def nth_value(
     Args:
         expression: Argument to perform bitwise calculation on
         n: Index of value to return. Starts at 1.
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignull null values.
     """
@@ -1997,7 +2153,7 @@ def bit_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: Argument to perform bitwise calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_and(expression.expr, filter=filter_raw))
@@ -2013,7 +2169,7 @@ def bit_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: Argument to perform bitwise calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_or(expression.expr, filter=filter_raw))
@@ -2032,7 +2188,7 @@ def bit_xor(
     Args:
         expression: Argument to perform bitwise calculation on
         distinct: If True, evaluate each unique value of expression only once
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
@@ -2049,7 +2205,7 @@ def bool_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: Argument to perform calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_and(expression.expr, filter=filter_raw))
@@ -2066,7 +2222,7 @@ def bool_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
     Args:
         expression: Argument to perform calculation on
-        filter: If provided, only compute against rows for which the filter is true
+        filter: If provided, only compute against rows for which the filter is True
     """
     filter_raw = filter.expr if filter is not None else None
     return Expr(f.bool_or(expression.expr, filter=filter_raw))
