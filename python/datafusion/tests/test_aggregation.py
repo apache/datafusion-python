@@ -163,6 +163,16 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.count_star(filter=column("a") != 3), pa.array([2]), False),
         (f.max(column("a"), filter=column("a") != lit(3)), pa.array([2]), False),
         (f.min(column("a"), filter=column("a") != lit(1)), pa.array([2]), False),
+        (
+            f.stddev(column("a"), filter=column("a") != lit(2)),
+            pa.array([np.sqrt(2)]),
+            False,
+        ),
+        (
+            f.stddev_pop(column("a"), filter=column("a") != lit(2)),
+            pa.array([1.0]),
+            False,
+        ),
     ],
 )
 def test_aggregation(df, agg_expr, expected, array_sort):

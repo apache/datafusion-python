@@ -1801,22 +1801,40 @@ def sum(arg: Expr) -> Expr:
     return Expr(f.sum(arg.expr))
 
 
-def stddev(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the standard deviation of the argument."""
-    return Expr(f.stddev(arg.expr, distinct=distinct))
+def stddev(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the standard deviation of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.stddev(expression.expr, filter=filter_raw))
 
 
-def stddev_pop(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the population standard deviation of the argument."""
-    return Expr(f.stddev_pop(arg.expr, distinct=distinct))
+def stddev_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population standard deviation of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
 
 
-def stddev_samp(arg: Expr, distinct: bool = False) -> Expr:
+def stddev_samp(arg: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     This is an alias for :py:func:`stddev`.
     """
-    return stddev(arg, distinct)
+    return stddev(arg, filter=filter)
 
 
 def var(arg: Expr) -> Expr:

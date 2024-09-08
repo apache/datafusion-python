@@ -93,26 +93,6 @@ pub fn sum(args: PyExpr) -> PyExpr {
 }
 
 #[pyfunction]
-pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::stddev(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn stddev_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::stddev_pop(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
 pub fn var_samp(expression: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::var_sample(expression.expr).into()
 }
@@ -703,6 +683,8 @@ aggregate_function!(regr_avgy, y x);
 aggregate_function!(regr_sxx, y x);
 aggregate_function!(regr_syy, y x);
 aggregate_function!(regr_sxy, y x);
+aggregate_function!(stddev);
+aggregate_function!(stddev_pop);
 
 // Code is commented out since grouping is not yet implemented
 // https://github.com/apache/datafusion-python/issues/861
