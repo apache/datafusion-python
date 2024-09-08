@@ -19,7 +19,12 @@ import datafusion
 import datafusion.functions
 import datafusion.object_store
 import datafusion.substrait
-from enum import EnumType
+
+# EnumType introduced in 3.11. 3.10 and prior it was called EnumMeta.
+try:
+    from enum import EnumType
+except ImportError:
+    from enum import EnumMeta as EnumType
 
 
 def missing_exports(internal_obj, wrapped_obj) -> None:
