@@ -39,54 +39,6 @@ use datafusion::logical_expr::{
     lit, Expr, WindowFunctionDefinition,
 };
 
-#[pyfunction]
-pub fn approx_distinct(expression: PyExpr, filter: Option<PyExpr>) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::approx_distinct(expression.expr);
-
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
-}
-
-#[pyfunction]
-pub fn approx_median(expression: PyExpr, filter: Option<PyExpr>) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::approx_median(expression.expr);
-
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
-}
-
-#[pyfunction]
-pub fn approx_percentile_cont(
-    expression: PyExpr,
-    percentile: f64,
-    num_centroids: Option<i64>, // enforces optional arguments at the end, currently
-    filter: Option<PyExpr>,
-) -> PyResult<PyExpr> {
-    let args = if let Some(num_centroids) = num_centroids {
-        vec![expression.expr, lit(percentile), lit(num_centroids)]
-    } else {
-        vec![expression.expr, lit(percentile)]
-    };
-    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
-    let agg_fn = udaf.call(args);
-
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
-}
-
-#[pyfunction]
-pub fn approx_percentile_cont_with_weight(
-    expression: PyExpr,
-    weight: PyExpr,
-    percentile: f64,
-    filter: Option<PyExpr>,
-) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
-        expression.expr,
-        weight.expr,
-        lit(percentile),
-    );
-
-    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
-}
-
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
     distinct: Option<bool>,
@@ -668,10 +620,46 @@ aggregate_function!(stddev);
 aggregate_function!(stddev_pop);
 aggregate_function!(var_sample);
 aggregate_function!(var_pop);
+aggregate_function!(approx_distinct);
+aggregate_function!(approx_median);
 
 // Code is commented out since grouping is not yet implemented
 // https://github.com/apache/datafusion-python/issues/861
 // aggregate_function!(grouping);
+
+#[pyfunction]
+pub fn approx_percentile_cont(
+    expression: PyExpr,
+    percentile: f64,
+    num_centroids: Option<i64>, // enforces optional arguments at the end, currently
+    filter: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    let args = if let Some(num_centroids) = num_centroids {
+        vec![expression.expr, lit(percentile), lit(num_centroids)]
+    } else {
+        vec![expression.expr, lit(percentile)]
+    };
+    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
+    let agg_fn = udaf.call(args);
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont_with_weight(
+    expression: PyExpr,
+    weight: PyExpr,
+    percentile: f64,
+    filter: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
+        expression.expr,
+        weight.expr,
+        lit(percentile),
+    );
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
 
 aggregate_function_vec_args!(last_value);
 
