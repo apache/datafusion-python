@@ -246,6 +246,7 @@ __all__ = [
     "var",
     "var_pop",
     "var_samp",
+    "var_sample",
     "when",
     # Window Functions
     "window",
@@ -1852,22 +1853,48 @@ def stddev_samp(arg: Expr, filter: Optional[Expr] = None) -> Expr:
     return stddev(arg, filter=filter)
 
 
-def var(arg: Expr) -> Expr:
+def var(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
     """
-    return var_samp(arg)
+    return var_samp(expression, filter)
 
 
-def var_pop(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the population variance of the argument."""
-    return Expr(f.var_pop(arg.expr, distinct=distinct))
+def var_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population variance of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The variable to compute the variance for
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.var_pop(expression.expr, filter=filter_raw))
 
 
-def var_samp(arg: Expr) -> Expr:
-    """Computes the sample variance of the argument."""
-    return Expr(f.var_samp(arg.expr))
+def var_samp(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample variance of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The variable to compute the variance for
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.var_sample(expression.expr, filter=filter_raw))
+
+
+def var_sample(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample variance of the argument.
+
+    This is an alias for :py:func:`var_samp`.
+    """
+    return var_samp(expression, filter)
 
 
 def regr_avgx(

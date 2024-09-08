@@ -87,21 +87,6 @@ pub fn approx_percentile_cont_with_weight(
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
 
-#[pyfunction]
-pub fn var_samp(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::var_sample(expression.expr).into()
-}
-
-#[pyfunction]
-pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::var_pop(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
     distinct: Option<bool>,
@@ -681,6 +666,8 @@ aggregate_function!(regr_syy, y x);
 aggregate_function!(regr_sxy, y x);
 aggregate_function!(stddev);
 aggregate_function!(stddev_pop);
+aggregate_function!(var_sample);
+aggregate_function!(var_pop);
 
 // Code is commented out since grouping is not yet implemented
 // https://github.com/apache/datafusion-python/issues/861
@@ -971,7 +958,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(upper))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
-    m.add_wrapped(wrap_pyfunction!(var_samp))?;
+    m.add_wrapped(wrap_pyfunction!(var_sample))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgx))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgy))?;
