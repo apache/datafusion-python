@@ -156,6 +156,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             False,
         ),
         (f.avg(column("b"), filter=column("a") != lit(1)), pa.array([5.0]), False),
+        (f.sum(column("b"), filter=column("a") != lit(1)), pa.array([10]), False),
         (f.count(column("b"), distinct=True), pa.array([2]), False),
         (f.count(column("b"), filter=column("a") != 3), pa.array([2]), False),
         (f.count(), pa.array([3]), False),

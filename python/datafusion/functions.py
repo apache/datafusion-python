@@ -1797,9 +1797,23 @@ def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.min(expression.expr, filter=filter_raw))
 
 
-def sum(arg: Expr) -> Expr:
-    """Computes the sum of a set of numbers."""
-    return Expr(f.sum(arg.expr))
+def sum(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of a set of numbers.
+
+    This aggregate function expects a numeric expression.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to combine into an array
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.sum(expression.expr, filter=filter_raw))
 
 
 def stddev(expression: Expr, filter: Optional[Expr] = None) -> Expr:

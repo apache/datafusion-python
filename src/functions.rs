@@ -88,11 +88,6 @@ pub fn approx_percentile_cont_with_weight(
 }
 
 #[pyfunction]
-pub fn sum(args: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::sum(args.expr).into()
-}
-
-#[pyfunction]
 pub fn var_samp(expression: PyExpr) -> PyExpr {
     functions_aggregate::expr_fn::var_sample(expression.expr).into()
 }
@@ -664,6 +659,7 @@ aggregate_function!(array_agg);
 aggregate_function!(max);
 aggregate_function!(min);
 aggregate_function!(avg);
+aggregate_function!(sum);
 aggregate_function!(bit_and);
 aggregate_function!(bit_or);
 aggregate_function!(bit_xor);
