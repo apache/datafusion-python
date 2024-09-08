@@ -223,6 +223,7 @@ __all__ = [
     "stddev",
     "stddev_pop",
     "stddev_samp",
+    "string_agg",
     "strpos",
     "struct",
     "substr",
@@ -2578,5 +2579,39 @@ def ntile(
             Expr.literal(groups).expr,
             partition_by=partition_cols,
             order_by=order_cols,
+        )
+    )
+
+
+def string_agg(
+    expression: Expr,
+    delimiter: str,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Concatenates the input strings.
+
+    This aggregate function will concatenate input strings, ignoring null values, and
+    seperating them with the specified delimiter. Non-string values will be converted to
+    their string equivalents.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``distinct`` and ``null_treatment``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        delimiter: Text to place between each value of expression
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Set the ordering of the expression to evaluate
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.string_agg(
+            expression.expr,
+            delimiter,
+            filter=filter_raw,
+            order_by=order_by_raw,
         )
     )

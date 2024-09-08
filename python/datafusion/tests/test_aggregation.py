@@ -378,3 +378,39 @@ def test_first_last_value(df_partitioned, name, expr, result) -> None:
     }
 
     assert df.collect()[0].to_pydict() == expected
+
+
+@pytest.mark.parametrize(
+    "name,expr,result",
+    [
+        ("string_agg", f.string_agg(column("a"), ","), "one,two,three,two"),
+        ("string_agg", f.string_agg(column("b"), ""), "03124"),
+        (
+            "string_agg",
+            f.string_agg(column("a"), ",", filter=column("b") != lit(3)),
+            "one,three,two",
+        ),
+        (
+            "string_agg",
+            f.string_agg(column("a"), ",", order_by=[column("b")]),
+            "one,three,two,two",
+        ),
+    ],
+)
+def test_string_agg(name, expr, result) -> None:
+    ctx = SessionContext()
+
+    df = ctx.from_pydict(
+        {
+            "a": ["one", "two", None, "three", "two"],
+            "b": [0, 3, 1, 2, 4],
+        }
+    )
+
+    df = df.aggregate([], [expr.alias(name)])
+
+    expected = {
+        name: [result],
+    }
+    df.show()
+    assert df.collect()[0].to_pydict() == expected
