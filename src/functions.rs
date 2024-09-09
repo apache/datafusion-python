@@ -47,10 +47,7 @@ fn add_builder_fns_to_aggregate(
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, we can guarantee initializing
-    // a builder with an `order_by` default of empty vec
-    // let order_by = order_by
-    //     .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
-    //     .unwrap_or_default();
+    // a builder with an `null_treatment` with option None
     let mut builder = agg_fn.null_treatment(None);
 
     if let Some(order_by_cols) = order_by {
@@ -66,7 +63,6 @@ fn add_builder_fns_to_aggregate(
         builder = builder.filter(filter.expr);
     }
 
-    // would be nice if all the options builder methods accepted Option<T> ...
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
