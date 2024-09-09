@@ -1,17 +1,25 @@
 use std::{
+    any::Any,
     ffi::{c_char, c_int, c_void, CStr, CString},
-    ptr::addr_of,
+    ptr::{addr_of, addr_of_mut},
     sync::Arc,
 };
 
-use arrow::{error::ArrowError, ffi::FFI_ArrowSchema};
-use datafusion::common::Result;
+use arrow::{
+    datatypes::{Schema, SchemaRef},
+    error::ArrowError,
+    ffi::FFI_ArrowSchema,
+};
+use async_trait::async_trait;
 use datafusion::{
     catalog::{Session, TableProvider},
     common::DFSchema,
     execution::{context::SessionState, session_state::SessionStateBuilder},
     physical_plan::ExecutionPlan,
     prelude::{Expr, SessionConfig},
+};
+use datafusion::{
+    common::Result, datasource::TableType, logical_expr::TableProviderFilterPushDown,
 };
 use tokio::runtime::Runtime;
 
@@ -80,9 +88,7 @@ pub struct FFI_Expr {}
 #[allow(non_camel_case_types)]
 pub struct FFI_TableProvider {
     pub version: i64,
-    pub schema: Option<
-        unsafe extern "C" fn(provider: *mut FFI_TableProvider, out: *mut FFI_ArrowSchema) -> c_int,
-    >,
+    pub schema: Option<unsafe extern "C" fn(provider: *const FFI_TableProvider) -> FFI_ArrowSchema>,
     pub scan: Option<
         unsafe extern "C" fn(
             provider: *mut FFI_TableProvider,
@@ -99,6 +105,7 @@ pub struct FFI_TableProvider {
 }
 
 unsafe impl Send for FFI_TableProvider {}
+unsafe impl Sync for FFI_TableProvider {}
 
 struct ProviderPrivateData {
     provider: Box<dyn TableProvider + Send>,
@@ -108,13 +115,14 @@ struct ProviderPrivateData {
 struct ExportedTableProvider {
     provider: *mut FFI_TableProvider,
 }
+struct ConstExportedTableProvider {
+    provider: *const FFI_TableProvider,
+}
 
 // The callback used to get array schema
-unsafe extern "C" fn provider_schema(
-    provider: *mut FFI_TableProvider,
-    schema: *mut FFI_ArrowSchema,
-) -> c_int {
-    ExportedTableProvider { provider }.schema(schema)
+unsafe extern "C" fn provider_schema(provider: *const FFI_TableProvider) -> FFI_ArrowSchema {
+    println!("callback function");
+    ConstExportedTableProvider { provider }.provider_schema()
 }
 
 unsafe extern "C" fn provider_scan(
@@ -151,8 +159,12 @@ unsafe extern "C" fn provider_scan(
 
     let limit = limit.try_into().ok();
 
-    let plan =
-        ExportedTableProvider { provider }.scan(&session, maybe_projections, filters_vec, limit);
+    let plan = ExportedTableProvider { provider }.provider_scan(
+        &session,
+        maybe_projections,
+        filters_vec,
+        limit,
+    );
 
     match plan {
         Ok(mut plan) => {
@@ -163,33 +175,33 @@ unsafe extern "C" fn provider_scan(
     }
 }
 
+impl ConstExportedTableProvider {
+    fn get_private_data(&self) -> &ProviderPrivateData {
+        unsafe { &*((*self.provider).private_data as *const ProviderPrivateData) }
+    }
+
+    pub fn provider_schema(&self) -> FFI_ArrowSchema {
+        println!("Enter exported table provider");
+        let private_data = self.get_private_data();
+        let provider = &private_data.provider;
+
+        println!("about to try from in provider.schema()");
+        // This does silently fail because TableProvider does not return a result
+        // so we expect it to always pass. Maybe some logging should be added.
+        let mut schema = FFI_ArrowSchema::try_from(provider.schema().as_ref())
+            .unwrap_or(FFI_ArrowSchema::empty());
+
+        println!("Found the schema but can we return it?");
+        schema
+    }
+}
+
 impl ExportedTableProvider {
     fn get_private_data(&mut self) -> &mut ProviderPrivateData {
         unsafe { &mut *((*self.provider).private_data as *mut ProviderPrivateData) }
     }
 
-    pub fn schema(&mut self, out: *mut FFI_ArrowSchema) -> i32 {
-        let private_data = self.get_private_data();
-        let provider = &private_data.provider;
-
-        let schema = FFI_ArrowSchema::try_from(provider.schema().as_ref());
-
-        match schema {
-            Ok(schema) => {
-                unsafe { std::ptr::copy(addr_of!(schema), out, 1) };
-                std::mem::forget(schema);
-                0
-            }
-            Err(ref err) => {
-                private_data.last_error = Some(
-                    CString::new(err.to_string()).expect("Error string has a null byte in it."),
-                );
-                get_error_code(err)
-            }
-        }
-    }
-
-    pub fn scan(
+    pub fn provider_scan(
         &mut self,
         session: &SessionState,
         projections: Option<&Vec<usize>>,
@@ -268,5 +280,67 @@ impl FFI_TableProvider {
             scan: None,
             private_data: std::ptr::null_mut(),
         }
+    }
+}
+
+#[async_trait]
+impl TableProvider for FFI_TableProvider {
+    /// Returns the table provider as [`Any`](std::any::Any) so that it can be
+    /// downcast to a specific implementation.
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    /// Get a reference to the schema for this table
+    fn schema(&self) -> SchemaRef {
+        let schema = match self.schema {
+            Some(func) => {
+                println!("About to call the function to get the schema");
+                unsafe {
+                    let v = func(self);
+                    println!("Got the mutalbe ffi_arrow_schmea?");
+                    // func(self).as_ref().and_then(|s| Schema::try_from(s).ok())
+                    Schema::try_from(&func(self)).ok()
+                }
+            }
+            None => None,
+        };
+        Arc::new(schema.unwrap_or(Schema::empty()))
+    }
+
+    /// Get the type of this table for metadata/catalog purposes.
+    fn table_type(&self) -> TableType {
+        TableType::Base
+    }
+
+    /// Create an ExecutionPlan that will scan the table.
+    /// The table provider will be usually responsible of grouping
+    /// the source data into partitions that can be efficiently
+    /// parallelized or distributed.
+    async fn scan(
+        &self,
+        _ctx: &dyn Session,
+        projection: Option<&Vec<usize>>,
+        filters: &[Expr],
+        // limit can be used to reduce the amount scanned
+        // from the datasource as a performance optimization.
+        // If set, it contains the amount of rows needed by the `LogicalPlan`,
+        // The datasource should return *at least* this number of rows if available.
+        _limit: Option<usize>,
+    ) -> Result<Arc<dyn ExecutionPlan>> {
+        Err(datafusion::error::DataFusionError::NotImplemented(
+            "scan not implemented".to_string(),
+        ))
+    }
+
+    /// Tests whether the table provider can make use of a filter expression
+    /// to optimise data retrieval.
+    fn supports_filters_pushdown(
+        &self,
+        filter: &[&Expr],
+    ) -> Result<Vec<TableProviderFilterPushDown>> {
+        Err(datafusion::error::DataFusionError::NotImplemented(
+            "support filter pushdown not implemented".to_string(),
+        ))
     }
 }
