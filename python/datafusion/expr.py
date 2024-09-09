@@ -473,7 +473,7 @@ class Expr:
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(self.expr.null_treatment(null_treatment))
+        return ExprFuncBuilder(self.expr.null_treatment(null_treatment.value))
 
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set the partitioning for a window function.
@@ -518,7 +518,7 @@ class ExprFuncBuilder:
 
     def null_treatment(self, null_treatment: NullTreatment) -> ExprFuncBuilder:
         """Set how nulls are treated for either window or aggregate functions."""
-        return ExprFuncBuilder(self.builder.null_treatment(null_treatment))
+        return ExprFuncBuilder(self.builder.null_treatment(null_treatment.value))
 
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set partitioning for window functions."""

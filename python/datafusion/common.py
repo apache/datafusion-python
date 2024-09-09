@@ -17,13 +17,13 @@
 """Common data types used throughout the DataFusion project."""
 
 from ._internal import common as common_internal
+from enum import Enum
 
 # TODO these should all have proper wrapper classes
 
 DFSchema = common_internal.DFSchema
 DataType = common_internal.DataType
 DataTypeMap = common_internal.DataTypeMap
-NullTreatment = common_internal.NullTreatment
 PythonType = common_internal.PythonType
 RexType = common_internal.RexType
 SqlFunction = common_internal.SqlFunction
@@ -47,3 +47,16 @@ __all__ = [
     "SqlStatistics",
     "SqlFunction",
 ]
+
+
+class NullTreatment(Enum):
+    """Describe how null values are to be treated by functions.
+
+    This is used primarily by aggregate and window functions. It can be set on
+    these functions using the builder approach described in
+    ref:`_window_functions` and ref:`_aggregation` in the online documentation.
+
+    """
+
+    RESPECT_NULLS = common_internal.NullTreatment.RESPECT_NULLS
+    IGNORE_NULLS = common_internal.NullTreatment.IGNORE_NULLS

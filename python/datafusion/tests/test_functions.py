@@ -912,17 +912,64 @@ def test_regr_funcs_sql_2():
 @pytest.mark.parametrize(
     "func, expected",
     [
-        pytest.param(f.regr_slope, pa.array([2], type=pa.float64()), id="regr_slope"),
+        pytest.param(f.regr_slope(column("c2"), column("c1")), [4.6], id="regr_slope"),
         pytest.param(
-            f.regr_intercept, pa.array([0], type=pa.float64()), id="regr_intercept"
+            f.regr_slope(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [8],
+            id="regr_slope_filter",
         ),
-        pytest.param(f.regr_count, pa.array([3], type=pa.uint64()), id="regr_count"),
-        pytest.param(f.regr_r2, pa.array([1], type=pa.float64()), id="regr_r2"),
-        pytest.param(f.regr_avgx, pa.array([2], type=pa.float64()), id="regr_avgx"),
-        pytest.param(f.regr_avgy, pa.array([4], type=pa.float64()), id="regr_avgy"),
-        pytest.param(f.regr_sxx, pa.array([2], type=pa.float64()), id="regr_sxx"),
-        pytest.param(f.regr_syy, pa.array([8], type=pa.float64()), id="regr_syy"),
-        pytest.param(f.regr_sxy, pa.array([4], type=pa.float64()), id="regr_sxy"),
+        pytest.param(
+            f.regr_intercept(column("c2"), column("c1")), [-4], id="regr_intercept"
+        ),
+        pytest.param(
+            f.regr_intercept(
+                column("c2"), column("c1"), filter=column("c1") > literal(2)
+            ),
+            [-16],
+            id="regr_intercept_filter",
+        ),
+        pytest.param(f.regr_count(column("c2"), column("c1")), [4], id="regr_count"),
+        pytest.param(
+            f.regr_count(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [2],
+            id="regr_count_filter",
+        ),
+        pytest.param(f.regr_r2(column("c2"), column("c1")), [0.92], id="regr_r2"),
+        pytest.param(
+            f.regr_r2(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [1.0],
+            id="regr_r2_filter",
+        ),
+        pytest.param(f.regr_avgx(column("c2"), column("c1")), [2.5], id="regr_avgx"),
+        pytest.param(
+            f.regr_avgx(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [3.5],
+            id="regr_avgx_filter",
+        ),
+        pytest.param(f.regr_avgy(column("c2"), column("c1")), [7.5], id="regr_avgy"),
+        pytest.param(
+            f.regr_avgy(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [12.0],
+            id="regr_avgy_filter",
+        ),
+        pytest.param(f.regr_sxx(column("c2"), column("c1")), [5.0], id="regr_sxx"),
+        pytest.param(
+            f.regr_sxx(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [0.5],
+            id="regr_sxx_filter",
+        ),
+        pytest.param(f.regr_syy(column("c2"), column("c1")), [115.0], id="regr_syy"),
+        pytest.param(
+            f.regr_syy(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [32.0],
+            id="regr_syy_filter",
+        ),
+        pytest.param(f.regr_sxy(column("c2"), column("c1")), [23.0], id="regr_sxy"),
+        pytest.param(
+            f.regr_sxy(column("c2"), column("c1"), filter=column("c1") > literal(2)),
+            [4.0],
+            id="regr_sxy_filter",
+        ),
     ],
 )
 def test_regr_funcs_df(func, expected):
@@ -932,38 +979,18 @@ def test_regr_funcs_df(func, expected):
     ctx = SessionContext()
 
     # Create a DataFrame
-    data = {"column1": [1, 2, 3], "column2": [2, 4, 6]}
+    data = {"c1": [1, 2, 3, 4, 5, None], "c2": [2, 4, 8, 16, None, 64]}
     df = ctx.from_pydict(data, name="test_table")
 
     # Perform the regression function using DataFrame API
-    result_df = df.aggregate([], [func(f.col("column2"), f.col("column1"))]).collect()
-
-    # Assertion for DataFrame API result
-    assert result_df[0].column(0) == expected
-
-
-def test_first_last_value(df):
-    df = df.aggregate(
-        [],
-        [
-            f.first_value(column("a")),
-            f.first_value(column("b")),
-            f.first_value(column("d")),
-            f.last_value(column("a")),
-            f.last_value(column("b")),
-            f.last_value(column("d")),
-        ],
-    )
-
-    result = df.collect()
-    result = result[0]
-    assert result.column(0) == pa.array(["Hello"])
-    assert result.column(1) == pa.array([4])
-    assert result.column(2) == pa.array([datetime(2022, 12, 31)])
-    assert result.column(3) == pa.array(["!"])
-    assert result.column(4) == pa.array([6])
-    assert result.column(5) == pa.array([datetime(2020, 7, 2)])
+    df = df.aggregate([], [func.alias("result")])
     df.show()
+
+    expected_dict = {
+        "result": expected,
+    }
+
+    assert df.collect()[0].to_pydict() == expected_dict
 
 
 def test_binary_string_functions(df):

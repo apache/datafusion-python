@@ -18,9 +18,10 @@
 
 from __future__ import annotations
 
-from datafusion._internal import functions as f, common
+from datafusion._internal import functions as f, expr as expr_internal
 from datafusion.expr import CaseBuilder, Expr, WindowFrame
 from datafusion.context import SessionContext
+from datafusion.common import NullTreatment
 
 from typing import Any, Optional
 
@@ -126,7 +127,6 @@ __all__ = [
     "floor",
     "from_unixtime",
     "gcd",
-    "grouping",
     "in_list",
     "initcap",
     "isnan",
@@ -180,6 +180,7 @@ __all__ = [
     "named_struct",
     "nanvl",
     "now",
+    "nth_value",
     "nullif",
     "octet_length",
     "order_by",
@@ -222,6 +223,7 @@ __all__ = [
     "stddev",
     "stddev_pop",
     "stddev_samp",
+    "string_agg",
     "strpos",
     "struct",
     "substr",
@@ -244,6 +246,7 @@ __all__ = [
     "var",
     "var_pop",
     "var_samp",
+    "var_sample",
     "when",
     # Window Functions
     "window",
@@ -256,6 +259,12 @@ __all__ = [
     "cume_dist",
     "ntile",
 ]
+
+
+def expr_list_to_raw_expr_list(
+    expr_list: Optional[list[Expr]],
+) -> Optional[list[expr_internal.Expr]]:
+    return [e.expr for e in expr_list] if expr_list is not None else None
 
 
 def isnan(expr: Expr) -> Expr:
@@ -358,9 +367,18 @@ def col(name: str) -> Expr:
     return Expr(f.col(name))
 
 
-def count_star() -> Expr:
-    """Create a COUNT(1) aggregate expression."""
-    return Expr(f.count_star())
+def count_star(filter: Optional[Expr] = None) -> Expr:
+    """Create a COUNT(1) aggregate expression.
+
+    This aggregate function will count all of the rows in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``distinct``, and ``null_treatment``.
+
+    Args:
+        filter: If provided, only count rows for which the filter is True
+    """
+    return count(Expr.literal(1), filter=filter)
 
 
 def case(expr: Expr) -> CaseBuilder:
@@ -400,8 +418,8 @@ def window(
         df.select(functions.lag(col("a")).partition_by(col("b")).build())
     """
     args = [a.expr for a in args]
-    partition_by = [e.expr for e in partition_by] if partition_by is not None else None
-    order_by = [o.expr for o in order_by] if order_by is not None else None
+    partition_by = expr_list_to_raw_expr_list(partition_by)
+    order_by = expr_list_to_raw_expr_list(order_by)
     window_frame = window_frame.window_frame if window_frame is not None else None
     return Expr(f.window(name, args, partition_by, order_by, window_frame, ctx))
 
@@ -1486,291 +1504,788 @@ def flatten(array: Expr) -> Expr:
 
 
 # aggregate functions
-def approx_distinct(expression: Expr) -> Expr:
-    """Returns the approximate number of distinct values."""
-    return Expr(f.approx_distinct(expression.expr))
+def approx_distinct(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Returns the approximate number of distinct values.
+
+    This aggregate function is similar to :py:func:`count` with distinct set, but it
+    will approximate the number of distinct entries. It may return significantly faster
+    than :py:func:`count` for some DataFrames.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to check for distinct entries
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
 
 
-def approx_median(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the approximate median value."""
-    return Expr(f.approx_median(arg.expr, distinct=distinct))
+def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Returns the approximate median value.
+
+    This aggregate function is similar to :py:func:`median`, but it will only
+    approximate the median. It may return significantly faster for some DataFrames.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to find the median for
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.approx_median(expression.expr, filter=filter_raw))
 
 
 def approx_percentile_cont(
     expression: Expr,
-    percentile: Expr,
-    num_centroids: Expr | None = None,
-    distinct: bool = False,
+    percentile: float,
+    num_centroids: Optional[int] = None,
+    filter: Optional[Expr] = None,
 ) -> Expr:
-    """Returns the value that is approximately at a given percentile of ``expr``."""
-    if num_centroids is None:
-        return Expr(
-            f.approx_percentile_cont(
-                expression.expr, percentile.expr, distinct=distinct, num_centroids=None
-            )
-        )
+    """Returns the value that is approximately at a given percentile of ``expr``.
 
+    This aggregate function assumes the input values form a continuous distribution.
+    Suppose you have a DataFrame which consists of 100 different test scores. If you
+    called this function with a percentile of 0.9, it would return the value of the
+    test score that is above 90% of the other test scores. The returned value may be
+    between two of the values.
+
+    This function uses the [t-digest](https://arxiv.org/abs/1902.04023) algorithm to
+    compute the percentil. You can limit the number of bins used in this algorithm by
+    setting the ``num_centroids`` parameter.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values for which to find the approximate percentile
+        percentile: This must be between 0.0 and 1.0, inclusive
+        num_centroids: Max bin size for the t-digest algorithm
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont(
-            expression.expr,
-            percentile.expr,
-            distinct=distinct,
-            num_centroids=num_centroids.expr,
+            expression.expr, percentile, num_centroids=num_centroids, filter=filter_raw
         )
     )
 
 
 def approx_percentile_cont_with_weight(
-    arg: Expr, weight: Expr, percentile: Expr, distinct: bool = False
+    expression: Expr, weight: Expr, percentile: float, filter: Optional[Expr] = None
 ) -> Expr:
-    """Returns the value of the approximate percentile.
+    """Returns the value of the weighted approximate percentile.
 
-    This function is similar to :py:func:`approx_percentile_cont` except that it uses
-    the associated associated weights.
+    This aggregate function is similar to :py:func:`approx_percentile_cont` except that
+    it uses the associated associated weights.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values for which to find the approximate percentile
+        weight: Relative weight for each of the values in ``expression``
+        percentile: This must be between 0.0 and 1.0, inclusive
+        filter: If provided, only compute against rows for which the filter is True
+
     """
+    filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont_with_weight(
-            arg.expr, weight.expr, percentile.expr, distinct=distinct
+            expression.expr, weight.expr, percentile, filter=filter_raw
         )
     )
 
 
-def array_agg(arg: Expr, distinct: bool = False) -> Expr:
-    """Aggregate values into an array."""
-    return Expr(f.array_agg(arg.expr, distinct=distinct))
+def array_agg(
+    expression: Expr,
+    distinct: bool = False,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Aggregate values into an array.
+
+    Currently ``distinct`` and ``order_by`` cannot be used together. As a work around,
+    consider :py:func:`array_sort` after aggregation.
+    [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``null_treatment``.
+
+    Args:
+        expression: Values to combine into an array
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Order the resultant array values
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.array_agg(
+            expression.expr, distinct=distinct, filter=filter_raw, order_by=order_by_raw
+        )
+    )
 
 
-def avg(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the average value."""
-    return Expr(f.avg(arg.expr, distinct=distinct))
+def avg(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Returns the average value.
+
+    This aggregate function expects a numeric expression and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to combine into an array
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.avg(expression.expr, filter=filter_raw))
 
 
-def corr(value1: Expr, value2: Expr, distinct: bool = False) -> Expr:
-    """Returns the correlation coefficient between ``value1`` and ``value2``."""
-    return Expr(f.corr(value1.expr, value2.expr, distinct=distinct))
+def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Returns the correlation coefficient between ``value1`` and ``value2``.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for correlation
+        value_x: The independent variable for correlation
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.corr(value_y.expr, value_x.expr, filter=filter_raw))
 
 
-def count(args: Expr | list[Expr] | None = None, distinct: bool = False) -> Expr:
-    """Returns the number of rows that match the given arguments."""
-    if args is None:
-        return count(Expr.literal(1), distinct=distinct)
-    if isinstance(args, list):
-        args = [arg.expr for arg in args]
-    elif isinstance(args, Expr):
-        args = [args.expr]
-    return Expr(f.count(*args, distinct=distinct))
+def count(
+    expressions: Expr | list[Expr] | None = None,
+    distinct: bool = False,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Returns the number of rows that match the given arguments.
+
+    This aggregate function will count the non-null rows provided in the expression.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expressions: Argument to perform bitwise calculation on
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    if expressions is None:
+        args = [Expr.literal(1).expr]
+    elif isinstance(expressions, list):
+        args = [arg.expr for arg in expressions]
+    else:
+        args = [expressions.expr]
+
+    return Expr(f.count(*args, distinct=distinct, filter=filter_raw))
 
 
-def covar(y: Expr, x: Expr) -> Expr:
+def covar_pop(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population covariance.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for covariance
+        value_x: The independent variable for covariance
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
+
+
+def covar_samp(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample covariance.
+
+    This aggregate function expects both values to be numeric and will return a float.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        value_y: The dependent variable for covariance
+        value_x: The independent variable for covariance
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
+
+
+def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample covariance.
 
     This is an alias for :py:func:`covar_samp`.
     """
-    return covar_samp(y, x)
+    return covar_samp(value_y, value_x, filter)
 
 
-def covar_pop(y: Expr, x: Expr) -> Expr:
-    """Computes the population covariance."""
-    return Expr(f.covar_pop(y.expr, x.expr))
+def max(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Aggregate function that returns the maximum value of the argument.
 
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-def covar_samp(y: Expr, x: Expr) -> Expr:
-    """Computes the sample covariance."""
-    return Expr(f.covar_samp(y.expr, x.expr))
-
-
-def grouping(arg: Expr, distinct: bool = False) -> Expr:
-    """Indicates if the expression is aggregated or not.
-
-    Returns 1 if the value of the argument is aggregated, 0 if not.
+    Args:
+        expression: The value to find the maximum of
+        filter: If provided, only compute against rows for which the filter is True
     """
-    return Expr(f.grouping(arg.expr, distinct=distinct))
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.max(expression.expr, filter=filter_raw))
 
 
-def max(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the maximum value of the argument."""
-    return Expr(f.max(arg.expr, distinct=distinct))
-
-
-def mean(arg: Expr, distinct: bool = False) -> Expr:
+def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     This is an alias for :py:func:`avg`.
     """
-    return avg(arg, distinct)
+    return avg(expression, filter)
 
 
-def median(arg: Expr) -> Expr:
-    """Computes the median of a set of numbers."""
-    return Expr(f.median(arg.expr))
+def median(
+    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+) -> Expr:
+    """Computes the median of a set of numbers.
+
+    This aggregate function returns the median value of the expression for the given
+    aggregate function.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expression: The value to compute the median of
+        distinct: If True, a single entry for each distinct value will be in the result
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def min(arg: Expr, distinct: bool = False) -> Expr:
-    """Returns the minimum value of the argument."""
-    return Expr(f.min(arg.expr, distinct=distinct))
+def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Returns the minimum value of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.min(expression.expr, filter=filter_raw))
 
 
-def sum(arg: Expr) -> Expr:
-    """Computes the sum of a set of numbers."""
-    return Expr(f.sum(arg.expr))
+def sum(
+    expression: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of a set of numbers.
+
+    This aggregate function expects a numeric expression.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Values to combine into an array
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.sum(expression.expr, filter=filter_raw))
 
 
-def stddev(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the standard deviation of the argument."""
-    return Expr(f.stddev(arg.expr, distinct=distinct))
+def stddev(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the standard deviation of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.stddev(expression.expr, filter=filter_raw))
 
 
-def stddev_pop(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the population standard deviation of the argument."""
-    return Expr(f.stddev_pop(arg.expr, distinct=distinct))
+def stddev_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population standard deviation of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The value to find the minimum of
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
 
 
-def stddev_samp(arg: Expr, distinct: bool = False) -> Expr:
+def stddev_samp(arg: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     This is an alias for :py:func:`stddev`.
     """
-    return stddev(arg, distinct)
+    return stddev(arg, filter=filter)
 
 
-def var(arg: Expr) -> Expr:
+def var(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
     """
-    return var_samp(arg)
+    return var_samp(expression, filter)
 
 
-def var_pop(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the population variance of the argument."""
-    return Expr(f.var_pop(arg.expr, distinct=distinct))
+def var_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the population variance of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The variable to compute the variance for
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.var_pop(expression.expr, filter=filter_raw))
 
 
-def var_samp(arg: Expr) -> Expr:
-    """Computes the sample variance of the argument."""
-    return Expr(f.var_samp(arg.expr))
+def var_samp(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample variance of the argument.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: The variable to compute the variance for
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.var_sample(expression.expr, filter=filter_raw))
 
 
-def regr_avgx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
+def var_sample(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the sample variance of the argument.
+
+    This is an alias for :py:func:`var_samp`.
+    """
+    return var_samp(expression, filter)
+
+
+def regr_avgx(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
     """Computes the average of the independent variable ``x``.
 
-    Only non-null pairs of the inputs are evaluated.
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
     """
-    return Expr(f.regr_avgx(y.expr, x.expr, distinct))
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_avgx(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_avgy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
+def regr_avgy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
     """Computes the average of the dependent variable ``y``.
 
-    Only non-null pairs of the inputs are evaluated.
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
     """
-    return Expr(f.regr_avgy(y.expr, x.expr, distinct))
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_avgy(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_count(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Counts the number of rows in which both expressions are not null."""
-    return Expr(f.regr_count(y.expr, x.expr, distinct))
+def regr_count(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Counts the number of rows in which both expressions are not null.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_count(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_intercept(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the intercept from the linear regression."""
-    return Expr(f.regr_intercept(y.expr, x.expr, distinct))
+def regr_intercept(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the intercept from the linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_intercept(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_r2(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the R-squared value from linear regression."""
-    return Expr(f.regr_r2(y.expr, x.expr, distinct))
+def regr_r2(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the R-squared value from linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_r2(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_slope(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the slope from linear regression."""
-    return Expr(f.regr_slope(y.expr, x.expr, distinct))
+def regr_slope(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the slope from linear regression.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_slope(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_sxx(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of squares of the independent variable ``x``."""
-    return Expr(f.regr_sxx(y.expr, x.expr, distinct))
+def regr_sxx(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of squares of the independent variable ``x``.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_sxx(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_sxy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of products of pairs of numbers."""
-    return Expr(f.regr_sxy(y.expr, x.expr, distinct))
+def regr_sxy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of products of pairs of numbers.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_sxy(y.expr, x.expr, filter=filter_raw))
 
 
-def regr_syy(y: Expr, x: Expr, distinct: bool = False) -> Expr:
-    """Computes the sum of squares of the dependent variable ``y``."""
-    return Expr(f.regr_syy(y.expr, x.expr, distinct))
+def regr_syy(
+    y: Expr,
+    x: Expr,
+    filter: Optional[Expr] = None,
+) -> Expr:
+    """Computes the sum of squares of the dependent variable ``y``.
+
+    This is a linear regression aggregate function. Only non-null pairs of the inputs
+    are evaluated.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        y: The linear regression dependent variable
+        x: The linear regression independent variable
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(f.regr_syy(y.expr, x.expr, filter=filter_raw))
 
 
 def first_value(
-    arg: Expr,
-    distinct: bool = False,
-    filter: Optional[bool] = None,
+    expression: Expr,
+    filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
-    null_treatment: Optional[common.NullTreatment] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
-    """Returns the first value in a group of values."""
-    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+    """Returns the first value in a group of values.
+
+    This aggregate function will return the first value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
 
     return Expr(
         f.first_value(
-            arg.expr,
-            distinct=distinct,
-            filter=filter,
-            order_by=order_by_cols,
-            null_treatment=null_treatment,
+            expression.expr,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment.value,
         )
     )
 
 
 def last_value(
-    arg: Expr,
-    distinct: bool = False,
-    filter: Optional[bool] = None,
+    expression: Expr,
+    filter: Optional[Expr] = None,
     order_by: Optional[list[Expr]] = None,
-    null_treatment: Optional[common.NullTreatment] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
 
-    To set parameters on this expression, use ``.order_by()``, ``.distinct()``,
-    ``.filter()``, or ``.null_treatment()``.
+    This aggregate function will return the last value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
     """
-    order_by_cols = [e.expr for e in order_by] if order_by is not None else None
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
 
     return Expr(
         f.last_value(
-            arg.expr,
-            distinct=distinct,
-            filter=filter,
-            order_by=order_by_cols,
-            null_treatment=null_treatment,
+            expression.expr,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment.value,
         )
     )
 
 
-def bit_and(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise AND of the argument."""
-    return Expr(f.bit_and(arg.expr, distinct=distinct))
+def nth_value(
+    expression: Expr,
+    n: int,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+    null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
+) -> Expr:
+    """Returns the n-th value in a group of values.
+
+    This aggregate function will return the n-th value in the partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the option ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        n: Index of value to return. Starts at 1.
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Set the ordering of the expression to evaluate
+        null_treatment: Assign whether to respect or ignull null values.
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.nth_value(
+            expression.expr,
+            n,
+            filter=filter_raw,
+            order_by=order_by_raw,
+            null_treatment=null_treatment.value,
+        )
+    )
 
 
-def bit_or(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise OR of the argument."""
-    return Expr(f.bit_or(arg.expr, distinct=distinct))
+def bit_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the bitwise AND of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_and(expression.expr, filter=filter_raw))
 
 
-def bit_xor(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the bitwise XOR of the argument."""
-    return Expr(f.bit_xor(arg.expr, distinct=distinct))
+def bit_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the bitwise OR of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_or(expression.expr, filter=filter_raw))
 
 
-def bool_and(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean AND of the argument."""
-    return Expr(f.bool_and(arg.expr, distinct=distinct))
+def bit_xor(
+    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+) -> Expr:
+    """Computes the bitwise XOR of the argument.
+
+    This aggregate function will bitwise compare every value in the input partition.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by`` and ``null_treatment``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        distinct: If True, evaluate each unique value of expression only once
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def bool_or(arg: Expr, distinct: bool = False) -> Expr:
-    """Computes the boolean OR of the argument."""
-    return Expr(f.bool_or(arg.expr, distinct=distinct))
+def bool_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the boolean AND of the argument.
+
+    This aggregate function will compare every value in the input partition. These are
+    expected to be boolean values.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform calculation on
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bool_and(expression.expr, filter=filter_raw))
+
+
+def bool_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+    """Computes the boolean OR of the argument.
+
+    This aggregate function will compare every value in the input partition. These are
+    expected to be boolean values.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+    Args:
+        expression: Argument to perform calculation on
+        filter: If provided, only compute against rows for which the filter is True
+    """
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(f.bool_or(expression.expr, filter=filter_raw))
 
 
 def lead(
@@ -2105,5 +2620,39 @@ def ntile(
             Expr.literal(groups).expr,
             partition_by=partition_cols,
             order_by=order_cols,
+        )
+    )
+
+
+def string_agg(
+    expression: Expr,
+    delimiter: str,
+    filter: Optional[Expr] = None,
+    order_by: Optional[list[Expr]] = None,
+) -> Expr:
+    """Concatenates the input strings.
+
+    This aggregate function will concatenate input strings, ignoring null values, and
+    seperating them with the specified delimiter. Non-string values will be converted to
+    their string equivalents.
+
+    If using the builder functions described in ref:`_aggregation` this function ignores
+    the options ``distinct`` and ``null_treatment``.
+
+    Args:
+        expression: Argument to perform bitwise calculation on
+        delimiter: Text to place between each value of expression
+        filter: If provided, only compute against rows for which the filter is True
+        order_by: Set the ordering of the expression to evaluate
+    """
+    order_by_raw = expr_list_to_raw_expr_list(order_by)
+    filter_raw = filter.expr if filter is not None else None
+
+    return Expr(
+        f.string_agg(
+            expression.expr,
+            delimiter,
+            filter=filter_raw,
+            order_by=order_by_raw,
         )
     )

@@ -35,305 +35,27 @@ use datafusion::functions_aggregate;
 use datafusion::logical_expr::expr::Alias;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion::logical_expr::{
-    expr::{find_df_window_func, AggregateFunction, Sort, WindowFunction},
+    expr::{find_df_window_func, Sort, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
 
-#[pyfunction]
-pub fn approx_distinct(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::approx_distinct(expression.expr).into()
-}
-
-#[pyfunction]
-pub fn approx_median(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::approx_median(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn approx_percentile_cont(
-    expression: PyExpr,
-    percentile: PyExpr,
-    distinct: bool,
-    num_centroids: Option<PyExpr>, // enforces optional arguments at the end, currently
-) -> PyResult<PyExpr> {
-    let args = if let Some(num_centroids) = num_centroids {
-        vec![expression.expr, percentile.expr, num_centroids.expr]
-    } else {
-        vec![expression.expr, percentile.expr]
-    };
-    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
-    let expr = udaf.call(args);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn approx_percentile_cont_with_weight(
-    expression: PyExpr,
-    weight: PyExpr,
-    percentile: PyExpr,
-    distinct: bool,
-) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
-        expression.expr,
-        weight.expr,
-        percentile.expr,
-    );
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn avg(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::avg(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bit_and(expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bit_and(expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bit_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bit_or(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bit_xor(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bit_xor(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bool_and(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bool_and(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn bool_or(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::bool_or(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn corr(y: PyExpr, x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::corr(y.expr, x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn grouping(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::grouping(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn sum(args: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::sum(args.expr).into()
-}
-
-#[pyfunction]
-pub fn covar_samp(y: PyExpr, x: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::covar_samp(y.expr, x.expr).into()
-}
-
-#[pyfunction]
-pub fn covar_pop(y: PyExpr, x: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::covar_pop(y.expr, x.expr).into()
-}
-
-#[pyfunction]
-pub fn median(arg: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::median(arg.expr).into()
-}
-
-#[pyfunction]
-pub fn stddev(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::stddev(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn stddev_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::stddev_pop(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn var_samp(expression: PyExpr) -> PyExpr {
-    functions_aggregate::expr_fn::var_sample(expression.expr).into()
-}
-
-#[pyfunction]
-pub fn var_pop(expression: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::var_pop(expression.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_avgx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_avgx(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_avgy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_avgy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_count(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_count(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_intercept(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_intercept(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_r2(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_r2(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_slope(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_slope(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_sxx(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_sxx(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_sxy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_sxy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
-#[pyfunction]
-pub fn regr_syy(expr_y: PyExpr, expr_x: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::regr_syy(expr_y.expr, expr_x.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
-    distinct: bool,
+    distinct: Option<bool>,
     filter: Option<PyExpr>,
     order_by: Option<Vec<PyExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, we can guarantee initializing
-    // a builder with an `order_by` default of empty vec
-    let order_by = order_by
-        .map(|x| x.into_iter().map(|x| x.expr).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let mut builder = agg_fn.order_by(order_by);
+    // a builder with an `null_treatment` with option None
+    let mut builder = agg_fn.null_treatment(None);
 
-    if distinct {
+    if let Some(order_by_cols) = order_by {
+        let order_by_cols = to_sort_expressions(order_by_cols);
+        builder = builder.order_by(order_by_cols);
+    }
+
+    if let Some(true) = distinct {
         builder = builder.distinct();
     }
 
@@ -341,37 +63,9 @@ fn add_builder_fns_to_aggregate(
         builder = builder.filter(filter.expr);
     }
 
-    // would be nice if all the options builder methods accepted Option<T> ...
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
     Ok(builder.build()?.into())
-}
-
-#[pyfunction]
-pub fn first_value(
-    expr: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
-
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
-}
-
-#[pyfunction]
-pub fn last_value(
-    expr: PyExpr,
-    distinct: bool,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    let agg_fn = functions_aggregate::expr_fn::last_value(vec![expr.expr]);
-
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
 #[pyfunction]
@@ -505,25 +199,6 @@ fn col(name: &str) -> PyResult<PyExpr> {
     })
 }
 
-// TODO: should we just expose this in python?
-/// Create a COUNT(1) aggregate expression
-#[pyfunction]
-fn count_star() -> PyExpr {
-    functions_aggregate::expr_fn::count(lit(1)).into()
-}
-
-/// Wrapper for [`functions_aggregate::expr_fn::count`]
-/// Count the number of non-null values in the column
-#[pyfunction]
-fn count(expr: PyExpr, distinct: bool) -> PyResult<PyExpr> {
-    let expr = functions_aggregate::expr_fn::count(expr.expr);
-    if distinct {
-        Ok(expr.distinct().build()?.into())
-    } else {
-        Ok(expr.into())
-    }
-}
-
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
 #[pyfunction]
 fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
@@ -646,24 +321,46 @@ fn window(
     })
 }
 
+// Generates a [pyo3] wrapper for associated aggregate functions.
+// All of the builder options are exposed to the python internal
+// function and we rely on the wrappers to only use those that
+// are appropriate.
 macro_rules! aggregate_function {
-    ($NAME: ident, $FUNC: path) => {
-        aggregate_function!($NAME, $FUNC, stringify!($NAME));
+    ($NAME: ident) => {
+        aggregate_function!($NAME, expr);
     };
-    ($NAME: ident, $FUNC: path, $DOC: expr) => {
-        #[doc = $DOC]
+    ($NAME: ident, $($arg:ident)*) => {
         #[pyfunction]
-        #[pyo3(signature = (*args, distinct=false))]
-        fn $NAME(args: Vec<PyExpr>, distinct: bool) -> PyExpr {
-            let expr = datafusion::logical_expr::Expr::AggregateFunction(AggregateFunction {
-                func: $FUNC(),
-                args: args.into_iter().map(|e| e.into()).collect(),
-                distinct,
-                filter: None,
-                order_by: None,
-                null_treatment: None,
-            });
-            expr.into()
+        fn $NAME(
+            $($arg: PyExpr),*,
+            distinct: Option<bool>,
+            filter: Option<PyExpr>,
+            order_by: Option<Vec<PyExpr>>,
+            null_treatment: Option<NullTreatment>
+        ) -> PyResult<PyExpr> {
+            let agg_fn = functions_aggregate::expr_fn::$NAME($($arg.into()),*);
+
+            add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+        }
+    };
+}
+
+macro_rules! aggregate_function_vec_args {
+    ($NAME: ident) => {
+        aggregate_function_vec_args!($NAME, expr);
+    };
+    ($NAME: ident, $($arg:ident)*) => {
+        #[pyfunction]
+        fn $NAME(
+            $($arg: PyExpr),*,
+            distinct: Option<bool>,
+            filter: Option<PyExpr>,
+            order_by: Option<Vec<PyExpr>>,
+            null_treatment: Option<NullTreatment>
+        ) -> PyResult<PyExpr> {
+            let agg_fn = functions_aggregate::expr_fn::$NAME(vec![$($arg.into()),*]);
+
+            add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
         }
     };
 }
@@ -891,9 +588,120 @@ array_fn!(array_resize, array size value);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
-aggregate_function!(array_agg, functions_aggregate::array_agg::array_agg_udaf);
-aggregate_function!(max, functions_aggregate::min_max::max_udaf);
-aggregate_function!(min, functions_aggregate::min_max::min_udaf);
+aggregate_function!(array_agg);
+aggregate_function!(max);
+aggregate_function!(min);
+aggregate_function!(avg);
+aggregate_function!(sum);
+aggregate_function!(bit_and);
+aggregate_function!(bit_or);
+aggregate_function!(bit_xor);
+aggregate_function!(bool_and);
+aggregate_function!(bool_or);
+aggregate_function!(corr, y x);
+aggregate_function!(count);
+aggregate_function!(covar_samp, y x);
+aggregate_function!(covar_pop, y x);
+aggregate_function!(median);
+aggregate_function!(regr_slope, y x);
+aggregate_function!(regr_intercept, y x);
+aggregate_function!(regr_count, y x);
+aggregate_function!(regr_r2, y x);
+aggregate_function!(regr_avgx, y x);
+aggregate_function!(regr_avgy, y x);
+aggregate_function!(regr_sxx, y x);
+aggregate_function!(regr_syy, y x);
+aggregate_function!(regr_sxy, y x);
+aggregate_function!(stddev);
+aggregate_function!(stddev_pop);
+aggregate_function!(var_sample);
+aggregate_function!(var_pop);
+aggregate_function!(approx_distinct);
+aggregate_function!(approx_median);
+
+// Code is commented out since grouping is not yet implemented
+// https://github.com/apache/datafusion-python/issues/861
+// aggregate_function!(grouping);
+
+#[pyfunction]
+pub fn approx_percentile_cont(
+    expression: PyExpr,
+    percentile: f64,
+    num_centroids: Option<i64>, // enforces optional arguments at the end, currently
+    filter: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    let args = if let Some(num_centroids) = num_centroids {
+        vec![expression.expr, lit(percentile), lit(num_centroids)]
+    } else {
+        vec![expression.expr, lit(percentile)]
+    };
+    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
+    let agg_fn = udaf.call(args);
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
+
+#[pyfunction]
+pub fn approx_percentile_cont_with_weight(
+    expression: PyExpr,
+    weight: PyExpr,
+    percentile: f64,
+    filter: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
+        expression.expr,
+        weight.expr,
+        lit(percentile),
+    );
+
+    add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
+}
+
+aggregate_function_vec_args!(last_value);
+
+// We handle first_value explicitly because the signature expects an order_by
+// https://github.com/apache/datafusion/issues/12376
+#[pyfunction]
+pub fn first_value(
+    expr: PyExpr,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
+
+// nth_value requires a non-expr argument
+#[pyfunction]
+pub fn nth_value(
+    expr: PyExpr,
+    n: i64,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(vec![expr.expr, lit(n)]);
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
+
+// string_agg requires a non-expr argument
+#[pyfunction]
+pub fn string_agg(
+    expr: PyExpr,
+    delimiter: String,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PyExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    let agg_fn = datafusion::functions_aggregate::string_agg::string_agg(expr.expr, lit(delimiter));
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
 
 fn add_builder_fns_to_window(
     window_fn: Expr,
@@ -1042,7 +850,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(cosh))?;
     m.add_wrapped(wrap_pyfunction!(cot))?;
     m.add_wrapped(wrap_pyfunction!(count))?;
-    m.add_wrapped(wrap_pyfunction!(count_star))?;
     m.add_wrapped(wrap_pyfunction!(covar_pop))?;
     m.add_wrapped(wrap_pyfunction!(covar_samp))?;
     m.add_wrapped(wrap_pyfunction!(current_date))?;
@@ -1059,7 +866,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(floor))?;
     m.add_wrapped(wrap_pyfunction!(from_unixtime))?;
     m.add_wrapped(wrap_pyfunction!(gcd))?;
-    m.add_wrapped(wrap_pyfunction!(grouping))?;
+    // m.add_wrapped(wrap_pyfunction!(grouping))?;
     m.add_wrapped(wrap_pyfunction!(in_list))?;
     m.add_wrapped(wrap_pyfunction!(initcap))?;
     m.add_wrapped(wrap_pyfunction!(isnan))?;
@@ -1113,6 +920,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(starts_with))?;
     m.add_wrapped(wrap_pyfunction!(stddev))?;
     m.add_wrapped(wrap_pyfunction!(stddev_pop))?;
+    m.add_wrapped(wrap_pyfunction!(string_agg))?;
     m.add_wrapped(wrap_pyfunction!(strpos))?;
     m.add_wrapped(wrap_pyfunction!(r#struct))?; // Use raw identifier since struct is a keyword
     m.add_wrapped(wrap_pyfunction!(substr))?;
@@ -1134,7 +942,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(upper))?;
     m.add_wrapped(wrap_pyfunction!(self::uuid))?; // Use self to avoid name collision
     m.add_wrapped(wrap_pyfunction!(var_pop))?;
-    m.add_wrapped(wrap_pyfunction!(var_samp))?;
+    m.add_wrapped(wrap_pyfunction!(var_sample))?;
     m.add_wrapped(wrap_pyfunction!(window))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgx))?;
     m.add_wrapped(wrap_pyfunction!(regr_avgy))?;
@@ -1147,6 +955,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(regr_syy))?;
     m.add_wrapped(wrap_pyfunction!(first_value))?;
     m.add_wrapped(wrap_pyfunction!(last_value))?;
+    m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;
