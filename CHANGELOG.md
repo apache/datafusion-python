@@ -19,6 +19,51 @@
 
 # DataFusion Python Changelog
 
+## [41.0.0](https://github.com/apache/datafusion-python/tree/41.0.0) (2024-09-09)
+
+This release consists of 19 commits from 6 contributors. See credits at the end of this changelog for more information.
+
+**Implemented enhancements:**
+
+- feat: enable list of paths for read_csv [#824](https://github.com/apache/datafusion-python/pull/824) (mesejo)
+- feat: better exception and message for table not found [#851](https://github.com/apache/datafusion-python/pull/851) (mesejo)
+- feat: make cast accept built-in Python types [#858](https://github.com/apache/datafusion-python/pull/858) (mesejo)
+
+**Other:**
+
+- chore: Prepare for 40.0.0 release [#801](https://github.com/apache/datafusion-python/pull/801) (andygrove)
+- Add typing-extensions dependency to pyproject [#805](https://github.com/apache/datafusion-python/pull/805) (timsaucer)
+- Upgrade deps to datafusion 41 [#802](https://github.com/apache/datafusion-python/pull/802) (Michael-J-Ward)
+- Fix SessionContext init with only SessionConfig [#827](https://github.com/apache/datafusion-python/pull/827) (jcrist)
+- build(deps): upgrade actions/{upload,download}-artifact@v3 to v4 [#829](https://github.com/apache/datafusion-python/pull/829) (Michael-J-Ward)
+- Run ruff format in CI [#837](https://github.com/apache/datafusion-python/pull/837) (timsaucer)
+- Add PyCapsule support for Arrow import and export [#825](https://github.com/apache/datafusion-python/pull/825) (timsaucer)
+- Feature/expose when function [#836](https://github.com/apache/datafusion-python/pull/836) (timsaucer)
+- Add Window Functions for use with function builder [#808](https://github.com/apache/datafusion-python/pull/808) (timsaucer)
+- chore: fix typos [#844](https://github.com/apache/datafusion-python/pull/844) (mesejo)
+- build(ci): use proper mac runners [#841](https://github.com/apache/datafusion-python/pull/841) (Michael-J-Ward)
+- Set of small features [#839](https://github.com/apache/datafusion-python/pull/839) (timsaucer)
+- chore: fix docstrings, typos [#852](https://github.com/apache/datafusion-python/pull/852) (mesejo)
+- chore: Use datafusion re-exported dependencies [#856](https://github.com/apache/datafusion-python/pull/856) (emgeee)
+- add guidelines on separating python and rust code [#860](https://github.com/apache/datafusion-python/pull/860) (Michael-J-Ward)
+- Update Aggregate functions to take builder parameters [#859](https://github.com/apache/datafusion-python/pull/859) (timsaucer)
+
+## Credits
+
+Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) per contributor.
+
+```
+     7  Tim Saucer
+     5  Daniel Mesejo
+     4  Michael J Ward
+     1  Andy Grove
+     1  Jim Crist-Harif
+     1  Matt Green
+```
+
+Thank you also to everyone who contributed in other ways such as filing issues, reviewing PRs, and providing feedback on this release.
+
+
 ## [40.0.0](https://github.com/apache/datafusion-python/tree/40.0.0) (2024-08-09)
 
 This release consists of 18 commits from 4 contributors. See credits at the end of this changelog for more information.
