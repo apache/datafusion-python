@@ -1,6 +1,6 @@
-use std::ffi::{c_void, CString};
+use std::{ffi::{c_void, CString}, sync::Arc};
 
-use datafusion::prelude::SessionConfig;
+use datafusion::{catalog::Session, prelude::SessionConfig};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -26,5 +26,21 @@ struct ExportedSessionConfig {
 impl ExportedSessionConfig {
     fn get_private_data(&mut self) -> &mut SessionConfigPrivateData {
         unsafe { &mut *((*self.session).private_data as *mut SessionConfigPrivateData) }
+    }
+}
+
+impl FFI_SessionConfig {
+    /// Creates a new [`FFI_TableProvider`].
+    pub fn new(session: &dyn Session) -> Self {
+        let config = session.config().clone();
+        let private_data = Box::new(SessionConfigPrivateData {
+            config,
+            last_error: None,
+        });
+
+        Self {
+            version: 2,
+            private_data: Box::into_raw(private_data) as *mut c_void,
+        }
     }
 }

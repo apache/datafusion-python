@@ -37,12 +37,12 @@ pub struct FFI_TableProvider {
     pub schema: Option<unsafe extern "C" fn(provider: *const FFI_TableProvider) -> FFI_ArrowSchema>,
     pub scan: Option<
         unsafe extern "C" fn(
-            provider: *mut FFI_TableProvider,
-            session_config: *mut FFI_SessionConfig,
+            provider: *const FFI_TableProvider,
+            session_config: *const FFI_SessionConfig,
             n_projections: c_int,
-            projections: *mut c_int,
+            projections: *const c_int,
             n_filters: c_int,
-            filters: *mut *const c_char,
+            filters: *const *const c_char,
             limit: c_int,
             out: *mut FFI_ExecutionPlan,
         ) -> c_int,
@@ -58,25 +58,20 @@ struct ProviderPrivateData {
     last_error: Option<CString>,
 }
 
-struct ExportedTableProvider {
-    provider: *mut FFI_TableProvider,
-}
-struct ConstExportedTableProvider {
-    provider: *const FFI_TableProvider,
-}
+struct ExportedTableProvider(*const FFI_TableProvider);
 
 // The callback used to get array schema
 unsafe extern "C" fn provider_schema(provider: *const FFI_TableProvider) -> FFI_ArrowSchema {
-    ConstExportedTableProvider { provider }.provider_schema()
+    ExportedTableProvider(provider).provider_schema()
 }
 
 unsafe extern "C" fn provider_scan(
-    provider: *mut FFI_TableProvider,
-    session_config: *mut FFI_SessionConfig,
+    provider: *const FFI_TableProvider,
+    session_config: *const FFI_SessionConfig,
     n_projections: c_int,
-    projections: *mut c_int,
+    projections: *const c_int,
     n_filters: c_int,
-    filters: *mut *const c_char,
+    filters: *const *const c_char,
     limit: c_int,
     mut out: *mut FFI_ExecutionPlan,
 ) -> c_int {
@@ -104,7 +99,7 @@ unsafe extern "C" fn provider_scan(
 
     let limit = limit.try_into().ok();
 
-    let plan = ExportedTableProvider { provider }.provider_scan(
+    let plan = ExportedTableProvider(provider).provider_scan(
         &session,
         maybe_projections,
         filters_vec,
@@ -120,9 +115,9 @@ unsafe extern "C" fn provider_scan(
     }
 }
 
-impl ConstExportedTableProvider {
+impl ExportedTableProvider {
     fn get_private_data(&self) -> &ProviderPrivateData {
-        unsafe { &*((*self.provider).private_data as *const ProviderPrivateData) }
+        unsafe { &*((*self.0).private_data as *const ProviderPrivateData) }
     }
 
     pub fn provider_schema(&self) -> FFI_ArrowSchema {
@@ -132,12 +127,6 @@ impl ConstExportedTableProvider {
         // This does silently fail because TableProvider does not return a result
         // so we expect it to always pass. Maybe some logging should be added.
         FFI_ArrowSchema::try_from(provider.schema().as_ref()).unwrap_or(FFI_ArrowSchema::empty())
-    }
-}
-
-impl ExportedTableProvider {
-    fn get_private_data(&mut self) -> &mut ProviderPrivateData {
-        unsafe { &mut *((*self.provider).private_data as *mut ProviderPrivateData) }
     }
 
     pub fn provider_scan(
@@ -250,22 +239,46 @@ impl TableProvider for FFI_TableProvider {
     /// parallelized or distributed.
     async fn scan(
         &self,
-        _ctx: &dyn Session,
+        session: &dyn Session,
         projection: Option<&Vec<usize>>,
         filters: &[Expr],
         // limit can be used to reduce the amount scanned
         // from the datasource as a performance optimization.
         // If set, it contains the amount of rows needed by the `LogicalPlan`,
         // The datasource should return *at least* this number of rows if available.
-        _limit: Option<usize>,
+        limit: Option<usize>,
     ) -> Result<Arc<dyn ExecutionPlan>> {
         let scan_fn = self.scan.ok_or(DataFusionError::NotImplemented(
             "Scan not defined on FFI_TableProvider".to_string(),
         ))?;
 
-        Err(datafusion::error::DataFusionError::NotImplemented(
-            "scan not implemented".to_string(),
-        ))
+        let session_config = FFI_SessionConfig::new(session);
+
+        let n_projections = projection.map(|p| p.len()).unwrap_or(0) as c_int;
+        let projections: Vec<c_int> = projection.map(|p| p.iter().map(|v| *v as c_int).collect()).unwrap_or_default();
+        let projections_ptr = projections.as_ptr();
+
+        let n_filters = filters.len() as c_int;
+        let filters: Vec<CString> = filters.iter().filter_map(|f| CString::new(f.to_string()).ok()).collect();
+        let filters_ptr: Vec<*const i8> = filters.iter()
+            .map(|s| s.as_ptr())
+            .collect();
+
+        let limit = match limit {
+            Some(l) => l as c_int,
+            None => -1,
+        };
+
+        let mut out = FFI_ExecutionPlan::empty();
+
+        let err_code = unsafe {
+            scan_fn(self, &session_config, n_projections, projections_ptr, n_filters, filters_ptr.as_ptr(), limit, &mut out)
+        };
+
+        match err_code {
+            0 => Ok(Arc::new(out)),
+            _ => Err(datafusion::error::DataFusionError::Internal("Unable to perform scan via FFI".to_string()))
+        }
     }
 
     /// Tests whether the table provider can make use of a filter expression
