@@ -70,7 +70,7 @@ Module Contents
    .. py:method:: _repr_html_() -> str
 
 
-   .. py:method:: aggregate(group_by: list[datafusion.expr.Expr], aggs: list[datafusion.expr.Expr]) -> DataFrame
+   .. py:method:: aggregate(group_by: list[datafusion.expr.Expr] | datafusion.expr.Expr, aggs: list[datafusion.expr.Expr] | datafusion.expr.Expr) -> DataFrame
 
       Aggregates the rows of the current DataFrame.
 
