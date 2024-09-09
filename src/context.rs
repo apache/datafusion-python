@@ -583,21 +583,22 @@ impl PySessionContext {
 
             println!("Found provider version {}", provider.version);
 
-            if let Some(s) = provider.schema {
-                let mut schema = FFI_ArrowSchema::empty();
+            let schema = provider.schema();
+            println!("Got schema through TableProvider trait {}", schema);
 
-                let ret_code = unsafe { s(&mut provider, &mut schema) };
+            // if let Some(s) = provider.schema {
+            //     let mut schema = s(provider);
 
-                if ret_code == 0 {
-                    let schema = Schema::try_from(&schema)
-                        .map_err(|e| PyValueError::new_err(e.to_string()))?;
-                    println!("got schema {}", schema);
-                } else {
-                    return Err(PyValueError::new_err(format!(
-                        "Cannot get schema from input stream. Error code: {ret_code:?}"
-                    )));
-                }
-            }
+            //     if ret_code == 0 {
+            //         let schema = Schema::try_from(&schema)
+            //             .map_err(|e| PyValueError::new_err(e.to_string()))?;
+            //         println!("got schema {}", schema);
+            //     } else {
+            //         return Err(PyValueError::new_err(format!(
+            //             "Cannot get schema from input stream. Error code: {ret_code:?}"
+            //         )));
+            //     }
+            // }
         }
         Ok(())
     }
