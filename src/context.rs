@@ -38,7 +38,7 @@ use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
 use crate::expr::sort_expr::PySortExpr;
 use crate::expr::PyExpr;
-use crate::ffi::FFI_TableProvider;
+use crate::ffi::table_provider::FFI_TableProvider;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -579,26 +579,14 @@ impl PySessionContext {
             let capsule = capsule.downcast::<PyCapsule>()?;
             // validate_pycapsule(capsule, "arrow_array_stream")?;
 
-            let mut provider = unsafe { FFI_TableProvider::from_raw(capsule.pointer() as _) };
+            let provider = unsafe { FFI_TableProvider::from_raw(capsule.pointer() as _) };
 
             println!("Found provider version {}", provider.version);
 
             let schema = provider.schema();
             println!("Got schema through TableProvider trait {}", schema);
 
-            // if let Some(s) = provider.schema {
-            //     let mut schema = s(provider);
-
-            //     if ret_code == 0 {
-            //         let schema = Schema::try_from(&schema)
-            //             .map_err(|e| PyValueError::new_err(e.to_string()))?;
-            //         println!("got schema {}", schema);
-            //     } else {
-            //         return Err(PyValueError::new_err(format!(
-            //             "Cannot get schema from input stream. Error code: {ret_code:?}"
-            //         )));
-            //     }
-            // }
+            let _ = self.ctx.register_table(name, Arc::new(provider))?;
         }
         Ok(())
     }
