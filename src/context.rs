@@ -21,6 +21,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use arrow::array::RecordBatchReader;
+use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
 use datafusion::execution::session_state::SessionStateBuilder;
@@ -36,6 +37,8 @@ use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
 use crate::expr::sort_expr::PySortExpr;
+use crate::expr::PyExpr;
+use crate::ffi::FFI_TableProvider;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -54,11 +57,9 @@ use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
-use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{
-    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
-};
+use datafusion::datasource::{provider, MemTable};
+use datafusion::execution::context::{DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::ReadOptions;
@@ -67,7 +68,7 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use pyo3::types::{PyDict, PyList, PyTuple};
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -563,6 +564,41 @@ impl PySessionContext {
         self.ctx
             .deregister_table(name)
             .map_err(DataFusionError::from)?;
+        Ok(())
+    }
+
+    /// Construct datafusion dataframe from Arrow Table
+    pub fn register_table_provider(
+        &mut self,
+        name: &str,
+        provider: Bound<'_, PyAny>,
+        py: Python,
+    ) -> PyResult<()> {
+        if provider.hasattr("__datafusion_table_provider__")? {
+            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>()?;
+            // validate_pycapsule(capsule, "arrow_array_stream")?;
+
+            let mut provider = unsafe { FFI_TableProvider::from_raw(capsule.pointer() as _) };
+
+            println!("Found provider version {}", provider.version);
+
+            if let Some(s) = provider.schema {
+                let mut schema = FFI_ArrowSchema::empty();
+
+                let ret_code = unsafe { s(&mut provider, &mut schema) };
+
+                if ret_code == 0 {
+                    let schema = Schema::try_from(&schema)
+                        .map_err(|e| PyValueError::new_err(e.to_string()))?;
+                    println!("got schema {}", schema);
+                } else {
+                    return Err(PyValueError::new_err(format!(
+                        "Cannot get schema from input stream. Error code: {ret_code:?}"
+                    )));
+                }
+            }
+        }
         Ok(())
     }
 

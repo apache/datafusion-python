@@ -61,6 +61,8 @@ mod udf;
 mod udwf;
 pub mod utils;
 
+pub mod ffi;
+
 #[cfg(feature = "mimalloc")]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
