@@ -756,16 +756,6 @@ pub fn lag(
 }
 
 #[pyfunction]
-pub fn row_number(
-    partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
-) -> PyResult<PyExpr> {
-    let window_fn = window_function::row_number();
-
-    add_builder_fns_to_window(window_fn, partition_by, order_by)
-}
-
-#[pyfunction]
 pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
@@ -1002,7 +992,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;
     m.add_wrapped(wrap_pyfunction!(lag))?;
-    m.add_wrapped(wrap_pyfunction!(row_number))?;
     m.add_wrapped(wrap_pyfunction!(rank))?;
     m.add_wrapped(wrap_pyfunction!(dense_rank))?;
     m.add_wrapped(wrap_pyfunction!(percent_rank))?;
