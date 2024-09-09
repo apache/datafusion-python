@@ -1,7 +1,6 @@
 use std::{
     any::Any,
     ffi::{c_char, c_int, c_void, CStr, CString},
-    ptr::{addr_of, addr_of_mut},
     sync::Arc,
 };
 
@@ -14,73 +13,20 @@ use async_trait::async_trait;
 use datafusion::{
     catalog::{Session, TableProvider},
     common::DFSchema,
+    datasource::TableType,
+    error::DataFusionError,
     execution::{context::SessionState, session_state::SessionStateBuilder},
+    logical_expr::TableProviderFilterPushDown,
     physical_plan::ExecutionPlan,
-    prelude::{Expr, SessionConfig},
-};
-use datafusion::{
-    common::Result, datasource::TableType, logical_expr::TableProviderFilterPushDown,
+    prelude::Expr,
 };
 use tokio::runtime::Runtime;
 
-#[repr(C)]
-#[derive(Debug)]
-#[allow(non_camel_case_types)]
-pub enum FFI_Constraint {
-    /// Columns with the given indices form a composite primary key (they are
-    /// jointly unique and not nullable):
-    PrimaryKey(Vec<usize>),
-    /// Columns with the given indices form a composite unique key:
-    Unique(Vec<usize>),
-}
-
-#[repr(C)]
-#[derive(Debug)]
-#[allow(missing_docs)]
-#[allow(non_camel_case_types)]
-pub struct FFI_ExecutionPlan {
-    pub private_data: *mut c_void,
-}
-
-unsafe impl Send for FFI_ExecutionPlan {}
-
-struct ExecutionPlanPrivateData {
-    plan: Arc<dyn ExecutionPlan + Send>,
-    last_error: Option<CString>,
-}
-
-#[repr(C)]
-#[derive(Debug)]
-#[allow(missing_docs)]
-#[allow(non_camel_case_types)]
-pub struct FFI_SessionConfig {
-    pub version: i64,
-
-    pub private_data: *mut c_void,
-}
-
-unsafe impl Send for FFI_SessionConfig {}
-
-struct SessionConfigPrivateData {
-    config: SessionConfig,
-    last_error: Option<CString>,
-}
-
-struct ExportedSessionConfig {
-    session: *mut FFI_SessionConfig,
-}
-
-impl ExportedSessionConfig {
-    fn get_private_data(&mut self) -> &mut SessionConfigPrivateData {
-        unsafe { &mut *((*self.session).private_data as *mut SessionConfigPrivateData) }
-    }
-}
-
-#[repr(C)]
-#[derive(Debug)]
-#[allow(missing_docs)]
-#[allow(non_camel_case_types)]
-pub struct FFI_Expr {}
+use super::{
+    execution_plan::{ExecutionPlanPrivateData, FFI_ExecutionPlan},
+    session_config::{FFI_SessionConfig, SessionConfigPrivateData},
+};
+use datafusion::error::Result;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -121,7 +67,6 @@ struct ConstExportedTableProvider {
 
 // The callback used to get array schema
 unsafe extern "C" fn provider_schema(provider: *const FFI_TableProvider) -> FFI_ArrowSchema {
-    println!("callback function");
     ConstExportedTableProvider { provider }.provider_schema()
 }
 
@@ -181,18 +126,12 @@ impl ConstExportedTableProvider {
     }
 
     pub fn provider_schema(&self) -> FFI_ArrowSchema {
-        println!("Enter exported table provider");
         let private_data = self.get_private_data();
         let provider = &private_data.provider;
 
-        println!("about to try from in provider.schema()");
         // This does silently fail because TableProvider does not return a result
         // so we expect it to always pass. Maybe some logging should be added.
-        let mut schema = FFI_ArrowSchema::try_from(provider.schema().as_ref())
-            .unwrap_or(FFI_ArrowSchema::empty());
-
-        println!("Found the schema but can we return it?");
-        schema
+        FFI_ArrowSchema::try_from(provider.schema().as_ref()).unwrap_or(FFI_ArrowSchema::empty())
     }
 }
 
@@ -294,15 +233,7 @@ impl TableProvider for FFI_TableProvider {
     /// Get a reference to the schema for this table
     fn schema(&self) -> SchemaRef {
         let schema = match self.schema {
-            Some(func) => {
-                println!("About to call the function to get the schema");
-                unsafe {
-                    let v = func(self);
-                    println!("Got the mutalbe ffi_arrow_schmea?");
-                    // func(self).as_ref().and_then(|s| Schema::try_from(s).ok())
-                    Schema::try_from(&func(self)).ok()
-                }
-            }
+            Some(func) => unsafe { Schema::try_from(&func(self)).ok() },
             None => None,
         };
         Arc::new(schema.unwrap_or(Schema::empty()))
@@ -328,6 +259,10 @@ impl TableProvider for FFI_TableProvider {
         // The datasource should return *at least* this number of rows if available.
         _limit: Option<usize>,
     ) -> Result<Arc<dyn ExecutionPlan>> {
+        let scan_fn = self.scan.ok_or(DataFusionError::NotImplemented(
+            "Scan not defined on FFI_TableProvider".to_string(),
+        ))?;
+
         Err(datafusion::error::DataFusionError::NotImplemented(
             "scan not implemented".to_string(),
         ))
