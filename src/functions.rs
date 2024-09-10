@@ -96,6 +96,7 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 }
 
 #[pyfunction]
+#[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
     let index = Expr::Literal(index);
@@ -104,6 +105,7 @@ fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr 
 }
 
 #[pyfunction]
+#[pyo3(signature = (array, begin, end, stride=None))]
 fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>) -> PyExpr {
     datafusion::functions_nested::expr_fn::array_slice(
         array.into(),
@@ -142,16 +144,19 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
 }
 
 #[pyfunction]
+#[pyo3(signature = (values, regex, flags=None))]
 fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_like(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
 
 #[pyfunction]
+#[pyo3(signature = (values, regex, flags=None))]
 fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
 }
 
 #[pyfunction]
+#[pyo3(signature = (string, pattern, replacement, flags=None))]
 /// Replaces substring(s) matching a POSIX regular expression.
 fn regexp_replace(
     string: PyExpr,
@@ -283,6 +288,7 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
 
 /// Creates a new Window function expression
 #[pyfunction]
+#[pyo3(signature = (name, args, partition_by=None, order_by=None, window_frame=None, ctx=None))]
 fn window(
     name: &str,
     args: Vec<PyExpr>,
@@ -331,6 +337,7 @@ macro_rules! aggregate_function {
     };
     ($NAME: ident, $($arg:ident)*) => {
         #[pyfunction]
+        #[pyo3(signature = ($($arg),*, distinct=None, filter=None, order_by=None, null_treatment=None))]
         fn $NAME(
             $($arg: PyExpr),*,
             distinct: Option<bool>,
@@ -351,6 +358,7 @@ macro_rules! aggregate_function_vec_args {
     };
     ($NAME: ident, $($arg:ident)*) => {
         #[pyfunction]
+        #[pyo3(signature = ($($arg),*, distinct=None, filter=None, order_by=None, null_treatment=None))]
         fn $NAME(
             $($arg: PyExpr),*,
             distinct: Option<bool>,
@@ -624,6 +632,7 @@ aggregate_function!(approx_median);
 // aggregate_function!(grouping);
 
 #[pyfunction]
+#[pyo3(signature = (expression, percentile, num_centroids=None, filter=None))]
 pub fn approx_percentile_cont(
     expression: PyExpr,
     percentile: f64,
@@ -642,6 +651,7 @@ pub fn approx_percentile_cont(
 }
 
 #[pyfunction]
+#[pyo3(signature = (expression, weight, percentile, filter=None))]
 pub fn approx_percentile_cont_with_weight(
     expression: PyExpr,
     weight: PyExpr,
@@ -662,6 +672,7 @@ aggregate_function_vec_args!(last_value);
 // We handle first_value explicitly because the signature expects an order_by
 // https://github.com/apache/datafusion/issues/12376
 #[pyfunction]
+#[pyo3(signature = (expr, distinct=None, filter=None, order_by=None, null_treatment=None))]
 pub fn first_value(
     expr: PyExpr,
     distinct: Option<bool>,
@@ -677,6 +688,7 @@ pub fn first_value(
 
 // nth_value requires a non-expr argument
 #[pyfunction]
+#[pyo3(signature = (expr, n, distinct=None, filter=None, order_by=None, null_treatment=None))]
 pub fn nth_value(
     expr: PyExpr,
     n: i64,
@@ -691,6 +703,7 @@ pub fn nth_value(
 
 // string_agg requires a non-expr argument
 #[pyfunction]
+#[pyo3(signature = (expr, delimiter, distinct=None, filter=None, order_by=None, null_treatment=None))]
 pub fn string_agg(
     expr: PyExpr,
     delimiter: String,
@@ -730,6 +743,7 @@ fn add_builder_fns_to_window(
 }
 
 #[pyfunction]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
 pub fn lead(
     arg: PyExpr,
     shift_offset: i64,
@@ -743,6 +757,7 @@ pub fn lead(
 }
 
 #[pyfunction]
+#[pyo3(signature = (arg, shift_offset, default_value=None, partition_by=None, order_by=None))]
 pub fn lag(
     arg: PyExpr,
     shift_offset: i64,
@@ -756,6 +771,7 @@ pub fn lag(
 }
 
 #[pyfunction]
+#[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
@@ -763,6 +779,7 @@ pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) ->
 }
 
 #[pyfunction]
+#[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
@@ -773,6 +790,7 @@ pub fn dense_rank(
 }
 
 #[pyfunction]
+#[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
@@ -783,6 +801,7 @@ pub fn percent_rank(
 }
 
 #[pyfunction]
+#[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PyExpr>>,
@@ -793,6 +812,7 @@ pub fn cume_dist(
 }
 
 #[pyfunction]
+#[pyo3(signature = (arg, partition_by=None, order_by=None))]
 pub fn ntile(
     arg: PyExpr,
     partition_by: Option<Vec<PyExpr>>,

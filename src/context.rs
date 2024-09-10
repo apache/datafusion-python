@@ -294,6 +294,7 @@ impl PySessionContext {
     }
 
     /// Register an object store with the given name
+    #[pyo3(signature = (scheme, store, host=None))]
     pub fn register_object_store(
         &mut self,
         scheme: &str,
@@ -374,6 +375,7 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
+    #[pyo3(signature = (query, options=None))]
     pub fn sql_with_options(
         &mut self,
         query: &str,
@@ -390,6 +392,7 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
+    #[pyo3(signature = (partitions, name=None, schema=None))]
     pub fn create_dataframe(
         &mut self,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
@@ -433,6 +436,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python list
+    #[pyo3(signature = (data, name=None))]
     pub fn from_pylist(
         &mut self,
         data: Bound<'_, PyList>,
@@ -452,6 +456,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Python dictionary
+    #[pyo3(signature = (data, name=None))]
     pub fn from_pydict(
         &mut self,
         data: Bound<'_, PyDict>,
@@ -471,6 +476,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from Arrow Table
+    #[pyo3(signature = (data, name=None))]
     pub fn from_arrow(
         &mut self,
         data: Bound<'_, PyAny>,
@@ -506,6 +512,7 @@ impl PySessionContext {
 
     /// Construct datafusion dataframe from pandas
     #[allow(clippy::wrong_self_convention)]
+    #[pyo3(signature = (data, name=None))]
     pub fn from_pandas(
         &mut self,
         data: Bound<'_, PyAny>,
@@ -525,6 +532,7 @@ impl PySessionContext {
     }
 
     /// Construct datafusion dataframe from polars
+    #[pyo3(signature = (data, name=None))]
     pub fn from_polars(
         &mut self,
         data: Bound<'_, PyAny>,

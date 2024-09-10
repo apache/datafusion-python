@@ -62,6 +62,7 @@ pub struct SqlTable {
 #[pymethods]
 impl SqlTable {
     #[new]
+    #[pyo3(signature = (table_name, columns, row_count, filepaths=None))]
     pub fn new(
         table_name: String,
         columns: Vec<(String, DataTypeMap)>,
