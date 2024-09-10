@@ -393,6 +393,22 @@ class Expr:
 
         return Expr(self.expr.cast(to))
 
+    def between(self, low: Any, high: Any, negated: bool = False) -> Expr:
+        """Returns ``True`` if this expression is between a given range.
+
+        Args:
+            low: lower bound of the range (inclusive).
+            high: higher bound of the range (inclusive).
+            negated: negates whether the expression is between a given range
+        """
+        if not isinstance(low, Expr):
+            low = Expr.literal(low)
+
+        if not isinstance(high, Expr):
+            high = Expr.literal(high)
+
+        return Expr(self.expr.between(low.expr, high.expr, negated=negated))
+
     def rex_type(self) -> RexType:
         """Return the Rex Type of this expression.
 
