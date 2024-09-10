@@ -28,7 +28,7 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::{
     col,
-    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
+    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
 use datafusion::scalar::ScalarValue;
