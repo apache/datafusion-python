@@ -24,6 +24,7 @@ use std::fmt::{self, Display, Formatter};
 use crate::common::df_schema::PyDFSchema;
 use crate::errors::py_type_err;
 use crate::expr::logical_node::LogicalNode;
+use crate::expr::sort_expr::{py_sort_expr_list, PySortExpr};
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
@@ -114,9 +115,9 @@ impl PyWindow {
     }
 
     /// Returns order by columns in a window function expression
-    pub fn get_sort_exprs(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
+    pub fn get_sort_exprs(&self, expr: PyExpr) -> PyResult<Vec<PySortExpr>> {
         match expr.expr.unalias() {
-            Expr::WindowFunction(WindowFunction { order_by, .. }) => py_expr_list(&order_by),
+            Expr::WindowFunction(WindowFunction { order_by, .. }) => py_sort_expr_list(&order_by),
             other => Err(not_window_function_err(other)),
         }
     }
