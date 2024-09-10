@@ -58,6 +58,10 @@ pub fn to_sort_expressions(order_by: Vec<PySortExpr>) -> Vec<SortExpr> {
         .collect()
 }
 
+pub fn py_sort_expr_list(expr: &[SortExpr]) -> PyResult<Vec<PySortExpr>> {
+    Ok(expr.iter().map(|e| PySortExpr::from(e.clone())).collect())
+}
+
 #[pymethods]
 impl PySortExpr {
     fn expr(&self) -> PyResult<PyExpr> {

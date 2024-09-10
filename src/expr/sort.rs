@@ -22,7 +22,7 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
 use crate::expr::logical_node::LogicalNode;
-use crate::expr::PyExpr;
+use crate::expr::sort_expr::PySortExpr;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(name = "Sort", module = "datafusion.expr", subclass)]
@@ -63,12 +63,12 @@ impl Display for PySort {
 #[pymethods]
 impl PySort {
     /// Retrieves the sort expressions for this `Sort`
-    fn sort_exprs(&self) -> PyResult<Vec<PyExpr>> {
+    fn sort_exprs(&self) -> PyResult<Vec<PySortExpr>> {
         Ok(self
             .sort
             .expr
             .iter()
-            .map(|e| PyExpr::from(e.clone()))
+            .map(|e| PySortExpr::from(e.clone()))
             .collect())
     }
 
