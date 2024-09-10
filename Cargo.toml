@@ -40,8 +40,8 @@ pyo3 = { version = "0.22", features = ["extension-module", "abi3", "abi3-py38"] 
 arrow = { version = "53", feature = ["pyarrow"] }
 datafusion = { version = "41.0.0", features = ["pyarrow", "avro", "unicode_expressions"] }
 datafusion-substrait = { version = "41.0.0", optional = true }
-prost = "0.12" # keep in line with `datafusion-substrait`
-prost-types = "0.12" # keep in line with `datafusion-substrait`
+prost = "0.13" # keep in line with `datafusion-substrait`
+prost-types = "0.13" # keep in line with `datafusion-substrait`
 uuid = { version = "1.9", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
 async-trait = "0.1"
@@ -64,5 +64,5 @@ lto = true
 codegen-units = 1
     
 [patch.crates-io]
-datafusion = { path = "../../arrow-datafusion-main/datafusion/core" }
-datafusion-substrait = { path = "../../arrow-datafusion-main/datafusion/substrait" }
+datafusion = { git = "https://github.com/apache/datafusion.git", rev = "c71a9d7508e37e5d082e22d2953a12b61d290df5" }
+datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "c71a9d7508e37e5d082e22d2953a12b61d290df5" }

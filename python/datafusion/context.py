@@ -28,7 +28,7 @@ from ._internal import LogicalPlan, ExecutionPlan
 from datafusion._internal import AggregateUDF
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
-from datafusion.expr import Expr
+from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.udf import ScalarUDF
 
@@ -466,7 +466,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".parquet",
         schema: pyarrow.Schema | None = None,
-        file_sort_order: list[list[Expr]] | None = None,
+        file_sort_order: list[list[Expr | SortExpr]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
 
@@ -484,15 +484,18 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        if file_sort_order is not None:
-            file_sort_order = [[x.expr for x in xs] for xs in file_sort_order]
+        file_sort_order_raw = (
+            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
+            if file_sort_order is not None
+            else None
+        )
         self.ctx.register_listing_table(
             name,
             str(path),
             table_partition_cols,
             file_extension,
             schema,
-            file_sort_order,
+            file_sort_order_raw,
         )
 
     def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:

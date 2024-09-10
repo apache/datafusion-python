@@ -45,7 +45,10 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{get_tokio_runtime, wait_for_future};
-use crate::{errors::DataFusionError, expr::{PyExpr, sort_expr::PySortExpr}};
+use crate::{
+    errors::DataFusionError,
+    expr::{sort_expr::PySortExpr, PyExpr},
+};
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.

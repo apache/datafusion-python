@@ -27,7 +27,7 @@ use datafusion::logical_expr::{expr::InList, Between, BinaryExpr, Expr, Operator
 
 use crate::errors::DataFusionError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 #[repr(transparent)]
 pub(crate) struct PyArrowFilterExpression(PyObject);
 

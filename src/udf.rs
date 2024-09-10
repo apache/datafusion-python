@@ -20,8 +20,8 @@ use std::sync::Arc;
 use pyo3::{prelude::*, types::PyTuple};
 
 use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
-use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::error::DataFusionError;
 use datafusion::logical_expr::create_udf;

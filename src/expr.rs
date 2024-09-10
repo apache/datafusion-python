@@ -94,7 +94,7 @@ pub mod unnest;
 pub mod unnest_expr;
 pub mod window;
 
-use sort_expr::{PySortExpr, to_sort_expressions};
+use sort_expr::{to_sort_expressions, PySortExpr};
 
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
@@ -152,7 +152,6 @@ impl PyExpr {
             Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
-            Expr::Sort(value) => Ok(sort_expr::PySortExpr::from(value.clone()).into_py(py)),
             Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
                 value
@@ -169,9 +168,9 @@ impl PyExpr {
             Expr::ScalarSubquery(value) => {
                 Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
             }
-            Expr::Wildcard { qualifier } => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::Wildcard to a Python object is not implemented : {:?}",
-                qualifier
+            Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
+                qualifier, options
             ))),
             Expr::GroupingSet(value) => {
                 Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
@@ -276,7 +275,7 @@ impl PyExpr {
 
     /// Create a sort PyExpr from an existing PyExpr.
     #[pyo3(signature = (ascending=true, nulls_first=true))]
-    pub fn sort(&self, ascending: bool, nulls_first: bool) -> PyExpr {
+    pub fn sort(&self, ascending: bool, nulls_first: bool) -> PySortExpr {
         self.expr.clone().sort(ascending, nulls_first).into()
     }
 
@@ -314,7 +313,6 @@ impl PyExpr {
             | Expr::Case { .. }
             | Expr::Cast { .. }
             | Expr::TryCast { .. }
-            | Expr::Sort { .. }
             | Expr::ScalarFunction { .. }
             | Expr::AggregateFunction { .. }
             | Expr::WindowFunction { .. }
@@ -378,7 +376,6 @@ impl PyExpr {
             | Expr::Negative(expr)
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
-            | Expr::Sort(Sort { expr, .. })
             | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
@@ -621,11 +618,6 @@ impl PyExpr {
         input_plan: &LogicalPlan,
     ) -> Result<Arc<Field>, DataFusionError> {
         match expr {
-            Expr::Sort(Sort { expr, .. }) => {
-                // DataFusion does not support create_name for sort expressions (since they never
-                // appear in projections) so we just delegate to the contained expression instead
-                Self::expr_to_field(expr, input_plan)
-            }
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(Arc::new(input_plan.schema().field(0).clone()))

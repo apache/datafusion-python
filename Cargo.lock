@@ -747,6 +747,7 @@ dependencies = [
 [[package]]
 name = "datafusion"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -781,7 +782,7 @@ dependencies = [
  "half",
  "hashbrown",
  "indexmap",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "num-traits",
  "num_cpus",
@@ -804,6 +805,7 @@ dependencies = [
 [[package]]
 name = "datafusion-catalog"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow-schema",
  "async-trait",
@@ -817,6 +819,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -841,6 +844,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common-runtime"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "log",
  "tokio",
@@ -849,6 +853,7 @@ dependencies = [
 [[package]]
 name = "datafusion-execution"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "chrono",
@@ -868,6 +873,7 @@ dependencies = [
 [[package]]
 name = "datafusion-expr"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -888,6 +894,7 @@ dependencies = [
 [[package]]
 name = "datafusion-expr-common"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -897,6 +904,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "arrow-buffer",
@@ -909,7 +917,7 @@ dependencies = [
  "datafusion-expr",
  "hashbrown",
  "hex",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "md-5",
  "rand",
@@ -922,6 +930,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-aggregate"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -941,6 +950,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-aggregate-common"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -953,6 +963,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-nested"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "arrow-array",
@@ -965,7 +976,7 @@ dependencies = [
  "datafusion-functions",
  "datafusion-functions-aggregate",
  "datafusion-physical-expr-common",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "paste",
  "rand",
@@ -974,6 +985,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-window"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "datafusion-common",
  "datafusion-expr",
@@ -984,6 +996,7 @@ dependencies = [
 [[package]]
 name = "datafusion-optimizer"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "async-trait",
@@ -993,7 +1006,7 @@ dependencies = [
  "datafusion-physical-expr",
  "hashbrown",
  "indexmap",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "paste",
  "regex-syntax",
@@ -1002,6 +1015,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -1022,7 +1036,7 @@ dependencies = [
  "hashbrown",
  "hex",
  "indexmap",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "paste",
  "petgraph",
@@ -1032,6 +1046,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr-common"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -1044,18 +1059,20 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-optimizer"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow-schema",
  "datafusion-common",
  "datafusion-execution",
  "datafusion-physical-expr",
  "datafusion-physical-plan",
- "itertools 0.13.0",
+ "itertools",
 ]
 
 [[package]]
 name = "datafusion-physical-plan"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "ahash",
  "arrow",
@@ -1077,7 +1094,7 @@ dependencies = [
  "half",
  "hashbrown",
  "indexmap",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "once_cell",
  "parking_lot",
@@ -1098,8 +1115,8 @@ dependencies = [
  "mimalloc",
  "object_store",
  "parking_lot",
- "prost 0.12.6",
- "prost-types 0.12.6",
+ "prost",
+ "prost-types",
  "pyo3",
  "pyo3-build-config",
  "rand",
@@ -1113,6 +1130,7 @@ dependencies = [
 [[package]]
 name = "datafusion-sql"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow",
  "arrow-array",
@@ -1128,15 +1146,16 @@ dependencies = [
 [[package]]
 name = "datafusion-substrait"
 version = "41.0.0"
+source = "git+https://github.com/apache/datafusion.git?rev=c71a9d7508e37e5d082e22d2953a12b61d290df5#c71a9d7508e37e5d082e22d2953a12b61d290df5"
 dependencies = [
  "arrow-buffer",
  "async-recursion",
  "chrono",
  "datafusion",
- "itertools 0.13.0",
+ "itertools",
  "object_store",
  "pbjson-types",
- "prost 0.13.2",
+ "prost",
  "substrait",
  "url",
 ]
@@ -1592,15 +1611,6 @@ checksum = "187674a687eed5fe42285b40c6291f9a01517d415fad1c3cbc6a9f778af7fcd4"
 
 [[package]]
 name = "itertools"
-version = "0.12.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba291022dbbd398a455acf126c1e341954079855bc60dfdda641363bd6922569"
-dependencies = [
- "either",
-]
-
-[[package]]
-name = "itertools"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
@@ -1963,7 +1973,7 @@ dependencies = [
  "futures",
  "humantime",
  "hyper",
- "itertools 0.13.0",
+ "itertools",
  "md-5",
  "parking_lot",
  "percent-encoding",
@@ -2093,9 +2103,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6eea3058763d6e656105d1403cb04e0a41b7bbac6362d413e7c33be0c32279c9"
 dependencies = [
  "heck 0.5.0",
- "itertools 0.13.0",
- "prost 0.13.2",
- "prost-types 0.13.2",
+ "itertools",
+ "prost",
+ "prost-types",
 ]
 
 [[package]]
@@ -2108,7 +2118,7 @@ dependencies = [
  "chrono",
  "pbjson",
  "pbjson-build",
- "prost 0.13.2",
+ "prost",
  "prost-build",
  "serde",
 ]
@@ -2241,22 +2251,12 @@ dependencies = [
 
 [[package]]
 name = "prost"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "deb1435c188b76130da55f17a466d252ff7b1418b2ad3e037d127b94e3411f29"
-dependencies = [
- "bytes",
- "prost-derive 0.12.6",
-]
-
-[[package]]
-name = "prost"
 version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b2ecbe40f08db5c006b5764a2645f7f3f141ce756412ac9e1dd6087e6d32995"
 dependencies = [
  "bytes",
- "prost-derive 0.13.2",
+ "prost-derive",
 ]
 
 [[package]]
@@ -2267,30 +2267,17 @@ checksum = "f8650aabb6c35b860610e9cff5dc1af886c9e25073b7b1712a68972af4281302"
 dependencies = [
  "bytes",
  "heck 0.5.0",
- "itertools 0.13.0",
+ "itertools",
  "log",
  "multimap",
  "once_cell",
  "petgraph",
  "prettyplease",
- "prost 0.13.2",
- "prost-types 0.13.2",
+ "prost",
+ "prost-types",
  "regex",
  "syn",
  "tempfile",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81bddcdb20abf9501610992b6759a4c888aef7d1a7247ef75e2404275ac24af1"
-dependencies = [
- "anyhow",
- "itertools 0.12.1",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -2300,19 +2287,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "acf0c195eebb4af52c752bec4f52f645da98b6e92077a04110c7f349477ae5ac"
 dependencies = [
  "anyhow",
- "itertools 0.13.0",
+ "itertools",
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "prost-types"
-version = "0.12.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9091c90b0a32608e984ff2fa4091273cbdd755d54935c51d520887f4a1dbd5b0"
-dependencies = [
- "prost 0.12.6",
 ]
 
 [[package]]
@@ -2321,7 +2299,7 @@ version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60caa6738c7369b940c3d49246a8d1749323674c65cb13010134f5c9bad5b519"
 dependencies = [
- "prost 0.13.2",
+ "prost",
 ]
 
 [[package]]
@@ -3058,9 +3036,9 @@ dependencies = [
  "pbjson-build",
  "pbjson-types",
  "prettyplease",
- "prost 0.13.2",
+ "prost",
  "prost-build",
- "prost-types 0.13.2",
+ "prost-types",
  "protobuf-src",
  "schemars",
  "semver",

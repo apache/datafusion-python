@@ -176,15 +176,11 @@ fn regexp_replace(
 /// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> {
-    Ok(
-        PySortExpr::from(
-            datafusion::logical_expr::expr::Sort {
-                expr: expr.expr,
-                asc,
-                nulls_first,
-            }
-        )
-    )
+    Ok(PySortExpr::from(datafusion::logical_expr::expr::Sort {
+        expr: expr.expr,
+        asc,
+        nulls_first,
+    }))
 }
 
 /// Creates a new Alias Expr
@@ -296,7 +292,7 @@ fn window(
     name: &str,
     args: Vec<PyExpr>,
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
     window_frame: Option<PyWindowFrame>,
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
@@ -318,11 +314,7 @@ fn window(
             order_by: order_by
                 .unwrap_or_default()
                 .into_iter()
-                .map(|x| x.expr)
-                .map(|e| match e {
-                    Expr::Sort(_) => e,
-                    _ => e.sort(true, true),
-                })
+                .map(|x| x.into())
                 .collect::<Vec<_>>(),
             window_frame,
             null_treatment: None,
@@ -690,20 +682,20 @@ pub fn first_value(
 }
 
 // nth_value requires a non-expr argument
-// #[pyfunction]
-// #[pyo3(signature = (expr, n, distinct=None, filter=None, order_by=None, null_treatment=None))]
-// pub fn nth_value(
-//     expr: PyExpr,
-//     n: i64,
-//     distinct: Option<bool>,
-//     filter: Option<PyExpr>,
-//     order_by: Option<Vec<PySortExpr>>,
-//     null_treatment: Option<NullTreatment>,
-// ) -> PyResult<PyExpr> {
-//     // @todo: Commenting this function out for now as it requires some reworking
-//     let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(vec![expr.expr, lit(n)]);
-//     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
-// }
+#[pyfunction]
+#[pyo3(signature = (expr, n, distinct=None, filter=None, order_by=None, null_treatment=None))]
+pub fn nth_value(
+    expr: PyExpr,
+    n: i64,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyResult<PyExpr> {
+    // @todo: Commenting this function out for now as it requires some reworking
+    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(expr.expr, n, vec![]);
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
 
 // string_agg requires a non-expr argument
 #[pyfunction]
@@ -776,7 +768,21 @@ pub fn lag(
 
 #[pyfunction]
 #[pyo3(signature = (partition_by=None, order_by=None))]
-pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PySortExpr>>) -> PyResult<PyExpr> {
+pub fn row_number(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
+) -> PyResult<PyExpr> {
+    let window_fn = datafusion::functions_window::expr_fn::row_number();
+
+    add_builder_fns_to_window(window_fn, partition_by, order_by)
+}
+
+#[pyfunction]
+#[pyo3(signature = (partition_by=None, order_by=None))]
+pub fn rank(
+    partition_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
+) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
     add_builder_fns_to_window(window_fn, partition_by, order_by)
@@ -969,7 +975,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(regr_syy))?;
     m.add_wrapped(wrap_pyfunction!(first_value))?;
     m.add_wrapped(wrap_pyfunction!(last_value))?;
-    // m.add_wrapped(wrap_pyfunction!(nth_value))?;
+    m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;
@@ -1017,6 +1023,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(lead))?;
     m.add_wrapped(wrap_pyfunction!(lag))?;
     m.add_wrapped(wrap_pyfunction!(rank))?;
+    m.add_wrapped(wrap_pyfunction!(row_number))?;
     m.add_wrapped(wrap_pyfunction!(dense_rank))?;
     m.add_wrapped(wrap_pyfunction!(percent_rank))?;
     m.add_wrapped(wrap_pyfunction!(cume_dist))?;
