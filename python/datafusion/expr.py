@@ -84,7 +84,7 @@ ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
-SortExpr = expr_internal.SortExpr
+# SortExpr = expr_internal.SortExpr
 Subquery = expr_internal.Subquery
 SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
@@ -669,19 +669,24 @@ class CaseBuilder:
 
 
 class SortExpr:
-    """Used to specify sorting on either a DataFrame or function"""
+    """Used to specify sorting on either a DataFrame or function."""
 
     def __init__(self, expr: Expr, ascending: bool, nulls_first: bool) -> None:
+        """This constructor should not be called by the end user."""
         self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
 
     def expr(self) -> Expr:
+        """Return the raw expr backing teh SortExpr."""
         return Expr(self.raw_sort.expr())
 
     def ascending(self) -> bool:
+        """Return ascending property."""
         return self.raw_sort.ascending()
 
     def nulls_first(self) -> bool:
+        """Return nulls_first property."""
         return self.raw_sort.nulls_first()
 
     def __repr__(self) -> str:
+        """Generate a string representation of this expression."""
         return self.raw_sort.__repr__()
