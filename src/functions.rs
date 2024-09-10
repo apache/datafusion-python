@@ -692,7 +692,6 @@ pub fn nth_value(
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
-    // @todo: Commenting this function out for now as it requires some reworking
     let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(expr.expr, n, vec![]);
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
