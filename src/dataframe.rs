@@ -36,7 +36,7 @@ use datafusion::prelude::*;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
@@ -73,14 +73,14 @@ impl PyDataFrame {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
             self.select_columns(vec![key])
-        // } else if let Ok(tuple) = key.extract::<&PyTuple>() {
-        // @todo: make this branch work
-        //     // df[col1, col2, col3]
-        //     let keys = tuple
-        //         .iter()
-        //         .map(|item| item.extract::<PyBackedStr>())
-        //         .collect::<PyResult<Vec<PyBackedStr>>>()?;
-        //     self.select_columns(keys)
+        } else if let Ok(tuple) = key.extract::<Py<PyTuple>>() {
+            // df[col1, col2, col3]
+            let tuple = tuple.bind(key.py());
+            let keys = tuple
+                .iter()
+                .map(|item| item.extract::<PyBackedStr>())
+                .collect::<PyResult<Vec<PyBackedStr>>>()?;
+            self.select_columns(keys)
         } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
             // df[[col1, col2, col3]]
             self.select_columns(keys)
