@@ -15,18 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import pyarrow
+import pytest
 from datafusion import SessionContext, col
-from datafusion.expr import Column, Literal, BinaryExpr, AggregateFunction
 from datafusion.expr import (
-    Projection,
-    Filter,
     Aggregate,
+    AggregateFunction,
+    BinaryExpr,
+    Column,
+    Filter,
     Limit,
+    Literal,
+    Projection,
     Sort,
     TableScan,
 )
-import pyarrow
-import pytest
 
 
 @pytest.fixture
@@ -196,6 +199,7 @@ def test_expr_getitem() -> None:
 
 def test_display_name_deprecation():
     import warnings
+
     expr = col("foo")
     with warnings.catch_warnings(record=True) as w:
         # Cause all warnings to always be triggered

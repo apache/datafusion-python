@@ -22,15 +22,15 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from ._internal import (
-    expr as expr_internal,
-    LogicalPlan,
-    functions as functions_internal,
-)
-from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any, Optional, Type
-from typing_extensions import deprecated
+
 import pyarrow as pa
+from datafusion.common import DataTypeMap, NullTreatment, RexType
+from typing_extensions import deprecated
+
+from ._internal import LogicalPlan
+from ._internal import expr as expr_internal
+from ._internal import functions as functions_internal
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -196,7 +196,9 @@ class Expr:
         """Convert this expression into a python object if possible."""
         return self.expr.to_variant()
 
-    @deprecated("display_name() is deprecated. Use :py:meth:`~Expr.schema_name` instead")
+    @deprecated(
+        "display_name() is deprecated. Use :py:meth:`~Expr.schema_name` instead"
+    )
     def display_name(self) -> str:
         """Returns the name of this expression as it should appear in a schema.
 
