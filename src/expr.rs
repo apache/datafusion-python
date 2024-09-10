@@ -94,6 +94,8 @@ pub mod unnest;
 pub mod unnest_expr;
 pub mod window;
 
+use sort_expr::{PySortExpr, to_sort_expressions};
+
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
@@ -518,7 +520,7 @@ impl PyExpr {
 
     // Expression Function Builder functions
 
-    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
         self.expr
             .clone()
             .order_by(to_sort_expressions(order_by))
@@ -562,20 +564,9 @@ impl From<ExprFuncBuilder> for PyExprFuncBuilder {
     }
 }
 
-pub fn to_sort_expressions(order_by: Vec<PyExpr>) -> Vec<Expr> {
-    order_by
-        .iter()
-        .map(|e| e.expr.clone())
-        .map(|e| match e {
-            Expr::Sort(_) => e,
-            _ => e.sort(true, true),
-        })
-        .collect()
-}
-
 #[pymethods]
 impl PyExprFuncBuilder {
-    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
         self.builder
             .clone()
             .order_by(to_sort_expressions(order_by))

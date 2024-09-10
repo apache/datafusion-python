@@ -35,7 +35,7 @@ use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
-use crate::expr::PyExpr;
+use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -333,7 +333,7 @@ impl PySessionContext {
         table_partition_cols: Vec<(String, String)>,
         file_extension: &str,
         schema: Option<PyArrowType<Schema>>,
-        file_sort_order: Option<Vec<Vec<PyExpr>>>,
+        file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyResult<()> {
         let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
@@ -589,7 +589,7 @@ impl PySessionContext {
         file_extension: &str,
         skip_metadata: bool,
         schema: Option<PyArrowType<Schema>>,
-        file_sort_order: Option<Vec<Vec<PyExpr>>>,
+        file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyResult<()> {
         let mut options = ParquetReadOptions::default()
@@ -890,7 +890,7 @@ impl PySessionContext {
         file_extension: &str,
         skip_metadata: bool,
         schema: Option<PyArrowType<Schema>>,
-        file_sort_order: Option<Vec<Vec<PyExpr>>>,
+        file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyResult<PyDataFrame> {
         let mut options = ParquetReadOptions::default()

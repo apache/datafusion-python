@@ -25,7 +25,8 @@ use crate::common::data_type::NullTreatment;
 use crate::context::PySessionContext;
 use crate::errors::DataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
-use crate::expr::to_sort_expressions;
+use crate::expr::sort_expr::to_sort_expressions;
+use crate::expr::sort_expr::PySortExpr;
 use crate::expr::window::PyWindowFrame;
 use crate::expr::PyExpr;
 use datafusion::common::{Column, ScalarValue, TableReference};
@@ -35,7 +36,7 @@ use datafusion::functions_aggregate;
 use datafusion::logical_expr::expr::Alias;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion::logical_expr::{
-    expr::{find_df_window_func, Sort, WindowFunction},
+    expr::{find_df_window_func, WindowFunction},
     lit, Expr, WindowFunctionDefinition,
 };
 
@@ -43,7 +44,7 @@ fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
     distinct: Option<bool>,
     filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, we can guarantee initializing
@@ -174,14 +175,16 @@ fn regexp_replace(
 }
 /// Creates a new Sort Expr
 #[pyfunction]
-fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PyExpr> {
-    Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Sort(Sort {
-            expr: Box::new(expr.expr),
-            asc,
-            nulls_first,
-        }),
-    })
+fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> {
+    Ok(
+        PySortExpr::from(
+            datafusion::logical_expr::expr::Sort {
+                expr: expr.expr,
+                asc,
+                nulls_first,
+            }
+        )
+    )
 }
 
 /// Creates a new Alias Expr
@@ -342,7 +345,7 @@ macro_rules! aggregate_function {
             $($arg: PyExpr),*,
             distinct: Option<bool>,
             filter: Option<PyExpr>,
-            order_by: Option<Vec<PyExpr>>,
+            order_by: Option<Vec<PySortExpr>>,
             null_treatment: Option<NullTreatment>
         ) -> PyResult<PyExpr> {
             let agg_fn = functions_aggregate::expr_fn::$NAME($($arg.into()),*);
@@ -363,7 +366,7 @@ macro_rules! aggregate_function_vec_args {
             $($arg: PyExpr),*,
             distinct: Option<bool>,
             filter: Option<PyExpr>,
-            order_by: Option<Vec<PyExpr>>,
+            order_by: Option<Vec<PySortExpr>>,
             null_treatment: Option<NullTreatment>
         ) -> PyResult<PyExpr> {
             let agg_fn = functions_aggregate::expr_fn::$NAME(vec![$($arg.into()),*]);
@@ -677,7 +680,7 @@ pub fn first_value(
     expr: PyExpr,
     distinct: Option<bool>,
     filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
@@ -687,19 +690,20 @@ pub fn first_value(
 }
 
 // nth_value requires a non-expr argument
-#[pyfunction]
-#[pyo3(signature = (expr, n, distinct=None, filter=None, order_by=None, null_treatment=None))]
-pub fn nth_value(
-    expr: PyExpr,
-    n: i64,
-    distinct: Option<bool>,
-    filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
-    null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
-    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(vec![expr.expr, lit(n)]);
-    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
-}
+// #[pyfunction]
+// #[pyo3(signature = (expr, n, distinct=None, filter=None, order_by=None, null_treatment=None))]
+// pub fn nth_value(
+//     expr: PyExpr,
+//     n: i64,
+//     distinct: Option<bool>,
+//     filter: Option<PyExpr>,
+//     order_by: Option<Vec<PySortExpr>>,
+//     null_treatment: Option<NullTreatment>,
+// ) -> PyResult<PyExpr> {
+//     // @todo: Commenting this function out for now as it requires some reworking
+//     let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(vec![expr.expr, lit(n)]);
+//     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+// }
 
 // string_agg requires a non-expr argument
 #[pyfunction]
@@ -709,7 +713,7 @@ pub fn string_agg(
     delimiter: String,
     distinct: Option<bool>,
     filter: Option<PyExpr>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyResult<PyExpr> {
     let agg_fn = datafusion::functions_aggregate::string_agg::string_agg(expr.expr, lit(delimiter));
@@ -719,7 +723,7 @@ pub fn string_agg(
 fn add_builder_fns_to_window(
     window_fn: Expr,
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, set an empty partition and then
     // override later if appropriate.
@@ -749,7 +753,7 @@ pub fn lead(
     shift_offset: i64,
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lead(arg.expr, Some(shift_offset), default_value);
 
@@ -763,7 +767,7 @@ pub fn lag(
     shift_offset: i64,
     default_value: Option<ScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::lag(arg.expr, Some(shift_offset), default_value);
 
@@ -772,7 +776,7 @@ pub fn lag(
 
 #[pyfunction]
 #[pyo3(signature = (partition_by=None, order_by=None))]
-pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) -> PyResult<PyExpr> {
+pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PySortExpr>>) -> PyResult<PyExpr> {
     let window_fn = window_function::rank();
 
     add_builder_fns_to_window(window_fn, partition_by, order_by)
@@ -782,7 +786,7 @@ pub fn rank(partition_by: Option<Vec<PyExpr>>, order_by: Option<Vec<PyExpr>>) ->
 #[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::dense_rank();
 
@@ -793,7 +797,7 @@ pub fn dense_rank(
 #[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::percent_rank();
 
@@ -804,7 +808,7 @@ pub fn percent_rank(
 #[pyo3(signature = (partition_by=None, order_by=None))]
 pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::cume_dist();
 
@@ -816,7 +820,7 @@ pub fn cume_dist(
 pub fn ntile(
     arg: PyExpr,
     partition_by: Option<Vec<PyExpr>>,
-    order_by: Option<Vec<PyExpr>>,
+    order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
     let window_fn = window_function::ntile(arg.into());
 
@@ -965,7 +969,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(regr_syy))?;
     m.add_wrapped(wrap_pyfunction!(first_value))?;
     m.add_wrapped(wrap_pyfunction!(last_value))?;
-    m.add_wrapped(wrap_pyfunction!(nth_value))?;
+    // m.add_wrapped(wrap_pyfunction!(nth_value))?;
     m.add_wrapped(wrap_pyfunction!(bit_and))?;
     m.add_wrapped(wrap_pyfunction!(bit_or))?;
     m.add_wrapped(wrap_pyfunction!(bit_xor))?;
