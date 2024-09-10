@@ -195,7 +195,7 @@ impl PyExpr {
 
     /// Returns a full and complete string representation of this expression.
     fn canonical_name(&self) -> PyResult<String> {
-        Ok(self.expr.canonical_name())
+        Ok(format!("{}", self.expr))
     }
 
     /// Returns the name of the Expr variant.
