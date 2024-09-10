@@ -86,7 +86,7 @@ impl PySessionConfig {
         let mut config = SessionConfig::new();
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
-                config = config.set(k, ScalarValue::Utf8(Some(v.clone())));
+                config = config.set(k, &ScalarValue::Utf8(Some(v.clone())));
             }
         }
 
