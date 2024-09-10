@@ -73,9 +73,8 @@ impl PyDataFrame {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
             self.select_columns(vec![key])
-        } else if let Ok(tuple) = key.extract::<Py<PyTuple>>() {
+        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
             // df[col1, col2, col3]
-            let tuple = tuple.bind(key.py());
             let keys = tuple
                 .iter()
                 .map(|item| item.extract::<PyBackedStr>())
