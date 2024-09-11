@@ -1024,3 +1024,34 @@ def test_cast(df, python_datatype, name: str, expected):
     result = df.collect()
     result = result[0]
     assert result.column(0) == result.column(1)
+
+
+@pytest.mark.parametrize(
+    "negated, low, high, expected",
+    [
+        pytest.param(False, 3, 5, {"filtered": [4, 5]}),
+        pytest.param(False, 4, 5, {"filtered": [4, 5]}),
+        pytest.param(True, 3, 5, {"filtered": [6]}),
+        pytest.param(True, 4, 6, []),
+    ],
+)
+def test_between(df, negated, low, high, expected):
+    df = df.filter(column("b").between(low, high, negated=negated)).select(
+        column("b").alias("filtered")
+    )
+
+    actual = df.collect()
+
+    if expected:
+        actual = actual[0].to_pydict()
+        assert actual == expected
+    else:
+        assert len(actual) == 0  # the rows are empty
+
+
+def test_between_default(df):
+    df = df.filter(column("b").between(3, 5)).select(column("b").alias("filtered"))
+    expected = {"filtered": [4, 5]}
+
+    actual = df.collect()[0].to_pydict()
+    assert actual == expected
