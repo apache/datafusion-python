@@ -276,6 +276,16 @@ Module Contents
 
 
 
+   .. py:method:: between(low: Any, high: Any, negated: bool = False) -> Expr
+
+      Returns ``True`` if this expression is between a given range.
+
+      :param low: lower bound of the range (inclusive).
+      :param high: higher bound of the range (inclusive).
+      :param negated: negates whether the expression is between a given range
+
+
+
    .. py:method:: canonical_name() -> str
 
       Returns a complete string representation of this expression.
