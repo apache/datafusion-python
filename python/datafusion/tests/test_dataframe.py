@@ -31,6 +31,7 @@ from datafusion import (
     literal,
     udf,
 )
+from datafusion.expr import Window
 
 
 @pytest.fixture
@@ -389,27 +390,29 @@ data_test_window_functions = [
     (
         "first_value",
         f.first_value(column("a")).over(
-            partition_by=[column("c")], order_by=[column("b")]
+            Window(partition_by=[column("c")], order_by=[column("b")])
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
     (
         "last_value",
         f.last_value(column("a")).over(
-            partition_by=[column("c")],
-            order_by=[column("b")],
-            window_frame=WindowFrame("rows", None, None),
+            Window(
+                partition_by=[column("c")],
+                order_by=[column("b")],
+                window_frame=WindowFrame("rows", None, None),
+            )
         ),
         [3, 3, 3, 3, 6, 6, 6],
     ),
     (
         "3rd_value",
-        f.nth_value(column("b"), 3).over(order_by=[column("a")]),
+        f.nth_value(column("b"), 3).over(Window(order_by=[column("a")])),
         [None, None, 7, 7, 7, 7, 7],
     ),
     (
         "avg",
-        f.round(f.avg(column("b")).over(order_by=[column("a")]), literal(3)),
+        f.round(f.avg(column("b")).over(Window(order_by=[column("a")])), literal(3)),
         [7.0, 7.0, 7.0, 7.333, 7.75, 7.75, 8.0],
     ),
 ]

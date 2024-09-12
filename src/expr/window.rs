@@ -32,9 +32,9 @@ use super::py_expr_list;
 
 use crate::errors::py_datafusion_err;
 
-#[pyclass(name = "Window", module = "datafusion.expr", subclass)]
+#[pyclass(name = "WindowExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
-pub struct PyWindow {
+pub struct PyWindowExpr {
     window: Window,
 }
 
@@ -62,15 +62,15 @@ pub struct PyWindowFrameBound {
     frame_bound: WindowFrameBound,
 }
 
-impl From<PyWindow> for Window {
-    fn from(window: PyWindow) -> Window {
+impl From<PyWindowExpr> for Window {
+    fn from(window: PyWindowExpr) -> Window {
         window.window
     }
 }
 
-impl From<Window> for PyWindow {
-    fn from(window: Window) -> PyWindow {
-        PyWindow { window }
+impl From<Window> for PyWindowExpr {
+    fn from(window: Window) -> PyWindowExpr {
+        PyWindowExpr { window }
     }
 }
 
@@ -80,7 +80,7 @@ impl From<WindowFrameBound> for PyWindowFrameBound {
     }
 }
 
-impl Display for PyWindow {
+impl Display for PyWindowExpr {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         write!(
             f,
@@ -103,7 +103,7 @@ impl Display for PyWindowFrame {
 }
 
 #[pymethods]
-impl PyWindow {
+impl PyWindowExpr {
     /// Returns the schema of the Window
     pub fn schema(&self) -> PyResult<PyDFSchema> {
         Ok(self.window.schema.as_ref().clone().into())
@@ -283,7 +283,7 @@ impl PyWindowFrameBound {
     }
 }
 
-impl LogicalNode for PyWindow {
+impl LogicalNode for PyWindowExpr {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![self.window.input.as_ref().clone().into()]
     }

@@ -34,7 +34,7 @@ use crate::expr::subquery::PySubquery;
 use crate::expr::subquery_alias::PySubqueryAlias;
 use crate::expr::table_scan::PyTableScan;
 use crate::expr::unnest::PyUnnest;
-use crate::expr::window::PyWindow;
+use crate::expr::window::PyWindowExpr;
 use datafusion::logical_expr::LogicalPlan;
 use pyo3::prelude::*;
 
@@ -80,7 +80,7 @@ impl PyLogicalPlan {
             LogicalPlan::Subquery(plan) => PySubquery::from(plan.clone()).to_variant(py),
             LogicalPlan::SubqueryAlias(plan) => PySubqueryAlias::from(plan.clone()).to_variant(py),
             LogicalPlan::Unnest(plan) => PyUnnest::from(plan.clone()).to_variant(py),
-            LogicalPlan::Window(plan) => PyWindow::from(plan.clone()).to_variant(py),
+            LogicalPlan::Window(plan) => PyWindowExpr::from(plan.clone()).to_variant(py),
             LogicalPlan::Repartition(_)
             | LogicalPlan::Union(_)
             | LogicalPlan::Statement(_)

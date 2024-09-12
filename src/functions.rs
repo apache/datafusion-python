@@ -15,8 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::ptr::null;
-
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion::logical_expr::window_function;
 use datafusion::logical_expr::ExprFunctionExt;
