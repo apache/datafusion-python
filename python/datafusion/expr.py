@@ -542,6 +542,43 @@ class Expr:
         """
         return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
+    def over(
+        self,
+        partition_by: Optional[list[Expr]] = None,
+        window_frame: Optional[WindowFrame] = None,
+        order_by: Optional[list[SortExpr | Expr]] = None,
+        null_treatment: Optional[NullTreatment] = None,
+    ) -> Expr:
+        """Turn an aggregate function into a window function.
+
+        This function turns any aggregate function into a window function. With the
+        exception of ``partition_by``, how each of the parameters is used is determined
+        by the underlying aggregate function.
+
+        Args:
+            partition_by: Expressions to partition the window frame on
+            window_frame: Specify the window frame parameters
+            order_by: Set ordering within the window frame
+            null_treatment: Set how to handle null values
+        """
+        partition_by_raw = expr_list_to_raw_expr_list(partition_by)
+        order_by_raw = sort_list_to_raw_sort_list(order_by)
+        window_frame_raw = (
+            window_frame.window_frame if window_frame is not None else None
+        )
+        null_treatment_raw = (
+            null_treatment.value if null_treatment is not None else None
+        )
+
+        return Expr(
+            self.expr.over(
+                partition_by=partition_by_raw,
+                order_by=order_by_raw,
+                window_frame=window_frame_raw,
+                null_treatment=null_treatment_raw,
+            )
+        )
+
 
 class ExprFuncBuilder:
     def __init__(self, builder: expr_internal.ExprFuncBuilder):

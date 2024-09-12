@@ -386,38 +386,30 @@ data_test_window_functions = [
         ),
         [-1, -1, None, 7, -1, -1, None],
     ),
-    # TODO update all aggregate functions as windows once upstream merges https://github.com/apache/datafusion-python/issues/833
-    pytest.param(
+    (
         "first_value",
-        f.window(
-            "first_value",
-            [column("a")],
-            order_by=[f.order_by(column("b"))],
-            partition_by=[column("c")],
+        f.first_value(column("a")).over(
+            partition_by=[column("c")], order_by=[column("b")]
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
-    pytest.param(
+    (
         "last_value",
-        f.window("last_value", [column("a")])
-        .window_frame(WindowFrame("rows", 0, None))
-        .order_by(column("b"))
-        .partition_by(column("c"))
-        .build(),
+        f.last_value(column("a")).over(
+            partition_by=[column("c")],
+            order_by=[column("b")],
+            window_frame=WindowFrame("rows", None, None),
+        ),
         [3, 3, 3, 3, 6, 6, 6],
     ),
-    pytest.param(
+    (
         "3rd_value",
-        f.window(
-            "nth_value",
-            [column("b"), literal(3)],
-            order_by=[f.order_by(column("a"))],
-        ),
+        f.nth_value(column("b"), 3).over(order_by=[column("a")]),
         [None, None, 7, 7, 7, 7, 7],
     ),
-    pytest.param(
+    (
         "avg",
-        f.round(f.window("avg", [column("b")], order_by=[column("a")]), literal(3)),
+        f.round(f.avg(column("b")).over(order_by=[column("a")]), literal(3)),
         [7.0, 7.0, 7.0, 7.333, 7.75, 7.75, 8.0],
     ),
 ]
