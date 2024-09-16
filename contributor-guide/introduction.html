@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=ef9fea58" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
     
     <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -180,13 +180,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../user-guide/io/csv.html">
-     CSV
+    <a class="reference internal" href="../user-guide/io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../user-guide/io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -195,8 +200,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../user-guide/io/avro.html">
-     Avro
+    <a class="reference internal" href="../user-guide/io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -351,6 +356,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#guidelines-for-separating-python-and-rust-code">
+   Guidelines for Separating Python and Rust Code
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#update-dependencies">
    Update Dependencies
   </a>
@@ -419,6 +429,16 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest
 <p>arrow-datafusion-python takes advantage of <a class="reference external" href="https://pre-commit.com/">pre-commit</a> to assist developers with code linting to help reduce the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the developer but certainly helpful for keeping PRs clean and concise.</p>
 <p>Our pre-commit hooks can be installed by running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">install</span></code>, which will install the configurations in your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete the commit if an offending lint is found allowing you to make changes locally before pushing.</p>
 <p>The pre-commit hooks can also be run adhoc without installing them by simply running <code class="code docutils literal notranslate"><span class="pre">pre-commit</span> <span class="pre">run</span> <span class="pre">--all-files</span></code></p>
+</section>
+<section id="guidelines-for-separating-python-and-rust-code">
+<h2>Guidelines for Separating Python and Rust Code<a class="headerlink" href="#guidelines-for-separating-python-and-rust-code" title="Link to this heading">¶</a></h2>
+<p>Version 40 of <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> introduced <code class="docutils literal notranslate"><span class="pre">python</span></code> wrappers around the <code class="docutils literal notranslate"><span class="pre">pyo3</span></code> generated code to vastly improve the user experience. (See the <a class="reference external" href="https://datafusion.apache.org/blog/2024/08/20/python-datafusion-40.0.0/">blog post</a> and <a class="reference external" href="https://github.com/apache/datafusion-python/pull/750">pull request</a> for more details.)</p>
+<p>Mostly, the <code class="docutils literal notranslate"><span class="pre">python</span></code> code is limited to pure wrappers with type hints and good docstrings, but there are a few reasons for when the code does more:</p>
+<ol class="arabic simple">
+<li><p>Trivial aliases like <a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.array_append" title="datafusion.functions.array_append"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_append()</span></code></a> and <a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.list_append" title="datafusion.functions.list_append"><code class="xref py py-func docutils literal notranslate"><span class="pre">list_append()</span></code></a>.</p></li>
+<li><p>Simple type conversion, like from a <code class="docutils literal notranslate"><span class="pre">path</span></code> to a <code class="docutils literal notranslate"><span class="pre">string</span></code> of the path or from <code class="docutils literal notranslate"><span class="pre">number</span></code> to <code class="docutils literal notranslate"><span class="pre">lit(number)</span></code>.</p></li>
+<li><p>The additional code makes an API <strong>much</strong> more pythonic, like we do for <a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.named_struct" title="datafusion.functions.named_struct"><code class="xref py py-func docutils literal notranslate"><span class="pre">named_struct()</span></code></a> (see <a class="reference external" href="https://github.com/apache/datafusion-python/blob/a0913c728f5f323c1eb4913e614c9d996083e274/python/datafusion/functions.py#L1040-L1046">source code</a>).</p></li>
+</ol>
 </section>
 <section id="update-dependencies">
 <h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Link to this heading">¶</a></h2>

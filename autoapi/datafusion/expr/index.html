@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=ef9fea58" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
     
     <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -180,13 +180,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
-     CSV
+    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -195,8 +200,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
-     Avro
+    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -619,6 +624,33 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.distinct">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.distinct()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.filter">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.filter()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.is_not_null">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.is_not_null()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.is_null">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -632,6 +664,33 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.literal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.null_treatment">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.null_treatment()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.order_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.order_by()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.partition_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.partition_by()
         </span>
        </code>
       </a>
@@ -709,6 +768,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.window_frame">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.window_frame()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.__radd__">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -767,6 +835,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.__rtruediv__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr._to_pyarrow_types">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr._to_pyarrow_types
         </span>
        </code>
       </a>
@@ -1701,8 +1778,11 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.__getitem__">
-<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.__getitem__" title="Link to this definition">¶</a></dt>
-<dd><p>For struct data types, return the field indicated by <code class="docutils literal notranslate"><span class="pre">key</span></code>.</p>
+<span class="sig-name descname"><span class="pre">__getitem__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.__getitem__" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve sub-object.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">key</span></code> is a string, returns the subfield of the struct.
+If <code class="docutils literal notranslate"><span class="pre">key</span></code> is an integer, retrieves the element in the array. Note that the
+element index begins at <code class="docutils literal notranslate"><span class="pre">0</span></code>, unlike <cite>array_element</cite> which begins at <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1799,7 +1879,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
 <dd><p>Cast to a new data type.</p>
 </dd></dl>
 
@@ -1823,6 +1903,30 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.distinct">
+<span class="sig-name descname"><span class="pre">distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.distinct" title="Link to this definition">¶</a></dt>
+<dd><p>Only evaluate distinct values for an aggregate function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Filter an aggregate function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.is_not_null">
+<span class="sig-name descname"><span class="pre">is_not_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.is_not_null" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is not null.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.is_null">
 <span class="sig-name descname"><span class="pre">is_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.is_null" title="Link to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is null.</p>
@@ -1833,6 +1937,33 @@
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.literal" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a new expression representing a scalar value.</p>
 <p><code class="docutils literal notranslate"><span class="pre">value</span></code> must be a valid PyArrow scalar value or easily castable to one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.null_treatment">
+<span class="sig-name descname"><span class="pre">null_treatment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">null_treatment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.common.NullTreatment</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.null_treatment" title="Link to this definition">¶</a></dt>
+<dd><p>Set the treatment for <code class="docutils literal notranslate"><span class="pre">null</span></code> values for a window or aggregate function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.order_by">
+<span class="sig-name descname"><span class="pre">order_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.order_by" title="Link to this definition">¶</a></dt>
+<dd><p>Set the ordering for a window or aggregate function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.partition_by">
+<span class="sig-name descname"><span class="pre">partition_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.partition_by" title="Link to this definition">¶</a></dt>
+<dd><p>Set the partitioning for a window function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1911,6 +2042,15 @@ SqlType Enum which this expression represents.</p>
 <p>Ex: <code class="docutils literal notranslate"><span class="pre">IsNotNull</span></code>, <code class="docutils literal notranslate"><span class="pre">Literal</span></code>, <code class="docutils literal notranslate"><span class="pre">BinaryExpr</span></code>, etc</p>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.window_frame">
+<span class="sig-name descname"><span class="pre">window_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">WindowFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.window_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Set the frame fora  window function.</p>
+<p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
+set parameters for either window or aggregate functions. If used on any other
+type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.__radd__">
 <span class="sig-name descname"><span class="pre">__radd__</span></span><a class="headerlink" href="#datafusion.expr.Expr.__radd__" title="Link to this definition">¶</a></dt>
@@ -1947,6 +2087,11 @@ SqlType Enum which this expression represents.</p>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Expr._to_pyarrow_types">
+<span class="sig-name descname"><span class="pre">_to_pyarrow_types</span></span><a class="headerlink" href="#datafusion.expr.Expr._to_pyarrow_types" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.expr">
 <span class="sig-name descname"><span class="pre">expr</span></span><a class="headerlink" href="#datafusion.expr.Expr.expr" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -1955,14 +2100,14 @@ SqlType Enum which this expression represents.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.expr.WindowFrame">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">WindowFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.WindowFrame" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">WindowFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_bound</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.WindowFrame" title="Link to this definition">¶</a></dt>
 <dd><p>Defines a window frame for performing window operations.</p>
 <p>Construct a window frame using the given parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>units</strong> – Should be one of <code class="docutils literal notranslate"><span class="pre">rows</span></code>, <code class="docutils literal notranslate"><span class="pre">range</span></code>, or <code class="docutils literal notranslate"><span class="pre">groups</span></code>.</p></li>
-<li><p><strong>start_bound</strong> – Sets the preceeding bound. Must be &gt;= 0. If none, this
+<li><p><strong>start_bound</strong> – Sets the preceding bound. Must be &gt;= 0. If none, this
 will be set to unbounded. If unit type is <code class="docutils literal notranslate"><span class="pre">groups</span></code>, this
 parameter must be set.</p></li>
 <li><p><strong>end_bound</strong> – Sets the following bound. Must be &gt;= 0. If none, this

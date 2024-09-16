@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>IO &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>Arrow &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,8 +34,8 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Arrow" href="arrow.html" />
-    <link rel="prev" title="User Defined Functions" href="../common-operations/udf-and-udfa.html" />
+    <link rel="next" title="Avro" href="avro.html" />
+    <link rel="prev" title="IO" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -170,7 +170,7 @@
   </ul>
  </li>
  <li class="toctree-l1 current active has-children">
-  <a class="current reference internal" href="#">
+  <a class="reference internal" href="index.html">
    IO
   </a>
   <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
@@ -178,9 +178,9 @@
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="arrow.html">
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
      Arrow
     </a>
    </li>
@@ -339,9 +339,24 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#importing-to-datafusion">
+   Importing to DataFusion
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#exporting-from-datafusion">
+   Exporting from DataFusion
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -361,21 +376,76 @@
               
               <div>
                 
-  <section id="io">
-<h1>IO<a class="headerlink" href="#io" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="arrow.html">Arrow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="arrow.html#importing-to-datafusion">Importing to DataFusion</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrow.html#exporting-from-datafusion">Exporting from DataFusion</a></li>
+  <section id="arrow">
+<h1>Arrow<a class="headerlink" href="#arrow" title="Link to this heading">¶</a></h1>
+<p>DataFusion implements the
+<a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html">Apache Arrow PyCapsule interface</a>
+for importing and exporting DataFrames with zero copy. With this feature, any Python
+project that implements this interface can share data back and forth with DataFusion
+with zero copy.</p>
+<p>We can demonstrate using <a class="reference external" href="https://arrow.apache.org/docs/python/index.html">pyarrow</a>.</p>
+<section id="importing-to-datafusion">
+<h2>Importing to DataFusion<a class="headerlink" href="#importing-to-datafusion" title="Link to this heading">¶</a></h2>
+<p>Here we will create an Arrow table and import it to DataFusion.</p>
+<p>To import an Arrow table, use <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.context.SessionContext.from_arrow()</span></code></a>.
+This will accept any Python object that implements
+<a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html#arrowstream-export">__arrow_c_stream__</a>
+or <a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html#arrowarray-export">__arrow_c_array__</a>
+and returns a <code class="docutils literal notranslate"><span class="pre">StructArray</span></code>. Common pyarrow sources you can use are:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.Array.html">Array</a> (but it must return a Struct Array)</p></li>
+<li><p><a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html">Record Batch</a></p></li>
+<li><p><a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatchReader.html">Record Batch Reader</a></p></li>
+<li><p><a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.Table.html">Table</a></p></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="avro.html">Avro</a></li>
-<li class="toctree-l1"><a class="reference internal" href="csv.html">CSV</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json.html">JSON</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parquet.html">Parquet</a></li>
-</ul>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pyarrow</span> <span class="k">as</span> <span class="nn">pa</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]}</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">table</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">Table</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_arrow</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+---+---+</span>
+<span class="o">|</span> <span class="n">a</span> <span class="o">|</span> <span class="n">b</span> <span class="o">|</span>
+<span class="o">+---+---+</span>
+<span class="o">|</span> <span class="mi">1</span> <span class="o">|</span> <span class="mi">4</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span> <span class="o">|</span> <span class="mi">5</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">3</span> <span class="o">|</span> <span class="mi">6</span> <span class="o">|</span>
+<span class="o">+---+---+</span>
+</pre></div>
 </div>
+</section>
+<section id="exporting-from-datafusion">
+<h2>Exporting from DataFusion<a class="headerlink" href="#exporting-from-datafusion" title="Link to this heading">¶</a></h2>
+<p>DataFusion DataFrames implement <code class="docutils literal notranslate"><span class="pre">__arrow_c_stream__</span></code> PyCapsule interface, so any
+Python library that accepts these can import a DataFusion DataFrame directly.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>It is important to note that this will cause the DataFrame execution to happen, which may be
+a time consuming task. That is, you will cause a
+<a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.dataframe.DataFrame.collect()</span></code></a> operation call to occur.</p>
+</div>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">((</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">lit</span><span class="p">(</span><span class="mf">1.5</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;c&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;df&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;d&quot;</span><span class="p">))</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">pa</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
+<span class="n">pyarrow</span><span class="o">.</span><span class="n">Table</span>
+<span class="n">c</span><span class="p">:</span> <span class="n">double</span>
+<span class="n">d</span><span class="p">:</span> <span class="n">string</span> <span class="ow">not</span> <span class="n">null</span>
+<span class="o">----</span>
+<span class="n">c</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1.5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mf">4.5</span><span class="p">]]</span>
+<span class="n">d</span><span class="p">:</span> <span class="p">[[</span><span class="s2">&quot;df&quot;</span><span class="p">,</span><span class="s2">&quot;df&quot;</span><span class="p">,</span><span class="s2">&quot;df&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</section>
 </section>
 
 
@@ -384,17 +454,17 @@
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../common-operations/udf-and-udfa.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">User Defined Functions</p>
+            <p class="prev-next-title">IO</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="arrow.html" title="next page">
+    <a class='right-next' id="next-link" href="avro.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Arrow</p>
+        <p class="prev-next-title">Avro</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

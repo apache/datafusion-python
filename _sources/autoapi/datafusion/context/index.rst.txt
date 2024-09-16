@@ -233,7 +233,7 @@ Module Contents
 
    .. py:method:: with_default_catalog_and_schema(catalog: str, schema: str) -> SessionConfig
 
-      Select a name for the default catalog and shcema.
+      Select a name for the default catalog and schema.
 
       :param catalog: Catalog name.
       :param schema: Schema name.
@@ -362,7 +362,7 @@ Module Contents
 
    Example usage:
 
-   The following example demostrates how to use the context to execute
+   The following example demonstrates how to use the context to execute
    a query against a CSV data source using the :py:class:`DataFrame` API::
 
        from datafusion import SessionContext
@@ -417,14 +417,26 @@ Module Contents
 
 
 
+   .. py:method:: from_arrow(data: Any, name: str | None = None) -> datafusion.dataframe.DataFrame
+
+      Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
+
+      The Arrow data source can be any object that implements either
+      ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
+      a struct array. Common examples of sources from pyarrow include
+
+      :param data: Arrow data source.
+      :param name: Name of the DataFrame.
+
+      :returns: DataFrame representation of the Arrow table.
+
+
+
    .. py:method:: from_arrow_table(data: pyarrow.Table, name: str | None = None) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
 
-      :param data: Arrow table.
-      :param name: Name of the DataFrame.
-
-      :returns: DataFrame representation of the Arrow table.
+      This is an alias for :py:func:`from_arrow`.
 
 
 
@@ -485,7 +497,7 @@ Module Contents
 
 
 
-   .. py:method:: read_csv(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
 
@@ -682,12 +694,14 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name: str, table: pyarrow.Table) -> None
+   .. py:method:: register_table(name: str, table: datafusion.catalog.Table) -> None
 
-      Register a table with the given name into the session.
+      Register a :py:class: `~datafusion.catalog.Table` as a table.
+
+      The registered table can be referenced from SQL statement executed against.
 
       :param name: Name of the resultant table.
-      :param table: PyArrow table to add to the session context.
+      :param table: DataFusion table to add to the session context.
 
 
 
@@ -705,7 +719,7 @@ Module Contents
 
    .. py:method:: session_id() -> str
 
-      Retrun an id that uniquely identifies this :py:class:`SessionContext`.
+      Return an id that uniquely identifies this :py:class:`SessionContext`.
 
 
 
@@ -729,7 +743,7 @@ Module Contents
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
-      This function will first validating that the query is allowed by the
+      This function will first validate that the query is allowed by the
       provided options.
 
       :param query: SQL query text.

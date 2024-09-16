@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=ef9fea58" />
+    <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
     
     <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -180,13 +180,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../io/csv.html">
-     CSV
+    <a class="reference internal" href="../io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -195,8 +200,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../io/avro.html">
-     Avro
+    <a class="reference internal" href="../io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -366,6 +371,8 @@
 <li class="toctree-l2"><a class="reference internal" href="expressions.html#column">Column</a></li>
 <li class="toctree-l2"><a class="reference internal" href="expressions.html#literal">Literal</a></li>
 <li class="toctree-l2"><a class="reference internal" href="expressions.html#boolean">Boolean</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expressions.html#arrays">Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expressions.html#structs">Structs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="expressions.html#functions">Functions</a></li>
 </ul>
 </li>
@@ -385,8 +392,17 @@
 <li class="toctree-l2"><a class="reference internal" href="functions.html#other">Other</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="aggregations.html">Aggregation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="windows.html">Window Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="aggregations.html">Aggregation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="aggregations.html#setting-parameters">Setting Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aggregations.html#aggregate-functions">Aggregate Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="windows.html">Window Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#setting-parameters">Setting Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#aggregate-functions">Aggregate Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="windows.html#available-functions">Available Functions</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="udf-and-udfa.html">User Defined Functions</a></li>
 </ul>
 </div>

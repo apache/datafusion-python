@@ -172,9 +172,13 @@ Module Contents
 
 
 
-   .. py:method:: __getitem__(key: str) -> Expr
+   .. py:method:: __getitem__(key: str | int) -> Expr
 
-      For struct data types, return the field indicated by ``key``.
+      Retrieve sub-object.
+
+      If ``key`` is a string, returns the subfield of the struct.
+      If ``key`` is an integer, retrieves the element in the array. Note that the
+      element index begins at ``0``, unlike `array_element` which begins at ``1``.
 
 
 
@@ -278,7 +282,7 @@ Module Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]) -> Expr
 
       Cast to a new data type.
 
@@ -306,6 +310,32 @@ Module Contents
 
 
 
+   .. py:method:: distinct() -> ExprFuncBuilder
+
+      Only evaluate distinct values for an aggregate function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: filter(filter: Expr) -> ExprFuncBuilder
+
+      Filter an aggregate function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: is_not_null() -> Expr
+
+      Returns ``True`` if this expression is not null.
+
+
+
    .. py:method:: is_null() -> Expr
 
       Returns ``True`` if this expression is null.
@@ -319,6 +349,36 @@ Module Contents
       Creates a new expression representing a scalar value.
 
       ``value`` must be a valid PyArrow scalar value or easily castable to one.
+
+
+
+   .. py:method:: null_treatment(null_treatment: datafusion.common.NullTreatment) -> ExprFuncBuilder
+
+      Set the treatment for ``null`` values for a window or aggregate function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: order_by(*exprs: Expr) -> ExprFuncBuilder
+
+      Set the ordering for a window or aggregate function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: partition_by(*partition_by: Expr) -> ExprFuncBuilder
+
+      Set the partitioning for a window function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
 
 
 
@@ -391,6 +451,16 @@ Module Contents
 
 
 
+   .. py:method:: window_frame(window_frame: WindowFrame) -> ExprFuncBuilder
+
+      Set the frame fora  window function.
+
+      This function will create an :py:class:`ExprFuncBuilder` that can be used to
+      set parameters for either window or aggregate functions. If used on any other
+      type of expression, an error will be generated when ``build()`` is called.
+
+
+
    .. py:attribute:: __radd__
 
 
@@ -412,17 +482,20 @@ Module Contents
    .. py:attribute:: __rtruediv__
 
 
+   .. py:attribute:: _to_pyarrow_types
+
+
    .. py:attribute:: expr
 
 
-.. py:class:: WindowFrame(units: str, start_bound: int | None, end_bound: int | None)
+.. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
 
    Defines a window frame for performing window operations.
 
    Construct a window frame using the given parameters.
 
    :param units: Should be one of ``rows``, ``range``, or ``groups``.
-   :param start_bound: Sets the preceeding bound. Must be >= 0. If none, this
+   :param start_bound: Sets the preceding bound. Must be >= 0. If none, this
                        will be set to unbounded. If unit type is ``groups``, this
                        parameter must be set.
    :param end_bound: Sets the following bound. Must be >= 0. If none, this

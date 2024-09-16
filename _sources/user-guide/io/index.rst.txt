@@ -21,8 +21,8 @@ IO
 .. toctree::
    :maxdepth: 2
 
-   csv
-   parquet
-   json
+   arrow
    avro
-
+   csv
+   json
+   parquet

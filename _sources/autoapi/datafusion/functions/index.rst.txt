@@ -93,6 +93,7 @@ Functions
    datafusion.functions.covar
    datafusion.functions.covar_pop
    datafusion.functions.covar_samp
+   datafusion.functions.cume_dist
    datafusion.functions.current_date
    datafusion.functions.current_time
    datafusion.functions.date_bin
@@ -102,6 +103,7 @@ Functions
    datafusion.functions.datetrunc
    datafusion.functions.decode
    datafusion.functions.degrees
+   datafusion.functions.dense_rank
    datafusion.functions.digest
    datafusion.functions.encode
    datafusion.functions.ends_with
@@ -113,13 +115,14 @@ Functions
    datafusion.functions.floor
    datafusion.functions.from_unixtime
    datafusion.functions.gcd
-   datafusion.functions.grouping
    datafusion.functions.in_list
    datafusion.functions.initcap
    datafusion.functions.isnan
    datafusion.functions.iszero
+   datafusion.functions.lag
    datafusion.functions.last_value
    datafusion.functions.lcm
+   datafusion.functions.lead
    datafusion.functions.left
    datafusion.functions.length
    datafusion.functions.levenshtein
@@ -167,16 +170,20 @@ Functions
    datafusion.functions.named_struct
    datafusion.functions.nanvl
    datafusion.functions.now
+   datafusion.functions.nth_value
+   datafusion.functions.ntile
    datafusion.functions.nullif
    datafusion.functions.octet_length
    datafusion.functions.order_by
    datafusion.functions.overlay
+   datafusion.functions.percent_rank
    datafusion.functions.pi
    datafusion.functions.pow
    datafusion.functions.power
    datafusion.functions.radians
    datafusion.functions.random
    datafusion.functions.range
+   datafusion.functions.rank
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -194,6 +201,7 @@ Functions
    datafusion.functions.reverse
    datafusion.functions.right
    datafusion.functions.round
+   datafusion.functions.row_number
    datafusion.functions.rpad
    datafusion.functions.rtrim
    datafusion.functions.sha224
@@ -209,6 +217,7 @@ Functions
    datafusion.functions.stddev
    datafusion.functions.stddev_pop
    datafusion.functions.stddev_samp
+   datafusion.functions.string_agg
    datafusion.functions.strpos
    datafusion.functions.struct
    datafusion.functions.substr
@@ -231,6 +240,8 @@ Functions
    datafusion.functions.var
    datafusion.functions.var_pop
    datafusion.functions.var_samp
+   datafusion.functions.var_sample
+   datafusion.functions.when
    datafusion.functions.window
 
 
@@ -267,27 +278,72 @@ Module Contents
    Creates an alias expression.
 
 
-.. py:function:: approx_distinct(expression: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the approximate number of distinct values.
 
+   This aggregate function is similar to :py:func:`count` with distinct set, but it
+   will approximate the number of distinct entries. It may return significantly faster
+   than :py:func:`count` for some DataFrames.
 
-.. py:function:: approx_median(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Values to check for distinct entries
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: approx_median(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the approximate median value.
 
+   This aggregate function is similar to :py:func:`median`, but it will only
+   approximate the median. It may return significantly faster for some DataFrames.
 
-.. py:function:: approx_percentile_cont(expression: datafusion.expr.Expr, percentile: datafusion.expr.Expr, num_centroids: datafusion.expr.Expr | None = None, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``, and ``distinct``.
+
+   :param expression: Values to find the median for
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: approx_percentile_cont(expression: datafusion.expr.Expr, percentile: float, num_centroids: Optional[int] = None, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the value that is approximately at a given percentile of ``expr``.
 
+   This aggregate function assumes the input values form a continuous distribution.
+   Suppose you have a DataFrame which consists of 100 different test scores. If you
+   called this function with a percentile of 0.9, it would return the value of the
+   test score that is above 90% of the other test scores. The returned value may be
+   between two of the values.
 
-.. py:function:: approx_percentile_cont_with_weight(arg: datafusion.expr.Expr, weight: datafusion.expr.Expr, percentile: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   This function uses the [t-digest](https://arxiv.org/abs/1902.04023) algorithm to
+   compute the percentil. You can limit the number of bins used in this algorithm by
+   setting the ``num_centroids`` parameter.
 
-   Returns the value of the approximate percentile.
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-   This function is similar to :py:func:`approx_percentile_cont` except that it uses
-   the associated associated weights.
+   :param expression: Values for which to find the approximate percentile
+   :param percentile: This must be between 0.0 and 1.0, inclusive
+   :param num_centroids: Max bin size for the t-digest algorithm
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: approx_percentile_cont_with_weight(expression: datafusion.expr.Expr, weight: datafusion.expr.Expr, percentile: float, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
+
+   Returns the value of the weighted approximate percentile.
+
+   This aggregate function is similar to :py:func:`approx_percentile_cont` except that
+   it uses the associated associated weights.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Values for which to find the approximate percentile
+   :param weight: Relative weight for each of the values in ``expression``
+   :param percentile: This must be between 0.0 and 1.0, inclusive
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: array(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -297,9 +353,21 @@ Module Contents
    This is an alias for :py:func:`make_array`.
 
 
-.. py:function:: array_agg(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: array_agg(expression: datafusion.expr.Expr, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
 
    Aggregate values into an array.
+
+   Currently ``distinct`` and ``order_by`` cannot be used together. As a work around,
+   consider :py:func:`array_sort` after aggregation.
+   [Issue Tracker](https://github.com/apache/datafusion/issues/12371)
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the option ``null_treatment``.
+
+   :param expression: Values to combine into an array
+   :param distinct: If True, a single entry for each distinct value will be in the result
+   :param filter: If provided, only compute against rows for which the filter is True
+   :param order_by: Order the resultant array values
 
 
 .. py:function:: array_append(array: datafusion.expr.Expr, element: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -542,14 +610,30 @@ Module Contents
    Returns inverse hyperbolic tangent.
 
 
-.. py:function:: avg(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: avg(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the average value.
 
+   This aggregate function expects a numeric expression and will return a float.
 
-.. py:function:: bit_and(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Values to combine into an array
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: bit_and(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the bitwise AND of the argument.
+
+   This aggregate function will bitwise compare every value in the input partition.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: bit_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -557,24 +641,59 @@ Module Contents
    Returns the number of bits in the string argument.
 
 
-.. py:function:: bit_or(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: bit_or(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the bitwise OR of the argument.
 
+   This aggregate function will bitwise compare every value in the input partition.
 
-.. py:function:: bit_xor(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: bit_xor(expression: datafusion.expr.Expr, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the bitwise XOR of the argument.
 
+   This aggregate function will bitwise compare every value in the input partition.
 
-.. py:function:: bool_and(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``.
 
-   Computes the boolean AND of the arugment.
+   :param expression: Argument to perform bitwise calculation on
+   :param distinct: If True, evaluate each unique value of expression only once
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
-.. py:function:: bool_or(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: bool_and(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
-   Computes the boolean OR of the arguement.
+   Computes the boolean AND of the argument.
+
+   This aggregate function will compare every value in the input partition. These are
+   expected to be boolean values.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Argument to perform calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: bool_or(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
+
+   Computes the boolean OR of the argument.
+
+   This aggregate function will compare every value in the input partition. These are
+   expected to be boolean values.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Argument to perform calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -637,12 +756,21 @@ Module Contents
 
    Concatenates the list ``args`` with the separator.
 
-   ``NULL`` arugments are ignored. ``separator`` should not be ``NULL``.
+   ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
 
 
-.. py:function:: corr(value1: datafusion.expr.Expr, value2: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: corr(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the correlation coefficient between ``value1`` and ``value2``.
+
+   This aggregate function expects both values to be numeric and will return a float.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param value_y: The dependent variable for correlation
+   :param value_x: The independent variable for correlation
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: cos(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -660,31 +788,87 @@ Module Contents
    Returns the cotangent of the argument.
 
 
-.. py:function:: count(args: datafusion.expr.Expr | list[datafusion.expr.Expr] | None = None, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: count(expressions: datafusion.expr.Expr | list[datafusion.expr.Expr] | None = None, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the number of rows that match the given arguments.
 
+   This aggregate function will count the non-null rows provided in the expression.
 
-.. py:function:: count_star() -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``.
+
+   :param expressions: Argument to perform bitwise calculation on
+   :param distinct: If True, a single entry for each distinct value will be in the result
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: count_star(filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Create a COUNT(1) aggregate expression.
 
+   This aggregate function will count all of the rows in the partition.
 
-.. py:function:: covar(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``distinct``, and ``null_treatment``.
+
+   :param filter: If provided, only count rows for which the filter is True
+
+
+.. py:function:: covar(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sample covariance.
 
    This is an alias for :py:func:`covar_samp`.
 
 
-.. py:function:: covar_pop(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: covar_pop(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the population covariance.
 
+   This aggregate function expects both values to be numeric and will return a float.
 
-.. py:function:: covar_samp(y: datafusion.expr.Expr, x: datafusion.expr.Expr) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param value_y: The dependent variable for covariance
+   :param value_x: The independent variable for covariance
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: covar_samp(value_y: datafusion.expr.Expr, value_x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sample covariance.
+
+   This aggregate function expects both values to be numeric and will return a float.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param value_y: The dependent variable for covariance
+   :param value_x: The independent variable for covariance
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: cume_dist(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a cumulative distribution window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   are the ratio of the row number to the total numebr of rows. Here is an example of a
+   dataframe with a window ordered by descending ``points`` and the associated
+   cumulative distribution::
+
+       +--------+-----------+
+       | points | cume_dist |
+       +--------+-----------+
+       | 100    | 0.5       |
+       | 100    | 0.5       |
+       | 50     | 0.75      |
+       | 25     | 1.0       |
+       +--------+-----------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: current_date() -> datafusion.expr.Expr
@@ -736,6 +920,27 @@ Module Contents
    Converts the argument from radians to degrees.
 
 
+.. py:function:: dense_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a dense_rank window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   will be consecutive. Here is an example of a dataframe with a window ordered by
+   descending ``points`` and the associated dense rank::
+
+       +--------+------------+
+       | points | dense_rank |
+       +--------+------------+
+       | 100    | 1          |
+       | 100    | 1          |
+       | 50     | 2          |
+       | 25     | 3          |
+       +--------+------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
+
+
 .. py:function:: digest(value: datafusion.expr.Expr, method: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Computes the binary hash of an expression using the specified algorithm.
@@ -756,7 +961,7 @@ Module Contents
 
 .. py:function:: exp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
-   Returns the exponential of the arugment.
+   Returns the exponential of the argument.
 
 
 .. py:function:: factorial(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -774,9 +979,19 @@ Module Contents
    The string list is a string composed of substrings separated by ``,`` characters.
 
 
-.. py:function:: first_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+.. py:function:: first_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the first value in a group of values.
+
+   This aggregate function will return the first value in the partition.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the option ``distinct``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
+   :param order_by: Set the ordering of the expression to evaluate
+   :param null_treatment: Assign whether to respect or ignull null values.
 
 
 .. py:function:: flatten(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -797,13 +1012,6 @@ Module Contents
 .. py:function:: gcd(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the greatest common divisor.
-
-
-.. py:function:: grouping(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
-
-   Indicates if the expression is aggregated or not.
-
-   Returns 1 if the value of the argument is aggregated, 0 if not.
 
 
 .. py:function:: in_list(arg: datafusion.expr.Expr, values: list[datafusion.expr.Expr], negated: bool = False) -> datafusion.expr.Expr
@@ -829,14 +1037,83 @@ Module Contents
    Returns true if a given number is +0.0 or -0.0 otherwise returns false.
 
 
-.. py:function:: last_value(arg: datafusion.expr.Expr, distinct: bool = False, filter: bool = None, order_by: datafusion.expr.Expr | None = None, null_treatment: datafusion._internal.common.NullTreatment | None = None) -> datafusion.expr.Expr
+.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a lag window function.
+
+   Lag operation will return the argument that is in the previous shift_offset-th row
+   in the partition. For example ``lag(col("b"), shift_offset=3, default_value=5)``
+   will return the 3rd previous value in column ``b``. At the beginnig of the
+   partition, where no values can be returned it will return the default value of 5.
+
+   Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
+   functions on a simple DataFrame::
+
+       +--------+------+-----+
+       | points | lead | lag |
+       +--------+------+-----+
+       | 100    | 100  |     |
+       | 100    | 50   | 100 |
+       | 50     | 25   | 100 |
+       | 25     |      | 50  |
+       +--------+------+-----+
+
+   :param arg: Value to return
+   :param shift_offset: Number of rows before the current row.
+   :param default_value: Value to return if shift_offet row does not exist.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
+
+
+.. py:function:: last_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the last value in a group of values.
+
+   This aggregate function will return the last value in the partition.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the option ``distinct``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param filter: If provided, only compute against rows for which the filter is True
+   :param order_by: Set the ordering of the expression to evaluate
+   :param null_treatment: Assign whether to respect or ignull null values.
 
 
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the least common multiple.
+
+
+.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a lead window function.
+
+   Lead operation will return the argument that is in the next shift_offset-th row in
+   the partition. For example ``lead(col("b"), shift_offset=3, default_value=5)`` will
+   return the 3rd following value in column ``b``. At the end of the partition, where
+   no futher values can be returned it will return the default value of 5.
+
+   Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
+   functions on a simple DataFrame::
+
+       +--------+------+-----+
+       | points | lead | lag |
+       +--------+------+-----+
+       | 100    | 100  |     |
+       | 100    | 50   | 100 |
+       | 50     | 25   | 100 |
+       | 25     |      | 50  |
+       +--------+------+-----+
+
+   To set window function parameters use the window builder approach described in the
+   ref:`_window_functions` online documentation.
+
+   :param arg: Value to return
+   :param shift_offset: Number of rows following the current row.
+   :param default_value: Value to return if shift_offet row does not exist.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: left(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1096,9 +1373,15 @@ Module Contents
    Make a date from year, month and day component parts.
 
 
-.. py:function:: max(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: max(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
-   Returns the maximum value of the arugment.
+   Aggregate function that returns the maximum value of the argument.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: The value to find the maximum of
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: md5(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1106,24 +1389,40 @@ Module Contents
    Computes an MD5 128-bit checksum for a string expression.
 
 
-.. py:function:: mean(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: mean(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the average (mean) value of the argument.
 
    This is an alias for :py:func:`avg`.
 
 
-.. py:function:: median(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: median(expression: datafusion.expr.Expr, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the median of a set of numbers.
 
+   This aggregate function returns the median value of the expression for the given
+   aggregate function.
 
-.. py:function:: min(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by`` and ``null_treatment``.
+
+   :param expression: The value to compute the median of
+   :param distinct: If True, a single entry for each distinct value will be in the result
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: min(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Returns the minimum value of the argument.
 
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-.. py:function:: named_struct(name_pairs: list[str, datafusion.expr.Expr]) -> datafusion.expr.Expr
+   :param expression: The value to find the minimum of
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: named_struct(name_pairs: list[tuple[str, datafusion.expr.Expr]]) -> datafusion.expr.Expr
 
    Returns a struct with the given names and arguments pairs.
 
@@ -1138,6 +1437,47 @@ Module Contents
    Returns the current timestamp in nanoseconds.
 
    This will use the same value for all instances of now() in same statement.
+
+
+.. py:function:: nth_value(expression: datafusion.expr.Expr, n: int, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
+
+   Returns the n-th value in a group of values.
+
+   This aggregate function will return the n-th value in the partition.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the option ``distinct``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param n: Index of value to return. Starts at 1.
+   :param filter: If provided, only compute against rows for which the filter is True
+   :param order_by: Set the ordering of the expression to evaluate
+   :param null_treatment: Assign whether to respect or ignull null values.
+
+
+.. py:function:: ntile(groups: int, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a n-tile window function.
+
+   This window function orders the window frame into a give number of groups based on
+   the ordering criteria. It then returns which group the current row is assigned to.
+   Here is an example of a dataframe with a window ordered by descending ``points``
+   and the associated n-tile function::
+
+       +--------+-------+
+       | points | ntile |
+       +--------+-------+
+       | 120    | 1     |
+       | 100    | 1     |
+       | 80     | 2     |
+       | 60     | 2     |
+       | 40     | 3     |
+       | 20     | 3     |
+       +--------+-------+
+
+   :param groups: Number of groups for the n-tile to be divided into.
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: nullif(expr1: datafusion.expr.Expr, expr2: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1163,6 +1503,28 @@ Module Contents
 
    Replace the substring of string that starts at the ``start``'th character and
    extends for ``length`` characters with new substring.
+
+
+.. py:function:: percent_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a percent_rank window function.
+
+   This window function is similar to :py:func:`rank` except that the returned values
+   are the percentage from 0.0 to 1.0 from first to last. Here is an example of a
+   dataframe with a window ordered by descending ``points`` and the associated percent
+   rank::
+
+       +--------+--------------+
+       | points | percent_rank |
+       +--------+--------------+
+       | 100    | 0.0          |
+       | 100    | 0.0          |
+       | 50     | 0.666667     |
+       | 25     | 1.0          |
+       +--------+--------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: pi() -> datafusion.expr.Expr
@@ -1197,6 +1559,32 @@ Module Contents
    Create a list of values in the range between start and stop.
 
 
+.. py:function:: rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a rank window function.
+
+   Returns the rank based upon the window order. Consecutive equal values will receive
+   the same rank, but the next different value will not be consecutive but rather the
+   number of rows that preceed it plus one. This is similar to Olympic medals. If two
+   people tie for gold, the next place is bronze. There would be no silver medal. Here
+   is an example of a dataframe with a window ordered by descending ``points`` and the
+   associated rank.
+
+   You should set ``order_by`` to produce meaningful results::
+
+       +--------+------+
+       | points | rank |
+       +--------+------+
+       | 100    | 1    |
+       | 100    | 1    |
+       | 50     | 3    |
+       | 25     | 4    |
+       +--------+------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
+
+
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Find if any regular expression (regex) matches exist.
@@ -1224,53 +1612,139 @@ Module Contents
    <https://docs.rs/regex/latest/regex/#grouping-and-flags>
 
 
-.. py:function:: regr_avgx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: regr_avgx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the average of the independent variable ``x``.
 
-   Only non-null pairs of the inputs are evaluated.
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
-.. py:function:: regr_avgy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: regr_avgy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the average of the dependent variable ``y``.
 
-   Only non-null pairs of the inputs are evaluated.
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
-.. py:function:: regr_count(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: regr_count(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Counts the number of rows in which both expressions are not null.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_intercept(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_intercept(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the intercept from the linear regression.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_r2(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_r2(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the R-squared value from linear regression.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_slope(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_slope(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the slope from linear regression.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_sxx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_sxx(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sum of squares of the independent variable ``x``.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_sxy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_sxy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sum of products of pairs of numbers.
 
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
 
-.. py:function:: regr_syy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: regr_syy(y: datafusion.expr.Expr, x: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sum of squares of the dependent variable ``y``.
+
+   This is a linear regression aggregate function. Only non-null pairs of the inputs
+   are evaluated.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param y: The linear regression dependent variable
+   :param x: The linear regression independent variable
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: repeat(string: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1300,6 +1774,27 @@ Module Contents
    If the optional ``decimal_places`` is specified, round to the nearest number of
    decimal places. You can specify a negative number of decimal places. For example
    ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
+
+
+.. py:function:: row_number(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Create a row number window function.
+
+   Returns the row number of the window function.
+
+   Here is an example of the ``row_number`` on a simple DataFrame::
+
+       +--------+------------+
+       | points | row number |
+       +--------+------------+
+       | 100    | 1          |
+       | 100    | 2          |
+       | 50     | 3          |
+       | 25     | 4          |
+       +--------+------------+
+
+   :param partition_by: Expressions to partition the window frame on.
+   :param order_by: Set ordering within the window frame.
 
 
 .. py:function:: rpad(string: datafusion.expr.Expr, count: datafusion.expr.Expr, characters: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
@@ -1368,21 +1863,50 @@ Module Contents
    Returns true if string starts with prefix.
 
 
-.. py:function:: stddev(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: stddev(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the standard deviation of the argument.
 
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-.. py:function:: stddev_pop(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   :param expression: The value to find the minimum of
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: stddev_pop(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the population standard deviation of the argument.
 
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-.. py:function:: stddev_samp(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+   :param expression: The value to find the minimum of
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: stddev_samp(arg: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sample standard deviation of the argument.
 
    This is an alias for :py:func:`stddev`.
+
+
+.. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+
+   Concatenates the input strings.
+
+   This aggregate function will concatenate input strings, ignoring null values, and
+   seperating them with the specified delimiter. Non-string values will be converted to
+   their string equivalents.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``distinct`` and ``null_treatment``.
+
+   :param expression: Argument to perform bitwise calculation on
+   :param delimiter: Text to place between each value of expression
+   :param filter: If provided, only compute against rows for which the filter is True
+   :param order_by: Set the ordering of the expression to evaluate
 
 
 .. py:function:: strpos(string: datafusion.expr.Expr, substring: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1413,9 +1937,17 @@ Module Contents
    Substring from the ``position`` with ``length`` characters.
 
 
-.. py:function:: sum(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: sum(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sum of a set of numbers.
+
+   This aggregate function expects a numeric expression.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: Values to combine into an array
+   :param filter: If provided, only compute against rows for which the filter is True
 
 
 .. py:function:: tan(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1493,25 +2025,59 @@ Module Contents
    Returns uuid v4 as a string value.
 
 
-.. py:function:: var(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: var(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sample variance of the argument.
 
    This is an alias for :py:func:`var_samp`.
 
 
-.. py:function:: var_pop(arg: datafusion.expr.Expr, distinct: bool = False) -> datafusion.expr.Expr
+.. py:function:: var_pop(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the population variance of the argument.
 
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
 
-.. py:function:: var_samp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+   :param expression: The variable to compute the variance for
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: var_samp(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
 
    Computes the sample variance of the argument.
+
+   If using the builder functions described in ref:`_aggregation` this function ignores
+   the options ``order_by``, ``null_treatment``, and ``distinct``.
+
+   :param expression: The variable to compute the variance for
+   :param filter: If provided, only compute against rows for which the filter is True
+
+
+.. py:function:: var_sample(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
+
+   Computes the sample variance of the argument.
+
+   This is an alias for :py:func:`var_samp`.
+
+
+.. py:function:: when(when: datafusion.expr.Expr, then: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
+
+   Create a case expression that has no base expression.
+
+   Create a :py:class:`~datafusion.expr.CaseBuilder` to match cases for the
+   expression ``expr``. See :py:class:`~datafusion.expr.CaseBuilder` for
+   detailed usage.
 
 
 .. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
 
    Creates a new Window function expression.
+
+   This interface will soon be deprecated. Instead of using this interface,
+   users should call the window functions directly. For example, to perform a
+   lag use::
+
+       df.select(functions.lag(col("a")).partition_by(col("b")).build())
 
 

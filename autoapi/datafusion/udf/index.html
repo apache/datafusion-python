@@ -25,7 +25,7 @@
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=ef9fea58" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
     
     <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
@@ -179,13 +179,18 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
-     CSV
+    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+     Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
-     Parquet
+    <a class="reference internal" href="../../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/csv.html">
+     CSV
     </a>
    </li>
    <li class="toctree-l2">
@@ -194,8 +199,8 @@
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
-     Avro
+    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+     Parquet
     </a>
    </li>
   </ul>
@@ -627,7 +632,7 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.udf.Accumulator.update">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.udf.Accumulator.update" title="Link to this definition">¶</a></dt>
-<dd><p>Evalute an array of values and update state.</p>
+<dd><p>Evaluate an array of values and update state.</p>
 </dd></dl>
 
 </dd></dl>
@@ -639,7 +644,7 @@
 <p>Aggregate UDFs operate on a group of rows and return a single value. See
 also <a class="reference internal" href="#datafusion.udf.ScalarUDF" title="datafusion.udf.ScalarUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a> for operating on a row by row basis.</p>
 <p>Instantiate a user defined aggregate function (UDAF).</p>
-<p>See <a class="reference internal" href="#datafusion.udf.AggregateUDF.udaf" title="datafusion.udf.AggregateUDF.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a> for a convenience function and arugment
+<p>See <a class="reference internal" href="#datafusion.udf.AggregateUDF.udaf" title="datafusion.udf.AggregateUDF.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a> for a convenience function and argument
 descriptions.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.udf.AggregateUDF.__call__">
