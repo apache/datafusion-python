@@ -85,7 +85,6 @@ ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
-# SortExpr = expr_internal.SortExpr
 Subquery = expr_internal.Subquery
 SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
@@ -687,7 +686,7 @@ class SortExpr:
         self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
 
     def expr(self) -> Expr:
-        """Return the raw expr backing teh SortExpr."""
+        """Return the raw expr backing the SortExpr."""
         return Expr(self.raw_sort.expr())
 
     def ascending(self) -> bool:
