@@ -353,7 +353,7 @@ Module Contents
    This is an alias for :py:func:`make_array`.
 
 
-.. py:function:: array_agg(expression: datafusion.expr.Expr, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: array_agg(expression: datafusion.expr.Expr, distinct: bool = False, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Aggregate values into an array.
 
@@ -849,7 +849,7 @@ Module Contents
    :param filter: If provided, only compute against rows for which the filter is True
 
 
-.. py:function:: cume_dist(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: cume_dist(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a cumulative distribution window function.
 
@@ -920,7 +920,7 @@ Module Contents
    Converts the argument from radians to degrees.
 
 
-.. py:function:: dense_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: dense_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a dense_rank window function.
 
@@ -979,7 +979,7 @@ Module Contents
    The string list is a string composed of substrings separated by ``,`` characters.
 
 
-.. py:function:: first_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
+.. py:function:: first_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the first value in a group of values.
 
@@ -1037,7 +1037,7 @@ Module Contents
    Returns true if a given number is +0.0 or -0.0 otherwise returns false.
 
 
-.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: lag(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a lag window function.
 
@@ -1065,7 +1065,7 @@ Module Contents
    :param order_by: Set ordering within the window frame.
 
 
-.. py:function:: last_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
+.. py:function:: last_value(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the last value in a group of values.
 
@@ -1085,7 +1085,7 @@ Module Contents
    Returns the least common multiple.
 
 
-.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: lead(arg: datafusion.expr.Expr, shift_offset: int = 1, default_value: Optional[Any] = None, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a lead window function.
 
@@ -1439,7 +1439,7 @@ Module Contents
    This will use the same value for all instances of now() in same statement.
 
 
-.. py:function:: nth_value(expression: datafusion.expr.Expr, n: int, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
+.. py:function:: nth_value(expression: datafusion.expr.Expr, n: int, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None, null_treatment: datafusion.common.NullTreatment = NullTreatment.RESPECT_NULLS) -> datafusion.expr.Expr
 
    Returns the n-th value in a group of values.
 
@@ -1455,7 +1455,7 @@ Module Contents
    :param null_treatment: Assign whether to respect or ignull null values.
 
 
-.. py:function:: ntile(groups: int, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: ntile(groups: int, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a n-tile window function.
 
@@ -1492,7 +1492,7 @@ Module Contents
    Returns the number of bytes of a string.
 
 
-.. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.Expr
+.. py:function:: order_by(expr: datafusion.expr.Expr, ascending: bool = True, nulls_first: bool = True) -> datafusion.expr.SortExpr
 
    Creates a new sort expression.
 
@@ -1505,7 +1505,7 @@ Module Contents
    extends for ``length`` characters with new substring.
 
 
-.. py:function:: percent_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: percent_rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a percent_rank window function.
 
@@ -1559,7 +1559,7 @@ Module Contents
    Create a list of values in the range between start and stop.
 
 
-.. py:function:: rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: rank(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a rank window function.
 
@@ -1776,7 +1776,7 @@ Module Contents
    ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
 
 
-.. py:function:: row_number(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: row_number(partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Create a row number window function.
 
@@ -1892,7 +1892,7 @@ Module Contents
    This is an alias for :py:func:`stddev`.
 
 
-.. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr]] = None) -> datafusion.expr.Expr
+.. py:function:: string_agg(expression: datafusion.expr.Expr, delimiter: str, filter: Optional[datafusion.expr.Expr] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
 
    Concatenates the input strings.
 
@@ -2070,7 +2070,7 @@ Module Contents
    detailed usage.
 
 
-.. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
+.. py:function:: window(name: str, args: list[datafusion.expr.Expr], partition_by: list[datafusion.expr.Expr] | None = None, order_by: list[datafusion.expr.Expr | datafusion.expr.SortExpr] | None = None, window_frame: datafusion.expr.WindowFrame | None = None, ctx: datafusion.context.SessionContext | None = None) -> datafusion.expr.Expr
 
    Creates a new Window function expression.
 

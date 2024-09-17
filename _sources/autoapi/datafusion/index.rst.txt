@@ -446,7 +446,7 @@ Package Contents
 
 
 
-   .. py:method:: order_by(*exprs: Expr) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
@@ -503,7 +503,15 @@ Package Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> Expr
+   .. py:method:: schema_name() -> str
+
+      Returns the name of this expression as it should appear in a schema.
+
+      This name will not include any CAST expressions.
+
+
+
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 

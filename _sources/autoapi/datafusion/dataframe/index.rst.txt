@@ -336,7 +336,7 @@ Module Contents
 
 
 
-   .. py:method:: sort(*exprs: datafusion.expr.Expr) -> DataFrame
+   .. py:method:: sort(*exprs: datafusion.expr.Expr | datafusion.expr.SortExpr) -> DataFrame
 
       Sort the DataFrame by the specified sorting expressions.
 
