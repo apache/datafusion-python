@@ -28,7 +28,7 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::{
     col,
-    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, Sort, WindowFunction},
+    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
 use datafusion::scalar::ScalarValue;
@@ -94,6 +94,8 @@ pub mod unnest;
 pub mod unnest_expr;
 pub mod window;
 
+use sort_expr::{to_sort_expressions, PySortExpr};
+
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
@@ -150,7 +152,6 @@ impl PyExpr {
             Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
-            Expr::Sort(value) => Ok(sort_expr::PySortExpr::from(value.clone()).into_py(py)),
             Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
                 value
@@ -167,9 +168,9 @@ impl PyExpr {
             Expr::ScalarSubquery(value) => {
                 Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
             }
-            Expr::Wildcard { qualifier } => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::Wildcard to a Python object is not implemented : {:?}",
-                qualifier
+            Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
+                "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
+                qualifier, options
             ))),
             Expr::GroupingSet(value) => {
                 Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
@@ -188,13 +189,13 @@ impl PyExpr {
 
     /// Returns the name of this expression as it should appear in a schema. This name
     /// will not include any CAST expressions.
-    fn display_name(&self) -> PyResult<String> {
-        Ok(self.expr.display_name()?)
+    fn schema_name(&self) -> PyResult<String> {
+        Ok(format!("{}", self.expr.schema_name()))
     }
 
     /// Returns a full and complete string representation of this expression.
     fn canonical_name(&self) -> PyResult<String> {
-        Ok(self.expr.canonical_name())
+        Ok(format!("{}", self.expr))
     }
 
     /// Returns the name of the Expr variant.
@@ -274,7 +275,7 @@ impl PyExpr {
 
     /// Create a sort PyExpr from an existing PyExpr.
     #[pyo3(signature = (ascending=true, nulls_first=true))]
-    pub fn sort(&self, ascending: bool, nulls_first: bool) -> PyExpr {
+    pub fn sort(&self, ascending: bool, nulls_first: bool) -> PySortExpr {
         self.expr.clone().sort(ascending, nulls_first).into()
     }
 
@@ -323,7 +324,6 @@ impl PyExpr {
             | Expr::Case { .. }
             | Expr::Cast { .. }
             | Expr::TryCast { .. }
-            | Expr::Sort { .. }
             | Expr::ScalarFunction { .. }
             | Expr::AggregateFunction { .. }
             | Expr::WindowFunction { .. }
@@ -387,7 +387,6 @@ impl PyExpr {
             | Expr::Negative(expr)
             | Expr::Cast(Cast { expr, .. })
             | Expr::TryCast(TryCast { expr, .. })
-            | Expr::Sort(Sort { expr, .. })
             | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
@@ -529,7 +528,7 @@ impl PyExpr {
 
     // Expression Function Builder functions
 
-    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
         self.expr
             .clone()
             .order_by(to_sort_expressions(order_by))
@@ -573,20 +572,9 @@ impl From<ExprFuncBuilder> for PyExprFuncBuilder {
     }
 }
 
-pub fn to_sort_expressions(order_by: Vec<PyExpr>) -> Vec<Expr> {
-    order_by
-        .iter()
-        .map(|e| e.expr.clone())
-        .map(|e| match e {
-            Expr::Sort(_) => e,
-            _ => e.sort(true, true),
-        })
-        .collect()
-}
-
 #[pymethods]
 impl PyExprFuncBuilder {
-    pub fn order_by(&self, order_by: Vec<PyExpr>) -> PyExprFuncBuilder {
+    pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
         self.builder
             .clone()
             .order_by(to_sort_expressions(order_by))
@@ -641,11 +629,6 @@ impl PyExpr {
         input_plan: &LogicalPlan,
     ) -> Result<Arc<Field>, DataFusionError> {
         match expr {
-            Expr::Sort(Sort { expr, .. }) => {
-                // DataFusion does not support create_name for sort expressions (since they never
-                // appear in projections) so we just delegate to the contained expression instead
-                Self::expr_to_field(expr, input_plan)
-            }
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(Arc::new(input_plan.schema().field(0).clone()))

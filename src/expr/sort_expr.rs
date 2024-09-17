@@ -51,10 +51,29 @@ impl Display for PySortExpr {
     }
 }
 
+pub fn to_sort_expressions(order_by: Vec<PySortExpr>) -> Vec<SortExpr> {
+    order_by.iter().map(|e| e.sort.clone()).collect()
+}
+
+pub fn py_sort_expr_list(expr: &[SortExpr]) -> PyResult<Vec<PySortExpr>> {
+    Ok(expr.iter().map(|e| PySortExpr::from(e.clone())).collect())
+}
+
 #[pymethods]
 impl PySortExpr {
+    #[new]
+    fn new(expr: PyExpr, asc: bool, nulls_first: bool) -> Self {
+        Self {
+            sort: SortExpr {
+                expr: expr.into(),
+                asc,
+                nulls_first,
+            },
+        }
+    }
+
     fn expr(&self) -> PyResult<PyExpr> {
-        Ok((*self.sort.expr).clone().into())
+        Ok(self.sort.expr.clone().into())
     }
 
     fn ascending(&self) -> PyResult<bool> {

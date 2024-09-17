@@ -39,7 +39,10 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         internal_attr = getattr(internal_obj, attr)
         wrapped_attr = getattr(wrapped_obj, attr)
 
-        assert wrapped_attr is not None if internal_attr is not None else True
+        if internal_attr is not None:
+            if wrapped_attr is None:
+                print("Missing attribute: ", attr)
+                assert False
 
         if attr in ["__self__", "__class__"]:
             continue

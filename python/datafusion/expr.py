@@ -22,14 +22,15 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from ._internal import (
-    expr as expr_internal,
-    LogicalPlan,
-    functions as functions_internal,
-)
-from datafusion.common import NullTreatment, RexType, DataTypeMap
 from typing import Any, Optional, Type
+
 import pyarrow as pa
+from datafusion.common import DataTypeMap, NullTreatment, RexType
+from typing_extensions import deprecated
+
+from ._internal import LogicalPlan
+from ._internal import expr as expr_internal
+from ._internal import functions as functions_internal
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -84,7 +85,6 @@ ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
-SortExpr = expr_internal.SortExpr
 Subquery = expr_internal.Subquery
 SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
@@ -159,6 +159,27 @@ __all__ = [
 ]
 
 
+def expr_list_to_raw_expr_list(
+    expr_list: Optional[list[Expr]],
+) -> Optional[list[expr_internal.Expr]]:
+    """Helper function to convert an optional list to raw expressions."""
+    return [e.expr for e in expr_list] if expr_list is not None else None
+
+
+def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
+    """Helper function to return a default Sort if an Expr is provided."""
+    if isinstance(e, SortExpr):
+        return e.raw_sort
+    return SortExpr(e.expr, True, True).raw_sort
+
+
+def sort_list_to_raw_sort_list(
+    sort_list: Optional[list[Expr | SortExpr]],
+) -> Optional[list[expr_internal.SortExpr]]:
+    """Helper function to return an optional sort list to raw variant."""
+    return [sort_or_default(e) for e in sort_list] if sort_list is not None else None
+
+
 class Expr:
     """Expression object.
 
@@ -174,12 +195,22 @@ class Expr:
         """Convert this expression into a python object if possible."""
         return self.expr.to_variant()
 
+    @deprecated(
+        "display_name() is deprecated. Use :py:meth:`~Expr.schema_name` instead"
+    )
     def display_name(self) -> str:
         """Returns the name of this expression as it should appear in a schema.
 
         This name will not include any CAST expressions.
         """
-        return self.expr.display_name()
+        return self.schema_name()
+
+    def schema_name(self) -> str:
+        """Returns the name of this expression as it should appear in a schema.
+
+        This name will not include any CAST expressions.
+        """
+        return self.expr.schema_name()
 
     def canonical_name(self) -> str:
         """Returns a complete string representation of this expression."""
@@ -355,14 +386,14 @@ class Expr:
         """Assign a name to the expression."""
         return Expr(self.expr.alias(name))
 
-    def sort(self, ascending: bool = True, nulls_first: bool = True) -> Expr:
+    def sort(self, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
         """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
         Args:
             ascending: If true, sort in ascending order.
             nulls_first: Return null values first.
         """
-        return Expr(self.expr.sort(ascending=ascending, nulls_first=nulls_first))
+        return SortExpr(self.expr, ascending=ascending, nulls_first=nulls_first)
 
     def is_null(self) -> Expr:
         """Returns ``True`` if this expression is null."""
@@ -455,14 +486,14 @@ class Expr:
         """Compute the output column name based on the provided logical plan."""
         return self.expr.column_name(plan)
 
-    def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
+    def order_by(self, *exprs: Expr | SortExpr) -> ExprFuncBuilder:
         """Set the ordering for a window or aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(self.expr.order_by(list(e.expr for e in exprs)))
+        return ExprFuncBuilder(self.expr.order_by([sort_or_default(e) for e in exprs]))
 
     def filter(self, filter: Expr) -> ExprFuncBuilder:
         """Filter an aggregate function.
@@ -522,7 +553,9 @@ class ExprFuncBuilder:
         Values given in ``exprs`` must be sort expressions. You can convert any other
         expression to a sort expression using `.sort()`.
         """
-        return ExprFuncBuilder(self.builder.order_by(list(e.expr for e in exprs)))
+        return ExprFuncBuilder(
+            self.builder.order_by([sort_or_default(e) for e in exprs])
+        )
 
     def filter(self, filter: Expr) -> ExprFuncBuilder:
         """Filter values during aggregation."""
@@ -659,3 +692,27 @@ class CaseBuilder:
         Any non-matching cases will end in a `null` value.
         """
         return Expr(self.case_builder.end())
+
+
+class SortExpr:
+    """Used to specify sorting on either a DataFrame or function."""
+
+    def __init__(self, expr: Expr, ascending: bool, nulls_first: bool) -> None:
+        """This constructor should not be called by the end user."""
+        self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
+
+    def expr(self) -> Expr:
+        """Return the raw expr backing the SortExpr."""
+        return Expr(self.raw_sort.expr())
+
+    def ascending(self) -> bool:
+        """Return ascending property."""
+        return self.raw_sort.ascending()
+
+    def nulls_first(self) -> bool:
+        """Return nulls_first property."""
+        return self.raw_sort.nulls_first()
+
+    def __repr__(self) -> str:
+        """Generate a string representation of this expression."""
+        return self.raw_sort.__repr__()

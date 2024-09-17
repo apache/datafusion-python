@@ -53,7 +53,7 @@ impl Iterator for PyArrowBatchesAdapter {
 
     fn next(&mut self) -> Option<Self::Item> {
         Python::with_gil(|py| {
-            let mut batches = self.batches.clone().into_bound(py);
+            let mut batches = self.batches.clone_ref(py).into_bound(py);
             Some(
                 batches
                     .next()?
@@ -65,7 +65,7 @@ impl Iterator for PyArrowBatchesAdapter {
 }
 
 // Wraps a pyarrow.dataset.Dataset class and implements a Datafusion ExecutionPlan around it
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub(crate) struct DatasetExec {
     dataset: PyObject,
     schema: SchemaRef,

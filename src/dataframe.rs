@@ -36,16 +36,19 @@ use datafusion::prelude::*;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::{PyCapsule, PyTuple};
+use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
-use crate::expr::to_sort_expressions;
+use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{get_tokio_runtime, wait_for_future};
-use crate::{errors::DataFusionError, expr::PyExpr};
+use crate::{
+    errors::DataFusionError,
+    expr::{sort_expr::PySortExpr, PyExpr},
+};
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -70,7 +73,7 @@ impl PyDataFrame {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
             self.select_columns(vec![key])
-        } else if let Ok(tuple) = key.extract::<&PyTuple>() {
+        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
             // df[col1, col2, col3]
             let keys = tuple
                 .iter()
@@ -196,7 +199,7 @@ impl PyDataFrame {
     }
 
     #[pyo3(signature = (*exprs))]
-    fn sort(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
+    fn sort(&self, exprs: Vec<PySortExpr>) -> PyResult<Self> {
         let exprs = to_sort_expressions(exprs);
         let df = self.df.as_ref().clone().sort(exprs)?;
         Ok(Self::new(df))
@@ -504,6 +507,7 @@ impl PyDataFrame {
         Ok(table)
     }
 
+    #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_stream__<'py>(
         &'py mut self,
         py: Python<'py>,

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from typing import Callable
 
 from datafusion._internal import DataFrame as DataFrameInternal
-from datafusion.expr import Expr
+from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion._internal import (
     LogicalPlan,
     ExecutionPlan,
@@ -199,7 +199,7 @@ class DataFrame:
         aggs = [e.expr for e in aggs]
         return DataFrame(self.df.aggregate(group_by, aggs))
 
-    def sort(self, *exprs: Expr) -> DataFrame:
+    def sort(self, *exprs: Expr | SortExpr) -> DataFrame:
         """Sort the DataFrame by the specified sorting expressions.
 
         Note that any expression can be turned into a sort expression by
@@ -211,8 +211,8 @@ class DataFrame:
         Returns:
             DataFrame after sorting.
         """
-        exprs = [expr.expr for expr in exprs]
-        return DataFrame(self.df.sort(*exprs))
+        exprs_raw = [sort_or_default(expr) for expr in exprs]
+        return DataFrame(self.df.sort(*exprs_raw))
 
     def limit(self, count: int, offset: int = 0) -> DataFrame:
         """Return a new :py:class:`DataFrame` with a limited number of rows.

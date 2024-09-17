@@ -264,14 +264,17 @@ def test_execute(ctx, tmp_path):
 
     # count
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
+    ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").show()
 
-    expected = pa.array([7], pa.int64())
-    expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
+    expected_schema = pa.schema([("cnt", pa.int64(), False)])
+    expected_values = pa.array([7], type=pa.int64())
+    expected = [pa.RecordBatch.from_arrays([expected_values], schema=expected_schema)]
+
     assert result == expected
 
     # where
-    expected = pa.array([2], pa.int64())
-    expected = [pa.RecordBatch.from_arrays([expected], ["cnt"])]
+    expected_values = pa.array([2], type=pa.int64())
+    expected = [pa.RecordBatch.from_arrays([expected_values], schema=expected_schema)]
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a > 10").collect()
     assert result == expected
 

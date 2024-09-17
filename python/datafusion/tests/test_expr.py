@@ -15,18 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import pyarrow
+import pytest
 from datafusion import SessionContext, col
-from datafusion.expr import Column, Literal, BinaryExpr, AggregateFunction
 from datafusion.expr import (
-    Projection,
-    Filter,
     Aggregate,
+    AggregateFunction,
+    BinaryExpr,
+    Column,
+    Filter,
     Limit,
+    Literal,
+    Projection,
     Sort,
     TableScan,
 )
-import pyarrow
-import pytest
 
 
 @pytest.fixture
@@ -192,3 +195,24 @@ def test_expr_getitem() -> None:
 
     assert names == ["Alice", "Bob", "Charlie", None]
     assert array_values == [2, 5, None, None]
+
+
+def test_display_name_deprecation():
+    import warnings
+
+    expr = col("foo")
+    with warnings.catch_warnings(record=True) as w:
+        # Cause all warnings to always be triggered
+        warnings.simplefilter("always")
+
+        # should trigger warning
+        name = expr.display_name()
+
+        # Verify some things
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+        assert "deprecated" in str(w[-1].message)
+
+    # returns appropriate result
+    assert name == expr.schema_name()
+    assert name == "foo"
