@@ -825,6 +825,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.over">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.over()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Expr.partition_by">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1999,6 +2008,20 @@ type of expression, an error will be generated when <code class="docutils litera
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
 set parameters for either window or aggregate functions. If used on any other
 type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.over">
+<span class="sig-name descname"><span class="pre">over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Window" title="datafusion.expr.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.over" title="Link to this definition">¶</a></dt>
+<dd><p>Turn an aggregate function into a window function.</p>
+<p>This function turns any aggregate function into a window function. With the
+exception of <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, how each of the parameters is used is determined
+by the underlying aggregate function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window</strong> – Window definition</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

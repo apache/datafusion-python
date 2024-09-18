@@ -696,6 +696,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.over">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.over()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.partition_by">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -927,6 +936,53 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SortExpr.raw_sort
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.Window">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Window
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Window._null_treatment">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Window._null_treatment
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Window._order_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Window._order_by
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Window._partition_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Window._partition_by
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Window._window_frame">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Window._window_frame
         </span>
        </code>
       </a>
@@ -1532,10 +1588,10 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.expr.Window">
+    <a class="reference internal nav-link" href="#datafusion.expr.WindowExpr">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Window
+       WindowExpr
       </span>
      </code>
     </a>
@@ -1733,7 +1789,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.UnnestExpr" title="datafusion.expr.UnnestExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UnnestExpr</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Window" title="datafusion.expr.Window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Window</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.WindowExpr" title="datafusion.expr.WindowExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowExpr</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -1752,10 +1808,13 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SortExpr</span></code></a></p></td>
 <td><p>Used to specify sorting on either a DataFrame or function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Window" title="datafusion.expr.Window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Window</span></code></a></p></td>
+<td><p>Define reusable window parameters.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrame</span></code></a></p></td>
 <td><p>Defines a window frame for performing window operations.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.WindowFrameBound" title="datafusion.expr.WindowFrameBound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrameBound</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.WindowFrameBound" title="datafusion.expr.WindowFrameBound"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowFrameBound</span></code></a></p></td>
 <td><p>Defines a single window frame bound.</p></td>
 </tr>
 </tbody>
@@ -2038,6 +2097,20 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.over">
+<span class="sig-name descname"><span class="pre">over</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Window" title="datafusion.expr.Window"><span class="pre">Window</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.over" title="Link to this definition">¶</a></dt>
+<dd><p>Turn an aggregate function into a window function.</p>
+<p>This function turns any aggregate function into a window function. With the
+exception of <code class="docutils literal notranslate"><span class="pre">partition_by</span></code>, how each of the parameters is used is determined
+by the underlying aggregate function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window</strong> – Window definition</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.partition_by">
 <span class="sig-name descname"><span class="pre">partition_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ExprFuncBuilder</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.partition_by" title="Link to this definition">¶</a></dt>
 <dd><p>Set the partitioning for a window function.</p>
@@ -2217,6 +2290,43 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.expr.SortExpr.raw_sort">
 <span class="sig-name descname"><span class="pre">raw_sort</span></span><a class="headerlink" href="#datafusion.expr.SortExpr.raw_sort" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.expr.Window">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">window_frame</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.expr.WindowFrame" title="datafusion.expr.WindowFrame"><span class="pre">WindowFrame</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">null_treatment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion.common.NullTreatment</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.Window" title="Link to this definition">¶</a></dt>
+<dd><p>Define reusable window parameters.</p>
+<p>Construct a window definition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>partition_by</strong> – Partitions for window operation</p></li>
+<li><p><strong>window_frame</strong> – Define the start and end bounds of the window frame</p></li>
+<li><p><strong>order_by</strong> – Set ordering</p></li>
+<li><p><strong>null_treatment</strong> – Indicate how nulls are to be treated</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Window._null_treatment">
+<span class="sig-name descname"><span class="pre">_null_treatment</span></span><a class="headerlink" href="#datafusion.expr.Window._null_treatment" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Window._order_by">
+<span class="sig-name descname"><span class="pre">_order_by</span></span><a class="headerlink" href="#datafusion.expr.Window._order_by" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Window._partition_by">
+<span class="sig-name descname"><span class="pre">_partition_by</span></span><a class="headerlink" href="#datafusion.expr.Window._partition_by" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.expr.Window._window_frame">
+<span class="sig-name descname"><span class="pre">_window_frame</span></span><a class="headerlink" href="#datafusion.expr.Window._window_frame" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2578,8 +2688,8 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
-<dt class="sig sig-object py" id="datafusion.expr.Window">
-<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Window</span></span><a class="headerlink" href="#datafusion.expr.Window" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.expr.WindowExpr">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">WindowExpr</span></span><a class="headerlink" href="#datafusion.expr.WindowExpr" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </section>

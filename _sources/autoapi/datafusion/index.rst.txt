@@ -456,6 +456,18 @@ Package Contents
 
 
 
+   .. py:method:: over(window: Window) -> Expr
+
+      Turn an aggregate function into a window function.
+
+      This function turns any aggregate function into a window function. With the
+      exception of ``partition_by``, how each of the parameters is used is determined
+      by the underlying aggregate function.
+
+      :param window: Window definition
+
+
+
    .. py:method:: partition_by(*partition_by: Expr) -> ExprFuncBuilder
 
       Set the partitioning for a window function.

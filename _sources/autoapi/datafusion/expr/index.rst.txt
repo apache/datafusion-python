@@ -70,7 +70,7 @@ Attributes
    datafusion.expr.Union
    datafusion.expr.Unnest
    datafusion.expr.UnnestExpr
-   datafusion.expr.Window
+   datafusion.expr.WindowExpr
 
 
 Classes
@@ -81,6 +81,7 @@ Classes
    datafusion.expr.CaseBuilder
    datafusion.expr.Expr
    datafusion.expr.SortExpr
+   datafusion.expr.Window
    datafusion.expr.WindowFrame
    datafusion.expr.WindowFrameBound
 
@@ -382,6 +383,18 @@ Module Contents
 
 
 
+   .. py:method:: over(window: Window) -> Expr
+
+      Turn an aggregate function into a window function.
+
+      This function turns any aggregate function into a window function. With the
+      exception of ``partition_by``, how each of the parameters is used is determined
+      by the underlying aggregate function.
+
+      :param window: Window definition
+
+
+
    .. py:method:: partition_by(*partition_by: Expr) -> ExprFuncBuilder
 
       Set the partitioning for a window function.
@@ -538,6 +551,30 @@ Module Contents
 
 
    .. py:attribute:: raw_sort
+
+
+.. py:class:: Window(partition_by: Optional[list[Expr]] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[list[SortExpr | Expr]] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
+
+   Define reusable window parameters.
+
+   Construct a window definition.
+
+   :param partition_by: Partitions for window operation
+   :param window_frame: Define the start and end bounds of the window frame
+   :param order_by: Set ordering
+   :param null_treatment: Indicate how nulls are to be treated
+
+
+   .. py:attribute:: _null_treatment
+
+
+   .. py:attribute:: _order_by
+
+
+   .. py:attribute:: _partition_by
+
+
+   .. py:attribute:: _window_frame
 
 
 .. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
@@ -726,5 +763,5 @@ Module Contents
 
 .. py:data:: UnnestExpr
 
-.. py:data:: Window
+.. py:data:: WindowExpr
 
