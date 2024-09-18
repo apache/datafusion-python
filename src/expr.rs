@@ -594,7 +594,7 @@ impl PyExpr {
             ),
             _ => Err(
                 DataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
-                    "Using `over` requires an aggregate function.".to_string(),
+                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
                 ))
                 .into(),
             ),
