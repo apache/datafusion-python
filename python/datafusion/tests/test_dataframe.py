@@ -31,6 +31,7 @@ from datafusion import (
     literal,
     udf,
 )
+from datafusion.expr import Window
 
 
 @pytest.fixture
@@ -386,38 +387,32 @@ data_test_window_functions = [
         ),
         [-1, -1, None, 7, -1, -1, None],
     ),
-    # TODO update all aggregate functions as windows once upstream merges https://github.com/apache/datafusion-python/issues/833
-    pytest.param(
+    (
         "first_value",
-        f.window(
-            "first_value",
-            [column("a")],
-            order_by=[f.order_by(column("b"))],
-            partition_by=[column("c")],
+        f.first_value(column("a")).over(
+            Window(partition_by=[column("c")], order_by=[column("b")])
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
-    pytest.param(
+    (
         "last_value",
-        f.window("last_value", [column("a")])
-        .window_frame(WindowFrame("rows", 0, None))
-        .order_by(column("b"))
-        .partition_by(column("c"))
-        .build(),
+        f.last_value(column("a")).over(
+            Window(
+                partition_by=[column("c")],
+                order_by=[column("b")],
+                window_frame=WindowFrame("rows", None, None),
+            )
+        ),
         [3, 3, 3, 3, 6, 6, 6],
     ),
-    pytest.param(
+    (
         "3rd_value",
-        f.window(
-            "nth_value",
-            [column("b"), literal(3)],
-            order_by=[f.order_by(column("a"))],
-        ),
+        f.nth_value(column("b"), 3).over(Window(order_by=[column("a")])),
         [None, None, 7, 7, 7, 7, 7],
     ),
-    pytest.param(
+    (
         "avg",
-        f.round(f.window("avg", [column("b")], order_by=[column("a")]), literal(3)),
+        f.round(f.avg(column("b")).over(Window(order_by=[column("a")])), literal(3)),
         [7.0, 7.0, 7.0, 7.333, 7.75, 7.75, 8.0],
     ),
 ]
@@ -471,6 +466,44 @@ def test_valid_window_frame(units, start_bound, end_bound):
 def test_invalid_window_frame(units, start_bound, end_bound):
     with pytest.raises(RuntimeError):
         WindowFrame(units, start_bound, end_bound)
+
+
+def test_window_frame_defaults_match_postgres(partitioned_df):
+    # ref: https://github.com/apache/datafusion-python/issues/688
+
+    window_frame = WindowFrame("rows", None, None)
+
+    col_a = column("a")
+
+    # Using `f.window` with or without an unbounded window_frame produces the same
+    # results. These tests are included as a regression check but can be removed when
+    # f.window() is deprecated in favor of using the .over() approach.
+    no_frame = f.window("avg", [col_a]).alias("no_frame")
+    with_frame = f.window("avg", [col_a], window_frame=window_frame).alias("with_frame")
+    df_1 = partitioned_df.select(col_a, no_frame, with_frame)
+
+    expected = {
+        "a": [0, 1, 2, 3, 4, 5, 6],
+        "no_frame": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
+        "with_frame": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
+    }
+
+    assert df_1.sort(col_a).to_pydict() == expected
+
+    # When order is not set, the default frame should be unounded preceeding to
+    # unbounded following. When order is set, the default frame is unbounded preceeding
+    # to current row.
+    no_order = f.avg(col_a).over(Window()).alias("over_no_order")
+    with_order = f.avg(col_a).over(Window(order_by=[col_a])).alias("over_with_order")
+    df_2 = partitioned_df.select(col_a, no_order, with_order)
+
+    expected = {
+        "a": [0, 1, 2, 3, 4, 5, 6],
+        "over_no_order": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
+        "over_with_order": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
+    }
+
+    assert df_2.sort(col_a).to_pydict() == expected
 
 
 def test_get_dataframe(tmp_path):

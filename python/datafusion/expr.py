@@ -92,7 +92,7 @@ TryCast = expr_internal.TryCast
 Union = expr_internal.Union
 Unnest = expr_internal.Unnest
 UnnestExpr = expr_internal.UnnestExpr
-Window = expr_internal.Window
+WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
     "Expr",
@@ -154,6 +154,7 @@ __all__ = [
     "Partitioning",
     "Repartition",
     "Window",
+    "WindowExpr",
     "WindowFrame",
     "WindowFrameBound",
 ]
@@ -542,6 +543,36 @@ class Expr:
         """
         return ExprFuncBuilder(self.expr.window_frame(window_frame.window_frame))
 
+    def over(self, window: Window) -> Expr:
+        """Turn an aggregate function into a window function.
+
+        This function turns any aggregate function into a window function. With the
+        exception of ``partition_by``, how each of the parameters is used is determined
+        by the underlying aggregate function.
+
+        Args:
+            window: Window definition
+        """
+        partition_by_raw = expr_list_to_raw_expr_list(window._partition_by)
+        order_by_raw = sort_list_to_raw_sort_list(window._order_by)
+        window_frame_raw = (
+            window._window_frame.window_frame
+            if window._window_frame is not None
+            else None
+        )
+        null_treatment_raw = (
+            window._null_treatment.value if window._null_treatment is not None else None
+        )
+
+        return Expr(
+            self.expr.over(
+                partition_by=partition_by_raw,
+                order_by=order_by_raw,
+                window_frame=window_frame_raw,
+                null_treatment=null_treatment_raw,
+            )
+        )
+
 
 class ExprFuncBuilder:
     def __init__(self, builder: expr_internal.ExprFuncBuilder):
@@ -582,6 +613,30 @@ class ExprFuncBuilder:
     def build(self) -> Expr:
         """Create an expression from a Function Builder."""
         return Expr(self.builder.build())
+
+
+class Window:
+    """Define reusable window parameters."""
+
+    def __init__(
+        self,
+        partition_by: Optional[list[Expr]] = None,
+        window_frame: Optional[WindowFrame] = None,
+        order_by: Optional[list[SortExpr | Expr]] = None,
+        null_treatment: Optional[NullTreatment] = None,
+    ) -> None:
+        """Construct a window definition.
+
+        Args:
+            partition_by: Partitions for window operation
+            window_frame: Define the start and end bounds of the window frame
+            order_by: Set ordering
+            null_treatment: Indicate how nulls are to be treated
+        """
+        self._partition_by = partition_by
+        self._window_frame = window_frame
+        self._order_by = order_by
+        self._null_treatment = null_treatment
 
 
 class WindowFrame:

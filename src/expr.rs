@@ -16,7 +16,9 @@
 // under the License.
 
 use datafusion::logical_expr::utils::exprlist_to_fields;
-use datafusion::logical_expr::{ExprFuncBuilder, ExprFunctionExt, LogicalPlan};
+use datafusion::logical_expr::{
+    ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
+};
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 use std::sync::Arc;
@@ -39,6 +41,7 @@ use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
+use crate::functions::add_builder_fns_to_window;
 use crate::sql::logical::PyLogicalPlan;
 
 use self::alias::PyAlias;
@@ -558,6 +561,45 @@ impl PyExpr {
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
         self.expr.clone().window_frame(window_frame.into()).into()
     }
+
+    #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
+    pub fn over(
+        &self,
+        partition_by: Option<Vec<PyExpr>>,
+        window_frame: Option<PyWindowFrame>,
+        order_by: Option<Vec<PySortExpr>>,
+        null_treatment: Option<NullTreatment>,
+    ) -> PyResult<PyExpr> {
+        match &self.expr {
+            Expr::AggregateFunction(agg_fn) => {
+                let window_fn = Expr::WindowFunction(WindowFunction::new(
+                    WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
+                    agg_fn.args.clone(),
+                ));
+
+                add_builder_fns_to_window(
+                    window_fn,
+                    partition_by,
+                    window_frame,
+                    order_by,
+                    null_treatment,
+                )
+            }
+            Expr::WindowFunction(_) => add_builder_fns_to_window(
+                self.expr.clone(),
+                partition_by,
+                window_frame,
+                order_by,
+                null_treatment,
+            ),
+            _ => Err(
+                DataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
+                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
+                ))
+                .into(),
+            ),
+        }
+    }
 }
 
 #[pyclass(name = "ExprFuncBuilder", module = "datafusion.expr", subclass)]
@@ -749,7 +791,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<drop_table::PyDropTable>()?;
     m.add_class::<repartition::PyPartitioning>()?;
     m.add_class::<repartition::PyRepartition>()?;
-    m.add_class::<window::PyWindow>()?;
+    m.add_class::<window::PyWindowExpr>()?;
     m.add_class::<window::PyWindowFrame>()?;
     m.add_class::<window::PyWindowFrameBound>()?;
     Ok(())
