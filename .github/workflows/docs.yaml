@@ -52,9 +52,9 @@ jobs:
           python-version: "3.11"
 
       - name: Install Protoc
-        uses: arduino/setup-protoc@v1
+        uses: arduino/setup-protoc@v3
         with:
-          version: '3.20.2'
+          version: '27.4'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies
