@@ -58,6 +58,7 @@ pub mod substrait;
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
+mod udwf;
 pub mod utils;
 
 #[cfg(feature = "mimalloc")]

@@ -42,6 +42,7 @@ use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
+use crate::udwf::PyWindowUDF;
 use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
@@ -743,6 +744,11 @@ impl PySessionContext {
 
     pub fn register_udaf(&mut self, udaf: PyAggregateUDF) -> PyResult<()> {
         self.ctx.register_udaf(udaf.function);
+        Ok(())
+    }
+
+    pub fn register_udwf(&mut self, udwf: PyWindowUDF) -> PyResult<()> {
+        self.ctx.register_udwf(udwf.function);
         Ok(())
     }
 
