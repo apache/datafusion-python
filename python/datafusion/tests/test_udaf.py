@@ -61,8 +61,6 @@ class MissingMethods(Accumulator):
 
 @pytest.fixture
 def df(ctx):
-    # ctx = SessionContext()
-
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 4, 6])],
