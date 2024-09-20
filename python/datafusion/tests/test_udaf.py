@@ -71,7 +71,6 @@ def df():
     return ctx.create_dataframe([[batch]])
 
 
-@pytest.mark.skip(reason="df.collect() will hang, need more investigations")
 def test_errors(df):
     with pytest.raises(TypeError):
         udaf(
@@ -92,8 +91,8 @@ def test_errors(df):
     df = df.aggregate([], [accum(column("a"))])
 
     msg = (
-        "Can't instantiate abstract class MissingMethods with abstract "
-        "methods evaluate, merge, update"
+        "Execution error: TypeError: Can't instantiate abstract class MissingMethods "
+        "without an implementation for abstract methods 'evaluate', 'merge', 'update'"
     )
     with pytest.raises(Exception, match=msg):
         df.collect()
