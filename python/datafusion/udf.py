@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING, TypeVar, Type
+from typing import Callable, TYPE_CHECKING, TypeVar
 from abc import ABCMeta, abstractmethod
 from typing import List
 from enum import Enum
@@ -412,7 +412,7 @@ class WindowUDF:
     def __init__(
         self,
         name: str | None,
-        func: Type[WindowEvaluator],
+        func: WindowEvaluator,
         input_type: pyarrow.DataType,
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
@@ -437,7 +437,7 @@ class WindowUDF:
 
     @staticmethod
     def udwf(
-        func: Type[WindowEvaluator],
+        func: WindowEvaluator,
         input_type: pyarrow.DataType,
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
@@ -455,12 +455,12 @@ class WindowUDF:
         Returns:
             A user defined window function.
         """
-        if not issubclass(func, WindowEvaluator):
+        if not isinstance(func, WindowEvaluator):
             raise TypeError(
                 "`func` must implement the abstract base class WindowEvaluator"
             )
         if name is None:
-            name = func.__qualname__.lower()
+            name = func.__class__.__qualname__.lower()
         return WindowUDF(
             name=name,
             func=func,

@@ -25,8 +25,8 @@ from datafusion.udf import WindowEvaluator
 class ExponentialSmooth(WindowEvaluator):
     """Interface of a user-defined accumulation."""
 
-    def __init__(self) -> None:
-        self.alpha = 0.9
+    def __init__(self, alpha: float) -> None:
+        self.alpha = alpha
 
     def evaluate_all(self, values: pa.Array, num_rows: int) -> pa.Array:
         results = []
@@ -66,7 +66,7 @@ def df():
 def test_udwf_errors(df):
     with pytest.raises(TypeError):
         udwf(
-            NotSubclassOfWindowEvaluator,
+            NotSubclassOfWindowEvaluator(),
             pa.float64(),
             pa.float64(),
             volatility="immutable",
@@ -74,7 +74,7 @@ def test_udwf_errors(df):
 
 
 smooth = udwf(
-    ExponentialSmooth,
+    ExponentialSmooth(0.9),
     pa.float64(),
     pa.float64(),
     volatility="immutable",

@@ -186,14 +186,10 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 }
 
-pub fn to_rust_partition_evaluator(evalutor: PyObject) -> PartitionEvaluatorFactory {
+pub fn to_rust_partition_evaluator(evaluator: PyObject) -> PartitionEvaluatorFactory {
     Arc::new(move || -> Result<Box<dyn PartitionEvaluator>> {
-        let evalutor = Python::with_gil(|py| {
-            evalutor
-                .call0(py)
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
-        })?;
-        Ok(Box::new(RustPartitionEvaluator::new(evalutor)))
+        let evaluator = Python::with_gil(|py| evaluator.clone_ref(py));
+        Ok(Box::new(RustPartitionEvaluator::new(evaluator)))
     })
 }
 
