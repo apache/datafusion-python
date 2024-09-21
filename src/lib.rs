@@ -91,6 +91,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<dataframe::PyDataFrame>()?;
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
+    m.add_class::<udwf::PyWindowUDF>()?;
     m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;

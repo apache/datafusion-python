@@ -25,12 +25,11 @@ from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import SessionContext as SessionContextInternal
 from ._internal import LogicalPlan, ExecutionPlan
 
-from datafusion._internal import AggregateUDF
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.udf import ScalarUDF
+from datafusion.udf import ScalarUDF, AggregateUDF, WindowUDF
 
 from typing import Any, TYPE_CHECKING
 from typing_extensions import deprecated
@@ -832,6 +831,10 @@ class SessionContext:
     def register_udaf(self, udaf: AggregateUDF) -> None:
         """Register a user-defined aggregation function (UDAF) with the context."""
         self.ctx.register_udaf(udaf._udaf)
+
+    def register_udwf(self, udwf: WindowUDF) -> None:
+        """Register a user-defined window function (UDWF) with the context."""
+        self.ctx.register_udwf(udwf._udwf)
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""

@@ -83,13 +83,12 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                 .bind(py)
                 .call_method0("is_causal")
                 .and_then(|v| v.extract())
+                .unwrap_or(false)
         })
-        .unwrap_or(false)
     }
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
         Python::with_gil(|py| {
-            // 1. cast args to Pyarrow array
             let mut py_args = values
                 .iter()
                 .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
@@ -97,15 +96,14 @@ impl PartitionEvaluator for RustPartitionEvaluator {
             py_args.push(num_rows.to_object(py));
             let py_args = PyTuple::new_bound(py, py_args);
 
-            // 2. call function
             self.evaluator
                 .bind(py)
                 .call_method1("evaluate_all", py_args)
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
                 .map(|v| {
                     let array_data = ArrayData::from_pyarrow_bound(&v).unwrap();
                     make_array(array_data)
                 })
+                .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })
     }
 
@@ -116,8 +114,9 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                 .iter()
                 .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
-            py_args.push(range.start.to_object(py));
-            py_args.push(range.end.to_object(py));
+            let range_tuple =
+                PyTuple::new_bound(py, vec![range.start.to_object(py), range.end.to_object(py)]);
+            py_args.push(range_tuple.into());
             let py_args = PyTuple::new_bound(py, py_args);
 
             // 2. call function
@@ -162,8 +161,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                 .bind(py)
                 .call_method0("supports_bounded_execution")
                 .and_then(|v| v.extract())
+                .unwrap_or(false)
         })
-        .unwrap_or(false)
     }
 
     fn uses_window_frame(&self) -> bool {
@@ -172,8 +171,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                 .bind(py)
                 .call_method0("uses_window_frame")
                 .and_then(|v| v.extract())
+                .unwrap_or(false)
         })
-        .unwrap_or(false)
     }
 
     fn include_rank(&self) -> bool {
@@ -182,8 +181,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                 .bind(py)
                 .call_method0("include_rank")
                 .and_then(|v| v.extract())
+                .unwrap_or(false)
         })
-        .unwrap_or(false)
     }
 }
 
