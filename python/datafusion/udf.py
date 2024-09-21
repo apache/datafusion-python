@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING, TypeVar
+from typing import Callable, TYPE_CHECKING, TypeVar, Type
 from abc import ABCMeta, abstractmethod
 from typing import List
 from enum import Enum
@@ -251,10 +251,15 @@ class AggregateUDF:
 class WindowEvaluator(metaclass=ABCMeta):
     """Evaluator class for user defined window functions (UDWF).
 
-    Users should inherit from this class and implement ``evaluate``, ``evaluate_all``,
-    and/or ``evaluate_all_with_rank``. If using `evaluate` only you will need to
-    override ``supports_bounded_execution``.
-    """
+    It is up to the user to decide which evaluate function is appropriate.
+
+    |``uses_window_frame``|``supports_bounded_execution``|``include_rank``|function_to_implement|
+    |---|---|----|----|
+    |False (default)      |False (default)               |False (default) | ``evaluate_all``           |
+    |False                |True                          |False           | ``evaluate``               |
+    |False                |True/False                    |True            | ``evaluate_all_with_rank`` |
+    |True                 |True/False                    |True/False      | ``evaluate``               |
+    """  # noqa: W505
 
     def memoize(self) -> None:
         """Perform a memoize operation to improve performance.
@@ -329,15 +334,8 @@ class WindowEvaluator(metaclass=ABCMeta):
         avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
         ```
         """
-        if self.supports_bounded_execution() and not self.uses_window_frame():
-            res = []
-            for idx in range(0, num_rows):
-                res.append(self.evaluate(values, self.get_range(idx, num_rows)))
-            return pyarrow.array(res)
-        else:
-            raise
+        pass
 
-    @abstractmethod
     def evaluate(self, values: pyarrow.Array, range: tuple[int, int]) -> pyarrow.Scalar:
         """Evaluate window function on a range of rows in an input partition.
 
@@ -355,7 +353,6 @@ class WindowEvaluator(metaclass=ABCMeta):
         """
         pass
 
-    @abstractmethod
     def evaluate_all_with_rank(
         self, num_rows: int, ranks_in_partition: list[tuple[int, int]]
     ) -> pyarrow.Array:
@@ -383,6 +380,8 @@ class WindowEvaluator(metaclass=ABCMeta):
           (2,2),
           (3,4),
         ]
+
+        The user must implement this method if ``include_rank`` returns True.
         """
         pass
 
@@ -399,6 +398,10 @@ class WindowEvaluator(metaclass=ABCMeta):
         return False
 
 
+if TYPE_CHECKING:
+    _W = TypeVar("_W", bound=WindowEvaluator)
+
+
 class WindowUDF:
     """Class for performing window user defined functions (UDF).
 
@@ -409,9 +412,9 @@ class WindowUDF:
     def __init__(
         self,
         name: str | None,
-        func: WindowEvaluator,
+        func: Type[WindowEvaluator],
         input_type: pyarrow.DataType,
-        return_type: _R,
+        return_type: pyarrow.DataType,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a user defined window function (UDWF).
@@ -434,9 +437,9 @@ class WindowUDF:
 
     @staticmethod
     def udwf(
-        func: Callable[..., _R],
+        func: Type[WindowEvaluator],
         input_type: pyarrow.DataType,
-        return_type: _R,
+        return_type: pyarrow.DataType,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> WindowUDF:
@@ -452,6 +455,10 @@ class WindowUDF:
         Returns:
             A user defined window function.
         """
+        if not issubclass(func, WindowEvaluator):
+            raise TypeError(
+                "`func` must implement the abstract base class WindowEvaluator"
+            )
         if name is None:
             name = func.__qualname__.lower()
         return WindowUDF(
