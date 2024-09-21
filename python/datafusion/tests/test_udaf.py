@@ -89,8 +89,8 @@ def test_errors(df):
     df = df.aggregate([], [accum(column("a"))])
 
     msg = (
-        "Execution error: TypeError: Can't instantiate abstract class MissingMethods "
-        "without an implementation for abstract methods 'evaluate', 'merge', 'update'"
+        "Can't instantiate abstract class MissingMethods without an implementation "
+        "for abstract methods 'evaluate', 'merge', 'update'"
     )
     with pytest.raises(Exception, match=msg):
         df.collect()
