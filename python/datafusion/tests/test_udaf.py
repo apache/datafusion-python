@@ -90,7 +90,7 @@ def test_errors(df):
 
     msg = (
         "Can't instantiate abstract class MissingMethods without an implementation "
-        "for abstract methods 'evaluate', 'merge', 'update'"
+        "for abstract methods (evaluate, merge, update|'evaluate', 'merge', 'update')"
     )
     with pytest.raises(Exception, match=msg):
         df.collect()
