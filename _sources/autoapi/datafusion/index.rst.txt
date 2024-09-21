@@ -159,7 +159,7 @@ Package Contents
 
 
 
-   .. py:attribute:: _udf
+   .. py:attribute:: _udaf
 
 
 .. py:class:: Catalog(catalog: datafusion._internal.Catalog)

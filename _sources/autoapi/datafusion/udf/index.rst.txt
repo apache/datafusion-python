@@ -111,7 +111,7 @@ Module Contents
 
 
 
-   .. py:attribute:: _udf
+   .. py:attribute:: _udaf
 
 
 .. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
