@@ -274,7 +274,7 @@ class WindowEvaluator(metaclass=ABCMeta):
         """
         pass
 
-    def get_range(self, idx: int, n_rows: int) -> tuple[int, int]:
+    def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:
         """Return the range for the window fuction.
 
         If `uses_window_frame` flag is `false`. This method is used to
@@ -288,7 +288,7 @@ class WindowEvaluator(metaclass=ABCMeta):
 
         Args:
             idx:: Current index
-            n_rows: Number of rows.
+            num_rows: Number of rows.
         """
         return (idx, idx + 1)
 
@@ -296,7 +296,7 @@ class WindowEvaluator(metaclass=ABCMeta):
         """Get whether evaluator needs future data for its result."""
         return False
 
-    def evaluate_all(self, values: pyarrow.Array, num_rows: int) -> pyarrow.Array:
+    def evaluate_all(self, values: list[pyarrow.Array], num_rows: int) -> pyarrow.Array:
         """Evaluate a window function on an entire input partition.
 
         This function is called once per input *partition* for window
@@ -336,7 +336,9 @@ class WindowEvaluator(metaclass=ABCMeta):
         """
         pass
 
-    def evaluate(self, values: pyarrow.Array, range: tuple[int, int]) -> pyarrow.Scalar:
+    def evaluate(
+        self, values: list[pyarrow.Array], eval_range: tuple[int, int]
+    ) -> pyarrow.Scalar:
         """Evaluate window function on a range of rows in an input partition.
 
         This is the simplest and most general function to implement

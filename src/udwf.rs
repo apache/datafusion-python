@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::num;
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -89,12 +90,17 @@ impl PartitionEvaluator for RustPartitionEvaluator {
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
         Python::with_gil(|py| {
-            let mut py_args = values
-                .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
-                .collect::<Vec<_>>();
-            py_args.push(num_rows.to_object(py));
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_values = PyList::new_bound(
+                py,
+                values
+                    .iter()
+                    .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
+            );
+            let py_num_rows = num_rows.to_object(py).into_bound(py);
+            let py_args = PyTuple::new_bound(
+                py,
+                PyTuple::new_bound(py, vec![py_values.as_any(), &py_num_rows]),
+            );
 
             self.evaluator
                 .bind(py)
@@ -109,17 +115,19 @@ impl PartitionEvaluator for RustPartitionEvaluator {
 
     fn evaluate(&mut self, values: &[ArrayRef], range: &Range<usize>) -> Result<ScalarValue> {
         Python::with_gil(|py| {
-            // 1. cast args to Pyarrow array
-            let mut py_args = values
-                .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
-                .collect::<Vec<_>>();
+            let py_values = PyList::new_bound(
+                py,
+                values
+                    .iter()
+                    .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
+            );
             let range_tuple =
                 PyTuple::new_bound(py, vec![range.start.to_object(py), range.end.to_object(py)]);
-            py_args.push(range_tuple.into());
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = PyTuple::new_bound(
+                py,
+                PyTuple::new_bound(py, vec![py_values.as_any(), range_tuple.as_any()]),
+            );
 
-            // 2. call function
             self.evaluator
                 .bind(py)
                 .call_method1("evaluate", py_args)
