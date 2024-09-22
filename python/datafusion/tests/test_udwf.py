@@ -24,8 +24,6 @@ from datafusion.expr import WindowFrame
 
 
 class ExponentialSmoothDefault(WindowEvaluator):
-    """Interface of a user-defined accumulation."""
-
     def __init__(self, alpha: float) -> None:
         self.alpha = alpha
 
@@ -129,6 +127,39 @@ class ExponentialSmoothFrame(WindowEvaluator):
         return pa.scalar(curr_value).cast(pa.float64())
 
 
+class SmoothTwoColumn(WindowEvaluator):
+    """This class demonstrates using two columns.
+
+    If the second column is above a threshold, then smooth over the first column from
+    the previous and next rows.
+    """
+
+    def __init__(self, alpha: float) -> None:
+        self.alpha = alpha
+
+    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+        results = []
+        values_a = values[0]
+        values_b = values[1]
+        for idx in range(num_rows):
+            if values_b[idx].as_py() > 7:
+                if idx == 0:
+                    results.append(values_a[1].cast(pa.float64()))
+                elif idx == num_rows - 1:
+                    results.append(values_a[num_rows - 2].cast(pa.float64()))
+                else:
+                    results.append(
+                        pa.scalar(
+                            values_a[idx - 1].as_py() * self.alpha
+                            + values_a[idx + 1].as_py() * (1.0 - self.alpha)
+                        )
+                    )
+            else:
+                results.append(values_a[idx].cast(pa.float64()))
+
+        return pa.array(results)
+
+
 class NotSubclassOfWindowEvaluator:
     pass
 
@@ -187,6 +218,13 @@ smooth_frame = udwf(
     volatility="immutable",
 )
 
+smooth_two_col = udwf(
+    SmoothTwoColumn(0.9),
+    [pa.int64(), pa.int64()],
+    pa.float64(),
+    volatility="immutable",
+)
+
 data_test_udwf_functions = [
     (
         "default_udwf",
@@ -238,13 +276,18 @@ data_test_udwf_functions = [
         .build(),
         [0.551, 1.13, 2.3, 2.755, 3.876, 5.0, 5.513],
     ),
+    (
+        "two_column_udwf",
+        smooth_two_col(column("a"), column("b")),
+        [0.0, 1.0, 2.0, 2.2, 3.2, 5.0, 6.0],
+    ),
 ]
 
 
 @pytest.mark.parametrize("name,expr,expected", data_test_udwf_functions)
 def test_udwf_functions(df, name, expr, expected):
     df = df.select("a", "b", f.round(expr, lit(3)).alias(name))
-    df.sort(column("a")).show()
+
     # execute and collect the first (and only) batch
     result = df.sort(column("a")).select(column(name)).collect()[0]
 

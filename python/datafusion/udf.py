@@ -415,7 +415,7 @@ class WindowUDF:
         self,
         name: str | None,
         func: WindowEvaluator,
-        input_type: pyarrow.DataType,
+        input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
     ) -> None:
@@ -425,7 +425,7 @@ class WindowUDF:
         descriptions.
         """
         self._udwf = df_internal.WindowUDF(
-            name, func, input_type, return_type, str(volatility)
+            name, func, input_types, return_type, str(volatility)
         )
 
     def __call__(self, *args: Expr) -> Expr:
@@ -440,7 +440,7 @@ class WindowUDF:
     @staticmethod
     def udwf(
         func: WindowEvaluator,
-        input_type: pyarrow.DataType,
+        input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
         name: str | None = None,
@@ -449,7 +449,7 @@ class WindowUDF:
 
         Args:
             func: The python function.
-            input_type: The data type of the arguments to ``func``.
+            input_types: The data types of the arguments to ``func``.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
             name: A descriptive name for the function.
@@ -463,10 +463,12 @@ class WindowUDF:
             )
         if name is None:
             name = func.__class__.__qualname__.lower()
+        if isinstance(input_types, pyarrow.DataType):
+            input_types = [input_types]
         return WindowUDF(
             name=name,
             func=func,
-            input_type=input_type,
+            input_types=input_types,
             return_type=return_type,
             volatility=volatility,
         )

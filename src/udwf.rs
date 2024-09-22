@@ -15,13 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::num;
+use std::any::Any;
 use std::ops::Range;
 use std::sync::Arc;
 
 use arrow::array::{make_array, Array, ArrayData, ArrayRef};
 use datafusion::logical_expr::window_state::WindowAggState;
-use datafusion::prelude::create_udwf;
 use datafusion::scalar::ScalarValue;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -29,7 +28,9 @@ use pyo3::prelude::*;
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
-use datafusion::logical_expr::{PartitionEvaluator, PartitionEvaluatorFactory, WindowUDF};
+use datafusion::logical_expr::{
+    PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
+};
 use pyo3::types::{PyList, PyTuple};
 
 use crate::expr::PyExpr;
@@ -211,21 +212,24 @@ pub struct PyWindowUDF {
 #[pymethods]
 impl PyWindowUDF {
     #[new]
-    #[pyo3(signature=(name, evaluator, input_type, return_type, volatility))]
+    #[pyo3(signature=(name, evaluator, input_types, return_type, volatility))]
     fn new(
         name: &str,
         evaluator: PyObject,
-        input_type: PyArrowType<DataType>,
+        input_types: Vec<PyArrowType<DataType>>,
         return_type: PyArrowType<DataType>,
         volatility: &str,
     ) -> PyResult<Self> {
-        let function = create_udwf(
+        let return_type = return_type.0;
+        let input_types = input_types.into_iter().map(|t| t.0).collect();
+
+        let function = WindowUDF::from(MultiColumnWindowUDF::new(
             name,
-            input_type.0,
-            Arc::new(return_type.0),
+            input_types,
+            return_type,
             parse_volatility(volatility)?,
             to_rust_partition_evaluator(evaluator),
-        );
+        ));
         Ok(Self { function })
     }
 
@@ -238,5 +242,64 @@ impl PyWindowUDF {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("WindowUDF({})", self.function.name()))
+    }
+}
+
+pub struct MultiColumnWindowUDF {
+    name: String,
+    signature: Signature,
+    return_type: DataType,
+    partition_evaluator_factory: PartitionEvaluatorFactory,
+}
+
+impl std::fmt::Debug for MultiColumnWindowUDF {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_struct("WindowUDF")
+            .field("name", &self.name)
+            .field("signature", &self.signature)
+            .field("return_type", &"<func>")
+            .field("partition_evaluator_factory", &"<FUNC>")
+            .finish()
+    }
+}
+
+impl MultiColumnWindowUDF {
+    pub fn new(
+        name: impl Into<String>,
+        input_types: Vec<DataType>,
+        return_type: DataType,
+        volatility: Volatility,
+        partition_evaluator_factory: PartitionEvaluatorFactory,
+    ) -> Self {
+        let name = name.into();
+        let signature = Signature::exact(input_types, volatility);
+        Self {
+            name,
+            signature,
+            return_type,
+            partition_evaluator_factory,
+        }
+    }
+}
+
+impl WindowUDFImpl for MultiColumnWindowUDF {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    fn return_type(&self, _arg_types: &[DataType]) -> Result<DataType> {
+        Ok(self.return_type.clone())
+    }
+
+    fn partition_evaluator(&self) -> Result<Box<dyn PartitionEvaluator>> {
+        (self.partition_evaluator_factory)()
     }
 }
