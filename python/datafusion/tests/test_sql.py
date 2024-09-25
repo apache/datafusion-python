@@ -104,6 +104,41 @@ def test_register_csv(ctx, tmp_path):
         ctx.register_csv("csv4", path, file_compression_type="rar")
 
 
+def test_register_csv_list(ctx, tmp_path):
+    path = tmp_path / "test.csv"
+
+    int_values = [1, 2, 3, 4]
+    table = pa.Table.from_arrays(
+        [
+            int_values,
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table, path)
+    ctx.register_csv("csv", path)
+
+    csv_df = ctx.table("csv")
+    expected_count = csv_df.count() * 2
+    ctx.register_csv(
+        "double_csv",
+        path=[
+            path,
+            path,
+        ],
+    )
+
+    double_csv_df = ctx.table("double_csv")
+    actual_count = double_csv_df.count()
+    assert actual_count == expected_count
+
+    int_sum = ctx.sql("select sum(int) from double_csv").to_pydict()[
+        "sum(double_csv.int)"
+    ][0]
+    assert int_sum == 2 * sum(int_values)
+
+
 def test_register_parquet(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
