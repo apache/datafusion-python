@@ -382,19 +382,18 @@ _null_mask = np.array([False, True, False])
         pytest.param(
             pa.array([b"1111", b"2222", b"3333"], pa.binary(4), _null_mask),
             id="binary4",
-            marks=pytest.mark.xfail,
         ),
         pytest.param(
             helpers.data_datetime("s"), id="datetime_s", marks=pytest.mark.xfail
         ),
         pytest.param(
-            helpers.data_datetime("ms"), id="datetime_ms", marks=pytest.mark.xfail
+            helpers.data_datetime("ms"), id="datetime_ms",
         ),
         pytest.param(
-            helpers.data_datetime("us"), id="datetime_us", marks=pytest.mark.xfail
+            helpers.data_datetime("us"), id="datetime_us",
         ),
         pytest.param(
-            helpers.data_datetime("ns"), id="datetime_ns", marks=pytest.mark.xfail
+            helpers.data_datetime("ns"), id="datetime_ns",
         ),
         # Not writtable to parquet
         pytest.param(
