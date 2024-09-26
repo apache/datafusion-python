@@ -378,22 +378,26 @@ _null_mask = np.array([False, True, False])
         helpers.data_binary_other(),
         helpers.data_date32(),
         helpers.data_with_nans(),
-        # C data interface missing
         pytest.param(
             pa.array([b"1111", b"2222", b"3333"], pa.binary(4), _null_mask),
             id="binary4",
         ),
         pytest.param(
-            helpers.data_datetime("s"), id="datetime_s", marks=pytest.mark.xfail
+            helpers.data_datetime("s"),
+            id="datetime_s",
+            marks=pytest.mark.xfail(reason="Mismatch in format"),
         ),
         pytest.param(
-            helpers.data_datetime("ms"), id="datetime_ms",
+            helpers.data_datetime("ms"),
+            id="datetime_ms",
         ),
         pytest.param(
-            helpers.data_datetime("us"), id="datetime_us",
+            helpers.data_datetime("us"),
+            id="datetime_us",
         ),
         pytest.param(
-            helpers.data_datetime("ns"), id="datetime_ns",
+            helpers.data_datetime("ns"),
+            id="datetime_ns",
         ),
         # Not writtable to parquet
         pytest.param(
