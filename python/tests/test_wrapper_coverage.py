@@ -55,7 +55,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
 
 
 def test_datafusion_missing_exports() -> None:
-    """Check for any missing pythone exports.
+    """Check for any missing python exports.
 
     This test verifies that every exposed class, attribute, and function in
     the internal (pyo3) module is also exposed in our python wrappers.

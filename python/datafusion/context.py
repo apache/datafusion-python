@@ -450,7 +450,9 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
-    def register_object_store(self, schema: str, store: Any, host: str | None) -> None:
+    def register_object_store(
+        self, schema: str, store: Any, host: str | None = None
+    ) -> None:
         """Add a new object store into the session.
 
         Args:

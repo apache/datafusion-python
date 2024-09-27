@@ -22,7 +22,9 @@ use pyo3::prelude::*;
 use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
+use object_store::http::{HttpBuilder, HttpStore};
 use object_store::local::LocalFileSystem;
+use url::Url;
 
 #[derive(FromPyObject)]
 pub enum StorageContexts {
@@ -30,6 +32,7 @@ pub enum StorageContexts {
     GoogleCloudStorage(PyGoogleCloudContext),
     MicrosoftAzure(PyMicrosoftAzureContext),
     LocalFileSystem(PyLocalFileSystemContext),
+    HTTP(PyHttpContext),
 }
 
 #[pyclass(name = "LocalFileSystem", module = "datafusion.store", subclass)]
@@ -219,10 +222,37 @@ impl PyAmazonS3Context {
     }
 }
 
+#[pyclass(name = "Http", module = "datafusion.store", subclass)]
+#[derive(Debug, Clone)]
+pub struct PyHttpContext {
+    pub url: String,
+    pub store: Arc<HttpStore>,
+}
+
+#[pymethods]
+impl PyHttpContext {
+    #[new]
+    fn new(url: String) -> Self {
+        let store = match Url::parse(url.as_str()) {
+            Ok(url) => HttpBuilder::new()
+                .with_url(url.origin().ascii_serialization())
+                .build()
+                .unwrap(),
+            Err(_) => HttpBuilder::new().build().unwrap(),
+        };
+
+        Self {
+            url,
+            store: Arc::new(store),
+        }
+    }
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyAmazonS3Context>()?;
     m.add_class::<PyMicrosoftAzureContext>()?;
     m.add_class::<PyGoogleCloudContext>()?;
     m.add_class::<PyLocalFileSystemContext>()?;
+    m.add_class::<PyHttpContext>()?;
     Ok(())
 }
