@@ -382,10 +382,13 @@ _null_mask = np.array([False, True, False])
             pa.array([b"1111", b"2222", b"3333"], pa.binary(4), _null_mask),
             id="binary4",
         ),
+        # `timestamp[s]` does not roundtrip for pyarrow.parquet: https://github.com/apache/arrow/issues/41382
         pytest.param(
             helpers.data_datetime("s"),
             id="datetime_s",
-            marks=pytest.mark.xfail(reason="Mismatch in format"),
+            marks=pytest.mark.xfail(
+                reason="pyarrow.parquet does not support timestamp[s] roundtrips"
+            ),
         ),
         pytest.param(
             helpers.data_datetime("ms"),
