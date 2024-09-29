@@ -46,7 +46,8 @@ use crate::utils::{get_tokio_runtime, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::common::ScalarValue;
+use datafusion::catalog_common::TableReference;
+use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
@@ -54,9 +55,12 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{SQLOptions, SessionConfig, SessionContext, TaskContext};
+use datafusion::execution::context::{
+    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
+};
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
+use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
 use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
@@ -621,7 +625,7 @@ impl PySessionContext {
     pub fn register_csv(
         &mut self,
         name: &str,
-        path: PathBuf,
+        path: &Bound<'_, PyAny>,
         schema: Option<PyArrowType<Schema>>,
         has_header: bool,
         delimiter: &str,
@@ -630,9 +634,6 @@ impl PySessionContext {
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyResult<()> {
-        let path = path
-            .to_str()
-            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
             return Err(PyValueError::new_err(
@@ -648,8 +649,15 @@ impl PySessionContext {
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
 
-        let result = self.ctx.register_csv(name, path, options);
-        wait_for_future(py, result).map_err(DataFusionError::from)?;
+        if path.is_instance_of::<PyList>() {
+            let paths = path.extract::<Vec<String>>()?;
+            let result = self.register_csv_from_multiple_paths(name, paths, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?;
+        } else {
+            let path = path.extract::<String>()?;
+            let result = self.ctx.register_csv(name, &path, options);
+            wait_for_future(py, result).map_err(DataFusionError::from)?;
+        }
 
         Ok(())
     }
@@ -980,6 +988,46 @@ impl PySessionContext {
 impl PySessionContext {
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
         self.ctx.table(name).await
+    }
+
+    async fn register_csv_from_multiple_paths(
+        &self,
+        name: &str,
+        table_paths: Vec<String>,
+        options: CsvReadOptions<'_>,
+    ) -> datafusion::common::Result<()> {
+        let table_paths = table_paths.to_urls()?;
+        let session_config = self.ctx.copied_config();
+        let listing_options =
+            options.to_listing_options(&session_config, self.ctx.copied_table_options());
+
+        let option_extension = listing_options.file_extension.clone();
+
+        if table_paths.is_empty() {
+            return exec_err!("No table paths were provided");
+        }
+
+        // check if the file extension matches the expected extension
+        for path in &table_paths {
+            let file_path = path.as_str();
+            if !file_path.ends_with(option_extension.clone().as_str()) && !path.is_collection() {
+                return exec_err!(
+                    "File path '{file_path}' does not match the expected extension '{option_extension}'"
+                );
+            }
+        }
+
+        let resolved_schema = options
+            .get_resolved_schema(&session_config, self.ctx.state(), table_paths[0].clone())
+            .await?;
+
+        let config = ListingTableConfig::new_with_multi_paths(table_paths)
+            .with_listing_options(listing_options)
+            .with_schema(resolved_schema);
+        let table = ListingTable::try_new(config)?;
+        self.ctx
+            .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
+        Ok(())
     }
 }
 

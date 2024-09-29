@@ -714,7 +714,7 @@ class SessionContext:
     def register_csv(
         self,
         name: str,
-        path: str | pathlib.Path,
+        path: str | pathlib.Path | list[str | pathlib.Path],
         schema: pyarrow.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
@@ -728,7 +728,7 @@ class SessionContext:
 
         Args:
             name: Name of the table to register.
-            path: Path to the CSV file.
+            path: Path to the CSV file. It also accepts a list of Paths.
             schema: An optional schema representing the CSV file. If None, the
                 CSV reader will try to infer it based on data in file.
             has_header: Whether the CSV file have a header. If schema inference
@@ -741,9 +741,14 @@ class SessionContext:
                 selected for data input.
             file_compression_type: File compression type.
         """
+        if isinstance(path, list):
+            path = [str(p) for p in path]
+        else:
+            path = str(path)
+
         self.ctx.register_csv(
             name,
-            str(path),
+            path,
             schema,
             has_header,
             delimiter,
