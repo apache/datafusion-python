@@ -270,7 +270,7 @@ class WindowEvaluator(metaclass=ABCMeta):
         """Perform a memoize operation to improve performance.
 
         When the window frame has a fixed beginning (e.g UNBOUNDED
-        PRECEDING), some functions such as FIRST_VALUE, LAST_VALUE and
+        PRECEDING), some functions such as FIRST_VALUE and
         NTH_VALUE do not need the (unbounded) input once they have
         seen a certain amount of input.
 
