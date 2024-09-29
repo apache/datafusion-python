@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Provides the user defined functions for evaluation of dataframes."""
+"""Provides the user-defined functions for evaluation of dataframes."""
 
 from __future__ import annotations
 
@@ -76,7 +76,7 @@ class Volatility(Enum):
 
 
 class ScalarUDF:
-    """Class for performing scalar user defined functions (UDF).
+    """Class for performing scalar user-defined functions (UDF).
 
     Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
     operating on a group of rows.
@@ -90,7 +90,7 @@ class ScalarUDF:
         return_type: _R,
         volatility: Volatility | str,
     ) -> None:
-        """Instantiate a scalar user defined function (UDF).
+        """Instantiate a scalar user-defined function (UDF).
 
         See helper method :py:func:`udf` for argument details.
         """
@@ -115,7 +115,7 @@ class ScalarUDF:
         volatility: Volatility | str,
         name: str | None = None,
     ) -> ScalarUDF:
-        """Create a new User Defined Function.
+        """Create a new User-Defined Function.
 
         Args:
             func: A callable python function.
@@ -127,7 +127,7 @@ class ScalarUDF:
             name: A descriptive name for the function.
 
         Returns:
-            A user defined aggregate function, which can be used in either data
+            A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
         """
         if not callable(func):
@@ -172,7 +172,7 @@ if TYPE_CHECKING:
 
 
 class AggregateUDF:
-    """Class for performing scalar user defined functions (UDF).
+    """Class for performing scalar user-defined functions (UDF).
 
     Aggregate UDFs operate on a group of rows and return a single value. See
     also :py:class:`ScalarUDF` for operating on a row by row basis.
@@ -187,7 +187,7 @@ class AggregateUDF:
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
     ) -> None:
-        """Instantiate a user defined aggregate function (UDAF).
+        """Instantiate a user-defined aggregate function (UDAF).
 
         See :py:func:`udaf` for a convenience function and argument
         descriptions.
@@ -214,7 +214,7 @@ class AggregateUDF:
         volatility: Volatility | str,
         name: str | None = None,
     ) -> AggregateUDF:
-        """Create a new User Defined Aggregate Function.
+        """Create a new User-Defined Aggregate Function.
 
         The accumulator function must be callable and implement :py:class:`Accumulator`.
 
@@ -227,7 +227,7 @@ class AggregateUDF:
             name: A descriptive name for the function.
 
         Returns:
-            A user defined aggregate function, which can be used in either data
+            A user-defined aggregate function, which can be used in either data
             aggregation or window function calls.
         """
         if not issubclass(accum, Accumulator):
@@ -249,16 +249,21 @@ class AggregateUDF:
 
 
 class WindowEvaluator(metaclass=ABCMeta):
-    """Evaluator class for user defined window functions (UDWF).
+    """Evaluator class for user-defined window functions (UDWF).
 
     It is up to the user to decide which evaluate function is appropriate.
 
-    |``uses_window_frame``|``supports_bounded_execution``|``include_rank``|function_to_implement|
-    |---|---|----|----|
-    |False (default)      |False (default)               |False (default) | ``evaluate_all``           |
-    |False                |True                          |False           | ``evaluate``               |
-    |False                |True/False                    |True            | ``evaluate_all_with_rank`` |
-    |True                 |True/False                    |True/False      | ``evaluate``               |
+    +------------------------+--------------------------------+------------------+---------------------------+
+    | ``uses_window_frame``  | ``supports_bounded_execution`` | ``include_rank`` | function_to_implement     |
+    +========================+================================+==================+===========================+
+    | False (default)        | False (default)                | False (default)  | ``evaluate_all``          |
+    +------------------------+--------------------------------+------------------+---------------------------+
+    | False                  | True                           | False            | ``evaluate``              |
+    +------------------------+--------------------------------+------------------+---------------------------+
+    | False                  | True/False                     | True             | ``evaluate_all_with_rank``|
+    +------------------------+--------------------------------+------------------+---------------------------+
+    | True                   | True/False                     | True/False       | ``evaluate``              |
+    +------------------------+--------------------------------+------------------+---------------------------+
     """  # noqa: W505
 
     def memoize(self) -> None:
@@ -299,41 +304,43 @@ class WindowEvaluator(metaclass=ABCMeta):
     def evaluate_all(self, values: list[pyarrow.Array], num_rows: int) -> pyarrow.Array:
         """Evaluate a window function on an entire input partition.
 
-        This function is called once per input *partition* for window
-        functions that *do not use* values from the window frame,
-        such as `ROW_NUMBER`, `RANK`, `DENSE_RANK`, `PERCENT_RANK`,
-        `CUME_DIST`, `LEAD`, `LAG`).
+        This function is called once per input *partition* for window functions that
+        *do not use* values from the window frame, such as
+        :py:func:`~datafusion.functions.row_number`, :py:func:`~datafusion.functions.rank`,
+        :py:func:`~datafusion.functions.dense_rank`, :py:func:`~datafusion.functions.percent_rank`,
+        :py:func:`~datafusion.functions.cume_dist`, :py:func:`~datafusion.functions.lead`,
+        and :py:func:`~datafusion.functions.lag`.
 
         It produces the result of all rows in a single pass. It
-        expects to receive the entire partition as the `value` and
+        expects to receive the entire partition as the ``value`` and
         must produce an output column with one output row for every
         input row.
 
-        `num_rows` is required to correctly compute the output in case
-        `values.len() == 0`
+        ``num_rows`` is required to correctly compute the output in case
+        ``len(values) == 0``
 
-        Implementing this function is an optimization: certain window
+        Implementing this function is an optimization. Certain window
         functions are not affected by the window frame definition or
-        the query doesn't have a frame, and `evaluate` skips the
+        the query doesn't have a frame, and ``evaluate`` skips the
         (costly) window frame boundary calculation and the overhead of
-        calling `evaluate` for each output row.
+        calling ``evaluate`` for each output row.
 
         For example, the `LAG` built in window function does not use
         the values of its window frame (it can be computed in one shot
-        on the entire partition with `Self::evaluate_all` regardless of the
-        window defined in the `OVER` clause)
+        on the entire partition with ``Self::evaluate_all`` regardless of the
+        window defined in the ``OVER`` clause)
 
-        ```sql
-        lag(x, 1) OVER (ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
-        ```
+        .. code-block:: text
 
-        However, `avg()` computes the average in the window and thus
-        does use its window frame
+            lag(x, 1) OVER (ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
 
-        ```sql
-        avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
-        ```
-        """
+        However, ``avg()`` computes the average in the window and thus
+        does use its window frame.
+
+        .. code-block:: text
+
+            avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
+        """  # noqa: W505
         pass
 
     def evaluate(
@@ -361,27 +368,28 @@ class WindowEvaluator(metaclass=ABCMeta):
         """Called for window functions that only need the rank of a row.
 
         Evaluate the partition evaluator against the partition using
-        the row ranks. For example, `RANK(col)` produces
+        the row ranks. For example, ``rank(col("a"))`` produces
 
-        ```text
-        col | rank
-        --- + ----
-         A  | 1
-         A  | 1
-         C  | 3
-         D  | 4
-         D  | 5
-        ```
+        .. code-block:: text
+
+            a | rank
+            - + ----
+            A | 1
+            A | 1
+            C | 3
+            D | 4
+            D | 4
 
         For this case, `num_rows` would be `5` and the
         `ranks_in_partition` would be called with
 
-        ```text
-        [
-          (0,1),
-          (2,2),
-          (3,4),
-        ]
+        .. code-block:: text
+
+            [
+                (0,1),
+                (2,2),
+                (3,4),
+            ]
 
         The user must implement this method if ``include_rank`` returns True.
         """
@@ -405,7 +413,7 @@ if TYPE_CHECKING:
 
 
 class WindowUDF:
-    """Class for performing window user defined functions (UDF).
+    """Class for performing window user-defined functions (UDF).
 
     Window UDFs operate on a partition of rows. See
     also :py:class:`ScalarUDF` for operating on a row by row basis.
@@ -419,7 +427,7 @@ class WindowUDF:
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
     ) -> None:
-        """Instantiate a user defined window function (UDWF).
+        """Instantiate a user-defined window function (UDWF).
 
         See :py:func:`udwf` for a convenience function and argument
         descriptions.
@@ -445,7 +453,7 @@ class WindowUDF:
         volatility: Volatility | str,
         name: str | None = None,
     ) -> WindowUDF:
-        """Create a new User Defined Window Function.
+        """Create a new User-Defined Window Function.
 
         Args:
             func: The python function.
@@ -455,7 +463,7 @@ class WindowUDF:
             name: A descriptive name for the function.
 
         Returns:
-            A user defined window function.
+            A user-defined window function.
         """
         if not isinstance(func, WindowEvaluator):
             raise TypeError(

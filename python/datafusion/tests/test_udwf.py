@@ -51,7 +51,7 @@ class ExponentialSmoothBounded(WindowEvaluator):
         return True
 
     def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:
-        # Ovrerride the default range of current row since uses_window_frame is False
+        # Override the default range of current row since uses_window_frame is False
         # So for the purpose of this test we just smooth from the previous row to
         # current.
         if idx == 0:

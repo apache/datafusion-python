@@ -15,7 +15,7 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-User Defined Functions
+User-Defined Functions
 ======================
 
 DataFusion provides powerful expressions and functions, reducing the need for custom Python
@@ -24,15 +24,15 @@ functions. However you can still incorporate your own functions, i.e. User-Defin
 Scalar Functions
 ----------------
 
-When writing a user defined function that can operate on a row by row basis, these are called Scalar
+When writing a user-defined function that can operate on a row by row basis, these are called Scalar
 Functions. You can define your own scalar function by calling
 :py:func:`~datafusion.udf.ScalarUDF.udf` .
 
 The basic definition of a scalar UDF is a python function that takes one or more
 `pyarrow <https://arrow.apache.org/docs/python/index.html>`_ arrays and returns a single array as
-output. DataFusion scalar UDFs operate on an entire batch of record at a time, though the evaluation
-of those records should be on a row by row basis. In the following example, we compute if the input
-array contains null values.
+output. DataFusion scalar UDFs operate on an entire batch of records at a time, though the
+evaluation of those records should be on a row by row basis. In the following example, we compute
+if the input array contains null values.
 
 .. ipython:: python
 
@@ -76,10 +76,7 @@ converting to Python objects to do the evaluation.
     from datafusion import udf, col
 
     def is_null(array: pyarrow.Array) -> pyarrow.Array:
-        results = []
-        for value in array:
-            results.append(value.as_py() == None)
-        return pyarrow.array(results)
+        return pyarrow.array([value.as_py() is None for value in array])
 
     is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), 'stable')
 
@@ -169,7 +166,7 @@ There are three methods of evaluation of UDWFs.
 
 Which methods you implement are based upon which of these options are set.
 
-.. list-table:: Title
+.. list-table::
    :header-rows: 1
 
    * - ``uses_window_frame``
