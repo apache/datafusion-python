@@ -40,7 +40,7 @@ from ._internal import Config, LogicalPlan, ExecutionPlan, runtime
 
 from .record_batch import RecordBatchStream, RecordBatch
 
-from .udf import ScalarUDF, AggregateUDF, Accumulator
+from .udf import ScalarUDF, AggregateUDF, Accumulator, WindowUDF
 
 from .common import (
     DFSchema,
@@ -78,6 +78,7 @@ __all__ = [
     "Database",
     "Table",
     "AggregateUDF",
+    "WindowUDF",
     "LogicalPlan",
     "ExecutionPlan",
     "RecordBatch",
@@ -113,3 +114,5 @@ def lit(value):
 udf = ScalarUDF.udf
 
 udaf = AggregateUDF.udaf
+
+udwf = WindowUDF.udwf
