@@ -705,7 +705,7 @@ Module Contents
 
 
 
-   .. py:method:: register_udaf(udaf: datafusion._internal.AggregateUDF) -> None
+   .. py:method:: register_udaf(udaf: datafusion.udf.AggregateUDF) -> None
 
       Register a user-defined aggregation function (UDAF) with the context.
 
@@ -714,6 +714,12 @@ Module Contents
    .. py:method:: register_udf(udf: datafusion.udf.ScalarUDF) -> None
 
       Register a user-defined function (UDF) with the context.
+
+
+
+   .. py:method:: register_udwf(udwf: datafusion.udf.WindowUDF) -> None
+
+      Register a user-defined window function (UDWF) with the context.
 
 
 

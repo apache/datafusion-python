@@ -64,6 +64,7 @@ Classes
    datafusion.SessionConfig
    datafusion.Table
    datafusion.WindowFrame
+   datafusion.WindowUDF
 
 
 Functions
@@ -109,7 +110,7 @@ Package Contents
 
 
 
-   .. py:method:: update(values: pyarrow.Array) -> None
+   .. py:method:: update(*values: pyarrow.Array) -> None
       :abstractmethod:
 
 
@@ -119,12 +120,12 @@ Package Contents
 
 .. py:class:: AggregateUDF(name: str | None, accumulator: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Aggregate UDFs operate on a group of rows and return a single value. See
    also :py:class:`ScalarUDF` for operating on a row by row basis.
 
-   Instantiate a user defined aggregate function (UDAF).
+   Instantiate a user-defined aggregate function (UDAF).
 
    See :py:func:`udaf` for a convenience function and argument
    descriptions.
@@ -143,7 +144,7 @@ Package Contents
       :staticmethod:
 
 
-      Create a new User Defined Aggregate Function.
+      Create a new User-Defined Aggregate Function.
 
       The accumulator function must be callable and implement :py:class:`Accumulator`.
 
@@ -154,7 +155,7 @@ Package Contents
       :param volatility: See :py:class:`Volatility` for allowed values.
       :param name: A descriptive name for the function.
 
-      :returns: A user defined aggregate function, which can be used in either data
+      :returns: A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
 
 
@@ -809,12 +810,12 @@ Package Contents
 
 .. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
    operating on a group of rows.
 
-   Instantiate a scalar user defined function (UDF).
+   Instantiate a scalar user-defined function (UDF).
 
    See helper method :py:func:`udf` for argument details.
 
@@ -832,7 +833,7 @@ Package Contents
       :staticmethod:
 
 
-      Create a new User Defined Function.
+      Create a new User-Defined Function.
 
       :param func: A callable python function.
       :param input_types: The data types of the arguments to ``func``. This list
@@ -844,7 +845,7 @@ Package Contents
 
       :returns:
 
-                A user defined aggregate function, which can be used in either data
+                A user-defined aggregate function, which can be used in either data
                     aggregation or window function calls.
 
 
@@ -1064,6 +1065,47 @@ Package Contents
 
 
    .. py:attribute:: window_frame
+
+
+.. py:class:: WindowUDF(name: str | None, func: WindowEvaluator, input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+
+   Class for performing window user-defined functions (UDF).
+
+   Window UDFs operate on a partition of rows. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user-defined window function (UDWF).
+
+   See :py:func:`udwf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDWF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udwf(func: WindowEvaluator, input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Window Function.
+
+      :param func: The python function.
+      :param input_types: The data types of the arguments to ``func``.
+      :param return_type: The data type of the return value.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user-defined window function.
+
+
+
+   .. py:attribute:: _udwf
 
 
 .. py:function:: col(value: str)

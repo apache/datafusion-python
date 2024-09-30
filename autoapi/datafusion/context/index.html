@@ -164,7 +164,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">
-     User Defined Functions
+     User-Defined Functions
     </a>
    </li>
   </ul>
@@ -879,6 +879,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.register_udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udwf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.register_udwf()
         </span>
        </code>
       </a>
@@ -1878,7 +1887,7 @@ register it into the session using the given name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udaf">
-<span class="sig-name descname"><span class="pre">register_udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udaf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.AggregateUDF</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udaf" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udaf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.AggregateUDF" title="datafusion.udf.AggregateUDF"><span class="pre">datafusion.udf.AggregateUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udaf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined aggregation function (UDAF) with the context.</p>
 </dd></dl>
 
@@ -1886,6 +1895,12 @@ register it into the session using the given name.</p>
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udf">
 <span class="sig-name descname"><span class="pre">register_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.ScalarUDF" title="datafusion.udf.ScalarUDF"><span class="pre">datafusion.udf.ScalarUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined function (UDF) with the context.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udwf">
+<span class="sig-name descname"><span class="pre">register_udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udwf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.WindowUDF" title="datafusion.udf.WindowUDF"><span class="pre">datafusion.udf.WindowUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udwf" title="Link to this definition">¶</a></dt>
+<dd><p>Register a user-defined window function (UDWF) with the context.</p>
 </dd></dl>
 
 <dl class="py method">

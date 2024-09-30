@@ -5,7 +5,7 @@ datafusion.udf
 
 .. autoapi-nested-parse::
 
-   Provides the user defined functions for evaluation of dataframes.
+   Provides the user-defined functions for evaluation of dataframes.
 
 
 
@@ -16,6 +16,7 @@ Attributes
 
    datafusion.udf._A
    datafusion.udf._R
+   datafusion.udf._W
 
 
 Classes
@@ -27,6 +28,8 @@ Classes
    datafusion.udf.AggregateUDF
    datafusion.udf.ScalarUDF
    datafusion.udf.Volatility
+   datafusion.udf.WindowEvaluator
+   datafusion.udf.WindowUDF
 
 
 Module Contents
@@ -61,7 +64,7 @@ Module Contents
 
 
 
-   .. py:method:: update(values: pyarrow.Array) -> None
+   .. py:method:: update(*values: pyarrow.Array) -> None
       :abstractmethod:
 
 
@@ -71,12 +74,12 @@ Module Contents
 
 .. py:class:: AggregateUDF(name: str | None, accumulator: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Aggregate UDFs operate on a group of rows and return a single value. See
    also :py:class:`ScalarUDF` for operating on a row by row basis.
 
-   Instantiate a user defined aggregate function (UDAF).
+   Instantiate a user-defined aggregate function (UDAF).
 
    See :py:func:`udaf` for a convenience function and argument
    descriptions.
@@ -95,7 +98,7 @@ Module Contents
       :staticmethod:
 
 
-      Create a new User Defined Aggregate Function.
+      Create a new User-Defined Aggregate Function.
 
       The accumulator function must be callable and implement :py:class:`Accumulator`.
 
@@ -106,7 +109,7 @@ Module Contents
       :param volatility: See :py:class:`Volatility` for allowed values.
       :param name: A descriptive name for the function.
 
-      :returns: A user defined aggregate function, which can be used in either data
+      :returns: A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
 
 
@@ -116,12 +119,12 @@ Module Contents
 
 .. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
    operating on a group of rows.
 
-   Instantiate a scalar user defined function (UDF).
+   Instantiate a scalar user-defined function (UDF).
 
    See helper method :py:func:`udf` for argument details.
 
@@ -139,7 +142,7 @@ Module Contents
       :staticmethod:
 
 
-      Create a new User Defined Function.
+      Create a new User-Defined Function.
 
       :param func: A callable python function.
       :param input_types: The data types of the arguments to ``func``. This list
@@ -151,7 +154,7 @@ Module Contents
 
       :returns:
 
-                A user defined aggregate function, which can be used in either data
+                A user-defined aggregate function, which can be used in either data
                     aggregation or window function calls.
 
 
@@ -216,7 +219,218 @@ Module Contents
       for each output row, resulting in a unique random value for each row.
 
 
+.. py:class:: WindowEvaluator
+
+   Evaluator class for user-defined window functions (UDWF).
+
+   It is up to the user to decide which evaluate function is appropriate.
+
+   +------------------------+--------------------------------+------------------+---------------------------+
+   | ``uses_window_frame``  | ``supports_bounded_execution`` | ``include_rank`` | function_to_implement     |
+   +========================+================================+==================+===========================+
+   | False (default)        | False (default)                | False (default)  | ``evaluate_all``          |
+   +------------------------+--------------------------------+------------------+---------------------------+
+   | False                  | True                           | False            | ``evaluate``              |
+   +------------------------+--------------------------------+------------------+---------------------------+
+   | False                  | True/False                     | True             | ``evaluate_all_with_rank``|
+   +------------------------+--------------------------------+------------------+---------------------------+
+   | True                   | True/False                     | True/False       | ``evaluate``              |
+   +------------------------+--------------------------------+------------------+---------------------------+
+
+
+   .. py:method:: evaluate(values: list[pyarrow.Array], eval_range: tuple[int, int]) -> pyarrow.Scalar
+
+      Evaluate window function on a range of rows in an input partition.
+
+      This is the simplest and most general function to implement
+      but also the least performant as it creates output one row at
+      a time. It is typically much faster to implement stateful
+      evaluation using one of the other specialized methods on this
+      trait.
+
+      Returns a [`ScalarValue`] that is the value of the window
+      function within `range` for the entire partition. Argument
+      `values` contains the evaluation result of function arguments
+      and evaluation results of ORDER BY expressions. If function has a
+      single argument, `values[1..]` will contain ORDER BY expression results.
+
+
+
+   .. py:method:: evaluate_all(values: list[pyarrow.Array], num_rows: int) -> pyarrow.Array
+
+      Evaluate a window function on an entire input partition.
+
+      This function is called once per input *partition* for window functions that
+      *do not use* values from the window frame, such as
+      :py:func:`~datafusion.functions.row_number`, :py:func:`~datafusion.functions.rank`,
+      :py:func:`~datafusion.functions.dense_rank`, :py:func:`~datafusion.functions.percent_rank`,
+      :py:func:`~datafusion.functions.cume_dist`, :py:func:`~datafusion.functions.lead`,
+      and :py:func:`~datafusion.functions.lag`.
+
+      It produces the result of all rows in a single pass. It
+      expects to receive the entire partition as the ``value`` and
+      must produce an output column with one output row for every
+      input row.
+
+      ``num_rows`` is required to correctly compute the output in case
+      ``len(values) == 0``
+
+      Implementing this function is an optimization. Certain window
+      functions are not affected by the window frame definition or
+      the query doesn't have a frame, and ``evaluate`` skips the
+      (costly) window frame boundary calculation and the overhead of
+      calling ``evaluate`` for each output row.
+
+      For example, the `LAG` built in window function does not use
+      the values of its window frame (it can be computed in one shot
+      on the entire partition with ``Self::evaluate_all`` regardless of the
+      window defined in the ``OVER`` clause)
+
+      .. code-block:: text
+
+          lag(x, 1) OVER (ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
+
+      However, ``avg()`` computes the average in the window and thus
+      does use its window frame.
+
+      .. code-block:: text
+
+          avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
+
+
+
+   .. py:method:: evaluate_all_with_rank(num_rows: int, ranks_in_partition: list[tuple[int, int]]) -> pyarrow.Array
+
+      Called for window functions that only need the rank of a row.
+
+      Evaluate the partition evaluator against the partition using
+      the row ranks. For example, ``rank(col("a"))`` produces
+
+      .. code-block:: text
+
+          a | rank
+          - + ----
+          A | 1
+          A | 1
+          C | 3
+          D | 4
+          D | 4
+
+      For this case, `num_rows` would be `5` and the
+      `ranks_in_partition` would be called with
+
+      .. code-block:: text
+
+          [
+              (0,1),
+              (2,2),
+              (3,4),
+          ]
+
+      The user must implement this method if ``include_rank`` returns True.
+
+
+
+   .. py:method:: get_range(idx: int, num_rows: int) -> tuple[int, int]
+
+      Return the range for the window fuction.
+
+      If `uses_window_frame` flag is `false`. This method is used to
+      calculate required range for the window function during
+      stateful execution.
+
+      Generally there is no required range, hence by default this
+      returns smallest range(current row). e.g seeing current row is
+      enough to calculate window result (such as row_number, rank,
+      etc)
+
+      :param idx:: Current index:
+      :param num_rows: Number of rows.
+
+
+
+   .. py:method:: include_rank() -> bool
+
+      Can this function be evaluated with (only) rank?
+
+
+
+   .. py:method:: is_causal() -> bool
+
+      Get whether evaluator needs future data for its result.
+
+
+
+   .. py:method:: memoize() -> None
+
+      Perform a memoize operation to improve performance.
+
+      When the window frame has a fixed beginning (e.g UNBOUNDED
+      PRECEDING), some functions such as FIRST_VALUE and
+      NTH_VALUE do not need the (unbounded) input once they have
+      seen a certain amount of input.
+
+      `memoize` is called after each input batch is processed, and
+      such functions can save whatever they need
+
+
+
+   .. py:method:: supports_bounded_execution() -> bool
+
+      Can the window function be incrementally computed using bounded memory?
+
+
+
+   .. py:method:: uses_window_frame() -> bool
+
+      Does the window function use the values from the window frame?
+
+
+
+.. py:class:: WindowUDF(name: str | None, func: WindowEvaluator, input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+
+   Class for performing window user-defined functions (UDF).
+
+   Window UDFs operate on a partition of rows. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user-defined window function (UDWF).
+
+   See :py:func:`udwf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDWF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udwf(func: WindowEvaluator, input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: str | None = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Window Function.
+
+      :param func: The python function.
+      :param input_types: The data types of the arguments to ``func``.
+      :param return_type: The data type of the return value.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param name: A descriptive name for the function.
+
+      :returns: A user-defined window function.
+
+
+
+   .. py:attribute:: _udwf
+
+
 .. py:data:: _A
 
 .. py:data:: _R
+
+.. py:data:: _W
 
