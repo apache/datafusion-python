@@ -104,8 +104,8 @@ class ScalarUDF:
         This function is not typically called by an end user. These calls will
         occur during the evaluation of the dataframe.
         """
-        args = [arg.expr for arg in args]
-        return Expr(self._udf.__call__(*args))
+        args_raw = [arg.expr for arg in args]
+        return Expr(self._udf.__call__(*args_raw))
 
     @staticmethod
     def udf(
@@ -209,13 +209,13 @@ class AggregateUDF:
         This function is not typically called by an end user. These calls will
         occur during the evaluation of the dataframe.
         """
-        args = [arg.expr for arg in args]
-        return Expr(self._udaf.__call__(*args))
+        args_raw = [arg.expr for arg in args]
+        return Expr(self._udaf.__call__(*args_raw))
 
     @staticmethod
     def udaf(
         accum: _A,
-        input_types: list[pyarrow.DataType],
+        input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
@@ -245,7 +245,7 @@ class AggregateUDF:
             )
         if name is None:
             name = accum.__qualname__.lower()
-        if isinstance(input_types, pyarrow.lib.DataType):
+        if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
         arguments = [] if arguments is None else arguments
         return AggregateUDF(
