@@ -23,7 +23,7 @@ import datafusion._internal as df_internal
 from datafusion.expr import Expr
 from typing import Callable, TYPE_CHECKING, TypeVar
 from abc import ABCMeta, abstractmethod
-from typing import List
+from typing import List, Any, Optional
 from enum import Enum
 import pyarrow
 
@@ -186,6 +186,7 @@ class AggregateUDF:
         return_type: _R,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
+        arguments: list[Any],
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
 
@@ -193,7 +194,13 @@ class AggregateUDF:
         descriptions.
         """
         self._udaf = df_internal.AggregateUDF(
-            name, accumulator, input_types, return_type, state_type, str(volatility)
+            name,
+            accumulator,
+            input_types,
+            return_type,
+            state_type,
+            str(volatility),
+            arguments,
         )
 
     def __call__(self, *args: Expr) -> Expr:
@@ -212,6 +219,7 @@ class AggregateUDF:
         return_type: _R,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
+        arguments: Optional[list[Any]] = None,
         name: str | None = None,
     ) -> AggregateUDF:
         """Create a new User-Defined Aggregate Function.
@@ -224,6 +232,7 @@ class AggregateUDF:
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
             volatility: See :py:class:`Volatility` for allowed values.
+            arguments: A list of arguments to pass in to the __init__ method for accum.
             name: A descriptive name for the function.
 
         Returns:
@@ -238,6 +247,7 @@ class AggregateUDF:
             name = accum.__qualname__.lower()
         if isinstance(input_types, pyarrow.lib.DataType):
             input_types = [input_types]
+        arguments = [] if arguments is None else arguments
         return AggregateUDF(
             name=name,
             accumulator=accum,
@@ -245,6 +255,7 @@ class AggregateUDF:
             return_type=return_type,
             state_type=state_type,
             volatility=volatility,
+            arguments=arguments,
         )
 
 

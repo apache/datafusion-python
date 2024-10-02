@@ -128,11 +128,15 @@ impl Accumulator for RustAccumulator {
     }
 }
 
-pub fn to_rust_accumulator(accum: PyObject) -> AccumulatorFactoryFunction {
+pub fn to_rust_accumulator(
+    accum: PyObject,
+    arguments: Vec<PyObject>,
+) -> AccumulatorFactoryFunction {
     Arc::new(move |_| -> Result<Box<dyn Accumulator>> {
         let accum = Python::with_gil(|py| {
+            let py_args = PyTuple::new_bound(py, arguments.iter());
             accum
-                .call0(py)
+                .call1(py, py_args)
                 .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })?;
         Ok(Box::new(RustAccumulator::new(accum)))
@@ -149,7 +153,7 @@ pub struct PyAggregateUDF {
 #[pymethods]
 impl PyAggregateUDF {
     #[new]
-    #[pyo3(signature=(name, accumulator, input_type, return_type, state_type, volatility))]
+    #[pyo3(signature=(name, accumulator, input_type, return_type, state_type, volatility, arguments))]
     fn new(
         name: &str,
         accumulator: PyObject,
@@ -157,13 +161,14 @@ impl PyAggregateUDF {
         return_type: PyArrowType<DataType>,
         state_type: PyArrowType<Vec<DataType>>,
         volatility: &str,
+        arguments: Vec<PyObject>,
     ) -> PyResult<Self> {
         let function = create_udaf(
             name,
             input_type.0,
             Arc::new(return_type.0),
             parse_volatility(volatility)?,
-            to_rust_accumulator(accumulator),
+            to_rust_accumulator(accumulator, arguments),
             Arc::new(state_type.0),
         );
         Ok(Self { function })

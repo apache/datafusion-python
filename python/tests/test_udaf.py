@@ -27,8 +27,8 @@ from datafusion import Accumulator, column, udaf, udf
 class Summarize(Accumulator):
     """Interface of a user-defined accumulation."""
 
-    def __init__(self):
-        self._sum = pa.scalar(0.0)
+    def __init__(self, initial_value: float = 0.0):
+        self._sum = pa.scalar(initial_value)
 
     def state(self) -> List[pa.Scalar]:
         return [self._sum]
@@ -97,7 +97,7 @@ def test_errors(df):
         df.collect()
 
 
-def test_aggregate(df):
+def test_udaf_aggregate(df):
     summarize = udaf(
         Summarize,
         pa.float64(),
@@ -106,12 +106,39 @@ def test_aggregate(df):
         volatility="immutable",
     )
 
-    df = df.aggregate([], [summarize(column("a"))])
+    df1 = df.aggregate([], [summarize(column("a"))])
 
     # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    result = df1.collect()[0]
 
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
+def test_udaf_aggregate_with_arguments(df):
+    bias = 10.0
+
+    summarize = udaf(
+        Summarize,
+        pa.float64(),
+        pa.float64(),
+        [pa.float64()],
+        volatility="immutable",
+        arguments=[bias],
+    )
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
 
 
 def test_group_by(df):
