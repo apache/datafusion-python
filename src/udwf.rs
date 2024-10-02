@@ -195,9 +195,17 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 }
 
-pub fn to_rust_partition_evaluator(evaluator: PyObject) -> PartitionEvaluatorFactory {
+pub fn to_rust_partition_evaluator(
+    evaluator: PyObject,
+    arguments: Vec<PyObject>,
+) -> PartitionEvaluatorFactory {
     Arc::new(move || -> Result<Box<dyn PartitionEvaluator>> {
-        let evaluator = Python::with_gil(|py| evaluator.clone_ref(py));
+        let evaluator = Python::with_gil(|py| {
+            let py_args = PyTuple::new_bound(py, arguments.iter());
+            evaluator
+                .call1(py, py_args)
+                .map_err(|e| DataFusionError::Execution(e.to_string()))
+        })?;
         Ok(Box::new(RustPartitionEvaluator::new(evaluator)))
     })
 }
@@ -212,13 +220,14 @@ pub struct PyWindowUDF {
 #[pymethods]
 impl PyWindowUDF {
     #[new]
-    #[pyo3(signature=(name, evaluator, input_types, return_type, volatility))]
+    #[pyo3(signature=(name, evaluator, input_types, return_type, volatility, arguments))]
     fn new(
         name: &str,
         evaluator: PyObject,
         input_types: Vec<PyArrowType<DataType>>,
         return_type: PyArrowType<DataType>,
         volatility: &str,
+        arguments: Vec<PyObject>,
     ) -> PyResult<Self> {
         let return_type = return_type.0;
         let input_types = input_types.into_iter().map(|t| t.0).collect();
@@ -228,7 +237,7 @@ impl PyWindowUDF {
             input_types,
             return_type,
             parse_volatility(volatility)?,
-            to_rust_partition_evaluator(evaluator),
+            to_rust_partition_evaluator(evaluator, arguments),
         ));
         Ok(Self { function })
     }

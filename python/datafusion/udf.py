@@ -429,10 +429,11 @@ class WindowUDF:
     def __init__(
         self,
         name: str | None,
-        func: WindowEvaluator,
+        func: Type[WindowEvaluator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
+        arguments: list[Any],
     ) -> None:
         """Instantiate a user-defined window function (UDWF).
 
@@ -440,7 +441,7 @@ class WindowUDF:
         descriptions.
         """
         self._udwf = df_internal.WindowUDF(
-            name, func, input_types, return_type, str(volatility)
+            name, func, input_types, return_type, str(volatility), arguments
         )
 
     def __call__(self, *args: Expr) -> Expr:
@@ -454,10 +455,11 @@ class WindowUDF:
 
     @staticmethod
     def udwf(
-        func: WindowEvaluator,
+        func: Type[WindowEvaluator],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
+        arguments: Optional[list[Any]] = None,
         name: str | None = None,
     ) -> WindowUDF:
         """Create a new User-Defined Window Function.
@@ -467,12 +469,13 @@ class WindowUDF:
             input_types: The data types of the arguments to ``func``.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
+            arguments: A list of arguments to pass in to the __init__ method for accum.
             name: A descriptive name for the function.
 
         Returns:
             A user-defined window function.
         """
-        if not isinstance(func, WindowEvaluator):
+        if not issubclass(func, WindowEvaluator):
             raise TypeError(
                 "`func` must implement the abstract base class WindowEvaluator"
             )
@@ -480,10 +483,12 @@ class WindowUDF:
             name = func.__class__.__qualname__.lower()
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
+        arguments = [] if arguments is None else arguments
         return WindowUDF(
             name=name,
             func=func,
             input_types=input_types,
             return_type=return_type,
             volatility=volatility,
+            arguments=arguments,
         )

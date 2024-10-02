@@ -24,7 +24,7 @@ from datafusion.expr import WindowFrame
 
 
 class ExponentialSmoothDefault(WindowEvaluator):
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.8) -> None:
         self.alpha = alpha
 
     def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
@@ -183,7 +183,7 @@ def df():
 def test_udwf_errors(df):
     with pytest.raises(TypeError):
         udwf(
-            NotSubclassOfWindowEvaluator(),
+            NotSubclassOfWindowEvaluator,
             pa.float64(),
             pa.float64(),
             volatility="immutable",
@@ -191,38 +191,50 @@ def test_udwf_errors(df):
 
 
 smooth_default = udwf(
-    ExponentialSmoothDefault(0.9),
+    ExponentialSmoothDefault,
+    pa.float64(),
+    pa.float64(),
+    volatility="immutable",
+    arguments=[0.9],
+)
+
+smooth_no_arugments = udwf(
+    ExponentialSmoothDefault,
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_bounded = udwf(
-    ExponentialSmoothBounded(0.9),
+    ExponentialSmoothBounded,
     pa.float64(),
     pa.float64(),
     volatility="immutable",
+    arguments=[0.9],
 )
 
 smooth_rank = udwf(
-    ExponentialSmoothRank(0.9),
+    ExponentialSmoothRank,
     pa.utf8(),
     pa.float64(),
     volatility="immutable",
+    arguments=[0.9],
 )
 
 smooth_frame = udwf(
-    ExponentialSmoothFrame(0.9),
+    ExponentialSmoothFrame,
     pa.float64(),
     pa.float64(),
     volatility="immutable",
+    arguments=[0.9],
 )
 
 smooth_two_col = udwf(
-    SmoothTwoColumn(0.9),
+    SmoothTwoColumn,
     [pa.int64(), pa.int64()],
     pa.float64(),
     volatility="immutable",
+    arguments=[0.9],
 )
 
 data_test_udwf_functions = [
@@ -230,6 +242,11 @@ data_test_udwf_functions = [
         "default_udwf",
         smooth_default(column("a")),
         [0, 0.9, 1.89, 2.889, 3.889, 4.889, 5.889],
+    ),
+    (
+        "default_udwf_no_arguments",
+        smooth_no_arugments(column("a")),
+        [0, 0.8, 1.76, 2.752, 3.75, 4.75, 5.75],
     ),
     (
         "default_udwf_partitioned",
