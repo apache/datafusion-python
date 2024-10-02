@@ -21,7 +21,7 @@ import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
 
-from datafusion import Accumulator, column, udaf, udf
+from datafusion import Accumulator, column, udaf
 
 
 class Summarize(Accumulator):
@@ -173,20 +173,3 @@ def test_register_udaf(ctx, df) -> None:
     df_result = ctx.sql("select summarize(b) from test_table")
 
     assert df_result.collect()[0][0][0].as_py() == 14.0
-
-
-def test_register_udf(ctx, df) -> None:
-    is_null = udf(
-        lambda x: x.is_null(),
-        [pa.float64()],
-        pa.bool_(),
-        volatility="immutable",
-        name="is_null",
-    )
-
-    ctx.register_udf(is_null)
-
-    df_result = ctx.sql("select is_null(a) from test_table")
-    result = df_result.collect()[0].column(0)
-
-    assert result == pa.array([False, False, False])

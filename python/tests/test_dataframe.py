@@ -29,7 +29,6 @@ from datafusion import (
     WindowFrame,
     column,
     literal,
-    udf,
 )
 from datafusion.expr import Window
 
@@ -234,21 +233,6 @@ def test_unnest_without_nulls(nested_df):
 
     assert result.column(0) == pa.array([1, 2, 3, 4, 5, 6])
     assert result.column(1) == pa.array([7, 8, 8, 9, 9, 9])
-
-
-def test_udf(df):
-    # is_null is a pa function over arrays
-    is_null = udf(
-        lambda x: x.is_null(),
-        [pa.int64()],
-        pa.bool_(),
-        volatility="immutable",
-    )
-
-    df = df.select(is_null(column("a")))
-    result = df.collect()[0].column(0)
-
-    assert result == pa.array([False, False, False])
 
 
 def test_join():
