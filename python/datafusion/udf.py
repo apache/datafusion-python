@@ -86,7 +86,7 @@ class ScalarUDF:
         self,
         name: str | None,
         func: Callable[..., _R],
-        input_types: list[pyarrow.DataType],
+        input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
         volatility: Volatility | str,
     ) -> None:
@@ -94,6 +94,8 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
+        if isinstance(input_types, pyarrow.DataType):
+            input_types = [input_types]
         self._udf = df_internal.ScalarUDF(
             name, func, input_types, return_type, str(volatility)
         )
@@ -133,7 +135,10 @@ class ScalarUDF:
         if not callable(func):
             raise TypeError("`func` argument must be callable")
         if name is None:
-            name = func.__qualname__.lower()
+            if hasattr(func, "__qualname__"):
+                name = func.__qualname__.lower()
+            else:
+                name = func.__class__.__name__.lower()
         return ScalarUDF(
             name=name,
             func=func,
