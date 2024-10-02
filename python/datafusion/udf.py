@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING, TypeVar
+from typing import Callable, TYPE_CHECKING, TypeVar, Type
 from abc import ABCMeta, abstractmethod
 from typing import List, Any, Optional
 from enum import Enum
@@ -167,10 +167,6 @@ class Accumulator(metaclass=ABCMeta):
         pass
 
 
-if TYPE_CHECKING:
-    _A = TypeVar("_A", bound=(Callable[..., _R], Accumulator))
-
-
 class AggregateUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -181,9 +177,9 @@ class AggregateUDF:
     def __init__(
         self,
         name: str | None,
-        accumulator: _A,
+        accumulator: Type[Accumulator],
         input_types: list[pyarrow.DataType],
-        return_type: _R,
+        return_type: pyarrow.DataType,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
         arguments: list[Any],
@@ -214,9 +210,9 @@ class AggregateUDF:
 
     @staticmethod
     def udaf(
-        accum: _A,
+        accum: Type[Accumulator],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
-        return_type: _R,
+        return_type: pyarrow.DataType,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
         arguments: Optional[list[Any]] = None,
