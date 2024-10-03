@@ -31,7 +31,7 @@ s3 = AmazonS3(
 
 ctx = datafusion.SessionContext()
 path = f"s3://{bucket_name}/"
-ctx.register_object_store(path, s3)
+ctx.register_object_store("s3://", s3, None)
 
 ctx.register_parquet("trips", path)
 
