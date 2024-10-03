@@ -75,7 +75,7 @@ jobs:
           channel-priority: strict
       - name: Install dependencies
         run: |
-          conda install -c conda-forge conda-verify
+          conda install -c conda-forge conda-build conda-verify
 
           which python
           pip list
