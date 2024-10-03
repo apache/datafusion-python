@@ -24,7 +24,7 @@ use std::sync::{Arc, OnceLock};
 use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
-pub(crate) fn get_tokio_runtime(_: Python) -> Arc<TokioRuntime> {
+pub(crate) fn get_tokio_runtime() -> Arc<TokioRuntime> {
     static RUNTIME: OnceLock<Arc<TokioRuntime>> = OnceLock::new();
     RUNTIME
         .get_or_init(|| {
@@ -40,7 +40,7 @@ where
     F: Future + Send,
     F::Output: Send,
 {
-    let runtime: &Runtime = &get_tokio_runtime(py).0;
+    let runtime: &Runtime = &get_tokio_runtime().0;
     py.allow_threads(|| runtime.block_on(f))
 }
 

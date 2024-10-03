@@ -982,7 +982,7 @@ impl PySessionContext {
     ) -> PyResult<PyRecordBatchStream> {
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime(py).0;
+        let rt = &get_tokio_runtime().0;
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
