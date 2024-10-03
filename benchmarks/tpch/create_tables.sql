@@ -13,7 +13,10 @@ CREATE EXTERNAL TABLE customer (
     c_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/customer.csv';
 
 CREATE EXTERNAL TABLE lineitem (
@@ -36,7 +39,10 @@ CREATE EXTERNAL TABLE lineitem (
     l_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/lineitem.csv';
 
 CREATE EXTERNAL TABLE nation (
@@ -47,7 +53,10 @@ CREATE EXTERNAL TABLE nation (
     n_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/nation.csv';
 
 CREATE EXTERNAL TABLE orders (
@@ -63,7 +72,10 @@ CREATE EXTERNAL TABLE orders (
     o_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/orders.csv';
 
 CREATE EXTERNAL TABLE part (
@@ -79,7 +91,10 @@ CREATE EXTERNAL TABLE part (
     p_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/part.csv';
 
 CREATE EXTERNAL TABLE partsupp (
@@ -91,7 +106,10 @@ CREATE EXTERNAL TABLE partsupp (
     ps_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/partsupp.csv';
 
 CREATE EXTERNAL TABLE region (
@@ -101,7 +119,10 @@ CREATE EXTERNAL TABLE region (
     r_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/region.csv';
 
 CREATE EXTERNAL TABLE supplier (
@@ -115,5 +136,8 @@ CREATE EXTERNAL TABLE supplier (
     s_extra VARCHAR NOT NULL,
 )
 STORED AS CSV
-WITH HEADER ROW DELIMITER '|'
+OPTIONS (
+    format.delimiter '|',
+    format.has_header true
+)
 LOCATION '$PATH/supplier.csv';
