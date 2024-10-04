@@ -24,7 +24,7 @@ from datafusion.expr import WindowFrame
 
 
 class ExponentialSmoothDefault(WindowEvaluator):
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.9) -> None:
         self.alpha = alpha
 
     def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
@@ -44,7 +44,7 @@ class ExponentialSmoothDefault(WindowEvaluator):
 
 
 class ExponentialSmoothBounded(WindowEvaluator):
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.9) -> None:
         self.alpha = alpha
 
     def supports_bounded_execution(self) -> bool:
@@ -75,7 +75,7 @@ class ExponentialSmoothBounded(WindowEvaluator):
 
 
 class ExponentialSmoothRank(WindowEvaluator):
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.9) -> None:
         self.alpha = alpha
 
     def include_rank(self) -> bool:
@@ -101,7 +101,7 @@ class ExponentialSmoothRank(WindowEvaluator):
 
 
 class ExponentialSmoothFrame(WindowEvaluator):
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.9) -> None:
         self.alpha = alpha
 
     def uses_window_frame(self) -> bool:
@@ -134,7 +134,7 @@ class SmoothTwoColumn(WindowEvaluator):
     the previous and next rows.
     """
 
-    def __init__(self, alpha: float) -> None:
+    def __init__(self, alpha: float = 0.9) -> None:
         self.alpha = alpha
 
     def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
@@ -183,7 +183,7 @@ def df():
 def test_udwf_errors(df):
     with pytest.raises(TypeError):
         udwf(
-            NotSubclassOfWindowEvaluator(),
+            NotSubclassOfWindowEvaluator,
             pa.float64(),
             pa.float64(),
             volatility="immutable",
@@ -191,35 +191,42 @@ def test_udwf_errors(df):
 
 
 smooth_default = udwf(
-    ExponentialSmoothDefault(0.9),
+    ExponentialSmoothDefault,
+    pa.float64(),
+    pa.float64(),
+    volatility="immutable",
+)
+
+smooth_w_arguments = udwf(
+    lambda: ExponentialSmoothDefault(0.8),
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_bounded = udwf(
-    ExponentialSmoothBounded(0.9),
+    ExponentialSmoothBounded,
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_rank = udwf(
-    ExponentialSmoothRank(0.9),
+    ExponentialSmoothRank,
     pa.utf8(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_frame = udwf(
-    ExponentialSmoothFrame(0.9),
+    ExponentialSmoothFrame,
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_two_col = udwf(
-    SmoothTwoColumn(0.9),
+    SmoothTwoColumn,
     [pa.int64(), pa.int64()],
     pa.float64(),
     volatility="immutable",
@@ -227,9 +234,14 @@ smooth_two_col = udwf(
 
 data_test_udwf_functions = [
     (
-        "default_udwf",
+        "default_udwf_no_arguments",
         smooth_default(column("a")),
         [0, 0.9, 1.89, 2.889, 3.889, 4.889, 5.889],
+    ),
+    (
+        "default_udwf_w_arguments",
+        smooth_w_arguments(column("a")),
+        [0, 0.8, 1.76, 2.752, 3.75, 4.75, 5.75],
     ),
     (
         "default_udwf_partitioned",

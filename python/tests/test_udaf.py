@@ -21,14 +21,14 @@ import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
 
-from datafusion import Accumulator, column, udaf, udf
+from datafusion import Accumulator, column, udaf
 
 
 class Summarize(Accumulator):
     """Interface of a user-defined accumulation."""
 
-    def __init__(self):
-        self._sum = pa.scalar(0.0)
+    def __init__(self, initial_value: float = 0.0):
+        self._sum = pa.scalar(initial_value)
 
     def state(self) -> List[pa.Scalar]:
         return [self._sum]
@@ -79,25 +79,22 @@ def test_errors(df):
             volatility="immutable",
         )
 
-    accum = udaf(
-        MissingMethods,
-        pa.int64(),
-        pa.int64(),
-        [pa.int64()],
-        volatility="immutable",
-    )
-    df = df.aggregate([], [accum(column("a"))])
-
     msg = (
         "Can't instantiate abstract class MissingMethods (without an implementation "
         "for abstract methods 'evaluate', 'merge', 'update'|with abstract methods "
         "evaluate, merge, update)"
     )
     with pytest.raises(Exception, match=msg):
-        df.collect()
+        accum = udaf(  # noqa F841
+            MissingMethods,
+            pa.int64(),
+            pa.int64(),
+            [pa.int64()],
+            volatility="immutable",
+        )
 
 
-def test_aggregate(df):
+def test_udaf_aggregate(df):
     summarize = udaf(
         Summarize,
         pa.float64(),
@@ -106,12 +103,45 @@ def test_aggregate(df):
         volatility="immutable",
     )
 
-    df = df.aggregate([], [summarize(column("a"))])
+    df1 = df.aggregate([], [summarize(column("a"))])
 
     # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    result = df1.collect()[0]
 
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
+def test_udaf_aggregate_with_arguments(df):
+    bias = 10.0
+
+    summarize = udaf(
+        lambda: Summarize(bias),
+        pa.float64(),
+        pa.float64(),
+        [pa.float64()],
+        volatility="immutable",
+    )
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
 
 
 def test_group_by(df):
@@ -146,20 +176,3 @@ def test_register_udaf(ctx, df) -> None:
     df_result = ctx.sql("select summarize(b) from test_table")
 
     assert df_result.collect()[0][0][0].as_py() == 14.0
-
-
-def test_register_udf(ctx, df) -> None:
-    is_null = udf(
-        lambda x: x.is_null(),
-        [pa.float64()],
-        pa.bool_(),
-        volatility="immutable",
-        name="is_null",
-    )
-
-    ctx.register_udf(is_null)
-
-    df_result = ctx.sql("select is_null(a) from test_table")
-    result = df_result.collect()[0].column(0)
-
-    assert result == pa.array([False, False, False])
