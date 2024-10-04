@@ -24,6 +24,7 @@ from __future__ import annotations
 from typing import Any, List, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
+from datafusion.plan import LogicalPlan, ExecutionPlan
 
 if TYPE_CHECKING:
     import pyarrow as pa
@@ -34,10 +35,6 @@ if TYPE_CHECKING:
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
-from datafusion._internal import (
-    LogicalPlan,
-    ExecutionPlan,
-)
 
 
 class DataFrame:
@@ -316,7 +313,7 @@ class DataFrame:
         Returns:
             Unoptimized logical plan.
         """
-        return self.df.logical_plan()
+        return LogicalPlan(self.df.logical_plan())
 
     def optimized_logical_plan(self) -> LogicalPlan:
         """Return the optimized ``LogicalPlan``.
@@ -324,7 +321,7 @@ class DataFrame:
         Returns:
             Optimized logical plan.
         """
-        return self.df.optimized_logical_plan()
+        return LogicalPlan(self.df.optimized_logical_plan())
 
     def execution_plan(self) -> ExecutionPlan:
         """Return the execution/physical plan.
@@ -332,7 +329,7 @@ class DataFrame:
         Returns:
             Execution plan.
         """
-        return self.df.execution_plan()
+        return ExecutionPlan(self.df.execution_plan())
 
     def repartition(self, num: int) -> DataFrame:
         """Repartition a DataFrame into ``num`` partitions.

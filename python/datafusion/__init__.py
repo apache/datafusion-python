@@ -36,7 +36,7 @@ from .context import (
 from .catalog import Catalog, Database, Table
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config, LogicalPlan, ExecutionPlan, runtime
+from ._internal import Config, runtime
 
 from .record_batch import RecordBatchStream, RecordBatch
 
@@ -52,6 +52,8 @@ from .expr import (
     Expr,
     WindowFrame,
 )
+
+from .plan import LogicalPlan, ExecutionPlan
 
 from . import functions, object_store, substrait
 

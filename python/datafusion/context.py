@@ -23,7 +23,6 @@ from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import RuntimeConfig as RuntimeConfigInternal
 from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import SessionContext as SessionContextInternal
-from ._internal import LogicalPlan, ExecutionPlan
 
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
@@ -39,6 +38,7 @@ if TYPE_CHECKING:
     import pandas
     import polars
     import pathlib
+    from datafusion.plan import LogicalPlan, ExecutionPlan
 
 
 class SessionConfig:
@@ -268,8 +268,10 @@ class RuntimeConfig:
         Returns:
             A new :py:class:`RuntimeConfig` object with the updated setting.
         """
-        paths = [str(p) for p in paths]
-        self.config_internal = self.config_internal.with_disk_manager_specified(paths)
+        paths_list = [str(p) for p in paths]
+        self.config_internal = self.config_internal.with_disk_manager_specified(
+            paths_list
+        )
         return self
 
     def with_unbounded_memory_pool(self) -> RuntimeConfig:
@@ -558,7 +560,7 @@ class SessionContext:
         Returns:
             DataFrame representation of the logical plan.
         """
-        return DataFrame(self.ctx.create_dataframe_from_logical_plan(plan))
+        return DataFrame(self.ctx.create_dataframe_from_logical_plan(plan._raw_plan))
 
     def from_pylist(
         self, data: list[dict[str, Any]], name: str | None = None
@@ -1034,4 +1036,4 @@ class SessionContext:
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""
-        return RecordBatchStream(self.ctx.execute(plan, partitions))
+        return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
