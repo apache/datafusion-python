@@ -79,22 +79,19 @@ def test_errors(df):
             volatility="immutable",
         )
 
-    accum = udaf(
-        MissingMethods,
-        pa.int64(),
-        pa.int64(),
-        [pa.int64()],
-        volatility="immutable",
-    )
-    df = df.aggregate([], [accum(column("a"))])
-
     msg = (
         "Can't instantiate abstract class MissingMethods (without an implementation "
         "for abstract methods 'evaluate', 'merge', 'update'|with abstract methods "
         "evaluate, merge, update)"
     )
     with pytest.raises(Exception, match=msg):
-        df.collect()
+        accum = udaf(  # noqa F841
+            MissingMethods,
+            pa.int64(),
+            pa.int64(),
+            [pa.int64()],
+            volatility="immutable",
+        )
 
 
 def test_udaf_aggregate(df):
@@ -125,18 +122,24 @@ def test_udaf_aggregate_with_arguments(df):
     bias = 10.0
 
     summarize = udaf(
-        Summarize,
+        lambda: Summarize(bias),
         pa.float64(),
         pa.float64(),
         [pa.float64()],
         volatility="immutable",
-        arguments=[bias],
     )
 
     df1 = df.aggregate([], [summarize(column("a"))])
 
     # execute and collect the first (and only) batch
     result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
 
     assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
 

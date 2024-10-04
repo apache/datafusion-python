@@ -21,9 +21,9 @@ from __future__ import annotations
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING, TypeVar, Type
+from typing import Callable, TYPE_CHECKING, TypeVar
 from abc import ABCMeta, abstractmethod
-from typing import List, Any, Optional
+from typing import List, Optional
 from enum import Enum
 import pyarrow
 
@@ -84,7 +84,7 @@ class ScalarUDF:
 
     def __init__(
         self,
-        name: str | None,
+        name: Optional[str],
         func: Callable[..., _R],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
@@ -115,7 +115,7 @@ class ScalarUDF:
         input_types: list[pyarrow.DataType],
         return_type: _R,
         volatility: Volatility | str,
-        name: str | None = None,
+        name: Optional[str] = None,
     ) -> ScalarUDF:
         """Create a new User-Defined Function.
 
@@ -181,13 +181,12 @@ class AggregateUDF:
 
     def __init__(
         self,
-        name: str | None,
-        accumulator: Type[Accumulator],
+        name: Optional[str],
+        accumulator: Callable[[], Accumulator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
-        arguments: list[Any],
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
 
@@ -201,7 +200,6 @@ class AggregateUDF:
             return_type,
             state_type,
             str(volatility),
-            arguments,
         )
 
     def __call__(self, *args: Expr) -> Expr:
@@ -215,17 +213,47 @@ class AggregateUDF:
 
     @staticmethod
     def udaf(
-        accum: Type[Accumulator],
+        accum: Callable[[], Accumulator],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         state_type: list[pyarrow.DataType],
         volatility: Volatility | str,
-        arguments: Optional[list[Any]] = None,
-        name: str | None = None,
+        name: Optional[str] = None,
     ) -> AggregateUDF:
         """Create a new User-Defined Aggregate Function.
 
-        The accumulator function must be callable and implement :py:class:`Accumulator`.
+        If your :py:class:`Accumulator` can be instantiated with no arguments, you
+        can simply pass it's type as ``accum``. If you need to pass additional arguments
+        to it's constructor, you can define a lambda or a factory method. During runtime
+        the :py:class:`Accumulator` will be constructed for every instance in
+        which this UDAF is used. The following examples are all valid.
+
+        .. code-block:: python
+            import pyarrow as pa
+            import pyarrow.compute as pc
+
+            class Summarize(Accumulator):
+                def __init__(self, bias: float = 0.0):
+                    self._sum = pa.scalar(bias)
+
+                def state(self) -> List[pa.Scalar]:
+                    return [self._sum]
+
+                def update(self, values: pa.Array) -> None:
+                    self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
+
+                def merge(self, states: List[pa.Array]) -> None:
+                    self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
+
+                def evaluate(self) -> pa.Scalar:
+                    return self._sum
+
+            def sum_bias_10() -> Summarize:
+                return Summarize(10.0)
+
+            udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()], "immutable")
+            udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()], "immutable")
+            udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(), [pa.float64()], "immutable")
 
         Args:
             accum: The accumulator python function.
@@ -233,22 +261,22 @@ class AggregateUDF:
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
             volatility: See :py:class:`Volatility` for allowed values.
-            arguments: A list of arguments to pass in to the __init__ method for accum.
             name: A descriptive name for the function.
 
         Returns:
             A user-defined aggregate function, which can be used in either data
             aggregation or window function calls.
-        """
-        if not issubclass(accum, Accumulator):
+        """  # noqa W505
+        if not callable(accum):
+            raise TypeError("`func` must be callable.")
+        if not isinstance(accum.__call__(), Accumulator):
             raise TypeError(
-                "`accum` must implement the abstract base class Accumulator"
+                "Accumulator must implement the abstract base class Accumulator"
             )
         if name is None:
-            name = accum.__qualname__.lower()
+            name = accum.__call__().__class__.__qualname__.lower()
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
-        arguments = [] if arguments is None else arguments
         return AggregateUDF(
             name=name,
             accumulator=accum,
@@ -256,7 +284,6 @@ class AggregateUDF:
             return_type=return_type,
             state_type=state_type,
             volatility=volatility,
-            arguments=arguments,
         )
 
 
@@ -433,12 +460,11 @@ class WindowUDF:
 
     def __init__(
         self,
-        name: str | None,
-        func: Type[WindowEvaluator],
+        name: Optional[str],
+        func: Callable[[], WindowEvaluator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
-        arguments: list[Any],
     ) -> None:
         """Instantiate a user-defined window function (UDWF).
 
@@ -446,7 +472,7 @@ class WindowUDF:
         descriptions.
         """
         self._udwf = df_internal.WindowUDF(
-            name, func, input_types, return_type, str(volatility), arguments
+            name, func, input_types, return_type, str(volatility)
         )
 
     def __call__(self, *args: Expr) -> Expr:
@@ -460,17 +486,40 @@ class WindowUDF:
 
     @staticmethod
     def udwf(
-        func: Type[WindowEvaluator],
+        func: Callable[[], WindowEvaluator],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: pyarrow.DataType,
         volatility: Volatility | str,
-        arguments: Optional[list[Any]] = None,
-        name: str | None = None,
+        name: Optional[str] = None,
     ) -> WindowUDF:
         """Create a new User-Defined Window Function.
 
+        If your :py:class:`WindowEvaluator` can be instantiated with no arguments, you
+        can simply pass it's type as ``func``. If you need to pass additional arguments
+        to it's constructor, you can define a lambda or a factory method. During runtime
+        the :py:class:`WindowEvaluator` will be constructed for every instance in
+        which this UDWF is used. The following examples are all valid.
+
+        .. code-block:: python
+
+            import pyarrow as pa
+
+            class BiasedNumbers(WindowEvaluator):
+                def __init__(self, start: int = 0) -> None:
+                    self.start = start
+
+                def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+                    return pa.array([self.start + i for i in range(num_rows)])
+
+            def bias_10() -> BiasedNumbers:
+                return BiasedNumbers(10)
+
+            udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
+            udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+            udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
+
         Args:
-            func: The python function.
+            func: A callable to create the window function.
             input_types: The data types of the arguments to ``func``.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
@@ -479,21 +528,21 @@ class WindowUDF:
 
         Returns:
             A user-defined window function.
-        """
-        if not issubclass(func, WindowEvaluator):
+        """  # noqa W505
+        if not callable(func):
+            raise TypeError("`func` must be callable.")
+        if not isinstance(func.__call__(), WindowEvaluator):
             raise TypeError(
                 "`func` must implement the abstract base class WindowEvaluator"
             )
         if name is None:
-            name = func.__class__.__qualname__.lower()
+            name = func.__call__().__class__.__qualname__.lower()
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
-        arguments = [] if arguments is None else arguments
         return WindowUDF(
             name=name,
             func=func,
             input_types=input_types,
             return_type=return_type,
             volatility=volatility,
-            arguments=arguments,
         )
