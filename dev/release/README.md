@@ -159,10 +159,29 @@ Send the email to start the vote.
 
 ## Verifying a Release
 
-Install the release from testpypi:
+Running the unit tests against a testpypi release candidate:
 
 ```bash
-pip install --extra-index-url https://test.pypi.org/simple/ datafusion==0.7.0
+# clone a fresh repo
+git clone https://github.com/apache/datafusion-python.git
+cd datafusion-python
+
+# checkout the release commit
+git fetch --tags
+git checkout 40.0.0-rc1
+
+# create the env
+python3 -m venv venv
+source venv/bin/activate
+
+# install release candidate
+pip install --extra-index-url https://test.pypi.org/simple/ datafusion==40.0.0
+
+# only dep needed to run tests is pytest
+pip install pytest
+
+# run the tests
+pytest --import-mode=importlib python/tests
 ```
 
 Try running one of the examples from the top-level README, or write some custom Python code to query some available

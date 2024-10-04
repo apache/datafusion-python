@@ -78,7 +78,7 @@ max-doc-length = 88
 
 # Disable docstring checking for these directories
 [tool.ruff.lint.per-file-ignores]
-"python/datafusion/tests/*" = ["D"]
+"python/tests/*" = ["D"]
 "examples/*" = ["D", "W505"]
 "dev/*" = ["D"]
 "benchmarks/*" = ["D", "F"]
