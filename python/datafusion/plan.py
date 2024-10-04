@@ -85,11 +85,17 @@ class LogicalPlan:
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> LogicalPlan:
-        """Create a LogicalPlan from protobuf bytes."""
+        """Create a LogicalPlan from protobuf bytes.
+
+        Tables created in memory from record batches are currently not supported.
+        """
         return LogicalPlan(df_internal.LogicalPlan.from_proto(ctx.ctx, data))
 
     def to_proto(self) -> bytes:
-        """Convert a LogicalPlan to protobuf bytes."""
+        """Convert a LogicalPlan to protobuf bytes.
+
+        Tables created in memory from record batches are currently not supported.
+        """
         return self._raw_plan.to_proto()
 
 
@@ -127,9 +133,15 @@ class ExecutionPlan:
 
     @staticmethod
     def from_proto(ctx: SessionContext, data: bytes) -> ExecutionPlan:
-        """Create an ExecutionPlan from protobuf bytes."""
+        """Create an ExecutionPlan from protobuf bytes.
+
+        Tables created in memory from record batches are currently not supported.
+        """
         return ExecutionPlan(df_internal.ExecutionPlan.from_proto(ctx.ctx, data))
 
     def to_proto(self) -> bytes:
-        """Convert an ExecutionPlan into protobuf bytes."""
+        """Convert an ExecutionPlan into protobuf bytes.
+
+        Tables created in memory from record batches are currently not supported.
+        """
         return self._raw_plan.to_proto()
