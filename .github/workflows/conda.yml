@@ -70,17 +70,16 @@ jobs:
       - name: Set up Python
         uses: conda-incubator/setup-miniconda@v3.0.4
         with:
-          miniforge-variant: Mambaforge
-          use-mamba: true
+          miniforge-variant: Miniforge3
           python-version: "3.8"
           channel-priority: strict
       - name: Install dependencies
         run: |
-          mamba install -c conda-forge boa conda-verify
+          conda install -c conda-forge conda-build conda-verify
 
           which python
           pip list
-          mamba list
+          conda list
       # Clean the conda cache
       - name: Clean Conda Cache
         run: conda clean --all --yes
@@ -89,7 +88,7 @@ jobs:
           # suffix for nightly package versions
           export VERSION_SUFFIX=a`date +%y%m%d`
 
-          conda mambabuild conda/recipes \
+          conda build conda/recipes \
                            --python ${{ matrix.python }} \
                            --variants "{target_platform: [${{ matrix.arch }}]}" \
                            --error-overlinking \
@@ -99,7 +98,7 @@ jobs:
       - name: Test conda packages
         if: matrix.arch == 'linux-64'  # can only test native platform packages
         run: |
-          conda mambabuild --test packages/${{ matrix.arch }}/*.tar.bz2
+          conda build --test packages/${{ matrix.arch }}/*.tar.bz2
       - name: Upload conda packages as artifacts
         uses: actions/upload-artifact@v4
         with:
