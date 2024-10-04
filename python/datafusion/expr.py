@@ -22,15 +22,17 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, TYPE_CHECKING
 
 import pyarrow as pa
 from datafusion.common import DataTypeMap, NullTreatment, RexType
 from typing_extensions import deprecated
 
-from ._internal import LogicalPlan
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
+
+if TYPE_CHECKING:
+    from datafusion.plan import LogicalPlan
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -485,7 +487,7 @@ class Expr:
 
     def column_name(self, plan: LogicalPlan) -> str:
         """Compute the output column name based on the provided logical plan."""
-        return self.expr.column_name(plan)
+        return self.expr.column_name(plan._raw_plan)
 
     def order_by(self, *exprs: Expr | SortExpr) -> ExprFuncBuilder:
         """Set the ordering for a window or aggregate function.

@@ -28,10 +28,10 @@ from ._internal import substrait as substrait_internal
 from typing import TYPE_CHECKING
 from typing_extensions import deprecated
 import pathlib
+from datafusion.plan import LogicalPlan
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
-    from datafusion._internal import LogicalPlan
 
 __all__ = [
     "Plan",
@@ -156,7 +156,9 @@ class Producer:
             Substrait plan.
         """
         return Plan(
-            substrait_internal.Producer.to_substrait_plan(logical_plan, ctx.ctx)
+            substrait_internal.Producer.to_substrait_plan(
+                logical_plan._raw_plan, ctx.ctx
+            )
         )
 
 
@@ -181,8 +183,8 @@ class Consumer:
         Returns:
             LogicalPlan.
         """
-        return substrait_internal.Consumer.from_substrait_plan(
-            ctx.ctx, plan.plan_internal
+        return LogicalPlan(
+            substrait_internal.Consumer.from_substrait_plan(ctx.ctx, plan.plan_internal)
         )
 
 
