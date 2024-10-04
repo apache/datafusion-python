@@ -175,7 +175,7 @@ Module Contents
 
 
 
-   .. py:method:: execution_plan() -> datafusion._internal.ExecutionPlan
+   .. py:method:: execution_plan() -> datafusion.plan.ExecutionPlan
 
       Return the execution/physical plan.
 
@@ -250,7 +250,7 @@ Module Contents
 
 
 
-   .. py:method:: logical_plan() -> datafusion._internal.LogicalPlan
+   .. py:method:: logical_plan() -> datafusion.plan.LogicalPlan
 
       Return the unoptimized ``LogicalPlan``.
 
@@ -258,7 +258,7 @@ Module Contents
 
 
 
-   .. py:method:: optimized_logical_plan() -> datafusion._internal.LogicalPlan
+   .. py:method:: optimized_logical_plan() -> datafusion.plan.LogicalPlan
 
       Return the optimized ``LogicalPlan``.
 

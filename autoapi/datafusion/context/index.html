@@ -303,6 +303,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../record_batch/index.html">
        datafusion.record_batch
       </a>
@@ -1478,7 +1483,7 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.create_dataframe_from_logical_plan">
-<span class="sig-name descname"><span class="pre">create_dataframe_from_logical_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.LogicalPlan</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.create_dataframe_from_logical_plan" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_dataframe_from_logical_plan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.create_dataframe_from_logical_plan" title="Link to this definition">¶</a></dt>
 <dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an existing plan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1504,7 +1509,7 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.ExecutionPlan</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../record_batch/index.html#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><span class="pre">datafusion.record_batch.RecordBatchStream</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">datafusion.plan.ExecutionPlan</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../record_batch/index.html#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><span class="pre">datafusion.record_batch.RecordBatchStream</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.execute" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <code class="docutils literal notranslate"><span class="pre">plan</span></code> and return the results.</p>
 </dd></dl>
 

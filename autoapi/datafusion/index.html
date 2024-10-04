@@ -303,6 +303,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="record_batch/index.html">
        datafusion.record_batch
       </a>
@@ -530,6 +535,89 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Database.db
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ExecutionPlan">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ExecutionPlan
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.children">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.children()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.display">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.display()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.display_indent">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.display_indent()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.from_proto">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.from_proto()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.to_proto">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.to_proto()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan._raw_plan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan._raw_plan
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ExecutionPlan.partition_count">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ExecutionPlan.partition_count
         </span>
        </code>
       </a>
@@ -1009,6 +1097,107 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.expr
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.LogicalPlan">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LogicalPlan
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.display">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.display()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.display_graphviz">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.display_graphviz()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.display_indent">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.display_indent()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.display_indent_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.display_indent_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.from_proto">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.from_proto()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.inputs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.inputs()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.to_proto">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.to_proto()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan.to_variant">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan.to_variant()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.LogicalPlan._raw_plan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LogicalPlan._raw_plan
         </span>
        </code>
       </a>
@@ -1610,6 +1799,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/index.html">datafusion.functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="object_store/index.html">datafusion.object_store</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plan/index.html">datafusion.plan</a></li>
 <li class="toctree-l1"><a class="reference internal" href="record_batch/index.html">datafusion.record_batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="substrait/index.html">datafusion.substrait</a></li>
 <li class="toctree-l1"><a class="reference internal" href="udf/index.html">datafusion.udf</a></li>
@@ -1642,8 +1832,14 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
 <td><p>DataFusion Database.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
+<td><p>Represent nodes in the DataFusion Physical Plan.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
 <td><p>Expression object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
+<td><p>Logical Plan.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
 <td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p></td>
@@ -1822,6 +2018,64 @@ aggregation or window function calls.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">ExecutionPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.ExecutionPlan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.ExecutionPlan" title="Link to this definition">¶</a></dt>
+<dd><p>Represent nodes in the DataFusion Physical Plan.</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the physical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.children">
+<span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><span class="pre">ExecutionPlan</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.children" title="Link to this definition">¶</a></dt>
+<dd><p>Get a list of children <a href="#id1"><span class="problematic" id="id2">`</span></a>ExecutionPlan`s that act as inputs to this plan.</p>
+<p>The returned list will be empty for leaf nodes such as scans, will contain a
+single value for unary nodes, or two values for binary nodes (such as joins).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.display">
+<span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.display" title="Link to this definition">¶</a></dt>
+<dd><p>Print the physical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.display_indent">
+<span class="sig-name descname"><span class="pre">display_indent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.display_indent" title="Link to this definition">¶</a></dt>
+<dd><p>Print an indented form of the physical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.from_proto">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_proto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><span class="pre">ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.from_proto" title="Link to this definition">¶</a></dt>
+<dd><p>Create an ExecutionPlan from protobuf bytes.</p>
+<p>Tables created in memory from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.to_proto">
+<span class="sig-name descname"><span class="pre">to_proto</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.to_proto" title="Link to this definition">¶</a></dt>
+<dd><p>Convert an ExecutionPlan into protobuf bytes.</p>
+<p>Tables created in memory from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan._raw_plan">
+<span class="sig-name descname"><span class="pre">_raw_plan</span></span><a class="headerlink" href="#datafusion.ExecutionPlan._raw_plan" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="datafusion.ExecutionPlan.partition_count">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">partition_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datafusion.ExecutionPlan.partition_count" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of partitions in the physical plan.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Expr">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.expr.Expr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Expr" title="Link to this definition">¶</a></dt>
 <dd><p>Expression object.</p>
@@ -1985,7 +2239,7 @@ element index begins at <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.column_name">
-<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.LogicalPlan</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.column_name" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Expr.column_name" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the output column name based on the provided logical plan.</p>
 </dd></dl>
 
@@ -2209,6 +2463,84 @@ type of expression, an error will be generated when <code class="docutils litera
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.Expr.expr">
 <span class="sig-name descname"><span class="pre">expr</span></span><a class="headerlink" href="#datafusion.Expr.expr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">LogicalPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.LogicalPlan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.LogicalPlan" title="Link to this definition">¶</a></dt>
+<dd><p>Logical Plan.</p>
+<p>A <cite>LogicalPlan</cite> is a node in a tree of relational operators (such as
+Projection or Filter).</p>
+<p>Represents transforming an input relation (table) to an output relation
+(table) with a potentially different schema. Plans form a dataflow tree
+where data flows from leaves up to the root to produce the query result.</p>
+<p><a href="#id3"><span class="problematic" id="id4">`</span></a>LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+or programmatically (for example custom query languages).</p>
+<p>This constructor should not be called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Generate a printable representation of the plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.display">
+<span class="sig-name descname"><span class="pre">display</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.display" title="Link to this definition">¶</a></dt>
+<dd><p>Print the logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.display_graphviz">
+<span class="sig-name descname"><span class="pre">display_graphviz</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.display_graphviz" title="Link to this definition">¶</a></dt>
+<dd><p>Print the graph visualization of the logical plan.</p>
+<p>Returns a <cite>format`able structure that produces lines meant for graphical display
+using the `DOT</cite> language. This format can be visualized using software from
+[<cite>graphviz</cite>](<a class="reference external" href="https://graphviz.org/">https://graphviz.org/</a>)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.display_indent">
+<span class="sig-name descname"><span class="pre">display_indent</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.display_indent" title="Link to this definition">¶</a></dt>
+<dd><p>Print an indented form of the logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.display_indent_schema">
+<span class="sig-name descname"><span class="pre">display_indent_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.display_indent_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Print an indented form of the schema for the logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.from_proto">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_proto</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">datafusion.context.SessionContext</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><span class="pre">LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.LogicalPlan.from_proto" title="Link to this definition">¶</a></dt>
+<dd><p>Create a LogicalPlan from protobuf bytes.</p>
+<p>Tables created in memory from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.inputs">
+<span class="sig-name descname"><span class="pre">inputs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><span class="pre">LogicalPlan</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.inputs" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of inputs to the logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.to_proto">
+<span class="sig-name descname"><span class="pre">to_proto</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.to_proto" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a LogicalPlan to protobuf bytes.</p>
+<p>Tables created in memory from record batches are currently not supported.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan.to_variant">
+<span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.LogicalPlan.to_variant" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the logical plan into its specific variant.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.LogicalPlan._raw_plan">
+<span class="sig-name descname"><span class="pre">_raw_plan</span></span><a class="headerlink" href="#datafusion.LogicalPlan._raw_plan" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

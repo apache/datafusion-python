@@ -33,6 +33,7 @@ Submodules
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/object_store/index
+   /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
    /autoapi/datafusion/udf/index
@@ -55,7 +56,9 @@ Classes
    datafusion.AggregateUDF
    datafusion.Catalog
    datafusion.Database
+   datafusion.ExecutionPlan
    datafusion.Expr
+   datafusion.LogicalPlan
    datafusion.RecordBatch
    datafusion.RecordBatchStream
    datafusion.RuntimeConfig
@@ -205,6 +208,67 @@ Package Contents
 
 
    .. py:attribute:: db
+
+
+.. py:class:: ExecutionPlan(plan: datafusion._internal.ExecutionPlan)
+
+   Represent nodes in the DataFusion Physical Plan.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the physical plan.
+
+
+
+   .. py:method:: children() -> List[ExecutionPlan]
+
+      Get a list of children `ExecutionPlan`s that act as inputs to this plan.
+
+      The returned list will be empty for leaf nodes such as scans, will contain a
+      single value for unary nodes, or two values for binary nodes (such as joins).
+
+
+
+   .. py:method:: display() -> str
+
+      Print the physical plan.
+
+
+
+   .. py:method:: display_indent() -> str
+
+      Print an indented form of the physical plan.
+
+
+
+   .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
+      :staticmethod:
+
+
+      Create an ExecutionPlan from protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: to_proto() -> bytes
+
+      Convert an ExecutionPlan into protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:attribute:: _raw_plan
+
+
+   .. py:property:: partition_count
+      :type: int
+
+      Returns the number of partitions in the physical plan.
 
 
 .. py:class:: Expr(expr: datafusion._internal.expr.Expr)
@@ -381,7 +445,7 @@ Package Contents
 
 
 
-   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+   .. py:method:: column_name(plan: datafusion.plan.LogicalPlan) -> str
 
       Compute the output column name based on the provided logical plan.
 
@@ -591,6 +655,90 @@ Package Contents
 
 
    .. py:attribute:: expr
+
+
+.. py:class:: LogicalPlan(plan: datafusion._internal.LogicalPlan)
+
+   Logical Plan.
+
+   A `LogicalPlan` is a node in a tree of relational operators (such as
+   Projection or Filter).
+
+   Represents transforming an input relation (table) to an output relation
+   (table) with a potentially different schema. Plans form a dataflow tree
+   where data flows from leaves up to the root to produce the query result.
+
+   `LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+   or programmatically (for example custom query languages).
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Generate a printable representation of the plan.
+
+
+
+   .. py:method:: display() -> str
+
+      Print the logical plan.
+
+
+
+   .. py:method:: display_graphviz() -> str
+
+      Print the graph visualization of the logical plan.
+
+      Returns a `format`able structure that produces lines meant for graphical display
+      using the `DOT` language. This format can be visualized using software from
+      [`graphviz`](https://graphviz.org/)
+
+
+
+   .. py:method:: display_indent() -> str
+
+      Print an indented form of the logical plan.
+
+
+
+   .. py:method:: display_indent_schema() -> str
+
+      Print an indented form of the schema for the logical plan.
+
+
+
+   .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
+      :staticmethod:
+
+
+      Create a LogicalPlan from protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: inputs() -> List[LogicalPlan]
+
+      Returns the list of inputs to the logical plan.
+
+
+
+   .. py:method:: to_proto() -> bytes
+
+      Convert a LogicalPlan to protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: to_variant() -> Any
+
+      Convert the logical plan into its specific variant.
+
+
+
+   .. py:attribute:: _raw_plan
 
 
 .. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)

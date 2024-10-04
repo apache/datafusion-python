@@ -389,7 +389,7 @@ Module Contents
 
 
 
-   .. py:method:: create_dataframe_from_logical_plan(plan: datafusion._internal.LogicalPlan) -> datafusion.dataframe.DataFrame
+   .. py:method:: create_dataframe_from_logical_plan(plan: datafusion.plan.LogicalPlan) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from an existing plan.
 
@@ -411,7 +411,7 @@ Module Contents
 
 
 
-   .. py:method:: execute(plan: datafusion._internal.ExecutionPlan, partitions: int) -> datafusion.record_batch.RecordBatchStream
+   .. py:method:: execute(plan: datafusion.plan.ExecutionPlan, partitions: int) -> datafusion.record_batch.RecordBatchStream
 
       Execute the ``plan`` and return the results.
 

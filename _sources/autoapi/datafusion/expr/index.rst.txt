@@ -307,7 +307,7 @@ Module Contents
 
 
 
-   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+   .. py:method:: column_name(plan: datafusion.plan.LogicalPlan) -> str
 
       Compute the output column name based on the provided logical plan.
 

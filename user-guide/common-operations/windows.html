@@ -303,6 +303,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/record_batch/index.html">
        datafusion.record_batch
       </a>
@@ -423,7 +428,7 @@ provides a single value for multiple rows.</p>
    <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f49382e95d0</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fe3dc201210</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -652,20 +657,20 @@ power in its <code class="docutils literal notranslate"><span class="pre">&quot;
    <span class="o">....</span><span class="p">:</span> 
 <span class="n">Out</span><span class="p">[</span><span class="mi">15</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+---------------------+--------+--------+----------------+</span>
-<span class="o">|</span> <span class="n">Name</span>                <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Average</span> <span class="n">Attack</span> <span class="o">|</span>
-<span class="o">+---------------------+--------+--------+----------------+</span>
-<span class="o">|</span> <span class="n">Jynx</span>                <span class="o">|</span> <span class="mi">50</span>     <span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="mf">67.5</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Articuno</span>            <span class="o">|</span> <span class="mi">85</span>     <span class="o">|</span> <span class="n">Ice</span>    <span class="o">|</span> <span class="mf">67.5</span>           <span class="o">|</span>
-<span class="o">|</span> <span class="n">Pidgey</span>              <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Pidgeotto</span>           <span class="o">|</span> <span class="mi">60</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Pidgeot</span>             <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">PidgeotMega</span> <span class="n">Pidgeot</span> <span class="o">|</span> <span class="mi">80</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rattata</span>             <span class="o">|</span> <span class="mi">56</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Raticate</span>            <span class="o">|</span> <span class="mi">81</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Spearow</span>             <span class="o">|</span> <span class="mi">60</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fearow</span>              <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="n">Normal</span> <span class="o">|</span> <span class="mf">70.625</span>         <span class="o">|</span>
-<span class="o">+---------------------+--------+--------+----------------+</span>
+<span class="o">+-----------------------+--------+--------+-------------------+</span>
+<span class="o">|</span> <span class="n">Name</span>                  <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Average</span> <span class="n">Attack</span>    <span class="o">|</span>
+<span class="o">+-----------------------+--------+--------+-------------------+</span>
+<span class="o">|</span> <span class="n">Metapod</span>               <span class="o">|</span> <span class="mi">20</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Butterfree</span>            <span class="o">|</span> <span class="mi">45</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Weedle</span>                <span class="o">|</span> <span class="mi">35</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Kakuna</span>                <span class="o">|</span> <span class="mi">25</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Beedrill</span>              <span class="o">|</span> <span class="mi">90</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">BeedrillMega</span> <span class="n">Beedrill</span> <span class="o">|</span> <span class="mi">150</span>    <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Paras</span>                 <span class="o">|</span> <span class="mi">70</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Parasect</span>              <span class="o">|</span> <span class="mi">95</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Venonat</span>               <span class="o">|</span> <span class="mi">55</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Venomoth</span>              <span class="o">|</span> <span class="mi">65</span>     <span class="o">|</span> <span class="n">Bug</span>    <span class="o">|</span> <span class="mf">76.42857142857143</span> <span class="o">|</span>
+<span class="o">+-----------------------+--------+--------+-------------------+</span>
 </pre></div>
 </div>
 </section>

@@ -303,6 +303,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../record_batch/index.html">
        datafusion.record_batch
       </a>
@@ -993,7 +998,7 @@ for non-numeric datatypes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.execution_plan">
-<span class="sig-name descname"><span class="pre">execution_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion._internal.ExecutionPlan</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.execution_plan" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">execution_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../plan/index.html#datafusion.plan.ExecutionPlan" title="datafusion.plan.ExecutionPlan"><span class="pre">datafusion.plan.ExecutionPlan</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.execution_plan" title="Link to this definition">¶</a></dt>
 <dd><p>Return the execution/physical plan.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1093,7 +1098,7 @@ dataframes, respectively. These lists must have the same length.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.logical_plan">
-<span class="sig-name descname"><span class="pre">logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion._internal.LogicalPlan</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.logical_plan" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.logical_plan" title="Link to this definition">¶</a></dt>
 <dd><p>Return the unoptimized <code class="docutils literal notranslate"><span class="pre">LogicalPlan</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -1104,7 +1109,7 @@ dataframes, respectively. These lists must have the same length.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.optimized_logical_plan">
-<span class="sig-name descname"><span class="pre">optimized_logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion._internal.LogicalPlan</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.optimized_logical_plan" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">optimized_logical_plan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.optimized_logical_plan" title="Link to this definition">¶</a></dt>
 <dd><p>Return the optimized <code class="docutils literal notranslate"><span class="pre">LogicalPlan</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
