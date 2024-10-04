@@ -24,7 +24,13 @@ use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
+#[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
+    // NOTE: Other pyo3 python libraries have had issues with using tokio
+    // behind a forking app-server like `gunicorn`
+    // If we run into that problem, in the future we can look to `delta-rs`
+    // which adds a check in that disallows calls from a forked process
+    // https://github.com/delta-io/delta-rs/blob/87010461cfe01563d91a4b9cd6fa468e2ad5f283/python/src/utils.rs#L10-L31
     static RUNTIME: OnceLock<TokioRuntime> = OnceLock::new();
     RUNTIME.get_or_init(|| {
         let rt = TokioRuntime(tokio::runtime::Runtime::new().unwrap());
