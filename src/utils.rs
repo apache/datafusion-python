@@ -20,18 +20,16 @@ use crate::TokioRuntime;
 use datafusion::logical_expr::Volatility;
 use pyo3::prelude::*;
 use std::future::Future;
-use std::sync::{Arc, OnceLock};
+use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
-pub(crate) fn get_tokio_runtime() -> Arc<TokioRuntime> {
-    static RUNTIME: OnceLock<Arc<TokioRuntime>> = OnceLock::new();
-    RUNTIME
-        .get_or_init(|| {
-            let rt = TokioRuntime(tokio::runtime::Runtime::new().unwrap());
-            Arc::new(rt)
-        })
-        .clone()
+pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
+    static RUNTIME: OnceLock<TokioRuntime> = OnceLock::new();
+    RUNTIME.get_or_init(|| {
+        let rt = TokioRuntime(tokio::runtime::Runtime::new().unwrap());
+        rt
+    })
 }
 
 /// Utility to collect rust futures with GIL released
