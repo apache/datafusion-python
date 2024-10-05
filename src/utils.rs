@@ -20,20 +20,19 @@ use crate::TokioRuntime;
 use datafusion::logical_expr::Volatility;
 use pyo3::prelude::*;
 use std::future::Future;
+use std::sync::OnceLock;
 use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
-pub(crate) fn get_tokio_runtime(py: Python) -> PyRef<TokioRuntime> {
-    let datafusion = py.import_bound("datafusion._internal").unwrap();
-    let tmp = datafusion.getattr("runtime").unwrap();
-    match tmp.extract::<PyRef<TokioRuntime>>() {
-        Ok(runtime) => runtime,
-        Err(_e) => {
-            let rt = TokioRuntime(tokio::runtime::Runtime::new().unwrap());
-            let obj: Bound<'_, TokioRuntime> = Py::new(py, rt).unwrap().into_bound(py);
-            obj.extract().unwrap()
-        }
-    }
+#[inline]
+pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
+    // NOTE: Other pyo3 python libraries have had issues with using tokio
+    // behind a forking app-server like `gunicorn`
+    // If we run into that problem, in the future we can look to `delta-rs`
+    // which adds a check in that disallows calls from a forked process
+    // https://github.com/delta-io/delta-rs/blob/87010461cfe01563d91a4b9cd6fa468e2ad5f283/python/src/utils.rs#L10-L31
+    static RUNTIME: OnceLock<TokioRuntime> = OnceLock::new();
+    RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
 }
 
 /// Utility to collect rust futures with GIL released
@@ -42,7 +41,7 @@ where
     F: Future + Send,
     F::Output: Send,
 {
-    let runtime: &Runtime = &get_tokio_runtime(py).0;
+    let runtime: &Runtime = &get_tokio_runtime().0;
     py.allow_threads(|| runtime.block_on(f))
 }
 

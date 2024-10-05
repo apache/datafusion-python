@@ -543,7 +543,7 @@ impl PyDataFrame {
 
     fn execute_stream(&self, py: Python) -> PyResult<PyRecordBatchStream> {
         // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime(py).0;
+        let rt = &get_tokio_runtime().0;
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
@@ -553,7 +553,7 @@ impl PyDataFrame {
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
         // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime(py).0;
+        let rt = &get_tokio_runtime().0;
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });

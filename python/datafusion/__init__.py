@@ -36,7 +36,7 @@ from .context import (
 from .catalog import Catalog, Database, Table
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config, runtime
+from ._internal import Config
 
 from .record_batch import RecordBatchStream, RecordBatch
 
@@ -75,7 +75,6 @@ __all__ = [
     "literal",
     "lit",
     "DFSchema",
-    "runtime",
     "Catalog",
     "Database",
     "Table",
