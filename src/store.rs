@@ -24,6 +24,7 @@ use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
 use object_store::http::{HttpBuilder, HttpStore};
 use object_store::local::LocalFileSystem;
+use pyo3::exceptions::PyValueError;
 use url::Url;
 
 #[derive(FromPyObject)]
@@ -232,19 +233,19 @@ pub struct PyHttpContext {
 #[pymethods]
 impl PyHttpContext {
     #[new]
-    fn new(url: String) -> Self {
+    fn new(url: String) -> PyResult<Self> {
         let store = match Url::parse(url.as_str()) {
             Ok(url) => HttpBuilder::new()
                 .with_url(url.origin().ascii_serialization())
-                .build()
-                .unwrap(),
-            Err(_) => HttpBuilder::new().build().unwrap(),
-        };
+                .build(),
+            Err(_) => HttpBuilder::new().build(),
+        }
+        .map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))?;
 
-        Self {
+        Ok(Self {
             url,
             store: Arc::new(store),
-        }
+        })
     }
 }
 
