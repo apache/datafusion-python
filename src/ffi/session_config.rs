@@ -1,4 +1,7 @@
-use std::{ffi::{c_void, CString}, sync::Arc};
+use std::{
+    ffi::{c_void, CString},
+    sync::Arc,
+};
 
 use datafusion::{catalog::Session, prelude::SessionConfig};
 
