@@ -23,7 +23,7 @@ use datafusion::{
 use tokio::runtime::Runtime;
 
 use super::{
-    execution_plan::{ExecutionPlanPrivateData, FFI_ExecutionPlan},
+    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFI_ExecutionPlan},
     session_config::{FFI_SessionConfig, SessionConfigPrivateData},
 };
 use datafusion::error::Result;
@@ -150,14 +150,15 @@ impl ExportedTableProvider {
         let runtime = Runtime::new().unwrap();
         let plan = runtime.block_on(provider.scan(session, projections, &filter_exprs, limit))?;
 
-        let plan_ptr = Box::new(ExecutionPlanPrivateData {
-            plan,
-            last_error: None,
-        });
+        // let plan_ptr = Box::new(ExecutionPlanPrivateData {
+        //     plan,
+        //     last_error: None,
+        // });
 
-        Ok(FFI_ExecutionPlan {
-            private_data: Box::into_raw(plan_ptr) as *mut c_void,
-        })
+        // Ok(FFI_ExecutionPlan {
+        //     private_data: Box::into_raw(plan_ptr) as *mut c_void,
+        // })
+        Ok(FFI_ExecutionPlan::new(plan))
     }
 }
 
@@ -255,14 +256,17 @@ impl TableProvider for FFI_TableProvider {
         let session_config = FFI_SessionConfig::new(session);
 
         let n_projections = projection.map(|p| p.len()).unwrap_or(0) as c_int;
-        let projections: Vec<c_int> = projection.map(|p| p.iter().map(|v| *v as c_int).collect()).unwrap_or_default();
+        let projections: Vec<c_int> = projection
+            .map(|p| p.iter().map(|v| *v as c_int).collect())
+            .unwrap_or_default();
         let projections_ptr = projections.as_ptr();
 
         let n_filters = filters.len() as c_int;
-        let filters: Vec<CString> = filters.iter().filter_map(|f| CString::new(f.to_string()).ok()).collect();
-        let filters_ptr: Vec<*const i8> = filters.iter()
-            .map(|s| s.as_ptr())
+        let filters: Vec<CString> = filters
+            .iter()
+            .filter_map(|f| CString::new(f.to_string()).ok())
             .collect();
+        let filters_ptr: Vec<*const i8> = filters.iter().map(|s| s.as_ptr()).collect();
 
         let limit = match limit {
             Some(l) => l as c_int,
@@ -272,13 +276,26 @@ impl TableProvider for FFI_TableProvider {
         let mut out = FFI_ExecutionPlan::empty();
 
         let err_code = unsafe {
-            scan_fn(self, &session_config, n_projections, projections_ptr, n_filters, filters_ptr.as_ptr(), limit, &mut out)
+            scan_fn(
+                self,
+                &session_config,
+                n_projections,
+                projections_ptr,
+                n_filters,
+                filters_ptr.as_ptr(),
+                limit,
+                &mut out,
+            )
         };
 
-        match err_code {
-            0 => Ok(Arc::new(out)),
-            _ => Err(datafusion::error::DataFusionError::Internal("Unable to perform scan via FFI".to_string()))
+        if 0 != err_code {
+            return Err(datafusion::error::DataFusionError::Internal(
+                "Unable to perform scan via FFI".to_string(),
+            ));
         }
+
+        let plan = ExportedExecutionPlan::new(&out)?;
+        Ok(Arc::new(plan))
     }
 
     /// Tests whether the table provider can make use of a filter expression
