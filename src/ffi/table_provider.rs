@@ -23,7 +23,7 @@ use datafusion::{
 use tokio::runtime::Runtime;
 
 use super::{
-    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFIExecutionPlan},
+    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFI_ExecutionPlan},
     session_config::{FFI_SessionConfig, SessionConfigPrivateData},
 };
 use datafusion::error::Result;
@@ -44,7 +44,7 @@ pub struct FFI_TableProvider {
             n_filters: c_int,
             filters: *const *const c_char,
             limit: c_int,
-            out: *mut FFIExecutionPlan,
+            out: *mut FFI_ExecutionPlan,
         ) -> c_int,
     >,
     pub private_data: *mut c_void,
@@ -73,7 +73,7 @@ unsafe extern "C" fn provider_scan(
     n_filters: c_int,
     filters: *const *const c_char,
     limit: c_int,
-    mut out: *mut FFIExecutionPlan,
+    mut out: *mut FFI_ExecutionPlan,
 ) -> c_int {
     let config = unsafe { (*session_config).private_data as *const SessionConfigPrivateData };
     let session = SessionStateBuilder::new()
@@ -135,7 +135,7 @@ impl ExportedTableProvider {
         projections: Option<&Vec<usize>>,
         filters: Vec<String>,
         limit: Option<usize>,
-    ) -> Result<FFIExecutionPlan> {
+    ) -> Result<FFI_ExecutionPlan> {
         let private_data = self.get_private_data();
         let provider = &private_data.provider;
 
@@ -155,10 +155,10 @@ impl ExportedTableProvider {
         //     last_error: None,
         // });
 
-        // Ok(FFIExecutionPlan {
+        // Ok(FFI_ExecutionPlan {
         //     private_data: Box::into_raw(plan_ptr) as *mut c_void,
         // })
-        Ok(FFIExecutionPlan::new(plan))
+        Ok(FFI_ExecutionPlan::new(plan))
     }
 }
 
@@ -273,7 +273,7 @@ impl TableProvider for FFI_TableProvider {
             None => -1,
         };
 
-        let mut out = FFIExecutionPlan::empty();
+        let mut out = FFI_ExecutionPlan::empty();
 
         let plan = unsafe {
             let err_code = scan_fn(
