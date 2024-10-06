@@ -1,14 +1,24 @@
 use std::{
     ffi::{c_void, CString},
-    ptr::null,
+    ptr::{null, null_mut},
+    slice,
     sync::Arc,
 };
 
-use datafusion::error::Result;
+use arrow::{datatypes::Schema, ffi::FFI_ArrowSchema};
 use datafusion::{
     error::DataFusionError,
     physical_plan::{DisplayAs, ExecutionMode, ExecutionPlan, PlanProperties},
 };
+use datafusion::{error::Result, physical_expr::EquivalenceProperties, prelude::SessionContext};
+use datafusion_proto::{
+    physical_plan::{
+        from_proto::{parse_physical_sort_exprs, parse_protobuf_partitioning},
+        DefaultPhysicalExtensionCodec,
+    },
+    protobuf::{partitioning, Partitioning, PhysicalSortExprNodeCollection},
+};
+use prost::{DecodeError, Message};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -119,7 +129,7 @@ impl ExportedExecutionPlan {
             let properties_fn = (*plan).properties.ok_or(DataFusionError::NotImplemented(
                 "properties not implemented on FFIExecutionPlan".to_string(),
             ))?;
-            properties_fn(plan).into()
+            properties_fn(plan).try_into()?
         };
 
         let children = unsafe {
@@ -224,6 +234,8 @@ pub struct FFIPlanProperties {
             buffer_bytes: &mut *mut u8,
         ) -> i32,
     >,
+
+    pub schema: Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> FFI_ArrowSchema>,
 }
 
 impl From<&PlanProperties> for FFIPlanProperties {
@@ -232,10 +244,86 @@ impl From<&PlanProperties> for FFIPlanProperties {
     }
 }
 
-impl From<FFIPlanProperties> for PlanProperties {
-    fn from(value: FFIPlanProperties) -> Self {
-        todo!()
+impl TryFrom<FFIPlanProperties> for PlanProperties {
+    type Error = DataFusionError;
+
+    fn try_from(value: FFIPlanProperties) -> std::result::Result<Self, Self::Error> {
+        unsafe {
+            let schema_fn = value.schema.ok_or(DataFusionError::NotImplemented(
+                "schema() not implemented on FFIPlanProperties".to_string(),
+            ))?;
+            let ffi_schema = schema_fn(&value);
+            let schema: Schema = (&ffi_schema).try_into()?;
+
+            let ordering_fn = value
+                .output_ordering
+                .ok_or(DataFusionError::NotImplemented(
+                    "output_ordering() not implemented on FFIPlanProperties".to_string(),
+                ))?;
+            let mut buff_size = 0;
+            let mut buff = null_mut();
+            if ordering_fn(&value, &mut buff_size, &mut buff) != 0 {
+                return Err(DataFusionError::Plan(
+                    "Error occurred during FFI call to output_ordering in FFIPlanProperties"
+                        .to_string(),
+                ));
+            }
+            let data = slice::from_raw_parts(buff, buff_size);
+
+            let proto_output_ordering = PhysicalSortExprNodeCollection::decode(data)
+                .map_err(|e| DataFusionError::External(Box::new(e)))?;
+
+            // TODO we will need to get these, but unsure if it happesn on the provider or consumer right now.
+            let default_ctx = SessionContext::new();
+            let codex = DefaultPhysicalExtensionCodec {};
+            let orderings = parse_physical_sort_exprs(
+                &proto_output_ordering.physical_sort_expr_nodes,
+                &default_ctx,
+                &schema,
+                &codex,
+            )?;
+
+            let partitioning_fn =
+                value
+                    .output_partitioning
+                    .ok_or(DataFusionError::NotImplemented(
+                        "output_partitioning() not implemented on FFIPlanProperties".to_string(),
+                    ))?;
+            if partitioning_fn(&value, &mut buff_size, &mut buff) != 0 {
+                return Err(DataFusionError::Plan(
+                    "Error occurred during FFI call to output_partitioning in FFIPlanProperties"
+                        .to_string(),
+                ));
+            }
+            let data = slice::from_raw_parts(buff, buff_size);
+
+            let proto_partitioning =
+                Partitioning::decode(data).map_err(|e| DataFusionError::External(Box::new(e)))?;
+            // TODO: Validate this unwrap is safe.
+            let partitioning = parse_protobuf_partitioning(
+                Some(&proto_partitioning),
+                &default_ctx,
+                &schema,
+                &codex,
+            )?
+            .unwrap();
+
+            let execution_mode_fn = value.execution_mode.ok_or(DataFusionError::NotImplemented(
+                "execution_mode() not implemented on FFIPlanProperties".to_string(),
+            ))?;
+            let execution_mode = execution_mode_fn(&value).into();
+
+            let eq_properties =
+                EquivalenceProperties::new_with_orderings(Arc::new(schema), &[orderings]);
+
+            Ok(Self::new(eq_properties, partitioning, execution_mode))
+        }
     }
+    // fn from(value: FFIPlanProperties) -> Self {
+    //     let schema = self.schema()
+
+    //     let equiv_prop = EquivalenceProperties::new_with_orderings(schema, orderings);
+    // }
 }
 
 #[repr(C)]
