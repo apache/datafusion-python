@@ -22,7 +22,7 @@ import pyarrow as pa
 from pyarrow.csv import write_csv
 import pyarrow.dataset as ds
 import pytest
-from datafusion.object_store import LocalFileSystem
+from datafusion.object_store import Http
 
 from datafusion import udf, col
 
@@ -137,6 +137,15 @@ def test_register_csv_list(ctx, tmp_path):
         "sum(double_csv.int)"
     ][0]
     assert int_sum == 2 * sum(int_values)
+
+
+def test_register_http_csv(ctx):
+    url = "https://raw.githubusercontent.com/ibis-project/testing-data/refs/heads/master/csv/diamonds.csv"
+    ctx.register_object_store("", Http(url))
+    ctx.register_csv("remote", url)
+    assert ctx.table_exist("remote")
+    res, *_ = ctx.sql("SELECT COUNT(*) AS total FROM remote").to_pylist()
+    assert res["total"] > 0
 
 
 def test_register_parquet(ctx, tmp_path):
@@ -494,7 +503,6 @@ def test_register_listing_table(
 
     dir_root = f"file://{dir_root}/" if path_to_str else dir_root
 
-    ctx.register_object_store("file://local", LocalFileSystem(), None)
     ctx.register_listing_table(
         "my_table",
         dir_root,

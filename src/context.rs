@@ -312,6 +312,7 @@ impl PySessionContext {
             StorageContexts::GoogleCloudStorage(gcs) => (gcs.inner, gcs.bucket_name),
             StorageContexts::MicrosoftAzure(azure) => (azure.inner, azure.container_name),
             StorageContexts::LocalFileSystem(local) => (local.inner, "".to_string()),
+            StorageContexts::HTTP(http) => (http.store, http.url),
         };
 
         // let users override the host to match the api signature from upstream

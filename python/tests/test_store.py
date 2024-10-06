@@ -16,21 +16,15 @@
 # under the License.
 
 import os
+
 import pytest
 
 from datafusion import SessionContext
-from datafusion.object_store import LocalFileSystem
 
 
 @pytest.fixture
-def local():
-    return LocalFileSystem()
-
-
-@pytest.fixture
-def ctx(local):
+def ctx():
     ctx = SessionContext()
-    ctx.register_object_store("file://local", local, None)
     return ctx
 
 
