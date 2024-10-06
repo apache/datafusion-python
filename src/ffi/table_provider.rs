@@ -23,7 +23,7 @@ use datafusion::{
 use tokio::runtime::Runtime;
 
 use super::{
-    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFI_ExecutionPlan},
+    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFIExecutionPlan},
     session_config::{FFI_SessionConfig, SessionConfigPrivateData},
 };
 use datafusion::error::Result;
@@ -44,7 +44,7 @@ pub struct FFI_TableProvider {
             n_filters: c_int,
             filters: *const *const c_char,
             limit: c_int,
-            out: *mut FFI_ExecutionPlan,
+            out: *mut FFIExecutionPlan,
         ) -> c_int,
     >,
     pub private_data: *mut c_void,
@@ -73,7 +73,7 @@ unsafe extern "C" fn provider_scan(
     n_filters: c_int,
     filters: *const *const c_char,
     limit: c_int,
-    mut out: *mut FFI_ExecutionPlan,
+    mut out: *mut FFIExecutionPlan,
 ) -> c_int {
     let config = unsafe { (*session_config).private_data as *const SessionConfigPrivateData };
     let session = SessionStateBuilder::new()
@@ -135,7 +135,7 @@ impl ExportedTableProvider {
         projections: Option<&Vec<usize>>,
         filters: Vec<String>,
         limit: Option<usize>,
-    ) -> Result<FFI_ExecutionPlan> {
+    ) -> Result<FFIExecutionPlan> {
         let private_data = self.get_private_data();
         let provider = &private_data.provider;
 
@@ -155,10 +155,10 @@ impl ExportedTableProvider {
         //     last_error: None,
         // });
 
-        // Ok(FFI_ExecutionPlan {
+        // Ok(FFIExecutionPlan {
         //     private_data: Box::into_raw(plan_ptr) as *mut c_void,
         // })
-        Ok(FFI_ExecutionPlan::new(plan))
+        Ok(FFIExecutionPlan::new(plan))
     }
 }
 
@@ -231,7 +231,7 @@ impl TableProvider for FFI_TableProvider {
 
     /// Get the type of this table for metadata/catalog purposes.
     fn table_type(&self) -> TableType {
-        TableType::Base
+        todo!()
     }
 
     /// Create an ExecutionPlan that will scan the table.
@@ -273,10 +273,10 @@ impl TableProvider for FFI_TableProvider {
             None => -1,
         };
 
-        let mut out = FFI_ExecutionPlan::empty();
+        let mut out = FFIExecutionPlan::empty();
 
-        let err_code = unsafe {
-            scan_fn(
+        let plan = unsafe {
+            let err_code = scan_fn(
                 self,
                 &session_config,
                 n_projections,
@@ -285,16 +285,17 @@ impl TableProvider for FFI_TableProvider {
                 filters_ptr.as_ptr(),
                 limit,
                 &mut out,
-            )
+            );
+
+            if 0 != err_code {
+                return Err(datafusion::error::DataFusionError::Internal(
+                    "Unable to perform scan via FFI".to_string(),
+                ));
+            }
+
+            ExportedExecutionPlan::new(&out)?
         };
 
-        if 0 != err_code {
-            return Err(datafusion::error::DataFusionError::Internal(
-                "Unable to perform scan via FFI".to_string(),
-            ));
-        }
-
-        let plan = ExportedExecutionPlan::new(&out)?;
         Ok(Arc::new(plan))
     }
 
@@ -304,8 +305,6 @@ impl TableProvider for FFI_TableProvider {
         &self,
         filter: &[&Expr],
     ) -> Result<Vec<TableProviderFilterPushDown>> {
-        Err(datafusion::error::DataFusionError::NotImplemented(
-            "support filter pushdown not implemented".to_string(),
-        ))
+        todo!()
     }
 }
