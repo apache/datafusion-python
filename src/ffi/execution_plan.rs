@@ -24,14 +24,14 @@ use prost::{DecodeError, Message};
 #[derive(Debug)]
 #[allow(missing_docs)]
 #[allow(non_camel_case_types)]
-pub struct FFIExecutionPlan {
+pub struct FFI_ExecutionPlan {
     pub properties:
-        Option<unsafe extern "C" fn(plan: *const FFIExecutionPlan) -> FFIPlanProperties>,
+        Option<unsafe extern "C" fn(plan: *const FFI_ExecutionPlan) -> FFI_PlanProperties>,
     pub children: Option<
         unsafe extern "C" fn(
-            plan: *const FFIExecutionPlan,
+            plan: *const FFI_ExecutionPlan,
             num_children: &mut usize,
-            out: &mut *const FFIExecutionPlan,
+            out: &mut *const FFI_ExecutionPlan,
         ) -> i32,
     >,
 
@@ -43,24 +43,24 @@ pub struct ExecutionPlanPrivateData {
     pub last_error: Option<CString>,
 }
 
-unsafe extern "C" fn properties_fn_wrapper(plan: *const FFIExecutionPlan) -> FFIPlanProperties {
+unsafe extern "C" fn properties_fn_wrapper(plan: *const FFI_ExecutionPlan) -> FFI_PlanProperties {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
     let properties = (*private_data).plan.properties();
     properties.into()
 }
 
 unsafe extern "C" fn children_fn_wrapper(
-    plan: *const FFIExecutionPlan,
+    plan: *const FFI_ExecutionPlan,
     num_children: &mut usize,
-    out: &mut *const FFIExecutionPlan,
+    out: &mut *const FFI_ExecutionPlan,
 ) -> i32 {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
 
     let children = (*private_data).plan.children();
     *num_children = children.len();
-    let children: Vec<FFIExecutionPlan> = children
+    let children: Vec<FFI_ExecutionPlan> = children
         .into_iter()
-        .map(|child| FFIExecutionPlan::new(child.clone()))
+        .map(|child| FFI_ExecutionPlan::new(child.clone()))
         .collect();
     *out = children.as_ptr();
 
@@ -72,7 +72,7 @@ unsafe extern "C" fn children_fn_wrapper(
 // in the provider's side.
 #[derive(Debug)]
 pub struct ExportedExecutionPlan {
-    plan: *const FFIExecutionPlan,
+    plan: *const FFI_ExecutionPlan,
     properties: PlanProperties,
     children: Vec<Arc<dyn ExecutionPlan>>,
 }
@@ -88,13 +88,13 @@ impl DisplayAs for ExportedExecutionPlan {
     ) -> std::fmt::Result {
         write!(
             f,
-            "FFIExecutionPlan(number_of_children={})",
+            "FFI_ExecutionPlan(number_of_children={})",
             self.children.len(),
         )
     }
 }
 
-impl FFIExecutionPlan {
+impl FFI_ExecutionPlan {
     pub fn new(plan: Arc<dyn ExecutionPlan + Send>) -> Self {
         let private_data = Box::new(ExecutionPlanPrivateData {
             plan,
@@ -123,25 +123,25 @@ impl ExportedExecutionPlan {
     /// # Safety
     ///
     /// The caller must ensure the pointer provided points to a valid implementation
-    /// of FFIExecutionPlan
-    pub unsafe fn new(plan: *const FFIExecutionPlan) -> Result<Self> {
+    /// of FFI_ExecutionPlan
+    pub unsafe fn new(plan: *const FFI_ExecutionPlan) -> Result<Self> {
         let properties = unsafe {
             let properties_fn = (*plan).properties.ok_or(DataFusionError::NotImplemented(
-                "properties not implemented on FFIExecutionPlan".to_string(),
+                "properties not implemented on FFI_ExecutionPlan".to_string(),
             ))?;
             properties_fn(plan).try_into()?
         };
 
         let children = unsafe {
             let children_fn = (*plan).children.ok_or(DataFusionError::NotImplemented(
-                "children not implemented on FFIExecutionPlan".to_string(),
+                "children not implemented on FFI_ExecutionPlan".to_string(),
             ))?;
             let mut num_children = 0;
-            let mut children_ptr: *const FFIExecutionPlan = null();
+            let mut children_ptr: *const FFI_ExecutionPlan = null();
 
             if children_fn(plan, &mut num_children, &mut children_ptr) != 0 {
                 return Err(DataFusionError::Plan(
-                    "Error getting children for FFIExecutionPlan".to_string(),
+                    "Error getting children for FFI_ExecutionPlan".to_string(),
                 ));
             }
 
@@ -197,7 +197,7 @@ impl ExecutionPlan for ExportedExecutionPlan {
     }
 }
 
-impl DisplayAs for FFIExecutionPlan {
+impl DisplayAs for FFI_ExecutionPlan {
     fn fmt_as(
         &self,
         t: datafusion::physical_plan::DisplayFormatType,
@@ -210,47 +210,47 @@ impl DisplayAs for FFIExecutionPlan {
 #[repr(C)]
 #[derive(Debug)]
 #[allow(missing_docs)]
-pub struct FFIPlanProperties {
+pub struct FFI_PlanProperties {
     // We will build equivalence properties from teh schema and ordersing (new_with_orderings). This is how we do ti in dataset_exec
-    // pub eq_properties: Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> EquivalenceProperties>,
+    // pub eq_properties: Option<unsafe extern "C" fn(plan: *const FFI_PlanProperties) -> EquivalenceProperties>,
 
     // Returns protobuf serialized bytes of the partitioning
     pub output_partitioning: Option<
         unsafe extern "C" fn(
-            plan: *const FFIPlanProperties,
+            plan: *const FFI_PlanProperties,
             buffer_size: &mut usize,
             buffer_bytes: &mut *mut u8,
         ) -> i32,
     >,
 
     pub execution_mode:
-        Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> FFIExecutionMode>,
+        Option<unsafe extern "C" fn(plan: *const FFI_PlanProperties) -> FFI_ExecutionMode>,
 
     // PhysicalSortExprNodeCollection proto
     pub output_ordering: Option<
         unsafe extern "C" fn(
-            plan: *const FFIPlanProperties,
+            plan: *const FFI_PlanProperties,
             buffer_size: &mut usize,
             buffer_bytes: &mut *mut u8,
         ) -> i32,
     >,
 
-    pub schema: Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> FFI_ArrowSchema>,
+    pub schema: Option<unsafe extern "C" fn(plan: *const FFI_PlanProperties) -> FFI_ArrowSchema>,
 }
 
-impl From<&PlanProperties> for FFIPlanProperties {
+impl From<&PlanProperties> for FFI_PlanProperties {
     fn from(value: &PlanProperties) -> Self {
         todo!()
     }
 }
 
-impl TryFrom<FFIPlanProperties> for PlanProperties {
+impl TryFrom<FFI_PlanProperties> for PlanProperties {
     type Error = DataFusionError;
 
-    fn try_from(value: FFIPlanProperties) -> std::result::Result<Self, Self::Error> {
+    fn try_from(value: FFI_PlanProperties) -> std::result::Result<Self, Self::Error> {
         unsafe {
             let schema_fn = value.schema.ok_or(DataFusionError::NotImplemented(
-                "schema() not implemented on FFIPlanProperties".to_string(),
+                "schema() not implemented on FFI_PlanProperties".to_string(),
             ))?;
             let ffi_schema = schema_fn(&value);
             let schema: Schema = (&ffi_schema).try_into()?;
@@ -258,13 +258,13 @@ impl TryFrom<FFIPlanProperties> for PlanProperties {
             let ordering_fn = value
                 .output_ordering
                 .ok_or(DataFusionError::NotImplemented(
-                    "output_ordering() not implemented on FFIPlanProperties".to_string(),
+                    "output_ordering() not implemented on FFI_PlanProperties".to_string(),
                 ))?;
             let mut buff_size = 0;
             let mut buff = null_mut();
             if ordering_fn(&value, &mut buff_size, &mut buff) != 0 {
                 return Err(DataFusionError::Plan(
-                    "Error occurred during FFI call to output_ordering in FFIPlanProperties"
+                    "Error occurred during FFI call to output_ordering in FFI_PlanProperties"
                         .to_string(),
                 ));
             }
@@ -287,11 +287,11 @@ impl TryFrom<FFIPlanProperties> for PlanProperties {
                 value
                     .output_partitioning
                     .ok_or(DataFusionError::NotImplemented(
-                        "output_partitioning() not implemented on FFIPlanProperties".to_string(),
+                        "output_partitioning() not implemented on FFI_PlanProperties".to_string(),
                     ))?;
             if partitioning_fn(&value, &mut buff_size, &mut buff) != 0 {
                 return Err(DataFusionError::Plan(
-                    "Error occurred during FFI call to output_partitioning in FFIPlanProperties"
+                    "Error occurred during FFI call to output_partitioning in FFI_PlanProperties"
                         .to_string(),
                 ));
             }
@@ -309,7 +309,7 @@ impl TryFrom<FFIPlanProperties> for PlanProperties {
             .unwrap();
 
             let execution_mode_fn = value.execution_mode.ok_or(DataFusionError::NotImplemented(
-                "execution_mode() not implemented on FFIPlanProperties".to_string(),
+                "execution_mode() not implemented on FFI_PlanProperties".to_string(),
             ))?;
             let execution_mode = execution_mode_fn(&value).into();
 
@@ -319,7 +319,7 @@ impl TryFrom<FFIPlanProperties> for PlanProperties {
             Ok(Self::new(eq_properties, partitioning, execution_mode))
         }
     }
-    // fn from(value: FFIPlanProperties) -> Self {
+    // fn from(value: FFI_PlanProperties) -> Self {
     //     let schema = self.schema()
 
     //     let equiv_prop = EquivalenceProperties::new_with_orderings(schema, orderings);
@@ -327,7 +327,7 @@ impl TryFrom<FFIPlanProperties> for PlanProperties {
 }
 
 #[repr(C)]
-pub enum FFIExecutionMode {
+pub enum FFI_ExecutionMode {
     Bounded,
 
     Unbounded,
@@ -335,22 +335,22 @@ pub enum FFIExecutionMode {
     PipelineBreaking,
 }
 
-impl From<ExecutionMode> for FFIExecutionMode {
+impl From<ExecutionMode> for FFI_ExecutionMode {
     fn from(value: ExecutionMode) -> Self {
         match value {
-            ExecutionMode::Bounded => FFIExecutionMode::Bounded,
-            ExecutionMode::Unbounded => FFIExecutionMode::Unbounded,
-            ExecutionMode::PipelineBreaking => FFIExecutionMode::PipelineBreaking,
+            ExecutionMode::Bounded => FFI_ExecutionMode::Bounded,
+            ExecutionMode::Unbounded => FFI_ExecutionMode::Unbounded,
+            ExecutionMode::PipelineBreaking => FFI_ExecutionMode::PipelineBreaking,
         }
     }
 }
 
-impl From<FFIExecutionMode> for ExecutionMode {
-    fn from(value: FFIExecutionMode) -> Self {
+impl From<FFI_ExecutionMode> for ExecutionMode {
+    fn from(value: FFI_ExecutionMode) -> Self {
         match value {
-            FFIExecutionMode::Bounded => ExecutionMode::Bounded,
-            FFIExecutionMode::Unbounded => ExecutionMode::Unbounded,
-            FFIExecutionMode::PipelineBreaking => ExecutionMode::PipelineBreaking,
+            FFI_ExecutionMode::Bounded => ExecutionMode::Bounded,
+            FFI_ExecutionMode::Unbounded => ExecutionMode::Unbounded,
+            FFI_ExecutionMode::PipelineBreaking => ExecutionMode::PipelineBreaking,
         }
     }
 }
