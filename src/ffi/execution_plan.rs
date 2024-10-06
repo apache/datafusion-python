@@ -7,23 +7,21 @@ use std::{
 use datafusion::error::Result;
 use datafusion::{
     error::DataFusionError,
-    parquet::file::properties,
-    physical_expr::{EquivalenceProperties, LexOrdering},
-    physical_plan::{DisplayAs, ExecutionMode, ExecutionPlan, Partitioning, PlanProperties},
+    physical_plan::{DisplayAs, ExecutionMode, ExecutionPlan, PlanProperties},
 };
 
 #[repr(C)]
 #[derive(Debug)]
 #[allow(missing_docs)]
 #[allow(non_camel_case_types)]
-pub struct FFI_ExecutionPlan {
+pub struct FFIExecutionPlan {
     pub properties:
-        Option<unsafe extern "C" fn(plan: *const FFI_ExecutionPlan) -> FFI_PlanProperties>,
+        Option<unsafe extern "C" fn(plan: *const FFIExecutionPlan) -> FFIPlanProperties>,
     pub children: Option<
         unsafe extern "C" fn(
-            plan: *const FFI_ExecutionPlan,
+            plan: *const FFIExecutionPlan,
             num_children: &mut usize,
-            out: &mut *const FFI_ExecutionPlan,
+            out: &mut *const FFIExecutionPlan,
         ) -> i32,
     >,
 
@@ -35,24 +33,24 @@ pub struct ExecutionPlanPrivateData {
     pub last_error: Option<CString>,
 }
 
-unsafe extern "C" fn properties_fn_wrapper(plan: *const FFI_ExecutionPlan) -> FFI_PlanProperties {
+unsafe extern "C" fn properties_fn_wrapper(plan: *const FFIExecutionPlan) -> FFIPlanProperties {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
     let properties = (*private_data).plan.properties();
     properties.into()
 }
 
 unsafe extern "C" fn children_fn_wrapper(
-    plan: *const FFI_ExecutionPlan,
+    plan: *const FFIExecutionPlan,
     num_children: &mut usize,
-    out: &mut *const FFI_ExecutionPlan,
+    out: &mut *const FFIExecutionPlan,
 ) -> i32 {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
 
     let children = (*private_data).plan.children();
     *num_children = children.len();
-    let children: Vec<FFI_ExecutionPlan> = children
+    let children: Vec<FFIExecutionPlan> = children
         .into_iter()
-        .map(|child| FFI_ExecutionPlan::new(child.clone()))
+        .map(|child| FFIExecutionPlan::new(child.clone()))
         .collect();
     *out = children.as_ptr();
 
@@ -64,7 +62,7 @@ unsafe extern "C" fn children_fn_wrapper(
 // in the provider's side.
 #[derive(Debug)]
 pub struct ExportedExecutionPlan {
-    plan: *const FFI_ExecutionPlan,
+    plan: *const FFIExecutionPlan,
     properties: PlanProperties,
     children: Vec<Arc<dyn ExecutionPlan>>,
 }
@@ -75,14 +73,18 @@ unsafe impl Sync for ExportedExecutionPlan {}
 impl DisplayAs for ExportedExecutionPlan {
     fn fmt_as(
         &self,
-        t: datafusion::physical_plan::DisplayFormatType,
+        _t: datafusion::physical_plan::DisplayFormatType,
         f: &mut std::fmt::Formatter,
     ) -> std::fmt::Result {
-        todo!()
+        write!(
+            f,
+            "FFIExecutionPlan(number_of_children={})",
+            self.children.len(),
+        )
     }
 }
 
-impl FFI_ExecutionPlan {
+impl FFIExecutionPlan {
     pub fn new(plan: Arc<dyn ExecutionPlan + Send>) -> Self {
         let private_data = Box::new(ExecutionPlanPrivateData {
             plan,
@@ -106,24 +108,30 @@ impl FFI_ExecutionPlan {
 }
 
 impl ExportedExecutionPlan {
-    pub fn new(plan: *const FFI_ExecutionPlan) -> Result<Self> {
+    /// Wrap a FFI Execution Plan
+    ///
+    /// # Safety
+    ///
+    /// The caller must ensure the pointer provided points to a valid implementation
+    /// of FFIExecutionPlan
+    pub unsafe fn new(plan: *const FFIExecutionPlan) -> Result<Self> {
         let properties = unsafe {
             let properties_fn = (*plan).properties.ok_or(DataFusionError::NotImplemented(
-                "properties not implemented on FFI_ExecutionPlan".to_string(),
+                "properties not implemented on FFIExecutionPlan".to_string(),
             ))?;
             properties_fn(plan).into()
         };
 
         let children = unsafe {
             let children_fn = (*plan).children.ok_or(DataFusionError::NotImplemented(
-                "children not implemented on FFI_ExecutionPlan".to_string(),
+                "children not implemented on FFIExecutionPlan".to_string(),
             ))?;
             let mut num_children = 0;
-            let mut children_ptr: *const FFI_ExecutionPlan = null();
+            let mut children_ptr: *const FFIExecutionPlan = null();
 
             if children_fn(plan, &mut num_children, &mut children_ptr) != 0 {
                 return Err(DataFusionError::Plan(
-                    "Error getting children for FFI_ExecutionPlan".to_string(),
+                    "Error getting children for FFIExecutionPlan".to_string(),
                 ));
             }
 
@@ -179,7 +187,7 @@ impl ExecutionPlan for ExportedExecutionPlan {
     }
 }
 
-impl DisplayAs for FFI_ExecutionPlan {
+impl DisplayAs for FFIExecutionPlan {
     fn fmt_as(
         &self,
         t: datafusion::physical_plan::DisplayFormatType,
@@ -192,26 +200,69 @@ impl DisplayAs for FFI_ExecutionPlan {
 #[repr(C)]
 #[derive(Debug)]
 #[allow(missing_docs)]
-#[allow(non_camel_case_types)]
-pub struct FFI_PlanProperties {
-    /// See [ExecutionPlanProperties::equivalence_properties]
-    pub eq_properties: EquivalenceProperties,
-    /// See [ExecutionPlanProperties::output_partitioning]
-    pub partitioning: Partitioning,
-    /// See [ExecutionPlanProperties::execution_mode]
-    pub execution_mode: ExecutionMode,
-    /// See [ExecutionPlanProperties::output_ordering]
-    output_ordering: Option<LexOrdering>,
+pub struct FFIPlanProperties {
+    // We will build equivalence properties from teh schema and ordersing (new_with_orderings). This is how we do ti in dataset_exec
+    // pub eq_properties: Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> EquivalenceProperties>,
+
+    // Returns protobuf serialized bytes of the partitioning
+    pub output_partitioning: Option<
+        unsafe extern "C" fn(
+            plan: *const FFIPlanProperties,
+            buffer_size: &mut usize,
+            buffer_bytes: &mut *mut u8,
+        ) -> i32,
+    >,
+
+    pub execution_mode:
+        Option<unsafe extern "C" fn(plan: *const FFIPlanProperties) -> FFIExecutionMode>,
+
+    // PhysicalSortExprNodeCollection proto
+    pub output_ordering: Option<
+        unsafe extern "C" fn(
+            plan: *const FFIPlanProperties,
+            buffer_size: &mut usize,
+            buffer_bytes: &mut *mut u8,
+        ) -> i32,
+    >,
 }
 
-impl From<&PlanProperties> for FFI_PlanProperties {
+impl From<&PlanProperties> for FFIPlanProperties {
     fn from(value: &PlanProperties) -> Self {
         todo!()
     }
 }
 
-impl From<FFI_PlanProperties> for PlanProperties {
-    fn from(value: FFI_PlanProperties) -> Self {
+impl From<FFIPlanProperties> for PlanProperties {
+    fn from(value: FFIPlanProperties) -> Self {
         todo!()
+    }
+}
+
+#[repr(C)]
+pub enum FFIExecutionMode {
+    Bounded,
+
+    Unbounded,
+
+    PipelineBreaking,
+}
+
+impl From<ExecutionMode> for FFIExecutionMode {
+    fn from(value: ExecutionMode) -> Self {
+        match value {
+            ExecutionMode::Bounded => FFIExecutionMode::Bounded,
+            ExecutionMode::Unbounded => FFIExecutionMode::Unbounded,
+            ExecutionMode::PipelineBreaking => FFIExecutionMode::PipelineBreaking,
+        }
+    }
+}
+
+impl From<FFIExecutionMode> for ExecutionMode {
+    fn from(value: FFIExecutionMode) -> Self {
+        match value {
+            FFIExecutionMode::Bounded => ExecutionMode::Bounded,
+            FFIExecutionMode::Unbounded => ExecutionMode::Unbounded,
+            FFIExecutionMode::PipelineBreaking => ExecutionMode::PipelineBreaking,
+        }
     }
 }
