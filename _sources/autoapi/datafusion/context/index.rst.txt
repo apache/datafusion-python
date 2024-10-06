@@ -650,7 +650,7 @@ Module Contents
 
 
 
-   .. py:method:: register_object_store(schema: str, store: Any, host: str | None) -> None
+   .. py:method:: register_object_store(schema: str, store: Any, host: str | None = None) -> None
 
       Add a new object store into the session.
 
