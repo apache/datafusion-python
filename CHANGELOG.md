@@ -19,6 +19,54 @@
 
 # DataFusion Python Changelog
 
+## [42.0.0](https://github.com/apache/datafusion-python/tree/42.0.0) (2024-10-06)
+
+This release consists of 20 commits from 6 contributors. See credits at the end of this changelog for more information.
+
+**Implemented enhancements:**
+
+- feat: expose between [#868](https://github.com/apache/datafusion-python/pull/868) (mesejo)
+- feat: make register_csv accept a list of paths [#883](https://github.com/apache/datafusion-python/pull/883) (mesejo)
+- feat: expose http object store [#885](https://github.com/apache/datafusion-python/pull/885) (mesejo)
+
+**Fixed bugs:**
+
+- fix: Calling `count` on a pyarrow dataset results in an error [#843](https://github.com/apache/datafusion-python/pull/843) (Michael-J-Ward)
+
+**Other:**
+
+- Upgrade datafusion [#867](https://github.com/apache/datafusion-python/pull/867) (emgeee)
+- Feature/aggregates as windows [#871](https://github.com/apache/datafusion-python/pull/871) (timsaucer)
+- Fix regression on register_udaf [#878](https://github.com/apache/datafusion-python/pull/878) (timsaucer)
+- build(deps): upgrade setup-protoc action and protoc version number [#873](https://github.com/apache/datafusion-python/pull/873) (Michael-J-Ward)
+- build(deps): bump prost-types from 0.13.2 to 0.13.3 [#881](https://github.com/apache/datafusion-python/pull/881) (dependabot[bot])
+- build(deps): bump prost from 0.13.2 to 0.13.3 [#882](https://github.com/apache/datafusion-python/pull/882) (dependabot[bot])
+- chore: remove XFAIL from passing tests [#884](https://github.com/apache/datafusion-python/pull/884) (Michael-J-Ward)
+- Add user defined window function support [#880](https://github.com/apache/datafusion-python/pull/880) (timsaucer)
+- build(deps): bump syn from 2.0.77 to 2.0.79 [#886](https://github.com/apache/datafusion-python/pull/886) (dependabot[bot])
+- fix example of reading parquet from s3 [#896](https://github.com/apache/datafusion-python/pull/896) (sir-sigurd)
+- release-testing [#889](https://github.com/apache/datafusion-python/pull/889) (Michael-J-Ward)
+- chore(bench): fix create_tables.sql for tpch benchmark [#897](https://github.com/apache/datafusion-python/pull/897) (Michael-J-Ward)
+- Add physical and logical plan conversion to and from protobuf [#892](https://github.com/apache/datafusion-python/pull/892) (timsaucer)
+- Feature/instance udfs [#890](https://github.com/apache/datafusion-python/pull/890) (timsaucer)
+- chore(ci): remove Mambaforge variant from CI [#894](https://github.com/apache/datafusion-python/pull/894) (Michael-J-Ward)
+- Use OnceLock to store TokioRuntime [#895](https://github.com/apache/datafusion-python/pull/895) (Michael-J-Ward)
+
+## Credits
+
+Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) per contributor.
+
+```
+     7	Michael J Ward
+     5	Tim Saucer
+     3	Daniel Mesejo
+     3	dependabot[bot]
+     1	Matt Green
+     1	Sergey Fedoseev
+```
+
+Thank you also to everyone who contributed in other ways such as filing issues, reviewing PRs, and providing feedback on this release.
+
 ## [41.0.0](https://github.com/apache/datafusion-python/tree/41.0.0) (2024-09-09)
 
 This release consists of 19 commits from 6 contributors. See credits at the end of this changelog for more information.
@@ -62,7 +110,6 @@ Thank you to everyone who contributed to this release. Here is a breakdown of co
 ```
 
 Thank you also to everyone who contributed in other ways such as filing issues, reviewing PRs, and providing feedback on this release.
-
 
 ## [40.0.0](https://github.com/apache/datafusion-python/tree/40.0.0) (2024-08-09)
 
