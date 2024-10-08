@@ -169,6 +169,7 @@ cd datafusion-python
 # checkout the release commit
 git fetch --tags
 git checkout 40.0.0-rc1
+git submodule update --init --recursive
 
 # create the env
 python3 -m venv venv
