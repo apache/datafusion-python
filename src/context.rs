@@ -586,7 +586,7 @@ impl PySessionContext {
             println!("Found provider version {}", provider.version);
 
             let schema = provider.schema();
-            println!("Got schema through TableProvider trait {}", schema);
+            println!("Got schema through TableProvider trait.");
 
             let _ = self.ctx.register_table(name, Arc::new(provider))?;
         }

@@ -1,6 +1,7 @@
 use std::{
     any::Any,
     ffi::{c_char, c_int, c_void, CStr, CString},
+    ptr::null_mut,
     sync::Arc,
 };
 
@@ -44,8 +45,8 @@ pub struct FFI_TableProvider {
             n_filters: c_int,
             filters: *const *const c_char,
             limit: c_int,
-            out: *mut FFI_ExecutionPlan,
-        ) -> c_int,
+            err_code: *mut c_int,
+        ) -> *mut FFI_ExecutionPlan,
     >,
     pub private_data: *mut c_void,
 }
@@ -65,7 +66,7 @@ unsafe extern "C" fn provider_schema(provider: *const FFI_TableProvider) -> FFI_
     ExportedTableProvider(provider).provider_schema()
 }
 
-unsafe extern "C" fn provider_scan(
+unsafe extern "C" fn scan_fn_wrapper(
     provider: *const FFI_TableProvider,
     session_config: *const FFI_SessionConfig,
     n_projections: c_int,
@@ -73,8 +74,9 @@ unsafe extern "C" fn provider_scan(
     n_filters: c_int,
     filters: *const *const c_char,
     limit: c_int,
-    mut out: *mut FFI_ExecutionPlan,
-) -> c_int {
+    err_code: *mut c_int,
+) -> *mut FFI_ExecutionPlan {
+    println!("entered scan_fn_wrapper");
     let config = unsafe { (*session_config).private_data as *const SessionConfigPrivateData };
     let session = SessionStateBuilder::new()
         .with_config((*config).config.clone())
@@ -106,12 +108,17 @@ unsafe extern "C" fn provider_scan(
         limit,
     );
 
+    println!("leaving scan_fn_wrapper, has plan? {}", plan.is_ok());
+
     match plan {
-        Ok(mut plan) => {
-            out = &mut plan;
-            0
+        Ok(plan) => {
+            *err_code = 0;
+            plan
         }
-        Err(_) => 1,
+        Err(_) => {
+            *err_code = 1;
+            null_mut()
+        }
     }
 }
 
@@ -135,7 +142,7 @@ impl ExportedTableProvider {
         projections: Option<&Vec<usize>>,
         filters: Vec<String>,
         limit: Option<usize>,
-    ) -> Result<FFI_ExecutionPlan> {
+    ) -> Result<*mut FFI_ExecutionPlan> {
         let private_data = self.get_private_data();
         let provider = &private_data.provider;
 
@@ -150,15 +157,8 @@ impl ExportedTableProvider {
         let runtime = Runtime::new().unwrap();
         let plan = runtime.block_on(provider.scan(session, projections, &filter_exprs, limit))?;
 
-        // let plan_ptr = Box::new(ExecutionPlanPrivateData {
-        //     plan,
-        //     last_error: None,
-        // });
-
-        // Ok(FFI_ExecutionPlan {
-        //     private_data: Box::into_raw(plan_ptr) as *mut c_void,
-        // })
-        Ok(FFI_ExecutionPlan::new(plan))
+        let plan_boxed = Box::new(FFI_ExecutionPlan::new(plan));
+        Ok(Box::into_raw(plan_boxed))
     }
 }
 
@@ -187,7 +187,7 @@ impl FFI_TableProvider {
         Self {
             version: 2,
             schema: Some(provider_schema),
-            scan: Some(provider_scan),
+            scan: Some(scan_fn_wrapper),
             private_data: Box::into_raw(private_data) as *mut c_void,
         }
     }
@@ -273,10 +273,10 @@ impl TableProvider for FFI_TableProvider {
             None => -1,
         };
 
-        let mut out = FFI_ExecutionPlan::empty();
-
+        println!("Within scan about to call unsafe scan_fn");
+        let mut err_code = 0;
         let plan = unsafe {
-            let err_code = scan_fn(
+            let plan_ptr = scan_fn(
                 self,
                 &session_config,
                 n_projections,
@@ -284,7 +284,7 @@ impl TableProvider for FFI_TableProvider {
                 n_filters,
                 filters_ptr.as_ptr(),
                 limit,
-                &mut out,
+                &mut err_code,
             );
 
             if 0 != err_code {
@@ -293,8 +293,16 @@ impl TableProvider for FFI_TableProvider {
                 ));
             }
 
-            ExportedExecutionPlan::new(&out)?
+            println!(
+                "Finished scan_fn inside FFI_TableProvider::scan {}",
+                plan_ptr.is_null()
+            );
+
+            let p = ExportedExecutionPlan::new(plan_ptr)?;
+            println!("ExportedExecutionPlan::new returned inside scan()");
+            p
         };
+        println!("Scan returned with some plan.");
 
         Ok(Arc::new(plan))
     }
