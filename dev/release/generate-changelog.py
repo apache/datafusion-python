@@ -22,18 +22,22 @@ import os
 import re
 import subprocess
 
+
 def print_pulls(repo_name, title, pulls):
-    if len(pulls)  > 0:
+    if len(pulls) > 0:
         print("**{}:**".format(title))
         print()
-        for (pull, commit) in pulls:
+        for pull, commit in pulls:
             url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
-            print("- {} [#{}]({}) ({})".format(pull.title, pull.number, url, commit.author.login))
+            print(
+                "- {} [#{}]({}) ({})".format(
+                    pull.title, pull.number, url, commit.author.login
+                )
+            )
         print()
 
 
 def generate_changelog(repo, repo_name, tag1, tag2, version):
-
     # get a list of commits between two tags
     print(f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr)
     comparison = repo.compare(tag1, tag2)
@@ -61,29 +65,27 @@ def generate_changelog(repo, repo_name, tag1, tag2, version):
 
     # categorize the pull requests based on GitHub labels
     print("Categorizing pull requests", file=sys.stderr)
-    for (pull, commit) in all_pulls:
-
+    for pull, commit in all_pulls:
         # see if PR title uses Conventional Commits
-        cc_type = ''
-        cc_scope = ''
-        cc_breaking = ''
-        parts = re.findall(r'^([a-z]+)(\([a-z]+\))?(!)?:', pull.title)
+        cc_type = ""
+        cc_breaking = ""
+        parts = re.findall(r"^([a-z]+)(\([a-z]+\))?(!)?:", pull.title)
         if len(parts) == 1:
             parts_tuple = parts[0]
-            cc_type = parts_tuple[0] # fix, feat, docs, chore
-            cc_scope = parts_tuple[1] # component within project
-            cc_breaking = parts_tuple[2] == '!'
+            cc_type = parts_tuple[0]  # fix, feat, docs, chore
+            # cc_scope = parts_tuple[1]  # component within project
+            cc_breaking = parts_tuple[2] == "!"
 
         labels = [label.name for label in pull.labels]
-        if 'api change' in labels or cc_breaking:
+        if "api change" in labels or cc_breaking:
             breaking.append((pull, commit))
-        elif 'bug' in labels or cc_type == 'fix':
+        elif "bug" in labels or cc_type == "fix":
             bugs.append((pull, commit))
-        elif 'performance' in labels or cc_type == 'perf':
+        elif "performance" in labels or cc_type == "perf":
             performance.append((pull, commit))
-        elif 'enhancement' in labels or cc_type == 'feat':
+        elif "enhancement" in labels or cc_type == "feat":
             enhancements.append((pull, commit))
-        elif 'documentation' in labels or cc_type == 'docs' or cc_type == 'doc':
+        elif "documentation" in labels or cc_type == "docs" or cc_type == "doc":
             docs.append((pull, commit))
         else:
             other.append((pull, commit))
@@ -114,13 +116,19 @@ under the License.
     print(f"# Apache DataFusion Python {version} Changelog\n")
 
     # get the number of commits
-    commit_count = subprocess.check_output(f"git log --pretty=oneline {tag1}..{tag2} | wc -l", shell=True, text=True).strip()
+    commit_count = subprocess.check_output(
+        f"git log --pretty=oneline {tag1}..{tag2} | wc -l", shell=True, text=True
+    ).strip()
 
     # get number of contributors
-    contributor_count = subprocess.check_output(f"git shortlog -sn {tag1}..{tag2} | wc -l", shell=True, text=True).strip()
+    contributor_count = subprocess.check_output(
+        f"git shortlog -sn {tag1}..{tag2} | wc -l", shell=True, text=True
+    ).strip()
 
-    print(f"This release consists of {commit_count} commits from {contributor_count} contributors. "
-          f"See credits at the end of this changelog for more information.\n")
+    print(
+        f"This release consists of {commit_count} commits from {contributor_count} contributors. "
+        f"See credits at the end of this changelog for more information.\n"
+    )
 
     print_pulls(repo_name, "Breaking changes", breaking)
     print_pulls(repo_name, "Performance related", performance)
@@ -130,17 +138,24 @@ under the License.
     print_pulls(repo_name, "Other", other)
 
     # show code contributions
-    credits = subprocess.check_output(f"git shortlog -sn {tag1}..{tag2}", shell=True, text=True).rstrip()
+    credits = subprocess.check_output(
+        f"git shortlog -sn {tag1}..{tag2}", shell=True, text=True
+    ).rstrip()
 
     print("## Credits\n")
-    print("Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) "
-          "per contributor.\n")
+    print(
+        "Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) "
+        "per contributor.\n"
+    )
     print("```")
     print(credits)
     print("```\n")
 
-    print("Thank you also to everyone who contributed in other ways such as filing issues, reviewing "
-          "PRs, and providing feedback on this release.\n")
+    print(
+        "Thank you also to everyone who contributed in other ways such as filing issues, reviewing "
+        "PRs, and providing feedback on this release.\n"
+    )
+
 
 def cli(args=None):
     """Process command line arguments."""
@@ -150,7 +165,9 @@ def cli(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument("tag1", help="The previous commit or tag (e.g. 0.1.0)")
     parser.add_argument("tag2", help="The current commit or tag (e.g. HEAD)")
-    parser.add_argument("version", help="The version number to include in the changelog")
+    parser.add_argument(
+        "version", help="The version number to include in the changelog"
+    )
     args = parser.parse_args()
 
     token = os.getenv("GITHUB_TOKEN")
@@ -159,6 +176,7 @@ def cli(args=None):
     g = Github(token)
     repo = g.get_repo(project)
     generate_changelog(repo, project, args.tag1, args.tag2, args.version)
+
 
 if __name__ == "__main__":
     cli()
