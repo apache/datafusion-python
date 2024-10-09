@@ -7,7 +7,6 @@ use std::{
 
 use arrow::{
     datatypes::{Schema, SchemaRef},
-    error::ArrowError,
     ffi::FFI_ArrowSchema,
 };
 use async_trait::async_trait;
@@ -16,7 +15,7 @@ use datafusion::{
     common::DFSchema,
     datasource::TableType,
     error::DataFusionError,
-    execution::{context::SessionState, session_state::SessionStateBuilder, TaskContext},
+    execution::session_state::SessionStateBuilder,
     logical_expr::TableProviderFilterPushDown,
     physical_plan::ExecutionPlan,
     prelude::{Expr, SessionContext},
@@ -56,7 +55,6 @@ unsafe impl Sync for FFI_TableProvider {}
 
 struct ProviderPrivateData {
     provider: Box<dyn TableProvider + Send>,
-    last_error: Option<CString>,
 }
 
 struct ExportedTableProvider(*const FFI_TableProvider);
@@ -160,27 +158,10 @@ impl ExportedTableProvider {
     }
 }
 
-const ENOMEM: i32 = 12;
-const EIO: i32 = 5;
-const EINVAL: i32 = 22;
-const ENOSYS: i32 = 78;
-
-fn get_error_code(err: &ArrowError) -> i32 {
-    match err {
-        ArrowError::NotYetImplemented(_) => ENOSYS,
-        ArrowError::MemoryError(_) => ENOMEM,
-        ArrowError::IoError(_, _) => EIO,
-        _ => EINVAL,
-    }
-}
-
 impl FFI_TableProvider {
     /// Creates a new [`FFI_TableProvider`].
     pub fn new(provider: Box<dyn TableProvider + Send>) -> Self {
-        let private_data = Box::new(ProviderPrivateData {
-            provider,
-            last_error: None,
-        });
+        let private_data = Box::new(ProviderPrivateData { provider });
 
         Self {
             version: 2,

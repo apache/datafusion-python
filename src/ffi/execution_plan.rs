@@ -1,19 +1,15 @@
 use std::{
     ffi::{c_char, c_void, CString},
-    ptr::{null, null_mut},
+    pin::Pin,
+    ptr::null_mut,
     slice,
     sync::Arc,
 };
 
-use arrow::{
-    array::RecordBatchReader,
-    datatypes::Schema,
-    ffi::{FFI_ArrowArray, FFI_ArrowSchema},
-    ffi_stream::FFI_ArrowArrayStream,
-};
+use arrow::{datatypes::Schema, ffi::FFI_ArrowSchema, ffi_stream::FFI_ArrowArrayStream};
 use datafusion::{
     error::DataFusionError,
-    execution::TaskContext,
+    execution::{SendableRecordBatchStream, TaskContext},
     physical_plan::{DisplayAs, ExecutionMode, ExecutionPlan, PlanProperties},
 };
 use datafusion::{error::Result, physical_expr::EquivalenceProperties, prelude::SessionContext};
@@ -25,11 +21,9 @@ use datafusion_proto::{
     },
     protobuf::{Partitioning, PhysicalSortExprNodeCollection},
 };
-use futures::{StreamExt, TryStreamExt};
 use prost::Message;
-use tokio::runtime::Runtime;
 
-use super::record_batch_stream::record_batch_to_arrow_stream;
+use super::record_batch_stream::{record_batch_to_arrow_stream, ConsumerRecordBatchStream};
 
 #[repr(C)]
 #[derive(Debug)]
@@ -51,7 +45,7 @@ pub struct FFI_ExecutionPlan {
         plan: *const FFI_ExecutionPlan,
         partition: usize,
         err_code: &mut i32,
-    ) -> *const FFI_ArrowArrayStream,
+    ) -> FFI_ArrowArrayStream,
 
     pub private_data: *mut c_void,
 }
@@ -91,23 +85,21 @@ unsafe extern "C" fn execute_fn_wrapper(
     plan: *const FFI_ExecutionPlan,
     partition: usize,
     err_code: &mut i32,
-) -> *const FFI_ArrowArrayStream {
+) -> FFI_ArrowArrayStream {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
 
-    let mut record_batch_stream = match (*private_data)
+    let record_batch_stream = match (*private_data)
         .plan
         .execute(partition, (*private_data).context.clone())
     {
         Ok(rbs) => rbs,
         Err(_e) => {
             *err_code = 1;
-            return null();
+            return FFI_ArrowArrayStream::empty();
         }
     };
 
-    let ffi_stream = Box::new(record_batch_to_arrow_stream(record_batch_stream));
-
-    Box::into_raw(ffi_stream)
+    record_batch_to_arrow_stream(record_batch_stream)
 }
 unsafe extern "C" fn name_fn_wrapper(plan: *const FFI_ExecutionPlan) -> *const c_char {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
@@ -215,7 +207,7 @@ impl ExportedExecutionPlan {
             ))?;
             let mut num_children = 0;
             let mut err_code = 0;
-            let mut children_ptr = children_fn(plan, &mut num_children, &mut err_code);
+            let children_ptr = children_fn(plan, &mut num_children, &mut err_code);
 
             println!(
                 "We called the FFI function children so the provider told us we have {} children",
@@ -284,25 +276,32 @@ impl ExecutionPlan for ExportedExecutionPlan {
         self: Arc<Self>,
         children: Vec<Arc<dyn ExecutionPlan>>,
     ) -> datafusion::error::Result<Arc<dyn ExecutionPlan>> {
-        todo!()
+        Ok(Arc::new(ExportedExecutionPlan {
+            plan: self.plan,
+            name: self.name.clone(),
+            children,
+            properties: self.properties.clone(),
+        }))
     }
 
     fn execute(
         &self,
         partition: usize,
-        context: Arc<datafusion::execution::TaskContext>,
+        _context: Arc<datafusion::execution::TaskContext>,
     ) -> datafusion::error::Result<datafusion::execution::SendableRecordBatchStream> {
-        todo!()
-    }
-}
+        unsafe {
+            let execute_fn = (*self.plan).execute;
+            let mut err_code = 0;
+            let arrow_stream = execute_fn(self.plan, partition, &mut err_code);
 
-impl DisplayAs for FFI_ExecutionPlan {
-    fn fmt_as(
-        &self,
-        t: datafusion::physical_plan::DisplayFormatType,
-        f: &mut std::fmt::Formatter,
-    ) -> std::fmt::Result {
-        todo!()
+            match err_code {
+                0 => ConsumerRecordBatchStream::try_from(arrow_stream)
+                    .map(|v| Pin::new(Box::new(v)) as SendableRecordBatchStream),
+                _ => Err(DataFusionError::Execution(
+                    "Error occurred during FFI call to FFI_ExecutionPlan execute.".to_string(),
+                )),
+            }
+        }
     }
 }
 
@@ -311,9 +310,6 @@ impl DisplayAs for FFI_ExecutionPlan {
 #[allow(missing_docs)]
 #[allow(non_camel_case_types)]
 pub struct FFI_PlanProperties {
-    // We will build equivalence properties from teh schema and ordersing (new_with_orderings). This is how we do ti in dataset_exec
-    // pub eq_properties: Option<unsafe extern "C" fn(plan: *const FFI_PlanProperties) -> EquivalenceProperties>,
-
     // Returns protobuf serialized bytes of the partitioning
     pub output_partitioning: Option<
         unsafe extern "C" fn(
