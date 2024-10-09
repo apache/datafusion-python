@@ -16,15 +16,15 @@ use datafusion::{
     common::DFSchema,
     datasource::TableType,
     error::DataFusionError,
-    execution::{context::SessionState, session_state::SessionStateBuilder},
+    execution::{context::SessionState, session_state::SessionStateBuilder, TaskContext},
     logical_expr::TableProviderFilterPushDown,
     physical_plan::ExecutionPlan,
-    prelude::Expr,
+    prelude::{Expr, SessionContext},
 };
 use tokio::runtime::Runtime;
 
 use super::{
-    execution_plan::{ExecutionPlanPrivateData, ExportedExecutionPlan, FFI_ExecutionPlan},
+    execution_plan::{ExportedExecutionPlan, FFI_ExecutionPlan},
     session_config::{FFI_SessionConfig, SessionConfigPrivateData},
 };
 use datafusion::error::Result;
@@ -81,6 +81,7 @@ unsafe extern "C" fn scan_fn_wrapper(
     let session = SessionStateBuilder::new()
         .with_config((*config).config.clone())
         .build();
+    let ctx = SessionContext::new_with_state(session);
 
     let num_projections: usize = n_projections.try_into().unwrap_or(0);
 
@@ -101,12 +102,8 @@ unsafe extern "C" fn scan_fn_wrapper(
 
     let limit = limit.try_into().ok();
 
-    let plan = ExportedTableProvider(provider).provider_scan(
-        &session,
-        maybe_projections,
-        filters_vec,
-        limit,
-    );
+    let plan =
+        ExportedTableProvider(provider).provider_scan(&ctx, maybe_projections, filters_vec, limit);
 
     println!("leaving scan_fn_wrapper, has plan? {}", plan.is_ok());
 
@@ -138,7 +135,7 @@ impl ExportedTableProvider {
 
     pub fn provider_scan(
         &mut self,
-        session: &SessionState,
+        ctx: &SessionContext,
         projections: Option<&Vec<usize>>,
         filters: Vec<String>,
         limit: Option<usize>,
@@ -151,13 +148,14 @@ impl ExportedTableProvider {
 
         let filter_exprs = filters
             .into_iter()
-            .map(|expr_str| session.create_logical_expr(&expr_str, &df_schema))
+            .map(|expr_str| ctx.state().create_logical_expr(&expr_str, &df_schema))
             .collect::<datafusion::common::Result<Vec<Expr>>>()?;
 
         let runtime = Runtime::new().unwrap();
-        let plan = runtime.block_on(provider.scan(session, projections, &filter_exprs, limit))?;
+        let plan =
+            runtime.block_on(provider.scan(&ctx.state(), projections, &filter_exprs, limit))?;
 
-        let plan_boxed = Box::new(FFI_ExecutionPlan::new(plan));
+        let plan_boxed = Box::new(FFI_ExecutionPlan::new(plan, ctx.task_ctx()));
         Ok(Box::into_raw(plan_boxed))
     }
 }
