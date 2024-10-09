@@ -1,28 +1,35 @@
 use std::{
-    ffi::{c_void, CString},
-    num,
+    ffi::{c_char, c_void, CString},
     ptr::{null, null_mut},
     slice,
     sync::Arc,
 };
 
-use arrow::{datatypes::Schema, ffi::FFI_ArrowSchema};
+use arrow::{
+    array::RecordBatchReader,
+    datatypes::Schema,
+    ffi::{FFI_ArrowArray, FFI_ArrowSchema},
+    ffi_stream::FFI_ArrowArrayStream,
+};
 use datafusion::{
     error::DataFusionError,
+    execution::TaskContext,
     physical_plan::{DisplayAs, ExecutionMode, ExecutionPlan, PlanProperties},
 };
 use datafusion::{error::Result, physical_expr::EquivalenceProperties, prelude::SessionContext};
 use datafusion_proto::{
     physical_plan::{
         from_proto::{parse_physical_sort_exprs, parse_protobuf_partitioning},
-        to_proto::{
-            serialize_partitioning, serialize_physical_exprs, serialize_physical_sort_exprs,
-        },
+        to_proto::{serialize_partitioning, serialize_physical_sort_exprs},
         DefaultPhysicalExtensionCodec,
     },
-    protobuf::{partitioning, Partitioning, PhysicalSortExprNodeCollection},
+    protobuf::{Partitioning, PhysicalSortExprNodeCollection},
 };
-use prost::{DecodeError, Message};
+use futures::{StreamExt, TryStreamExt};
+use prost::Message;
+use tokio::runtime::Runtime;
+
+use super::record_batch_stream::record_batch_to_arrow_stream;
 
 #[repr(C)]
 #[derive(Debug)]
@@ -38,7 +45,13 @@ pub struct FFI_ExecutionPlan {
             err_code: &mut i32,
         ) -> *mut *const FFI_ExecutionPlan,
     >,
-    pub name: unsafe extern "C" fn(plan: *const FFI_ExecutionPlan) -> CString,
+    pub name: unsafe extern "C" fn(plan: *const FFI_ExecutionPlan) -> *const c_char,
+
+    pub execute: unsafe extern "C" fn(
+        plan: *const FFI_ExecutionPlan,
+        partition: usize,
+        err_code: &mut i32,
+    ) -> *const FFI_ArrowArrayStream,
 
     pub private_data: *mut c_void,
 }
@@ -47,6 +60,7 @@ pub struct ExecutionPlanPrivateData {
     pub plan: Arc<dyn ExecutionPlan + Send>,
     pub last_error: Option<CString>,
     pub children: Vec<*const FFI_ExecutionPlan>,
+    pub context: Arc<TaskContext>,
 }
 
 unsafe extern "C" fn properties_fn_wrapper(plan: *const FFI_ExecutionPlan) -> FFI_PlanProperties {
@@ -63,11 +77,6 @@ unsafe extern "C" fn children_fn_wrapper(
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
 
     *num_children = (*private_data).children.len();
-    // let children: Vec<FFI_ExecutionPlan> = children
-    //     .into_iter()
-    //     .map(|child| FFI_ExecutionPlan::new(child.clone()))
-    //     .collect();
-
     *err_code = 0;
 
     let mut children: Vec<_> = (*private_data).children.to_owned();
@@ -78,12 +87,36 @@ unsafe extern "C" fn children_fn_wrapper(
     children_ptr
 }
 
-unsafe extern "C" fn name_fn_wrapper(plan: *const FFI_ExecutionPlan) -> CString {
+unsafe extern "C" fn execute_fn_wrapper(
+    plan: *const FFI_ExecutionPlan,
+    partition: usize,
+    err_code: &mut i32,
+) -> *const FFI_ArrowArrayStream {
+    let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
+
+    let mut record_batch_stream = match (*private_data)
+        .plan
+        .execute(partition, (*private_data).context.clone())
+    {
+        Ok(rbs) => rbs,
+        Err(_e) => {
+            *err_code = 1;
+            return null();
+        }
+    };
+
+    let ffi_stream = Box::new(record_batch_to_arrow_stream(record_batch_stream));
+
+    Box::into_raw(ffi_stream)
+}
+unsafe extern "C" fn name_fn_wrapper(plan: *const FFI_ExecutionPlan) -> *const c_char {
     let private_data = (*plan).private_data as *const ExecutionPlanPrivateData;
 
     let name = (*private_data).plan.name();
 
-    CString::new(name).unwrap_or(CString::new("unable to parse execution plan name").unwrap())
+    CString::new(name)
+        .unwrap_or(CString::new("unable to parse execution plan name").unwrap())
+        .into_raw()
 }
 
 // Since the trait ExecutionPlan requires borrowed values, we wrap our FFI.
@@ -116,11 +149,11 @@ impl DisplayAs for ExportedExecutionPlan {
 
 impl FFI_ExecutionPlan {
     /// This function is called on the provider's side.
-    pub fn new(plan: Arc<dyn ExecutionPlan + Send>) -> Self {
+    pub fn new(plan: Arc<dyn ExecutionPlan + Send>, context: Arc<TaskContext>) -> Self {
         let children = plan
             .children()
             .into_iter()
-            .map(|child| Box::new(FFI_ExecutionPlan::new(child.clone())))
+            .map(|child| Box::new(FFI_ExecutionPlan::new(child.clone(), context.clone())))
             .map(|child| Box::into_raw(child) as *const FFI_ExecutionPlan)
             .collect();
         println!("children collected");
@@ -128,6 +161,7 @@ impl FFI_ExecutionPlan {
         let private_data = Box::new(ExecutionPlanPrivateData {
             plan,
             children,
+            context,
             last_error: None,
         });
         println!("generated private data, ready to return");
@@ -136,6 +170,7 @@ impl FFI_ExecutionPlan {
             properties: Some(properties_fn_wrapper),
             children: Some(children_fn_wrapper),
             name: name_fn_wrapper,
+            execute: execute_fn_wrapper,
             private_data: Box::into_raw(private_data) as *mut c_void,
         }
     }
@@ -159,9 +194,10 @@ impl ExportedExecutionPlan {
     pub unsafe fn new(plan: *const FFI_ExecutionPlan) -> Result<Self> {
         let name_fn = (*plan).name;
         let name_cstr = name_fn(plan);
-        let name = name_cstr
-            .into_string()
-            .unwrap_or("Unable to parse FFI_ExecutionPlan name".to_string());
+        let name = CString::from_raw(name_cstr as *mut c_char)
+            .to_str()
+            .unwrap_or("Unable to parse FFI_ExecutionPlan name")
+            .to_string();
 
         println!("entered ExportedExecutionPlan::new");
         let properties = unsafe {
@@ -511,6 +547,7 @@ impl TryFrom<FFI_PlanProperties> for PlanProperties {
 }
 
 #[repr(C)]
+#[allow(non_camel_case_types)]
 pub enum FFI_ExecutionMode {
     Bounded,
 
