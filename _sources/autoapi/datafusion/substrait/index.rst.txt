@@ -31,7 +31,7 @@ Module Contents
    Generates a logical plan from a substrait plan.
 
 
-   .. py:method:: from_substrait_plan(ctx: datafusion.context.SessionContext, plan: Plan) -> datafusion._internal.LogicalPlan
+   .. py:method:: from_substrait_plan(ctx: datafusion.context.SessionContext, plan: Plan) -> datafusion.plan.LogicalPlan
       :staticmethod:
 
 
@@ -71,7 +71,7 @@ Module Contents
    Generates substrait plans from a logical plan.
 
 
-   .. py:method:: to_substrait_plan(logical_plan: datafusion._internal.LogicalPlan, ctx: datafusion.context.SessionContext) -> Plan
+   .. py:method:: to_substrait_plan(logical_plan: datafusion.plan.LogicalPlan, ctx: datafusion.context.SessionContext) -> Plan
       :staticmethod:
 
 

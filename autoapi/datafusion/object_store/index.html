@@ -24,17 +24,17 @@
     
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
     
     <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
     <script src="../../../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.record_batch" href="../record_batch/index.html" />
+    <link rel="next" title="datafusion.plan" href="../plan/index.html" />
     <link rel="prev" title="datafusion.functions" href="../functions/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -164,7 +164,7 @@
    </li>
    <li class="toctree-l2">
     <a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">
-     User Defined Functions
+     User-Defined Functions
     </a>
    </li>
   </ul>
@@ -303,6 +303,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../record_batch/index.html">
        datafusion.record_batch
       </a>
@@ -374,6 +379,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.object_store.Http">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Http
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.object_store.LocalFileSystem">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -427,10 +441,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.object_store.GoogleCloud" title="datafusion.object_store.GoogleCloud"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GoogleCloud</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.LocalFileSystem" title="datafusion.object_store.LocalFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalFileSystem</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.Http" title="datafusion.object_store.Http"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Http</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.object_store.MicrosoftAzure" title="datafusion.object_store.MicrosoftAzure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MicrosoftAzure</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.object_store.LocalFileSystem" title="datafusion.object_store.LocalFileSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocalFileSystem</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.object_store.MicrosoftAzure" title="datafusion.object_store.MicrosoftAzure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MicrosoftAzure</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -446,6 +463,11 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.object_store.GoogleCloud">
 <span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">GoogleCloud</span></span><a class="headerlink" href="#datafusion.object_store.GoogleCloud" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.object_store.Http">
+<span class="sig-prename descclassname"><span class="pre">datafusion.object_store.</span></span><span class="sig-name descname"><span class="pre">Http</span></span><a class="headerlink" href="#datafusion.object_store.Http" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -474,10 +496,10 @@
             <p class="prev-next-title">datafusion.functions</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../record_batch/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../plan/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.record_batch</p>
+        <p class="prev-next-title">datafusion.plan</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
@@ -503,7 +525,7 @@
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.0.2.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.0.<br>
 </p>
     </div>
     

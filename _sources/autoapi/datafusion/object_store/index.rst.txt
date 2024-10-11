@@ -16,6 +16,7 @@ Attributes
 
    datafusion.object_store.AmazonS3
    datafusion.object_store.GoogleCloud
+   datafusion.object_store.Http
    datafusion.object_store.LocalFileSystem
    datafusion.object_store.MicrosoftAzure
 
@@ -26,6 +27,8 @@ Module Contents
 .. py:data:: AmazonS3
 
 .. py:data:: GoogleCloud
+
+.. py:data:: Http
 
 .. py:data:: LocalFileSystem
 

@@ -33,6 +33,7 @@ Submodules
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/object_store/index
+   /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
    /autoapi/datafusion/udf/index
@@ -55,7 +56,9 @@ Classes
    datafusion.AggregateUDF
    datafusion.Catalog
    datafusion.Database
+   datafusion.ExecutionPlan
    datafusion.Expr
+   datafusion.LogicalPlan
    datafusion.RecordBatch
    datafusion.RecordBatchStream
    datafusion.RuntimeConfig
@@ -64,6 +67,7 @@ Classes
    datafusion.SessionConfig
    datafusion.Table
    datafusion.WindowFrame
+   datafusion.WindowUDF
 
 
 Functions
@@ -109,7 +113,7 @@ Package Contents
 
 
 
-   .. py:method:: update(values: pyarrow.Array) -> None
+   .. py:method:: update(*values: pyarrow.Array) -> None
       :abstractmethod:
 
 
@@ -117,14 +121,14 @@ Package Contents
 
 
 
-.. py:class:: AggregateUDF(name: str | None, accumulator: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+.. py:class:: AggregateUDF(name: Optional[str], accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Aggregate UDFs operate on a group of rows and return a single value. See
    also :py:class:`ScalarUDF` for operating on a row by row basis.
 
-   Instantiate a user defined aggregate function (UDAF).
+   Instantiate a user-defined aggregate function (UDAF).
 
    See :py:func:`udaf` for a convenience function and argument
    descriptions.
@@ -139,13 +143,44 @@ Package Contents
 
 
 
-   .. py:method:: udaf(accum: _A, input_types: list[pyarrow.DataType], return_type: _R, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: str | None = None) -> AggregateUDF
+   .. py:method:: udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
       :staticmethod:
 
 
-      Create a new User Defined Aggregate Function.
+      Create a new User-Defined Aggregate Function.
 
-      The accumulator function must be callable and implement :py:class:`Accumulator`.
+      If your :py:class:`Accumulator` can be instantiated with no arguments, you
+      can simply pass it's type as ``accum``. If you need to pass additional arguments
+      to it's constructor, you can define a lambda or a factory method. During runtime
+      the :py:class:`Accumulator` will be constructed for every instance in
+      which this UDAF is used. The following examples are all valid.
+
+      .. code-block:: python
+          import pyarrow as pa
+          import pyarrow.compute as pc
+
+          class Summarize(Accumulator):
+              def __init__(self, bias: float = 0.0):
+                  self._sum = pa.scalar(bias)
+
+              def state(self) -> List[pa.Scalar]:
+                  return [self._sum]
+
+              def update(self, values: pa.Array) -> None:
+                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
+
+              def merge(self, states: List[pa.Array]) -> None:
+                  self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
+
+              def evaluate(self) -> pa.Scalar:
+                  return self._sum
+
+          def sum_bias_10() -> Summarize:
+              return Summarize(10.0)
+
+          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()], "immutable")
+          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()], "immutable")
+          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(), [pa.float64()], "immutable")
 
       :param accum: The accumulator python function.
       :param input_types: The data types of the arguments to ``accum``.
@@ -154,12 +189,12 @@ Package Contents
       :param volatility: See :py:class:`Volatility` for allowed values.
       :param name: A descriptive name for the function.
 
-      :returns: A user defined aggregate function, which can be used in either data
+      :returns: A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
 
 
 
-   .. py:attribute:: _udf
+   .. py:attribute:: _udaf
 
 
 .. py:class:: Catalog(catalog: datafusion._internal.Catalog)
@@ -204,6 +239,67 @@ Package Contents
 
 
    .. py:attribute:: db
+
+
+.. py:class:: ExecutionPlan(plan: datafusion._internal.ExecutionPlan)
+
+   Represent nodes in the DataFusion Physical Plan.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the physical plan.
+
+
+
+   .. py:method:: children() -> List[ExecutionPlan]
+
+      Get a list of children `ExecutionPlan`s that act as inputs to this plan.
+
+      The returned list will be empty for leaf nodes such as scans, will contain a
+      single value for unary nodes, or two values for binary nodes (such as joins).
+
+
+
+   .. py:method:: display() -> str
+
+      Print the physical plan.
+
+
+
+   .. py:method:: display_indent() -> str
+
+      Print an indented form of the physical plan.
+
+
+
+   .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> ExecutionPlan
+      :staticmethod:
+
+
+      Create an ExecutionPlan from protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: to_proto() -> bytes
+
+      Convert an ExecutionPlan into protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:attribute:: _raw_plan
+
+
+   .. py:property:: partition_count
+      :type: int
+
+      Returns the number of partitions in the physical plan.
 
 
 .. py:class:: Expr(expr: datafusion._internal.expr.Expr)
@@ -350,6 +446,16 @@ Package Contents
 
 
 
+   .. py:method:: between(low: Any, high: Any, negated: bool = False) -> Expr
+
+      Returns ``True`` if this expression is between a given range.
+
+      :param low: lower bound of the range (inclusive).
+      :param high: higher bound of the range (inclusive).
+      :param negated: negates whether the expression is between a given range
+
+
+
    .. py:method:: canonical_name() -> str
 
       Returns a complete string representation of this expression.
@@ -370,7 +476,7 @@ Package Contents
 
 
 
-   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+   .. py:method:: column_name(plan: datafusion.plan.LogicalPlan) -> str
 
       Compute the output column name based on the provided logical plan.
 
@@ -436,13 +542,25 @@ Package Contents
 
 
 
-   .. py:method:: order_by(*exprs: Expr) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
       set parameters for either window or aggregate functions. If used on any other
       type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: over(window: Window) -> Expr
+
+      Turn an aggregate function into a window function.
+
+      This function turns any aggregate function into a window function. With the
+      exception of ``partition_by``, how each of the parameters is used is determined
+      by the underlying aggregate function.
+
+      :param window: Window definition
 
 
 
@@ -493,7 +611,15 @@ Package Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> Expr
+   .. py:method:: schema_name() -> str
+
+      Returns the name of this expression as it should appear in a schema.
+
+      This name will not include any CAST expressions.
+
+
+
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
@@ -560,6 +686,90 @@ Package Contents
 
 
    .. py:attribute:: expr
+
+
+.. py:class:: LogicalPlan(plan: datafusion._internal.LogicalPlan)
+
+   Logical Plan.
+
+   A `LogicalPlan` is a node in a tree of relational operators (such as
+   Projection or Filter).
+
+   Represents transforming an input relation (table) to an output relation
+   (table) with a potentially different schema. Plans form a dataflow tree
+   where data flows from leaves up to the root to produce the query result.
+
+   `LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+   or programmatically (for example custom query languages).
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Generate a printable representation of the plan.
+
+
+
+   .. py:method:: display() -> str
+
+      Print the logical plan.
+
+
+
+   .. py:method:: display_graphviz() -> str
+
+      Print the graph visualization of the logical plan.
+
+      Returns a `format`able structure that produces lines meant for graphical display
+      using the `DOT` language. This format can be visualized using software from
+      [`graphviz`](https://graphviz.org/)
+
+
+
+   .. py:method:: display_indent() -> str
+
+      Print an indented form of the logical plan.
+
+
+
+   .. py:method:: display_indent_schema() -> str
+
+      Print an indented form of the schema for the logical plan.
+
+
+
+   .. py:method:: from_proto(ctx: datafusion.context.SessionContext, data: bytes) -> LogicalPlan
+      :staticmethod:
+
+
+      Create a LogicalPlan from protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: inputs() -> List[LogicalPlan]
+
+      Returns the list of inputs to the logical plan.
+
+
+
+   .. py:method:: to_proto() -> bytes
+
+      Convert a LogicalPlan to protobuf bytes.
+
+      Tables created in memory from record batches are currently not supported.
+
+
+
+   .. py:method:: to_variant() -> Any
+
+      Convert the logical plan into its specific variant.
+
+
+
+   .. py:attribute:: _raw_plan
 
 
 .. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
@@ -777,14 +987,14 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: str | None, func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: Optional[str], func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
-   Class for performing scalar user defined functions (UDF).
+   Class for performing scalar user-defined functions (UDF).
 
    Scalar UDFs operate on a row by row basis. See also :py:class:`AggregateUDF` for
    operating on a group of rows.
 
-   Instantiate a scalar user defined function (UDF).
+   Instantiate a scalar user-defined function (UDF).
 
    See helper method :py:func:`udf` for argument details.
 
@@ -798,11 +1008,11 @@ Package Contents
 
 
 
-   .. py:method:: udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: str | None = None) -> ScalarUDF
+   .. py:method:: udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
       :staticmethod:
 
 
-      Create a new User Defined Function.
+      Create a new User-Defined Function.
 
       :param func: A callable python function.
       :param input_types: The data types of the arguments to ``func``. This list
@@ -814,7 +1024,7 @@ Package Contents
 
       :returns:
 
-                A user defined aggregate function, which can be used in either data
+                A user-defined aggregate function, which can be used in either data
                     aggregation or window function calls.
 
 
@@ -1034,6 +1244,72 @@ Package Contents
 
 
    .. py:attribute:: window_frame
+
+
+.. py:class:: WindowUDF(name: Optional[str], func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+
+   Class for performing window user-defined functions (UDF).
+
+   Window UDFs operate on a partition of rows. See
+   also :py:class:`ScalarUDF` for operating on a row by row basis.
+
+   Instantiate a user-defined window function (UDWF).
+
+   See :py:func:`udwf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDWF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Window Function.
+
+      If your :py:class:`WindowEvaluator` can be instantiated with no arguments, you
+      can simply pass it's type as ``func``. If you need to pass additional arguments
+      to it's constructor, you can define a lambda or a factory method. During runtime
+      the :py:class:`WindowEvaluator` will be constructed for every instance in
+      which this UDWF is used. The following examples are all valid.
+
+      .. code-block:: python
+
+          import pyarrow as pa
+
+          class BiasedNumbers(WindowEvaluator):
+              def __init__(self, start: int = 0) -> None:
+                  self.start = start
+
+              def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+                  return pa.array([self.start + i for i in range(num_rows)])
+
+          def bias_10() -> BiasedNumbers:
+              return BiasedNumbers(10)
+
+          udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
+          udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+          udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
+
+      :param func: A callable to create the window function.
+      :param input_types: The data types of the arguments to ``func``.
+      :param return_type: The data type of the return value.
+      :param volatility: See :py:class:`Volatility` for allowed values.
+      :param arguments: A list of arguments to pass in to the __init__ method for accum.
+      :param name: A descriptive name for the function.
+
+      :returns: A user-defined window function.
+
+
+
+   .. py:attribute:: _udwf
 
 
 .. py:function:: col(value: str)

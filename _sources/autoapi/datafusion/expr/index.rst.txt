@@ -63,7 +63,6 @@ Attributes
    datafusion.expr.ScalarVariable
    datafusion.expr.SimilarTo
    datafusion.expr.Sort
-   datafusion.expr.SortExpr
    datafusion.expr.Subquery
    datafusion.expr.SubqueryAlias
    datafusion.expr.TableScan
@@ -71,7 +70,7 @@ Attributes
    datafusion.expr.Union
    datafusion.expr.Unnest
    datafusion.expr.UnnestExpr
-   datafusion.expr.Window
+   datafusion.expr.WindowExpr
 
 
 Classes
@@ -81,6 +80,8 @@ Classes
 
    datafusion.expr.CaseBuilder
    datafusion.expr.Expr
+   datafusion.expr.SortExpr
+   datafusion.expr.Window
    datafusion.expr.WindowFrame
    datafusion.expr.WindowFrameBound
 
@@ -276,6 +277,16 @@ Module Contents
 
 
 
+   .. py:method:: between(low: Any, high: Any, negated: bool = False) -> Expr
+
+      Returns ``True`` if this expression is between a given range.
+
+      :param low: lower bound of the range (inclusive).
+      :param high: higher bound of the range (inclusive).
+      :param negated: negates whether the expression is between a given range
+
+
+
    .. py:method:: canonical_name() -> str
 
       Returns a complete string representation of this expression.
@@ -296,7 +307,7 @@ Module Contents
 
 
 
-   .. py:method:: column_name(plan: datafusion._internal.LogicalPlan) -> str
+   .. py:method:: column_name(plan: datafusion.plan.LogicalPlan) -> str
 
       Compute the output column name based on the provided logical plan.
 
@@ -362,13 +373,25 @@ Module Contents
 
 
 
-   .. py:method:: order_by(*exprs: Expr) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
       set parameters for either window or aggregate functions. If used on any other
       type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: over(window: Window) -> Expr
+
+      Turn an aggregate function into a window function.
+
+      This function turns any aggregate function into a window function. With the
+      exception of ``partition_by``, how each of the parameters is used is determined
+      by the underlying aggregate function.
+
+      :param window: Window definition
 
 
 
@@ -419,7 +442,15 @@ Module Contents
 
 
 
-   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> Expr
+   .. py:method:: schema_name() -> str
+
+      Returns the name of this expression as it should appear in a schema.
+
+      This name will not include any CAST expressions.
+
+
+
+   .. py:method:: sort(ascending: bool = True, nulls_first: bool = True) -> SortExpr
 
       Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.
 
@@ -486,6 +517,64 @@ Module Contents
 
 
    .. py:attribute:: expr
+
+
+.. py:class:: SortExpr(expr: Expr, ascending: bool, nulls_first: bool)
+
+   Used to specify sorting on either a DataFrame or function.
+
+   This constructor should not be called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Generate a string representation of this expression.
+
+
+
+   .. py:method:: ascending() -> bool
+
+      Return ascending property.
+
+
+
+   .. py:method:: expr() -> Expr
+
+      Return the raw expr backing the SortExpr.
+
+
+
+   .. py:method:: nulls_first() -> bool
+
+      Return nulls_first property.
+
+
+
+   .. py:attribute:: raw_sort
+
+
+.. py:class:: Window(partition_by: Optional[list[Expr]] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[list[SortExpr | Expr]] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
+
+   Define reusable window parameters.
+
+   Construct a window definition.
+
+   :param partition_by: Partitions for window operation
+   :param window_frame: Define the start and end bounds of the window frame
+   :param order_by: Set ordering
+   :param null_treatment: Indicate how nulls are to be treated
+
+
+   .. py:attribute:: _null_treatment
+
+
+   .. py:attribute:: _order_by
+
+
+   .. py:attribute:: _partition_by
+
+
+   .. py:attribute:: _window_frame
 
 
 .. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
@@ -660,8 +749,6 @@ Module Contents
 
 .. py:data:: Sort
 
-.. py:data:: SortExpr
-
 .. py:data:: Subquery
 
 .. py:data:: SubqueryAlias
@@ -676,5 +763,5 @@ Module Contents
 
 .. py:data:: UnnestExpr
 
-.. py:data:: Window
+.. py:data:: WindowExpr
 
