@@ -40,8 +40,12 @@ fn pyarrow_function_to_rust(
             // 1. cast args to Pyarrow arrays
             let py_args = args
                 .iter()
-                .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
-                .collect::<Vec<_>>();
+                .map(|arg| {
+                    arg.into_data()
+                        .to_pyarrow(py)
+                        .map_err(|e| DataFusionError::Execution(format!("{e:?}")))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
             let py_args = PyTuple::new_bound(py, py_args);
 
             // 2. call function
@@ -50,7 +54,8 @@ fn pyarrow_function_to_rust(
                 .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
 
             // 3. cast to arrow::array::Array
-            let array_data = ArrayData::from_pyarrow_bound(value.bind(py)).unwrap();
+            let array_data = ArrayData::from_pyarrow_bound(value.bind(py))
+                .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
             Ok(make_array(array_data))
         })
     }
