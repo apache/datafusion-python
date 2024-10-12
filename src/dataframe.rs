@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::Arc;
 
@@ -180,14 +181,13 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
-    /// Rename one column by applying a new projection. This is a no-op if the column to be
+    /// Rename single or multiple columns by applying a new projection. This is a no-op if the column to be
     /// renamed does not exist.
-    fn with_column_renamed(&self, old_name: &str, new_name: &str) -> PyResult<Self> {
-        let df = self
-            .df
-            .as_ref()
-            .clone()
-            .with_column_renamed(old_name, new_name)?;
+    fn rename(&self, mapping: HashMap<String, String>) -> PyResult<Self> {
+        let mut df = self.df.as_ref().clone();
+        for (old_name, new_name) in mapping.iter() {
+            df = df.with_column_renamed(old_name, new_name)?
+        }
         Ok(Self::new(df))
     }
 

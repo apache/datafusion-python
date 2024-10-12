@@ -205,8 +205,8 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
-def test_with_column_renamed(df):
-    df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
+def test_rename(df):
+    df = df.with_column("c", column("a") + column("b")).rename({"c":"sum"})
 
     result = df.collect()[0]
 

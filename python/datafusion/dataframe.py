@@ -160,6 +160,9 @@ class DataFrame:
         """
         return DataFrame(self.df.with_column(name, expr.expr))
 
+    @deprecated(
+        "with_column_renamed() is deprecated. Use :py:meth:`~DataFrame.rename` instead"
+    )
     def with_column_renamed(self, old_name: str, new_name: str) -> DataFrame:
         r"""Rename one column by applying a new projection.
 
@@ -175,7 +178,23 @@ class DataFrame:
         Returns:
             DataFrame with the column renamed.
         """
-        return DataFrame(self.df.with_column_renamed(old_name, new_name))
+        return DataFrame(self.df.rename({old_name: new_name}))
+
+    def rename(self, mapping: dict[str, str]) -> DataFrame:
+        r"""Rename one or multiple columns by applying a new projection.
+
+        This is a no-op if the column to be renamed does not exist.
+
+        The method supports case sensitive rename with wrapping column name
+        into one the following symbols (" or ' or \`).
+
+        Args:
+            mapping (dict[str, str]): mapping of old (key) to new (value) names
+
+        Returns:
+            DataFrame with one or multiple columns renamed.
+        """
+        return DataFrame(self.df.rename(mapping))
 
     def aggregate(
         self, group_by: list[Expr] | Expr, aggs: list[Expr] | Expr
