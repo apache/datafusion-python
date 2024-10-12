@@ -21,7 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, Iterable, List, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -159,6 +159,40 @@ class DataFrame:
             DataFrame with the new column.
         """
         return DataFrame(self.df.with_column(name, expr.expr))
+
+    def with_columns(
+        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+    ) -> DataFrame:
+        """Add an additional column to the DataFrame.
+
+        Args:
+            *exprs: Name of the column to add.
+            **named_exprs: Expression to compute the column.
+
+        Returns:
+            DataFrame with the new column.
+        """
+
+        def _simplify_expression(
+            *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        ) -> list[Expr]:
+            expr_list = []
+            for expr in exprs:
+                if isinstance(expr, Expr):
+                    expr_list.append(expr.expr)
+                elif isinstance(expr, Iterable):
+                    for inner_expr in expr:
+                        expr_list.append(inner_expr.expr)
+                else:
+                    raise NotImplementedError
+            if named_exprs:
+                for alias, expr in named_exprs.items():
+                    expr_list.append(expr.alias(alias).expr)
+            return expr_list
+
+        expressions = _simplify_expression(*exprs, **named_exprs)
+
+        return DataFrame(self.df.with_columns(expressions))
 
     def with_column_renamed(self, old_name: str, new_name: str) -> DataFrame:
         r"""Rename one column by applying a new projection.
