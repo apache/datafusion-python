@@ -163,7 +163,20 @@ class DataFrame:
     def with_columns(
         self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
     ) -> DataFrame:
-        """Add an additional column to the DataFrame.
+        """Add columns to the DataFrame.
+
+        By passing expressions, iteratables of expressions, or named expressions. To
+        pass named expressions use the form name=Expr.
+
+        Example usage:
+
+            The following will add 4 columns labeled a, b, c, and d.
+
+            df = df.with_columns(
+                lit(0).alias('a'),
+                [lit(1).alias('b'), lit(2).alias('c')],
+                d=lit(3)
+                )
 
         Args:
             *exprs: Name of the column to add.
