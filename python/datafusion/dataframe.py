@@ -223,6 +223,30 @@ class DataFrame:
         """
         return DataFrame(self.df.limit(count, offset))
 
+    def head(self, n: int) -> DataFrame:
+        """Return a new :py:class:`DataFrame` with a limited number of rows.
+
+        Args:
+            n: Number of rows to take from the head of the DataFrame.
+
+        Returns:
+            DataFrame after limiting.
+        """
+        return DataFrame(self.df.limit(n, 0))
+
+    def tail(self, n: int) -> DataFrame:
+        """Return a new :py:class:`DataFrame` with a limited number of rows.
+
+        Be aware this could be potentially expensive due to the size of the frame.
+
+        Args:
+            n: Number of rows to take from the tail of the DataFrame.
+
+        Returns:
+            DataFrame after limiting.
+        """
+        return DataFrame(self.df.limit(n, max(0, self.count() - n)))
+
     def collect(self) -> list[pa.RecordBatch]:
         """Execute this :py:class:`DataFrame` and collect results into memory.
 
