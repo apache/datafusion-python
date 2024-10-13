@@ -319,8 +319,7 @@ class DataFrame:
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-        Join keys are a pair of lists of column names in the left and right
-        dataframes, respectively. These lists must have the same length.
+        `on` has to be provided or both `left_on` and `right_on` in conjunction.
 
         Args:
             right: Other DataFrame to join with.
