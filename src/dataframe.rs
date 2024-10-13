@@ -170,6 +170,13 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    #[pyo3(signature = (*args))]
+    fn drop(&self, args: Vec<PyBackedStr>) -> PyResult<Self> {
+        let cols = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self.df.as_ref().clone().drop_columns(&cols)?;
+        Ok(Self::new(df))
+    }
+
     fn filter(&self, predicate: PyExpr) -> PyResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))

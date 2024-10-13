@@ -169,6 +169,17 @@ def test_sort(df):
     assert table.to_pydict() == expected
 
 
+def test_drop(df):
+    df = df.drop("c")
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert df.schema().names == ["a", "b"]
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
 def test_limit(df):
     df = df.limit(1)
 
