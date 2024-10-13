@@ -206,7 +206,7 @@ def test_with_column(df):
 
 
 def test_rename(df):
-    df = df.with_column("c", column("a") + column("b")).rename({"c":"sum"})
+    df = df.with_column("c", column("a") + column("b")).rename({"c": "sum"})
 
     result = df.collect()[0]
 
