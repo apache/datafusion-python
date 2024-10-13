@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow
+import pyarrow as pa
 import pytest
 from datafusion import SessionContext, col
 from datafusion.expr import (
@@ -125,8 +125,8 @@ def test_sort(test_ctx):
 def test_relational_expr(test_ctx):
     ctx = SessionContext()
 
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, 2, 3]), pyarrow.array(["alpha", "beta", "gamma"])],
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array(["alpha", "beta", "gamma"])],
         names=["a", "b"],
     )
     df = ctx.create_dataframe([[batch]], name="batch_array")
@@ -216,3 +216,30 @@ def test_display_name_deprecation():
     # returns appropriate result
     assert name == expr.schema_name()
     assert name == "foo"
+
+
+@pytest.fixture
+def df():
+    ctx = SessionContext()
+
+    # create a RecordBatch and a new DataFrame from it
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, None]), pa.array([4, None, 6]), pa.array([None, None, 8])],
+        names=["a", "b", "c"],
+    )
+
+    return ctx.from_arrow(batch)
+
+
+def test_fill_null(df):
+    df = df.select(
+        col("a").fill_null(100).alias("a"),
+        col("b").fill_null(25).alias("b"),
+        col("c").fill_null(1234).alias("c"),
+    )
+    df.show()
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([1, 2, 100])
+    assert result.column(1) == pa.array([4, 25, 6])
+    assert result.column(2) == pa.array([1234, 1234, 8])

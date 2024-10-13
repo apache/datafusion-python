@@ -490,6 +490,11 @@ expr_fn!(
     x y,
     "Returns x if x is not NaN otherwise returns y."
 );
+expr_fn!(
+    nvl,
+    x y,
+    "Returns x if x is not NULL otherwise returns y."
+);
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
 expr_fn_vec!(overlay);
@@ -913,6 +918,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(named_struct))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
+    m.add_wrapped(wrap_pyfunction!(nvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;

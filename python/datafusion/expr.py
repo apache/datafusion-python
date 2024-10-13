@@ -406,6 +406,18 @@ class Expr:
         """Returns ``True`` if this expression is not null."""
         return Expr(self.expr.is_not_null())
 
+    def fill_nan(self, value: Any | Expr | None = None) -> Expr:
+        """Fill NaN values with a provided value."""
+        if not isinstance(value, Expr):
+            value = Expr.literal(value)
+        return Expr(functions_internal.nanvl(self.expr, value.expr))
+
+    def fill_null(self, value: Any | Expr | None = None) -> Expr:
+        """Fill NULL values with a provided value."""
+        if not isinstance(value, Expr):
+            value = Expr.literal(value)
+        return Expr(functions_internal.nvl(self.expr, value.expr))
+
     _to_pyarrow_types = {
         float: pa.float64(),
         int: pa.int64(),
