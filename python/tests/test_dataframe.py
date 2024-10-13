@@ -269,7 +269,7 @@ def test_join_on():
     df = ctx.create_dataframe([[batch]], "l")
 
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2]), pa.array([8, 10])],
+        [pa.array([1, 2]), pa.array([-8, 10])],
         names=["a", "c"],
     )
     df1 = ctx.create_dataframe([[batch]], "r")
@@ -279,7 +279,7 @@ def test_join_on():
     df2 = df2.sort(column("l.a"))
     table = pa.Table.from_batches(df2.collect())
 
-    expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+    expected = {"a": [1, 2], "c": [-8, 10], "b": [4, 5]}
     assert table.to_pydict() == expected
 
     df3 = df.join_on(
@@ -291,8 +291,7 @@ def test_join_on():
     df3.show()
     df3 = df3.sort(column("l.a"))
     table = pa.Table.from_batches(df3.collect())
-
-    expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+    expected = {"a": [2], "c": [10], "b": [5]}
     assert table.to_pydict() == expected
 
 
