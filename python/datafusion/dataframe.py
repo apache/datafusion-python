@@ -245,6 +245,19 @@ class DataFrame:
         exprs_raw = [sort_or_default(expr) for expr in exprs]
         return DataFrame(self.df.sort(*exprs_raw))
 
+    def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
+        """Cast all or a subset of columns to new dtype.
+
+        Args:
+            mapping (dict[str, pa.DataType[Any]]):  Mapped with column as key and column
+                dtype as value.
+
+        Returns:
+            DataFrame after casting columns
+        """
+        exprs = [Expr.column(col).cast(dtype) for col, dtype in mapping.items()]
+        return self.with_columns(exprs)
+
     def limit(self, count: int, offset: int = 0) -> DataFrame:
         """Return a new :py:class:`DataFrame` with a limited number of rows.
 
