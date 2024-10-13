@@ -160,9 +160,6 @@ class DataFrame:
         """
         return DataFrame(self.df.with_column(name, expr.expr))
 
-    @deprecated(
-        "with_column_renamed() is deprecated. Use :py:meth:`~DataFrame.rename` instead"
-    )
     def with_column_renamed(self, old_name: str, new_name: str) -> DataFrame:
         r"""Rename one column by applying a new projection.
 
@@ -189,7 +186,7 @@ class DataFrame:
         into one the following symbols (" or ' or \`).
 
         Args:
-            mapping (dict[str, str]): mapping of old (key) to new (value) names
+            mapping: mapping of old (key) to new (value) names
 
         Returns:
             DataFrame with one or multiple columns renamed.
