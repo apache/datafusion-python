@@ -30,7 +30,7 @@ from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.udf import ScalarUDF, AggregateUDF, WindowUDF
 
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Protocol
 from typing_extensions import deprecated
 
 if TYPE_CHECKING:
@@ -39,6 +39,28 @@ if TYPE_CHECKING:
     import polars
     import pathlib
     from datafusion.plan import LogicalPlan, ExecutionPlan
+
+
+class ArrowStreamExportable(Protocol):
+    """Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.
+
+    https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+    """
+
+    def __arrow_c_stream__(  # noqa: D105
+        self, requested_schema: object | None = None
+    ) -> object: ...
+
+
+class ArrowArrayExportable(Protocol):
+    """Type hint for object exporting Arrow C Array via Arrow PyCapsule Interface.
+
+    https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+    """
+
+    def __arrow_c_array__(  # noqa: D105
+        self, requested_schema: object | None = None
+    ) -> tuple[object, object]: ...
 
 
 class SessionConfig:
@@ -592,12 +614,18 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_pydict(data, name))
 
-    def from_arrow(self, data: Any, name: str | None = None) -> DataFrame:
+    def from_arrow(
+        self,
+        data: ArrowStreamExportable | ArrowArrayExportable,
+        name: str | None = None,
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
 
         The Arrow data source can be any object that implements either
         ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
-        a struct array. Common examples of sources from pyarrow include
+        a struct array.
+
+        Arrow data can be Polars, Pandas, Pyarrow etc.
 
         Args:
             data: Arrow data source.
