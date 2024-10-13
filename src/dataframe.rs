@@ -254,8 +254,9 @@ impl PyDataFrame {
     fn join(
         &self,
         right: PyDataFrame,
-        join_keys: (Vec<PyBackedStr>, Vec<PyBackedStr>),
         how: &str,
+        left_on: Vec<PyBackedStr>,
+        right_on: Vec<PyBackedStr>,
     ) -> PyResult<Self> {
         let join_type = match how {
             "inner" => JoinType::Inner,
@@ -272,13 +273,11 @@ impl PyDataFrame {
             }
         };
 
-        let left_keys = join_keys
-            .0
+        let left_keys = left_on
             .iter()
             .map(|s| s.as_ref())
             .collect::<Vec<&str>>();
-        let right_keys = join_keys
-            .1
+        let right_keys = right_on
             .iter()
             .map(|s| s.as_ref())
             .collect::<Vec<&str>>();

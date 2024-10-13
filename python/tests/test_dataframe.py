@@ -250,13 +250,61 @@ def test_join():
     )
     df1 = ctx.create_dataframe([[batch]], "r")
 
-    df = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
-    df.show()
-    df = df.sort(column("l.a"))
-    table = pa.Table.from_batches(df.collect())
+    df2 = df.join(df1, on="a", how="inner")
+    df2.show()
+    df2 = df2.sort(column("l.a"))
+    table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
     assert table.to_pydict() == expected
+
+    df2 = df.join(df1, left_on="a", right_on="a", how="inner")
+    df2.show()
+    df2 = df2.sort(column("l.a"))
+    table = pa.Table.from_batches(df2.collect())
+
+    expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+    assert table.to_pydict() == expected
+
+
+def test_join_invalid_params():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([8, 10])],
+        names=["a", "c"],
+    )
+    df1 = ctx.create_dataframe([[batch]], "r")
+
+    with pytest.deprecated_call():
+        df2 = df.join(df1, join_keys=(["a"], ["a"]), how="inner")
+        df2.show()
+        df2 = df2.sort(column("l.a"))
+        table = pa.Table.from_batches(df2.collect())
+
+        expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+        assert table.to_pydict() == expected
+
+    with pytest.raises(
+        ValueError, match=r"`left_on` or `right_on` should not provided with `on`"
+    ):
+        df2 = df.join(df1, on="a", how="inner", right_on="test")  # type: ignore
+
+    with pytest.raises(
+        ValueError, match=r"`left_on` and `right_on` should both be provided."
+    ):
+        df2 = df.join(df1, left_on="a", how="inner")  # type: ignore
+
+    with pytest.raises(
+        ValueError, match=r"either `on` or `left_on` and `right_on` should be provided."
+    ):
+        df2 = df.join(df1, how="inner")  # type: ignore
 
 
 def test_distinct():
