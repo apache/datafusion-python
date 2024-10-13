@@ -246,11 +246,10 @@ class DataFrame:
         return DataFrame(self.df.sort(*exprs_raw))
 
     def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
-        """Cast all or a subset of columns to new dtype.
+        """Cast one or more columns to a different data type.
 
         Args:
-            mapping (dict[str, pa.DataType[Any]]):  Mapped with column as key and column
-                dtype as value.
+            mapping: Mapped with column as key and column dtype as value.
 
         Returns:
             DataFrame after casting columns
