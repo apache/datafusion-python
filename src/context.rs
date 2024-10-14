@@ -38,7 +38,6 @@ use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
 use crate::expr::sort_expr::PySortExpr;
 use crate::expr::PyExpr;
-use crate::ffi::table_provider::FFI_TableProvider;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -70,6 +69,7 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
@@ -582,9 +582,7 @@ impl PySessionContext {
             // validate_pycapsule(capsule, "arrow_array_stream")?;
 
             let provider = unsafe { FFI_TableProvider::from_raw(capsule.pointer() as _) };
-
-            println!("Found provider version {}", provider.version);
-
+            let provider = ForeignTableProvider::new(provider);
             let schema = provider.schema();
             println!("Got schema through TableProvider trait.");
 
