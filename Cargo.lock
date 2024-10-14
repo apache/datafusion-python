@@ -1162,6 +1162,7 @@ dependencies = [
  "async-trait",
  "datafusion",
  "datafusion-ffi",
+ "datafusion-functions-window-common",
  "datafusion-proto",
  "datafusion-substrait",
  "futures",
