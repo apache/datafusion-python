@@ -287,7 +287,7 @@ impl PySessionContext {
         } else {
             RuntimeConfig::default()
         };
-        let runtime = Arc::new(RuntimeEnv::new(runtime_config)?);
+        let runtime = Arc::new(RuntimeEnv::try_new(runtime_config)?);
         let session_state = SessionStateBuilder::new()
             .with_config(config)
             .with_runtime_env(runtime)
