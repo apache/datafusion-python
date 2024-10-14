@@ -31,7 +31,7 @@ use datafusion::logical_expr::{create_udf, ColumnarValue};
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
-/// Create a Rust callable function fr a python function that expects pyarrow arrays
+/// Create a Rust callable function from a python function that expects pyarrow arrays
 fn pyarrow_function_to_rust(
     func: PyObject,
 ) -> impl Fn(&[ArrayRef]) -> Result<ArrayRef, DataFusionError> {
