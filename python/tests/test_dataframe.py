@@ -201,6 +201,28 @@ def test_limit_with_offset(df):
     assert len(result.column(1)) == 1
 
 
+def test_head(df):
+    df = df.head(1)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([1])
+    assert result.column(1) == pa.array([4])
+    assert result.column(2) == pa.array([8])
+
+
+def test_tail(df):
+    df = df.tail(1)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([3])
+    assert result.column(1) == pa.array([6])
+    assert result.column(2) == pa.array([8])
+
+
 def test_with_column(df):
     df = df.with_column("c", column("a") + column("b"))
 
