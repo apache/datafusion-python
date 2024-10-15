@@ -147,6 +147,16 @@ Module Contents
 
 
 
+   .. py:method:: drop(*columns: str) -> DataFrame
+
+      Drop arbitrary amount of columns.
+
+      :param columns: Column names to drop from the dataframe.
+
+      :returns: DataFrame with those columns removed in the projection.
+
+
+
    .. py:method:: except_all(other: DataFrame) -> DataFrame
 
       Calculate the exception of two :py:class:`DataFrame`.
@@ -232,6 +242,22 @@ Module Contents
 
       :param right: Other DataFrame to join with.
       :param join_keys: Tuple of two lists of column names to join on.
+      :param how: Type of join to perform. Supported types are "inner", "left",
+                  "right", "full", "semi", "anti".
+
+      :returns: DataFrame after join.
+
+
+
+   .. py:method:: join_on(right: DataFrame, *on_exprs: datafusion.expr.Expr, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner') -> DataFrame
+
+      Join two :py:class:`DataFrame`using the specified expressions.
+
+      On expressions are used to support in-equality predicates. Equality
+      predicates are correctly optimized
+
+      :param right: Other DataFrame to join with.
+      :param on_exprs: single or multiple (in)-equality predicates.
       :param how: Type of join to perform. Supported types are "inner", "left",
                   "right", "full", "semi", "anti".
 
