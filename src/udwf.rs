@@ -20,6 +20,7 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use arrow::array::{make_array, Array, ArrayData, ArrayRef};
+use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
 use datafusion::logical_expr::window_state::WindowAggState;
 use datafusion::scalar::ScalarValue;
 use pyo3::exceptions::PyValueError;
@@ -299,11 +300,21 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
         &self.signature
     }
 
-    fn return_type(&self, _arg_types: &[DataType]) -> Result<DataType> {
-        Ok(self.return_type.clone())
+    fn field(&self, field_args: WindowUDFFieldArgs) -> Result<arrow::datatypes::Field> {
+        // TODO: Should nullable always be `true`?
+        Ok(arrow::datatypes::Field::new(
+            field_args.name(),
+            self.return_type.clone(),
+            true,
+        ))
     }
 
-    fn partition_evaluator(&self) -> Result<Box<dyn PartitionEvaluator>> {
+    // TODO: Enable passing partition_evaluator_args to python?
+    fn partition_evaluator(
+        &self,
+        _partition_evaluator_args: PartitionEvaluatorArgs,
+    ) -> Result<Box<dyn PartitionEvaluator>> {
+        let _ = _partition_evaluator_args;
         (self.partition_evaluator_factory)()
     }
 }
