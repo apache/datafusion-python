@@ -21,7 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
-from typing import Any, List, TYPE_CHECKING
+from typing import Any, List, TYPE_CHECKING, Literal
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -303,6 +303,29 @@ class DataFrame:
             DataFrame after join.
         """
         return DataFrame(self.df.join(right.df, join_keys, how))
+
+    def join_on(
+        self,
+        right: DataFrame,
+        *on_exprs: Expr,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+    ) -> DataFrame:
+        """Join two :py:class:`DataFrame`using the specified expressions.
+
+        On expressions are used to support in-equality predicates. Equality
+        predicates are correctly optimized
+
+        Args:
+            right: Other DataFrame to join with.
+            on_exprs: single or multiple (in)-equality predicates.
+            how: Type of join to perform. Supported types are "inner", "left",
+                "right", "full", "semi", "anti".
+
+        Returns:
+            DataFrame after join.
+        """
+        exprs = [expr.expr for expr in on_exprs]
+        return DataFrame(self.df.join_on(right.df, exprs, how))
 
     def explain(self, verbose: bool = False, analyze: bool = False) -> DataFrame:
         """Return a DataFrame with the explanation of its plan so far.
