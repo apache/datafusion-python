@@ -129,6 +129,17 @@ class DataFrame:
         ]
         return DataFrame(self.df.select(*exprs_internal))
 
+    def drop(self, *columns: str) -> DataFrame:
+        """Drop arbitrary amount of columns.
+
+        Args:
+            columns: Column names to drop from the dataframe.
+
+        Returns:
+            DataFrame with those columns removed in the projection.
+        """
+        return DataFrame(self.df.drop(*columns))
+
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
