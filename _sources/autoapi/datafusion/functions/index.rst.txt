@@ -173,6 +173,7 @@ Functions
    datafusion.functions.nth_value
    datafusion.functions.ntile
    datafusion.functions.nullif
+   datafusion.functions.nvl
    datafusion.functions.octet_length
    datafusion.functions.order_by
    datafusion.functions.overlay
@@ -1485,6 +1486,11 @@ Module Contents
    Returns NULL if expr1 equals expr2; otherwise it returns expr1.
 
    This can be used to perform the inverse operation of the COALESCE expression.
+
+
+.. py:function:: nvl(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``.
 
 
 .. py:function:: octet_length(arg: datafusion.expr.Expr) -> datafusion.expr.Expr

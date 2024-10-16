@@ -331,6 +331,18 @@ Module Contents
 
 
 
+   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
+
+      Fill NaN values with a provided value.
+
+
+
+   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
+
+      Fill NULL values with a provided value.
+
+
+
    .. py:method:: filter(filter: Expr) -> ExprFuncBuilder
 
       Filter an aggregate function.

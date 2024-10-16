@@ -859,6 +859,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.fill_nan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.fill_nan()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.fill_null">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.fill_null()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Expr.filter">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2261,6 +2279,18 @@ element index begins at <code class="docutils literal notranslate"><span class="
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
 set parameters for either window or aggregate functions. If used on any other
 type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.fill_nan">
+<span class="sig-name descname"><span class="pre">fill_nan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.fill_nan" title="Link to this definition">¶</a></dt>
+<dd><p>Fill NaN values with a provided value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.fill_null">
+<span class="sig-name descname"><span class="pre">fill_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.fill_null" title="Link to this definition">¶</a></dt>
+<dd><p>Fill NULL values with a provided value.</p>
 </dd></dl>
 
 <dl class="py method">
