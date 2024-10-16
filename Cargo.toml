@@ -37,9 +37,12 @@ substrait = ["dep:datafusion-substrait"]
 tokio = { version = "1.39", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 pyo3 = { version = "0.22", features = ["extension-module", "abi3", "abi3-py38"] }
 arrow = { version = "53", features = ["pyarrow"] }
-datafusion = { version = "42.0.0", features = ["pyarrow", "avro", "unicode_expressions"] }
-datafusion-substrait = { version = "42.0.0", optional = true }
-datafusion-proto = { version = "42.0.0" }
+# TODO remove this intermediate branch once ffi merges into DataFusion
+datafusion = { git = "https://github.com/timsaucer/datafusion.git", rev = "20756df736006253f1ce9e94385b75ab44e268f8", features = ["pyarrow", "avro", "unicode_expressions"] }
+datafusion-substrait = { git = "https://github.com/timsaucer/datafusion.git", rev = "20756df736006253f1ce9e94385b75ab44e268f8", optional = true }
+datafusion-proto = { git = "https://github.com/timsaucer/datafusion.git", rev = "20756df736006253f1ce9e94385b75ab44e268f8" }
+datafusion-ffi = { git = "https://github.com/timsaucer/datafusion.git", rev = "20756df736006253f1ce9e94385b75ab44e268f8" }
+datafusion-functions-window-common = { git = "https://github.com/timsaucer/datafusion.git", rev = "20756df736006253f1ce9e94385b75ab44e268f8" }
 prost = "0.13" # keep in line with `datafusion-substrait`
 uuid = { version = "1.9", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
