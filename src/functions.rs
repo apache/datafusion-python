@@ -33,6 +33,7 @@ use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions;
 use datafusion::functions_aggregate;
+use datafusion::functions_window;
 use datafusion::logical_expr::expr::Alias;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
 use datafusion::logical_expr::{
@@ -781,7 +782,7 @@ pub fn row_number(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = datafusion::functions_window::expr_fn::row_number();
+    let window_fn = functions_window::expr_fn::row_number();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -792,7 +793,7 @@ pub fn rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::rank();
+    let window_fn = functions_window::expr_fn::rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -803,7 +804,7 @@ pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::dense_rank();
+    let window_fn = functions_window::expr_fn::dense_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -814,7 +815,7 @@ pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::percent_rank();
+    let window_fn = functions_window::expr_fn::percent_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
