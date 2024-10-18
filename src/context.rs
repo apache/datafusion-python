@@ -581,10 +581,8 @@ impl PySessionContext {
             let capsule = capsule.downcast::<PyCapsule>()?;
             // validate_pycapsule(capsule, "arrow_array_stream")?;
 
-            let provider = unsafe { FFI_TableProvider::from_raw(capsule.pointer() as _) };
+            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
             let provider = ForeignTableProvider::new(provider);
-            let schema = provider.schema();
-            println!("Got schema through TableProvider trait.");
 
             let _ = self.ctx.register_table(name, Arc::new(provider))?;
         }
