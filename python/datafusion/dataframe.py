@@ -168,9 +168,7 @@ class DataFrame:
         By passing expressions, iteratables of expressions, or named expressions. To
         pass named expressions use the form name=Expr.
 
-        Example usage:
-
-            The following will add 4 columns labeled a, b, c, and d.
+        Example usage: The following will add 4 columns labeled a, b, c, and d::
 
             df = df.with_columns(
                 lit(0).alias('a'),
@@ -179,11 +177,11 @@ class DataFrame:
                 )
 
         Args:
-            *exprs: Name of the column to add.
-            **named_exprs: Expression to compute the column.
+            exprs: Either a single expression or an iterable of expressions to add.
+            named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
-            DataFrame with the new column.
+            DataFrame with the new columns added.
         """
 
         def _simplify_expression(
