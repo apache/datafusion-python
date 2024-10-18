@@ -502,6 +502,28 @@ Module Contents
 
 
 
+   .. py:method:: with_columns(*exprs: datafusion.expr.Expr | Iterable[datafusion.expr.Expr], **named_exprs: datafusion.expr.Expr) -> DataFrame
+
+      Add columns to the DataFrame.
+
+      By passing expressions, iteratables of expressions, or named expressions. To
+      pass named expressions use the form name=Expr.
+
+      Example usage: The following will add 4 columns labeled a, b, c, and d::
+
+          df = df.with_columns(
+              lit(0).alias('a'),
+              [lit(1).alias('b'), lit(2).alias('c')],
+              d=lit(3)
+              )
+
+      :param exprs: Either a single expression or an iterable of expressions to add.
+      :param named_exprs: Named expressions in the form of ``name=expr``
+
+      :returns: DataFrame with the new columns added.
+
+
+
    .. py:method:: write_csv(path: str | pathlib.Path, with_header: bool = False) -> None
 
       Execute the :py:class:`DataFrame`  and write the results to a CSV file.
