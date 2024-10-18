@@ -216,6 +216,37 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
+def test_with_columns(df):
+    df = df.with_columns(
+        (column("a") + column("b")).alias("c"),
+        (column("a") + column("b")).alias("d"),
+        [
+            (column("a") + column("b")).alias("e"),
+            (column("a") + column("b")).alias("f"),
+        ],
+        g=(column("a") + column("b")),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+    assert result.schema.field(3).name == "d"
+    assert result.schema.field(4).name == "e"
+    assert result.schema.field(5).name == "f"
+    assert result.schema.field(6).name == "g"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
+    assert result.column(3) == pa.array([5, 7, 9])
+    assert result.column(4) == pa.array([5, 7, 9])
+    assert result.column(5) == pa.array([5, 7, 9])
+    assert result.column(6) == pa.array([5, 7, 9])
+
+
 def test_with_column_renamed(df):
     df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
 

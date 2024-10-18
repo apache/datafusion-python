@@ -21,7 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
-from typing import Any, List, TYPE_CHECKING, Literal
+from typing import Any, Iterable, List, Literal, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -170,6 +170,51 @@ class DataFrame:
             DataFrame with the new column.
         """
         return DataFrame(self.df.with_column(name, expr.expr))
+
+    def with_columns(
+        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+    ) -> DataFrame:
+        """Add columns to the DataFrame.
+
+        By passing expressions, iteratables of expressions, or named expressions. To
+        pass named expressions use the form name=Expr.
+
+        Example usage: The following will add 4 columns labeled a, b, c, and d::
+
+            df = df.with_columns(
+                lit(0).alias('a'),
+                [lit(1).alias('b'), lit(2).alias('c')],
+                d=lit(3)
+                )
+
+        Args:
+            exprs: Either a single expression or an iterable of expressions to add.
+            named_exprs: Named expressions in the form of ``name=expr``
+
+        Returns:
+            DataFrame with the new columns added.
+        """
+
+        def _simplify_expression(
+            *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        ) -> list[Expr]:
+            expr_list = []
+            for expr in exprs:
+                if isinstance(expr, Expr):
+                    expr_list.append(expr.expr)
+                elif isinstance(expr, Iterable):
+                    for inner_expr in expr:
+                        expr_list.append(inner_expr.expr)
+                else:
+                    raise NotImplementedError
+            if named_exprs:
+                for alias, expr in named_exprs.items():
+                    expr_list.append(expr.alias(alias).expr)
+            return expr_list
+
+        expressions = _simplify_expression(*exprs, **named_exprs)
+
+        return DataFrame(self.df.with_columns(expressions))
 
     def with_column_renamed(self, old_name: str, new_name: str) -> DataFrame:
         r"""Rename one column by applying a new projection.

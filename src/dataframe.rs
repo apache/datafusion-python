@@ -187,6 +187,16 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    fn with_columns(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
+        let mut df = self.df.as_ref().clone();
+        for expr in exprs {
+            let expr: Expr = expr.into();
+            let name = format!("{}", expr.schema_name());
+            df = df.with_column(name.as_str(), expr)?
+        }
+        Ok(Self::new(df))
+    }
+
     /// Rename one column by applying a new projection. This is a no-op if the column to be
     /// renamed does not exist.
     fn with_column_renamed(&self, old_name: &str, new_name: &str) -> PyResult<Self> {
