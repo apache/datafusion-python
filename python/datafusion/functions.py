@@ -186,6 +186,7 @@ __all__ = [
     "min",
     "named_struct",
     "nanvl",
+    "nvl",
     "now",
     "nth_value",
     "nullif",
@@ -671,6 +672,11 @@ def md5(arg: Expr) -> Expr:
 def nanvl(x: Expr, y: Expr) -> Expr:
     """Returns ``x`` if ``x`` is not ``NaN``. Otherwise returns ``y``."""
     return Expr(f.nanvl(x.expr, y.expr))
+
+
+def nvl(x: Expr, y: Expr) -> Expr:
+    """Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``."""
+    return Expr(f.nvl(x.expr, y.expr))
 
 
 def octet_length(arg: Expr) -> Expr:

@@ -23,8 +23,8 @@ build-backend = "maturin"
 name = "datafusion"
 description = "Build and run queries against data"
 readme = "README.md"
-license = {file = "LICENSE.txt"}
-requires-python = ">=3.6"
+license = { file = "LICENSE.txt" }
+requires-python = ">=3.7"
 keywords = ["datafusion", "dataframe", "rust", "query-engine"]
 classifier = [
     "Development Status :: 2 - Pre-Alpha",
@@ -42,10 +42,7 @@ classifier = [
     "Programming Language :: Python",
     "Programming Language :: Rust",
 ]
-dependencies = [
-    "pyarrow>=11.0.0",
-    "typing-extensions;python_version<'3.13'",
-]
+dependencies = ["pyarrow>=11.0.0", "typing-extensions;python_version<'3.13'"]
 
 [project.urls]
 homepage = "https://datafusion.apache.org/python"
@@ -58,9 +55,7 @@ profile = "black"
 [tool.maturin]
 python-source = "python"
 module-name = "datafusion._internal"
-include = [
-    { path = "Cargo.lock", format = "sdist" }
-]
+include = [{ path = "Cargo.lock", format = "sdist" }]
 exclude = [".github/**", "ci/**", ".asf.yaml"]
 # Require Cargo.lock is up to date
 locked = true

@@ -169,6 +169,17 @@ def test_sort(df):
     assert table.to_pydict() == expected
 
 
+def test_drop(df):
+    df = df.drop("c")
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert df.schema().names == ["a", "b"]
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
 def test_limit(df):
     df = df.limit(1)
 
@@ -296,6 +307,42 @@ def test_join():
     table = pa.Table.from_batches(df.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+    assert table.to_pydict() == expected
+
+
+def test_join_on():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([-8, 10])],
+        names=["a", "c"],
+    )
+    df1 = ctx.create_dataframe([[batch]], "r")
+
+    df2 = df.join_on(df1, column("l.a").__eq__(column("r.a")), how="inner")
+    df2.show()
+    df2 = df2.sort(column("l.a"))
+    table = pa.Table.from_batches(df2.collect())
+
+    expected = {"a": [1, 2], "c": [-8, 10], "b": [4, 5]}
+    assert table.to_pydict() == expected
+
+    df3 = df.join_on(
+        df1,
+        column("l.a").__eq__(column("r.a")),
+        column("l.a").__lt__(column("r.c")),
+        how="inner",
+    )
+    df3.show()
+    df3 = df3.sort(column("l.a"))
+    table = pa.Table.from_batches(df3.collect())
+    expected = {"a": [2], "c": [10], "b": [5]}
     assert table.to_pydict() == expected
 
 

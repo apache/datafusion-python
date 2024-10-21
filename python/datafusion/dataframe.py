@@ -21,7 +21,8 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
-from typing import Any, Iterable, List, TYPE_CHECKING
+
+from typing import Any, Iterable, List, Literal, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -129,6 +130,17 @@ class DataFrame:
         ]
         return DataFrame(self.df.select(*exprs_internal))
 
+    def drop(self, *columns: str) -> DataFrame:
+        """Drop arbitrary amount of columns.
+
+        Args:
+            columns: Column names to drop from the dataframe.
+
+        Returns:
+            DataFrame with those columns removed in the projection.
+        """
+        return DataFrame(self.df.drop(*columns))
+
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
@@ -163,14 +175,25 @@ class DataFrame:
     def with_columns(
         self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
     ) -> DataFrame:
-        """Add an additional column to the DataFrame.
+        """Add columns to the DataFrame.
+
+        By passing expressions, iteratables of expressions, or named expressions. To
+        pass named expressions use the form name=Expr.
+
+        Example usage: The following will add 4 columns labeled a, b, c, and d::
+
+            df = df.with_columns(
+                lit(0).alias('a'),
+                [lit(1).alias('b'), lit(2).alias('c')],
+                d=lit(3)
+                )
 
         Args:
-            *exprs: Name of the column to add.
-            **named_exprs: Expression to compute the column.
+            exprs: Either a single expression or an iterable of expressions to add.
+            named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
-            DataFrame with the new column.
+            DataFrame with the new columns added.
         """
 
         def _simplify_expression(
@@ -338,6 +361,29 @@ class DataFrame:
             DataFrame after join.
         """
         return DataFrame(self.df.join(right.df, join_keys, how))
+
+    def join_on(
+        self,
+        right: DataFrame,
+        *on_exprs: Expr,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+    ) -> DataFrame:
+        """Join two :py:class:`DataFrame`using the specified expressions.
+
+        On expressions are used to support in-equality predicates. Equality
+        predicates are correctly optimized
+
+        Args:
+            right: Other DataFrame to join with.
+            on_exprs: single or multiple (in)-equality predicates.
+            how: Type of join to perform. Supported types are "inner", "left",
+                "right", "full", "semi", "anti".
+
+        Returns:
+            DataFrame after join.
+        """
+        exprs = [expr.expr for expr in on_exprs]
+        return DataFrame(self.df.join_on(right.df, exprs, how))
 
     def explain(self, verbose: bool = False, analyze: bool = False) -> DataFrame:
         """Return a DataFrame with the explanation of its plan so far.
