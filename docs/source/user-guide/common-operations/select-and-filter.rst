@@ -33,7 +33,7 @@ DataFusion can work with several file types, to start simple we can use a subset
     
     ctx = SessionContext()
     df = ctx.read_parquet("yellow_trip_data.parquet")
-    df.select_columns("trip_distance", "passenger_count")
+    df.select("trip_distance", "passenger_count")
 
 For mathematical or logical operations use :py:func:`~datafusion.col` to select columns, and give meaningful names to the resulting
 operations using :py:func:`~datafusion.expr.Expr.alias`
@@ -48,7 +48,7 @@ operations using :py:func:`~datafusion.expr.Expr.alias`
 
     Please be aware that all identifiers are effectively made lower-case in SQL, so if your file has capital letters
     (ex: Name) you must put your column name in double quotes or the selection won’t work. As an alternative for simple
-    column selection use :py:func:`~datafusion.dataframe.DataFrame.select_columns` without double quotes
+    column selection use :py:func:`~datafusion.dataframe.DataFrame.select` without double quotes
 
 For selecting columns with capital letters use ``'"VendorID"'``
 
