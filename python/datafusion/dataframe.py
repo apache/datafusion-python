@@ -21,6 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
+
 from typing import Any, Iterable, List, Literal, TYPE_CHECKING
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
@@ -266,6 +267,18 @@ class DataFrame:
         """
         exprs_raw = [sort_or_default(expr) for expr in exprs]
         return DataFrame(self.df.sort(*exprs_raw))
+
+    def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
+        """Cast one or more columns to a different data type.
+
+        Args:
+            mapping: Mapped with column as key and column dtype as value.
+
+        Returns:
+            DataFrame after casting columns
+        """
+        exprs = [Expr.column(col).cast(dtype) for col, dtype in mapping.items()]
+        return self.with_columns(exprs)
 
     def limit(self, count: int, offset: int = 0) -> DataFrame:
         """Return a new :py:class:`DataFrame` with a limited number of rows.

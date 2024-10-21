@@ -247,6 +247,15 @@ def test_with_columns(df):
     assert result.column(6) == pa.array([5, 7, 9])
 
 
+def test_cast(df):
+    df = df.cast({"a": pa.float16(), "b": pa.list_(pa.uint32())})
+    expected = pa.schema(
+        [("a", pa.float16()), ("b", pa.list_(pa.uint32())), ("c", pa.int64())]
+    )
+
+    assert df.schema() == expected
+
+
 def test_with_column_renamed(df):
     df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
 
