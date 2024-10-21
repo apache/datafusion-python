@@ -47,25 +47,23 @@ end_date = lit(datetime.strptime(END_DATE, "%Y-%m-%d").date())
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
-    "p_partkey", "p_type"
-)
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_type")
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey", "s_nationkey"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey", "l_extendedprice", "l_discount", "l_suppkey", "l_orderkey"
 )
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select(
     "o_orderkey", "o_custkey", "o_orderdate"
 )
-df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select(
     "c_custkey", "c_nationkey"
 )
-df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name", "n_regionkey"
 )
-df_region = ctx.read_parquet(get_data_path("region.parquet")).select_columns(
+df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
     "r_regionkey", "r_name"
 )
 
@@ -133,7 +131,7 @@ df_national_suppliers = df_national_suppliers.join(
 
 # When we join to the customer dataframe, we don't want to confuse other columns, so only
 # select the supplier key that we need
-df_national_suppliers = df_national_suppliers.select_columns("s_suppkey")
+df_national_suppliers = df_national_suppliers.select("s_suppkey")
 
 
 # Part 3: Combine suppliers and customers and compute the market share

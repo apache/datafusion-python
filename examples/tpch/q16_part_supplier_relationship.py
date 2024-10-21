@@ -40,13 +40,13 @@ SIZES_OF_INTEREST = [49, 14, 23, 45, 19, 3, 36, 9]
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select(
     "p_partkey", "p_brand", "p_type", "p_size"
 )
-df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select(
     "ps_suppkey", "ps_partkey"
 )
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey", "s_comment"
 )
 
@@ -75,7 +75,7 @@ df_part = df_part.filter(~F.array_position(p_sizes, col("p_size")).is_null())
 
 df = df_part.join(df_partsupp, (["p_partkey"], ["ps_partkey"]), "inner")
 
-df = df.select_columns("p_brand", "p_type", "p_size", "ps_suppkey").distinct()
+df = df.select("p_brand", "p_type", "p_size", "ps_suppkey").distinct()
 
 df = df.aggregate(
     [col("p_brand"), col("p_type"), col("p_size")],

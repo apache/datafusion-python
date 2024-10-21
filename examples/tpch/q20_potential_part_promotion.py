@@ -40,19 +40,17 @@ NATION_OF_INTEREST = "CANADA"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
-    "p_partkey", "p_name"
-)
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_name")
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_shipdate", "l_partkey", "l_suppkey", "l_quantity"
 )
-df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select(
     "ps_partkey", "ps_suppkey", "ps_availqty"
 )
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey", "s_address", "s_name", "s_nationkey"
 )
-df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
 
@@ -91,7 +89,7 @@ df = df.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), "inner")
 df = df.join(df_nation, (["s_nationkey"], ["n_nationkey"]), "inner")
 
 # Restrict to the requested data per the problem statement
-df = df.select_columns("s_name", "s_address").distinct()
+df = df.select("s_name", "s_address").distinct()
 
 df = df.sort(col("s_name").sort())
 

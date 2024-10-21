@@ -35,13 +35,13 @@ QUANTITY = 300
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select(
     "c_custkey", "c_name"
 )
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select(
     "o_orderkey", "o_custkey", "o_orderdate", "o_totalprice"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_quantity", "l_extendedprice"
 )
 
@@ -57,7 +57,7 @@ df = df.filter(col("total_quantity") > lit(QUANTITY))
 df = df.join(df_orders, (["l_orderkey"], ["o_orderkey"]), "inner")
 df = df.join(df_customer, (["o_custkey"], ["c_custkey"]), "inner")
 
-df = df.select_columns(
+df = df.select(
     "c_name", "c_custkey", "o_orderkey", "o_orderdate", "o_totalprice", "total_quantity"
 )
 
