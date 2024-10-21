@@ -89,6 +89,16 @@ Module Contents
 
 
 
+   .. py:method:: cast(mapping: dict[str, pyarrow.DataType[Any]]) -> DataFrame
+
+      Cast one or more columns to a different data type.
+
+      :param mapping: Mapped with column as key and column dtype as value.
+
+      :returns: DataFrame after casting columns
+
+
+
    .. py:method:: collect() -> list[pyarrow.RecordBatch]
 
       Execute this :py:class:`DataFrame` and collect results into memory.
