@@ -19,6 +19,47 @@
 
 # DataFusion Python Changelog
 
+## [42.1.0](https://github.com/apache/datafusion-python/tree/42.1.0) (2024-10-22)
+
+This release consists of 14 commits from 6 contributors. See credits at the end of this changelog for more information.
+
+**Implemented enhancements:**
+
+- feat: expose `drop` method [#913](https://github.com/apache/datafusion-python/pull/913) (ion-elgreco)
+- feat: expose `join_on` [#914](https://github.com/apache/datafusion-python/pull/914) (ion-elgreco)
+- feat: add fill_null/nan expressions [#919](https://github.com/apache/datafusion-python/pull/919) (ion-elgreco)
+- feat: add `with_columns` [#909](https://github.com/apache/datafusion-python/pull/909) (ion-elgreco)
+- feat: add `cast` to DataFrame [#916](https://github.com/apache/datafusion-python/pull/916) (ion-elgreco)
+- feat: add `head`, `tail` methods [#915](https://github.com/apache/datafusion-python/pull/915) (ion-elgreco)
+
+**Fixed bugs:**
+
+- fix: remove use of deprecated `make_scalar_function` [#906](https://github.com/apache/datafusion-python/pull/906) (Michael-J-Ward)
+
+**Other:**
+
+- Ts/minor updates release process [#903](https://github.com/apache/datafusion-python/pull/903) (timsaucer)
+- build(deps): bump pyo3 from 0.22.3 to 0.22.4 [#910](https://github.com/apache/datafusion-python/pull/910) (dependabot[bot])
+- refactor: `from_arrow` use protocol typehints [#917](https://github.com/apache/datafusion-python/pull/917) (ion-elgreco)
+- Change requires-python version in pyproject.toml [#924](https://github.com/apache/datafusion-python/pull/924) (kosiew)
+- chore: deprecate `select_columns` [#911](https://github.com/apache/datafusion-python/pull/911) (ion-elgreco)
+- build(deps): bump uuid from 1.10.0 to 1.11.0 [#927](https://github.com/apache/datafusion-python/pull/927) (dependabot[bot])
+
+## Credits
+
+Thank you to everyone who contributed to this release. Here is a breakdown of commits (PRs merged) per contributor.
+
+```
+     8  Ion Koutsouris
+     2  dependabot[bot]
+     1  Michael J Ward
+     1  Michael-J-Ward
+     1  Tim Saucer
+     1  kosiew
+```
+
+Thank you also to everyone who contributed in other ways such as filing issues, reviewing PRs, and providing feedback on this release.
+
 ## [42.0.0](https://github.com/apache/datafusion-python/tree/42.0.0) (2024-10-06)
 
 This release consists of 20 commits from 6 contributors. See credits at the end of this changelog for more information.
