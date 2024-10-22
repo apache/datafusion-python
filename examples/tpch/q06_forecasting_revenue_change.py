@@ -51,7 +51,7 @@ interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 
 ctx = SessionContext()
 
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_shipdate", "l_quantity", "l_extendedprice", "l_discount"
 )
 

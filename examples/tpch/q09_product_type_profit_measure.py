@@ -39,16 +39,14 @@ part_color = lit("green")
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
-    "p_partkey", "p_name"
-)
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_name")
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey", "s_nationkey"
 )
-df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select(
     "ps_suppkey", "ps_partkey", "ps_supplycost"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey",
     "l_extendedprice",
     "l_discount",
@@ -56,10 +54,10 @@ df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns
     "l_orderkey",
     "l_quantity",
 )
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select(
     "o_orderkey", "o_custkey", "o_orderdate"
 )
-df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name", "n_regionkey"
 )
 

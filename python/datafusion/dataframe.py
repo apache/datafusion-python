@@ -98,6 +98,9 @@ class DataFrame:
         """
         return self.df.schema()
 
+    @deprecated(
+        "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
+    )
     def select_columns(self, *args: str) -> DataFrame:
         """Filter the DataFrame by columns.
 

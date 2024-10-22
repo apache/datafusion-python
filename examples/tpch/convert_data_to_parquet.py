@@ -138,6 +138,6 @@ for filename, curr_schema in all_schemas.items():
 
     df = ctx.read_csv(source_file, schema=schema, has_header=False, delimiter="|")
 
-    df = df.select_columns(*output_cols)
+    df = df.select(*output_cols)
 
     df.write_parquet(dest_file, compression="snappy")

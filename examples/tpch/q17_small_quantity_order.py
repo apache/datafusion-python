@@ -38,10 +38,10 @@ CONTAINER = "MED BOX"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select(
     "p_partkey", "p_brand", "p_container"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey", "l_quantity", "l_extendedprice"
 )
 

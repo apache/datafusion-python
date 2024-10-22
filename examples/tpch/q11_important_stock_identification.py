@@ -37,13 +37,13 @@ FRACTION = 0.0001
 
 ctx = SessionContext()
 
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey", "s_nationkey"
 )
-df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select(
     "ps_supplycost", "ps_availqty", "ps_suppkey", "ps_partkey"
 )
-df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_name"
 )
 
@@ -75,7 +75,7 @@ df = df.with_column(
 df = df.filter(col("value") / col("total_value") >= lit(FRACTION))
 
 # We only need to report on these two columns
-df = df.select_columns("ps_partkey", "value")
+df = df.select("ps_partkey", "value")
 
 # Sort in descending order of value
 df = df.sort(col("value").sort(ascending=False))

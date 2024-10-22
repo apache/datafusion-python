@@ -37,13 +37,13 @@ DATE_OF_INTEREST = "1995-03-15"
 
 ctx = SessionContext()
 
-df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select_columns(
+df_customer = ctx.read_parquet(get_data_path("customer.parquet")).select(
     "c_mktsegment", "c_custkey"
 )
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select(
     "o_orderdate", "o_shippriority", "o_custkey", "o_orderkey"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_extendedprice", "l_discount", "l_shipdate"
 )
 
@@ -80,7 +80,7 @@ df = df.limit(10)
 
 # Change the order that the columns are reported in just to match the spec
 
-df = df.select_columns("l_orderkey", "revenue", "o_orderdate", "o_shippriority")
+df = df.select("l_orderkey", "revenue", "o_orderdate", "o_shippriority")
 
 # Show result
 
