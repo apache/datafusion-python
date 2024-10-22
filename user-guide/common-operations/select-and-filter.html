@@ -378,13 +378,13 @@
 <span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="s2">&quot;https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span>                            <span class="s2">&quot;yellow_trip_data.parquet&quot;</span><span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;yellow_trip_data.parquet&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f1b49cc6050</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;yellow_trip_data.parquet&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7fae25d21050</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;yellow_trip_data.parquet&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select_columns</span><span class="p">(</span><span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span> <span class="s2">&quot;passenger_count&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span> <span class="s2">&quot;passenger_count&quot;</span><span class="p">)</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+---------------+-----------------+</span>
@@ -430,7 +430,7 @@ operations using <a class="reference internal" href="../../autoapi/datafusion/ex
 <p class="admonition-title">Warning</p>
 <p>Please be aware that all identifiers are effectively made lower-case in SQL, so if your file has capital letters
 (ex: Name) you must put your column name in double quotes or the selection won’t work. As an alternative for simple
-column selection use <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select_columns" title="datafusion.dataframe.DataFrame.select_columns"><code class="xref py py-func docutils literal notranslate"><span class="pre">select_columns()</span></code></a> without double quotes</p>
+column selection use <a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-func docutils literal notranslate"><span class="pre">select()</span></code></a> without double quotes</p>
 </div>
 <p>For selecting columns with capital letters use <code class="docutils literal notranslate"><span class="pre">'&quot;VendorID&quot;'</span></code></p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;VendorID&quot;&#39;</span><span class="p">))</span>
