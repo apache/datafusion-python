@@ -51,6 +51,7 @@ __all__ = [
     "array_dims",
     "array_distinct",
     "array_element",
+    "array_empty",
     "array_except",
     "array_extract",
     "array_has",
@@ -1158,6 +1159,11 @@ def list_dims(array: Expr) -> Expr:
 def array_element(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array."""
     return Expr(f.array_element(array.expr, n.expr))
+
+
+def array_empty(array: Expr) -> Expr:
+    """Returns a boolean indicating whether the array is empty."""
+    return Expr(f.array_empty(array.expr))
 
 
 def array_extract(array: Expr, n: Expr) -> Expr:
