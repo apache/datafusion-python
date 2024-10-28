@@ -757,7 +757,7 @@ pub fn lead(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::lead(arg.expr, Some(shift_offset), default_value);
+    let window_fn = datafusion::functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -771,7 +771,7 @@ pub fn lag(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::lag(arg.expr, Some(shift_offset), default_value);
+    let window_fn = datafusion::functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
