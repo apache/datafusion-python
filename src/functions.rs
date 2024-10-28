@@ -826,7 +826,7 @@ pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::cume_dist();
+    let window_fn = datafusion::functions_window::expr_fn::cume_dist();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
