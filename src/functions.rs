@@ -572,6 +572,7 @@ array_fn!(array_to_string, array delimiter);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
 array_fn!(array_element, array element);
+array_fn!(array_empty, array);
 array_fn!(array_length, array);
 array_fn!(array_has, first_array second_array);
 array_fn!(array_has_all, first_array second_array);
@@ -1003,6 +1004,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_distinct))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
+    m.add_wrapped(wrap_pyfunction!(array_empty))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
     m.add_wrapped(wrap_pyfunction!(array_has))?;
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
