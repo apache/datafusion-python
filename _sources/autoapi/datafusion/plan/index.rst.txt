@@ -79,6 +79,7 @@ Module Contents
    .. py:property:: partition_count
       :type: int
 
+
       Returns the number of partitions in the physical plan.
 
 

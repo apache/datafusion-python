@@ -801,12 +801,6 @@ Module Contents
 
 
 
-   .. py:attribute:: config
-
-
    .. py:attribute:: ctx
-
-
-   .. py:attribute:: runtime
 
 

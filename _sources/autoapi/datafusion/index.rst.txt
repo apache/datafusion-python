@@ -12,15 +12,6 @@ datafusion
 
 
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 1
-
-   /autoapi/datafusion/input/index
-
-
 Submodules
 ----------
 
@@ -32,6 +23,7 @@ Submodules
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
+   /autoapi/datafusion/input/index
    /autoapi/datafusion/object_store/index
    /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
@@ -298,6 +290,7 @@ Package Contents
 
    .. py:property:: partition_count
       :type: int
+
 
       Returns the number of partitions in the physical plan.
 
@@ -1215,6 +1208,7 @@ Package Contents
 
    .. py:property:: kind
       :type: str
+
 
       Returns the kind of table.
 

@@ -30,6 +30,7 @@ Functions
    datafusion.functions.array_dims
    datafusion.functions.array_distinct
    datafusion.functions.array_element
+   datafusion.functions.array_empty
    datafusion.functions.array_except
    datafusion.functions.array_extract
    datafusion.functions.array_has
@@ -401,6 +402,11 @@ Module Contents
 .. py:function:: array_element(array: datafusion.expr.Expr, n: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Extracts the element with the index n from the array.
+
+
+.. py:function:: array_empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns a boolean indicating whether the array is empty.
 
 
 .. py:function:: array_except(array1: datafusion.expr.Expr, array2: datafusion.expr.Expr) -> datafusion.expr.Expr

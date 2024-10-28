@@ -250,28 +250,6 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/catalog/index.html">
        datafusion.catalog
@@ -296,6 +274,28 @@
       <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
@@ -410,7 +410,7 @@ In here we will cover some of the more popular use cases. If you want to view al
    <span class="o">...</span><span class="p">:</span> <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f5c87018190</span><span class="o">&gt;</span><span class="p">)</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f75e69db710</span><span class="o">&gt;</span><span class="p">)</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -484,16 +484,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+--------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">22</span><span class="n">T17</span><span class="p">:</span><span class="mi">52</span><span class="p">:</span><span class="mf">01.650181860</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">10</span><span class="o">-</span><span class="mi">28</span><span class="n">T16</span><span class="p">:</span><span class="mi">07</span><span class="p">:</span><span class="mf">04.619778823</span><span class="n">Z</span> <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
 </pre></div>
 </div>
