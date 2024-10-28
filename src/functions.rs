@@ -793,7 +793,7 @@ pub fn rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::rank();
+    let window_fn = datafusion::functions_window::expr_fn::rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -804,7 +804,7 @@ pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::dense_rank();
+    let window_fn = datafusion::functions_window::expr_fn::dense_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -815,7 +815,7 @@ pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
-    let window_fn = window_function::percent_rank();
+    let window_fn = datafusion::functions_window::expr_fn::percent_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
