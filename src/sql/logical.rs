@@ -19,7 +19,6 @@ use std::sync::Arc;
 
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
-use crate::expr::cross_join::PyCrossJoin;
 use crate::expr::distinct::PyDistinct;
 use crate::expr::empty_relation::PyEmptyRelation;
 use crate::expr::explain::PyExplain;
@@ -68,7 +67,6 @@ impl PyLogicalPlan {
         match self.plan.as_ref() {
             LogicalPlan::Aggregate(plan) => PyAggregate::from(plan.clone()).to_variant(py),
             LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
-            LogicalPlan::CrossJoin(plan) => PyCrossJoin::from(plan.clone()).to_variant(py),
             LogicalPlan::Distinct(plan) => PyDistinct::from(plan.clone()).to_variant(py),
             LogicalPlan::EmptyRelation(plan) => PyEmptyRelation::from(plan.clone()).to_variant(py),
             LogicalPlan::Explain(plan) => PyExplain::from(plan.clone()).to_variant(py),

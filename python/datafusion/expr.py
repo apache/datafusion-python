@@ -51,7 +51,6 @@ Cast = expr_internal.Cast
 Column = expr_internal.Column
 CreateMemoryTable = expr_internal.CreateMemoryTable
 CreateView = expr_internal.CreateView
-CrossJoin = expr_internal.CrossJoin
 Distinct = expr_internal.Distinct
 DropTable = expr_internal.DropTable
 EmptyRelation = expr_internal.EmptyRelation
@@ -140,7 +139,6 @@ __all__ = [
     "Join",
     "JoinType",
     "JoinConstraint",
-    "CrossJoin",
     "Union",
     "Unnest",
     "UnnestExpr",
