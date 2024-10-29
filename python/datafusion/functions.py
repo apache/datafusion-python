@@ -125,6 +125,7 @@ __all__ = [
     "decode",
     "degrees",
     "digest",
+    "empty",
     "encode",
     "ends_with",
     "exp",
@@ -1520,6 +1521,13 @@ def flatten(array: Expr) -> Expr:
 def cardinality(array: Expr) -> Expr:
     """Returns the total number of elements in the array."""
     return Expr(f.cardinality(array.expr))
+
+
+def empty(array: Expr) -> Expr:
+    """
+    This is an alias for :py:func:`array_empty`.
+    """
+    return array_empty(array)
 
 
 # aggregate functions

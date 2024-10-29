@@ -82,7 +82,7 @@ approaches.
     Indexing an element of an array via ``[]`` starts at index 0 whereas
     :py:func:`~datafusion.functions.array_element` starts at index 1.
 
-To check if an array is empty, you can use the function :py:func:`datafusion.functions.array_empty`.
+To check if an array is empty, you can use the function :py:func:`datafusion.functions.array_empty` or `datafusion.functions.empty`.
 This function returns a boolean indicating whether the array is empty.
 
 .. ipython:: python
