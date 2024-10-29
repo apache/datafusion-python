@@ -96,6 +96,20 @@ This function returns a boolean indicating whether the array is empty.
 
 In this example, the `is_empty` column will contain `True` for the first row and `False` for the second row.
 
+To get the total number of elements in an array, you can use the function :py:func:`datafusion.functions.cardinality`.
+This function returns an integer indicating the total number of elements in the array.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import cardinality
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+    df.select(cardinality(col("a")).alias("num_elements"))
+
+In this example, the `num_elements` column will contain `3` for both rows.
+
 Structs
 -------
 
