@@ -594,6 +594,7 @@ array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
 array_fn!(array_resize, array size value);
+array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
@@ -1030,6 +1031,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
+    m.add_wrapped(wrap_pyfunction!(cardinality))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

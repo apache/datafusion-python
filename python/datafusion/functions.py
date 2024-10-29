@@ -132,6 +132,7 @@ __all__ = [
     "find_in_set",
     "first_value",
     "flatten",
+    "cardinality",
     "floor",
     "from_unixtime",
     "gcd",
@@ -1514,6 +1515,11 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
 def flatten(array: Expr) -> Expr:
     """Flattens an array of arrays into a single array."""
     return Expr(f.flatten(array.expr))
+
+
+def cardinality(array: Expr) -> Expr:
+    """Returns the total number of elements in the array."""
+    return Expr(f.cardinality(array.expr))
 
 
 # aggregate functions
