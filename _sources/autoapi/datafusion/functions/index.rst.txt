@@ -75,6 +75,7 @@ Functions
    datafusion.functions.bool_and
    datafusion.functions.bool_or
    datafusion.functions.btrim
+   datafusion.functions.cardinality
    datafusion.functions.case
    datafusion.functions.cbrt
    datafusion.functions.ceil
@@ -706,6 +707,11 @@ Module Contents
 .. py:function:: btrim(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Removes all characters, spaces by default, from both sides of a string.
+
+
+.. py:function:: cardinality(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns the total number of elements in the array.
 
 
 .. py:function:: case(expr: datafusion.expr.Expr) -> datafusion.expr.CaseBuilder
