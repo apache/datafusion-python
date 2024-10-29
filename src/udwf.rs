@@ -22,10 +22,14 @@ use std::sync::Arc;
 use arrow::array::{make_array, Array, ArrayData, ArrayRef};
 use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
 use datafusion::logical_expr::window_state::WindowAggState;
+use datafusion::physical_plan::PhysicalExpr;
 use datafusion::scalar::ScalarValue;
+use datafusion_functions_window_common::expr::ExpressionArgs;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+use crate::expr::PyExpr;
+use crate::utils::parse_volatility;
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
@@ -33,9 +37,6 @@ use datafusion::logical_expr::{
     PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
 };
 use pyo3::types::{PyList, PyTuple};
-
-use crate::expr::PyExpr;
-use crate::utils::parse_volatility;
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {
@@ -91,6 +92,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
+        println!("evaluate all called with number of values {}", values.len());
         Python::with_gil(|py| {
             let py_values = PyList::new_bound(
                 py,
@@ -316,5 +318,9 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
     ) -> Result<Box<dyn PartitionEvaluator>> {
         let _ = _partition_evaluator_args;
         (self.partition_evaluator_factory)()
+    }
+
+    fn expressions(&self, expr_args: ExpressionArgs) -> Vec<Arc<dyn PhysicalExpr>> {
+        expr_args.input_exprs().into()
     }
 }
