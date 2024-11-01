@@ -290,14 +290,8 @@ impl PyDataFrame {
             }
         };
 
-        let left_keys = left_on
-            .iter()
-            .map(|s| s.as_ref())
-            .collect::<Vec<&str>>();
-        let right_keys = right_on
-            .iter()
-            .map(|s| s.as_ref())
-            .collect::<Vec<&str>>();
+        let left_keys = left_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let right_keys = right_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
 
         let df = self.df.as_ref().clone().join(
             right.df.as_ref().clone(),

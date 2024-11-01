@@ -452,6 +452,10 @@ class DataFrame:
             raise ValueError(
                 "either `on` or `left_on` and `right_on` should be provided."
             )
+        if isinstance(left_on, str):
+            left_on = [left_on]
+        if isinstance(right_on, str):
+            right_on = [right_on]
 
         return DataFrame(self.df.join(right.df, how, left_on, right_on))
 
