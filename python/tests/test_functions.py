@@ -314,6 +314,10 @@ def py_flatten(arr):
             lambda data: [len(r) == 0 for r in data],
         ],
         [
+            lambda col: f.empty(col),
+            lambda data: [len(r) == 0 for r in data],
+        ],
+        [
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
         ],
