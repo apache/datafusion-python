@@ -41,10 +41,10 @@ interval_3_months = lit(pa.scalar((0, 91, 0), type=pa.month_day_nano_interval())
 
 ctx = SessionContext()
 
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_suppkey", "l_shipdate", "l_extendedprice", "l_discount"
 )
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_suppkey",
     "s_name",
     "s_address",
@@ -79,7 +79,7 @@ df = df.filter(col("total_revenue") == col("max_revenue"))
 df = df.join(df_supplier, (["l_suppkey"], ["s_suppkey"]), "inner")
 
 # Return only the columns requested
-df = df.select_columns("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
+df = df.select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")
 
 # If we have more than one, sort by supplier number (suppkey)
 df = df.sort(col("s_suppkey").sort())

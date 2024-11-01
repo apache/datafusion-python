@@ -21,7 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 import warnings
-from typing import Any, List, TYPE_CHECKING, Literal, overload
+from typing import Any, Iterable, List, TYPE_CHECKING, Literal, overload
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -97,6 +97,9 @@ class DataFrame:
         """
         return self.df.schema()
 
+    @deprecated(
+        "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
+    )
     def select_columns(self, *args: str) -> DataFrame:
         """Filter the DataFrame by columns.
 
@@ -129,6 +132,17 @@ class DataFrame:
         ]
         return DataFrame(self.df.select(*exprs_internal))
 
+    def drop(self, *columns: str) -> DataFrame:
+        """Drop arbitrary amount of columns.
+
+        Args:
+            columns: Column names to drop from the dataframe.
+
+        Returns:
+            DataFrame with those columns removed in the projection.
+        """
+        return DataFrame(self.df.drop(*columns))
+
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
@@ -159,6 +173,51 @@ class DataFrame:
             DataFrame with the new column.
         """
         return DataFrame(self.df.with_column(name, expr.expr))
+
+    def with_columns(
+        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+    ) -> DataFrame:
+        """Add columns to the DataFrame.
+
+        By passing expressions, iteratables of expressions, or named expressions. To
+        pass named expressions use the form name=Expr.
+
+        Example usage: The following will add 4 columns labeled a, b, c, and d::
+
+            df = df.with_columns(
+                lit(0).alias('a'),
+                [lit(1).alias('b'), lit(2).alias('c')],
+                d=lit(3)
+                )
+
+        Args:
+            exprs: Either a single expression or an iterable of expressions to add.
+            named_exprs: Named expressions in the form of ``name=expr``
+
+        Returns:
+            DataFrame with the new columns added.
+        """
+
+        def _simplify_expression(
+            *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        ) -> list[Expr]:
+            expr_list = []
+            for expr in exprs:
+                if isinstance(expr, Expr):
+                    expr_list.append(expr.expr)
+                elif isinstance(expr, Iterable):
+                    for inner_expr in expr:
+                        expr_list.append(inner_expr.expr)
+                else:
+                    raise NotImplementedError
+            if named_exprs:
+                for alias, expr in named_exprs.items():
+                    expr_list.append(expr.alias(alias).expr)
+            return expr_list
+
+        expressions = _simplify_expression(*exprs, **named_exprs)
+
+        return DataFrame(self.df.with_columns(expressions))
 
     def with_column_renamed(self, old_name: str, new_name: str) -> DataFrame:
         r"""Rename one column by applying a new projection.
@@ -211,6 +270,18 @@ class DataFrame:
         exprs_raw = [sort_or_default(expr) for expr in exprs]
         return DataFrame(self.df.sort(*exprs_raw))
 
+    def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
+        """Cast one or more columns to a different data type.
+
+        Args:
+            mapping: Mapped with column as key and column dtype as value.
+
+        Returns:
+            DataFrame after casting columns
+        """
+        exprs = [Expr.column(col).cast(dtype) for col, dtype in mapping.items()]
+        return self.with_columns(exprs)
+
     def limit(self, count: int, offset: int = 0) -> DataFrame:
         """Return a new :py:class:`DataFrame` with a limited number of rows.
 
@@ -222,6 +293,31 @@ class DataFrame:
             DataFrame after limiting.
         """
         return DataFrame(self.df.limit(count, offset))
+
+    def head(self, n: int = 5) -> DataFrame:
+        """Return a new :py:class:`DataFrame` with a limited number of rows.
+
+        Args:
+            n: Number of rows to take from the head of the DataFrame.
+
+        Returns:
+            DataFrame after limiting.
+        """
+        return DataFrame(self.df.limit(n, 0))
+
+    def tail(self, n: int = 5) -> DataFrame:
+        """Return a new :py:class:`DataFrame` with a limited number of rows.
+
+        Be aware this could be potentially expensive since the row size needs to be
+        determined of the dataframe. This is done by collecting it.
+
+        Args:
+            n: Number of rows to take from the tail of the DataFrame.
+
+        Returns:
+            DataFrame after limiting.
+        """
+        return DataFrame(self.df.limit(n, max(0, self.count() - n)))
 
     def collect(self) -> list[pa.RecordBatch]:
         """Execute this :py:class:`DataFrame` and collect results into memory.
@@ -358,6 +454,29 @@ class DataFrame:
             )
 
         return DataFrame(self.df.join(right.df, how, left_on, right_on))
+
+    def join_on(
+        self,
+        right: DataFrame,
+        *on_exprs: Expr,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+    ) -> DataFrame:
+        """Join two :py:class:`DataFrame`using the specified expressions.
+
+        On expressions are used to support in-equality predicates. Equality
+        predicates are correctly optimized
+
+        Args:
+            right: Other DataFrame to join with.
+            on_exprs: single or multiple (in)-equality predicates.
+            how: Type of join to perform. Supported types are "inner", "left",
+                "right", "full", "semi", "anti".
+
+        Returns:
+            DataFrame after join.
+        """
+        exprs = [expr.expr for expr in on_exprs]
+        return DataFrame(self.df.join_on(right.df, exprs, how))
 
     def explain(self, verbose: bool = False, analyze: bool = False) -> DataFrame:
         """Return a DataFrame with the explanation of its plan so far.

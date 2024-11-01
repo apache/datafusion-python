@@ -103,30 +103,28 @@ def partitioned_df():
 
 
 def test_select(df):
-    df = df.select(
+    df_1 = df.select(
         column("a") + column("b"),
         column("a") - column("b"),
     )
 
     # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    result = df_1.collect()[0]
 
     assert result.column(0) == pa.array([5, 7, 9])
     assert result.column(1) == pa.array([-3, -3, -3])
 
-
-def test_select_mixed_expr_string(df):
-    df = df.select_columns(column("b"), "a")
+    df_2 = df.select("b", "a")
 
     # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    result = df_2.collect()[0]
 
     assert result.column(0) == pa.array([4, 5, 6])
     assert result.column(1) == pa.array([1, 2, 3])
 
 
-def test_select_columns(df):
-    df = df.select_columns("b", "a")
+def test_select_mixed_expr_string(df):
+    df = df.select(column("b"), "a")
 
     # execute and collect the first (and only) batch
     result = df.collect()[0]
@@ -169,6 +167,17 @@ def test_sort(df):
     assert table.to_pydict() == expected
 
 
+def test_drop(df):
+    df = df.drop("c")
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert df.schema().names == ["a", "b"]
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+
+
 def test_limit(df):
     df = df.limit(1)
 
@@ -190,6 +199,28 @@ def test_limit_with_offset(df):
     assert len(result.column(1)) == 1
 
 
+def test_head(df):
+    df = df.head(1)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([1])
+    assert result.column(1) == pa.array([4])
+    assert result.column(2) == pa.array([8])
+
+
+def test_tail(df):
+    df = df.tail(1)
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([3])
+    assert result.column(1) == pa.array([6])
+    assert result.column(2) == pa.array([8])
+
+
 def test_with_column(df):
     df = df.with_column("c", column("a") + column("b"))
 
@@ -203,6 +234,46 @@ def test_with_column(df):
     assert result.column(0) == pa.array([1, 2, 3])
     assert result.column(1) == pa.array([4, 5, 6])
     assert result.column(2) == pa.array([5, 7, 9])
+
+
+def test_with_columns(df):
+    df = df.with_columns(
+        (column("a") + column("b")).alias("c"),
+        (column("a") + column("b")).alias("d"),
+        [
+            (column("a") + column("b")).alias("e"),
+            (column("a") + column("b")).alias("f"),
+        ],
+        g=(column("a") + column("b")),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+    assert result.schema.field(3).name == "d"
+    assert result.schema.field(4).name == "e"
+    assert result.schema.field(5).name == "f"
+    assert result.schema.field(6).name == "g"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
+    assert result.column(3) == pa.array([5, 7, 9])
+    assert result.column(4) == pa.array([5, 7, 9])
+    assert result.column(5) == pa.array([5, 7, 9])
+    assert result.column(6) == pa.array([5, 7, 9])
+
+
+def test_cast(df):
+    df = df.cast({"a": pa.float16(), "b": pa.list_(pa.uint32())})
+    expected = pa.schema(
+        [("a", pa.float16()), ("b", pa.list_(pa.uint32())), ("c", pa.int64())]
+    )
+
+    assert df.schema() == expected
 
 
 def test_with_column_renamed(df):
@@ -305,6 +376,42 @@ def test_join_invalid_params():
         ValueError, match=r"either `on` or `left_on` and `right_on` should be provided."
     ):
         df2 = df.join(df1, how="inner")  # type: ignore
+
+
+def test_join_on():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([-8, 10])],
+        names=["a", "c"],
+    )
+    df1 = ctx.create_dataframe([[batch]], "r")
+
+    df2 = df.join_on(df1, column("l.a").__eq__(column("r.a")), how="inner")
+    df2.show()
+    df2 = df2.sort(column("l.a"))
+    table = pa.Table.from_batches(df2.collect())
+
+    expected = {"a": [1, 2], "c": [-8, 10], "b": [4, 5]}
+    assert table.to_pydict() == expected
+
+    df3 = df.join_on(
+        df1,
+        column("l.a").__eq__(column("r.a")),
+        column("l.a").__lt__(column("r.c")),
+        how="inner",
+    )
+    df3.show()
+    df3 = df3.sort(column("l.a"))
+    table = pa.Table.from_batches(df3.collect())
+    expected = {"a": [2], "c": [10], "b": [5]}
+    assert table.to_pydict() == expected
 
 
 def test_distinct():

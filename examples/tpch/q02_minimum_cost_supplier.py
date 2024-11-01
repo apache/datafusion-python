@@ -43,10 +43,10 @@ REGION_OF_INTEREST = "EUROPE"
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select(
     "p_partkey", "p_mfgr", "p_type", "p_size"
 )
-df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns(
+df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select(
     "s_acctbal",
     "s_name",
     "s_address",
@@ -55,13 +55,13 @@ df_supplier = ctx.read_parquet(get_data_path("supplier.parquet")).select_columns
     "s_nationkey",
     "s_suppkey",
 )
-df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select_columns(
+df_partsupp = ctx.read_parquet(get_data_path("partsupp.parquet")).select(
     "ps_partkey", "ps_suppkey", "ps_supplycost"
 )
-df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select_columns(
+df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
     "n_nationkey", "n_regionkey", "n_name"
 )
-df_region = ctx.read_parquet(get_data_path("region.parquet")).select_columns(
+df_region = ctx.read_parquet(get_data_path("region.parquet")).select(
     "r_regionkey", "r_name"
 )
 
@@ -115,7 +115,7 @@ df = df.join(df_part, (["ps_partkey"], ["p_partkey"]), how="inner")
 
 # From the problem statement, these are the values we wish to output
 
-df = df.select_columns(
+df = df.select(
     "s_acctbal",
     "s_name",
     "n_name",

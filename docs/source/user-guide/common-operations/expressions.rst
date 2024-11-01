@@ -77,11 +77,38 @@ approaches.
     df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
     df.select(col("a")[0].alias("a0"))
 
-
 .. warning::
 
     Indexing an element of an array via ``[]`` starts at index 0 whereas
     :py:func:`~datafusion.functions.array_element` starts at index 1.
+
+To check if an array is empty, you can use the function :py:func:`datafusion.functions.array_empty` or `datafusion.functions.empty`.
+This function returns a boolean indicating whether the array is empty.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import array_empty
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[], [1, 2, 3]]})
+    df.select(array_empty(col("a")).alias("is_empty"))
+
+In this example, the `is_empty` column will contain `True` for the first row and `False` for the second row.
+
+To get the total number of elements in an array, you can use the function :py:func:`datafusion.functions.cardinality`.
+This function returns an integer indicating the total number of elements in the array.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import cardinality
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+    df.select(cardinality(col("a")).alias("num_elements"))
+
+In this example, the `num_elements` column will contain `3` for both rows.
 
 Structs
 -------

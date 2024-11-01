@@ -52,10 +52,10 @@ items_of_interest = {
 
 ctx = SessionContext()
 
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select(
     "p_partkey", "p_brand", "p_container", "p_size"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey",
     "l_quantity",
     "l_shipmode",

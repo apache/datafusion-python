@@ -39,10 +39,10 @@ DATE_OF_INTEREST = "1993-07-01"
 
 ctx = SessionContext()
 
-df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select_columns(
+df_orders = ctx.read_parquet(get_data_path("orders.parquet")).select(
     "o_orderdate", "o_orderpriority", "o_orderkey"
 )
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_orderkey", "l_commitdate", "l_receiptdate"
 )
 
@@ -54,7 +54,7 @@ interval = pa.scalar((0, INTERVAL_DAYS, 0), type=pa.month_day_nano_interval())
 # Limit results to cases where commitment date before receipt date
 # Aggregate the results so we only get one row to join with the order table.
 # Alternately, and likely more idiomatic is instead of `.aggregate` you could
-# do `.select_columns("l_orderkey").distinct()`. The goal here is to show
+# do `.select("l_orderkey").distinct()`. The goal here is to show
 # multiple examples of how to use Data Fusion.
 df_lineitem = df_lineitem.filter(col("l_commitdate") < col("l_receiptdate")).aggregate(
     [col("l_orderkey")], []

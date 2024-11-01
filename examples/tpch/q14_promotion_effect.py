@@ -41,12 +41,10 @@ interval_one_month = lit(pa.scalar((0, 30, 0), type=pa.month_day_nano_interval()
 
 ctx = SessionContext()
 
-df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select_columns(
+df_lineitem = ctx.read_parquet(get_data_path("lineitem.parquet")).select(
     "l_partkey", "l_shipdate", "l_extendedprice", "l_discount"
 )
-df_part = ctx.read_parquet(get_data_path("part.parquet")).select_columns(
-    "p_partkey", "p_type"
-)
+df_part = ctx.read_parquet(get_data_path("part.parquet")).select("p_partkey", "p_type")
 
 
 # Check part type begins with PROMO

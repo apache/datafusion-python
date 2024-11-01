@@ -51,6 +51,7 @@ __all__ = [
     "array_dims",
     "array_distinct",
     "array_element",
+    "array_empty",
     "array_except",
     "array_extract",
     "array_has",
@@ -124,6 +125,7 @@ __all__ = [
     "decode",
     "degrees",
     "digest",
+    "empty",
     "encode",
     "ends_with",
     "exp",
@@ -131,6 +133,7 @@ __all__ = [
     "find_in_set",
     "first_value",
     "flatten",
+    "cardinality",
     "floor",
     "from_unixtime",
     "gcd",
@@ -186,6 +189,7 @@ __all__ = [
     "min",
     "named_struct",
     "nanvl",
+    "nvl",
     "now",
     "nth_value",
     "nullif",
@@ -673,6 +677,11 @@ def nanvl(x: Expr, y: Expr) -> Expr:
     return Expr(f.nanvl(x.expr, y.expr))
 
 
+def nvl(x: Expr, y: Expr) -> Expr:
+    """Returns ``x`` if ``x`` is not ``NULL``. Otherwise returns ``y``."""
+    return Expr(f.nvl(x.expr, y.expr))
+
+
 def octet_length(arg: Expr) -> Expr:
     """Returns the number of bytes of a string."""
     return Expr(f.octet_length(arg.expr))
@@ -1154,6 +1163,11 @@ def array_element(array: Expr, n: Expr) -> Expr:
     return Expr(f.array_element(array.expr, n.expr))
 
 
+def array_empty(array: Expr) -> Expr:
+    """Returns a boolean indicating whether the array is empty."""
+    return Expr(f.array_empty(array.expr))
+
+
 def array_extract(array: Expr, n: Expr) -> Expr:
     """Extracts the element with the index n from the array.
 
@@ -1502,6 +1516,16 @@ def list_resize(array: Expr, size: Expr, value: Expr) -> Expr:
 def flatten(array: Expr) -> Expr:
     """Flattens an array of arrays into a single array."""
     return Expr(f.flatten(array.expr))
+
+
+def cardinality(array: Expr) -> Expr:
+    """Returns the total number of elements in the array."""
+    return Expr(f.cardinality(array.expr))
+
+
+def empty(array: Expr) -> Expr:
+    """This is an alias for :py:func:`array_empty`."""
+    return array_empty(array)
 
 
 # aggregate functions
@@ -2122,7 +2146,7 @@ def first_value(
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
-        null_treatment: Assign whether to respect or ignull null values.
+        null_treatment: Assign whether to respect or ignore null values.
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2154,7 +2178,7 @@ def last_value(
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
-        null_treatment: Assign whether to respect or ignull null values.
+        null_treatment: Assign whether to respect or ignore null values.
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2188,7 +2212,7 @@ def nth_value(
         n: Index of value to return. Starts at 1.
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
-        null_treatment: Assign whether to respect or ignull null values.
+        null_treatment: Assign whether to respect or ignore null values.
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None

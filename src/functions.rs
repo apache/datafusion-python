@@ -490,6 +490,11 @@ expr_fn!(
     x y,
     "Returns x if x is not NaN otherwise returns y."
 );
+expr_fn!(
+    nvl,
+    x y,
+    "Returns x if x is not NULL otherwise returns y."
+);
 expr_fn!(nullif, arg_1 arg_2);
 expr_fn!(octet_length, args, "Returns number of bytes in the string. Since this version of the function accepts type character directly, it will not strip trailing spaces.");
 expr_fn_vec!(overlay);
@@ -567,6 +572,7 @@ array_fn!(array_to_string, array delimiter);
 array_fn!(array_dims, array);
 array_fn!(array_distinct, array);
 array_fn!(array_element, array element);
+array_fn!(array_empty, array);
 array_fn!(array_length, array);
 array_fn!(array_has, first_array second_array);
 array_fn!(array_has_all, first_array second_array);
@@ -588,6 +594,7 @@ array_fn!(array_intersect, first_array second_array);
 array_fn!(array_union, array1 array2);
 array_fn!(array_except, first_array second_array);
 array_fn!(array_resize, array size value);
+array_fn!(cardinality, array);
 array_fn!(flatten, array);
 array_fn!(range, start stop step);
 
@@ -913,6 +920,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(min))?;
     m.add_wrapped(wrap_pyfunction!(named_struct))?;
     m.add_wrapped(wrap_pyfunction!(nanvl))?;
+    m.add_wrapped(wrap_pyfunction!(nvl))?;
     m.add_wrapped(wrap_pyfunction!(now))?;
     m.add_wrapped(wrap_pyfunction!(nullif))?;
     m.add_wrapped(wrap_pyfunction!(octet_length))?;
@@ -997,6 +1005,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_dims))?;
     m.add_wrapped(wrap_pyfunction!(array_distinct))?;
     m.add_wrapped(wrap_pyfunction!(array_element))?;
+    m.add_wrapped(wrap_pyfunction!(array_empty))?;
     m.add_wrapped(wrap_pyfunction!(array_length))?;
     m.add_wrapped(wrap_pyfunction!(array_has))?;
     m.add_wrapped(wrap_pyfunction!(array_has_all))?;
@@ -1022,6 +1031,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(array_sort))?;
     m.add_wrapped(wrap_pyfunction!(array_slice))?;
     m.add_wrapped(wrap_pyfunction!(flatten))?;
+    m.add_wrapped(wrap_pyfunction!(cardinality))?;
 
     // Window Functions
     m.add_wrapped(wrap_pyfunction!(lead))?;

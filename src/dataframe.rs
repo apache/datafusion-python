@@ -170,6 +170,13 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    #[pyo3(signature = (*args))]
+    fn drop(&self, args: Vec<PyBackedStr>) -> PyResult<Self> {
+        let cols = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self.df.as_ref().clone().drop_columns(&cols)?;
+        Ok(Self::new(df))
+    }
+
     fn filter(&self, predicate: PyExpr) -> PyResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))
@@ -177,6 +184,16 @@ impl PyDataFrame {
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyResult<Self> {
         let df = self.df.as_ref().clone().with_column(name, expr.into())?;
+        Ok(Self::new(df))
+    }
+
+    fn with_columns(&self, exprs: Vec<PyExpr>) -> PyResult<Self> {
+        let mut df = self.df.as_ref().clone();
+        for expr in exprs {
+            let expr: Expr = expr.into();
+            let name = format!("{}", expr.schema_name());
+            df = df.with_column(name.as_str(), expr)?
+        }
         Ok(Self::new(df))
     }
 
@@ -289,6 +306,31 @@ impl PyDataFrame {
             &right_keys,
             None,
         )?;
+        Ok(Self::new(df))
+    }
+
+    fn join_on(&self, right: PyDataFrame, on_exprs: Vec<PyExpr>, how: &str) -> PyResult<Self> {
+        let join_type = match how {
+            "inner" => JoinType::Inner,
+            "left" => JoinType::Left,
+            "right" => JoinType::Right,
+            "full" => JoinType::Full,
+            "semi" => JoinType::LeftSemi,
+            "anti" => JoinType::LeftAnti,
+            how => {
+                return Err(DataFusionError::Common(format!(
+                    "The join type {how} does not exist or is not implemented"
+                ))
+                .into());
+            }
+        };
+        let exprs: Vec<Expr> = on_exprs.into_iter().map(|e| e.into()).collect();
+
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .join_on(right.df.as_ref().clone(), join_type, exprs)?;
         Ok(Self::new(df))
     }
 

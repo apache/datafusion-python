@@ -310,6 +310,14 @@ def py_flatten(arr):
             lambda data: [r[0] for r in data],
         ],
         [
+            lambda col: f.array_empty(col),
+            lambda data: [len(r) == 0 for r in data],
+        ],
+        [
+            lambda col: f.empty(col),
+            lambda data: [len(r) == 0 for r in data],
+        ],
+        [
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
         ],
@@ -533,6 +541,24 @@ def test_array_function_flatten():
     for a, b in zip(query_result, py_expr):
         np.testing.assert_array_almost_equal(
             np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
+        )
+
+
+def test_array_function_cardinality():
+    data = [[1, 2, 3], [4, 4, 5, 6]]
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([np.array(data, dtype=object)], names=["arr"])
+    df = ctx.create_dataframe([[batch]])
+
+    stmt = f.cardinality(column("arr"))
+    py_expr = [len(arr) for arr in data]  # Expected lengths: [3, 3]
+    # assert py_expr lengths
+
+    query_result = df.select(stmt).collect()[0].column(0)
+
+    for a, b in zip(query_result, py_expr):
+        np.testing.assert_array_equal(
+            np.array([a.as_py()], dtype=int), np.array([b], dtype=int)
         )
 
 
