@@ -21,7 +21,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use arrow::array::RecordBatchReader;
-use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
 use datafusion::execution::session_state::SessionStateBuilder;
@@ -37,7 +36,6 @@ use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, DataFusionError};
 use crate::expr::sort_expr::PySortExpr;
-use crate::expr::PyExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -56,8 +54,8 @@ use datafusion::datasource::file_format::parquet::ParquetFormat;
 use datafusion::datasource::listing::{
     ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
 };
+use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
-use datafusion::datasource::{provider, MemTable};
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -574,7 +572,6 @@ impl PySessionContext {
         &mut self,
         name: &str,
         provider: Bound<'_, PyAny>,
-        py: Python,
     ) -> PyResult<()> {
         if provider.hasattr("__datafusion_table_provider__")? {
             let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
@@ -582,7 +579,7 @@ impl PySessionContext {
             // validate_pycapsule(capsule, "arrow_array_stream")?;
 
             let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-            let provider = ForeignTableProvider::new(provider);
+            let provider: ForeignTableProvider = provider.into();
 
             let _ = self.ctx.register_table(name, Arc::new(provider))?;
         }
