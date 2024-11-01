@@ -107,6 +107,7 @@ Functions
    datafusion.functions.degrees
    datafusion.functions.dense_rank
    datafusion.functions.digest
+   datafusion.functions.empty
    datafusion.functions.encode
    datafusion.functions.ends_with
    datafusion.functions.exp
@@ -962,6 +963,11 @@ Module Contents
    blake2b, and blake3.
 
 
+.. py:function:: empty(array: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   This is an alias for :py:func:`array_empty`.
+
+
 .. py:function:: encode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
@@ -1004,7 +1010,7 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
    :param order_by: Set the ordering of the expression to evaluate
-   :param null_treatment: Assign whether to respect or ignull null values.
+   :param null_treatment: Assign whether to respect or ignore null values.
 
 
 .. py:function:: flatten(array: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1090,7 +1096,7 @@ Module Contents
    :param expression: Argument to perform bitwise calculation on
    :param filter: If provided, only compute against rows for which the filter is True
    :param order_by: Set the ordering of the expression to evaluate
-   :param null_treatment: Assign whether to respect or ignull null values.
+   :param null_treatment: Assign whether to respect or ignore null values.
 
 
 .. py:function:: lcm(x: datafusion.expr.Expr, y: datafusion.expr.Expr) -> datafusion.expr.Expr
@@ -1465,7 +1471,7 @@ Module Contents
    :param n: Index of value to return. Starts at 1.
    :param filter: If provided, only compute against rows for which the filter is True
    :param order_by: Set the ordering of the expression to evaluate
-   :param null_treatment: Assign whether to respect or ignull null values.
+   :param null_treatment: Assign whether to respect or ignore null values.
 
 
 .. py:function:: ntile(groups: int, partition_by: Optional[list[datafusion.expr.Expr]] = None, order_by: Optional[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] = None) -> datafusion.expr.Expr
