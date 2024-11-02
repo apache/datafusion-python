@@ -55,9 +55,9 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") > lit(DATE_OF_INTEREST))
 
 # Join all 3 dataframes
 
-df = df_customer.join(df_orders, (["c_custkey"], ["o_custkey"]), how="inner").join(
-    df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner"
-)
+df = df_customer.join(
+    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
+).join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
 
 # Compute the revenue
 

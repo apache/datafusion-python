@@ -74,7 +74,7 @@ df = df_orders.filter(col("o_orderdate") >= date_start_of_quarter).filter(
     col("o_orderdate") < date_start_of_quarter + interval_one_quarter
 )
 
-df = df.join(df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner")
+df = df.join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
 
 # Compute the revenue
 df = df.aggregate(
@@ -83,8 +83,8 @@ df = df.aggregate(
 )
 
 # Now join in the customer data
-df = df.join(df_customer, (["o_custkey"], ["c_custkey"]), how="inner")
-df = df.join(df_nation, (["c_nationkey"], ["n_nationkey"]), how="inner")
+df = df.join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
+df = df.join(df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner")
 
 # These are the columns the problem statement requires
 df = df.select(

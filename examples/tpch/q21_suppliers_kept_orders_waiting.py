@@ -52,13 +52,13 @@ df_nation = ctx.read_parquet(get_data_path("nation.parquet")).select(
 df_suppliers_of_interest = df_nation.filter(col("n_name") == lit(NATION_OF_INTEREST))
 
 df_suppliers_of_interest = df_suppliers_of_interest.join(
-    df_supplier, (["n_nationkey"], ["s_nationkey"]), "inner"
+    df_supplier, left_on="n_nationkey", right_on="s_nationkey", how="inner"
 )
 
 # Find the failed orders and all their line items
 df = df_orders.filter(col("o_orderstatus") == lit("F"))
 
-df = df_lineitem.join(df, (["l_orderkey"], ["o_orderkey"]), "inner")
+df = df_lineitem.join(df, left_on="l_orderkey", right_on="o_orderkey", how="inner")
 
 # Identify the line items for which the order is failed due to.
 df = df.with_column(

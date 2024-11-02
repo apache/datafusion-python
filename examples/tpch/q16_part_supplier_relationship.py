@@ -56,7 +56,7 @@ df_unwanted_suppliers = df_supplier.filter(
 
 # Remove unwanted suppliers
 df_partsupp = df_partsupp.join(
-    df_unwanted_suppliers, (["ps_suppkey"], ["s_suppkey"]), "anti"
+    df_unwanted_suppliers, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="anti"
 )
 
 # Select the parts we are interested in

@@ -18,7 +18,7 @@
 import pytest
 from importlib import import_module
 import pyarrow as pa
-from datafusion import col, lit, functions as F
+from datafusion import DataFrame, col, lit, functions as F
 from util import get_answer_file
 
 
@@ -94,7 +94,7 @@ def check_q17(df):
 )
 def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
     module = import_module(query_code)
-    df = module.df
+    df: DataFrame = module.df
 
     # Treat q17 as a special case. The answer file does not match the spec.
     # Running at scale factor 1, we have manually verified this result does
@@ -121,5 +121,5 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
 
     cols = list(read_schema.names)
 
-    assert df.join(df_expected, (cols, cols), "anti").count() == 0
+    assert df.join(df_expected, on=cols, how="anti").count() == 0
     assert df.count() == df_expected.count()

@@ -49,7 +49,9 @@ df_orders = df_orders.filter(
 )
 
 # Since we may have customers with no orders we must do a left join
-df = df_customer.join(df_orders, (["c_custkey"], ["o_custkey"]), how="left")
+df = df_customer.join(
+    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="left"
+)
 
 # Find the number of orders for each customer
 df = df.aggregate([col("c_custkey")], [F.count(col("o_custkey")).alias("c_count")])

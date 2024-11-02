@@ -70,7 +70,7 @@ df = df_lineitem.filter(col("l_shipdate") >= lit(date)).filter(
 )
 
 # This will filter down the line items to the parts of interest
-df = df.join(df_part, (["l_partkey"], ["p_partkey"]), "inner")
+df = df.join(df_part, left_on="l_partkey", right_on="p_partkey", how="inner")
 
 # Compute the total sold and limit ourselves to individual supplier/part combinations
 df = df.aggregate(
@@ -78,15 +78,18 @@ df = df.aggregate(
 )
 
 df = df.join(
-    df_partsupp, (["l_partkey", "l_suppkey"], ["ps_partkey", "ps_suppkey"]), "inner"
+    df_partsupp,
+    left_on=["l_partkey", "l_suppkey"],
+    right_on=["ps_partkey", "ps_suppkey"],
+    how="inner",
 )
 
 # Find cases of excess quantity
 df.filter(col("ps_availqty") > lit(0.5) * col("total_sold"))
 
 # We could do these joins earlier, but now limit to the nation of interest suppliers
-df = df.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), "inner")
-df = df.join(df_nation, (["s_nationkey"], ["n_nationkey"]), "inner")
+df = df.join(df_supplier, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="inner")
+df = df.join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
 
 # Restrict to the requested data per the problem statement
 df = df.select("s_name", "s_address").distinct()
