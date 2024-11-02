@@ -102,7 +102,9 @@ df = df.select(
 )
 
 # Join to the supplier of interest list for the nation of interest
-df = df.join(df_suppliers_of_interest, (["suppkey"], ["s_suppkey"]), "inner")
+df = df.join(
+    df_suppliers_of_interest, left_on=["suppkey"], right_on=["s_suppkey"], how="inner"
+)
 
 # Count how many orders that supplier is the only failed supplier for
 df = df.aggregate([col("s_name")], [F.count(col("o_orderkey")).alias("numwait")])
