@@ -179,6 +179,8 @@ conda env create -f ./conda/environments/datafusion-dev.yaml -n datafusion-dev
 conda activate datafusion-dev
 ```
 
+Or alternatively, if you are on an OS that supports CUDA Toolkit, you can use `-f ./conda/environments/datafusion-cuda-dev.yaml`.
+
 Bootstrap (Pip):
 
 ```bash
