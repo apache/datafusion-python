@@ -147,6 +147,8 @@ __all__ = [
     "length",
     "levenshtein",
     "list_append",
+    "list_cat",
+    "list_concat",
     "list_dims",
     "list_distinct",
     "list_element",
@@ -1140,6 +1142,22 @@ def array_dims(array: Expr) -> Expr:
 def array_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates."""
     return Expr(f.array_distinct(array.expr))
+
+
+def list_cat(*args: Expr) -> Expr:
+    """Concatenates the input arrays.
+
+    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    """
+    return array_concat(*args)
+
+
+def list_concat(*args: Expr) -> Expr:
+    """Concatenates the input arrays.
+
+    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    """
+    return array_concat(*args)
 
 
 def list_distinct(array: Expr) -> Expr:
