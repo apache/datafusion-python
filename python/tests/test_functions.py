@@ -446,6 +446,10 @@ def py_flatten(arr):
             lambda data: [[arr] * 2 for arr in data],
         ],
         [
+            lambda col: f.list_repeat(col, literal(2)),
+            lambda data: [[arr] * 2 for arr in data],
+        ],
+        [
             lambda col: f.array_replace(col, literal(3.0), literal(4.0)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
         ],

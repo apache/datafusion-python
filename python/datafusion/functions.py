@@ -164,6 +164,7 @@ __all__ = [
     "list_prepend",
     "list_push_back",
     "list_push_front",
+    "list_repeat",
     "list_remove",
     "list_remove_all",
     "list_remove_n",
@@ -1382,6 +1383,14 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
 def array_repeat(element: Expr, count: Expr) -> Expr:
     """Returns an array containing ``element`` ``count`` times."""
     return Expr(f.array_repeat(element.expr, count.expr))
+
+
+def list_repeat(element: Expr, count: Expr) -> Expr:
+    """Returns an array containing ``element`` ``count`` times.
+
+    This is an alias for :py:func:`array_repeat`.
+    """
+    return array_repeat(element, count)
 
 
 def array_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
