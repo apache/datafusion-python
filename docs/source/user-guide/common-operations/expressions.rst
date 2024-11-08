@@ -129,12 +129,12 @@ This function returns a new array with the elements repeated.
 
 .. ipython:: python
 
-    from datafusion import SessionContext, col
+    from datafusion import SessionContext, col, literal
     from datafusion.functions import list_repeat
 
     ctx = SessionContext()
     df = ctx.from_pydict({"a": [[1, 2, 3]]})
-    df.select(list_repeat(col("a"), 2).alias("repeated_array"))
+    df.select(list_repeat(col("a"), literal(2)).alias("repeated_array"))
 
 In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
 
