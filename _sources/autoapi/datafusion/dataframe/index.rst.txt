@@ -253,17 +253,21 @@ Module Contents
 
 
 
-   .. py:method:: join(right: DataFrame, join_keys: tuple[list[str], list[str]], how: str) -> DataFrame
+   .. py:method:: join(right: DataFrame, on: str | Sequence[str], how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: None = None, right_on: None = None, join_keys: None = None) -> DataFrame
+                  join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: str | Sequence[str], right_on: str | Sequence[str], join_keys: tuple[list[str], list[str]] | None = None) -> DataFrame
+                  join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, join_keys: tuple[list[str], list[str]], left_on: None = None, right_on: None = None) -> DataFrame
 
       Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-      Join keys are a pair of lists of column names in the left and right
-      dataframes, respectively. These lists must have the same length.
+      `on` has to be provided or both `left_on` and `right_on` in conjunction.
 
       :param right: Other DataFrame to join with.
-      :param join_keys: Tuple of two lists of column names to join on.
+      :param on: Column names to join on in both dataframes.
       :param how: Type of join to perform. Supported types are "inner", "left",
                   "right", "full", "semi", "anti".
+      :param left_on: Join column of the left dataframe.
+      :param right_on: Join column of the right dataframe.
+      :param join_keys: Tuple of two lists of column names to join on. [Deprecated]
 
       :returns: DataFrame after join.
 

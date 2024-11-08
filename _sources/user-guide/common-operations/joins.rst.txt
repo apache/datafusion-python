@@ -56,7 +56,7 @@ will be included in the resulting DataFrame.
 
 .. ipython:: python
 
-    left.join(right, join_keys=(["customer_id"], ["id"]), how="inner")
+    left.join(right, left_on="customer_id", right_on="id", how="inner")
 
 The parameter ``join_keys`` specifies the columns from the left DataFrame and right DataFrame that contains the values
 that should match.
@@ -70,7 +70,7 @@ values for the corresponding columns.
 
 .. ipython:: python
 
-    left.join(right, join_keys=(["customer_id"], ["id"]), how="left")
+    left.join(right, left_on="customer_id", right_on="id", how="left")
 
 Full Join
 ---------
@@ -80,7 +80,7 @@ is no match. Unmatched rows will have null values.
 
 .. ipython:: python
 
-    left.join(right, join_keys=(["customer_id"], ["id"]), how="full")
+    left.join(right, left_on="customer_id", right_on="id", how="full")
 
 Left Semi Join
 --------------
@@ -90,7 +90,7 @@ omitting duplicates with multiple matches in the right table.
 
 .. ipython:: python
 
-    left.join(right, join_keys=(["customer_id"], ["id"]), how="semi")
+    left.join(right, left_on="customer_id", right_on="id", how="semi")
 
 Left Anti Join
 --------------
@@ -101,4 +101,4 @@ the right table.
 
 .. ipython:: python
 
-    left.join(right, join_keys=(["customer_id"], ["id"]), how="anti")
+    left.join(right, left_on="customer_id", right_on="id", how="anti")
