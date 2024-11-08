@@ -20,9 +20,8 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 """
 
 from __future__ import annotations
-
-
-from typing import Any, Iterable, List, Literal, TYPE_CHECKING
+import warnings
+from typing import Any, Iterable, List, TYPE_CHECKING, Literal, overload
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -32,7 +31,7 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl
     import pathlib
-    from typing import Callable
+    from typing import Callable, Sequence
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
@@ -368,27 +367,105 @@ class DataFrame:
         """
         return DataFrame(self.df.distinct())
 
+    @overload
     def join(
         self,
         right: DataFrame,
+        on: str | Sequence[str],
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+        *,
+        left_on: None = None,
+        right_on: None = None,
+        join_keys: None = None,
+    ) -> DataFrame: ...
+
+    @overload
+    def join(
+        self,
+        right: DataFrame,
+        on: None = None,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+        *,
+        left_on: str | Sequence[str],
+        right_on: str | Sequence[str],
+        join_keys: tuple[list[str], list[str]] | None = None,
+    ) -> DataFrame: ...
+
+    @overload
+    def join(
+        self,
+        right: DataFrame,
+        on: None = None,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+        *,
         join_keys: tuple[list[str], list[str]],
-        how: str,
+        left_on: None = None,
+        right_on: None = None,
+    ) -> DataFrame: ...
+
+    def join(
+        self,
+        right: DataFrame,
+        on: str | Sequence[str] | tuple[list[str], list[str]] | None = None,
+        how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
+        *,
+        left_on: str | Sequence[str] | None = None,
+        right_on: str | Sequence[str] | None = None,
+        join_keys: tuple[list[str], list[str]] | None = None,
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-        Join keys are a pair of lists of column names in the left and right
-        dataframes, respectively. These lists must have the same length.
+        `on` has to be provided or both `left_on` and `right_on` in conjunction.
 
         Args:
             right: Other DataFrame to join with.
-            join_keys: Tuple of two lists of column names to join on.
+            on: Column names to join on in both dataframes.
             how: Type of join to perform. Supported types are "inner", "left",
                 "right", "full", "semi", "anti".
+            left_on: Join column of the left dataframe.
+            right_on: Join column of the right dataframe.
+            join_keys: Tuple of two lists of column names to join on. [Deprecated]
 
         Returns:
             DataFrame after join.
         """
-        return DataFrame(self.df.join(right.df, join_keys, how))
+        # This check is to prevent breaking API changes where users prior to
+        # DF 43.0.0 would  pass the join_keys as a positional argument instead
+        # of a keyword argument.
+        if isinstance(on, tuple) and len(on) == 2:
+            if isinstance(on[0], list) and isinstance(on[1], list):
+                join_keys = on  # type: ignore
+                on = None
+
+        if join_keys is not None:
+            warnings.warn(
+                "`join_keys` is deprecated, use `on` or `left_on` with `right_on`",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            left_on = join_keys[0]
+            right_on = join_keys[1]
+
+        if on:
+            if left_on or right_on:
+                raise ValueError(
+                    "`left_on` or `right_on` should not provided with `on`"
+                )
+            left_on = on
+            right_on = on
+        elif left_on or right_on:
+            if left_on is None or right_on is None:
+                raise ValueError("`left_on` and `right_on` should both be provided.")
+        else:
+            raise ValueError(
+                "either `on` or `left_on` and `right_on` should be provided."
+            )
+        if isinstance(left_on, str):
+            left_on = [left_on]
+        if isinstance(right_on, str):
+            right_on = [right_on]
+
+        return DataFrame(self.df.join(right.df, how, left_on, right_on))
 
     def join_on(
         self,

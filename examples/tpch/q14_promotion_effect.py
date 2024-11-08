@@ -57,7 +57,9 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= date_of_interest).filter(
 )
 
 # Left join so we can sum up the promo parts different from other parts
-df = df_lineitem.join(df_part, (["l_partkey"], ["p_partkey"]), "left")
+df = df_lineitem.join(
+    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="left"
+)
 
 # Make a factor of 1.0 if it is a promotion, 0.0 otherwise
 df = df.with_column("promo_factor", F.coalesce(col("promo_factor"), lit(0.0)))

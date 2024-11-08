@@ -89,27 +89,27 @@ df_regional_customers = df_region.filter(col("r_name") == customer_region)
 
 # After this join we have all of the possible sales nations
 df_regional_customers = df_regional_customers.join(
-    df_nation, (["r_regionkey"], ["n_regionkey"]), how="inner"
+    df_nation, left_on=["r_regionkey"], right_on=["n_regionkey"], how="inner"
 )
 
 # Now find the possible customers
 df_regional_customers = df_regional_customers.join(
-    df_customer, (["n_nationkey"], ["c_nationkey"]), how="inner"
+    df_customer, left_on=["n_nationkey"], right_on=["c_nationkey"], how="inner"
 )
 
 # Next find orders for these customers
 df_regional_customers = df_regional_customers.join(
-    df_orders, (["c_custkey"], ["o_custkey"]), how="inner"
+    df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
 )
 
 # Find all line items from these orders
 df_regional_customers = df_regional_customers.join(
-    df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner"
+    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
 )
 
 # Limit to the part of interest
 df_regional_customers = df_regional_customers.join(
-    df_part, (["l_partkey"], ["p_partkey"]), how="inner"
+    df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner"
 )
 
 # Compute the volume for each line item
@@ -126,7 +126,7 @@ df_national_suppliers = df_nation.filter(col("n_name") == supplier_nation)
 
 # Determine the suppliers by the limited nation key we have in our single row df above
 df_national_suppliers = df_national_suppliers.join(
-    df_supplier, (["n_nationkey"], ["s_nationkey"]), how="inner"
+    df_supplier, left_on=["n_nationkey"], right_on=["s_nationkey"], how="inner"
 )
 
 # When we join to the customer dataframe, we don't want to confuse other columns, so only
@@ -141,7 +141,7 @@ df_national_suppliers = df_national_suppliers.select("s_suppkey")
 # column only from suppliers in the nation we are evaluating.
 
 df = df_regional_customers.join(
-    df_national_suppliers, (["l_suppkey"], ["s_suppkey"]), how="left"
+    df_national_suppliers, left_on=["l_suppkey"], right_on=["s_suppkey"], how="left"
 )
 
 # Use a case statement to compute the volume sold by suppliers in the nation of interest

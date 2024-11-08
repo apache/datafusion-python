@@ -51,7 +51,7 @@ df = df_part.filter(col("p_brand") == lit(BRAND)).filter(
 )
 
 # Combine data
-df = df.join(df_lineitem, (["p_partkey"], ["l_partkey"]), "inner")
+df = df.join(df_lineitem, left_on=["p_partkey"], right_on=["l_partkey"], how="inner")
 
 # Find the average quantity
 window_frame = WindowFrame("rows", None, None)

@@ -62,7 +62,7 @@ df.show()
 df = df.filter(col("c_acctbal") > col("avg_balance"))
 
 # Limit results to customers with no orders
-df = df.join(df_orders, (["c_custkey"], ["o_custkey"]), "anti")
+df = df.join(df_orders, left_on="c_custkey", right_on="o_custkey", how="anti")
 
 # Count up the customers and the balances
 df = df.aggregate(

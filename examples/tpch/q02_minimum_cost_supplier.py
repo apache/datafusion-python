@@ -80,16 +80,20 @@ df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
 # Now that we have the region, find suppliers in that region. Suppliers are tied to their nation
 # and nations are tied to the region.
 
-df_nation = df_nation.join(df_region, (["n_regionkey"], ["r_regionkey"]), how="inner")
+df_nation = df_nation.join(
+    df_region, left_on=["n_regionkey"], right_on=["r_regionkey"], how="inner"
+)
 df_supplier = df_supplier.join(
-    df_nation, (["s_nationkey"], ["n_nationkey"]), how="inner"
+    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
 )
 
 # Now that we know who the potential suppliers are for the part, we can limit out part
 # supplies table down. We can further join down to the specific parts we've identified
 # as matching the request
 
-df = df_partsupp.join(df_supplier, (["ps_suppkey"], ["s_suppkey"]), how="inner")
+df = df_partsupp.join(
+    df_supplier, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="inner"
+)
 
 # Locate the minimum cost across all suppliers. There are multiple ways you could do this,
 # but one way is to create a window function across all suppliers, find the minimum, and
@@ -111,7 +115,7 @@ df = df.with_column(
 
 df = df.filter(col("min_cost") == col("ps_supplycost"))
 
-df = df.join(df_part, (["ps_partkey"], ["p_partkey"]), how="inner")
+df = df.join(df_part, left_on=["ps_partkey"], right_on=["p_partkey"], how="inner")
 
 # From the problem statement, these are the values we wish to output
 

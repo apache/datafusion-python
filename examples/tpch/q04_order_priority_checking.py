@@ -66,7 +66,9 @@ df_orders = df_orders.filter(col("o_orderdate") >= lit(date)).filter(
 )
 
 # Perform the join to find only orders for which there are lineitems outside of expected range
-df = df_orders.join(df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner")
+df = df_orders.join(
+    df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner"
+)
 
 # Based on priority, find the number of entries
 df = df.aggregate(

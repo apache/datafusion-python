@@ -90,20 +90,22 @@ df_nation = df_nation.with_column(
 
 # Limit suppliers to either nation
 df_supplier = df_supplier.join(
-    df_nation, (["s_nationkey"], ["n_nationkey"]), how="inner"
+    df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner"
 ).select(col("s_suppkey"), col("n_name").alias("supp_nation"))
 
 # Limit customers to either nation
 df_customer = df_customer.join(
-    df_nation, (["c_nationkey"], ["n_nationkey"]), how="inner"
+    df_nation, left_on=["c_nationkey"], right_on=["n_nationkey"], how="inner"
 ).select(col("c_custkey"), col("n_name").alias("cust_nation"))
 
 # Join up all the data frames from line items, and make sure the supplier and customer are in
 # different nations.
 df = (
-    df_lineitem.join(df_orders, (["l_orderkey"], ["o_orderkey"]), how="inner")
-    .join(df_customer, (["o_custkey"], ["c_custkey"]), how="inner")
-    .join(df_supplier, (["l_suppkey"], ["s_suppkey"]), how="inner")
+    df_lineitem.join(
+        df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner"
+    )
+    .join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
+    .join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
     .filter(col("cust_nation") != col("supp_nation"))
 )
 

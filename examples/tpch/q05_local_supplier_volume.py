@@ -76,15 +76,18 @@ df_region = df_region.filter(col("r_name") == lit(REGION_OF_INTEREST))
 # Join all the dataframes
 
 df = (
-    df_customer.join(df_orders, (["c_custkey"], ["o_custkey"]), how="inner")
-    .join(df_lineitem, (["o_orderkey"], ["l_orderkey"]), how="inner")
+    df_customer.join(
+        df_orders, left_on=["c_custkey"], right_on=["o_custkey"], how="inner"
+    )
+    .join(df_lineitem, left_on=["o_orderkey"], right_on=["l_orderkey"], how="inner")
     .join(
         df_supplier,
-        (["l_suppkey", "c_nationkey"], ["s_suppkey", "s_nationkey"]),
+        left_on=["l_suppkey", "c_nationkey"],
+        right_on=["s_suppkey", "s_nationkey"],
         how="inner",
     )
-    .join(df_nation, (["s_nationkey"], ["n_nationkey"]), how="inner")
-    .join(df_region, (["n_regionkey"], ["r_regionkey"]), how="inner")
+    .join(df_nation, left_on=["s_nationkey"], right_on=["n_nationkey"], how="inner")
+    .join(df_region, left_on=["n_regionkey"], right_on=["r_regionkey"], how="inner")
 )
 
 # Compute the final result

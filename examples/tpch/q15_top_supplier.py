@@ -76,7 +76,7 @@ df = df.filter(col("total_revenue") == col("max_revenue"))
 
 # Now that we know the supplier(s) with maximum revenue, get the rest of their information
 # from the supplier table
-df = df.join(df_supplier, (["l_suppkey"], ["s_suppkey"]), "inner")
+df = df.join(df_supplier, left_on=["l_suppkey"], right_on=["s_suppkey"], how="inner")
 
 # Return only the columns requested
 df = df.select("s_suppkey", "s_name", "s_address", "s_phone", "total_revenue")

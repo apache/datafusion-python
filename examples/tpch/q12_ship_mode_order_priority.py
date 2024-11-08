@@ -75,7 +75,7 @@ df = df.filter(
 
 
 # We need order priority, so join order df to line item
-df = df.join(df_orders, (["l_orderkey"], ["o_orderkey"]), how="inner")
+df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
 
 # Restrict to line items we care about based on the problem statement.
 df = df.filter(col("l_commitdate") < col("l_receiptdate"))

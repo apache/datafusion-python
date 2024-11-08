@@ -72,7 +72,7 @@ df = df.filter(
     (col("l_shipmode") == lit("AIR")) | (col("l_shipmode") == lit("AIR REG"))
 )
 
-df = df.join(df_part, (["l_partkey"], ["p_partkey"]), "inner")
+df = df.join(df_part, left_on=["l_partkey"], right_on=["p_partkey"], how="inner")
 
 
 # Create the user defined function (UDF) definition that does the work

@@ -54,8 +54,8 @@ df = df.filter(col("total_quantity") > lit(QUANTITY))
 
 # We've identified the orders of interest, now join the additional data
 # we are required to report on
-df = df.join(df_orders, (["l_orderkey"], ["o_orderkey"]), "inner")
-df = df.join(df_customer, (["o_custkey"], ["c_custkey"]), "inner")
+df = df.join(df_orders, left_on=["l_orderkey"], right_on=["o_orderkey"], how="inner")
+df = df.join(df_customer, left_on=["o_custkey"], right_on=["c_custkey"], how="inner")
 
 df = df.select(
     "c_name", "c_custkey", "o_orderkey", "o_orderdate", "o_totalprice", "total_quantity"

@@ -56,7 +56,7 @@ df_unwanted_suppliers = df_supplier.filter(
 
 # Remove unwanted suppliers
 df_partsupp = df_partsupp.join(
-    df_unwanted_suppliers, (["ps_suppkey"], ["s_suppkey"]), "anti"
+    df_unwanted_suppliers, left_on=["ps_suppkey"], right_on=["s_suppkey"], how="anti"
 )
 
 # Select the parts we are interested in
@@ -73,7 +73,9 @@ df_part = df_part.filter(
 p_sizes = F.make_array(*[lit(s).cast(pa.int32()) for s in SIZES_OF_INTEREST])
 df_part = df_part.filter(~F.array_position(p_sizes, col("p_size")).is_null())
 
-df = df_part.join(df_partsupp, (["p_partkey"], ["ps_partkey"]), "inner")
+df = df_part.join(
+    df_partsupp, left_on=["p_partkey"], right_on=["ps_partkey"], how="inner"
+)
 
 df = df.select("p_brand", "p_type", "p_size", "ps_suppkey").distinct()
 

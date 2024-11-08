@@ -52,9 +52,11 @@ df_nation = df_nation.filter(col("n_name") == lit(NATION))
 
 # Find part supplies of within this target nation
 
-df = df_nation.join(df_supplier, (["n_nationkey"], ["s_nationkey"]), how="inner")
+df = df_nation.join(
+    df_supplier, left_on=["n_nationkey"], right_on=["s_nationkey"], how="inner"
+)
 
-df = df.join(df_partsupp, (["s_suppkey"], ["ps_suppkey"]), how="inner")
+df = df.join(df_partsupp, left_on=["s_suppkey"], right_on=["ps_suppkey"], how="inner")
 
 
 # Compute the value of individual parts
