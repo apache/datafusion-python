@@ -406,7 +406,7 @@ class DataFrame:
     def join(
         self,
         right: DataFrame,
-        on: str | Sequence[str] | None = None,
+        on: str | Sequence[str] | tuple[list[str], list[str]] | None = None,
         how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
         *,
         left_on: str | Sequence[str] | None = None,
@@ -429,6 +429,14 @@ class DataFrame:
         Returns:
             DataFrame after join.
         """
+        # This check is to prevent breaking API changes where users prior to
+        # DF 43.0.0 would  pass the join_keys as a positional argument instead
+        # of a keyword argument.
+        if isinstance(on, tuple) and len(on) == 2:
+            if isinstance(on[0], list) and isinstance(on[1], list):
+                join_keys = on  # type: ignore
+                on = None
+
         if join_keys is not None:
             warnings.warn(
                 "`join_keys` is deprecated, use `on` or `left_on` with `right_on`",

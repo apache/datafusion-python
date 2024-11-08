@@ -337,6 +337,16 @@ def test_join():
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
     assert table.to_pydict() == expected
 
+    # Verify we don't make a breaking change to pre-43.0.0
+    # where users would pass join_keys as a positional argument
+    df2 = df.join(df1, (["a"], ["a"]), how="inner")  # type: ignore
+    df2.show()
+    df2 = df2.sort(column("l.a"))
+    table = pa.Table.from_batches(df2.collect())
+
+    expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
+    assert table.to_pydict() == expected
+
 
 def test_join_invalid_params():
     ctx = SessionContext()
