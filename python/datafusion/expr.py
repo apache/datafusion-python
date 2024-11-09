@@ -374,6 +374,8 @@ class Expr:
 
         ``value`` must be a valid PyArrow scalar value or easily castable to one.
         """
+        if isinstance(value, str):
+            value = pa.scalar(value, type=pa.string_view())
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
         return Expr(expr_internal.Expr.literal(value))
@@ -419,7 +421,7 @@ class Expr:
     _to_pyarrow_types = {
         float: pa.float64(),
         int: pa.int64(),
-        str: pa.string(),
+        str: pa.string_view(),
         bool: pa.bool_(),
     }
 
