@@ -421,7 +421,7 @@ class Expr:
     _to_pyarrow_types = {
         float: pa.float64(),
         int: pa.int64(),
-        str: pa.string_view(),
+        str: pa.string(),
         bool: pa.bool_(),
     }
 

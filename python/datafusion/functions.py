@@ -295,7 +295,7 @@ def decode(input: Expr, encoding: Expr) -> Expr:
 
 def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
     """Converts each element to its text representation."""
-    return Expr(f.array_to_string(expr.expr, delimiter.expr))
+    return Expr(f.array_to_string(expr.expr, delimiter.expr.cast(pa.string())))
 
 
 def array_join(expr: Expr, delimiter: Expr) -> Expr:
@@ -924,7 +924,7 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
         return f.to_timestamp(arg.expr)
 
     formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp(arg.expr, *formatters))
+    return Expr(f.to_timestamp(arg.expr.cast(pa.string()), *formatters))
 
 
 def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
@@ -1065,7 +1065,10 @@ def struct(*args: Expr) -> Expr:
 
 def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
     """Returns a struct with the given names and arguments pairs."""
-    name_pair_exprs = [[Expr.literal(pair[0]), pair[1]] for pair in name_pairs]
+    name_pair_exprs = [
+        [Expr.literal(pa.scalar(pair[0], type=pa.string())), pair[1]]
+        for pair in name_pairs
+    ]
 
     # flatten
     name_pairs = [x.expr for xs in name_pair_exprs for x in xs]
@@ -1422,7 +1425,9 @@ def array_sort(array: Expr, descending: bool = False, null_first: bool = False) 
     nulls_first = "NULLS FIRST" if null_first else "NULLS LAST"
     return Expr(
         f.array_sort(
-            array.expr, Expr.literal(desc).expr, Expr.literal(nulls_first).expr
+            array.expr,
+            Expr.literal(pa.scalar(desc, type=pa.string())).expr,
+            Expr.literal(pa.scalar(nulls_first, type=pa.string())).expr,
         )
     )
 
