@@ -90,6 +90,7 @@ impl PyLogicalPlan {
             | LogicalPlan::Ddl(_)
             | LogicalPlan::Copy(_)
             | LogicalPlan::DescribeTable(_)
+            | LogicalPlan::Execute(_)
             | LogicalPlan::RecursiveQuery(_) => Err(py_unsupported_variant_err(format!(
                 "Conversion of variant not implemented: {:?}",
                 self.plan
