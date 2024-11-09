@@ -924,7 +924,7 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
         return f.to_timestamp(arg.expr)
 
     formatters = [f.expr for f in formatters]
-    return Expr(f.to_timestamp(arg.expr.cast(pa.string()), *formatters))
+    return Expr(f.to_timestamp(arg.expr, *formatters))
 
 
 def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
