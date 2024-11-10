@@ -34,9 +34,9 @@ def df():
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [
-            pa.array(["Hello", "World", "!"]),
+            pa.array(["Hello", "World", "!"], type=pa.string_view()),
             pa.array([4, 5, 6]),
-            pa.array(["hello ", " world ", " !"]),
+            pa.array(["hello ", " world ", " !"], type=pa.string_view()),
             pa.array(
                 [
                     datetime(2022, 12, 31),
@@ -88,8 +88,8 @@ def test_literal(df):
     assert len(result) == 1
     result = result[0]
     assert result.column(0) == pa.array([1] * 3)
-    assert result.column(1) == pa.array(["1"] * 3)
-    assert result.column(2) == pa.array(["OK"] * 3)
+    assert result.column(1) == pa.array(["1"] * 3, type=pa.string_view())
+    assert result.column(2) == pa.array(["OK"] * 3, type=pa.string_view())
     assert result.column(3) == pa.array([3.14] * 3)
     assert result.column(4) == pa.array([True] * 3)
     assert result.column(5) == pa.array([b"hello world"] * 3)
@@ -97,7 +97,9 @@ def test_literal(df):
 
 def test_lit_arith(df):
     """Test literals with arithmetic operations"""
-    df = df.select(literal(1) + column("b"), f.concat(column("a"), literal("!")))
+    df = df.select(
+        literal(1) + column("b"), f.concat(column("a").cast(pa.string()), literal("!"))
+    )
     result = df.collect()
     assert len(result) == 1
     result = result[0]
@@ -600,21 +602,33 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.ascii(column("a")),
             pa.array([72, 87, 33], type=pa.int32()),
         ),  # H = 72; W = 87; ! = 33
-        (f.bit_length(column("a")), pa.array([40, 40, 8], type=pa.int32())),
-        (f.btrim(literal(" World ")), pa.array(["World", "World", "World"])),
+        (
+            f.bit_length(column("a").cast(pa.string())),
+            pa.array([40, 40, 8], type=pa.int32()),
+        ),
+        (
+            f.btrim(literal(" World ")),
+            pa.array(["World", "World", "World"], type=pa.string_view()),
+        ),
         (f.character_length(column("a")), pa.array([5, 5, 1], type=pa.int32())),
         (f.chr(literal(68)), pa.array(["D", "D", "D"])),
         (
             f.concat_ws("-", column("a"), literal("test")),
             pa.array(["Hello-test", "World-test", "!-test"]),
         ),
-        (f.concat(column("a"), literal("?")), pa.array(["Hello?", "World?", "!?"])),
+        (
+            f.concat(column("a").cast(pa.string()), literal("?")),
+            pa.array(["Hello?", "World?", "!?"]),
+        ),
         (f.initcap(column("c")), pa.array(["Hello ", " World ", " !"])),
         (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
         (f.lower(column("a")), pa.array(["hello", "world", "!"])),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
-        (f.ltrim(column("c")), pa.array(["hello ", "world ", "!"])),
+        (
+            f.ltrim(column("c")),
+            pa.array(["hello ", "world ", "!"], type=pa.string_view()),
+        ),
         (
             f.md5(column("a")),
             pa.array(
@@ -640,19 +654,25 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.rpad(column("a"), literal(8)),
             pa.array(["Hello   ", "World   ", "!       "]),
         ),
-        (f.rtrim(column("c")), pa.array(["hello", " world", " !"])),
+        (
+            f.rtrim(column("c")),
+            pa.array(["hello", " world", " !"], type=pa.string_view()),
+        ),
         (
             f.split_part(column("a"), literal("l"), literal(1)),
             pa.array(["He", "Wor", "!"]),
         ),
         (f.starts_with(column("a"), literal("Wor")), pa.array([False, True, False])),
         (f.strpos(column("a"), literal("o")), pa.array([5, 2, 0], type=pa.int32())),
-        (f.substr(column("a"), literal(3)), pa.array(["llo", "rld", ""])),
+        (
+            f.substr(column("a"), literal(3)),
+            pa.array(["llo", "rld", ""], type=pa.string_view()),
+        ),
         (
             f.translate(column("a"), literal("or"), literal("ld")),
             pa.array(["Helll", "Wldld", "!"]),
         ),
-        (f.trim(column("c")), pa.array(["hello", "world", "!"])),
+        (f.trim(column("c")), pa.array(["hello", "world", "!"], type=pa.string_view())),
         (f.upper(column("c")), pa.array(["HELLO ", " WORLD ", " !"])),
         (f.ends_with(column("a"), literal("llo")), pa.array([True, False, False])),
         (
@@ -794,9 +814,9 @@ def test_temporal_functions(df):
         f.date_trunc(literal("month"), column("d")),
         f.datetrunc(literal("day"), column("d")),
         f.date_bin(
-            literal("15 minutes"),
+            literal("15 minutes").cast(pa.string()),
             column("d"),
-            literal("2001-01-01 00:02:30"),
+            literal("2001-01-01 00:02:30").cast(pa.string()),
         ),
         f.from_unixtime(literal(1673383974)),
         f.to_timestamp(literal("2023-09-07 05:06:14.523952")),
@@ -858,8 +878,8 @@ def test_case(df):
     result = df.collect()
     result = result[0]
     assert result.column(0) == pa.array([10, 8, 8])
-    assert result.column(1) == pa.array(["Hola", "Mundo", "!!"])
-    assert result.column(2) == pa.array(["Hola", "Mundo", None])
+    assert result.column(1) == pa.array(["Hola", "Mundo", "!!"], type=pa.string_view())
+    assert result.column(2) == pa.array(["Hola", "Mundo", None], type=pa.string_view())
 
 
 def test_when_with_no_base(df):
@@ -877,8 +897,10 @@ def test_when_with_no_base(df):
     result = df.collect()
     result = result[0]
     assert result.column(0) == pa.array([4, 5, 6])
-    assert result.column(1) == pa.array(["too small", "just right", "too big"])
-    assert result.column(2) == pa.array(["Hello", None, None])
+    assert result.column(1) == pa.array(
+        ["too small", "just right", "too big"], type=pa.string_view()
+    )
+    assert result.column(2) == pa.array(["Hello", None, None], type=pa.string_view())
 
 
 def test_regr_funcs_sql(df):
@@ -1021,8 +1043,13 @@ def test_regr_funcs_df(func, expected):
 
 def test_binary_string_functions(df):
     df = df.select(
-        f.encode(column("a"), literal("base64")),
-        f.decode(f.encode(column("a"), literal("base64")), literal("base64")),
+        f.encode(column("a").cast(pa.string()), literal("base64").cast(pa.string())),
+        f.decode(
+            f.encode(
+                column("a").cast(pa.string()), literal("base64").cast(pa.string())
+            ),
+            literal("base64").cast(pa.string()),
+        ),
     )
     result = df.collect()
     assert len(result) == 1

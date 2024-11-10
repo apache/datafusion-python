@@ -46,7 +46,7 @@ impl Display for PyLimit {
         write!(
             f,
             "Limit
-            Skip: {}
+            Skip: {:?}
             Fetch: {:?}
             Input: {:?}",
             &self.limit.skip, &self.limit.fetch, &self.limit.input
@@ -56,15 +56,19 @@ impl Display for PyLimit {
 
 #[pymethods]
 impl PyLimit {
-    /// Retrieves the skip value for this `Limit`
-    fn skip(&self) -> usize {
-        self.limit.skip
-    }
+    // NOTE: Upstream now has expressions for skip and fetch
+    // TODO: Do we still want to expose these?
+    // REF: https://github.com/apache/datafusion/pull/12836
 
-    /// Retrieves the fetch value for this `Limit`
-    fn fetch(&self) -> Option<usize> {
-        self.limit.fetch
-    }
+    // /// Retrieves the skip value for this `Limit`
+    // fn skip(&self) -> usize {
+    //     self.limit.skip
+    // }
+
+    // /// Retrieves the fetch value for this `Limit`
+    // fn fetch(&self) -> Option<usize> {
+    //     self.limit.fetch
+    // }
 
     /// Retrieves the input `LogicalPlan` to this `Limit` node
     fn input(&self) -> PyResult<Vec<PyLogicalPlan>> {

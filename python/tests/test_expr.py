@@ -85,14 +85,18 @@ def test_limit(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    assert plan.skip() == 0
+    # TODO: Upstream now has expressions for skip and fetch
+    # REF: https://github.com/apache/datafusion/pull/12836
+    # assert plan.skip() == 0
 
     df = test_ctx.sql("select c1 from test LIMIT 10 OFFSET 5")
     plan = df.logical_plan()
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    assert plan.skip() == 5
+    # TODO: Upstream now has expressions for skip and fetch
+    # REF: https://github.com/apache/datafusion/pull/12836
+    # assert plan.skip() == 5
 
 
 def test_aggregate_query(test_ctx):
@@ -126,7 +130,10 @@ def test_relational_expr(test_ctx):
     ctx = SessionContext()
 
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2, 3]), pa.array(["alpha", "beta", "gamma"])],
+        [
+            pa.array([1, 2, 3]),
+            pa.array(["alpha", "beta", "gamma"], type=pa.string_view()),
+        ],
         names=["a", "b"],
     )
     df = ctx.create_dataframe([[batch]], name="batch_array")
@@ -141,7 +148,8 @@ def test_relational_expr(test_ctx):
     assert df.filter(col("b") == "beta").count() == 1
     assert df.filter(col("b") != "beta").count() == 2
 
-    assert df.filter(col("a") == "beta").count() == 0
+    with pytest.raises(Exception):
+        df.filter(col("a") == "beta").count()
 
 
 def test_expr_to_variant():

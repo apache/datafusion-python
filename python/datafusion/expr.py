@@ -51,7 +51,6 @@ Cast = expr_internal.Cast
 Column = expr_internal.Column
 CreateMemoryTable = expr_internal.CreateMemoryTable
 CreateView = expr_internal.CreateView
-CrossJoin = expr_internal.CrossJoin
 Distinct = expr_internal.Distinct
 DropTable = expr_internal.DropTable
 EmptyRelation = expr_internal.EmptyRelation
@@ -140,7 +139,6 @@ __all__ = [
     "Join",
     "JoinType",
     "JoinConstraint",
-    "CrossJoin",
     "Union",
     "Unnest",
     "UnnestExpr",
@@ -376,6 +374,8 @@ class Expr:
 
         ``value`` must be a valid PyArrow scalar value or easily castable to one.
         """
+        if isinstance(value, str):
+            value = pa.scalar(value, type=pa.string_view())
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
         return Expr(expr_internal.Expr.literal(value))

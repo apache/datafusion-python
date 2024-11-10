@@ -229,6 +229,7 @@ class AggregateUDF:
         which this UDAF is used. The following examples are all valid.
 
         .. code-block:: python
+
             import pyarrow as pa
             import pyarrow.compute as pc
 

@@ -468,6 +468,13 @@ def test_simple_select(ctx, tmp_path, arr):
     batches = ctx.sql("SELECT a AS tt FROM t").collect()
     result = batches[0].column(0)
 
+    # In DF 43.0.0 we now default to having BinaryView and StringView
+    # so the array that is saved to the parquet is slightly different
+    # than the array read. Convert to values for comparison.
+    if isinstance(result, pa.BinaryViewArray) or isinstance(result, pa.StringViewArray):
+        arr = arr.tolist()
+        result = result.tolist()
+
     np.testing.assert_equal(result, arr)
 
 

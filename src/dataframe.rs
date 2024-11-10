@@ -402,7 +402,9 @@ impl PyDataFrame {
 
     #[pyo3(signature = (column, preserve_nulls=true))]
     fn unnest_column(&self, column: &str, preserve_nulls: bool) -> PyResult<Self> {
-        let unnest_options = UnnestOptions { preserve_nulls };
+        // TODO: expose RecursionUnnestOptions
+        // REF: https://github.com/apache/datafusion/pull/11577
+        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
         let df = self
             .df
             .as_ref()
@@ -413,7 +415,9 @@ impl PyDataFrame {
 
     #[pyo3(signature = (columns, preserve_nulls=true))]
     fn unnest_columns(&self, columns: Vec<String>, preserve_nulls: bool) -> PyResult<Self> {
-        let unnest_options = UnnestOptions { preserve_nulls };
+        // TODO: expose RecursionUnnestOptions
+        // REF: https://github.com/apache/datafusion/pull/11577
+        let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
         let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self
             .df
