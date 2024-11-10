@@ -27,7 +27,6 @@ Attributes
    datafusion.expr.Column
    datafusion.expr.CreateMemoryTable
    datafusion.expr.CreateView
-   datafusion.expr.CrossJoin
    datafusion.expr.Distinct
    datafusion.expr.DropTable
    datafusion.expr.EmptyRelation
@@ -688,8 +687,6 @@ Module Contents
 .. py:data:: CreateMemoryTable
 
 .. py:data:: CreateView
-
-.. py:data:: CrossJoin
 
 .. py:data:: Distinct
 
