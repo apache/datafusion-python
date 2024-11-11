@@ -109,9 +109,6 @@ jobs:
           source venv/bin/activate
           pip install -e . -vv
           pytest -v .
-
-      - name: Test FFI module
-        run: |
           cd examples/ffi-table-provider
           pytest _test_table_provider.py
 
