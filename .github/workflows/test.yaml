@@ -114,7 +114,7 @@ jobs:
         run: |
           cd examples/ffi-table-provider
           maturin build --release --strip
-          pytest
+          pytest _test_table_provider.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
