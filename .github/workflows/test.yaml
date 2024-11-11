@@ -109,8 +109,7 @@ jobs:
           source venv/bin/activate
           pip install -e . -vv
           pytest -v .
-          cd examples/ffi-table-provider
-          pytest _test_table_provider.py
+          pytest examples/ffi-table-provider/python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
