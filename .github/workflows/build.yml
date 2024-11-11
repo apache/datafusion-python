@@ -156,7 +156,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip --features substrait
+        run: |
+          maturin build --release --strip --features substrait
+          cd examples/ffi-table-provider
+          maturin build --release --strip
       - name: List Mac wheels
         run: find target/wheels/
 

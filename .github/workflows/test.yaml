@@ -113,7 +113,6 @@ jobs:
       - name: Test FFI module
         run: |
           cd examples/ffi-table-provider
-          maturin build --release --strip
           pytest _test_table_provider.py
 
       - name: Cache the generated dataset
