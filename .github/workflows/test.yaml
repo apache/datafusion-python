@@ -110,6 +110,12 @@ jobs:
           pip install -e . -vv
           pytest -v .
 
+      - name: Test FFI module
+        run: |
+          cd examples/ffi-table-provider
+          maturin build --release --strip
+          pytest
+
       - name: Cache the generated dataset
         id: cache-tpch-dataset
         uses: actions/cache@v4
