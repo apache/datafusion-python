@@ -109,7 +109,15 @@ jobs:
           source venv/bin/activate
           pip install -e . -vv
           pytest -v .
-          pytest examples/ffi-table-provider/python/tests/_test_table_provider.py
+
+      - name: FFI unit tests
+        run: |
+          source venv/bin/activate
+          pip install -e . -vv
+          pip install maturin==1.5.1
+          cd examples/ffi-table-provider
+          maturin build --release --strip
+          pytest python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
