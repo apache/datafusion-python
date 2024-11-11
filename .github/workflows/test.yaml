@@ -116,7 +116,7 @@ jobs:
           pip install -e . -vv
           pip install maturin==1.5.1
           cd examples/ffi-table-provider
-          maturin build --release --strip
+          maturin develop --release --strip
           pytest python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
