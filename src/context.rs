@@ -28,7 +28,7 @@ use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
 
-use pyo3::exceptions::{PyKeyError, PyTypeError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyNotImplementedError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -582,8 +582,13 @@ impl PySessionContext {
             let provider: ForeignTableProvider = provider.into();
 
             let _ = self.ctx.register_table(name, Arc::new(provider))?;
+
+            Ok(())
+        } else {
+            Err(PyNotImplementedError::new_err(
+                "__datafusion_table_provider__ does not exist on Table Provider object.",
+            ))
         }
-        Ok(())
     }
 
     pub fn register_record_batches(
