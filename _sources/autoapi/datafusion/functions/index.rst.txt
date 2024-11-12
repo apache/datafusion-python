@@ -130,6 +130,8 @@ Functions
    datafusion.functions.length
    datafusion.functions.levenshtein
    datafusion.functions.list_append
+   datafusion.functions.list_cat
+   datafusion.functions.list_concat
    datafusion.functions.list_dims
    datafusion.functions.list_distinct
    datafusion.functions.list_element
@@ -148,6 +150,7 @@ Functions
    datafusion.functions.list_remove
    datafusion.functions.list_remove_all
    datafusion.functions.list_remove_n
+   datafusion.functions.list_repeat
    datafusion.functions.list_replace
    datafusion.functions.list_replace_all
    datafusion.functions.list_replace_n
@@ -1157,6 +1160,20 @@ Module Contents
    This is an alias for :py:func:`array_append`.
 
 
+.. py:function:: list_cat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the input arrays.
+
+   This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+
+
+.. py:function:: list_concat(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Concatenates the input arrays.
+
+   This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+
+
 .. py:function:: list_dims(array: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns an array of the array's dimensions.
@@ -1281,6 +1298,13 @@ Module Contents
    Removes the first ``max`` elements from the array equal to the given value.
 
    This is an alias for :py:func:`array_remove_n`.
+
+
+.. py:function:: list_repeat(element: datafusion.expr.Expr, count: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array containing ``element`` ``count`` times.
+
+   This is an alias for :py:func:`array_repeat`.
 
 
 .. py:function:: list_replace(array: datafusion.expr.Expr, from_val: datafusion.expr.Expr, to_val: datafusion.expr.Expr) -> datafusion.expr.Expr
