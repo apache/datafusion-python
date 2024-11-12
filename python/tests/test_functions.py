@@ -292,6 +292,14 @@ def py_flatten(arr):
             lambda data: [np.concatenate([arr, arr]) for arr in data],
         ],
         [
+            lambda col: f.list_cat(col, col),
+            lambda data: [np.concatenate([arr, arr]) for arr in data],
+        ],
+        [
+            lambda col: f.list_concat(col, col),
+            lambda data: [np.concatenate([arr, arr]) for arr in data],
+        ],
+        [
             lambda col: f.array_dims(col),
             lambda data: [[len(r)] for r in data],
         ],
@@ -437,6 +445,10 @@ def py_flatten(arr):
         ],
         [
             lambda col: f.array_repeat(col, literal(2)),
+            lambda data: [[arr] * 2 for arr in data],
+        ],
+        [
+            lambda col: f.list_repeat(col, literal(2)),
             lambda data: [[arr] * 2 for arr in data],
         ],
         [
