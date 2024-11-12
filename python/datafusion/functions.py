@@ -147,6 +147,8 @@ __all__ = [
     "length",
     "levenshtein",
     "list_append",
+    "list_cat",
+    "list_concat",
     "list_dims",
     "list_distinct",
     "list_element",
@@ -162,6 +164,7 @@ __all__ = [
     "list_prepend",
     "list_push_back",
     "list_push_front",
+    "list_repeat",
     "list_remove",
     "list_remove_all",
     "list_remove_n",
@@ -1145,6 +1148,22 @@ def array_distinct(array: Expr) -> Expr:
     return Expr(f.array_distinct(array.expr))
 
 
+def list_cat(*args: Expr) -> Expr:
+    """Concatenates the input arrays.
+
+    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    """
+    return array_concat(*args)
+
+
+def list_concat(*args: Expr) -> Expr:
+    """Concatenates the input arrays.
+
+    This is an alias for :py:func:`array_concat`, :py:func:`array_cat`.
+    """
+    return array_concat(*args)
+
+
 def list_distinct(array: Expr) -> Expr:
     """Returns distinct values from the array after removing duplicates.
 
@@ -1367,6 +1386,14 @@ def list_remove_all(array: Expr, element: Expr) -> Expr:
 def array_repeat(element: Expr, count: Expr) -> Expr:
     """Returns an array containing ``element`` ``count`` times."""
     return Expr(f.array_repeat(element.expr, count.expr))
+
+
+def list_repeat(element: Expr, count: Expr) -> Expr:
+    """Returns an array containing ``element`` ``count`` times.
+
+    This is an alias for :py:func:`array_repeat`.
+    """
+    return array_repeat(element, count)
 
 
 def array_replace(array: Expr, from_val: Expr, to_val: Expr) -> Expr:
