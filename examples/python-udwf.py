@@ -185,35 +185,36 @@ batch = pa.RecordBatch.from_arrays(
 df = ctx.create_dataframe([[batch]])
 
 exp_smooth = udwf(
-    ExponentialSmoothDefault(0.9),
+    lambda: ExponentialSmoothDefault(0.9),
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_two_row = udwf(
-    SmoothBoundedFromPreviousRow(0.9),
+    lambda: SmoothBoundedFromPreviousRow(0.9),
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_rank = udwf(
-    SmoothAcrossRank(0.9),
+    lambda: SmoothAcrossRank(0.9),
     pa.float64(),
     pa.float64(),
     volatility="immutable",
 )
 
 smooth_frame = udwf(
-    ExponentialSmoothFrame(0.9),
+    lambda: ExponentialSmoothFrame(0.9),
     pa.float64(),
     pa.float64(),
     volatility="immutable",
+    name="smooth_frame",
 )
 
 smooth_two_col = udwf(
-    SmoothTwoColumn(0.9),
+    lambda: SmoothTwoColumn(0.9),
     [pa.float64(), pa.int64()],
     pa.float64(),
     volatility="immutable",
