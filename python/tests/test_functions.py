@@ -576,6 +576,37 @@ def test_array_function_cardinality():
         )
 
 
+@pytest.mark.parametrize("make_func", [f.make_array, f.make_list])
+def test_make_array_functions(make_func):
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["Hello", "World", "!"], type=pa.string()),
+            pa.array([4, 5, 6]),
+            pa.array(["hello ", " world ", " !"], type=pa.string()),
+        ],
+        names=["a", "b", "c"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    stmt = make_func(
+        column("a").cast(pa.string()),
+        column("b").cast(pa.string()),
+        column("c").cast(pa.string()),
+    )
+    py_expr = [
+        ["Hello", "4", "hello "],
+        ["World", "5", " world "],
+        ["!", "6", " !"],
+    ]
+
+    query_result = df.select(stmt).collect()[0].column(0)
+    for a, b in zip(query_result, py_expr):
+        np.testing.assert_array_equal(
+            np.array(a.as_py(), dtype=str), np.array(b, dtype=str)
+        )
+
+
 @pytest.mark.parametrize(
     ("stmt", "py_expr"),
     [
