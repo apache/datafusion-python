@@ -26,3 +26,4 @@ IO
    csv
    json
    parquet
+   table_provider

@@ -28,7 +28,7 @@ use object_store::ObjectStore;
 use url::Url;
 use uuid::Uuid;
 
-use pyo3::exceptions::{PyKeyError, PyTypeError, PyValueError};
+use pyo3::exceptions::{PyKeyError, PyNotImplementedError, PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::catalog::{PyCatalog, PyTable};
@@ -67,7 +67,8 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use pyo3::types::{PyDict, PyList, PyTuple};
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -564,6 +565,30 @@ impl PySessionContext {
             .deregister_table(name)
             .map_err(DataFusionError::from)?;
         Ok(())
+    }
+
+    /// Construct datafusion dataframe from Arrow Table
+    pub fn register_table_provider(
+        &mut self,
+        name: &str,
+        provider: Bound<'_, PyAny>,
+    ) -> PyResult<()> {
+        if provider.hasattr("__datafusion_table_provider__")? {
+            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>()?;
+            // validate_pycapsule(capsule, "arrow_array_stream")?;
+
+            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+            let provider: ForeignTableProvider = provider.into();
+
+            let _ = self.ctx.register_table(name, Arc::new(provider))?;
+
+            Ok(())
+        } else {
+            Err(PyNotImplementedError::new_err(
+                "__datafusion_table_provider__ does not exist on Table Provider object.",
+            ))
+        }
     }
 
     pub fn register_record_batches(

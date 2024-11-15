@@ -306,6 +306,7 @@ def test_unnest_without_nulls(nested_df):
     assert result.column(1) == pa.array([7, 8, 8, 9, 9, 9])
 
 
+@pytest.mark.filterwarnings("ignore:`join_keys`:DeprecationWarning")
 def test_join():
     ctx = SessionContext()
 

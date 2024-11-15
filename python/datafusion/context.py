@@ -685,6 +685,14 @@ class SessionContext:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
 
+    def register_table_provider(self, name: str, provider: Any) -> None:
+        """Register a table provider.
+
+        This table provider must have a method called ``__datafusion_table_provider__``
+        which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+        """
+        self.ctx.register_table_provider(name, provider)
+
     def register_record_batches(
         self, name: str, partitions: list[list[pyarrow.RecordBatch]]
     ) -> None:

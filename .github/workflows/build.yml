@@ -156,7 +156,9 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Python package
-        run: maturin build --release --strip --features substrait
+        run: |
+          maturin build --release --strip --features substrait
+
       - name: List Mac wheels
         run: find target/wheels/
 
