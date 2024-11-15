@@ -735,6 +735,15 @@ Module Contents
 
 
 
+   .. py:method:: register_table_provider(name: str, provider: Any) -> None
+
+      Register a table provider.
+
+      This table provider must have a method called ``__datafusion_table_provider__``
+      which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+
+
+
    .. py:method:: register_udaf(udaf: datafusion.udf.AggregateUDF) -> None
 
       Register a user-defined aggregation function (UDAF) with the context.
