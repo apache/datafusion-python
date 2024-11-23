@@ -168,6 +168,7 @@ Functions
    datafusion.functions.ltrim
    datafusion.functions.make_array
    datafusion.functions.make_date
+   datafusion.functions.make_list
    datafusion.functions.max
    datafusion.functions.md5
    datafusion.functions.mean
@@ -1414,6 +1415,13 @@ Module Contents
 .. py:function:: make_date(year: datafusion.expr.Expr, month: datafusion.expr.Expr, day: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Make a date from year, month and day component parts.
+
+
+.. py:function:: make_list(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Returns an array using the specified input expressions.
+
+   This is an alias for :py:func:`make_array`.
 
 
 .. py:function:: max(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr
