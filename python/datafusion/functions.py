@@ -184,6 +184,7 @@ __all__ = [
     "lpad",
     "ltrim",
     "make_array",
+    "make_list",
     "make_date",
     "max",
     "md5",
@@ -1042,6 +1043,14 @@ def make_array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions."""
     args = [arg.expr for arg in args]
     return Expr(f.make_array(args))
+
+
+def make_list(*args: Expr) -> Expr:
+    """Returns an array using the specified input expressions.
+
+    This is an alias for :py:func:`make_array`.
+    """
+    return make_array(*args)
 
 
 def array(*args: Expr) -> Expr:
