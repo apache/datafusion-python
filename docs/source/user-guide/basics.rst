@@ -25,7 +25,7 @@ source file as described in the :ref:`Introduction <guide>`, the Pokemon data se
 
 .. ipython:: python
 
-    from datafusion import SessionContext, functions as F
+    from datafusion import SessionContext, col, functions as F
 
     ctx = SessionContext()
 
