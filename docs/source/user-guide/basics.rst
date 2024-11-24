@@ -25,16 +25,16 @@ source file as described in the :ref:`Introduction <guide>`, the Pokemon data se
 
 .. ipython:: python
 
-    from datafusion import SessionContext, col, functions as F
+    from datafusion import SessionContext, col, lit, functions as f
 
     ctx = SessionContext()
 
-    df = ctx.read_csv("pokemon.csv")
+    df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
 
     df = df.select(
-        '"Name"',
-        (col('"Attack"') - col('"Defense"')).alias("delta"),
-       col('"Speed"')
+        "trip_distance",
+        col("total_amount").alias("total"),
+        (f.round(lit(100.0) * col("tip_amount") / col("total_amount"), lit(1))).alias("tip_percent"),
     )
 
     df.show()
@@ -65,7 +65,7 @@ The second statement group creates a :code:`DataFrame`,
 .. code-block:: python
 
     # Create a DataFrame from a file
-    df = ctx.read_csv("pokemon.csv")
+    df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
 
 A DataFrame refers to a (logical) set of rows that share the same column names, similar to a `Pandas DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_.
 DataFrames are typically created by calling a method on :py:class:`~datafusion.context.SessionContext`, such as :code:`read_csv`, and can then be modified by
@@ -75,14 +75,17 @@ and :py:func:`~datafusion.dataframe.DataFrame.limit` to build up a query definit
 Expressions
 -----------
 
-The third statement uses :code:`Expressions` to build up a query definition.
+The third statement uses :code:`Expressions` to build up a query definition. You can find
+explanations for what the functions below do in the user documentation for
+:py:func:`~datafusion.col`, :py:func:`~datafusion.lit`, :py:func:`~datafusion.functions.round`,
+and :py:func:`~datafusion.expr.Expr.alias`.
 
 .. code-block:: python
 
     df = df.select(
-        '"Name"',
-        (col('"Attack"') - col('"Defense"')).alias("delta"),
-        col('"Speed"')
+        "trip_distance",
+        col("total_amount").alias("total"),
+        (f.round(lit(100.0) * col("tip_amount") / col("total_amount"), lit(1))).alias("tip_percent"),
     )
 
 Finally the :py:func:`~datafusion.dataframe.DataFrame.show` method converts the logical plan
