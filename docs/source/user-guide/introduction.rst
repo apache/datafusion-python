@@ -72,6 +72,6 @@ display that may be easier to read.
 
     display(df)
 
-.. image:: ../../_static/images/jupyter_lab_df_view.png
+.. image:: ../images/jupyter_lab_df_view.png
     :width: 800
     :alt: Rendered table showing Pokemon DataFrame

@@ -26,9 +26,7 @@ to form a single summary value. For performing an aggregation, DataFusion provid
 
 .. ipython:: python
 
-    from datafusion import SessionContext
-    from datafusion import col, lit
-    from datafusion import functions as f
+    from datafusion import SessionContext, col, lit, functions as f
 
     ctx = SessionContext()
     df = ctx.read_csv("pokemon.csv")
