@@ -20,72 +20,73 @@
 Concepts
 ========
 
-In this section, we will cover a basic example to introduce a few key concepts.
+In this section, we will cover a basic example to introduce a few key concepts. We will use the same
+source file as described in the :ref:`Introduction <guide>`, the Pokemon data set.
 
-.. code-block:: python
+.. ipython:: python
 
-    import datafusion
-    from datafusion import col
-    import pyarrow
+    from datafusion import SessionContext, functions as F
 
-    # create a context
-    ctx = datafusion.SessionContext()
+    ctx = SessionContext()
 
-    # create a RecordBatch and a new DataFrame from it
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-        names=["a", "b"],
-    )
-    df = ctx.create_dataframe([[batch]])
+    df = ctx.read_csv("pokemon.csv")
 
-    # create a new statement
     df = df.select(
-        col("a") + col("b"),
-        col("a") - col("b"),
+        '"Name"',
+        (col('"Attack"') - col('"Defense"')).alias("delta"),
+       col('"Speed"')
     )
 
-    # execute and collect the first (and only) batch
-    result = df.collect()[0]
+    df.show()
 
-The first statement group:
+Session Context
+---------------
+
+The first statement group creates a :py:class:`~datafusion.context.SessionContext`.
 
 .. code-block:: python
 
     # create a context
     ctx = datafusion.SessionContext()
 
-creates a :py:class:`~datafusion.context.SessionContext`, that is, the main interface for executing queries with DataFusion. It maintains the state
-of the connection between a user and an instance of the DataFusion engine. Additionally it provides the following functionality:
+A Session Context is the main interface for executing queries with DataFusion. It maintains the state
+of the connection between a user and an instance of the DataFusion engine. Additionally it provides
+the following functionality:
 
-- Create a DataFrame from a CSV or Parquet data source.
-- Register a CSV or Parquet data source as a table that can be referenced from a SQL query.
-- Register a custom data source that can be referenced from a SQL query.
+- Create a DataFrame from a data source.
+- Register a data source as a table that can be referenced from a SQL query.
 - Execute a SQL query
+
+DataFrame
+---------
 
 The second statement group creates a :code:`DataFrame`,
 
 .. code-block:: python
 
-    # create a RecordBatch and a new DataFrame from it
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-        names=["a", "b"],
-    )
-    df = ctx.create_dataframe([[batch]])
+    # Create a DataFrame from a file
+    df = ctx.read_csv("pokemon.csv")
 
 A DataFrame refers to a (logical) set of rows that share the same column names, similar to a `Pandas DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_.
 DataFrames are typically created by calling a method on :py:class:`~datafusion.context.SessionContext`, such as :code:`read_csv`, and can then be modified by
 calling the transformation methods, such as :py:func:`~datafusion.dataframe.DataFrame.filter`, :py:func:`~datafusion.dataframe.DataFrame.select`, :py:func:`~datafusion.dataframe.DataFrame.aggregate`,
 and :py:func:`~datafusion.dataframe.DataFrame.limit` to build up a query definition.
 
+Expressions
+-----------
+
 The third statement uses :code:`Expressions` to build up a query definition.
 
 .. code-block:: python
 
     df = df.select(
-        col("a") + col("b"),
-        col("a") - col("b"),
+        '"Name"',
+        (col('"Attack"') - col('"Defense"')).alias("delta"),
+        col('"Speed"')
     )
 
-Finally the :py:func:`~datafusion.dataframe.DataFrame.collect` method converts the logical plan represented by the DataFrame into a physical plan and execute it,
-collecting all results into a list of `RecordBatch <https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html>`_.
+Finally the :py:func:`~datafusion.dataframe.DataFrame.show` method converts the logical plan
+represented by the DataFrame into a physical plan and execute it, collecting all results and
+displaying them to the user. It is important to note that DataFusion performs lazy evaluation
+of the DataFrame. Until you call a method such as :py:func:`~datafusion.dataframe.DataFrame.show`
+or :py:func:`~datafusion.dataframe.DataFrame.collect`, DataFusion will not perform the query.
