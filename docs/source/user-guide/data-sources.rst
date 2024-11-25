@@ -124,7 +124,7 @@ interface can be imported to DataFusion using the
 not support the arrow interface. In those cases, you can still import via the
 :py:func:`~datafusion.context.SessionContext.from_polars` function.
 
-.. ipython:: python
+.. code-block:: python
 
     import pandas as pd
 
@@ -133,6 +133,8 @@ not support the arrow interface. In those cases, you can still import via the
 
     datafusion_df = ctx.from_arrow(pandas_df)
     datafusion_df.show()
+
+.. code-block:: python
 
     import polars as pl
     polars_df = pl.DataFrame(data)
