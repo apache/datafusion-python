@@ -71,9 +71,10 @@ Example
 
    user-guide/introduction
    user-guide/basics
-   user-guide/configuration
+   user-guide/data-sources
    user-guide/common-operations/index
    user-guide/io/index
+   user-guide/configuration
    user-guide/sql
 
 

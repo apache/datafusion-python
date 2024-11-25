@@ -15,13 +15,14 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _io_parquet:
+
 Parquet
 =======
 
 It is quite simple to read a parquet file using the :py:func:`~datafusion.context.SessionContext.read_parquet` function.
 
 .. code-block:: python
-
 
     from datafusion import SessionContext
 

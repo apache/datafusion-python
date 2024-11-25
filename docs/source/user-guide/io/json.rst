@@ -15,6 +15,8 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _io_json:
+
 JSON
 ====
 `JSON <https://www.json.org/json-en.html>`_ (JavaScript Object Notation) is a lightweight data-interchange format.
