@@ -1100,9 +1100,9 @@ def arrow_typeof(arg: Expr) -> Expr:
     return Expr(f.arrow_typeof(arg.expr))
 
 
-def arrow_cast(expr: Expr, data_type: str) -> Expr:
+def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
     """Casts an expression to a specified data type."""
-    return Expr(f.arrow_cast(expr.expr, data_type))
+    return Expr(f.arrow_cast(expr.expr, data_type.expr))
 
 
 def random() -> Expr:
