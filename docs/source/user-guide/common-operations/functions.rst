@@ -78,6 +78,7 @@ Convert to timestamps using :py:func:`~datafusion.functions.to_timestamp`
 
     df.select(f.to_timestamp(col('"Total"')).alias("timestamp"))
 
+
 String
 ------
 
@@ -101,6 +102,17 @@ This also includes the functions for regular expressions like :py:func:`~datafus
         f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers")
     )
 
+Casting
+-------
+
+Casting expressions to different data types using :py:func:`~datafusion.functions.arrow_cast`
+
+.. ipython:: python
+
+    df.select(
+        f.arrow_cast(col('"Total"'), "Float64").alias("total_as_float"),
+        f.arrow_cast(col('"Total"'), "Int32").alias("total_as_int")
+    )
 
 Other
 -----
