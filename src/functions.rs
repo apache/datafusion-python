@@ -384,12 +384,11 @@ macro_rules! expr_fn {
     ($FUNC: ident, $($arg:ident)*, $DOC: expr) => {
         #[doc = $DOC]
         #[pyfunction]
-        fn $FUNC($($arg: PyExpr),*) -> PyExpr {
-            functions::expr_fn::$FUNC($($arg.into()),*).into()
+        fn $FUNC($($arg: PyExpr),*, data_type: &str) -> PyExpr {
+            functions::expr_fn::$FUNC($($arg.into()),*, data_type.to_string()).into()
         }
     };
 }
-
 /// Generates a [pyo3] wrapper for [datafusion::functions::expr_fn]
 ///
 /// These functions take a single `Vec<PyExpr>` argument using `pyo3(signature = (*args))`.
@@ -564,6 +563,7 @@ expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
 expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
+expr_fn!(arrow_cast, expr data_type);
 expr_fn!(random);
 
 // Array Functions
