@@ -563,7 +563,7 @@ expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
 expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
-expr_fn!(arrow_cast, datatype);
+expr_fn!(arrow_cast, column datatype);
 expr_fn!(random);
 
 // Array Functions
@@ -856,6 +856,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(range))?;
     m.add_wrapped(wrap_pyfunction!(array_agg))?;
     m.add_wrapped(wrap_pyfunction!(arrow_typeof))?;
+    m.add_wrapped(wrap_pyfunction!(arrow_cast))?;
     m.add_wrapped(wrap_pyfunction!(ascii))?;
     m.add_wrapped(wrap_pyfunction!(asin))?;
     m.add_wrapped(wrap_pyfunction!(asinh))?;
