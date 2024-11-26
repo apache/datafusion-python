@@ -907,8 +907,8 @@ def test_temporal_functions(df):
 
 def test_arrow_cast(df):
     df = df.select(
-        f.arrow_cast(column("a"), "Float64").alias("a_as_float"),
-        f.arrow_cast(column("a"), "Int32").alias("a_as_int"),
+        f.arrow_cast(column("a"), literal("Float64")).alias("a_as_float"),
+        f.arrow_cast(column("a"), literal("Int32")).alias("a_as_int"),
     )
     result = df.collect()
     assert len(result) == 1
