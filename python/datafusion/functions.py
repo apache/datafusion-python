@@ -82,6 +82,7 @@ __all__ = [
     "array_to_string",
     "array_union",
     "arrow_typeof",
+    "arrow_cast",
     "ascii",
     "asin",
     "asinh",
@@ -1097,6 +1098,11 @@ def from_unixtime(arg: Expr) -> Expr:
 def arrow_typeof(arg: Expr) -> Expr:
     """Returns the Arrow type of the expression."""
     return Expr(f.arrow_typeof(arg.expr))
+
+
+def arrow_cast(expr: Expr, data_type: str) -> Expr:
+    """Casts an expression to a specified data type."""
+    return Expr(f.arrow_cast(expr.expr, data_type))
 
 
 def random() -> Expr:
