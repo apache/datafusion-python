@@ -909,14 +909,15 @@ def test_temporal_functions(df):
 
 def test_arrow_cast(df):
     df = df.select(
-        f.arrow_cast(column("a"), utf8_literal("Float64")).alias("a_as_float"),
-        f.arrow_cast(column("a"), utf8_literal("Int32")).alias("a_as_int"),
+        f.arrow_cast(column("b"), utf8_literal("Float64")).alias("b_as_float"),
+        f.arrow_cast(column("b"), utf8_literal("Int32")).alias("b_as_int"),
     )
     result = df.collect()
     assert len(result) == 1
     result = result[0]
-    assert result.column(0) == pa.array([1.0, 2.0, 3.0], type=pa.float64())
-    assert result.column(1) == pa.array([1, 2, 3], type=pa.int32())
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
 
 
 def test_case(df):
