@@ -144,6 +144,12 @@ fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
+/// Casts an expression to a specified data type.
+#[pyfunction]
+fn arrow_cast(expr: PyExpr, data_type: &str) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::arrow_cast(expr.expr, data_type.to_string()).into())
+}
+
 #[pyfunction]
 #[pyo3(signature = (values, regex, flags=None))]
 fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
@@ -563,7 +569,6 @@ expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
 expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
-expr_fn!(arrow_cast, arg_1 datatype);
 expr_fn!(random);
 
 // Array Functions
