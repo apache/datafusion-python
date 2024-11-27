@@ -17,7 +17,6 @@
 """User functions for operating on :py:class:`~datafusion.expr.Expr`."""
 
 from __future__ import annotations
-
 from datafusion._internal import functions as f
 from datafusion.expr import (
     CaseBuilder,
@@ -1100,9 +1099,9 @@ def arrow_typeof(arg: Expr) -> Expr:
     return Expr(f.arrow_typeof(arg.expr))
 
 
-def arrow_cast(expr: Expr, data_type: Expr) -> Expr:
+def arrow_cast(expr: Expr, data_type: str) -> Expr:
     """Casts an expression to a specified data type."""
-    return Expr(f.arrow_cast(expr.expr, data_type.expr))
+    return Expr(f.arrow_cast(expr.expr, literal(data_type).expr))
 
 
 def random() -> Expr:
