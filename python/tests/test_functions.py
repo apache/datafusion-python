@@ -23,7 +23,9 @@ from datetime import datetime
 
 from datafusion import SessionContext, column
 from datafusion import functions as f
-from datafusion import literal
+from datafusion import literal, utf8_literal
+from datafusion import Expr
+from datafusion.expr import expr_internal
 
 np.seterr(invalid="ignore")
 
@@ -907,8 +909,8 @@ def test_temporal_functions(df):
 
 def test_arrow_cast(df):
     df = df.select(
-        f.arrow_cast(column("a"), literal("Float64")).alias("a_as_float"),
-        f.arrow_cast(column("a"), literal("Int32")).alias("a_as_int"),
+        f.arrow_cast(column("a"), utf8_literal("Float64")).alias("a_as_float"),
+        f.arrow_cast(column("a"), utf8_literal("Int32")).alias("a_as_int"),
     )
     result = df.collect()
     assert len(result) == 1

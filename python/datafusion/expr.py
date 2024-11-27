@@ -381,6 +381,12 @@ class Expr:
         return Expr(expr_internal.Expr.literal(value))
 
     @staticmethod
+    def utf8_literal(value: str) -> Expr:
+        """Creates a new expression representing a UTF8 literal value."""
+        value = pa.scalar(value, type=pa.string())
+        return Expr(expr_internal.Expr.literal(value))
+
+    @staticmethod
     def column(value: str) -> Expr:
         """Creates a new expression representing a column."""
         return Expr(expr_internal.Expr.column(value))
