@@ -563,7 +563,7 @@ expr_fn_vec!(r#struct); // Use raw identifier since struct is a keyword
 expr_fn_vec!(named_struct);
 expr_fn!(from_unixtime, unixtime);
 expr_fn!(arrow_typeof, arg_1);
-expr_fn!(arrow_cast, column datatype);
+expr_fn!(arrow_cast, arg_1 datatype);
 expr_fn!(random);
 
 // Array Functions
