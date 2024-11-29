@@ -19,6 +19,15 @@
 #
 
 set -e
+
+if [ ! -f pokemon.csv ]; then
+    curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
+fi
+
+if [ ! -f yellow_tripdata_2021-01.parquet ]; then
+    curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+fi
+
 rm -rf build 2> /dev/null
 rm -rf temp 2> /dev/null
 mkdir temp

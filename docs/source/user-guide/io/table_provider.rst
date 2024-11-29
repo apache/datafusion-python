@@ -15,6 +15,8 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
+.. _io_custom_table_provider:
+
 Custom Table Provider
 =====================
 

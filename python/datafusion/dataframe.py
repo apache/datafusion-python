@@ -473,7 +473,7 @@ class DataFrame:
         *on_exprs: Expr,
         how: Literal["inner", "left", "right", "full", "semi", "anti"] = "inner",
     ) -> DataFrame:
-        """Join two :py:class:`DataFrame`using the specified expressions.
+        """Join two :py:class:`DataFrame` using the specified expressions.
 
         On expressions are used to support in-equality predicates. Equality
         predicates are correctly optimized
