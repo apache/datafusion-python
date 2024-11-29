@@ -39,5 +39,39 @@ You can verify the installation by running:
     import datafusion
     datafusion.__version__
 
+In this documentation we will also show some examples for how DataFusion integrates
+with Jupyter notebooks. To install and start a Jupyter labs session use
 
+.. code-block:: shell
 
+    pip install jupyterlab
+    jupyter lab
+
+To demonstrate working with DataFusion, we need a data source. Later in the tutorial we will show
+options for data sources. For our first example, we demonstrate using a Pokemon dataset that you
+can download
+`here <https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv>`_.
+
+With that file in place you can use the following python example to view the DataFrame in
+DataFusion.
+
+.. ipython:: python
+
+    from datafusion import SessionContext
+
+    ctx = SessionContext()
+
+    df = ctx.read_csv("pokemon.csv")
+
+    df.show()
+
+If you are working in a Jupyter notebook, you can also use the following to give you a table
+display that may be easier to read.
+
+.. code-block:: shell
+
+    display(df)
+
+.. image:: ../images/jupyter_lab_df_view.png
+    :width: 800
+    :alt: Rendered table showing Pokemon DataFrame

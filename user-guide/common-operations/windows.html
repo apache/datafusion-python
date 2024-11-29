@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../configuration.html">
-   Configuration
+  <a class="reference internal" href="../data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 current active has-children">
@@ -210,6 +210,11 @@
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../sql.html">
@@ -420,35 +425,26 @@ multiple rows to produce a result for each individual row, unlike an aggregate f
 provides a single value for multiple rows.</p>
 <p>The window functions are availble in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">urllib.request</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv&quot;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;pokemon.csv&quot;</span><span class="p">,</span>
-   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
-   <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="p">(</span><span class="s1">&#39;pokemon.csv&#39;</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">http</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">HTTPMessage</span> <span class="n">at</span> <span class="mh">0x7f3360d7f610</span><span class="o">&gt;</span><span class="p">)</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-
-<span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;pokemon.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here is an example that shows how you can compare each pokemon’s speed to the speed of the
 previous row in the DataFrame.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">lag</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">6</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+---------------------------+-------+----------------+</span>
 <span class="o">|</span> <span class="n">Name</span>                      <span class="o">|</span> <span class="n">Speed</span> <span class="o">|</span> <span class="n">Previous</span> <span class="n">Speed</span> <span class="o">|</span>
@@ -472,7 +468,7 @@ previous row in the DataFrame.</p>
 <h3>Ordering<a class="headerlink" href="#ordering" title="Link to this heading">¶</a></h3>
 <p>You can control the order in which rows are processed by window functions by providing
 a list of <code class="docutils literal notranslate"><span class="pre">order_by</span></code> functions for the <code class="docutils literal notranslate"><span class="pre">order_by</span></code> parameter.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
@@ -482,7 +478,7 @@ a list of <code class="docutils literal notranslate"><span class="pre">order_by<
    <span class="o">...</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
    <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">))</span>
    <span class="o">...</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">7</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+------------+--------+--------+------+</span>
 <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
@@ -508,17 +504,17 @@ a list of <code class="docutils literal notranslate"><span class="pre">order_by<
 independently for each of the partitions. In the example above, we found the rank of each
 Pokemon per <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">1</span></code> partitions. We can see the first couple of each partition if we do
 the following:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span>
+   <span class="o">...</span><span class="p">:</span>         <span class="n">partition_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)],</span>
+   <span class="o">...</span><span class="p">:</span>         <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">True</span><span class="p">)],</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span> <span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;rank&quot;</span><span class="p">))</span>
+   <span class="o">...</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+-----------+--------+----------+------+</span>
 <span class="o">|</span> <span class="n">Name</span>      <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">rank</span> <span class="o">|</span>
@@ -561,9 +557,9 @@ parameter.</p></li>
 </ul>
 <p>In this example we perform a “rolling average” of the speed of the current Pokemon and the
 two preceeding rows.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.expr</span> <span class="kn">import</span> <span class="n">WindowFrame</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.expr</span> <span class="kn">import</span> <span class="n">WindowFrame</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span>
@@ -573,7 +569,7 @@ two preceeding rows.</p>
    <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+------------+-------+--------------------+</span>
 <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Speed</span> <span class="o">|</span> <span class="n">Previous</span> <span class="n">Speed</span>     <span class="o">|</span>
@@ -603,9 +599,9 @@ nulls will fill in with the value of the most recent non-null row. To do this, w
 the window frame so that we only process up to the current row.</p>
 <p>In this example, we filter down to one specific type of Pokemon that does have some entries in
 it’s <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> column that are null.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.common</span> <span class="kn">import</span> <span class="n">NullTreatment</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.common</span> <span class="kn">import</span> <span class="n">NullTreatment</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span>  <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span>  <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">,</span>
    <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">,</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;last_value&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">)])</span>
@@ -622,7 +618,7 @@ it’s <code class="docutils literal notranslate"><span class="pre">Type</span> 
    <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_with_null&quot;</span><span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">14</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+------------+--------+--------------+----------------+</span>
 <span class="o">|</span> <span class="n">Name</span>       <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="o">|</span> <span class="n">last_wo_null</span> <span class="o">|</span> <span class="n">last_with_null</span> <span class="o">|</span>
@@ -650,7 +646,7 @@ aggregate functions must use the deprecated
 DataFusion 42.0 (<a class="reference external" href="https://github.com/apache/datafusion-python/issues/833">Issue Link</a>). Here
 is an example that shows how to compare each pokemons’s attack power with the average attack
 power in its <code class="docutils literal notranslate"><span class="pre">&quot;Type</span> <span class="pre">1&quot;</span></code> using the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.avg" title="datafusion.functions.avg"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.avg()</span></code></a> function.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span>
@@ -660,7 +656,7 @@ power in its <code class="docutils literal notranslate"><span class="pre">&quot;
    <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Average Attack&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">15</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+---------------------+--------+--------+----------------+</span>
 <span class="o">|</span> <span class="n">Name</span>                <span class="o">|</span> <span class="n">Attack</span> <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span> <span class="o">|</span> <span class="n">Average</span> <span class="n">Attack</span> <span class="o">|</span>

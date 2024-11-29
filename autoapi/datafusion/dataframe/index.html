@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/configuration.html">
-   Configuration
+  <a class="reference internal" href="../../../user-guide/data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -210,6 +210,11 @@
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../../user-guide/sql.html">
@@ -1189,7 +1194,7 @@ logical operations in <a class="reference internal" href="../functions/index.htm
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.join_on">
 <span class="sig-name descname"><span class="pre">join_on</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">on_exprs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">how</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'inner'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'left'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'right'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'full'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'semi'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'anti'</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'inner'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.join_on" title="Link to this definition">¶</a></dt>
-<dd><p>Join two :py:class:<a href="#id1"><span class="problematic" id="id2">`</span></a>DataFrame`using the specified expressions.</p>
+<dd><p>Join two <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> using the specified expressions.</p>
 <p>On expressions are used to support in-equality predicates. Equality
 predicates are correctly optimized</p>
 <dl class="field-list simple">

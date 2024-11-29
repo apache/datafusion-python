@@ -18,6 +18,8 @@
 Common Operations
 =================
 
+The contents of this section are designed to guide a new user through how to use DataFusion.
+
 .. toctree::
    :maxdepth: 2
 

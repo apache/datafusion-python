@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../user-guide/configuration.html">
-   Configuration
+  <a class="reference internal" href="../../user-guide/data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -210,6 +210,11 @@
     </a>
    </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../user-guide/configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../user-guide/sql.html">
@@ -2073,7 +2078,7 @@ aggregation or window function calls.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ExecutionPlan.children">
 <span class="sig-name descname"><span class="pre">children</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><span class="pre">ExecutionPlan</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.ExecutionPlan.children" title="Link to this definition">¶</a></dt>
-<dd><p>Get a list of children <a href="#id1"><span class="problematic" id="id2">`</span></a>ExecutionPlan`s that act as inputs to this plan.</p>
+<dd><p>Get a list of children <cite>ExecutionPlan</cite> that act as inputs to this plan.</p>
 <p>The returned list will be empty for leaf nodes such as scans, will contain a
 single value for unary nodes, or two values for binary nodes (such as joins).</p>
 </dd></dl>
@@ -2530,7 +2535,7 @@ Projection or Filter).</p>
 <p>Represents transforming an input relation (table) to an output relation
 (table) with a potentially different schema. Plans form a dataflow tree
 where data flows from leaves up to the root to produce the query result.</p>
-<p><a href="#id3"><span class="problematic" id="id4">`</span></a>LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+<p>A <cite>LogicalPlan</cite> can be created by the SQL query planner, the DataFrame API,
 or programmatically (for example custom query languages).</p>
 <p>This constructor should not be called by the end user.</p>
 <dl class="py method">
