@@ -577,15 +577,23 @@ Module Contents
 
 
    .. py:attribute:: _null_treatment
+      :value: None
+
 
 
    .. py:attribute:: _order_by
+      :value: None
+
 
 
    .. py:attribute:: _partition_by
+      :value: None
+
 
 
    .. py:attribute:: _window_frame
+      :value: None
+
 
 
 .. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])

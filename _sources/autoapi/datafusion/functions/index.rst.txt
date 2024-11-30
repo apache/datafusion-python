@@ -111,6 +111,7 @@ Functions
    datafusion.functions.encode
    datafusion.functions.ends_with
    datafusion.functions.exp
+   datafusion.functions.extract
    datafusion.functions.factorial
    datafusion.functions.find_in_set
    datafusion.functions.first_value
@@ -985,6 +986,13 @@ Module Contents
 .. py:function:: exp(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Returns the exponential of the argument.
+
+
+.. py:function:: extract(part: datafusion.expr.Expr, date: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Extracts a subfield from the date.
+
+   This is an alias for :py:func:`date_part`.
 
 
 .. py:function:: factorial(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
