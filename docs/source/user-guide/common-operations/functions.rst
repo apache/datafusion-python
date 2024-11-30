@@ -72,6 +72,15 @@ Convert to timestamps using :py:func:`~datafusion.functions.to_timestamp`
 
     df.select(f.to_timestamp(col('"Total"')).alias("timestamp"))
 
+Extracting parts of a date using :py:func:`~datafusion.functions.date_part` (alias :py:func:`~datafusion.functions.extract`)
+
+.. ipython:: python
+
+     df.select(
+        f.date_part(literal("month"), f.to_timestamp(col('"Total"'))).alias("month"),
+        f.extract(literal("day"), f.to_timestamp(col('"Total"'))).alias("day")
+     )
+  
 String
 ------
 
