@@ -446,14 +446,14 @@ class DataFrame:
             left_on = join_keys[0]
             right_on = join_keys[1]
 
-        if on:
-            if left_on or right_on:
+        if on is not None:
+            if left_on is not None or right_on is not None:
                 raise ValueError(
                     "`left_on` or `right_on` should not provided with `on`"
                 )
             left_on = on
             right_on = on
-        elif left_on or right_on:
+        elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 raise ValueError("`left_on` and `right_on` should both be provided.")
         else:
