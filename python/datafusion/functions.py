@@ -431,6 +431,7 @@ def window(
     partition_by = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     window_frame = window_frame.window_frame if window_frame is not None else None
+    ctx = ctx.ctx if ctx is not None else None
     return Expr(f.window(name, args, partition_by, order_by_raw, window_frame, ctx))
 
 

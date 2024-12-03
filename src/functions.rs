@@ -16,6 +16,7 @@
 // under the License.
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
+use datafusion::functions_window::all_default_window_functions;
 use datafusion::logical_expr::ExprFunctionExt;
 use datafusion::logical_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
@@ -280,6 +281,16 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
 
     if let Some(agg_fn) = agg_fn {
         return Ok(agg_fn);
+    }
+
+    // search default window functions
+    let window_fn = all_default_window_functions()
+        .iter()
+        .find(|v| v.name() == name || v.aliases().contains(&name.to_string()))
+        .map(|f| WindowFunctionDefinition::WindowUDF(f.clone()));
+
+    if let Some(window_fn) = window_fn {
+        return Ok(window_fn);
     }
 
     Err(DataFusionError::Common(format!("window function `{name}` not found")).into())
