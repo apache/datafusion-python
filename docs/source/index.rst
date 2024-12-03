@@ -43,27 +43,13 @@ Example
 
 .. ipython:: python
 
-    import datafusion
-    from datafusion import col
-    import pyarrow
+    from datafusion import SessionContext
 
-    # create a context
-    ctx = datafusion.SessionContext()
+    ctx = SessionContext()
 
-    # create a RecordBatch and a new DataFrame from it
-    batch = pyarrow.RecordBatch.from_arrays(
-        [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
-        names=["a", "b"],
-    )
-    df = ctx.create_dataframe([[batch]], name="batch_array")
+    df = ctx.read_csv("pokemon.csv")
 
-    # create a new statement
-    df = df.select(
-        col("a") + col("b"),
-        col("a") - col("b"),
-    )
-
-    df
+    df.show()
 
 
 .. _toc.links:
@@ -85,9 +71,10 @@ Example
 
    user-guide/introduction
    user-guide/basics
-   user-guide/configuration
+   user-guide/data-sources
    user-guide/common-operations/index
    user-guide/io/index
+   user-guide/configuration
    user-guide/sql
 
 

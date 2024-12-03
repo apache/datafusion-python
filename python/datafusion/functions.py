@@ -129,6 +129,7 @@ __all__ = [
     "empty",
     "encode",
     "ends_with",
+    "extract",
     "exp",
     "factorial",
     "find_in_set",
@@ -993,6 +994,14 @@ def datepart(part: Expr, date: Expr) -> Expr:
 def date_part(part: Expr, date: Expr) -> Expr:
     """Extracts a subfield from the date."""
     return Expr(f.date_part(part.expr, date.expr))
+
+
+def extract(part: Expr, date: Expr) -> Expr:
+    """Extracts a subfield from the date.
+
+    This is an alias for :py:func:`date_part`.
+    """
+    return date_part(part, date)
 
 
 def date_trunc(part: Expr, date: Expr) -> Expr:

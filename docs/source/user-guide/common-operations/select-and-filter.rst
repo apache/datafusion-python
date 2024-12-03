@@ -21,18 +21,15 @@ Column Selections
 Use :py:func:`~datafusion.dataframe.DataFrame.select`  for basic column selection.
 
 DataFusion can work with several file types, to start simple we can use a subset of the 
-`TLC Trip Record Data <https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page>`_
+`TLC Trip Record Data <https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page>`_,
+which you can download `here <https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet>`_.
 
 .. ipython:: python
-    
-    import urllib.request
-    from datafusion import SessionContext
 
-    urllib.request.urlretrieve("https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet",
-                               "yellow_trip_data.parquet")
+    from datafusion import SessionContext
     
     ctx = SessionContext()
-    df = ctx.read_parquet("yellow_trip_data.parquet")
+    df = ctx.read_parquet("yellow_tripdata_2021-01.parquet")
     df.select("trip_distance", "passenger_count")
 
 For mathematical or logical operations use :py:func:`~datafusion.col` to select columns, and give meaningful names to the resulting

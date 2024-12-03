@@ -30,15 +30,9 @@ We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
 .. ipython:: python
 
-    import urllib.request
     from datafusion import SessionContext
     from datafusion import col
     from datafusion import functions as f
-
-    urllib.request.urlretrieve(
-        "https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv",
-        "pokemon.csv",
-    )
 
     ctx = SessionContext()
     df = ctx.read_csv("pokemon.csv")

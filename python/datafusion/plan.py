@@ -42,7 +42,7 @@ class LogicalPlan:
     (table) with a potentially different schema. Plans form a dataflow tree
     where data flows from leaves up to the root to produce the query result.
 
-    `LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+    A `LogicalPlan` can be created by the SQL query planner, the DataFrame API,
     or programmatically (for example custom query languages).
     """
 
@@ -107,7 +107,7 @@ class ExecutionPlan:
         self._raw_plan = plan
 
     def children(self) -> List[ExecutionPlan]:
-        """Get a list of children `ExecutionPlan`s that act as inputs to this plan.
+        """Get a list of children `ExecutionPlan` that act as inputs to this plan.
 
         The returned list will be empty for leaf nodes such as scans, will contain a
         single value for unary nodes, or two values for binary nodes (such as joins).
