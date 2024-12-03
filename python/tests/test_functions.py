@@ -24,8 +24,6 @@ from datetime import datetime
 from datafusion import SessionContext, column
 from datafusion import functions as f
 from datafusion import literal, utf8_literal
-from datafusion import Expr
-from datafusion.expr import expr_internal
 
 np.seterr(invalid="ignore")
 

@@ -394,7 +394,7 @@ class Expr:
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string())
             return Expr(expr_internal.Expr.literal(value))
-        return literal(value)
+        return Expr.literal(value)
 
     @staticmethod
     def column(value: str) -> Expr:
