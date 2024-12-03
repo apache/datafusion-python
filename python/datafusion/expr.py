@@ -385,6 +385,8 @@ class Expr:
         """Creates a new expression representing a UTF8 literal value.
 
         It is different from `literal` because it is pa.string() instead of pa.string_view()
+        This is needed for cases where datafusion is expecting a utf8 instead of utf8view literal like in
+        https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
         """
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string())
