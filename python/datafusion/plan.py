@@ -98,6 +98,10 @@ class LogicalPlan:
         """
         return self._raw_plan.to_proto()
 
+    def to_sql(self) -> str:
+        """Return the SQL equivalent statement for this logical plan."""
+        return self._raw_plan.to_sql()
+
 
 class ExecutionPlan:
     """Represent nodes in the DataFusion Physical Plan."""
