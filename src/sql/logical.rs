@@ -34,6 +34,7 @@ use crate::expr::table_scan::PyTableScan;
 use crate::expr::unnest::PyUnnest;
 use crate::expr::window::PyWindowExpr;
 use crate::{context::PySessionContext, errors::py_unsupported_variant_err};
+use datafusion::sql::unparser::plan_to_sql;
 use datafusion::{error::DataFusionError, logical_expr::LogicalPlan};
 use datafusion_proto::logical_plan::{AsLogicalPlan, DefaultLogicalExtensionCodec};
 use prost::Message;
@@ -152,6 +153,12 @@ impl PyLogicalPlan {
             .try_into_logical_plan(&ctx.ctx, &codec)
             .map_err(DataFusionError::from)?;
         Ok(Self::new(plan))
+    }
+
+    pub fn to_sql(&self) -> PyResult<String> {
+        plan_to_sql(&self.plan)
+            .map(|v| v.to_string())
+            .map_err(|err| PyRuntimeError::new_err(err.to_string()))
     }
 }
 
