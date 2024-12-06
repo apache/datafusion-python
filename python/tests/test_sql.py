@@ -159,6 +159,16 @@ def test_register_parquet(ctx, tmp_path):
     assert result.to_pydict() == {"cnt": [100]}
 
 
+def test_parameterized_sql(ctx, tmp_path) -> None:
+    path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
+    df = ctx.read_parquet(path)
+    result = ctx.sql(
+        "SELECT COUNT(a) AS cnt FROM {replaced_df}", replaced_df=df
+    ).collect()
+    result = pa.Table.from_batches(result)
+    assert result.to_pydict() == {"cnt": [100]}
+
+
 @pytest.mark.parametrize("path_to_str", (True, False))
 def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
     dir_root = tmp_path / "dataset_parquet_partitioned"
