@@ -910,7 +910,7 @@ def test_temporal_functions(df):
 def test_arrow_cast(df):
     df = df.select(
         # we use `utf8_literal` to return utf8 instead of `literal` which returns
-        # utf8view # because datafusion.arrow_cast expects a utf8 instead of utf8view
+        # utf8view because datafusion.arrow_cast expects a utf8 instead of utf8view
         # https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
         f.arrow_cast(column("b"), utf8_literal("Float64")).alias("b_as_float"),
         f.arrow_cast(column("b"), utf8_literal("Int32")).alias("b_as_int"),
