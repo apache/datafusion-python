@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/configuration.html">
-   Configuration
+  <a class="reference internal" href="../../../user-guide/data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -204,7 +204,17 @@
      Parquet
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../../../user-guide/sql.html">
@@ -250,28 +260,6 @@
      </i>
     </label>
     <ul class="current">
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../catalog/index.html">
        datafusion.catalog
@@ -296,6 +284,28 @@
       <a class="reference internal" href="../functions/index.html">
        datafusion.functions
       </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../object_store/index.html">
@@ -360,6 +370,46 @@
    Module Contents
   </a>
   <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.context.ArrowArrayExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ArrowArrayExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.ArrowArrayExportable.__arrow_c_array__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ArrowArrayExportable.__arrow_c_array__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ArrowStreamExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ArrowStreamExportable.__arrow_c_stream__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig">
      <code class="docutils literal notranslate">
@@ -871,6 +921,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_table_provider">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.register_table_provider()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udaf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -943,28 +1002,10 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.config">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         SessionContext.config
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.ctx">
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.ctx
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.runtime">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         SessionContext.runtime
         </span>
        </code>
       </a>
@@ -1001,6 +1042,12 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.ArrowArrayExportable" title="datafusion.context.ArrowArrayExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrowArrayExportable</span></code></a></p></td>
+<td><p>Type hint for object exporting Arrow C Array via Arrow PyCapsule Interface.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.ArrowStreamExportable" title="datafusion.context.ArrowStreamExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrowStreamExportable</span></code></a></p></td>
+<td><p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
@@ -1018,6 +1065,32 @@
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.ArrowArrayExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">ArrowArrayExportable</span></span><a class="headerlink" href="#datafusion.context.ArrowArrayExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object exporting Arrow C Array via Arrow PyCapsule Interface.</p>
+<p><a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html">https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.ArrowArrayExportable.__arrow_c_array__">
+<span class="sig-name descname"><span class="pre">__arrow_c_array__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">object</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">object</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.context.ArrowArrayExportable.__arrow_c_array__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.ArrowStreamExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">ArrowStreamExportable</span></span><a class="headerlink" href="#datafusion.context.ArrowStreamExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p>
+<p><a class="reference external" href="https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html">https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.ArrowStreamExportable.__arrow_c_stream__">
+<span class="sig-name descname"><span class="pre">__arrow_c_stream__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">requested_schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.ArrowStreamExportable.__arrow_c_stream__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.context.RuntimeConfig">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig" title="Link to this definition">¶</a></dt>
@@ -1515,11 +1588,12 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.from_arrow">
-<span class="sig-name descname"><span class="pre">from_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_arrow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.ArrowStreamExportable" title="datafusion.context.ArrowStreamExportable"><span class="pre">ArrowStreamExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.context.ArrowArrayExportable" title="datafusion.context.ArrowArrayExportable"><span class="pre">ArrowArrayExportable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.from_arrow" title="Link to this definition">¶</a></dt>
 <dd><p>Create a <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> from an Arrow source.</p>
 <p>The Arrow data source can be any object that implements either
 <code class="docutils literal notranslate"><span class="pre">__arrow_c_stream__</span></code> or <code class="docutils literal notranslate"><span class="pre">__arrow_c_array__</span></code>. For the latter, it must return
-a struct array. Common examples of sources from pyarrow include</p>
+a struct array.</p>
+<p>Arrow data can be Polars, Pandas, Pyarrow etc.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1891,6 +1965,14 @@ register it into the session using the given name.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.register_table_provider">
+<span class="sig-name descname"><span class="pre">register_table_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_table_provider" title="Link to this definition">¶</a></dt>
+<dd><p>Register a table provider.</p>
+<p>This table provider must have a method called <code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code>
+which returns a PyCapsule that exposes a <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udaf">
 <span class="sig-name descname"><span class="pre">register_udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udaf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.AggregateUDF" title="datafusion.udf.AggregateUDF"><span class="pre">datafusion.udf.AggregateUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udaf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined aggregation function (UDAF) with the context.</p>
@@ -1967,18 +2049,8 @@ provided options.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.context.SessionContext.config">
-<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#datafusion.context.SessionContext.config" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.ctx">
 <span class="sig-name descname"><span class="pre">ctx</span></span><a class="headerlink" href="#datafusion.context.SessionContext.ctx" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.context.SessionContext.runtime">
-<span class="sig-name descname"><span class="pre">runtime</span></span><a class="headerlink" href="#datafusion.context.SessionContext.runtime" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -2028,7 +2100,7 @@ provided options.</p>
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
 </p>
     </div>
     

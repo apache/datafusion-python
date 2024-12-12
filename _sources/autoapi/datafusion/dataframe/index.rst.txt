@@ -89,6 +89,16 @@ Module Contents
 
 
 
+   .. py:method:: cast(mapping: dict[str, pyarrow.DataType[Any]]) -> DataFrame
+
+      Cast one or more columns to a different data type.
+
+      :param mapping: Mapped with column as key and column dtype as value.
+
+      :returns: DataFrame after casting columns
+
+
+
    .. py:method:: collect() -> list[pyarrow.RecordBatch]
 
       Execute this :py:class:`DataFrame` and collect results into memory.
@@ -144,6 +154,16 @@ Module Contents
       Return a new :py:class:`DataFrame` with all duplicated rows removed.
 
       :returns: DataFrame after removing duplicates.
+
+
+
+   .. py:method:: drop(*columns: str) -> DataFrame
+
+      Drop arbitrary amount of columns.
+
+      :param columns: Column names to drop from the dataframe.
+
+      :returns: DataFrame with those columns removed in the projection.
 
 
 
@@ -211,6 +231,16 @@ Module Contents
 
 
 
+   .. py:method:: head(n: int = 5) -> DataFrame
+
+      Return a new :py:class:`DataFrame` with a limited number of rows.
+
+      :param n: Number of rows to take from the head of the DataFrame.
+
+      :returns: DataFrame after limiting.
+
+
+
    .. py:method:: intersect(other: DataFrame) -> DataFrame
 
       Calculate the intersection of two :py:class:`DataFrame`.
@@ -223,15 +253,35 @@ Module Contents
 
 
 
-   .. py:method:: join(right: DataFrame, join_keys: tuple[list[str], list[str]], how: str) -> DataFrame
+   .. py:method:: join(right: DataFrame, on: str | Sequence[str], how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: None = None, right_on: None = None, join_keys: None = None) -> DataFrame
+                  join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: str | Sequence[str], right_on: str | Sequence[str], join_keys: tuple[list[str], list[str]] | None = None) -> DataFrame
+                  join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, join_keys: tuple[list[str], list[str]], left_on: None = None, right_on: None = None) -> DataFrame
 
       Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
-      Join keys are a pair of lists of column names in the left and right
-      dataframes, respectively. These lists must have the same length.
+      `on` has to be provided or both `left_on` and `right_on` in conjunction.
 
       :param right: Other DataFrame to join with.
-      :param join_keys: Tuple of two lists of column names to join on.
+      :param on: Column names to join on in both dataframes.
+      :param how: Type of join to perform. Supported types are "inner", "left",
+                  "right", "full", "semi", "anti".
+      :param left_on: Join column of the left dataframe.
+      :param right_on: Join column of the right dataframe.
+      :param join_keys: Tuple of two lists of column names to join on. [Deprecated]
+
+      :returns: DataFrame after join.
+
+
+
+   .. py:method:: join_on(right: DataFrame, *on_exprs: datafusion.expr.Expr, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner') -> DataFrame
+
+      Join two :py:class:`DataFrame` using the specified expressions.
+
+      On expressions are used to support in-equality predicates. Equality
+      predicates are correctly optimized
+
+      :param right: Other DataFrame to join with.
+      :param on_exprs: single or multiple (in)-equality predicates.
       :param how: Type of join to perform. Supported types are "inner", "left",
                   "right", "full", "semi", "anti".
 
@@ -346,6 +396,19 @@ Module Contents
       :param exprs: Sort expressions, applied in order.
 
       :returns: DataFrame after sorting.
+
+
+
+   .. py:method:: tail(n: int = 5) -> DataFrame
+
+      Return a new :py:class:`DataFrame` with a limited number of rows.
+
+      Be aware this could be potentially expensive since the row size needs to be
+      determined of the dataframe. This is done by collecting it.
+
+      :param n: Number of rows to take from the tail of the DataFrame.
+
+      :returns: DataFrame after limiting.
 
 
 
@@ -473,6 +536,28 @@ Module Contents
       :param new_name: New column name.
 
       :returns: DataFrame with the column renamed.
+
+
+
+   .. py:method:: with_columns(*exprs: datafusion.expr.Expr | Iterable[datafusion.expr.Expr], **named_exprs: datafusion.expr.Expr) -> DataFrame
+
+      Add columns to the DataFrame.
+
+      By passing expressions, iteratables of expressions, or named expressions. To
+      pass named expressions use the form name=Expr.
+
+      Example usage: The following will add 4 columns labeled a, b, c, and d::
+
+          df = df.with_columns(
+              lit(0).alias('a'),
+              [lit(1).alias('b'), lit(2).alias('c')],
+              d=lit(3)
+              )
+
+      :param exprs: Either a single expression or an iterable of expressions to add.
+      :param named_exprs: Named expressions in the form of ``name=expr``
+
+      :returns: DataFrame with the new columns added.
 
 
 

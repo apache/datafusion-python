@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../configuration.html">
-   Configuration
+  <a class="reference internal" href="../data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 current active has-children">
@@ -204,7 +204,17 @@
      Parquet
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="../sql.html">
@@ -250,28 +260,6 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/catalog/index.html">
        datafusion.catalog
@@ -296,6 +284,28 @@
       <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../../autoapi/datafusion/input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/object_store/index.html">
@@ -466,19 +476,105 @@ approaches.</p>
 <p>Indexing an element of an array via <code class="docutils literal notranslate"><span class="pre">[]</span></code> starts at index 0 whereas
 <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_element" title="datafusion.functions.array_element"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_element()</span></code></a> starts at index 1.</p>
 </div>
+<p>To check if an array is empty, you can use the function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_empty" title="datafusion.functions.array_empty"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.array_empty()</span></code></a> or <cite>datafusion.functions.empty</cite>.
+This function returns a boolean indicating whether the array is empty.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.functions</span> <span class="kn">import</span> <span class="n">array_empty</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]})</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">array_empty</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;is_empty&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">13</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">is_empty</span> <span class="o">|</span>
+<span class="o">+----------+</span>
+<span class="o">|</span> <span class="n">true</span>     <span class="o">|</span>
+<span class="o">|</span> <span class="n">false</span>    <span class="o">|</span>
+<span class="o">+----------+</span>
+</pre></div>
+</div>
+<p>In this example, the <cite>is_empty</cite> column will contain <cite>True</cite> for the first row and <cite>False</cite> for the second row.</p>
+<p>To get the total number of elements in an array, you can use the function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.cardinality" title="datafusion.functions.cardinality"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.cardinality()</span></code></a>.
+This function returns an integer indicating the total number of elements in the array.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.functions</span> <span class="kn">import</span> <span class="n">cardinality</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]})</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">cardinality</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;num_elements&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">18</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span> <span class="n">num_elements</span> <span class="o">|</span>
+<span class="o">+--------------+</span>
+<span class="o">|</span> <span class="mi">3</span>            <span class="o">|</span>
+<span class="o">|</span> <span class="mi">3</span>            <span class="o">|</span>
+<span class="o">+--------------+</span>
+</pre></div>
+</div>
+<p>In this example, the <cite>num_elements</cite> column will contain <cite>3</cite> for both rows.</p>
+<p>To concatenate two arrays, you can use the function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_cat" title="datafusion.functions.array_cat"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.array_cat()</span></code></a> or <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_concat" title="datafusion.functions.array_concat"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.array_concat()</span></code></a>.
+These functions return a new array that is the concatenation of the input arrays.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.functions</span> <span class="kn">import</span> <span class="n">array_cat</span><span class="p">,</span> <span class="n">array_concat</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]})</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">array_cat</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;concatenated_array&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">23</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span> <span class="n">concatenated_array</span> <span class="o">|</span>
+<span class="o">+--------------------+</span>
+<span class="o">|</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">+--------------------+</span>
+</pre></div>
+</div>
+<p>In this example, the <cite>concatenated_array</cite> column will contain <cite>[1, 2, 3, 4, 5, 6]</cite>.</p>
+<p>To repeat the elements of an array a specified number of times, you can use the function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.array_repeat" title="datafusion.functions.array_repeat"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.functions.array_repeat()</span></code></a>.
+This function returns a new array with the elements repeated.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.functions</span> <span class="kn">import</span> <span class="n">array_repeat</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">26</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">27</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]})</span>
+
+<span class="n">In</span> <span class="p">[</span><span class="mi">28</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">array_repeat</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;repeated_array&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">28</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+------------------------+</span>
+<span class="o">|</span> <span class="n">repeated_array</span>         <span class="o">|</span>
+<span class="o">+------------------------+</span>
+<span class="o">|</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span> <span class="o">|</span>
+<span class="o">+------------------------+</span>
+</pre></div>
+</div>
+<p>In this example, the <cite>repeated_array</cite> column will contain <cite>[[1, 2, 3], [1, 2, 3]]</cite>.</p>
 </section>
 <section id="structs">
 <h2>Structs<a class="headerlink" href="#structs" title="Link to this heading">¶</a></h2>
 <p>Columns that contain struct elements can be accessed using the bracket notation as if they were
 Python dictionary style objects. This expects a string key as the parameter passed.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">29</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">}]}</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">30</span><span class="p">]:</span> <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;blue&quot;</span><span class="p">}]}</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">31</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;a_size&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">32</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)[</span><span class="s2">&quot;size&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;a_size&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">32</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+--------+</span>
 <span class="o">|</span> <span class="n">a_size</span> <span class="o">|</span>
@@ -495,17 +591,17 @@ Python dictionary style objects. This expects a string key as the parameter pass
 a wide variety of expressions built up from other expressions. For example, <a class="reference internal" href="../../autoapi/datafusion/expr/index.html#datafusion.expr.Expr.alias" title="datafusion.expr.Expr.alias"><code class="xref py py-func docutils literal notranslate"><span class="pre">alias()</span></code></a> is a function that takes
 as it input a single expression and returns an expression in which the name of the expression has changed.</p>
 <p>The following example shows a series of expressions that are built up from functions operating on expressions.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">33</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">column</span><span class="p">,</span> <span class="n">lit</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">34</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">column</span><span class="p">,</span> <span class="n">lit</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">35</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">random</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">36</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">random</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">17</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">37</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">18</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">38</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="p">{</span>
    <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;Albert&quot;</span><span class="p">,</span> <span class="s2">&quot;Becca&quot;</span><span class="p">,</span> <span class="s2">&quot;Carlos&quot;</span><span class="p">,</span> <span class="s2">&quot;Dante&quot;</span><span class="p">],</span>
    <span class="o">....</span><span class="p">:</span>         <span class="s2">&quot;age&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">67</span><span class="p">,</span> <span class="mi">27</span><span class="p">,</span> <span class="mi">71</span><span class="p">],</span>
@@ -515,20 +611,20 @@ as it input a single expression and returns an expression in which the name of t
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">19</span><span class="p">]:</span> <span class="n">age_col</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">39</span><span class="p">]:</span> <span class="n">age_col</span> <span class="o">=</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">20</span><span class="p">]:</span> <span class="n">renamed_age</span> <span class="o">=</span> <span class="n">age_col</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;age_in_years&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">40</span><span class="p">]:</span> <span class="n">renamed_age</span> <span class="o">=</span> <span class="n">age_col</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;age_in_years&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">21</span><span class="p">]:</span> <span class="n">start_age</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">41</span><span class="p">]:</span> <span class="n">start_age</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">22</span><span class="p">]:</span> <span class="n">started_young</span> <span class="o">=</span> <span class="n">start_age</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">42</span><span class="p">]:</span> <span class="n">started_young</span> <span class="o">=</span> <span class="n">start_age</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">18</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">23</span><span class="p">]:</span> <span class="n">can_retire</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">43</span><span class="p">]:</span> <span class="n">can_retire</span> <span class="o">=</span> <span class="n">age_col</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">65</span><span class="p">)</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">24</span><span class="p">]:</span> <span class="n">long_timer</span> <span class="o">=</span> <span class="n">started_young</span> <span class="o">&amp;</span> <span class="n">can_retire</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">44</span><span class="p">]:</span> <span class="n">long_timer</span> <span class="o">=</span> <span class="n">started_young</span> <span class="o">&amp;</span> <span class="n">can_retire</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">25</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">long_timer</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">renamed_age</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">))</span>
-<span class="n">Out</span><span class="p">[</span><span class="mi">25</span><span class="p">]:</span> 
+<span class="n">In</span> <span class="p">[</span><span class="mi">45</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">long_timer</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">),</span> <span class="n">renamed_age</span><span class="p">,</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;years_in_position&quot;</span><span class="p">))</span>
+<span class="n">Out</span><span class="p">[</span><span class="mi">45</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
 <span class="o">+-------+--------------+-------------------+</span>
 <span class="o">|</span> <span class="n">name</span>  <span class="o">|</span> <span class="n">age_in_years</span> <span class="o">|</span> <span class="n">years_in_position</span> <span class="o">|</span>
@@ -582,7 +678,7 @@ as it input a single expression and returns an expression in which the name of t
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
 </p>
     </div>
     

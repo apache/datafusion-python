@@ -14,6 +14,8 @@ Classes
 
 .. autoapisummary::
 
+   datafusion.context.ArrowArrayExportable
+   datafusion.context.ArrowStreamExportable
    datafusion.context.RuntimeConfig
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
@@ -22,6 +24,32 @@ Classes
 
 Module Contents
 ---------------
+
+.. py:class:: ArrowArrayExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object exporting Arrow C Array via Arrow PyCapsule Interface.
+
+   https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+
+
+   .. py:method:: __arrow_c_array__(requested_schema: object | None = None) -> tuple[object, object]
+
+
+.. py:class:: ArrowStreamExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.
+
+   https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+
+
+   .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
+
 
 .. py:class:: RuntimeConfig
 
@@ -417,13 +445,15 @@ Module Contents
 
 
 
-   .. py:method:: from_arrow(data: Any, name: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: from_arrow(data: ArrowStreamExportable | ArrowArrayExportable, name: str | None = None) -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow source.
 
       The Arrow data source can be any object that implements either
       ``__arrow_c_stream__`` or ``__arrow_c_array__``. For the latter, it must return
-      a struct array. Common examples of sources from pyarrow include
+      a struct array.
+
+      Arrow data can be Polars, Pandas, Pyarrow etc.
 
       :param data: Arrow data source.
       :param name: Name of the DataFrame.
@@ -705,6 +735,15 @@ Module Contents
 
 
 
+   .. py:method:: register_table_provider(name: str, provider: Any) -> None
+
+      Register a table provider.
+
+      This table provider must have a method called ``__datafusion_table_provider__``
+      which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+
+
+
    .. py:method:: register_udaf(udaf: datafusion.udf.AggregateUDF) -> None
 
       Register a user-defined aggregation function (UDAF) with the context.
@@ -771,12 +810,6 @@ Module Contents
 
 
 
-   .. py:attribute:: config
-
-
    .. py:attribute:: ctx
-
-
-   .. py:attribute:: runtime
 
 

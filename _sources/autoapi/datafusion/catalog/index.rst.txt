@@ -82,6 +82,7 @@ Module Contents
    .. py:property:: kind
       :type: str
 
+
       Returns the kind of table.
 
 

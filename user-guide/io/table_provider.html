@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Avro &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>Custom Table Provider &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,8 +34,8 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="CSV" href="csv.html" />
-    <link rel="prev" title="Arrow" href="arrow.html" />
+    <link rel="next" title="Configuration" href="../configuration.html" />
+    <link rel="prev" title="Parquet" href="parquet.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -184,8 +184,8 @@
      Arrow
     </a>
    </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
+   <li class="toctree-l2">
+    <a class="reference internal" href="avro.html">
      Avro
     </a>
    </li>
@@ -204,8 +204,8 @@
      Parquet
     </a>
    </li>
-   <li class="toctree-l2">
-    <a class="reference internal" href="table_provider.html">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
      Custom Table Provider
     </a>
    </li>
@@ -376,14 +376,38 @@
               
               <div>
                 
-  <section id="avro">
-<span id="io-avro"></span><h1>Avro<a class="headerlink" href="#avro" title="Link to this heading">¶</a></h1>
-<p><a class="reference external" href="https://avro.apache.org/">Avro</a> is a serialization format for record data. Reading an avro file is very straightforward
-with <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_avro" title="datafusion.context.SessionContext.read_avro"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_avro()</span></code></a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+  <section id="custom-table-provider">
+<span id="io-custom-table-provider"></span><h1>Custom Table Provider<a class="headerlink" href="#custom-table-provider" title="Link to this heading">¶</a></h1>
+<p>If you have a custom data source that you want to integrate with DataFusion, you can do so by
+implementing the <a class="reference external" href="https://datafusion.apache.org/library-user-guide/custom-table-providers.html">TableProvider</a>
+interface in Rust and then exposing it in Python. To do so,
+you must use DataFusion 43.0.0 or later and expose a <a class="reference external" href="https://crates.io/crates/datafusion-ffi">FFI_TableProvider</a>
+via <a class="reference external" href="https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule">PyCapsule</a>.</p>
+<p>A complete example can be found in the <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">examples folder</a>.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pymethods]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">MyTableProvider</span><span class="w"> </span><span class="p">{</span>
 
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_avro</span><span class="p">(</span><span class="s2">&quot;file.avro&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_table_provider__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">        </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CString</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">())</span>
+<span class="w">            </span><span class="p">.</span><span class="n">map_err</span><span class="p">(</span><span class="o">|</span><span class="n">e</span><span class="o">|</span><span class="w"> </span><span class="n">PyRuntimeError</span><span class="p">::</span><span class="n">new_err</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">to_string</span><span class="p">()))</span><span class="o">?</span><span class="p">;</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">provider</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_bound</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">()))</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Once you have this library available, in python you can register your table provider
+to the <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provider</span> <span class="o">=</span> <span class="n">MyTableProvider</span><span class="p">()</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
 </section>
@@ -394,17 +418,17 @@ with <a class="reference internal" href="../../autoapi/datafusion/context/index.
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="arrow.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="parquet.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Arrow</p>
+            <p class="prev-next-title">Parquet</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="csv.html" title="next page">
+    <a class='right-next' id="next-link" href="../configuration.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">CSV</p>
+        <p class="prev-next-title">Configuration</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

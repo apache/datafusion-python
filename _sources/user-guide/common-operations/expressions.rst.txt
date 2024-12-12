@@ -77,11 +77,67 @@ approaches.
     df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
     df.select(col("a")[0].alias("a0"))
 
-
 .. warning::
 
     Indexing an element of an array via ``[]`` starts at index 0 whereas
     :py:func:`~datafusion.functions.array_element` starts at index 1.
+
+To check if an array is empty, you can use the function :py:func:`datafusion.functions.array_empty` or `datafusion.functions.empty`.
+This function returns a boolean indicating whether the array is empty.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import array_empty
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[], [1, 2, 3]]})
+    df.select(array_empty(col("a")).alias("is_empty"))
+
+In this example, the `is_empty` column will contain `True` for the first row and `False` for the second row.
+
+To get the total number of elements in an array, you can use the function :py:func:`datafusion.functions.cardinality`.
+This function returns an integer indicating the total number of elements in the array.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import cardinality
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3], [4, 5, 6]]})
+    df.select(cardinality(col("a")).alias("num_elements"))
+
+In this example, the `num_elements` column will contain `3` for both rows.
+
+To concatenate two arrays, you can use the function :py:func:`datafusion.functions.array_cat` or :py:func:`datafusion.functions.array_concat`.
+These functions return a new array that is the concatenation of the input arrays.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col
+    from datafusion.functions import array_cat, array_concat
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3]], "b": [[4, 5, 6]]})
+    df.select(array_cat(col("a"), col("b")).alias("concatenated_array"))
+
+In this example, the `concatenated_array` column will contain `[1, 2, 3, 4, 5, 6]`.
+
+To repeat the elements of an array a specified number of times, you can use the function :py:func:`datafusion.functions.array_repeat`.
+This function returns a new array with the elements repeated.
+
+.. ipython:: python
+
+    from datafusion import SessionContext, col, literal
+    from datafusion.functions import array_repeat
+
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [[1, 2, 3]]})
+    df.select(array_repeat(col("a"), literal(2)).alias("repeated_array"))
+
+In this example, the `repeated_array` column will contain `[[1, 2, 3], [1, 2, 3]]`.
+
 
 Structs
 -------

@@ -37,4 +37,3 @@ staging:
 publish:
   whoami: asf-site
   subdir: python
-

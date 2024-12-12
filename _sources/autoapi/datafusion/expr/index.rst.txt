@@ -27,7 +27,6 @@ Attributes
    datafusion.expr.Column
    datafusion.expr.CreateMemoryTable
    datafusion.expr.CreateView
-   datafusion.expr.CrossJoin
    datafusion.expr.Distinct
    datafusion.expr.DropTable
    datafusion.expr.EmptyRelation
@@ -331,6 +330,18 @@ Module Contents
 
 
 
+   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
+
+      Fill NaN values with a provided value.
+
+
+
+   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
+
+      Fill NULL values with a provided value.
+
+
+
    .. py:method:: filter(filter: Expr) -> ExprFuncBuilder
 
       Filter an aggregate function.
@@ -566,15 +577,23 @@ Module Contents
 
 
    .. py:attribute:: _null_treatment
+      :value: None
+
 
 
    .. py:attribute:: _order_by
+      :value: None
+
 
 
    .. py:attribute:: _partition_by
+      :value: None
+
 
 
    .. py:attribute:: _window_frame
+      :value: None
+
 
 
 .. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
@@ -676,8 +695,6 @@ Module Contents
 .. py:data:: CreateMemoryTable
 
 .. py:data:: CreateView
-
-.. py:data:: CrossJoin
 
 .. py:data:: Distinct
 

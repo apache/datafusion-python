@@ -34,7 +34,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Configuration" href="configuration.html" />
+    <link rel="next" title="Data Sources" href="data-sources.html" />
     <link rel="prev" title="Introduction" href="introduction.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -113,8 +113,8 @@
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="configuration.html">
-   Configuration
+  <a class="reference internal" href="data-sources.html">
+   Data Sources
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -204,7 +204,17 @@
      Parquet
     </a>
    </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
   </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="configuration.html">
+   Configuration
+  </a>
  </li>
  <li class="toctree-l1">
   <a class="reference internal" href="sql.html">
@@ -250,28 +260,6 @@
      </i>
     </label>
     <ul>
-     <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
-       datafusion.input
-      </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
-       <i class="fas fa-chevron-down">
-       </i>
-      </label>
-      <ul>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
-         datafusion.input.base
-        </a>
-       </li>
-       <li class="toctree-l4">
-        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
-         datafusion.input.location
-        </a>
-       </li>
-      </ul>
-     </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
        datafusion.catalog
@@ -296,6 +284,28 @@
       <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
      </li>
      <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
@@ -344,9 +354,29 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#session-context">
+   Session Context
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#dataframe">
+   DataFrame
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#expressions">
+   Expressions
+  </a>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -368,66 +398,96 @@
                 
   <section id="concepts">
 <span id="user-guide-concepts"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">¶</a></h1>
-<p>In this section, we will cover a basic example to introduce a few key concepts.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datafusion</span>
-<span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span>
-<span class="kn">import</span> <span class="nn">pyarrow</span>
+<p>In this section, we will cover a basic example to introduce a few key concepts. We will use the same
+source file as described in the <a class="reference internal" href="introduction.html#guide"><span class="std std-ref">Introduction</span></a>, the Pokemon data set.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
-<span class="c1"># create a context</span>
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="c1"># create a RecordBatch and a new DataFrame from it</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
-    <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
-    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]])</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;yellow_tripdata_2021-01.parquet&quot;</span><span class="p">)</span>
 
-<span class="c1"># create a new statement</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
-    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
-<span class="p">)</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span>     <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;tip_amount&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tip_percent&quot;</span><span class="p">),</span>
+   <span class="o">...</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">...</span><span class="p">:</span> 
 
-<span class="c1"># execute and collect the first (and only) batch</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">collect</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+---------------+-------+-------------+</span>
+<span class="o">|</span> <span class="n">trip_distance</span> <span class="o">|</span> <span class="n">total</span> <span class="o">|</span> <span class="n">tip_percent</span> <span class="o">|</span>
+<span class="o">+---------------+-------+-------------+</span>
+<span class="o">|</span> <span class="mf">2.1</span>           <span class="o">|</span> <span class="mf">11.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">0.2</span>           <span class="o">|</span> <span class="mf">4.3</span>   <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">14.7</span>          <span class="o">|</span> <span class="mf">51.95</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">10.6</span>          <span class="o">|</span> <span class="mf">36.35</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.94</span>          <span class="o">|</span> <span class="mf">24.36</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.6</span>           <span class="o">|</span> <span class="mf">14.15</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">4.1</span>           <span class="o">|</span> <span class="mf">17.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">5.7</span>           <span class="o">|</span> <span class="mf">21.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">9.1</span>           <span class="o">|</span> <span class="mf">28.8</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">2.7</span>           <span class="o">|</span> <span class="mf">18.95</span> <span class="o">|</span> <span class="mf">16.6</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">6.11</span>          <span class="o">|</span> <span class="mf">24.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.21</span>          <span class="o">|</span> <span class="mf">10.79</span> <span class="o">|</span> <span class="mf">23.1</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">7.4</span>           <span class="o">|</span> <span class="mf">33.92</span> <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.7</span>           <span class="o">|</span> <span class="mf">14.16</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">0.81</span>          <span class="o">|</span> <span class="mf">8.3</span>   <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.01</span>          <span class="o">|</span> <span class="mf">10.3</span>  <span class="o">|</span> <span class="mf">9.7</span>         <span class="o">|</span>
+<span class="o">|</span> <span class="mf">0.73</span>          <span class="o">|</span> <span class="mf">12.09</span> <span class="o">|</span> <span class="mf">23.1</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.17</span>          <span class="o">|</span> <span class="mf">12.36</span> <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">0.78</span>          <span class="o">|</span> <span class="mf">9.96</span>  <span class="o">|</span> <span class="mf">16.7</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="mf">1.66</span>          <span class="o">|</span> <span class="mf">12.3</span>  <span class="o">|</span> <span class="mf">0.0</span>         <span class="o">|</span>
+<span class="o">+---------------+-------+-------------+</span>
 </pre></div>
 </div>
-<p>The first statement group:</p>
+<section id="session-context">
+<h2>Session Context<a class="headerlink" href="#session-context" title="Link to this heading">¶</a></h2>
+<p>The first statement group creates a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a context</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>creates a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, that is, the main interface for executing queries with DataFusion. It maintains the state
-of the connection between a user and an instance of the DataFusion engine. Additionally it provides the following functionality:</p>
+<p>A Session Context is the main interface for executing queries with DataFusion. It maintains the state
+of the connection between a user and an instance of the DataFusion engine. Additionally it provides
+the following functionality:</p>
 <ul class="simple">
-<li><p>Create a DataFrame from a CSV or Parquet data source.</p></li>
-<li><p>Register a CSV or Parquet data source as a table that can be referenced from a SQL query.</p></li>
-<li><p>Register a custom data source that can be referenced from a SQL query.</p></li>
+<li><p>Create a DataFrame from a data source.</p></li>
+<li><p>Register a data source as a table that can be referenced from a SQL query.</p></li>
 <li><p>Execute a SQL query</p></li>
 </ul>
+</section>
+<section id="dataframe">
+<h2>DataFrame<a class="headerlink" href="#dataframe" title="Link to this heading">¶</a></h2>
 <p>The second statement group creates a <code class="code docutils literal notranslate"><span class="pre">DataFrame</span></code>,</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a RecordBatch and a new DataFrame from it</span>
-<span class="n">batch</span> <span class="o">=</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
-    <span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
-    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">],</span>
-<span class="p">)</span>
-<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">create_dataframe</span><span class="p">([[</span><span class="n">batch</span><span class="p">]])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Create a DataFrame from a file</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;yellow_tripdata_2021-01.parquet&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>A DataFrame refers to a (logical) set of rows that share the same column names, similar to a <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html">Pandas DataFrame</a>.
 DataFrames are typically created by calling a method on <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, such as <code class="code docutils literal notranslate"><span class="pre">read_csv</span></code>, and can then be modified by
 calling the transformation methods, such as <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-func docutils literal notranslate"><span class="pre">select()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">aggregate()</span></code></a>,
 and <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit" title="datafusion.dataframe.DataFrame.limit"><code class="xref py py-func docutils literal notranslate"><span class="pre">limit()</span></code></a> to build up a query definition.</p>
-<p>The third statement uses <code class="code docutils literal notranslate"><span class="pre">Expressions</span></code> to build up a query definition.</p>
+</section>
+<section id="expressions">
+<h2>Expressions<a class="headerlink" href="#expressions" title="Link to this heading">¶</a></h2>
+<p>The third statement uses <code class="code docutils literal notranslate"><span class="pre">Expressions</span></code> to build up a query definition. You can find
+explanations for what the functions below do in the user documentation for
+<a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.col" title="datafusion.col"><code class="xref py py-func docutils literal notranslate"><span class="pre">col()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/index.html#datafusion.lit" title="datafusion.lit"><code class="xref py py-func docutils literal notranslate"><span class="pre">lit()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/functions/index.html#datafusion.functions.round" title="datafusion.functions.round"><code class="xref py py-func docutils literal notranslate"><span class="pre">round()</span></code></a>,
+and <a class="reference internal" href="../autoapi/datafusion/expr/index.html#datafusion.expr.Expr.alias" title="datafusion.expr.Expr.alias"><code class="xref py py-func docutils literal notranslate"><span class="pre">alias()</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
-    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
-    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;trip_distance&quot;</span><span class="p">,</span>
+    <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;tip_amount&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">col</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;tip_percent&quot;</span><span class="p">),</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Finally the <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-func docutils literal notranslate"><span class="pre">collect()</span></code></a> method converts the logical plan represented by the DataFrame into a physical plan and execute it,
-collecting all results into a list of <a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html">RecordBatch</a>.</p>
+<p>Finally the <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.show" title="datafusion.dataframe.DataFrame.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show()</span></code></a> method converts the logical plan
+represented by the DataFrame into a physical plan and execute it, collecting all results and
+displaying them to the user. It is important to note that DataFusion performs lazy evaluation
+of the DataFrame. Until you call a method such as <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.show" title="datafusion.dataframe.DataFrame.show"><code class="xref py py-func docutils literal notranslate"><span class="pre">show()</span></code></a>
+or <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.collect" title="datafusion.dataframe.DataFrame.collect"><code class="xref py py-func docutils literal notranslate"><span class="pre">collect()</span></code></a>, DataFusion will not perform the query.</p>
+</section>
 </section>
 
 
@@ -443,10 +503,10 @@ collecting all results into a list of <a class="reference external" href="https:
             <p class="prev-next-title">Introduction</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="configuration.html" title="next page">
+    <a class='right-next' id="next-link" href="data-sources.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Configuration</p>
+        <p class="prev-next-title">Data Sources</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
@@ -472,7 +532,7 @@ collecting all results into a list of <a class="reference external" href="https:
     
     <div class="footer-item">
       <p class="sphinx-version">
-Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.0.<br>
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
 </p>
     </div>
     

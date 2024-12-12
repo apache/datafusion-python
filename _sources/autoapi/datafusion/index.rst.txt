@@ -12,15 +12,6 @@ datafusion
 
 
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 1
-
-   /autoapi/datafusion/input/index
-
-
 Submodules
 ----------
 
@@ -32,6 +23,7 @@ Submodules
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
+   /autoapi/datafusion/input/index
    /autoapi/datafusion/object_store/index
    /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
@@ -156,6 +148,7 @@ Package Contents
       which this UDAF is used. The following examples are all valid.
 
       .. code-block:: python
+
           import pyarrow as pa
           import pyarrow.compute as pc
 
@@ -256,7 +249,7 @@ Package Contents
 
    .. py:method:: children() -> List[ExecutionPlan]
 
-      Get a list of children `ExecutionPlan`s that act as inputs to this plan.
+      Get a list of children `ExecutionPlan` that act as inputs to this plan.
 
       The returned list will be empty for leaf nodes such as scans, will contain a
       single value for unary nodes, or two values for binary nodes (such as joins).
@@ -298,6 +291,7 @@ Package Contents
 
    .. py:property:: partition_count
       :type: int
+
 
       Returns the number of partitions in the physical plan.
 
@@ -500,6 +494,18 @@ Package Contents
 
 
 
+   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
+
+      Fill NaN values with a provided value.
+
+
+
+   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
+
+      Fill NULL values with a provided value.
+
+
+
    .. py:method:: filter(filter: Expr) -> ExprFuncBuilder
 
       Filter an aggregate function.
@@ -699,7 +705,7 @@ Package Contents
    (table) with a potentially different schema. Plans form a dataflow tree
    where data flows from leaves up to the root to produce the query result.
 
-   `LogicalPlan`s can be created by the SQL query planner, the DataFrame API,
+   A `LogicalPlan` can be created by the SQL query planner, the DataFrame API,
    or programmatically (for example custom query languages).
 
    This constructor should not be called by the end user.
@@ -1203,6 +1209,7 @@ Package Contents
 
    .. py:property:: kind
       :type: str
+
 
       Returns the kind of table.
 
