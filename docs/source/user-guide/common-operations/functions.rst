@@ -38,7 +38,7 @@ DataFusion offers mathematical functions such as :py:func:`~datafusion.functions
 
 .. ipython:: python
 
-    from datafusion import col, literal, utf8_literal
+    from datafusion import col, literal, string_literal
     from datafusion import functions as f
 
     df.select(
@@ -112,8 +112,8 @@ Casting expressions to different data types using :py:func:`~datafusion.function
 .. ipython:: python
 
     df.select(
-        f.arrow_cast(col('"Total"'), utf8_literal("Float64")).alias("total_as_float"),
-        f.arrow_cast(col('"Total"'), utf8_literal("Int32")).alias("total_as_int")
+        f.arrow_cast(col('"Total"'), string_literal("Float64")).alias("total_as_float"),
+        f.arrow_cast(col('"Total"'), str_lit("Int32")).alias("total_as_int")
     )
 
 Other
