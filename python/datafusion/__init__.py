@@ -107,9 +107,16 @@ def literal(value):
     return Expr.literal(value)
 
 
-def utf8_literal(value):
-    """Create a UTF8 literal expression."""
-    return Expr.utf8_literal(value)
+def string_literal(value):
+    """Create a UTF8 literal expression.
+    It differs from `literal`  creates a UTF8view literal.
+    """
+    return Expr.string_literal(value)
+
+
+def str_lit(value):
+    """Alias for `string_literal`"""
+    return string_literal(value)
 
 
 def lit(value):

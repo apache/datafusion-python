@@ -381,7 +381,7 @@ class Expr:
         return Expr(expr_internal.Expr.literal(value))
 
     @staticmethod
-    def utf8_literal(value: str) -> Expr:
+    def string_literal(value: str) -> Expr:
         """Creates a new expression representing a UTF8 literal value.
 
         It is different from `literal` because it is pa.string() instead of
