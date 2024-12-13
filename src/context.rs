@@ -62,7 +62,7 @@ use datafusion::execution::context::{
 use datafusion::execution::disk_manager::DiskManagerConfig;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::ReadOptions;
-use datafusion::execution::runtime_env::{RuntimeConfig, RuntimeEnv};
+use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
@@ -165,62 +165,62 @@ impl PySessionConfig {
 }
 
 /// Runtime options for a SessionContext
-#[pyclass(name = "RuntimeConfig", module = "datafusion", subclass)]
+#[pyclass(name = "RuntimeEnvBuilder", module = "datafusion", subclass)]
 #[derive(Clone)]
-pub struct PyRuntimeConfig {
-    pub config: RuntimeConfig,
+pub struct PyRuntimeEnvBuilder {
+    pub builder: RuntimeEnvBuilder,
 }
 
 #[pymethods]
-impl PyRuntimeConfig {
+impl PyRuntimeEnvBuilder {
     #[new]
     fn new() -> Self {
         Self {
-            config: RuntimeConfig::default(),
+            builder: RuntimeEnvBuilder::default(),
         }
     }
 
     fn with_disk_manager_disabled(&self) -> Self {
-        let config = self.config.clone();
-        let config = config.with_disk_manager(DiskManagerConfig::Disabled);
-        Self { config }
+        let mut builder = self.builder.clone();
+        builder = builder.with_disk_manager(DiskManagerConfig::Disabled);
+        Self { builder }
     }
 
     fn with_disk_manager_os(&self) -> Self {
-        let config = self.config.clone();
-        let config = config.with_disk_manager(DiskManagerConfig::NewOs);
-        Self { config }
+        let builder = self.builder.clone();
+        let builder = builder.with_disk_manager(DiskManagerConfig::NewOs);
+        Self { builder }
     }
 
     fn with_disk_manager_specified(&self, paths: Vec<String>) -> Self {
-        let config = self.config.clone();
+        let builder = self.builder.clone();
         let paths = paths.iter().map(|s| s.into()).collect();
-        let config = config.with_disk_manager(DiskManagerConfig::NewSpecified(paths));
-        Self { config }
+        let builder = builder.with_disk_manager(DiskManagerConfig::NewSpecified(paths));
+        Self { builder }
     }
 
     fn with_unbounded_memory_pool(&self) -> Self {
-        let config = self.config.clone();
-        let config = config.with_memory_pool(Arc::new(UnboundedMemoryPool::default()));
-        Self { config }
+        let builder = self.builder.clone();
+        let builder = builder.with_memory_pool(Arc::new(UnboundedMemoryPool::default()));
+        Self { builder }
     }
 
     fn with_fair_spill_pool(&self, size: usize) -> Self {
-        let config = self.config.clone();
-        let config = config.with_memory_pool(Arc::new(FairSpillPool::new(size)));
-        Self { config }
+        let builder = self.builder.clone();
+        let builder = builder.with_memory_pool(Arc::new(FairSpillPool::new(size)));
+        Self { builder }
     }
 
     fn with_greedy_memory_pool(&self, size: usize) -> Self {
-        let config = self.config.clone();
-        let config = config.with_memory_pool(Arc::new(GreedyMemoryPool::new(size)));
-        Self { config }
+        let builder = self.builder.clone();
+        let builder = builder.with_memory_pool(Arc::new(GreedyMemoryPool::new(size)));
+        Self { builder }
     }
 
     fn with_temp_file_path(&self, path: &str) -> Self {
-        let config = self.config.clone();
-        let config = config.with_temp_file_path(path);
-        Self { config }
+        let builder = self.builder.clone();
+        let builder = builder.with_temp_file_path(path);
+        Self { builder }
     }
 }
 
@@ -276,19 +276,19 @@ impl PySessionContext {
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
-        runtime: Option<PyRuntimeConfig>,
+        runtime: Option<PyRuntimeEnvBuilder>,
     ) -> PyResult<Self> {
         let config = if let Some(c) = config {
             c.config
         } else {
             SessionConfig::default().with_information_schema(true)
         };
-        let runtime_config = if let Some(c) = runtime {
-            c.config
+        let runtime_env_builder = if let Some(c) = runtime {
+            c.builder
         } else {
-            RuntimeConfig::default()
+            RuntimeEnvBuilder::default()
         };
-        let runtime = Arc::new(RuntimeEnv::try_new(runtime_config)?);
+        let runtime = Arc::new(runtime_env_builder.build()?);
         let session_state = SessionStateBuilder::new()
             .with_config(config)
             .with_runtime_env(runtime)
