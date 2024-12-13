@@ -34,7 +34,7 @@ use datafusion::error::{DataFusionError as InnerDataFusionError, Result as DFRes
 use datafusion::execution::context::TaskContext;
 use datafusion::logical_expr::utils::conjunction;
 use datafusion::logical_expr::Expr;
-use datafusion::physical_expr::{EquivalenceProperties, LexOrdering, PhysicalSortExpr};
+use datafusion::physical_expr::{EquivalenceProperties, LexOrdering};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionMode, ExecutionPlan, ExecutionPlanProperties,
