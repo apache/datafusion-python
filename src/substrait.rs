@@ -114,7 +114,8 @@ impl PySubstraitProducer {
     /// Convert DataFusion LogicalPlan to Substrait Plan
     #[staticmethod]
     pub fn to_substrait_plan(plan: PyLogicalPlan, ctx: &PySessionContext) -> PyResult<PyPlan> {
-        match producer::to_substrait_plan(&plan.plan, &ctx.ctx) {
+        let session_state = ctx.ctx.state();
+        match producer::to_substrait_plan(&plan.plan, &session_state) {
             Ok(plan) => Ok(PyPlan { plan: *plan }),
             Err(e) => Err(py_datafusion_err(e)),
         }
@@ -134,7 +135,8 @@ impl PySubstraitConsumer {
         plan: PyPlan,
         py: Python,
     ) -> PyResult<PyLogicalPlan> {
-        let result = consumer::from_substrait_plan(&ctx.ctx, &plan.plan);
+        let session_state = ctx.ctx.state();
+        let result = consumer::from_substrait_plan(&session_state, &plan.plan);
         let logical_plan = wait_for_future(py, result).map_err(DataFusionError::from)?;
         Ok(PyLogicalPlan::new(logical_plan))
     }
