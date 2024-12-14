@@ -87,7 +87,7 @@ It is possible to configure runtime (memory and disk settings) and configuration
 
 ```python
 runtime = (
-    RuntimeConfig()
+    RuntimeEnvBuilder()
     .with_disk_manager_os()
     .with_fair_spill_pool(10000000)
 )

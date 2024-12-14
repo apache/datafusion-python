@@ -25,7 +25,7 @@ import pytest
 
 from datafusion import (
     DataFrame,
-    RuntimeConfig,
+    RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
     SQLOptions,
@@ -43,7 +43,7 @@ def test_create_context_session_config_only():
 
 
 def test_create_context_runtime_config_only():
-    SessionContext(runtime=RuntimeConfig())
+    SessionContext(runtime=RuntimeEnvBuilder())
 
 
 @pytest.mark.parametrize("path_to_str", (True, False))
@@ -54,7 +54,7 @@ def test_runtime_configs(tmp_path, path_to_str):
     path1 = str(path1) if path_to_str else path1
     path2 = str(path2) if path_to_str else path2
 
-    runtime = RuntimeConfig().with_disk_manager_specified(path1, path2)
+    runtime = RuntimeEnvBuilder().with_disk_manager_specified(path1, path2)
     config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
     ctx = SessionContext(config, runtime)
     assert ctx is not None
@@ -67,7 +67,7 @@ def test_runtime_configs(tmp_path, path_to_str):
 def test_temporary_files(tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
-    runtime = RuntimeConfig().with_temp_file_path(path)
+    runtime = RuntimeEnvBuilder().with_temp_file_path(path)
     config = SessionConfig().with_default_catalog_and_schema("foo", "bar")
     ctx = SessionContext(config, runtime)
     assert ctx is not None
@@ -77,7 +77,7 @@ def test_temporary_files(tmp_path, path_to_str):
 
 
 def test_create_context_with_all_valid_args():
-    runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
+    runtime = RuntimeEnvBuilder().with_disk_manager_os().with_fair_spill_pool(10000000)
     config = (
         SessionConfig()
         .with_create_default_catalog_and_schema(True)

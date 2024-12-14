@@ -22,7 +22,7 @@ import datafusion as df
 from datafusion import (
     col,
     functions as f,
-    RuntimeConfig,
+    RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
 )
@@ -85,7 +85,9 @@ print("dataset loaded")
 
 # create a session context with explicit runtime and config settings
 runtime = (
-    RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(64 * 1024 * 1024 * 1024)
+    RuntimeEnvBuilder()
+    .with_disk_manager_os()
+    .with_fair_spill_pool(64 * 1024 * 1024 * 1024)
 )
 config = (
     SessionConfig()
