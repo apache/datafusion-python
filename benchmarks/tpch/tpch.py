@@ -28,7 +28,7 @@ def bench(data_path, query_path):
 
         # create context
         # runtime = (
-        #     RuntimeConfig()
+        #     RuntimeEnvBuilder()
         #     .with_disk_manager_os()
         #     .with_fair_spill_pool(10000000)
         # )

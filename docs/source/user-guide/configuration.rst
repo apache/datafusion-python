@@ -19,18 +19,18 @@ Configuration
 =============
 
 Let's look at how we can configure DataFusion. When creating a :py:class:`~datafusion.context.SessionContext`, you can pass in
-a :py:class:`~datafusion.context.SessionConfig` and :py:class:`~datafusion.context.RuntimeConfig` object. These two cover a wide range of options.
+a :py:class:`~datafusion.context.SessionConfig` and :py:class:`~datafusion.context.RuntimeEnvBuilder` object. These two cover a wide range of options.
 
 .. code-block:: python
 
-    from datafusion import RuntimeConfig, SessionConfig, SessionContext
+    from datafusion import RuntimeEnvBuilder, SessionConfig, SessionContext
 
     # create a session context with default settings
     ctx = SessionContext()
     print(ctx)
 
     # create a session context with explicit runtime and config settings
-    runtime = RuntimeConfig().with_disk_manager_os().with_fair_spill_pool(10000000)
+    runtime = RuntimeEnvBuilder().with_disk_manager_os().with_fair_spill_pool(10000000)
     config = (
         SessionConfig()
         .with_create_default_catalog_and_schema(True)
@@ -48,4 +48,4 @@ a :py:class:`~datafusion.context.SessionConfig` and :py:class:`~datafusion.conte
 
 
 You can read more about available :py:class:`~datafusion.context.SessionConfig` options in the `rust DataFusion Configuration guide <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
-and about :code:`RuntimeConfig` options in the rust `online API documentation <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html>`_.
+and about :code:`RuntimeEnvBuilder` options in the rust `online API documentation <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html>`_.
