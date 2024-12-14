@@ -103,8 +103,11 @@ def test_lit_arith(df):
     result = df.collect()
     assert len(result) == 1
     result = result[0]
+
     assert result.column(0) == pa.array([5, 6, 7])
-    assert result.column(1) == pa.array(["Hello!", "World!", "!!"])
+    assert result.column(1) == pa.array(
+        ["Hello!", "World!", "!!"], type=pa.string_view()
+    )
 
 
 def test_math_functions():
@@ -661,7 +664,7 @@ def test_array_function_obj_tests(stmt, py_expr):
         ),
         (
             f.concat(column("a").cast(pa.string()), literal("?")),
-            pa.array(["Hello?", "World?", "!?"]),
+            pa.array(["Hello?", "World?", "!?"], type=pa.string_view()),
         ),
         (f.initcap(column("c")), pa.array(["Hello ", " World ", " !"])),
         (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
@@ -871,8 +874,8 @@ def test_temporal_functions(df):
     result = df.collect()
     assert len(result) == 1
     result = result[0]
-    assert result.column(0) == pa.array([12, 6, 7], type=pa.float64())
-    assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.float64())
+    assert result.column(0) == pa.array([12, 6, 7], type=pa.int32())
+    assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.int32())
     assert result.column(2) == pa.array(
         [datetime(2022, 12, 1), datetime(2027, 6, 1), datetime(2020, 7, 1)],
         type=pa.timestamp("us"),
@@ -904,7 +907,7 @@ def test_temporal_functions(df):
     assert result.column(9) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
-    assert result.column(10) == pa.array([31, 26, 2], type=pa.float64())
+    assert result.column(10) == pa.array([31, 26, 2], type=pa.int32())
 
 
 def test_arrow_cast(df):
