@@ -29,7 +29,7 @@ except ImportError:
 from .context import (
     SessionContext,
     SessionConfig,
-    RuntimeConfig,
+    RuntimeEnvBuilder,
     SQLOptions,
 )
 
@@ -66,7 +66,7 @@ __all__ = [
     "SessionContext",
     "SessionConfig",
     "SQLOptions",
-    "RuntimeConfig",
+    "RuntimeEnvBuilder",
     "Expr",
     "ScalarUDF",
     "WindowFrame",

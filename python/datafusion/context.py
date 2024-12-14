@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from ._internal import SessionConfig as SessionConfigInternal
-from ._internal import RuntimeConfig as RuntimeConfigInternal
+from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import SessionContext as SessionContextInternal
 
@@ -265,39 +265,41 @@ class SessionConfig:
         return self
 
 
-class RuntimeConfig:
+class RuntimeEnvBuilder:
     """Runtime configuration options."""
 
     def __init__(self) -> None:
-        """Create a new :py:class:`RuntimeConfig` with default values."""
-        self.config_internal = RuntimeConfigInternal()
+        """Create a new :py:class:`RuntimeEnvBuilder` with default values."""
+        self.config_internal = RuntimeEnvBuilderInternal()
 
-    def with_disk_manager_disabled(self) -> RuntimeConfig:
+    def with_disk_manager_disabled(self) -> RuntimeEnvBuilder:
         """Disable the disk manager, attempts to create temporary files will error.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_disk_manager_disabled()
         return self
 
-    def with_disk_manager_os(self) -> RuntimeConfig:
+    def with_disk_manager_os(self) -> RuntimeEnvBuilder:
         """Use the operating system's temporary directory for disk manager.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_disk_manager_os()
         return self
 
-    def with_disk_manager_specified(self, *paths: str | pathlib.Path) -> RuntimeConfig:
+    def with_disk_manager_specified(
+        self, *paths: str | pathlib.Path
+    ) -> RuntimeEnvBuilder:
         """Use the specified paths for the disk manager's temporary files.
 
         Args:
             paths: Paths to use for the disk manager's temporary files.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
         """
         paths_list = [str(p) for p in paths]
         self.config_internal = self.config_internal.with_disk_manager_specified(
@@ -305,16 +307,16 @@ class RuntimeConfig:
         )
         return self
 
-    def with_unbounded_memory_pool(self) -> RuntimeConfig:
+    def with_unbounded_memory_pool(self) -> RuntimeEnvBuilder:
         """Use an unbounded memory pool.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_unbounded_memory_pool()
         return self
 
-    def with_fair_spill_pool(self, size: int) -> RuntimeConfig:
+    def with_fair_spill_pool(self, size: int) -> RuntimeEnvBuilder:
         """Use a fair spill pool with the specified size.
 
         This pool works best when you know beforehand the query has multiple spillable
@@ -335,16 +337,16 @@ class RuntimeConfig:
             size: Size of the memory pool in bytes.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
         Examples usage::
 
-            config = RuntimeConfig().with_fair_spill_pool(1024)
+            config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
         """
         self.config_internal = self.config_internal.with_fair_spill_pool(size)
         return self
 
-    def with_greedy_memory_pool(self, size: int) -> RuntimeConfig:
+    def with_greedy_memory_pool(self, size: int) -> RuntimeEnvBuilder:
         """Use a greedy memory pool with the specified size.
 
         This pool works well for queries that do not need to spill or have a single
@@ -355,30 +357,37 @@ class RuntimeConfig:
             size: Size of the memory pool in bytes.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
         Example usage::
 
-            config = RuntimeConfig().with_greedy_memory_pool(1024)
+            config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
         """
         self.config_internal = self.config_internal.with_greedy_memory_pool(size)
         return self
 
-    def with_temp_file_path(self, path: str | pathlib.Path) -> RuntimeConfig:
+    def with_temp_file_path(self, path: str | pathlib.Path) -> RuntimeEnvBuilder:
         """Use the specified path to create any needed temporary files.
 
         Args:
             path: Path to use for temporary files.
 
         Returns:
-            A new :py:class:`RuntimeConfig` object with the updated setting.
+            A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
         Example usage::
 
-            config = RuntimeConfig().with_temp_file_path("/tmp")
+            config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
         """
         self.config_internal = self.config_internal.with_temp_file_path(str(path))
         return self
+
+
+@deprecated("Use `RuntimeEnvBuilder` instead.")
+class RuntimeConfig(RuntimeEnvBuilder):
+    """See `RuntimeEnvBuilder`."""
+
+    pass
 
 
 class SQLOptions:
@@ -454,7 +463,9 @@ class SessionContext:
     """
 
     def __init__(
-        self, config: SessionConfig | None = None, runtime: RuntimeConfig | None = None
+        self,
+        config: SessionConfig | None = None,
+        runtime: RuntimeEnvBuilder | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
