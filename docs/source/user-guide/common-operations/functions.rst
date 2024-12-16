@@ -38,7 +38,7 @@ DataFusion offers mathematical functions such as :py:func:`~datafusion.functions
 
 .. ipython:: python
 
-    from datafusion import col, literal, string_literal
+    from datafusion import col, literal, string_literal, str_lit
     from datafusion import functions as f
 
     df.select(
