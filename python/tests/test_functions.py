@@ -23,7 +23,7 @@ from datetime import datetime
 
 from datafusion import SessionContext, column
 from datafusion import functions as f
-from datafusion import literal
+from datafusion import literal, string_literal
 
 np.seterr(invalid="ignore")
 
@@ -905,6 +905,22 @@ def test_temporal_functions(df):
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
     assert result.column(10) == pa.array([31, 26, 2], type=pa.float64())
+
+
+def test_arrow_cast(df):
+    df = df.select(
+        # we use `string_literal` to return utf8 instead of `literal` which returns
+        # utf8view because datafusion.arrow_cast expects a utf8 instead of utf8view
+        # https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
+        f.arrow_cast(column("b"), string_literal("Float64")).alias("b_as_float"),
+        f.arrow_cast(column("b"), string_literal("Int32")).alias("b_as_int"),
+    )
+    result = df.collect()
+    assert len(result) == 1
+    result = result[0]
+
+    assert result.column(0) == pa.array([4.0, 5.0, 6.0], type=pa.float64())
+    assert result.column(1) == pa.array([4, 5, 6], type=pa.int32())
 
 
 def test_case(df):

@@ -381,6 +381,22 @@ class Expr:
         return Expr(expr_internal.Expr.literal(value))
 
     @staticmethod
+    def string_literal(value: str) -> Expr:
+        """Creates a new expression representing a UTF8 literal value.
+
+        It is different from `literal` because it is pa.string() instead of
+        pa.string_view()
+
+        This is needed for cases where DataFusion is expecting a UTF8 instead of
+        UTF8View literal, like in:
+        https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
+        """
+        if isinstance(value, str):
+            value = pa.scalar(value, type=pa.string())
+            return Expr(expr_internal.Expr.literal(value))
+        return Expr.literal(value)
+
+    @staticmethod
     def column(value: str) -> Expr:
         """Creates a new expression representing a column."""
         return Expr(expr_internal.Expr.column(value))
