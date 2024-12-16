@@ -63,7 +63,7 @@ class RecordBatchStream:
 
     async def __anext__(self) -> RecordBatch:
         """Async iterator function."""
-        next_batch = self.rbs.__anext__()
+        next_batch = await self.rbs.__anext__()
         return RecordBatch(next_batch)
 
     def __next__(self) -> RecordBatch:
