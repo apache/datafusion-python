@@ -26,7 +26,7 @@ readme = "README.md"
 license = { file = "LICENSE.txt" }
 requires-python = ">=3.7"
 keywords = ["datafusion", "dataframe", "rust", "query-engine"]
-classifier = [
+classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
@@ -43,6 +43,7 @@ classifier = [
     "Programming Language :: Rust",
 ]
 dependencies = ["pyarrow>=11.0.0", "typing-extensions;python_version<'3.13'"]
+dynamic = ["version"]
 
 [project.urls]
 homepage = "https://datafusion.apache.org/python"
