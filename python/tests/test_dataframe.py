@@ -761,8 +761,8 @@ def test_execution_plan(aggregate_df):
     batch = stream.next()
     assert batch is not None
     # there should be no more batches
-    batch = stream.next()
-    assert batch is None
+    with pytest.raises(StopIteration):
+        stream.next()
 
 
 def test_repartition(df):
