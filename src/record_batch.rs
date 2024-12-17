@@ -15,13 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::Arc;
+
 use crate::utils::wait_for_future;
 use datafusion::arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::StreamExt;
+use pyo3::exceptions::{PyStopAsyncIteration, PyStopIteration};
 use pyo3::prelude::*;
 use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
+use tokio::sync::Mutex;
 
 #[pyclass(name = "RecordBatch", module = "datafusion", subclass)]
 pub struct PyRecordBatch {
@@ -43,31 +47,58 @@ impl From<RecordBatch> for PyRecordBatch {
 
 #[pyclass(name = "RecordBatchStream", module = "datafusion", subclass)]
 pub struct PyRecordBatchStream {
-    stream: SendableRecordBatchStream,
+    stream: Arc<Mutex<SendableRecordBatchStream>>,
 }
 
 impl PyRecordBatchStream {
     pub fn new(stream: SendableRecordBatchStream) -> Self {
-        Self { stream }
+        Self {
+            stream: Arc::new(Mutex::new(stream)),
+        }
     }
 }
 
 #[pymethods]
 impl PyRecordBatchStream {
-    fn next(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
-        let result = self.stream.next();
-        match wait_for_future(py, result) {
-            None => Ok(None),
-            Some(Ok(b)) => Ok(Some(b.into())),
-            Some(Err(e)) => Err(e.into()),
-        }
+    fn next(&mut self, py: Python) -> PyResult<PyRecordBatch> {
+        let stream = self.stream.clone();
+        wait_for_future(py, next_stream(stream, true))
     }
 
-    fn __next__(&mut self, py: Python) -> PyResult<Option<PyRecordBatch>> {
+    fn __next__(&mut self, py: Python) -> PyResult<PyRecordBatch> {
         self.next(py)
+    }
+
+    fn __anext__<'py>(&'py self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let stream = self.stream.clone();
+        pyo3_async_runtimes::tokio::future_into_py(py, next_stream(stream, false))
     }
 
     fn __iter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
         slf
+    }
+
+    fn __aiter__(slf: PyRef<'_, Self>) -> PyRef<'_, Self> {
+        slf
+    }
+}
+
+async fn next_stream(
+    stream: Arc<Mutex<SendableRecordBatchStream>>,
+    sync: bool,
+) -> PyResult<PyRecordBatch> {
+    let mut stream = stream.lock().await;
+    match stream.next().await {
+        Some(Ok(batch)) => Ok(batch.into()),
+        Some(Err(e)) => Err(e.into()),
+        None => {
+            // Depending on whether the iteration is sync or not, we raise either a
+            // StopIteration or a StopAsyncIteration
+            if sync {
+                Err(PyStopIteration::new_err("stream exhausted"))
+            } else {
+                Err(PyStopAsyncIteration::new_err("stream exhausted"))
+            }
+        }
     }
 }
