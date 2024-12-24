@@ -620,16 +620,24 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: str = "uncompressed",
+        compression: str = "ZSTD",
         compression_level: int | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
         Args:
-            path: Path of the Parquet file to write.
-            compression: Compression type to use.
-            compression_level: Compression level to use.
+        path (str | pathlib.Path): The file path to write the Parquet file.
+        compression (str): The compression algorithm to use. Default is "ZSTD".
+        compression_level (int | None): The compression level to use. For ZSTD, the
+            recommended range is 1 to 22, with the default being 3. Higher levels
+            provide better compression but slower speed.
         """
+        # default compression level to 3 for ZSTD
+        if compression == "ZSTD":
+            if compression_level is None:
+                compression_level = 3
+            elif not (1 <= compression_level <= 22):
+                raise ValueError("Compression level for ZSTD must be between 1 and 22")
         self.df.write_parquet(str(path), compression, compression_level)
 
     def write_json(self, path: str | pathlib.Path) -> None:
