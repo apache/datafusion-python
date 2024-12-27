@@ -632,9 +632,10 @@ class DataFrame:
             recommended range is 1 to 22, with the default being 3. Higher levels
             provide better compression but slower speed.
         """
-        # default compression level to 3 for ZSTD
         if compression == "ZSTD":
             if compression_level is None:
+                # Default compression level for ZSTD is 3 as per
+                # https://facebook.github.io/zstd/zstd_manual.html
                 compression_level = 3
             elif not (1 <= compression_level <= 22):
                 raise ValueError("Compression level for ZSTD must be between 1 and 22")
