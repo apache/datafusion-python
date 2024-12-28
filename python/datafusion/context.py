@@ -63,6 +63,15 @@ class ArrowArrayExportable(Protocol):
     ) -> tuple[object, object]: ...
 
 
+class TableProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_table_provider__ PyCapsule.
+
+    https://datafusion.apache.org/python/user-guide/io/table_provider.html
+    """
+
+    def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -685,7 +694,9 @@ class SessionContext:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
 
-    def register_table_provider(self, name: str, provider: Any) -> None:
+    def register_table_provider(
+        self, name: str, provider: TableProviderExportable
+    ) -> None:
         """Register a table provider.
 
         This table provider must have a method called ``__datafusion_table_provider__``
