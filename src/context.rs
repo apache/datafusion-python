@@ -44,7 +44,7 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -69,7 +69,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
-use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -303,6 +303,14 @@ impl PySessionContext {
     pub fn enable_url_table(&self) -> PyResult<Self> {
         Ok(PySessionContext {
             ctx: self.ctx.clone().enable_url_table(),
+        })
+    }
+
+    #[classmethod]
+    #[pyo3(signature = ())]
+    fn _global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
+        Ok(Self {
+            ctx: get_global_ctx().clone(),
         })
     }
 
