@@ -23,6 +23,7 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 
+
 from datafusion import (
     DataFrame,
     RuntimeConfig,

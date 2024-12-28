@@ -48,6 +48,8 @@ from .common import (
 
 from .dataframe import DataFrame
 
+from .io import read_parquet, read_avro, read_csv, read_json
+
 from .expr import (
     Expr,
     WindowFrame,
@@ -89,6 +91,10 @@ __all__ = [
     "functions",
     "object_store",
     "substrait",
+    "read_parquet",
+    "read_avro",
+    "read_csv",
+    "read_json",
 ]
 
 

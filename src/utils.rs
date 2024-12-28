@@ -17,6 +17,7 @@
 
 use crate::errors::DataFusionError;
 use crate::TokioRuntime;
+use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
 use pyo3::prelude::*;
 use std::future::Future;
@@ -33,6 +34,13 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
     // https://github.com/delta-io/delta-rs/blob/87010461cfe01563d91a4b9cd6fa468e2ad5f283/python/src/utils.rs#L10-L31
     static RUNTIME: OnceLock<TokioRuntime> = OnceLock::new();
     RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
+}
+
+/// Utility to get the Global Datafussion CTX
+#[inline]
+pub(crate) fn get_global_ctx() -> &'static SessionContext {
+    static CTX: OnceLock<SessionContext> = OnceLock::new();
+    CTX.get_or_init(|| SessionContext::new())
 }
 
 /// Utility to collect rust futures with GIL released
