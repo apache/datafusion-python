@@ -44,7 +44,7 @@ use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::{get_tokio_runtime, wait_for_future};
+use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
 use crate::{
     errors::DataFusionError,
     expr::{sort_expr::PySortExpr, PyExpr},
@@ -723,23 +723,4 @@ fn record_batch_into_schema(
     }
 
     RecordBatch::try_new(schema, data_arrays)
-}
-
-fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
-    let capsule_name = capsule.name()?;
-    if capsule_name.is_none() {
-        return Err(PyValueError::new_err(
-            "Expected schema PyCapsule to have name set.",
-        ));
-    }
-
-    let capsule_name = capsule_name.unwrap().to_str()?;
-    if capsule_name != name {
-        return Err(PyValueError::new_err(format!(
-            "Expected name '{}' in PyCapsule, instead got '{}'",
-            name, capsule_name
-        )));
-    }
-
-    Ok(())
 }
