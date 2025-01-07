@@ -1012,6 +1012,26 @@
      </li>
     </ul>
    </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.context.TableProviderExportable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TableProviderExportable
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.TableProviderExportable.__datafusion_table_provider__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableProviderExportable.__datafusion_table_provider__()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
   </ul>
  </li>
 </ul>
@@ -1059,6 +1079,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
 </table>
@@ -1966,7 +1989,7 @@ register it into the session using the given name.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_table_provider">
-<span class="sig-name descname"><span class="pre">register_table_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_table_provider" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_table_provider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><span class="pre">TableProviderExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_table_provider" title="Link to this definition">¶</a></dt>
 <dd><p>Register a table provider.</p>
 <p>This table provider must have a method called <code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code>
 which returns a PyCapsule that exposes a <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code>.</p>
@@ -2051,6 +2074,19 @@ provided options.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.ctx">
 <span class="sig-name descname"><span class="pre">ctx</span></span><a class="headerlink" href="#datafusion.context.SessionContext.ctx" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.TableProviderExportable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">TableProviderExportable</span></span><a class="headerlink" href="#datafusion.context.TableProviderExportable" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p>
+<p><a class="reference external" href="https://datafusion.apache.org/python/user-guide/io/table_provider.html">https://datafusion.apache.org/python/user-guide/io/table_provider.html</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.TableProviderExportable.__datafusion_table_provider__">
+<span class="sig-name descname"><span class="pre">__datafusion_table_provider__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">object</span></span></span><a class="headerlink" href="#datafusion.context.TableProviderExportable.__datafusion_table_provider__" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>

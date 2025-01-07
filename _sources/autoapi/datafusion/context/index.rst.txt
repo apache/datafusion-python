@@ -20,6 +20,7 @@ Classes
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
    datafusion.context.SessionContext
+   datafusion.context.TableProviderExportable
 
 
 Module Contents
@@ -735,7 +736,7 @@ Module Contents
 
 
 
-   .. py:method:: register_table_provider(name: str, provider: Any) -> None
+   .. py:method:: register_table_provider(name: str, provider: TableProviderExportable) -> None
 
       Register a table provider.
 
@@ -811,5 +812,18 @@ Module Contents
 
 
    .. py:attribute:: ctx
+
+
+.. py:class:: TableProviderExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object that has __datafusion_table_provider__ PyCapsule.
+
+   https://datafusion.apache.org/python/user-guide/io/table_provider.html
+
+
+   .. py:method:: __datafusion_table_provider__() -> object
 
 
