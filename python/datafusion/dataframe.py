@@ -626,11 +626,11 @@ class DataFrame:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
         Args:
-        path (str | pathlib.Path): The file path to write the Parquet file.
-        compression (str): The compression algorithm to use. Default is "ZSTD".
-        compression_level (int | None): The compression level to use. For ZSTD, the
-            recommended range is 1 to 22, with the default being 4. Higher levels
-            provide better compression but slower speed.
+            path: Path of the Parquet file to write.
+            compression: Compression type to use. Default is "ZSTD".
+            compression_level: Compression level to use. For ZSTD, the
+                recommended range is 1 to 22, with the default being 4. Higher levels
+                provide better compression but slower speed.
         """
         if compression == "ZSTD":
             if compression_level is None:
