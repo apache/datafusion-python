@@ -43,7 +43,7 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_tokio_runtime, wait_for_future};
+use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -576,7 +576,7 @@ impl PySessionContext {
         if provider.hasattr("__datafusion_table_provider__")? {
             let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>()?;
-            // validate_pycapsule(capsule, "arrow_array_stream")?;
+            validate_pycapsule(capsule, "datafusion_table_provider")?;
 
             let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
             let provider: ForeignTableProvider = provider.into();

@@ -18,7 +18,9 @@
 use crate::errors::DataFusionError;
 use crate::TokioRuntime;
 use datafusion::logical_expr::Volatility;
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyCapsule;
 use std::future::Future;
 use std::sync::OnceLock;
 use tokio::runtime::Runtime;
@@ -57,4 +59,23 @@ pub(crate) fn parse_volatility(value: &str) -> Result<Volatility, DataFusionErro
             )))
         }
     })
+}
+
+pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
+    let capsule_name = capsule.name()?;
+    if capsule_name.is_none() {
+        return Err(PyValueError::new_err(
+            "Expected schema PyCapsule to have name set.",
+        ));
+    }
+
+    let capsule_name = capsule_name.unwrap().to_str()?;
+    if capsule_name != name {
+        return Err(PyValueError::new_err(format!(
+            "Expected name '{}' in PyCapsule, instead got '{}'",
+            name, capsule_name
+        )));
+    }
+
+    Ok(())
 }
