@@ -629,14 +629,14 @@ class DataFrame:
         path (str | pathlib.Path): The file path to write the Parquet file.
         compression (str): The compression algorithm to use. Default is "ZSTD".
         compression_level (int | None): The compression level to use. For ZSTD, the
-            recommended range is 1 to 22, with the default being 3. Higher levels
+            recommended range is 1 to 22, with the default being 4. Higher levels
             provide better compression but slower speed.
         """
         if compression == "ZSTD":
             if compression_level is None:
-                # Default compression level for ZSTD is 3 as per
-                # https://facebook.github.io/zstd/zstd_manual.html
-                compression_level = 3
+                # Default compression level for ZSTD is 4 like in delta-rs
+                # https://github.com/apache/datafusion-python/pull/981#discussion_r1899871918
+                compression_level = 4
             elif not (1 <= compression_level <= 22):
                 raise ValueError("Compression level for ZSTD must be between 1 and 22")
         self.df.write_parquet(str(path), compression, compression_level)
