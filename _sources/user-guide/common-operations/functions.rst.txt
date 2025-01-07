@@ -38,7 +38,7 @@ DataFusion offers mathematical functions such as :py:func:`~datafusion.functions
 
 .. ipython:: python
 
-    from datafusion import col, literal
+    from datafusion import col, literal, string_literal, str_lit
     from datafusion import functions as f
 
     df.select(
@@ -104,6 +104,17 @@ This also includes the functions for regular expressions like :py:func:`~datafus
         f.regexp_replace(col('"Name"'), literal("saur"), literal("fleur")).alias("flowers")
     )
 
+Casting
+-------
+
+Casting expressions to different data types using :py:func:`~datafusion.functions.arrow_cast`
+
+.. ipython:: python
+
+    df.select(
+        f.arrow_cast(col('"Total"'), string_literal("Float64")).alias("total_as_float"),
+        f.arrow_cast(col('"Total"'), str_lit("Int32")).alias("total_as_int")
+    )
 
 Other
 -----

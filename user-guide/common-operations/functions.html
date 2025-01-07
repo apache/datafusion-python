@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
@@ -381,6 +381,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#casting">
+   Casting
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#other">
    Other
   </a>
@@ -411,7 +416,7 @@
 <p>DataFusion provides a large number of built-in functions for performing complex queries without requiring user-defined functions.
 In here we will cover some of the more popular use cases. If you want to view all the functions go to the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">Functions</span></code></a> API Reference.</p>
 <p>We’ll use the pokemon dataset in the following examples.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -423,9 +428,9 @@ In here we will cover some of the more popular use cases. If you want to view al
 <section id="mathematical">
 <h2>Mathematical<a class="headerlink" href="#mathematical" title="Link to this heading">¶</a></h2>
 <p>DataFusion offers mathematical functions such as <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.pow" title="datafusion.functions.pow"><code class="xref py py-func docutils literal notranslate"><span class="pre">pow()</span></code></a> or <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.log" title="datafusion.functions.log"><code class="xref py py-func docutils literal notranslate"><span class="pre">log()</span></code></a></p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span><span class="p">,</span> <span class="n">string_literal</span><span class="p">,</span> <span class="n">str_lit</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">7</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">...</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Attack&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">-</span> <span class="n">f</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Defense&quot;&#39;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
@@ -485,16 +490,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+--------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2024</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">04</span><span class="n">T11</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mf">30.282361843</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">01</span><span class="o">-</span><span class="mi">07</span><span class="n">T13</span><span class="p">:</span><span class="mi">34</span><span class="p">:</span><span class="mf">30.739999918</span><span class="n">Z</span> <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
 </pre></div>
 </div>
@@ -596,18 +601,45 @@ DataFusion offers a range of helpful options.</p>
 </pre></div>
 </div>
 </section>
+<section id="casting">
+<h2>Casting<a class="headerlink" href="#casting" title="Link to this heading">¶</a></h2>
+<p>Casting expressions to different data types using <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.arrow_cast" title="datafusion.functions.arrow_cast"><code class="xref py py-func docutils literal notranslate"><span class="pre">arrow_cast()</span></code></a></p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">string_literal</span><span class="p">(</span><span class="s2">&quot;Float64&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_float&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">arrow_cast</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Total&quot;&#39;</span><span class="p">),</span> <span class="n">str_lit</span><span class="p">(</span><span class="s2">&quot;Int32&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_as_int&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">14</span><span class="p">]:</span> 
+<span class="n">DataFrame</span><span class="p">()</span>
+<span class="o">+----------------+--------------+</span>
+<span class="o">|</span> <span class="n">total_as_float</span> <span class="o">|</span> <span class="n">total_as_int</span> <span class="o">|</span>
+<span class="o">+----------------+--------------+</span>
+<span class="o">|</span> <span class="mf">318.0</span>          <span class="o">|</span> <span class="mi">318</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">405.0</span>          <span class="o">|</span> <span class="mi">405</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">525.0</span>          <span class="o">|</span> <span class="mi">525</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">625.0</span>          <span class="o">|</span> <span class="mi">625</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">309.0</span>          <span class="o">|</span> <span class="mi">309</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">405.0</span>          <span class="o">|</span> <span class="mi">405</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">534.0</span>          <span class="o">|</span> <span class="mi">534</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">634.0</span>          <span class="o">|</span> <span class="mi">634</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">634.0</span>          <span class="o">|</span> <span class="mi">634</span>          <span class="o">|</span>
+<span class="o">|</span> <span class="mf">314.0</span>          <span class="o">|</span> <span class="mi">314</span>          <span class="o">|</span>
+<span class="o">+----------------+--------------+</span>
+</pre></div>
+</div>
+</section>
 <section id="other">
 <h2>Other<a class="headerlink" href="#other" title="Link to this heading">¶</a></h2>
 <p>The function <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#datafusion.functions.in_list" title="datafusion.functions.in_list"><code class="xref py py-func docutils literal notranslate"><span class="pre">in_list()</span></code></a> allows to check a column for the presence of multiple values:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">14</span><span class="p">]:</span> <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Grass&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Fire&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Water&quot;</span><span class="p">)]</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Grass&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Fire&quot;</span><span class="p">),</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot;Water&quot;</span><span class="p">)]</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">15</span><span class="p">]:</span> <span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">16</span><span class="p">]:</span> <span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">in_list</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">),</span> <span class="n">types</span><span class="p">,</span> <span class="n">negated</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;basic_types&quot;</span><span class="p">))</span>
    <span class="o">....</span><span class="p">:</span>       <span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
    <span class="o">....</span><span class="p">:</span>       <span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
-<span class="n">Out</span><span class="p">[</span><span class="mi">15</span><span class="p">]:</span> 
+<span class="n">Out</span><span class="p">[</span><span class="mi">16</span><span class="p">]:</span> 
     <span class="n">basic_types</span>
 <span class="mi">0</span>          <span class="kc">True</span>
 <span class="mi">1</span>          <span class="kc">True</span>
