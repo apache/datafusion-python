@@ -272,12 +272,11 @@ pub struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    #[pyo3(signature = (config=None, runtime=None, enable_url_table=false))]
+    #[pyo3(signature = (config=None, runtime=None))]
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
         runtime: Option<PyRuntimeConfig>,
-        enable_url_table: bool,
     ) -> PyResult<Self> {
         let config = if let Some(c) = config {
             c.config
@@ -295,11 +294,15 @@ impl PySessionContext {
             .with_runtime_env(runtime)
             .with_default_features()
             .build();
-        let mut ctx = SessionContext::new_with_state(session_state);
-        if enable_url_table {
-            ctx = ctx.enable_url_table();
-        }
-        Ok(PySessionContext { ctx })
+        Ok(PySessionContext {
+            ctx: SessionContext::new_with_state(session_state),
+        })
+    }
+
+    pub fn enable_url_table(&self) -> PyResult<Self> {
+        Ok(PySessionContext {
+            ctx: self.ctx.clone().enable_url_table(),
+        })
     }
 
     /// Register an object store with the given name

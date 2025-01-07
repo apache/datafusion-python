@@ -66,27 +66,13 @@ class ArrowArrayExportable(Protocol):
 class SessionConfig:
     """Session configuration options."""
 
-    def __init__(self, config_options: dict[str, str] | None = None, enable_url_table: bool = False) -> None:
+    def __init__(self, config_options: dict[str, str] | None = None) -> None:
         """Create a new :py:class:`SessionConfig` with the given configuration options.
 
         Args:
             config_options: Configuration options.
         """
         self.config_internal = SessionConfigInternal(config_options)
-        self.enable_url_table = enable_url_table
-
-    def with_url_table(self, enabled: bool = True) -> SessionConfig:
-
-        """Control if local files can be queried as tables.
-
-        Args:
-            enabled: Whether local files can be queried as tables.
-
-        Returns:
-            A new :py:class:`SessionConfig` object with the updated setting.
-        """
-        self.enable_url_table = enabled
-        return self
 
     def with_create_default_catalog_and_schema(
         self, enabled: bool = True
@@ -481,11 +467,22 @@ class SessionContext:
             ctx = SessionContext()
             df = ctx.read_csv("data.csv")
         """
-        enable_url_table = config.enable_url_table if config is not None else False
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if runtime is not None else None
 
-        self.ctx = SessionContextInternal(config, runtime, enable_url_table)
+        self.ctx = SessionContextInternal(config, runtime)
+
+    def enable_url_table(self) -> "SessionContext":
+
+        """Control if local files can be queried as tables.
+
+        Returns:
+            A new :py:class:`SessionContext` object with url table enabled.
+        """
+        klass = self.__class__
+        obj = klass.__new__(klass)
+        obj.ctx = self.ctx.enable_url_table()
+        return obj
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
