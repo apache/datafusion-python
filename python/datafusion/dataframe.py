@@ -36,7 +36,6 @@ if TYPE_CHECKING:
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 from enum import Enum
-from typing import Tuple
 
 
 class Compression(Enum):

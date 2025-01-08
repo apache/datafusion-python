@@ -463,7 +463,7 @@ impl PyDataFrame {
     /// Write a `DataFrame` to a Parquet file.
     #[pyo3(signature = (
         path,
-        compression="uncompressed",
+        compression="zstd",
         compression_level=None
         ))]
     fn write_parquet(
