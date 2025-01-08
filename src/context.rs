@@ -299,6 +299,12 @@ impl PySessionContext {
         })
     }
 
+    pub fn enable_url_table(&self) -> PyResult<Self> {
+        Ok(PySessionContext {
+            ctx: self.ctx.clone().enable_url_table(),
+        })
+    }
+
     /// Register an object store with the given name
     #[pyo3(signature = (scheme, store, host=None))]
     pub fn register_object_store(

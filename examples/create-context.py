@@ -37,3 +37,6 @@ config = (
 )
 ctx = SessionContext(config, runtime)
 print(ctx)
+
+ctx = ctx.enable_url_table()
+print(ctx)

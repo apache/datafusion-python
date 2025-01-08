@@ -481,6 +481,17 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
+    def enable_url_table(self) -> "SessionContext":
+        """Control if local files can be queried as tables.
+
+        Returns:
+            A new :py:class:`SessionContext` object with url table enabled.
+        """
+        klass = self.__class__
+        obj = klass.__new__(klass)
+        obj.ctx = self.ctx.enable_url_table()
+        return obj
+
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
     ) -> None:
