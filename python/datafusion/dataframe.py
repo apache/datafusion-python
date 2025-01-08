@@ -38,6 +38,8 @@ from datafusion.expr import Expr, SortExpr, sort_or_default
 from enum import Enum
 
 
+# excerpt from deltalake
+# https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
 class Compression(Enum):
     UNCOMPRESSED = "uncompressed"
     SNAPPY = "snappy"
@@ -58,11 +60,15 @@ class Compression(Enum):
             )
 
     def get_default_level(self) -> int:
+        # GZIP, BROTLI defaults from deltalake
+        # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
         if self == Compression.GZIP:
             DEFAULT = 6
         elif self == Compression.BROTLI:
             DEFAULT = 1
         elif self == Compression.ZSTD:
+            # ZSTD default from delta-rs
+            # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
             DEFAULT = 4
         else:
             raise KeyError(f"{self.value} does not have a compression level.")
