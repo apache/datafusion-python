@@ -57,7 +57,7 @@ class RecordBatchStream:
         """This constructor is typically not called by the end user."""
         self.rbs = record_batch_stream
 
-    def next(self) -> RecordBatch | None:
+    def next(self) -> RecordBatch:
         """See :py:func:`__next__` for the iterator function."""
         return next(self)
 
