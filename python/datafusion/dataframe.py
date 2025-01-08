@@ -35,6 +35,39 @@ if TYPE_CHECKING:
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
+from enum import Enum
+from typing import Tuple
+
+
+class Compression(Enum):
+    UNCOMPRESSED = "uncompressed"
+    SNAPPY = "snappy"
+    GZIP = "gzip"
+    BROTLI = "brotli"
+    LZ4 = "lz4"
+    LZ0 = "lz0"
+    ZSTD = "zstd"
+    LZ4_RAW = "lz4_raw"
+
+    @classmethod
+    def from_str(cls, value: str) -> "Compression":
+        try:
+            return cls(value.lower())
+        except ValueError:
+            raise ValueError(
+                f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
+            )
+
+    def get_default_level(self) -> int:
+        if self == Compression.GZIP:
+            DEFAULT = 6
+        elif self == Compression.BROTLI:
+            DEFAULT = 1
+        elif self == Compression.ZSTD:
+            DEFAULT = 4
+        else:
+            raise KeyError(f"{self.value} does not have a compression level.")
+        return DEFAULT
 
 
 class DataFrame:
@@ -620,7 +653,7 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: str = "ZSTD",
+        compression: str = Compression.ZSTD.value,
         compression_level: int | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
@@ -628,18 +661,26 @@ class DataFrame:
         Args:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
+                Available compression types are:
+                - "UNCOMPRESSED": No compression.
+                - "SNAPPY": Snappy compression.
+                - "GZIP": Gzip compression.
+                - "BROTLI": Brotli compression.
+                - "LZ0": LZ0 compression.
+                - "LZ4": LZ4 compression.
+                - "LZ4_RAW": LZ4_RAW compression.
+                - "ZSTD": Zstandard compression.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
         """
-        if compression == "ZSTD":
+        compression_enum = Compression.from_str(compression)
+
+        if compression_enum in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
             if compression_level is None:
-                # Default compression level for ZSTD is 4 like in delta-rs
-                # https://github.com/apache/datafusion-python/pull/981#discussion_r1899871918
-                compression_level = 4
-            elif not (1 <= compression_level <= 22):
-                raise ValueError("Compression level for ZSTD must be between 1 and 22")
-        self.df.write_parquet(str(path), compression, compression_level)
+                compression_level = compression_enum.get_default_level()
+
+        self.df.write_parquet(str(path), compression_enum.value, compression_level)
 
     def write_json(self, path: str | pathlib.Path) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
