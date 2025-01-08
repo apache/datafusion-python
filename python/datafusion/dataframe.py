@@ -41,6 +41,8 @@ from enum import Enum
 # excerpt from deltalake
 # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
 class Compression(Enum):
+    """Enum representing the available compression types for Parquet files."""
+
     UNCOMPRESSED = "uncompressed"
     SNAPPY = "snappy"
     GZIP = "gzip"
@@ -52,6 +54,17 @@ class Compression(Enum):
 
     @classmethod
     def from_str(cls, value: str) -> "Compression":
+        """Convert a string to a Compression enum value.
+
+        Args:
+            value (str): The string representation of the compression type.
+
+        Returns:
+            Compression: The corresponding Compression enum value.
+
+        Raises:
+            ValueError: If the string does not match any Compression enum value.
+        """
         try:
             return cls(value.lower())
         except ValueError:
@@ -60,6 +73,14 @@ class Compression(Enum):
             )
 
     def get_default_level(self) -> int:
+        """Get the default compression level for the compression type.
+
+        Returns:
+            int: The default compression level.
+
+        Raises:
+            KeyError: If the compression type does not have a default level.
+        """
         # GZIP, BROTLI defaults from deltalake
         # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
         if self == Compression.GZIP:
