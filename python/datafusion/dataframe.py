@@ -661,14 +661,14 @@ class DataFrame:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
                 Available compression types are:
-                - "UNCOMPRESSED": No compression.
-                - "SNAPPY": Snappy compression.
-                - "GZIP": Gzip compression.
-                - "BROTLI": Brotli compression.
-                - "LZ0": LZ0 compression.
-                - "LZ4": LZ4 compression.
-                - "LZ4_RAW": LZ4_RAW compression.
-                - "ZSTD": Zstandard compression.
+                - "uncompressed": No compression.
+                - "snappy": Snappy compression.
+                - "gzip": Gzip compression.
+                - "brotli": Brotli compression.
+                - "lz0": LZ0 compression.
+                - "lz4": LZ4 compression.
+                - "lz4_raw": LZ4_RAW compression.
+                - "zstd": Zstandard compression.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
