@@ -732,6 +732,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.enable_url_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.enable_url_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.execute">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1601,6 +1610,17 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.empty_table">
 <span class="sig-name descname"><span class="pre">empty_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.empty_table" title="Link to this definition">¶</a></dt>
 <dd><p>Create an empty <a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.enable_url_table">
+<span class="sig-name descname"><span class="pre">enable_url_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><span class="pre">SessionContext</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.enable_url_table" title="Link to this definition">¶</a></dt>
+<dd><p>Control if local files can be queried as tables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> object with url table enabled.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

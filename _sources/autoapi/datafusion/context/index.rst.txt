@@ -440,6 +440,14 @@ Module Contents
 
 
 
+   .. py:method:: enable_url_table() -> SessionContext
+
+      Control if local files can be queried as tables.
+
+      :returns: A new :py:class:`SessionContext` object with url table enabled.
+
+
+
    .. py:method:: execute(plan: datafusion.plan.ExecutionPlan, partitions: int) -> datafusion.record_batch.RecordBatchStream
 
       Execute the ``plan`` and return the results.
