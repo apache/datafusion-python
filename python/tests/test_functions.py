@@ -666,7 +666,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.concat(column("a").cast(pa.string()), literal("?")),
             pa.array(["Hello?", "World?", "!?"], type=pa.string_view()),
         ),
-        (f.initcap(column("c")), pa.array(["Hello ", " World ", " !"])),
+        (
+            f.initcap(column("c")),
+            pa.array(["Hello ", " World ", " !"], type=pa.string_view()),
+        ),
         (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
         (f.lower(column("a")), pa.array(["hello", "world", "!"])),
