@@ -418,75 +418,84 @@
       </span>
      </code>
     </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RuntimeEnvBuilder
+      </span>
+     </code>
+    </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_disk_manager_disabled">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_disabled">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_disabled()
+         RuntimeEnvBuilder.with_disk_manager_disabled()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_disk_manager_os">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_os">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_os()
+         RuntimeEnvBuilder.with_disk_manager_os()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_disk_manager_specified">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_specified">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_specified()
+         RuntimeEnvBuilder.with_disk_manager_specified()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_fair_spill_pool">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_fair_spill_pool()
+         RuntimeEnvBuilder.with_fair_spill_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_greedy_memory_pool">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_greedy_memory_pool()
+         RuntimeEnvBuilder.with_greedy_memory_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_temp_file_path">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_temp_file_path">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_temp_file_path()
+         RuntimeEnvBuilder.with_temp_file_path()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.with_unbounded_memory_pool">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.with_unbounded_memory_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_unbounded_memory_pool()
+         RuntimeEnvBuilder.with_unbounded_memory_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.context.RuntimeConfig.config_internal">
+      <a class="reference internal nav-link" href="#datafusion.context.RuntimeEnvBuilder.config_internal">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.config_internal
+         RuntimeEnvBuilder.config_internal
         </span>
        </code>
       </a>
@@ -1078,18 +1087,21 @@
 <td><p>Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a></p></td>
+<td><p>See <cite>RuntimeEnvBuilder</cite>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SQLOptions" title="datafusion.context.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
 <td><p>Options to be used when performing SQL queries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionConfig</span></code></a></p></td>
 <td><p>Session configuration options.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SessionContext</span></code></a></p></td>
 <td><p>This is the main interface for executing queries and creating DataFrames.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableProviderExportable</span></code></a></p></td>
 <td><p>Type hint for object that has __datafusion_table_provider__ PyCapsule.</p></td>
 </tr>
 </tbody>
@@ -1126,47 +1138,55 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.context.RuntimeConfig">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p>
+<p>See <cite>RuntimeEnvBuilder</cite>.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> with default values.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">RuntimeEnvBuilder</span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder" title="Link to this definition">¶</a></dt>
 <dd><p>Runtime configuration options.</p>
-<p>Create a new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> with default values.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> with default values.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_disk_manager_disabled">
-<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_disk_manager_disabled">
+<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
 <dd><p>Disable the disk manager, attempts to create temporary files will error.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_disk_manager_os">
-<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_disk_manager_os" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_disk_manager_os">
+<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_os" title="Link to this definition">¶</a></dt>
 <dd><p>Use the operating system’s temporary directory for disk manager.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_disk_manager_specified">
-<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_disk_manager_specified">
+<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
 <dd><p>Use the specified paths for the disk manager’s temporary files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>paths</strong> – Paths to use for the disk manager’s temporary files.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_fair_spill_pool">
-<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool">
+<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use a fair spill pool with the specified size.</p>
 <p>This pool works best when you know beforehand the query has multiple spillable
 operators that will likely all need to spill. Sometimes it will cause spills
@@ -1187,68 +1207,68 @@ doing so:</p>
 <dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Examples usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_greedy_memory_pool">
-<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool">
+<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use a greedy memory pool with the specified size.</p>
 <p>This pool works well for queries that do not need to spill or have a single
-spillable operator. See <a class="reference internal" href="#datafusion.context.RuntimeConfig.with_fair_spill_pool" title="datafusion.context.RuntimeConfig.with_fair_spill_pool"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fair_spill_pool()</span></code></a> if there are
+spillable operator. See <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool" title="datafusion.context.RuntimeEnvBuilder.with_fair_spill_pool"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fair_spill_pool()</span></code></a> if there are
 multiple spillable operators that all will spill.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_temp_file_path">
-<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_temp_file_path" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_temp_file_path">
+<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_temp_file_path" title="Link to this definition">¶</a></dt>
 <dd><p>Use the specified path to create any needed temporary files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> – Path to use for temporary files.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.with_unbounded_memory_pool">
-<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.with_unbounded_memory_pool">
+<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use an unbounded memory pool.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.context.RuntimeConfig.config_internal">
-<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.context.RuntimeConfig.config_internal" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.context.RuntimeEnvBuilder.config_internal">
+<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.context.RuntimeEnvBuilder.config_internal" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -1538,7 +1558,7 @@ automatically created.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">SessionContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><span class="pre">RuntimeConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.context.SessionContext" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.context.</span></span><span class="sig-name descname"><span class="pre">SessionContext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><span class="pre">SessionConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">runtime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.context.SessionContext" title="Link to this definition">¶</a></dt>
 <dd><p>This is the main interface for executing queries and creating DataFrames.</p>
 <p>See <a class="reference internal" href="../../../user-guide/basics.html#user-guide-concepts"><span class="std std-ref">Concepts</span></a> in the online documentation for more information.</p>
 <p>Main interface for executing queries with DataFusion.</p>
