@@ -57,19 +57,23 @@ class RecordBatchStream:
         """This constructor is typically not called by the end user."""
         self.rbs = record_batch_stream
 
-    def next(self) -> RecordBatch | None:
+    def next(self) -> RecordBatch:
         """See :py:func:`__next__` for the iterator function."""
-        try:
-            next_batch = next(self)
-        except StopIteration:
-            return None
+        return next(self)
 
-        return next_batch
+    async def __anext__(self) -> RecordBatch:
+        """Async iterator function."""
+        next_batch = await self.rbs.__anext__()
+        return RecordBatch(next_batch)
 
     def __next__(self) -> RecordBatch:
         """Iterator function."""
         next_batch = next(self.rbs)
         return RecordBatch(next_batch)
+
+    def __aiter__(self) -> typing_extensions.Self:
+        """Async iterator function."""
+        return self
 
     def __iter__(self) -> typing_extensions.Self:
         """Iterator function."""

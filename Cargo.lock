@@ -1303,6 +1303,7 @@ dependencies = [
  "prost",
  "prost-types",
  "pyo3",
+ "pyo3-async-runtimes",
  "pyo3-build-config",
  "tokio",
  "url",
@@ -2670,6 +2671,19 @@ dependencies = [
  "pyo3-ffi",
  "pyo3-macros",
  "unindent",
+]
+
+[[package]]
+name = "pyo3-async-runtimes"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2529f0be73ffd2be0cc43c013a640796558aa12d7ca0aab5cc14f375b4733031"
+dependencies = [
+ "futures",
+ "once_cell",
+ "pin-project-lite",
+ "pyo3",
+ "tokio",
 ]
 
 [[package]]
