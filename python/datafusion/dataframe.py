@@ -21,7 +21,16 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 import warnings
-from typing import Any, Iterable, List, TYPE_CHECKING, Literal, overload
+from typing import (
+    Any,
+    Iterable,
+    List,
+    TYPE_CHECKING,
+    Literal,
+    overload,
+    Optional,
+    Union,
+)
 from datafusion.record_batch import RecordBatchStream
 from typing_extensions import deprecated
 from datafusion.plan import LogicalPlan, ExecutionPlan
@@ -57,10 +66,7 @@ class Compression(Enum):
         """Convert a string to a Compression enum value.
 
         Args:
-            value (str): The string representation of the compression type.
-
-        Returns:
-            Compression: The corresponding Compression enum value.
+            value: The string representation of the compression type.
 
         Raises:
             ValueError: If the string does not match any Compression enum value.
@@ -72,28 +78,19 @@ class Compression(Enum):
                 f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
             )
 
-    def get_default_level(self) -> int:
-        """Get the default compression level for the compression type.
-
-        Returns:
-            int: The default compression level.
-
-        Raises:
-            KeyError: If the compression type does not have a default level.
-        """
-        # GZIP, BROTLI defaults from deltalake
+    def get_default_level(self) -> Optional[int]:
+        """Get the default compression level for the compression type."""
+        # GZIP, BROTLI default values from deltalake repo
         # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
+        # ZSTD default value from delta-rs
+        # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
         if self == Compression.GZIP:
-            DEFAULT = 6
+            return 6
         elif self == Compression.BROTLI:
-            DEFAULT = 1
+            return 1
         elif self == Compression.ZSTD:
-            # ZSTD default from delta-rs
-            # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
-            DEFAULT = 4
-        else:
-            raise KeyError(f"{self.value} does not have a compression level.")
-        return DEFAULT
+            return 4
+        return None
 
 
 class DataFrame:
@@ -679,7 +676,7 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: str = Compression.ZSTD.value,
+        compression: Union[str, Compression] = Compression.ZSTD,
         compression_level: int | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
@@ -700,13 +697,15 @@ class DataFrame:
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
         """
-        compression_enum = Compression.from_str(compression)
+        # Convert string to Compression enum if necessary
+        if isinstance(compression, str):
+            compression = Compression.from_str(compression)
 
-        if compression_enum in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
+        if compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
             if compression_level is None:
-                compression_level = compression_enum.get_default_level()
+                compression_level = compression.get_default_level()
 
-        self.df.write_parquet(str(path), compression_enum.value, compression_level)
+        self.df.write_parquet(str(path), compression.value, compression_level)
 
     def write_json(self, path: str | pathlib.Path) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
