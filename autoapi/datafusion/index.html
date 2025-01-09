@@ -1275,6 +1275,24 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__aiter__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__aiter__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__anext__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__anext__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__iter__">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2651,6 +2669,18 @@ using the `DOT</cite> language. This format can be visualized using software fro
 <a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream" title="datafusion.dataframe.DataFrame.execute_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute_stream()</span></code></a> operation.</p>
 <p>This constructor is typically not called by the end user.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__aiter__">
+<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
+<dd><p>Async iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__anext__">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__anext__" title="Link to this definition">¶</a></dt>
+<dd><p>Async iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RecordBatchStream.__iter__">
 <span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__iter__" title="Link to this definition">¶</a></dt>
 <dd><p>Iterator function.</p>
@@ -2664,7 +2694,7 @@ using the `DOT</cite> language. This format can be visualized using software fro
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RecordBatchStream.next">
-<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.next" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.next" title="Link to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#datafusion.RecordBatchStream.__next__" title="datafusion.RecordBatchStream.__next__"><code class="xref py py-func docutils literal notranslate"><span class="pre">__next__()</span></code></a> for the iterator function.</p>
 </dd></dl>
 
