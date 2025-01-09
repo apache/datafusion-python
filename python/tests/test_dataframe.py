@@ -1113,11 +1113,11 @@ def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression)
         df.write_parquet(str(path), compression=compression)
 
 
-# Test write_parquet with zstd, brotli, gzip default compression level,
-# ie don't specify compression level
-# should complete without error
 @pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
 def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
     path = tmp_path
 
     df.write_parquet(str(path), compression=compression)
