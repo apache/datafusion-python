@@ -78,7 +78,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<catalog::PyCatalog>()?;
     m.add_class::<catalog::PyDatabase>()?;
     m.add_class::<catalog::PyTable>()?;
-    m.add_class::<context::PyRuntimeConfig>()?;
+    m.add_class::<context::PyRuntimeEnvBuilder>()?;
     m.add_class::<context::PySessionConfig>()?;
     m.add_class::<context::PySessionContext>()?;
     m.add_class::<context::PySQLOptions>()?;

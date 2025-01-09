@@ -36,10 +36,7 @@ use datafusion::functions_aggregate;
 use datafusion::functions_window;
 use datafusion::logical_expr::expr::Alias;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
-use datafusion::logical_expr::{
-    expr::{find_df_window_func, WindowFunction},
-    lit, Expr, WindowFunctionDefinition,
-};
+use datafusion::logical_expr::{expr::WindowFunction, lit, Expr, WindowFunctionDefinition};
 
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,
@@ -232,12 +229,6 @@ fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
 ///
 /// NOTE: we search the built-ins first because the `UDAF` versions currently do not have the same behavior.
 fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
-    // search built in window functions (soon to be deprecated)
-    let df_window_func = find_df_window_func(name);
-    if let Some(df_window_func) = df_window_func {
-        return Ok(df_window_func);
-    }
-
     if let Some(ctx) = ctx {
         // search UDAFs
         let udaf = ctx

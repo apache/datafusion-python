@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::physical_plan::execution_plan::{Boundedness, EmissionType};
 /// Implements a Datafusion physical ExecutionPlan that delegates to a PyArrow Dataset
 /// This actually performs the projection, filtering and scanning of a Dataset
 use pyo3::prelude::*;
@@ -34,11 +35,11 @@ use datafusion::error::{DataFusionError as InnerDataFusionError, Result as DFRes
 use datafusion::execution::context::TaskContext;
 use datafusion::logical_expr::utils::conjunction;
 use datafusion::logical_expr::Expr;
-use datafusion::physical_expr::{EquivalenceProperties, PhysicalSortExpr};
+use datafusion::physical_expr::{EquivalenceProperties, LexOrdering};
 use datafusion::physical_plan::stream::RecordBatchStreamAdapter;
 use datafusion::physical_plan::{
-    DisplayAs, DisplayFormatType, ExecutionMode, ExecutionPlan, ExecutionPlanProperties,
-    Partitioning, SendableRecordBatchStream, Statistics,
+    DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
+    SendableRecordBatchStream, Statistics,
 };
 
 use crate::errors::DataFusionError;
@@ -136,7 +137,8 @@ impl DatasetExec {
         let plan_properties = datafusion::physical_plan::PlanProperties::new(
             EquivalenceProperties::new(schema.clone()),
             Partitioning::UnknownPartitioning(fragments.len()),
-            ExecutionMode::Bounded,
+            EmissionType::Final,
+            Boundedness::Bounded,
         );
 
         Ok(DatasetExec {
@@ -251,12 +253,16 @@ impl ExecutionPlanProperties for DatasetExec {
         self.plan_properties.output_partitioning()
     }
 
-    fn output_ordering(&self) -> Option<&[PhysicalSortExpr]> {
+    fn output_ordering(&self) -> Option<&LexOrdering> {
         None
     }
 
-    fn execution_mode(&self) -> datafusion::physical_plan::ExecutionMode {
-        self.plan_properties.execution_mode
+    fn boundedness(&self) -> Boundedness {
+        self.plan_properties.boundedness
+    }
+
+    fn pipeline_behavior(&self) -> EmissionType {
+        self.plan_properties.emission_type
     }
 
     fn equivalence_properties(&self) -> &datafusion::physical_expr::EquivalenceProperties {
