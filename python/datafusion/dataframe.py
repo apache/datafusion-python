@@ -68,6 +68,9 @@ class Compression(Enum):
         Args:
             value: The string representation of the compression type.
 
+        Returns:
+            The Compression enum lowercase value.
+
         Raises:
             ValueError: If the string does not match any Compression enum value.
         """
@@ -79,7 +82,11 @@ class Compression(Enum):
             )
 
     def get_default_level(self) -> Optional[int]:
-        """Get the default compression level for the compression type."""
+        """Get the default compression level for the compression type.
+
+        Returns:
+            The default compression level for the compression type.
+        """
         # GZIP, BROTLI default values from deltalake repo
         # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
         # ZSTD default value from delta-rs
