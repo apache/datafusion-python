@@ -1,0 +1,16 @@
+from typing import List
+from .. import LogicalPlan
+from ..common import DFSchema
+
+
+class Explain:
+    def explain_string(self) -> List[str]: ...
+
+    def verbose(self) -> bool: ...
+
+    def plan(self) -> LogicalPlan: ...
+
+    def schema(self) -> DFSchema: ...
+
+    def logical_optimization_succceeded(self) -> bool: ...
+

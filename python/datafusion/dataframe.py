@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from typing import Callable, Sequence
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import expr as expr_internal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
@@ -200,7 +201,7 @@ class DataFrame:
 
         def _simplify_expression(
             *exprs: Expr | Iterable[Expr], **named_exprs: Expr
-        ) -> list[Expr]:
+        ) -> list[expr_internal.Expr]:
             expr_list = []
             for expr in exprs:
                 if isinstance(expr, Expr):
@@ -251,9 +252,9 @@ class DataFrame:
         group_by = group_by if isinstance(group_by, list) else [group_by]
         aggs = aggs if isinstance(aggs, list) else [aggs]
 
-        group_by = [e.expr for e in group_by]
-        aggs = [e.expr for e in aggs]
-        return DataFrame(self.df.aggregate(group_by, aggs))
+        group_by_inner = [e.expr for e in group_by]
+        aggs_inner = [e.expr for e in aggs]
+        return DataFrame(self.df.aggregate(group_by_inner, aggs_inner))
 
     def sort(self, *exprs: Expr | SortExpr) -> DataFrame:
         """Sort the DataFrame by the specified sorting expressions.
@@ -451,8 +452,8 @@ class DataFrame:
                 raise ValueError(
                     "`left_on` or `right_on` should not provided with `on`"
                 )
-            left_on = on
-            right_on = on
+            left_on = on # type: ignore
+            right_on = on # type: ignore
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 raise ValueError("`left_on` and `right_on` should both be provided.")
@@ -465,7 +466,7 @@ class DataFrame:
         if isinstance(right_on, str):
             right_on = [right_on]
 
-        return DataFrame(self.df.join(right.df, how, left_on, right_on))
+        return DataFrame(self.df.join(right.df, how, left_on, right_on)) # type: ignore
 
     def join_on(
         self,
@@ -551,8 +552,8 @@ class DataFrame:
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [expr.expr for expr in exprs]
-        return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
+        exprs_inner = [expr.expr for expr in exprs]
+        return DataFrame(self.df.repartition_by_hash(*exprs_inner, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
         """Calculate the union of two :py:class:`DataFrame`.
@@ -724,8 +725,8 @@ class DataFrame:
         Returns:
             A DataFrame with the columns expanded.
         """
-        columns = [c for c in columns]
-        return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
+        columns_inner = [c for c in columns]
+        return DataFrame(self.df.unnest_columns(columns_inner, preserve_nulls=preserve_nulls))
 
     def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:
         """Export an Arrow PyCapsule Stream.

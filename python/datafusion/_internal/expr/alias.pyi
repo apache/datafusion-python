@@ -1,0 +1,6 @@
+from .base import Expr
+
+class Alias:
+    def alias(self) -> str: ...
+
+    def expr(self) -> Expr: ...

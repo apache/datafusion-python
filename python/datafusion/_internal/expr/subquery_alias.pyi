@@ -1,0 +1,13 @@
+from typing import List
+from .. import LogicalPlan
+from ..common import DFSchema
+
+
+class SubqueryAlias:
+    def input(self) -> List[LogicalPlan]: ...
+
+    def schema(self) -> DFSchema: ...
+
+    def alias(self) -> str: ...
+
+    def __name__(self) -> str: ...

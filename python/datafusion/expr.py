@@ -171,14 +171,14 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e.expr, True, True).raw_sort
+    return SortExpr(e, True, True).raw_sort
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[list[Expr | SortExpr]],
-) -> Optional[list[expr_internal.SortExpr]]:
+    sort_list: list[Expr | SortExpr],
+) -> list[expr_internal.SortExpr]:
     """Helper function to return an optional sort list to raw variant."""
-    return [sort_or_default(e) for e in sort_list] if sort_list is not None else None
+    return [sort_or_default(e) for e in sort_list]
 
 
 class Expr:
@@ -226,7 +226,7 @@ class Expr:
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""
-        return Expr(self.expr.__richcmp__(other, op))
+        return Expr(self.expr.__richcmp__(other.expr, op))
 
     def __repr__(self) -> str:
         """Generate a string representation of this expression."""
@@ -306,23 +306,23 @@ class Expr:
             )
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: Any) -> Expr:
+    def __eq__(self, rhs: Any) -> Expr: # type: ignore
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__eq__(rhs.expr))
+        return Expr(self.expr.__eq__(rhs.expr)) # type: ignore
 
-    def __ne__(self, rhs: Any) -> Expr:
+    def __ne__(self, rhs: Any) -> Expr: # type: ignore
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ne__(rhs.expr))
+        return Expr(self.expr.__ne__(rhs.expr)) # type: ignore
 
     def __ge__(self, rhs: Any) -> Expr:
         """Greater than or equal to.
@@ -331,7 +331,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ge__(rhs.expr))
+        return Expr(self.expr.__ge__(rhs.expr)) # type: ignore
 
     def __gt__(self, rhs: Any) -> Expr:
         """Greater than.
@@ -340,7 +340,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__gt__(rhs.expr))
+        return Expr(self.expr.__gt__(rhs.expr)) # type: ignore
 
     def __le__(self, rhs: Any) -> Expr:
         """Less than or equal to.
@@ -349,7 +349,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__le__(rhs.expr))
+        return Expr(self.expr.__le__(rhs.expr)) # type: ignore
 
     def __lt__(self, rhs: Any) -> Expr:
         """Less than.
@@ -358,7 +358,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__lt__(rhs.expr))
+        return Expr(self.expr.__lt__(rhs.expr)) # type: ignore
 
     __radd__ = __add__
     __rand__ = __and__
@@ -412,7 +412,7 @@ class Expr:
             ascending: If true, sort in ascending order.
             nulls_first: Return null values first.
         """
-        return SortExpr(self.expr, ascending=ascending, nulls_first=nulls_first)
+        return SortExpr(self, ascending=ascending, nulls_first=nulls_first)
 
     def is_null(self) -> Expr:
         """Returns ``True`` if this expression is null."""
@@ -584,7 +584,7 @@ class Expr:
             window: Window definition
         """
         partition_by_raw = expr_list_to_raw_expr_list(window._partition_by)
-        order_by_raw = sort_list_to_raw_sort_list(window._order_by)
+        order_by_raw = sort_list_to_raw_sort_list(window._order_by) if window._order_by else None
         window_frame_raw = (
             window._window_frame.window_frame
             if window._window_frame is not None
@@ -784,7 +784,7 @@ class SortExpr:
 
     def __init__(self, expr: Expr, ascending: bool, nulls_first: bool) -> None:
         """This constructor should not be called by the end user."""
-        self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
+        self.raw_sort = expr_internal.SortExpr(expr.expr, ascending, nulls_first)
 
     def expr(self) -> Expr:
         """Return the raw expr backing the SortExpr."""

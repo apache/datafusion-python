@@ -73,4 +73,4 @@ class Table:
     @property
     def kind(self) -> str:
         """Returns the kind of table."""
-        return self.table.kind()
+        return self.table.kind

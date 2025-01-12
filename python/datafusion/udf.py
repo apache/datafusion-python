@@ -84,7 +84,7 @@ class ScalarUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[..., _R],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
@@ -157,7 +157,7 @@ class Accumulator(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def update(self, *values: pyarrow.Array) -> None:
+    def update(self, values: pyarrow.Array) -> None:
         """Evaluate an array of values and update state."""
         pass
 
@@ -181,7 +181,7 @@ class AggregateUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         accumulator: Callable[[], Accumulator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
@@ -270,12 +270,13 @@ class AggregateUDF:
         """  # noqa W505
         if not callable(accum):
             raise TypeError("`func` must be callable.")
-        if not isinstance(accum.__call__(), Accumulator):
+        if not isinstance(accum.__call__(), Accumulator): # type: ignore
             raise TypeError(
                 "Accumulator must implement the abstract base class Accumulator"
             )
         if name is None:
-            name = accum.__call__().__class__.__qualname__.lower()
+            name = accum.__call__().__class__.__qualname__.lower() # type: ignore
+        assert name is not None
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
         return AggregateUDF(
@@ -461,7 +462,7 @@ class WindowUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[[], WindowEvaluator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
@@ -532,12 +533,13 @@ class WindowUDF:
         """  # noqa W505
         if not callable(func):
             raise TypeError("`func` must be callable.")
-        if not isinstance(func.__call__(), WindowEvaluator):
+        if not isinstance(func.__call__(), WindowEvaluator): # type: ignore
             raise TypeError(
                 "`func` must implement the abstract base class WindowEvaluator"
             )
         if name is None:
-            name = func.__call__().__class__.__qualname__.lower()
+            name = func.__call__().__class__.__qualname__.lower() # type: ignore
+        assert name is not None
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
         return WindowUDF(

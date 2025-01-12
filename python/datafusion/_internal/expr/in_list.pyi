@@ -1,0 +1,9 @@
+from typing import List
+from .base import Expr
+
+class InList:
+    def expr(self) -> Expr: ...
+
+    def list(self) -> List[Expr]: ...
+
+    def negated(self) -> bool: ...

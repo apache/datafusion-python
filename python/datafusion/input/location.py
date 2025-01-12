@@ -37,12 +37,12 @@ class LocationInputPlugin(BaseInputSource):
 
     def build_table(
         self,
-        input_file: str,
+        input_item: str,
         table_name: str,
         **kwargs,
     ) -> SqlTable:
         """Create a table from the input source."""
-        _, extension = os.path.splitext(input_file)
+        _, extension = os.path.splitext(input_item)
         format = extension.lstrip(".").lower()
         num_rows = 0  # Total number of rows in the file. Used for statistics
         columns = []
@@ -50,7 +50,7 @@ class LocationInputPlugin(BaseInputSource):
             import pyarrow.parquet as pq
 
             # Read the Parquet metadata
-            metadata = pq.read_metadata(input_file)
+            metadata = pq.read_metadata(input_item)
             num_rows = metadata.num_rows
             # Iterate through the schema and build the SqlTable
             for col in metadata.schema:
@@ -69,7 +69,7 @@ class LocationInputPlugin(BaseInputSource):
             # to get that information. However, this should only be occurring
             # at table creation time and therefore shouldn't
             # slow down query performance.
-            with open(input_file, "r") as file:
+            with open(input_item, "r") as file:
                 reader = csv.reader(file)
                 header_row = next(reader)
                 print(header_row)
@@ -84,6 +84,6 @@ class LocationInputPlugin(BaseInputSource):
             )
 
         # Input could possibly be multiple files. Create a list if so
-        input_files = glob.glob(input_file)
+        input_files = glob.glob(input_item)
 
         return SqlTable(table_name, columns, num_rows, input_files)

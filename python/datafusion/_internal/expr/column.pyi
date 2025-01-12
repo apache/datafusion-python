@@ -1,0 +1,9 @@
+from typing import Optional
+
+class Column:
+    def name(self) -> str: ...
+
+    def relation(self) -> Optional[str]: ...
+
+    def qualified_name(self) -> str: ...
+
