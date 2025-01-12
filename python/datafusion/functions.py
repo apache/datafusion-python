@@ -430,10 +430,21 @@ def window(
     """
     args_inner = [a.expr for a in args]
     partition_by_inner = expr_list_to_raw_expr_list(partition_by)
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     window_frame_inner = window_frame.window_frame if window_frame is not None else None
     ctx_inner = ctx.ctx if ctx is not None else None
-    return Expr(f.window(name, args_inner, partition_by_inner, order_by_raw, window_frame_inner, ctx_inner))
+    return Expr(
+        f.window(
+            name,
+            args_inner,
+            partition_by_inner,
+            order_by_raw,
+            window_frame_inner,
+            ctx_inner,
+        )
+    )
 
 
 # scalar functions
@@ -779,7 +790,9 @@ def regexp_replace(
         flags_inner = flags.expr
     else:
         flags_inner = None
-    return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags_inner))
+    return Expr(
+        f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags_inner)
+    )
 
 
 def repeat(string: Expr, n: Expr) -> Expr:
@@ -1710,7 +1723,9 @@ def array_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values
     """
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2208,7 +2223,9 @@ def first_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2240,7 +2257,9 @@ def last_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2274,7 +2293,9 @@ def nth_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2415,7 +2436,9 @@ def lead(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.lead(
@@ -2467,7 +2490,9 @@ def lag(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.lag(
@@ -2506,7 +2531,9 @@ def row_number(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.row_number(
@@ -2547,7 +2574,9 @@ def rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.rank(
@@ -2583,7 +2612,9 @@ def dense_rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.dense_rank(
@@ -2620,7 +2651,9 @@ def percent_rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.percent_rank(
@@ -2657,7 +2690,9 @@ def cume_dist(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.cume_dist(
@@ -2698,7 +2733,9 @@ def ntile(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
 
     return Expr(
         f.ntile(
@@ -2730,7 +2767,9 @@ def string_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
     """
-    order_by_raw = sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    order_by_raw = (
+        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
+    )
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(

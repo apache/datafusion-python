@@ -306,23 +306,23 @@ class Expr:
             )
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: Any) -> Expr: # type: ignore
+    def __eq__(self, rhs: Any) -> Expr:  # type: ignore
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__eq__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__eq__(rhs.expr))  # type: ignore
 
-    def __ne__(self, rhs: Any) -> Expr: # type: ignore
+    def __ne__(self, rhs: Any) -> Expr:  # type: ignore
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ne__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__ne__(rhs.expr))  # type: ignore
 
     def __ge__(self, rhs: Any) -> Expr:
         """Greater than or equal to.
@@ -331,7 +331,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ge__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__ge__(rhs.expr))  # type: ignore
 
     def __gt__(self, rhs: Any) -> Expr:
         """Greater than.
@@ -340,7 +340,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__gt__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__gt__(rhs.expr))  # type: ignore
 
     def __le__(self, rhs: Any) -> Expr:
         """Less than or equal to.
@@ -349,7 +349,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__le__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__le__(rhs.expr))  # type: ignore
 
     def __lt__(self, rhs: Any) -> Expr:
         """Less than.
@@ -358,7 +358,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__lt__(rhs.expr)) # type: ignore
+        return Expr(self.expr.__lt__(rhs.expr))  # type: ignore
 
     __radd__ = __add__
     __rand__ = __and__
@@ -584,7 +584,9 @@ class Expr:
             window: Window definition
         """
         partition_by_raw = expr_list_to_raw_expr_list(window._partition_by)
-        order_by_raw = sort_list_to_raw_sort_list(window._order_by) if window._order_by else None
+        order_by_raw = (
+            sort_list_to_raw_sort_list(window._order_by) if window._order_by else None
+        )
         window_frame_raw = (
             window._window_frame.window_frame
             if window._window_frame is not None

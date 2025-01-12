@@ -18,7 +18,6 @@
 from typing import List
 from .. import LogicalPlan
 
-
 class CreateMemoryTable:
     def name(self) -> str: ...
     def input(self) -> List[LogicalPlan]: ...

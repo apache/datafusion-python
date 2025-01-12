@@ -17,7 +17,6 @@
 
 from typing import List, Optional, Tuple
 
-
 class LocalFileSystem:
     def __init__(self, prefix: Optional[str] = None) -> None: ...
 
@@ -33,15 +32,15 @@ class MicrosoftAzure:
         tenant_id: Optional[str] = None,
         sas_query_pairs: Optional[List[Tuple[str, str]]] = None,
         use_emulator: Optional[bool] = None,
-        allow_http: Optional[bool] = None
-        ) -> None: ...
+        allow_http: Optional[bool] = None,
+    ) -> None: ...
 
 class GoogleCloud:
     def __init__(
         self,
         bucket_name: str,
         service_account_path: Optional[str] = None,
-        ) -> None: ...
+    ) -> None: ...
 
 class AmazonS3:
     def __init__(
@@ -53,8 +52,7 @@ class AmazonS3:
         endpoint: Optional[str] = None,
         allow_http: bool = False,
         imdsv1_fallback: bool = False,
-        ) -> None: ...
+    ) -> None: ...
 
 class Http:
     def __init__(self, url: str) -> None: ...
-

@@ -17,7 +17,6 @@
 
 from ..common import DataType
 
-
 class Placeholder:
     def id(self) -> str: ...
     def data_type(self) -> DataType: ...

@@ -17,7 +17,6 @@
 
 from .base import Expr
 
-
 class Not:
     def expr(self) -> Expr: ...
 

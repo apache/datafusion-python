@@ -270,12 +270,12 @@ class AggregateUDF:
         """  # noqa W505
         if not callable(accum):
             raise TypeError("`func` must be callable.")
-        if not isinstance(accum.__call__(), Accumulator): # type: ignore
+        if not isinstance(accum.__call__(), Accumulator):  # type: ignore
             raise TypeError(
                 "Accumulator must implement the abstract base class Accumulator"
             )
         if name is None:
-            name = accum.__call__().__class__.__qualname__.lower() # type: ignore
+            name = accum.__call__().__class__.__qualname__.lower()  # type: ignore
         assert name is not None
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
@@ -533,12 +533,12 @@ class WindowUDF:
         """  # noqa W505
         if not callable(func):
             raise TypeError("`func` must be callable.")
-        if not isinstance(func.__call__(), WindowEvaluator): # type: ignore
+        if not isinstance(func.__call__(), WindowEvaluator):  # type: ignore
             raise TypeError(
                 "`func` must implement the abstract base class WindowEvaluator"
             )
         if name is None:
-            name = func.__call__().__class__.__qualname__.lower() # type: ignore
+            name = func.__call__().__class__.__qualname__.lower()  # type: ignore
         assert name is not None
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]

@@ -18,7 +18,6 @@
 from typing import List, Optional
 from .. import LogicalPlan
 
-
 class CreateView:
     def name(self) -> str: ...
     def input(self) -> List[LogicalPlan]: ...

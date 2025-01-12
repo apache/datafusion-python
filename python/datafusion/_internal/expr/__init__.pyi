@@ -20,7 +20,18 @@ from .column import Column as Column
 from .binary_expr import BinaryExpr as BinaryExpr
 from .literal import Literal as Literal
 from .aggregate_expr import AggregateFunction as AggregateFunction
-from .bool_expr import Not as Not, IsNotNull as IsNotNull, IsNull as IsNull, IsTrue as IsTrue, IsFalse as IsFalse, IsUnknown as IsUnknown, IsNotTrue as IsNotTrue, IsNotFalse as IsNotFalse, IsNotUnknown as IsNotUnknown, Negative as Negative
+from .bool_expr import (
+    Not as Not,
+    IsNotNull as IsNotNull,
+    IsNull as IsNull,
+    IsTrue as IsTrue,
+    IsFalse as IsFalse,
+    IsUnknown as IsUnknown,
+    IsNotTrue as IsNotTrue,
+    IsNotFalse as IsNotFalse,
+    IsNotUnknown as IsNotUnknown,
+    Negative as Negative,
+)
 from .like import Like as Like, ILike as ILike, SimilarTo as SimilarTo
 from .scalar_variable import ScalarVariable as ScalarVariable
 from .alias import Alias as Alias
@@ -56,4 +67,8 @@ from .sort_expr import SortExpr as SortExpr
 from .subquery_alias import SubqueryAlias as SubqueryAlias
 from .drop_table import DropTable as DropTable
 from .repartition import Partitioning as Partitioning, Repartition as Repartition
-from .window import WindowExpr as WindowExpr, WindowFrame as WindowFrame, WindowFrameBound as WindowFrameBound
+from .window import (
+    WindowExpr as WindowExpr,
+    WindowFrame as WindowFrame,
+    WindowFrameBound as WindowFrameBound,
+)

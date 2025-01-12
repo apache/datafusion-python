@@ -17,7 +17,6 @@
 
 from .base import Expr
 
-
 class SortExpr:
     def __init__(
         self,
@@ -25,9 +24,6 @@ class SortExpr:
         asc: bool,
         nulls_first: bool,
     ) -> None: ...
-
     def expr(self) -> Expr: ...
-
     def ascending(self) -> bool: ...
-
     def nulls_first(self) -> bool: ...

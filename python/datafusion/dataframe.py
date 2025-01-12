@@ -452,8 +452,8 @@ class DataFrame:
                 raise ValueError(
                     "`left_on` or `right_on` should not provided with `on`"
                 )
-            left_on = on # type: ignore
-            right_on = on # type: ignore
+            left_on = on  # type: ignore
+            right_on = on  # type: ignore
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 raise ValueError("`left_on` and `right_on` should both be provided.")
@@ -466,7 +466,7 @@ class DataFrame:
         if isinstance(right_on, str):
             right_on = [right_on]
 
-        return DataFrame(self.df.join(right.df, how, left_on, right_on)) # type: ignore
+        return DataFrame(self.df.join(right.df, how, left_on, right_on))  # type: ignore
 
     def join_on(
         self,
@@ -726,7 +726,9 @@ class DataFrame:
             A DataFrame with the columns expanded.
         """
         columns_inner = [c for c in columns]
-        return DataFrame(self.df.unnest_columns(columns_inner, preserve_nulls=preserve_nulls))
+        return DataFrame(
+            self.df.unnest_columns(columns_inner, preserve_nulls=preserve_nulls)
+        )
 
     def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:
         """Export an Arrow PyCapsule Stream.
