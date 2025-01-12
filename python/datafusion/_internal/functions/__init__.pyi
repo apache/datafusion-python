@@ -18,7 +18,6 @@
 from typing import Any, List, Optional, Protocol
 from ..expr import Expr, SortExpr, CaseBuilder, WindowFrame
 from .. import SessionContext
-from ...common import NullTreatment
 
 def in_list(expr: Expr, value: List[Expr], negated: bool) -> Expr: ...
 

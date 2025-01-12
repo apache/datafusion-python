@@ -947,7 +947,6 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-
     formatters_inner = [f.expr for f in formatters]
     return Expr(f.to_timestamp_millis(arg.expr, *formatters_inner))
 

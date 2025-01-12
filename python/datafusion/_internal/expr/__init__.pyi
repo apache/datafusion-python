@@ -17,7 +17,6 @@
 
 from .base import Expr as Expr, ExprFuncBuilder as ExprFuncBuilder
 from .column import Column as Column
-from .literal import Literal as Literal
 from .binary_expr import BinaryExpr as BinaryExpr
 from .literal import Literal as Literal
 from .aggregate_expr import AggregateFunction as AggregateFunction
