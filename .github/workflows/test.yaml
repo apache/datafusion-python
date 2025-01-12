@@ -80,26 +80,12 @@ jobs:
           command: clippy
           args: --all-targets --all-features -- -D clippy::all -A clippy::redundant_closure
 
-      - name: Create Virtualenv (3.12)
-        if: ${{ matrix.python-version == '3.12' }}
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements-312.txt
-
-      - name: Create Virtualenv (3.10)
-        if: ${{ matrix.python-version == '3.10' }}
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements-310.txt
-
-      - name: Create Virtualenv (3.11)
-        if: ${{ matrix.python-version == '3.11' }}
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements-311.txt
+      - name: Install dependencies and build
+        run:  |
+          python -m pip install uv
+          uv venv
+          source .venv/bin/activate
+          uv sync --dev
 
       - name: Run tests
         env:
