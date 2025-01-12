@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 import pyarrow as pa
@@ -92,7 +109,7 @@ class SessionContext:
     def enable_url_table(self) -> SessionContext: ...
 
     def register_object_store(self, schema: str, storage: Any, host: Optional[str] = None): ...
-    
+
     def register_listing_table(self, name: str, path: str, table_partition_cols: List[Tuple[str, str]] = [], file_extension: str = ".parquet", schema: Optional[pa.Schema] = None, file_sort_order: Optional[List[List[SortExpr]]] = None): ...
 
     def sql(self, query: str) -> DataFrame: ...
@@ -122,9 +139,9 @@ class SessionContext:
     def register_record_batches(self, name: str, partitions: List[List[pa.RecordBatch]]): ...
 
     def register_parquet(
-        self, 
-        name: str, 
-        path: str, 
+        self,
+        name: str,
+        path: str,
         table_partition_cols: List[Tuple[str, str]] = [],
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
@@ -134,7 +151,7 @@ class SessionContext:
         **kwargs
         ):
         ...
-    
+
     def register_csv(
         self,
         name: str,
@@ -198,7 +215,7 @@ class SessionContext:
     def session_id(self) -> str: ...
 
     def read_json(
-        self, 
+        self,
         path: str | List[str],
         schema: Optional[pa.Schema] = None,
         schema_infer_max_records: int = 1000,
@@ -210,7 +227,7 @@ class SessionContext:
         ...
 
     def read_csv(
-        self, 
+        self,
         path: str | List[str],
         schema: Optional[pa.Schema] = None,
         head_header: bool = True,
@@ -224,7 +241,7 @@ class SessionContext:
         ...
 
     def read_parquet(
-        self, 
+        self,
         path: str | List[str],
         table_partition_cols: List[Tuple[str, str]] = [],
         parquet_pruning: bool = True,
@@ -245,12 +262,12 @@ class SessionContext:
         **kwargs
         ):
         ...
-    
+
     def read_table(self, table: Table) -> DataFrame: ...
 
     def execute(self, plan: ExecutionPlan, part: int) -> RecordBatchStream:
         ...
-    
+
 
 class DataFrame:
     def __getitem__(self, key: str | List[str] | Tuple[str, ...]) -> DataFrame: ...
@@ -306,7 +323,7 @@ class DataFrame:
     def repartition(self, num: int) -> DataFrame: ...
 
     def repartition_by_hash(self, *args: Expr, num: int) -> DataFrame: ...
-    
+
     def union(self, py_df: DataFrame, distinct: bool = False) -> DataFrame: ...
 
     def union_distinct(self, py_df: DataFrame) -> DataFrame: ...
@@ -355,7 +372,7 @@ class ScalarUDF:
         return_type: pa.DataType,
         volatility: str
         ) -> None: ...
-    
+
     def __call__(self, *args: Expr) -> Expr: ...
 
 class AggregateUDF:
@@ -368,7 +385,7 @@ class AggregateUDF:
         state_type: List[pa.DataType],
         volatility: str,
         ) -> None: ...
-    
+
     def __call__(self, *args: Expr) -> Expr: ...
 
 class WindowUDF:
@@ -380,7 +397,7 @@ class WindowUDF:
         return_type: pa.DataType,
         volatility: str,
         ) -> None: ...
-    
+
     def __call__(self, *args: Expr) -> Expr: ...
 
 class Config:
@@ -394,18 +411,18 @@ class Config:
 
     def set(self, key: str, value: object):
         ...
-    
+
     def get_all(self) -> Dict[str, Optional[str]]:
         ...
-        
-    
+
+
 class LogicalPlan:
     def to_variant(self) -> Any:
         ...
-    
+
     def inputs(self) -> List[LogicalPlan]:
         ...
-    
+
     def display(self) -> str:
         ...
 
@@ -414,10 +431,10 @@ class LogicalPlan:
 
     def display_indent_schema(self) -> str:
         ...
-    
+
     def display_graphviz(self) -> str:
         ...
-    
+
     def to_proto(self) -> bytes:
         ...
 
@@ -431,7 +448,7 @@ class ExecutionPlan:
 
     def display(self) -> str:
         ...
-    
+
     def display_indent(self) -> str:
         ...
 
@@ -441,7 +458,7 @@ class ExecutionPlan:
     @staticmethod
     def from_proto(ctx: SessionContext, proto_msg: bytes) -> ExecutionPlan:
         ...
-    
+
     @property
     def partition_count(self) -> int: ...
 
@@ -459,7 +476,7 @@ class RecordBatchStream:
 
     async def __anext__(self) -> RecordBatch:
         ...
-    
+
     def __iter__(self) -> RecordBatch:
         ...
 

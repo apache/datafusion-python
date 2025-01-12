@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 import enum
 from typing import List, Optional, Tuple
 
@@ -5,7 +22,7 @@ class DFSchema:
     @staticmethod
     def empty() -> DFSchema:
         ...
-    
+
     def field_names(self) -> List[str]:
         ...
 
@@ -111,13 +128,13 @@ class DataTypeMap:
 
     @property
     def python_type(self) -> PythonType: ...
-    
+
     @python_type.setter
     def python_type(self, python_type: PythonType): ...
 
     @property
     def sql_type(self) -> SqlType: ...
-    
+
     @sql_type.setter
     def sql_type(self, sql_type: SqlType): ...
 
@@ -139,28 +156,28 @@ class SqlSchema:
 
     @property
     def name(self) -> str: ...
-    
+
     @name.setter
     def name(self, name: str): ...
 
     @property
     def tables(self) -> List[SqlTable]: ...
-    
+
     @tables.setter
     def tables(self, tables: List[SqlTable]): ...
 
     @property
     def views(self) -> List[SqlView]: ...
-    
+
     @views.setter
     def views(self, views: List[SqlView]): ...
 
     @property
     def functions(self) -> List[SqlFunction]: ...
-    
+
     @functions.setter
     def functions(self, functions: List[SqlFunction]): ...
-    
+
 
 class SqlTable:
     def __init__(
@@ -173,13 +190,13 @@ class SqlTable:
 
     @property
     def name(self) -> str: ...
-    
+
     @name.setter
     def name(self, name: str): ...
 
     @property
     def columns(self) -> List[Tuple[str, DataTypeMap]]: ...
-    
+
     @columns.setter
     def columns(self, columns: List[Tuple[str, DataTypeMap]]): ...
 
@@ -224,13 +241,13 @@ class SqlView:
 
     @property
     def name(self) -> str: ...
-    
+
     @name.setter
     def name(self, name: str): ...
 
     @property
     def definition(self) -> str: ...
-    
+
     @definition.setter
     def definition(self, definition: str): ...
 
