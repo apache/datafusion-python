@@ -94,10 +94,10 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies and build
-        run:  |
+        run: |
           python -m pip install uv
           uv venv
-          source .venv/bin/activate
+          .venv\Scripts\activate
           uv sync
 
       - name: Build Python package
@@ -153,7 +153,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies and build
-        run:  |
+        run: |
           python -m pip install uv
           uv venv
           source .venv/bin/activate
