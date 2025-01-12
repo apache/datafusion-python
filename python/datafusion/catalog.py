@@ -66,9 +66,10 @@ class Table:
         """This constructor is not typically called by the end user."""
         self.table = table
 
+    @property
     def schema(self) -> pyarrow.Schema:
         """Returns the schema associated with this table."""
-        return self.table.schema()
+        return self.table.schema
 
     @property
     def kind(self) -> str:
