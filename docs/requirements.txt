@@ -24,3 +24,4 @@ ipython
 pandas
 pickleshare
 sphinx-autoapi
+setuptools
