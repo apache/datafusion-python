@@ -131,9 +131,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      # Requires pinning to specific hash: https://infra.apache.org/github-actions-policy.html
+      - uses: dtolnay/rust-toolchain@a54c7afa936fefeb4456b2dd8068152669aa8203
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
