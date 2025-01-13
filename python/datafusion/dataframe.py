@@ -57,7 +57,7 @@ class Compression(Enum):
     GZIP = "gzip"
     BROTLI = "brotli"
     LZ4 = "lz4"
-    LZ0 = "lz0"
+    LZO = "lzo"
     ZSTD = "zstd"
     LZ4_RAW = "lz4_raw"
 
@@ -696,7 +696,7 @@ class DataFrame:
                 - "snappy": Snappy compression.
                 - "gzip": Gzip compression.
                 - "brotli": Brotli compression.
-                - "lz0": LZ0 compression.
+                - "lzo": LZO compression.
                 - "lz4": LZ4 compression.
                 - "lz4_raw": LZ4_RAW compression.
                 - "zstd": Zstandard compression.
