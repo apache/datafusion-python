@@ -35,6 +35,8 @@ jobs:
 
       - name: Install dependencies
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       # Update output format to enable automatic inline annotations.
       - name: Run Ruff
@@ -89,6 +91,8 @@ jobs:
 
       - name: Install dependencies and build
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Build Python package
         run: uv run maturin build --release --strip --features substrait
@@ -142,6 +146,8 @@ jobs:
 
       - name: Install dependencies and build
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Build Python package
         run: uv run maturin build --release --strip --features substrait

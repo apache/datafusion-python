@@ -43,11 +43,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Rust Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@stable
         id: rust-toolchain
-        with:
-          toolchain: ${{ matrix.toolchain }}
-          override: true
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3
@@ -64,46 +61,30 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo
-          key: cargo-cache-${{ steps.rust-toolchain.outputs.rustc_hash }}-${{ hashFiles('Cargo.lock') }}
+          key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Check Formatting
-        uses: actions-rs/cargo@v1
         if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
-        with:
-          command: fmt
-          args: -- --check
+        run: cargo fmt -- --check
 
       - name: Run Clippy
-        uses: actions-rs/cargo@v1
         if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
-        with:
-          command: clippy
-          args: --all-targets --all-features -- -D clippy::all -A clippy::redundant_closure
+        run: cargo clippy --all-targets --all-features -- -D clippy::all -A clippy::redundant_closure
 
       - name: Install dependencies and build
-        run:  |
-          python -m pip install uv
-          uv venv
-          source .venv/bin/activate
-          uv sync --dev
+        uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
-        run: |
-          git submodule update --init
-          source venv/bin/activate
-          pip install -e . -vv
-          pytest -v .
+        run: uv run pytest -v .
 
       - name: FFI unit tests
         run: |
-          source venv/bin/activate
-          pip install -e . -vv
-          pip install maturin==1.5.1
-          cd examples/ffi-table-provider
-          maturin develop --release --strip
-          pytest python/tests/_test_table_provider.py
+          uv run maturin develop --release --strip
+          uv run pytest python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
@@ -120,7 +101,5 @@ jobs:
 
       - name: Run TPC-H examples
         run: |
-          source venv/bin/activate
-          cd examples/tpch
-          python convert_data_to_parquet.py
-          pytest _tests.py
+          uv run python convert_data_to_parquet.py
+          uv run pytest _tests.py

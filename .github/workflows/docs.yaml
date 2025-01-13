@@ -58,16 +58,13 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install dependencies and build
-        run:  |
-          python -m pip install uv
-          uv venv
-          source .venv/bin/activate
-          uv sync --dev
+        uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Build docs
         run: |
           set -x
-          source venv/bin/activate
           cd docs
           curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
           curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
