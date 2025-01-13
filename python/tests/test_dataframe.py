@@ -1113,6 +1113,9 @@ def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression)
         df.write_parquet(str(path), compression=compression)
 
 
+# TODO
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
 @pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
 def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
     # Test write_parquet with zstd, brotli, gzip default compression level,

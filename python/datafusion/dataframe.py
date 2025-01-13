@@ -57,7 +57,10 @@ class Compression(Enum):
     GZIP = "gzip"
     BROTLI = "brotli"
     LZ4 = "lz4"
-    LZO = "lzo"
+    # TODO
+    # lzo is not implemented yet
+    # https://github.com/apache/arrow-rs/issues/6970
+    # LZO = "lzo"
     ZSTD = "zstd"
     LZ4_RAW = "lz4_raw"
 
