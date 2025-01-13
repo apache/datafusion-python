@@ -46,4 +46,5 @@ Cargo.lock
 benchmarks/tpch/queries/q*.sql
 benchmarks/tpch/create_tables.sql
 .cargo/config.toml
+**/.cargo/config.toml
 uv.lock
