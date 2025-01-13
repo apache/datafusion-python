@@ -731,7 +731,9 @@ def test_optimized_logical_plan(aggregate_df):
 def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
-    expected = "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"  # noqa: E501
+    expected = (
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"  # noqa: E501
+    )
 
     assert expected == plan.display()
 
@@ -1124,16 +1126,6 @@ def test_write_compressed_parquet_default_compression_level(df, tmp_path, compre
     path = tmp_path
 
     df.write_parquet(str(path), compression=compression)
-
-
-# lzo is not a valid Compression yet
-# https://github.com/apache/arrow-rs/issues/6970
-# Test write_parquet with lzo compression, should raise an error
-def test_write_compressed_parquet_lzo(df, tmp_path):
-    path = tmp_path / "test.parquet"
-
-    with pytest.raises(ValueError, match="lzo is not a valid Compression"):
-        df.write_parquet(str(path), compression="lzo")
 
 
 def test_dataframe_export(df) -> None:

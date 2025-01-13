@@ -699,10 +699,10 @@ class DataFrame:
                 - "snappy": Snappy compression.
                 - "gzip": Gzip compression.
                 - "brotli": Brotli compression.
-                - "lzo": LZO compression.
                 - "lz4": LZ4 compression.
                 - "lz4_raw": LZ4_RAW compression.
                 - "zstd": Zstandard compression.
+            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
