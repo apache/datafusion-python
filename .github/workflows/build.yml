@@ -46,6 +46,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
       - uses: dtolnay/rust-toolchain@nightly
 
       - name: Generate license file
@@ -71,6 +73,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
       - uses: dtolnay/rust-toolchain@nightly
 
       - run: rm LICENSE.txt
@@ -124,6 +127,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
       - uses: dtolnay/rust-toolchain@nightly
 
       - run: rm LICENSE.txt
