@@ -82,7 +82,7 @@ jobs:
           RUST_BACKTRACE: 1
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin develop
+          uv run --no-project maturin develop -uv
           uv run --no-project pytest -v .
 
       - name: FFI unit tests

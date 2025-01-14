@@ -47,10 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
-      - uses: dtolnay/rust-toolchain@nightly
-
+      - uses: astral-sh/setup-uv@v5
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
       - uses: actions/upload-artifact@v4
@@ -94,7 +91,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Build Python package
-        run: uv run --no-project maturin build --release --strip --features substrait
+        run: uv run --no-project maturin build --release --strip --features substrait -uv
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -148,7 +145,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
 
       - name: Build Python package
-        run: uv run --no-project maturin build --release --strip --features substrait
+        run: uv run --no-project maturin build --release --strip --features substrait -uv
 
       - name: List Mac wheels
         run: find target/wheels/
