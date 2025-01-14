@@ -92,7 +92,7 @@ jobs:
       - name: Build Python package
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait --uv
+          uv run --no-project maturin build --release --strip --features substrait
 
       - name: List Windows wheels
         if: matrix.os == 'windows-latest'
@@ -147,7 +147,7 @@ jobs:
       - name: Build Python package
         run: |
           uv sync --dev --no-install-package datafusion
-          uv run --no-project maturin build --release --strip --features substrait --uv
+          uv run --no-project maturin build --release --strip --features substrait
 
       - name: List Mac wheels
         run: find target/wheels/
