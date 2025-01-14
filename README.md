@@ -175,13 +175,17 @@ over `pip`.
 
 Bootstrap (`uv`):
 
+By default `uv` will attempt to build the datafusion python package. For our development we prefer to build manually. This means
+that when creating your virtual environment using `uv sync` you need to pass in the additional `--no-install-package datafusion`
+and for `uv run` commands the additional parameter `--no-project`
+
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
 # create the virtual enviornment
 uv sync --dev --no-install-package datafusion
 # activate the environment
-source venv/bin/activate
+source .venv/bin/activate
 ```
 
 Bootstrap (`pip`):
@@ -190,9 +194,9 @@ Bootstrap (`pip`):
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
 # prepare development environment (used to build wheel / install in development)
-python3 -m venv venv
+python3 -m venv .venv
 # activate the venv
-source venv/bin/activate
+source .venv/bin/activate
 # update pip itself if necessary
 python -m pip install -U pip
 # install dependencies
@@ -217,8 +221,8 @@ Alternatively if you are using `uv` you can do the following without
 needing to activate the virtual environment:
 
 ```bash
-uv maturin delelop --uv
-uv pytest .
+uv run --no-project maturin develop --uv
+uv --no-project pytest .
 ```
 
 ### Running & Installing pre-commit hooks

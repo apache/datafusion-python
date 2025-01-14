@@ -26,42 +26,32 @@ when changes are merged to the main branch.
 ## Dependencies
 
 It's recommended to install build dependencies and build the documentation
-inside a Python `venv`.
+inside a Python `venv` using `uv`.
 
 To prepare building the documentation run the following on the root level of the project:
 
-1. Set up virtual environment if it was not already created
-   ```bash
-   python3 -m venv venv
-   ```
-1. Activate virtual environment
-    ```bash
-    source venv/bin/activate
-    ```
-1. Install Datafusion's Python dependencies
-    ```bash
-    pip install -r requirements-310.txt
-    ```
-1. Install documentation dependencies
-    ```bash
-    pip install -r docs/requirements.txt
-    ```
+```bash
+# Set up a virtual environment with the documentation dependencies
+uv sync --dev --group docs --no-install-package datafusion
+```
 
 ## Build & Preview
 
 Run the provided script to build the HTML pages.
 
 ```bash
-cd docs
-./build.sh
+# Build the repository
+uv run --no-project maturin develop --uv
+# Build the documentation
+uv run --no-project docs/build.sh
 ```
 
-The HTML will be generated into a `build` directory.
+The HTML will be generated into a `build` directory in `docs`.
 
 Preview the site on Linux by running this command.
 
 ```bash
-firefox build/html/index.html
+firefox docs/build/html/index.html
 ```
 
 ## Release Process

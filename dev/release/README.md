@@ -172,8 +172,8 @@ git checkout 40.0.0-rc1
 git submodule update --init --recursive
 
 # create the env
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 
 # install release candidate
 pip install --extra-index-url https://test.pypi.org/simple/ datafusion==40.0.0
