@@ -75,6 +75,8 @@ jobs:
 
       - name: Install dependencies and build
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Run tests
         env:

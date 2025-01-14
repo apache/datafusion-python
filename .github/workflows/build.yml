@@ -34,6 +34,9 @@ jobs:
           python-version: "3.12"
 
       - uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
+
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
 
@@ -48,6 +51,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
+
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
       - uses: actions/upload-artifact@v4
@@ -88,6 +94,8 @@ jobs:
 
       - name: Install dependencies and build
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Build Python package
         run: |
@@ -143,6 +151,8 @@ jobs:
 
       - name: Install dependencies and build
         uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
 
       - name: Build Python package
         run: |
