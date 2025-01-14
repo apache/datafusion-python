@@ -416,15 +416,6 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ0">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Compression.LZ0
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ4">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1015,11 +1006,6 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe.Compression.GZIP">
 <span class="sig-name descname"><span class="pre">GZIP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gzip'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.GZIP" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.dataframe.Compression.LZ0">
-<span class="sig-name descname"><span class="pre">LZ0</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'lz0'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.LZ0" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1791,10 +1777,10 @@ Available compression types are:
 - “snappy”: Snappy compression.
 - “gzip”: Gzip compression.
 - “brotli”: Brotli compression.
-- “lz0”: LZ0 compression.
 - “lz4”: LZ4 compression.
 - “lz4_raw”: LZ4_RAW compression.
 - “zstd”: Zstandard compression.</p></li>
+<li><p><strong>Note</strong> – LZO is not yet implemented in arrow-rs and is therefore excluded.</p></li>
 <li><p><strong>compression_level</strong> – Compression level to use. For ZSTD, the
 recommended range is 1 to 22, with the default being 4. Higher levels
 provide better compression but slower speed.</p></li>

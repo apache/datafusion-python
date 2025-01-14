@@ -63,11 +63,6 @@ Module Contents
 
 
 
-   .. py:attribute:: LZ0
-      :value: 'lz0'
-
-
-
    .. py:attribute:: LZ4
       :value: 'lz4'
 
@@ -660,10 +655,10 @@ Module Contents
                           - "snappy": Snappy compression.
                           - "gzip": Gzip compression.
                           - "brotli": Brotli compression.
-                          - "lz0": LZ0 compression.
                           - "lz4": LZ4 compression.
                           - "lz4_raw": LZ4_RAW compression.
                           - "zstd": Zstandard compression.
+      :param Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
       :param compression_level: Compression level to use. For ZSTD, the
                                 recommended range is 1 to 22, with the default being 4. Higher levels
                                 provide better compression but slower speed.
