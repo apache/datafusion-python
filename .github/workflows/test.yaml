@@ -87,6 +87,8 @@ jobs:
 
       - name: FFI unit tests
         run: |
+          cd examples/ffi-table-provider
+          uv run --no-project maturin develop --uv
           uv run --no-project pytest python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
@@ -104,5 +106,6 @@ jobs:
 
       - name: Run TPC-H examples
         run: |
+          cd examples/tpch
           uv run --no-project python convert_data_to_parquet.py
           uv run --no-project pytest _tests.py
