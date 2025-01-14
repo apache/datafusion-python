@@ -43,8 +43,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Rust Toolchain
-        # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@stable
         id: rust-toolchain
         with:
           components: clippy,rustfmt
