@@ -491,7 +491,7 @@ impl PyDataFrame {
                 ZstdLevel::try_new(verify_compression_level(compression_level)? as i32)
                     .map_err(|e| PyValueError::new_err(format!("{e}")))?,
             ),
-            "lz0" => Compression::LZO,
+            "lzo" => Compression::LZO,
             "lz4" => Compression::LZ4,
             "lz4_raw" => Compression::LZ4_RAW,
             "uncompressed" => Compression::UNCOMPRESSED,

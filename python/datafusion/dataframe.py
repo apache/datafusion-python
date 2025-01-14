@@ -57,7 +57,9 @@ class Compression(Enum):
     GZIP = "gzip"
     BROTLI = "brotli"
     LZ4 = "lz4"
-    LZ0 = "lz0"
+    # lzo is not implemented yet
+    # https://github.com/apache/arrow-rs/issues/6970
+    # LZO = "lzo"
     ZSTD = "zstd"
     LZ4_RAW = "lz4_raw"
 
@@ -696,10 +698,10 @@ class DataFrame:
                 - "snappy": Snappy compression.
                 - "gzip": Gzip compression.
                 - "brotli": Brotli compression.
-                - "lz0": LZ0 compression.
                 - "lz4": LZ4 compression.
                 - "lz4_raw": LZ4_RAW compression.
                 - "zstd": Zstandard compression.
+            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
