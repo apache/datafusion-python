@@ -46,12 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions-rs/toolchain@v1
-        id: rust-toolchain
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@nightly
 
       - name: Generate license file
         run: uv run python ./dev/create_license.py
@@ -76,9 +71,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
+      - uses: dtolnay/rust-toolchain@nightly
 
       - run: rm LICENSE.txt
       - name: Download LICENSE.txt
