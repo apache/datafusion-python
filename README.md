@@ -138,7 +138,13 @@ See [examples](examples/README.md) for more information.
 
 - [Serialize query plans using Substrait](https://github.com/apache/datafusion-python/blob/main/examples/substrait.py)
 
-## How to install (from pip)
+## How to install
+
+### uv
+
+```bash
+uv add datafusion
+```
 
 ### Pip
 
@@ -164,24 +170,21 @@ You can verify the installation by running:
 
 ## How to develop
 
-This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin).
+This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin). The Maturin tools used in this workflow can be installed either via `uv` or `pip`. Both approaches should offer the same experience. It is recommended to use `uv` since it has significant performance improvements
+over `pip`.
 
-The Maturin tools used in this workflow can be installed either via Conda or Pip. Both approaches should offer the same experience. Multiple approaches are only offered to appease developer preference. Bootstrapping for both Conda and Pip are as follows.
-
-Bootstrap (Conda):
+Bootstrap (`uv`):
 
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
-# create the conda environment for dev
-conda env create -f ./conda/environments/datafusion-dev.yaml -n datafusion-dev
-# activate the conda environment
-conda activate datafusion-dev
+# create the virtual enviornment
+uv sync --dev --no-install-package datafusion
+# activate the environment
+source venv/bin/activate
 ```
 
-Or alternatively, if you are on an OS that supports CUDA Toolkit, you can use `-f ./conda/environments/datafusion-cuda-dev.yaml`.
-
-Bootstrap (Pip):
+Bootstrap (`pip`):
 
 ```bash
 # fetch this repo
@@ -192,33 +195,40 @@ python3 -m venv venv
 source venv/bin/activate
 # update pip itself if necessary
 python -m pip install -U pip
-# install dependencies (for Python 3.8+)
-python -m pip install -r requirements.in
+# install dependencies
+python -m pip install -r pyproject.toml
 ```
 
 The tests rely on test data in git submodules.
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 Whenever rust code changes (your changes or via `git pull`):
 
 ```bash
 # make sure you activate the venv using "source venv/bin/activate" first
-maturin develop
+maturin develop --uv
 python -m pytest
+```
+
+Alternatively if you are using `uv` you can do the following without
+needing to activate the virtual environment:
+
+```bash
+uv maturin delelop --uv
+uv pytest .
 ```
 
 ### Running & Installing pre-commit hooks
 
-arrow-datafusion-python takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce
+`datafusion-python` takes advantage of [pre-commit](https://pre-commit.com/) to assist developers with code linting to help reduce
 the number of commits that ultimately fail in CI due to linter errors. Using the pre-commit hooks is optional for the
 developer but certainly helpful for keeping PRs clean and concise.
 
 Our pre-commit hooks can be installed by running `pre-commit install`, which will install the configurations in
-your ARROW_DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete
+your DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete
 the commit if an offending lint is found allowing you to make changes locally before pushing.
 
 The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`
@@ -236,18 +246,8 @@ There are scripts in `ci/scripts` for running Rust and Python linters.
 
 ## How to update dependencies
 
-To change test dependencies, change the `requirements.in` and run
+To change test dependencies, change the `pyproject.toml` and run
 
 ```bash
-# install pip-tools (this can be done only once), also consider running in venv
-python -m pip install pip-tools
-python -m piptools compile --generate-hashes -o requirements-310.txt
+uv sync --dev --no-install-package datafusion
 ```
-
-To update dependencies, run with `-U`
-
-```bash
-python -m piptools compile -U --generate-hashes -o requirements-310.txt
-```
-
-More details [here](https://github.com/jazzband/pip-tools)

@@ -106,7 +106,7 @@ setup_tempdir() {
 }
 
 test_source_distribution() {
-  # install rust toolchain in a similar fashion like test-miniconda
+  # install rust toolchain
   export RUSTUP_HOME=$PWD/test-rustup
   export CARGO_HOME=$PWD/test-rustup
 

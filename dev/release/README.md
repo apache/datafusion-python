@@ -218,28 +218,9 @@ uploading them using `twine`:
 twine upload --repository pypi dist-release/*
 ```
 
-### Publish Python Artifacts to Anaconda
+### Publish Python Artifacts to conda-forge
 
-Publishing artifacts to Anaconda is similar to PyPi. First, Download the source tarball created in the previous step and untar it.
-
-```bash
-# Assuming you have an existing conda environment named `datafusion-dev` if not see root README for instructions
-conda activate datafusion-dev
-conda build .
-```
-
-This will setup a virtual conda environment and build the artifacts inside of that virtual env. This step can take a few minutes as the entire build, host, and runtime environments are setup. Once complete a local filesystem path will be emitted for the location of the resulting package. Observe that path and copy to your clipboard.
-
-Ex: `/home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2`
-
-Now you are ready to publish this resulting package to anaconda.org. This can be accomplished in a few simple steps.
-
-```bash
-# First login to Anaconda with the datafusion credentials
-anaconda login
-# Upload the package
-anaconda upload /home/conda/envs/datafusion/conda-bld/linux-64/datafusion-0.7.0.tar.bz2
-```
+Pypi packages auto upload to conda-forge via [datafusion feedstock](https://github.com/conda-forge/datafusion-feedstock)
 
 ### Push the Release Tag
 
