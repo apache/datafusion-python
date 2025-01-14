@@ -80,6 +80,7 @@ jobs:
         env:
           RUST_BACKTRACE: 1
         run: |
+          git submodule update --init
           uv sync --dev --no-install-package datafusion
           uv run --no-project maturin develop --uv
           uv run --no-project pytest -v .
