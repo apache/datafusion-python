@@ -46,6 +46,8 @@ jobs:
         # Change to stable once https://issues.apache.org/jira/browse/INFRA-26428 resolves
         uses: dtolnay/rust-toolchain@nightly
         id: rust-toolchain
+        with:
+          components: clippy,rustfmt
 
       - name: Install Protoc
         uses: arduino/setup-protoc@v3

@@ -63,16 +63,16 @@ jobs:
       - name: Build repo
         run: |
           uv venv
-          uv sync --dev -v
+          uv sync --dev --no-install-package datafusion  --group docs
+          uv run --no-project maturin develop -uv
 
       - name: Build docs
         run: |
           set -x
           cd docs
-          uv pip install -r requirements.txt
           curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
           curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
-          uv run make html
+          uv run --no-project make html
 
       - name: Copy & push the generated HTML
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
