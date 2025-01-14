@@ -63,7 +63,7 @@ jobs:
       - name: Build repo
         run: |
           uv venv
-          uv sync --dev --no-install-package datafusion  --group docs
+          uv sync --dev --no-install-package datafusion --group docs
           uv run --no-project maturin develop -uv
 
       - name: Build docs

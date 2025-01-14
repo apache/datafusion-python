@@ -80,12 +80,14 @@ jobs:
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
-        run: uv run pytest -v .
+        run: |
+          uv sync --dev --no-install-package datafusion
+          uv run --no-project maturin develop
+          uv run --no-project pytest -v .
 
       - name: FFI unit tests
         run: |
-          uv run maturin develop
-          uv run pytest python/tests/_test_table_provider.py
+          uv run --no-project pytest python/tests/_test_table_provider.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset
@@ -102,5 +104,5 @@ jobs:
 
       - name: Run TPC-H examples
         run: |
-          uv run python convert_data_to_parquet.py
-          uv run pytest _tests.py
+          uv run --no-project python convert_data_to_parquet.py
+          uv run --no-project pytest _tests.py
