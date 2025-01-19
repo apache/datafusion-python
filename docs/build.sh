@@ -20,6 +20,10 @@
 
 set -e
 
+original_dir=$(pwd)
+script_dir=$(dirname "$(realpath "$0")")
+cd "$script_dir" || exit
+
 if [ ! -f pokemon.csv ]; then
     curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
 fi
@@ -33,3 +37,5 @@ rm -rf temp 2> /dev/null
 mkdir temp
 cp -rf source/* temp/
 make SOURCEDIR=`pwd`/temp html
+
+cd "$original_dir" || exit
