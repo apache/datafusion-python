@@ -37,6 +37,8 @@ jobs:
         with:
             enable-cache: true
 
+      # Use the --no-install-package to only install the dependencies
+      # but do not yet build the rust library
       - name: Install dependencies
         run: uv sync --dev --no-install-package datafusion
 
@@ -92,8 +94,7 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies and build
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
         with:
             enable-cache: true
 
@@ -149,8 +150,7 @@ jobs:
           version: "27.4"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies and build
-        uses: astral-sh/setup-uv@v5
+      - uses: astral-sh/setup-uv@v5
         with:
             enable-cache: true
 
