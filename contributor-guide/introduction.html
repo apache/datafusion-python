@@ -413,18 +413,19 @@
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.</p>
 <section id="how-to-develop">
 <h2>How to develop<a class="headerlink" href="#how-to-develop" title="Link to this heading">¶</a></h2>
-<p>This assumes that you have rust and cargo installed. We use the workflow recommended by <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>.</p>
+<p>This assumes that you have rust and cargo installed. We use the workflow recommended by
+<a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>. We recommend using
+<a class="reference external" href="https://docs.astral.sh/uv/">uv</a> for python package management.</p>
+<p>By default <cite>uv</cite> will attempt to build the datafusion python package. For our development we prefer to build manually. This means
+that when creating your virtual environment using <cite>uv sync</cite> you need to pass in the additional <cite>–no-install-package datafusion</cite>
+and for <cite>uv run</cite> commands the additional parameter <cite>–no-project</cite></p>
 <p>Bootstrap:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch this repo</span>
-git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/arrow-datafusion-python.git
-<span class="c1"># prepare development environment (used to build wheel / install in development)</span>
-python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
-<span class="c1"># activate the venv</span>
-<span class="nb">source</span><span class="w"> </span>venv/bin/activate
-<span class="c1"># update pip itself if necessary</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip
-<span class="c1"># install dependencies (for Python 3.8+)</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-310.txt
+git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/datafusion-python.git
+<span class="c1"># create the virtual enviornment</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
+<span class="c1"># activate the environment</span>
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 </pre></div>
 </div>
 <p>The tests rely on test data in git submodules.</p>
@@ -433,8 +434,8 @@ git<span class="w"> </span>submodule<span class="w"> </span>update
 </pre></div>
 </div>
 <p>Whenever rust code changes (your changes or via <cite>git pull</cite>):</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source venv/bin/activate&quot; first</span>
-maturin<span class="w"> </span>develop
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source .venv/bin/activate&quot; first</span>
+maturin<span class="w"> </span>develop<span class="w"> </span>-uv
 python<span class="w"> </span>-m<span class="w"> </span>pytest
 </pre></div>
 </div>
@@ -457,17 +458,11 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest
 </section>
 <section id="update-dependencies">
 <h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Link to this heading">¶</a></h2>
-<p>To change test dependencies, change the <cite>requirements.in</cite> and run</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pip-tools (this can be done only once), also consider running in venv</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pip-tools
-python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
+<p>To change test dependencies, change the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and run</p>
+<p>To update dependencies, run</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
 </pre></div>
 </div>
-<p>To update dependencies, run with <cite>-U</cite></p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>-U<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
-</pre></div>
-</div>
-<p>More details about pip-tools <a class="reference external" href="https://github.com/jazzband/pip-tools">here</a></p>
 </section>
 </section>
 
