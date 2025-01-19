@@ -95,3 +95,56 @@ To update dependencies, run
 .. code-block:: shell
 
     uv sync --dev --no-install-package datafusion
+
+Improving Build Speed
+---------------------
+
+The `pyo3 <https://github.com/PyO3/pyo3>`_ dependency of this project contains a ``build.rs`` file which
+can cause it to rebuild frequently. You can prevent this from happening by defining a ``PYO3_CONFIG_FILE``
+environment variable that points to a file with your build configuration. Whenever your build configuration
+changes, such as during some major version updates, you will need to regenerate this file. This variable
+should point to a fully resolved path on your build machine.
+
+To generate this file, use the following command:
+
+.. code-block:: shell
+
+    PYO3_PRINT_CONFIG=1 cargo build
+
+This will generate some output that looks like the following. You will want to copy these contents intro
+a file. If you place this file in your project directory with filename ``.pyo3_build_config`` it will
+be ignored by ``git``.
+
+.. code-block::
+
+    implementation=CPython
+    version=3.8
+    shared=true
+    abi3=true
+    lib_name=python3.12
+    lib_dir=/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/lib
+    executable=/Users/myusername/src/datafusion-python/.venv/bin/python
+    pointer_width=64
+    build_flags=
+    suppress_build_script_link_lines=false
+
+Add the environment variable to your system.
+
+.. code-block:: shell
+
+    export PYO3_CONFIG_FILE="/Users//myusername/src/datafusion-python/.pyo3_build_config"
+
+If you are on a Mac and you use VS Code for your IDE, you will want to add these variables
+to your settings. You can find the appropriate rust flags by looking in the
+``.cargo/config.toml`` file.
+
+.. code-block::
+
+    "rust-analyzer.cargo.extraEnv": {
+        "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup",
+        "PYO3_CONFIG_FILE": "/Users/myusername/src/datafusion-python/.pyo3_build_config"
+    },
+    "rust-analyzer.runnables.extraEnv": {
+        "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup",
+        "PYO3_CONFIG_FILE": "/Users/myusername/src/personal/datafusion-python/.pyo3_build_config"
+    }
