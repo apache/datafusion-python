@@ -30,6 +30,7 @@ from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.udf import ScalarUDF, AggregateUDF, WindowUDF
 
+import pathlib
 from typing import Any, TYPE_CHECKING, Protocol
 from typing_extensions import deprecated
 
@@ -37,7 +38,6 @@ if TYPE_CHECKING:
     import pyarrow
     import pandas
     import polars
-    import pathlib
     from datafusion.plan import LogicalPlan, ExecutionPlan
 
 
@@ -554,8 +554,17 @@ class SessionContext:
             file_sort_order_raw,
         )
 
-    def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
+    def sql(
+        self, query: str, options: SQLOptions | None = None, **named_dfs: DataFrame
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
+
+        The query string can optionally take a DataFrame as a parameter by assigning
+        a variable inside brackets. In the following example, if we have a DataFrame
+        called `my_df` then the DataFrame's logical plan will be converted into an
+        SQL query string and inserted as a subtitution::
+
+            ctx.sql("SELECT name from {df}", df=my_df)
 
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
         ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
@@ -565,12 +574,20 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: If provided, the query will be validated against these options.
+            named_dfs: When provided, used to replace parameterized query variables
+                in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
+        if named_dfs:
+            for alias, df in named_dfs.items():
+                df_sql = f"({df.logical_plan().to_sql()})"
+                query = query.replace(f"{{{alias}}}", df_sql)
+
         if options is None:
             return DataFrame(self.ctx.sql(query))
+
         return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
@@ -786,7 +803,7 @@ class SessionContext:
     def register_csv(
         self,
         name: str,
-        path: str | pathlib.Path | list[str | pathlib.Path],
+        path: str | pathlib.Path | list[str] | list[pathlib.Path],
         schema: pyarrow.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
@@ -950,6 +967,7 @@ class SessionContext:
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
+        table_name: str | None = None,
     ) -> DataFrame:
         """Read a line-delimited JSON data source.
 
@@ -962,22 +980,23 @@ class SessionContext:
                 selected for data input.
             table_partition_cols: Partition columns.
             file_compression_type: File compression type.
+            table_name: Name to register the table as for SQL queries
 
         Returns:
             DataFrame representation of the read JSON files.
         """
-        if table_partition_cols is None:
-            table_partition_cols = []
-        return DataFrame(
-            self.ctx.read_json(
-                str(path),
-                schema,
-                schema_infer_max_records,
-                file_extension,
-                table_partition_cols,
-                file_compression_type,
-            )
+        if table_name is None:
+            table_name = self.generate_table_name(path)
+        self.register_json(
+            table_name,
+            path,
+            schema=schema,
+            schema_infer_max_records=schema_infer_max_records,
+            file_extension=file_extension,
+            table_partition_cols=table_partition_cols,
+            file_compression_type=file_compression_type,
         )
+        return self.table(table_name)
 
     def read_csv(
         self,
@@ -989,6 +1008,7 @@ class SessionContext:
         file_extension: str = ".csv",
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_compression_type: str | None = None,
+        table_name: str | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
 
@@ -1006,27 +1026,24 @@ class SessionContext:
                 selected for data input.
             table_partition_cols:  Partition columns.
             file_compression_type:  File compression type.
+            table_name: Name to register the table as for SQL queries
 
         Returns:
             DataFrame representation of the read CSV files
         """
-        if table_partition_cols is None:
-            table_partition_cols = []
-
-        path = [str(p) for p in path] if isinstance(path, list) else str(path)
-
-        return DataFrame(
-            self.ctx.read_csv(
-                path,
-                schema,
-                has_header,
-                delimiter,
-                schema_infer_max_records,
-                file_extension,
-                table_partition_cols,
-                file_compression_type,
-            )
+        if table_name is None:
+            table_name = self.generate_table_name(path)
+        self.register_csv(
+            table_name,
+            path,
+            schema=schema,
+            has_header=has_header,
+            delimiter=delimiter,
+            schema_infer_max_records=schema_infer_max_records,
+            file_extension=file_extension,
+            file_compression_type=file_compression_type,
         )
+        return self.table(table_name)
 
     def read_parquet(
         self,
@@ -1037,6 +1054,7 @@ class SessionContext:
         skip_metadata: bool = True,
         schema: pyarrow.Schema | None = None,
         file_sort_order: list[list[Expr]] | None = None,
+        table_name: str | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1054,23 +1072,24 @@ class SessionContext:
                 the parquet reader will try to infer it based on data in the
                 file.
             file_sort_order: Sort order for the file.
+            table_name: Name to register the table as for SQL queries
 
         Returns:
             DataFrame representation of the read Parquet files
         """
-        if table_partition_cols is None:
-            table_partition_cols = []
-        return DataFrame(
-            self.ctx.read_parquet(
-                str(path),
-                table_partition_cols,
-                parquet_pruning,
-                file_extension,
-                skip_metadata,
-                schema,
-                file_sort_order,
-            )
+        if table_name is None:
+            table_name = self.generate_table_name(path)
+        self.register_parquet(
+            table_name,
+            path,
+            table_partition_cols=table_partition_cols,
+            parquet_pruning=parquet_pruning,
+            file_extension=file_extension,
+            skip_metadata=skip_metadata,
+            schema=schema,
+            file_sort_order=file_sort_order,
         )
+        return self.table(table_name)
 
     def read_avro(
         self,
@@ -1078,6 +1097,7 @@ class SessionContext:
         schema: pyarrow.Schema | None = None,
         file_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".avro",
+        table_name: str | None = None,
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading Avro data source.
 
@@ -1086,15 +1106,21 @@ class SessionContext:
             schema: The data source schema.
             file_partition_cols: Partition columns.
             file_extension: File extension to select.
+            table_name: Name to register the table as for SQL queries
 
         Returns:
             DataFrame representation of the read Avro file
         """
-        if file_partition_cols is None:
-            file_partition_cols = []
-        return DataFrame(
-            self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
+        if table_name is None:
+            table_name = self.generate_table_name(path)
+        self.register_avro(
+            table_name,
+            path,
+            schema=schema,
+            file_extension=file_extension,
+            table_partition_cols=file_partition_cols,
         )
+        return self.table(table_name)
 
     def read_table(self, table: Table) -> DataFrame:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
@@ -1108,3 +1134,22 @@ class SessionContext:
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""
         return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+
+    def generate_table_name(
+        self, path: str | pathlib.Path | list[str] | list[pathlib.Path]
+    ) -> str:
+        """Generate a table name based on the file name or a uuid."""
+        import uuid
+
+        if isinstance(path, list):
+            path = path[0]
+
+        if isinstance(path, str):
+            path = pathlib.Path(path)
+
+        table_name = path.stem.replace(".", "_")
+
+        if self.table_exist(table_name):
+            table_name = uuid.uuid4().hex
+
+        return table_name
