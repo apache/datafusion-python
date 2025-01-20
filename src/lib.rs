@@ -48,6 +48,7 @@ pub mod expr;
 mod functions;
 pub mod physical_plan;
 mod pyarrow_filter_expression;
+pub mod pyarrow_util;
 mod record_batch;
 pub mod sql;
 pub mod store;

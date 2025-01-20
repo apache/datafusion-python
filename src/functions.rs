@@ -22,8 +22,9 @@ use datafusion::logical_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
 
 use crate::common::data_type::NullTreatment;
+use crate::common::data_type::PyScalarValue;
 use crate::context::PySessionContext;
-use crate::errors::DataFusionError;
+use crate::errors::PyDataFusionError;
 use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::expr::sort_expr::PySortExpr;
@@ -64,7 +65,7 @@ fn add_builder_fns_to_aggregate(
 
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
-    Ok(builder.build()?.into())
+    Ok(builder.build().map_err(PyDataFusionError::from)?.into())
 }
 
 #[pyfunction]
@@ -284,7 +285,7 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
         return Ok(window_fn);
     }
 
-    Err(DataFusionError::Common(format!("window function `{name}` not found")).into())
+    Err(PyDataFusionError::Common(format!("window function `{name}` not found")).into())
 }
 
 /// Creates a new Window function expression
@@ -748,7 +749,10 @@ pub(crate) fn add_builder_fns_to_window(
         builder = builder.window_frame(window_frame.into());
     }
 
-    builder.build().map(|e| e.into()).map_err(|err| err.into())
+    builder
+        .build()
+        .map(|e| e.into())
+        .map_err(|err| PyDataFusionError::from(err).into())
 }
 
 #[pyfunction]
@@ -756,10 +760,11 @@ pub(crate) fn add_builder_fns_to_window(
 pub fn lead(
     arg: PyExpr,
     shift_offset: i64,
-    default_value: Option<ScalarValue>,
+    default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
+    let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -770,10 +775,11 @@ pub fn lead(
 pub fn lag(
     arg: PyExpr,
     shift_offset: i64,
-    default_value: Option<ScalarValue>,
+    default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyResult<PyExpr> {
+    let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)

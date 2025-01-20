@@ -46,7 +46,7 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
 use crate::{
-    errors::DataFusionError,
+    errors::PyDataFusionError,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
 
@@ -90,8 +90,13 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .limit(0, Some(10))
+            .map_err(PyDataFusionError::from)?;
+        let batches = wait_for_future(py, df.collect()).map_err(PyDataFusionError::from)?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
@@ -102,8 +107,13 @@ impl PyDataFrame {
     fn _repr_html_(&self, py: Python) -> PyResult<String> {
         let mut html_str = "<table border='1'>\n".to_string();
 
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .limit(0, Some(10))
+            .map_err(PyDataFusionError::from)?;
+        let batches = wait_for_future(py, df.collect()).map_err(PyDataFusionError::from)?;
 
         if batches.is_empty() {
             html_str.push_str("</table>\n");
@@ -147,7 +157,7 @@ impl PyDataFrame {
     /// Calculate summary statistics for a DataFrame
     fn describe(&self, py: Python) -> PyResult<Self> {
         let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?;
+        let stat_df = wait_for_future(py, df.describe()).map_err(PyDataFusionError::from)?;
         Ok(Self::new(stat_df))
     }
 
@@ -159,31 +169,56 @@ impl PyDataFrame {
     #[pyo3(signature = (*args))]
     fn select_columns(&self, args: Vec<PyBackedStr>) -> PyResult<Self> {
         let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
-        let df = self.df.as_ref().clone().select_columns(&args)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .select_columns(&args)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (*args))]
     fn select(&self, args: Vec<PyExpr>) -> PyResult<Self> {
         let expr = args.into_iter().map(|e| e.into()).collect();
-        let df = self.df.as_ref().clone().select(expr)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .select(expr)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (*args))]
     fn drop(&self, args: Vec<PyBackedStr>) -> PyResult<Self> {
         let cols = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
-        let df = self.df.as_ref().clone().drop_columns(&cols)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .drop_columns(&cols)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     fn filter(&self, predicate: PyExpr) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().filter(predicate.into())?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .filter(predicate.into())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().with_column(name, expr.into())?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .with_column(name, expr.into())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -192,7 +227,9 @@ impl PyDataFrame {
         for expr in exprs {
             let expr: Expr = expr.into();
             let name = format!("{}", expr.schema_name());
-            df = df.with_column(name.as_str(), expr)?
+            df = df
+                .with_column(name.as_str(), expr)
+                .map_err(PyDataFusionError::from)?
         }
         Ok(Self::new(df))
     }
@@ -204,27 +241,43 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .with_column_renamed(old_name, new_name)?;
+            .with_column_renamed(old_name, new_name)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();
-        let df = self.df.as_ref().clone().aggregate(group_by, aggs)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .aggregate(group_by, aggs)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (*exprs))]
     fn sort(&self, exprs: Vec<PySortExpr>) -> PyResult<Self> {
         let exprs = to_sort_expressions(exprs);
-        let df = self.df.as_ref().clone().sort(exprs)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .sort(exprs)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (count, offset=0))]
     fn limit(&self, count: usize, offset: usize) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().limit(offset, Some(count))?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .limit(offset, Some(count))
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -232,7 +285,8 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())
+            .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
@@ -240,14 +294,16 @@ impl PyDataFrame {
 
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyResult<Self> {
-        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
+        let df = wait_for_future(py, self.df.as_ref().clone().cache())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?;
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())
+            .map_err(PyDataFusionError::from)?;
 
         batches
             .into_iter()
@@ -258,13 +314,23 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyResult<()> {
-        let df = self.df.as_ref().clone().limit(0, Some(num))?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .limit(0, Some(num))
+            .map_err(PyDataFusionError::from)?;
         print_dataframe(py, df)
     }
 
     /// Filter out duplicate rows
     fn distinct(&self) -> PyResult<Self> {
-        let df = self.df.as_ref().clone().distinct()?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .distinct()
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -283,7 +349,7 @@ impl PyDataFrame {
             "semi" => JoinType::LeftSemi,
             "anti" => JoinType::LeftAnti,
             how => {
-                return Err(DataFusionError::Common(format!(
+                return Err(PyDataFusionError::Common(format!(
                     "The join type {how} does not exist or is not implemented"
                 ))
                 .into());
@@ -293,13 +359,18 @@ impl PyDataFrame {
         let left_keys = left_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let right_keys = right_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
 
-        let df = self.df.as_ref().clone().join(
-            right.df.as_ref().clone(),
-            join_type,
-            &left_keys,
-            &right_keys,
-            None,
-        )?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .join(
+                right.df.as_ref().clone(),
+                join_type,
+                &left_keys,
+                &right_keys,
+                None,
+            )
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -312,7 +383,7 @@ impl PyDataFrame {
             "semi" => JoinType::LeftSemi,
             "anti" => JoinType::LeftAnti,
             how => {
-                return Err(DataFusionError::Common(format!(
+                return Err(PyDataFusionError::Common(format!(
                     "The join type {how} does not exist or is not implemented"
                 ))
                 .into());
@@ -324,14 +395,20 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .join_on(right.df.as_ref().clone(), join_type, exprs)?;
+            .join_on(right.df.as_ref().clone(), join_type, exprs)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
     /// Print the query plan
     #[pyo3(signature = (verbose=false, analyze=false))]
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyResult<()> {
-        let df = self.df.as_ref().clone().explain(verbose, analyze)?;
+        let df = self
+            .df
+            .as_ref()
+            .clone()
+            .explain(verbose, analyze)
+            .map_err(PyDataFusionError::from)?;
         print_dataframe(py, df)
     }
 
@@ -342,12 +419,19 @@ impl PyDataFrame {
 
     /// Get the optimized logical plan for this `DataFrame`
     fn optimized_logical_plan(&self) -> PyResult<PyLogicalPlan> {
-        Ok(self.df.as_ref().clone().into_optimized_plan()?.into())
+        Ok(self
+            .df
+            .as_ref()
+            .clone()
+            .into_optimized_plan()
+            .map_err(PyDataFusionError::from)?
+            .into())
     }
 
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyResult<PyExecutionPlan> {
-        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
+        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())
+            .map_err(PyDataFusionError::from)?;
         Ok(plan.into())
     }
 
@@ -357,7 +441,8 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .repartition(Partitioning::RoundRobinBatch(num))?;
+            .repartition(Partitioning::RoundRobinBatch(num))
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(new_df))
     }
 
@@ -369,7 +454,8 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .repartition(Partitioning::Hash(expr, num))?;
+            .repartition(Partitioning::Hash(expr, num))
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(new_df))
     }
 
@@ -381,9 +467,14 @@ impl PyDataFrame {
             self.df
                 .as_ref()
                 .clone()
-                .union_distinct(py_df.df.as_ref().clone())?
+                .union_distinct(py_df.df.as_ref().clone())
+                .map_err(PyDataFusionError::from)?
         } else {
-            self.df.as_ref().clone().union(py_df.df.as_ref().clone())?
+            self.df
+                .as_ref()
+                .clone()
+                .union(py_df.df.as_ref().clone())
+                .map_err(PyDataFusionError::from)?
         };
 
         Ok(Self::new(new_df))
@@ -396,7 +487,8 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .union_distinct(py_df.df.as_ref().clone())?;
+            .union_distinct(py_df.df.as_ref().clone())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(new_df))
     }
 
@@ -409,7 +501,8 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .unnest_columns_with_options(&[column], unnest_options)?;
+            .unnest_columns_with_options(&[column], unnest_options)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -423,7 +516,8 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .unnest_columns_with_options(&cols, unnest_options)?;
+            .unnest_columns_with_options(&cols, unnest_options)
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(df))
     }
 
@@ -433,13 +527,19 @@ impl PyDataFrame {
             .df
             .as_ref()
             .clone()
-            .intersect(py_df.df.as_ref().clone())?;
+            .intersect(py_df.df.as_ref().clone())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(new_df))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn except_all(&self, py_df: PyDataFrame) -> PyResult<Self> {
-        let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
+        let new_df = self
+            .df
+            .as_ref()
+            .clone()
+            .except(py_df.df.as_ref().clone())
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(new_df))
     }
 
@@ -456,7 +556,8 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Some(csv_options),
             ),
-        )?;
+        )
+        .map_err(PyDataFusionError::from)?;
         Ok(())
     }
 
@@ -517,7 +618,8 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Option::from(options),
             ),
-        )?;
+        )
+        .map_err(PyDataFusionError::from)?;
         Ok(())
     }
 
@@ -529,7 +631,8 @@ impl PyDataFrame {
                 .as_ref()
                 .clone()
                 .write_json(path, DataFrameWriteOptions::new(), None),
-        )?;
+        )
+        .map_err(PyDataFusionError::from)?;
         Ok(())
     }
 
@@ -552,22 +655,24 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())
+            .map_err(PyDataFusionError::from)?;
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
             validate_pycapsule(&schema_capsule, "arrow_schema")?;
 
             let schema_ptr = unsafe { schema_capsule.reference::<FFI_ArrowSchema>() };
-            let desired_schema = Schema::try_from(schema_ptr).map_err(DataFusionError::from)?;
+            let desired_schema = Schema::try_from(schema_ptr).map_err(PyDataFusionError::from)?;
 
-            schema = project_schema(schema, desired_schema).map_err(DataFusionError::ArrowError)?;
+            schema =
+                project_schema(schema, desired_schema).map_err(PyDataFusionError::ArrowError)?;
 
             batches = batches
                 .into_iter()
                 .map(|record_batch| record_batch_into_schema(record_batch, &schema))
                 .collect::<Result<Vec<RecordBatch>, ArrowError>>()
-                .map_err(DataFusionError::ArrowError)?;
+                .map_err(PyDataFusionError::ArrowError)?;
         }
 
         let batches_wrapped = batches.into_iter().map(Ok);
@@ -587,7 +692,9 @@ impl PyDataFrame {
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        Ok(PyRecordBatchStream::new(
+            stream.map_err(PyDataFusionError::from)?,
+        ))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -648,14 +755,15 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count())
+            .map_err(PyDataFusionError::from)?)
     }
 }
 
 /// Print DataFrame
 fn print_dataframe(py: Python, df: DataFrame) -> PyResult<()> {
     // Get string representation of record batches
-    let batches = wait_for_future(py, df.collect())?;
+    let batches = wait_for_future(py, df.collect()).map_err(PyDataFusionError::from)?;
     let batches_as_string = pretty::pretty_format_batches(&batches);
     let result = match batches_as_string {
         Ok(batch) => format!("DataFrame()\n{batch}"),

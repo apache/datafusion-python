@@ -42,7 +42,7 @@ use datafusion::physical_plan::{
     SendableRecordBatchStream, Statistics,
 };
 
-use crate::errors::DataFusionError;
+use crate::errors::PyDataFusionError;
 use crate::pyarrow_filter_expression::PyArrowFilterExpression;
 
 struct PyArrowBatchesAdapter {
@@ -83,8 +83,8 @@ impl DatasetExec {
         dataset: &Bound<'_, PyAny>,
         projection: Option<Vec<usize>>,
         filters: &[Expr],
-    ) -> Result<Self, DataFusionError> {
-        let columns: Option<Result<Vec<String>, DataFusionError>> = projection.map(|p| {
+    ) -> Result<Self, PyDataFusionError> {
+        let columns: Option<Result<Vec<String>, PyDataFusionError>> = projection.map(|p| {
             p.iter()
                 .map(|index| {
                     let name: String = dataset

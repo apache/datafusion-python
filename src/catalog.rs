@@ -21,7 +21,7 @@ use std::sync::Arc;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 
-use crate::errors::DataFusionError;
+use crate::errors::PyDataFusionError;
 use crate::utils::wait_for_future;
 use datafusion::{
     arrow::pyarrow::ToPyArrow,
@@ -97,10 +97,12 @@ impl PyDatabase {
     }
 
     fn table(&self, name: &str, py: Python) -> PyResult<PyTable> {
-        if let Some(table) = wait_for_future(py, self.database.table(name))? {
+        if let Some(table) =
+            wait_for_future(py, self.database.table(name)).map_err(PyDataFusionError::from)?
+        {
             Ok(PyTable::new(table))
         } else {
-            Err(DataFusionError::Common(format!("Table not found: {name}")).into())
+            Err(PyDataFusionError::Common(format!("Table not found: {name}")).into())
         }
     }
 
