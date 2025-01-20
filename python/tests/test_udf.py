@@ -15,9 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import udf, column
 import pyarrow as pa
 import pytest
+from datafusion import column, udf
 
 
 @pytest.fixture

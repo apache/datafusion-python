@@ -20,31 +20,36 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 """
 
 from __future__ import annotations
+
 import warnings
 from typing import (
+    TYPE_CHECKING,
     Any,
     Iterable,
     List,
-    TYPE_CHECKING,
     Literal,
-    overload,
     Optional,
     Union,
+    overload,
 )
-from datafusion.record_batch import RecordBatchStream
+
 from typing_extensions import deprecated
-from datafusion.plan import LogicalPlan, ExecutionPlan
+
+from datafusion.plan import ExecutionPlan, LogicalPlan
+from datafusion.record_batch import RecordBatchStream
 
 if TYPE_CHECKING:
-    import pyarrow as pa
-    import pandas as pd
-    import polars as pl
     import pathlib
     from typing import Callable, Sequence
 
+    import pandas as pd
+    import polars as pl
+    import pyarrow as pa
+
+from enum import Enum
+
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
-from enum import Enum
 
 
 # excerpt from deltalake

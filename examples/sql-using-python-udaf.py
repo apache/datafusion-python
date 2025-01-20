@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import udaf, SessionContext, Accumulator
 import pyarrow as pa
+from datafusion import Accumulator, SessionContext, udaf
 
 
 # Define a user-defined aggregation function (UDAF)

@@ -22,11 +22,12 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import Any, Optional, Type, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional, Type
 
 import pyarrow as pa
-from datafusion.common import DataTypeMap, NullTreatment, RexType
 from typing_extensions import deprecated
+
+from datafusion.common import DataTypeMap, NullTreatment, RexType
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal

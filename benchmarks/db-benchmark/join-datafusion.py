@@ -15,14 +15,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
 import gc
+import os
 import timeit
-import datafusion as df
-from datafusion import functions as f
-from datafusion import col
-from pyarrow import csv as pacsv
 
+import datafusion as df
+from datafusion import col
+from datafusion import functions as f
+from pyarrow import csv as pacsv
 
 print("# join-datafusion.py", flush=True)
 
