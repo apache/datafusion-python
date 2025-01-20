@@ -18,7 +18,6 @@
 import os
 
 import pytest
-
 from datafusion import SessionContext
 
 

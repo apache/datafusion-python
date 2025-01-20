@@ -16,10 +16,9 @@
 # under the License.
 
 import pyarrow as pa
-
+import pytest
 from datafusion import SessionContext
 from datafusion import substrait as ss
-import pytest
 
 
 @pytest.fixture

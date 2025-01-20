@@ -15,11 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow as pa
 import datafusion
-from datafusion import udwf, functions as f, col, lit
-from datafusion.udf import WindowEvaluator
+import pyarrow as pa
+from datafusion import col, lit, udwf
+from datafusion import functions as f
 from datafusion.expr import WindowFrame
+from datafusion.udf import WindowEvaluator
 
 # This example creates five different examples of user defined window functions in order
 # to demonstrate the variety of ways a user may need to implement.

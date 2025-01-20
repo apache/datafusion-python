@@ -15,10 +15,12 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pytest
 from importlib import import_module
+
 import pyarrow as pa
-from datafusion import DataFrame, col, lit, functions as F
+import pytest
+from datafusion import DataFrame, col, lit
+from datafusion import functions as F
 from util import get_answer_file
 
 

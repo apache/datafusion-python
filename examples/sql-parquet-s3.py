@@ -16,6 +16,7 @@
 # under the License.
 
 import os
+
 import datafusion
 from datafusion.object_store import AmazonS3
 

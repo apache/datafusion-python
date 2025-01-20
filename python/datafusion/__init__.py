@@ -26,36 +26,28 @@ try:
 except ImportError:
     import importlib_metadata
 
-from .context import (
-    SessionContext,
-    SessionConfig,
-    RuntimeEnvBuilder,
-    SQLOptions,
-)
-
-from .catalog import Catalog, Database, Table
+from . import functions, object_store, substrait
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
-
-from .record_batch import RecordBatchStream, RecordBatch
-
-from .udf import ScalarUDF, AggregateUDF, Accumulator, WindowUDF
-
+from .catalog import Catalog, Database, Table
 from .common import (
     DFSchema,
 )
-
+from .context import (
+    RuntimeEnvBuilder,
+    SessionConfig,
+    SessionContext,
+    SQLOptions,
+)
 from .dataframe import DataFrame
-
 from .expr import (
     Expr,
     WindowFrame,
 )
-
-from .plan import LogicalPlan, ExecutionPlan
-
-from . import functions, object_store, substrait
+from .plan import ExecutionPlan, LogicalPlan
+from .record_batch import RecordBatch, RecordBatchStream
+from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF
 
 __version__ = importlib_metadata.version(__name__)
 

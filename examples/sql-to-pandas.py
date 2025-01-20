@@ -17,7 +17,6 @@
 
 from datafusion import SessionContext
 
-
 # Create a DataFusion context
 ctx = SessionContext()
 

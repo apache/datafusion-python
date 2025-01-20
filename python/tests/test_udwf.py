@@ -17,10 +17,10 @@
 
 import pyarrow as pa
 import pytest
-
-from datafusion import SessionContext, column, udwf, lit, functions as f
-from datafusion.udf import WindowEvaluator
+from datafusion import SessionContext, column, lit, udwf
+from datafusion import functions as f
 from datafusion.expr import WindowFrame
+from datafusion.udf import WindowEvaluator
 
 
 class ExponentialSmoothDefault(WindowEvaluator):

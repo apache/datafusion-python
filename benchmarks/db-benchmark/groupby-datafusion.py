@@ -15,20 +15,22 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
 import gc
+import os
 import timeit
+
 import datafusion as df
+import pyarrow
 from datafusion import (
-    col,
-    functions as f,
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
+    col,
 )
-import pyarrow
+from datafusion import (
+    functions as f,
+)
 from pyarrow import csv as pacsv
-
 
 print("# groupby-datafusion.py", flush=True)
 

@@ -19,26 +19,29 @@
 
 from __future__ import annotations
 
-from ._internal import SessionConfig as SessionConfigInternal
-from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
-from ._internal import SQLOptions as SQLOptionsInternal
-from ._internal import SessionContext as SessionContextInternal
+from typing import TYPE_CHECKING, Any, Protocol
+
+from typing_extensions import deprecated
 
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.udf import ScalarUDF, AggregateUDF, WindowUDF
+from datafusion.udf import AggregateUDF, ScalarUDF, WindowUDF
 
-from typing import Any, TYPE_CHECKING, Protocol
-from typing_extensions import deprecated
+from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
+from ._internal import SessionConfig as SessionConfigInternal
+from ._internal import SessionContext as SessionContextInternal
+from ._internal import SQLOptions as SQLOptionsInternal
 
 if TYPE_CHECKING:
-    import pyarrow
+    import pathlib
+
     import pandas
     import polars
-    import pathlib
-    from datafusion.plan import LogicalPlan, ExecutionPlan
+    import pyarrow
+
+    from datafusion.plan import ExecutionPlan, LogicalPlan
 
 
 class ArrowStreamExportable(Protocol):

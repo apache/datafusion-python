@@ -23,12 +23,14 @@ information about substrait.
 
 from __future__ import annotations
 
-from ._internal import substrait as substrait_internal
-
-from typing import TYPE_CHECKING
-from typing_extensions import deprecated
 import pathlib
+from typing import TYPE_CHECKING
+
+from typing_extensions import deprecated
+
 from datafusion.plan import LogicalPlan
+
+from ._internal import substrait as substrait_internal
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext

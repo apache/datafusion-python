@@ -20,7 +20,6 @@ from typing import List
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
-
 from datafusion import Accumulator, column, udaf
 
 

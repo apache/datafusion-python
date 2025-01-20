@@ -14,15 +14,14 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import datetime as dt
 import gzip
 import os
-import datetime as dt
 import pathlib
 
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-
 from datafusion import (
     DataFrame,
     RuntimeEnvBuilder,

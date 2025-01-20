@@ -18,21 +18,21 @@
 
 from __future__ import annotations
 
-from datafusion._internal import functions as f
-from datafusion.expr import (
-    CaseBuilder,
-    Expr,
-    WindowFrame,
-    SortExpr,
-    sort_list_to_raw_sort_list,
-    expr_list_to_raw_expr_list,
-)
-from datafusion.context import SessionContext
-from datafusion.common import NullTreatment
-
 from typing import Any, Optional
 
 import pyarrow as pa
+
+from datafusion._internal import functions as f
+from datafusion.common import NullTreatment
+from datafusion.context import SessionContext
+from datafusion.expr import (
+    CaseBuilder,
+    Expr,
+    SortExpr,
+    WindowFrame,
+    expr_list_to_raw_expr_list,
+    sort_list_to_raw_sort_list,
+)
 
 __all__ = [
     "abs",

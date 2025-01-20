@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import Config
 import pytest
+from datafusion import Config
 
 
 @pytest.fixture

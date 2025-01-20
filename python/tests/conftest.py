@@ -15,9 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import pyarrow as pa
 import pytest
 from datafusion import SessionContext
-import pyarrow as pa
 from pyarrow.csv import write_csv
 
 

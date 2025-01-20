@@ -19,9 +19,9 @@
 
 from __future__ import annotations
 
-import datafusion._internal as df_internal
-
 from typing import TYPE_CHECKING
+
+import datafusion._internal as df_internal
 
 if TYPE_CHECKING:
     import pyarrow

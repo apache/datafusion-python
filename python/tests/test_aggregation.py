@@ -18,7 +18,6 @@
 import numpy as np
 import pyarrow as pa
 import pytest
-
 from datafusion import SessionContext, column, lit
 from datafusion import functions as f
 from datafusion.common import NullTreatment

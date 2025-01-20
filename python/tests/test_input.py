@@ -16,6 +16,7 @@
 # under the License.
 
 import os
+
 from datafusion.input.location import LocationInputPlugin
 
 

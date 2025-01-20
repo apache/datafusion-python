@@ -15,11 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import datafusion
 import pyarrow
 import pyarrow.compute
-import datafusion
-from datafusion import udaf, Accumulator
-from datafusion import col
+from datafusion import Accumulator, col, udaf
 
 
 class MyAccumulator(Accumulator):

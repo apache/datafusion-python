@@ -17,7 +17,6 @@
 
 import pyarrow as pa
 import pytest
-
 from datafusion import SessionContext
 
 
