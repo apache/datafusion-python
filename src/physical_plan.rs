@@ -22,7 +22,7 @@ use std::sync::Arc;
 
 use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
 
-use crate::{context::PySessionContext, errors::DataFusionError};
+use crate::{context::PySessionContext, errors::PyDataFusionError};
 
 #[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -63,7 +63,8 @@ impl PyExecutionPlan {
         let proto = datafusion_proto::protobuf::PhysicalPlanNode::try_from_physical_plan(
             self.plan.clone(),
             &codec,
-        )?;
+        )
+        .map_err(PyDataFusionError::from)?;
 
         let bytes = proto.encode_to_vec();
         Ok(PyBytes::new_bound(py, &bytes))
@@ -83,7 +84,7 @@ impl PyExecutionPlan {
         let codec = DefaultPhysicalExtensionCodec {};
         let plan = proto_plan
             .try_into_physical_plan(&ctx.ctx, &ctx.ctx.runtime_env(), &codec)
-            .map_err(DataFusionError::from)?;
+            .map_err(PyDataFusionError::from)?;
         Ok(Self::new(plan))
     }
 

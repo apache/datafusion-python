@@ -33,10 +33,9 @@ use datafusion::logical_expr::{
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
-use datafusion::scalar::ScalarValue;
 
-use crate::common::data_type::{DataTypeMap, NullTreatment, RexType};
-use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};
+use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
+use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -261,8 +260,8 @@ impl PyExpr {
     }
 
     #[staticmethod]
-    pub fn literal(value: ScalarValue) -> PyExpr {
-        lit(value).into()
+    pub fn literal(value: PyScalarValue) -> PyExpr {
+        lit(value.0).into()
     }
 
     #[staticmethod]
@@ -356,7 +355,7 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => Ok(scalar_value.to_pyarrow(py)?),
+            Expr::Literal(scalar_value) => Ok(PyScalarValue(scalar_value.clone()).to_pyarrow(py)?),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr
@@ -592,7 +591,7 @@ impl PyExpr {
                 null_treatment,
             ),
             _ => Err(
-                DataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
+                PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
                     format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
                 ))
                 .into(),
@@ -654,12 +653,13 @@ impl PyExprFuncBuilder {
             .clone()
             .build()
             .map(|expr| expr.into())
-            .map_err(|err| err.into())
+            .map_err(PyDataFusionError::from)
+            .map_err(PyErr::from)
     }
 }
 
 impl PyExpr {
-    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
+    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, PyDataFusionError> {
         let field = Self::expr_to_field(&self.expr, plan)?;
         Ok(field.name().to_owned())
     }
@@ -668,15 +668,15 @@ impl PyExpr {
     pub fn expr_to_field(
         expr: &Expr,
         input_plan: &LogicalPlan,
-    ) -> Result<Arc<Field>, DataFusionError> {
+    ) -> Result<Arc<Field>, PyDataFusionError> {
         match expr {
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(Arc::new(input_plan.schema().field(0).clone()))
             }
             _ => {
-                let fields =
-                    exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
+                let fields = exprlist_to_fields(&[expr.clone()], input_plan)
+                    .map_err(PyDataFusionError::from)?;
                 Ok(fields[0].1.clone())
             }
         }

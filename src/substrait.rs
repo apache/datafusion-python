@@ -18,7 +18,7 @@
 use pyo3::{prelude::*, types::PyBytes};
 
 use crate::context::PySessionContext;
-use crate::errors::{py_datafusion_err, DataFusionError};
+use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
@@ -39,7 +39,7 @@ impl PyPlan {
         let mut proto_bytes = Vec::<u8>::new();
         self.plan
             .encode(&mut proto_bytes)
-            .map_err(DataFusionError::EncodeError)?;
+            .map_err(PyDataFusionError::EncodeError)?;
         Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
     }
 }
@@ -68,7 +68,7 @@ impl PySubstraitSerializer {
     #[staticmethod]
     pub fn serialize(sql: &str, ctx: PySessionContext, path: &str, py: Python) -> PyResult<()> {
         wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))
-            .map_err(DataFusionError::from)?;
+            .map_err(PyDataFusionError::from)?;
         Ok(())
     }
 
@@ -86,21 +86,21 @@ impl PySubstraitSerializer {
     #[staticmethod]
     pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyObject> {
         let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))
-            .map_err(DataFusionError::from)?;
+            .map_err(PyDataFusionError::from)?;
         Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
     }
 
     #[staticmethod]
     pub fn deserialize(path: &str, py: Python) -> PyResult<PyPlan> {
         let plan =
-            wait_for_future(py, serializer::deserialize(path)).map_err(DataFusionError::from)?;
+            wait_for_future(py, serializer::deserialize(path)).map_err(PyDataFusionError::from)?;
         Ok(PyPlan { plan: *plan })
     }
 
     #[staticmethod]
     pub fn deserialize_bytes(proto_bytes: Vec<u8>, py: Python) -> PyResult<PyPlan> {
         let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))
-            .map_err(DataFusionError::from)?;
+            .map_err(PyDataFusionError::from)?;
         Ok(PyPlan { plan: *plan })
     }
 }
@@ -137,7 +137,7 @@ impl PySubstraitConsumer {
     ) -> PyResult<PyLogicalPlan> {
         let session_state = ctx.ctx.state();
         let result = consumer::from_substrait_plan(&session_state, &plan.plan);
-        let logical_plan = wait_for_future(py, result).map_err(DataFusionError::from)?;
+        let logical_plan = wait_for_future(py, result).map_err(PyDataFusionError::from)?;
         Ok(PyLogicalPlan::new(logical_plan))
     }
 }

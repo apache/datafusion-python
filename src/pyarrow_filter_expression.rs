@@ -25,7 +25,8 @@ use arrow::pyarrow::ToPyArrow;
 use datafusion::common::{Column, ScalarValue};
 use datafusion::logical_expr::{expr::InList, Between, BinaryExpr, Expr, Operator};
 
-use crate::errors::DataFusionError;
+use crate::common::data_type::PyScalarValue;
+use crate::errors::PyDataFusionError;
 
 #[derive(Debug)]
 #[repr(transparent)]
@@ -34,7 +35,7 @@ pub(crate) struct PyArrowFilterExpression(PyObject);
 fn operator_to_py<'py>(
     operator: &Operator,
     op: &Bound<'py, PyModule>,
-) -> Result<Bound<'py, PyAny>, DataFusionError> {
+) -> Result<Bound<'py, PyAny>, PyDataFusionError> {
     let py_op: Bound<'_, PyAny> = match operator {
         Operator::Eq => op.getattr("eq")?,
         Operator::NotEq => op.getattr("ne")?,
@@ -45,7 +46,7 @@ fn operator_to_py<'py>(
         Operator::And => op.getattr("and_")?,
         Operator::Or => op.getattr("or_")?,
         _ => {
-            return Err(DataFusionError::Common(format!(
+            return Err(PyDataFusionError::Common(format!(
                 "Unsupported operator {operator:?}"
             )))
         }
@@ -53,8 +54,8 @@ fn operator_to_py<'py>(
     Ok(py_op)
 }
 
-fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, DataFusionError> {
-    let ret: Result<Vec<PyObject>, DataFusionError> = exprs
+fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, PyDataFusionError> {
+    let ret: Result<Vec<PyObject>, PyDataFusionError> = exprs
         .iter()
         .map(|expr| match expr {
             // TODO: should we also leverage `ScalarValue::to_pyarrow` here?
@@ -71,11 +72,11 @@ fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, Data
                 ScalarValue::Float32(Some(f)) => Ok(f.into_py(py)),
                 ScalarValue::Float64(Some(f)) => Ok(f.into_py(py)),
                 ScalarValue::Utf8(Some(s)) => Ok(s.into_py(py)),
-                _ => Err(DataFusionError::Common(format!(
+                _ => Err(PyDataFusionError::Common(format!(
                     "PyArrow can't handle ScalarValue: {v:?}"
                 ))),
             },
-            _ => Err(DataFusionError::Common(format!(
+            _ => Err(PyDataFusionError::Common(format!(
                 "Only a list of Literals are supported got {expr:?}"
             ))),
         })
@@ -90,7 +91,7 @@ impl PyArrowFilterExpression {
 }
 
 impl TryFrom<&Expr> for PyArrowFilterExpression {
-    type Error = DataFusionError;
+    type Error = PyDataFusionError;
 
     // Converts a Datafusion filter Expr into an expression string that can be evaluated by Python
     // Note that pyarrow.compute.{field,scalar} are put into Python globals() when evaluated
@@ -100,9 +101,11 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
         Python::with_gil(|py| {
             let pc = Python::import_bound(py, "pyarrow.compute")?;
             let op_module = Python::import_bound(py, "operator")?;
-            let pc_expr: Result<Bound<'_, PyAny>, DataFusionError> = match expr {
+            let pc_expr: Result<Bound<'_, PyAny>, PyDataFusionError> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
-                Expr::Literal(scalar) => Ok(scalar.to_pyarrow(py)?.into_bound(py)),
+                Expr::Literal(scalar) => {
+                    Ok(PyScalarValue(scalar.clone()).to_pyarrow(py)?.into_bound(py))
+                }
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {
                     let operator = operator_to_py(op, &op_module)?;
                     let left = PyArrowFilterExpression::try_from(left.as_ref())?.0;
@@ -167,7 +170,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
 
                     Ok(if *negated { invert.call1((ret,))? } else { ret })
                 }
-                _ => Err(DataFusionError::Common(format!(
+                _ => Err(PyDataFusionError::Common(format!(
                     "Unsupported Datafusion expression {expr:?}"
                 ))),
             };
