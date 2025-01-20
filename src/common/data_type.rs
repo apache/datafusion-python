@@ -23,6 +23,20 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::errors::py_datafusion_err;
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd)]
+pub struct PyScalarValue(pub ScalarValue);
+
+impl From<ScalarValue> for PyScalarValue {
+    fn from(value: ScalarValue) -> Self {
+        Self(value)
+    }
+}
+impl From<PyScalarValue> for ScalarValue {
+    fn from(value: PyScalarValue) -> Self {
+        value.0
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(eq, eq_int, name = "RexType", module = "datafusion.common")]
 pub enum RexType {

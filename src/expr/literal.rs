@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::errors::DataFusionError;
+use crate::errors::PyDataFusionError;
 use datafusion::common::ScalarValue;
 use pyo3::prelude::*;
 
@@ -154,5 +154,5 @@ impl PyLiteral {
 }
 
 fn unexpected_literal_value(value: &ScalarValue) -> PyErr {
-    DataFusionError::Common(format!("getValue<T>() - Unexpected value: {value}")).into()
+    PyDataFusionError::Common(format!("getValue<T>() - Unexpected value: {value}")).into()
 }

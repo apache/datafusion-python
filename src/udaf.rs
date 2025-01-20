@@ -28,6 +28,7 @@ use datafusion::logical_expr::{
     create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF,
 };
 
+use crate::common::data_type::PyScalarValue;
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
@@ -44,13 +45,25 @@ impl RustAccumulator {
 
 impl Accumulator for RustAccumulator {
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
-        Python::with_gil(|py| self.accum.bind(py).call_method0("state")?.extract())
-            .map_err(|e| DataFusionError::Execution(format!("{e}")))
+        Python::with_gil(|py| {
+            self.accum
+                .bind(py)
+                .call_method0("state")?
+                .extract::<Vec<PyScalarValue>>()
+        })
+        .map(|v| v.into_iter().map(|x| x.0).collect())
+        .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
-        Python::with_gil(|py| self.accum.bind(py).call_method0("evaluate")?.extract())
-            .map_err(|e| DataFusionError::Execution(format!("{e}")))
+        Python::with_gil(|py| {
+            self.accum
+                .bind(py)
+                .call_method0("evaluate")?
+                .extract::<PyScalarValue>()
+        })
+        .map(|v| v.0)
+        .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {

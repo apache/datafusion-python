@@ -21,6 +21,8 @@ use pyo3::types::*;
 use datafusion::common::ScalarValue;
 use datafusion::config::ConfigOptions;
 
+use crate::errors::PyDataFusionError;
+
 #[pyclass(name = "Config", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
@@ -40,7 +42,7 @@ impl PyConfig {
     #[staticmethod]
     pub fn from_env() -> PyResult<Self> {
         Ok(Self {
-            config: ConfigOptions::from_env()?,
+            config: ConfigOptions::from_env().map_err(PyDataFusionError::from)?,
         })
     }
 
@@ -60,7 +62,8 @@ impl PyConfig {
         let scalar_value = py_obj_to_scalar_value(py, value);
         self.config
             .set(key, scalar_value.to_string().as_str())
-            .map_err(|e| e.into())
+            .map_err(PyDataFusionError::from)
+            .map_err(PyErr::from)
     }
 
     /// Get all configuration options
