@@ -15,11 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import SessionContext, col, lit, udf, functions as F
 import os
+import time
+
 import pyarrow as pa
 import pyarrow.compute as pc
-import time
+from datafusion import SessionContext, col, lit, udf
+from datafusion import functions as F
 
 path = os.path.dirname(os.path.abspath(__file__))
 filepath = os.path.join(path, "./tpch/data/lineitem.parquet")

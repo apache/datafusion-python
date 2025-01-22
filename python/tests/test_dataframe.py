@@ -18,11 +18,8 @@ import os
 from typing import Any
 
 import pyarrow as pa
-from pyarrow.csv import write_csv
 import pyarrow.parquet as pq
 import pytest
-
-from datafusion import functions as f
 from datafusion import (
     DataFrame,
     SessionContext,
@@ -30,7 +27,9 @@ from datafusion import (
     column,
     literal,
 )
+from datafusion import functions as f
 from datafusion.expr import Window
+from pyarrow.csv import write_csv
 
 
 @pytest.fixture

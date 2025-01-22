@@ -27,8 +27,10 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 from datetime import datetime
+
 import pyarrow as pa
-from datafusion import SessionContext, WindowFrame, col, lit, functions as F
+from datafusion import SessionContext, WindowFrame, col, lit
+from datafusion import functions as F
 from util import get_data_path
 
 DATE = "1996-01-01"

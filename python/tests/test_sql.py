@@ -19,12 +19,11 @@ import os
 
 import numpy as np
 import pyarrow as pa
-from pyarrow.csv import write_csv
 import pyarrow.dataset as ds
 import pytest
+from datafusion import col, udf
 from datafusion.object_store import Http
-
-from datafusion import udf, col
+from pyarrow.csv import write_csv
 
 from . import generic as helpers
 

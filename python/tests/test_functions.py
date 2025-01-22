@@ -15,15 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
+from datetime import datetime
 
 import numpy as np
 import pyarrow as pa
 import pytest
-from datetime import datetime
-
-from datafusion import SessionContext, column
+from datafusion import SessionContext, column, literal, string_literal
 from datafusion import functions as f
-from datafusion import literal, string_literal
 
 np.seterr(invalid="ignore")
 

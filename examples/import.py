@@ -16,10 +16,9 @@
 # under the License.
 
 import datafusion
-import pyarrow as pa
 import pandas as pd
 import polars as pl
-
+import pyarrow as pa
 
 # Create a context
 ctx = datafusion.SessionContext()

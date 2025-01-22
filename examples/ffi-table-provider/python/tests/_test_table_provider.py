@@ -15,9 +15,9 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import pyarrow as pa
 from datafusion import SessionContext
 from ffi_table_provider import MyTableProvider
-import pyarrow as pa
 
 
 def test_table_loading():

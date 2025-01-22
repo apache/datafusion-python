@@ -17,8 +17,8 @@
 
 """The default input source for DataFusion."""
 
-import os
 import glob
+import os
 from typing import Any
 
 from datafusion.common import DataTypeMap, SqlTable
