@@ -24,7 +24,6 @@ use std::convert::{From, Into};
 use std::sync::Arc;
 use window::PyWindowFrame;
 
-use arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
@@ -41,6 +40,7 @@ use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use crate::functions::add_builder_fns_to_window;
+use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
 
 use self::alias::PyAlias;
@@ -355,7 +355,7 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => Ok(PyScalarValue(scalar_value.clone()).to_pyarrow(py)?),
+            Expr::Literal(scalar_value) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr

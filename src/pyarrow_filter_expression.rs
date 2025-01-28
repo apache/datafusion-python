@@ -21,12 +21,11 @@ use pyo3::prelude::*;
 use std::convert::TryFrom;
 use std::result::Result;
 
-use arrow::pyarrow::ToPyArrow;
 use datafusion::common::{Column, ScalarValue};
 use datafusion::logical_expr::{expr::InList, Between, BinaryExpr, Expr, Operator};
 
-use crate::common::data_type::PyScalarValue;
 use crate::errors::PyDataFusionError;
+use crate::pyarrow_util::scalar_to_pyarrow;
 
 #[derive(Debug)]
 #[repr(transparent)]
@@ -103,9 +102,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
             let op_module = Python::import_bound(py, "operator")?;
             let pc_expr: Result<Bound<'_, PyAny>, PyDataFusionError> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
-                Expr::Literal(scalar) => {
-                    Ok(PyScalarValue(scalar.clone()).to_pyarrow(py)?.into_bound(py))
-                }
+                Expr::Literal(scalar) => Ok(scalar_to_pyarrow(scalar, py)?.into_bound(py)),
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {
                     let operator = operator_to_py(op, &op_module)?;
                     let left = PyArrowFilterExpression::try_from(left.as_ref())?.0;
