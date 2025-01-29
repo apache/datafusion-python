@@ -27,6 +27,7 @@ from typing import (
     Any,
     Iterable,
     List,
+    Dict,
     Literal,
     Optional,
     Union,
@@ -50,6 +51,7 @@ from enum import Enum
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
+from datafusion.options import write_options_to_raw_write_options
 
 
 # excerpt from deltalake
@@ -678,20 +680,37 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
+    def write_csv(
+        self,
+        path: str | pathlib.Path,
+        with_header: bool = False,
+        write_options: Optional[Dict] = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame`  and write the results to a CSV file.
 
         Args:
             path: Path of the CSV file to write.
             with_header: If true, output the CSV header row.
+            write_options: Write options to use. This is a dictionary.
+                Available options are:
+                - "insert_operation": one of
+                    - "append": Appends new rows to the existing table without modifying any existing rows. This corresponds to the SQL INSERT INTO query.
+                    - "overwrite": Overwrites all existing rows in the table with the new rows. This corresponds to the SQL INSERT OVERWRITE query.
+                    - "replace": If any existing rows collides with the inserted rows (typically based on a unique key or primary key), those existing rows are replaced. This corresponds to the SQL REPLACE INTO query and its equivalents.
+                - "single_file_output": bool expressing if the write should go into a single file or not.
+                - "partition_by": a list of column names (as strings) to set up hive partitioning.
+                - "sort_by": a list of sort expressions to sort the output by.
         """
-        self.df.write_csv(str(path), with_header)
+        self.df.write_csv(
+            str(path), with_header, write_options_to_raw_write_options(write_options)
+        )
 
     def write_parquet(
         self,
         path: str | pathlib.Path,
         compression: Union[str, Compression] = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: Optional[Dict] = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -710,6 +729,15 @@ class DataFrame:
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
+            write_options: Write options to use. This is a dictionary.
+                Available options are:
+                - "insert_operation": one of
+                    - "append": Appends new rows to the existing table without modifying any existing rows. This corresponds to the SQL INSERT INTO query.
+                    - "overwrite": Overwrites all existing rows in the table with the new rows. This corresponds to the SQL INSERT OVERWRITE query.
+                    - "replace": If any existing rows collides with the inserted rows (typically based on a unique key or primary key), those existing rows are replaced. This corresponds to the SQL REPLACE INTO query and its equivalents.
+                - "single_file_output": bool expressing if the write should go into a single file or not.
+                - "partition_by": a list of column names (as strings) to set up hive partitioning.
+                - "sort_by": a list of sort expressions to sort the output by.
         """
         # Convert string to Compression enum if necessary
         if isinstance(compression, str):
@@ -719,15 +747,33 @@ class DataFrame:
             if compression_level is None:
                 compression_level = compression.get_default_level()
 
-        self.df.write_parquet(str(path), compression.value, compression_level)
+        self.df.write_parquet(
+            str(path),
+            compression.value,
+            compression_level,
+            write_options_to_raw_write_options(write_options),
+        )
 
-    def write_json(self, path: str | pathlib.Path) -> None:
+    def write_json(
+        self,
+        path: str | pathlib.Path,
+        write_options: Optional[Dict] = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
 
         Args:
             path: Path of the JSON file to write.
+            write_options: Write options to use. This is a dictionary.
+                Available options are:
+                - "insert_operation": one of
+                    - "append": Appends new rows to the existing table without modifying any existing rows. This corresponds to the SQL INSERT INTO query.
+                    - "overwrite": Overwrites all existing rows in the table with the new rows. This corresponds to the SQL INSERT OVERWRITE query.
+                    - "replace": If any existing rows collides with the inserted rows (typically based on a unique key or primary key), those existing rows are replaced. This corresponds to the SQL REPLACE INTO query and its equivalents.
+                - "single_file_output": bool expressing if the write should go into a single file or not.
+                - "partition_by": a list of column names (as strings) to set up hive partitioning.
+                - "sort_by": a list of sort expressions to sort the output by.
         """
-        self.df.write_json(str(path))
+        self.df.write_json(str(path), write_options_to_raw_write_options(write_options))
 
     def to_arrow_table(self) -> pa.Table:
         """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.

@@ -52,6 +52,7 @@ mod record_batch;
 pub mod sql;
 pub mod store;
 
+mod options;
 #[cfg(feature = "substrait")]
 pub mod substrait;
 #[allow(clippy::borrow_deref_ref)]

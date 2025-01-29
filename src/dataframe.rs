@@ -29,7 +29,7 @@ use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, TableParquetOptions};
-use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
+use datafusion::dataframe::DataFrame;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
@@ -41,6 +41,7 @@ use tokio::task::JoinHandle;
 
 use crate::errors::py_datafusion_err;
 use crate::expr::sort_expr::to_sort_expressions;
+use crate::options::{make_dataframe_write_options, PyDataFrameWriteOptions};
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
@@ -444,18 +445,29 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a CSV file.
-    fn write_csv(&self, path: &str, with_header: bool, py: Python) -> PyResult<()> {
+    #[pyo3(signature = (
+        path,
+        with_header,
+        write_options=None,
+        ))]
+    fn write_csv(
+        &self,
+        path: &str,
+        with_header: bool,
+        write_options: Option<PyDataFrameWriteOptions>,
+        py: Python,
+    ) -> PyResult<()> {
+        let write_options = make_dataframe_write_options(write_options)?;
         let csv_options = CsvOptions {
             has_header: Some(with_header),
             ..Default::default()
         };
         wait_for_future(
             py,
-            self.df.as_ref().clone().write_csv(
-                path,
-                DataFrameWriteOptions::new(),
-                Some(csv_options),
-            ),
+            self.df
+                .as_ref()
+                .clone()
+                .write_csv(path, write_options, Some(csv_options)),
         )?;
         Ok(())
     }
@@ -464,13 +476,15 @@ impl PyDataFrame {
     #[pyo3(signature = (
         path,
         compression="zstd",
-        compression_level=None
+        compression_level=None,
+        write_options=None,
         ))]
     fn write_parquet(
         &self,
         path: &str,
         compression: &str,
         compression_level: Option<u32>,
+        write_options: Option<PyDataFrameWriteOptions>,
         py: Python,
     ) -> PyResult<()> {
         fn verify_compression_level(cl: Option<u32>) -> Result<u32, PyErr> {
@@ -510,25 +524,37 @@ impl PyDataFrame {
         let mut options = TableParquetOptions::default();
         options.global.compression = Some(compression_string);
 
-        wait_for_future(
-            py,
-            self.df.as_ref().clone().write_parquet(
-                path,
-                DataFrameWriteOptions::new(),
-                Option::from(options),
-            ),
-        )?;
-        Ok(())
-    }
+        let write_options = make_dataframe_write_options(write_options)?;
 
-    /// Executes a query and writes the results to a partitioned JSON file.
-    fn write_json(&self, path: &str, py: Python) -> PyResult<()> {
         wait_for_future(
             py,
             self.df
                 .as_ref()
                 .clone()
-                .write_json(path, DataFrameWriteOptions::new(), None),
+                .write_parquet(path, write_options, Option::from(options)),
+        )?;
+        Ok(())
+    }
+
+    /// Executes a query and writes the results to a partitioned JSON file.
+    #[pyo3(signature = (
+        path,
+        write_options=None,
+        ))]
+    fn write_json(
+        &self,
+        path: &str,
+        write_options: Option<PyDataFrameWriteOptions>,
+        py: Python,
+    ) -> PyResult<()> {
+        let write_options = make_dataframe_write_options(write_options)?;
+
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_json(path, write_options, None),
         )?;
         Ok(())
     }
