@@ -18,7 +18,7 @@
 use pyo3::{prelude::*, types::PyBytes};
 
 use crate::context::PySessionContext;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
 
@@ -66,41 +66,47 @@ pub struct PySubstraitSerializer;
 #[pymethods]
 impl PySubstraitSerializer {
     #[staticmethod]
-    pub fn serialize(sql: &str, ctx: PySessionContext, path: &str, py: Python) -> PyResult<()> {
-        wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))
-            .map_err(PyDataFusionError::from)?;
+    pub fn serialize(
+        sql: &str,
+        ctx: PySessionContext,
+        path: &str,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))?;
         Ok(())
     }
 
     #[staticmethod]
-    pub fn serialize_to_plan(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyPlan> {
-        match PySubstraitSerializer::serialize_bytes(sql, ctx, py) {
-            Ok(proto_bytes) => {
-                let proto_bytes = proto_bytes.bind(py).downcast::<PyBytes>().unwrap();
-                PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
-            }
-            Err(e) => Err(py_datafusion_err(e)),
-        }
+    pub fn serialize_to_plan(
+        sql: &str,
+        ctx: PySessionContext,
+        py: Python,
+    ) -> PyDataFusionResult<PyPlan> {
+        PySubstraitSerializer::serialize_bytes(sql, ctx, py).and_then(|proto_bytes| {
+            let proto_bytes = proto_bytes.bind(py).downcast::<PyBytes>().unwrap();
+            PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
+        })
     }
 
     #[staticmethod]
-    pub fn serialize_bytes(sql: &str, ctx: PySessionContext, py: Python) -> PyResult<PyObject> {
-        let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))
-            .map_err(PyDataFusionError::from)?;
+    pub fn serialize_bytes(
+        sql: &str,
+        ctx: PySessionContext,
+        py: Python,
+    ) -> PyDataFusionResult<PyObject> {
+        let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))?;
         Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
     }
 
     #[staticmethod]
-    pub fn deserialize(path: &str, py: Python) -> PyResult<PyPlan> {
-        let plan =
-            wait_for_future(py, serializer::deserialize(path)).map_err(PyDataFusionError::from)?;
+    pub fn deserialize(path: &str, py: Python) -> PyDataFusionResult<PyPlan> {
+        let plan = wait_for_future(py, serializer::deserialize(path))?;
         Ok(PyPlan { plan: *plan })
     }
 
     #[staticmethod]
-    pub fn deserialize_bytes(proto_bytes: Vec<u8>, py: Python) -> PyResult<PyPlan> {
-        let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))
-            .map_err(PyDataFusionError::from)?;
+    pub fn deserialize_bytes(proto_bytes: Vec<u8>, py: Python) -> PyDataFusionResult<PyPlan> {
+        let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))?;
         Ok(PyPlan { plan: *plan })
     }
 }
@@ -134,10 +140,10 @@ impl PySubstraitConsumer {
         ctx: &mut PySessionContext,
         plan: PyPlan,
         py: Python,
-    ) -> PyResult<PyLogicalPlan> {
+    ) -> PyDataFusionResult<PyLogicalPlan> {
         let session_state = ctx.ctx.state();
         let result = consumer::from_substrait_plan(&session_state, &plan.plan);
-        let logical_plan = wait_for_future(py, result).map_err(PyDataFusionError::from)?;
+        let logical_plan = wait_for_future(py, result)?;
         Ok(PyLogicalPlan::new(logical_plan))
     }
 }

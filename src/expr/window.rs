@@ -23,7 +23,7 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
-use crate::errors::{py_type_err, PyDataFusionError};
+use crate::errors::{py_type_err, PyDataFusionResult};
 use crate::expr::logical_node::LogicalNode;
 use crate::expr::sort_expr::{py_sort_expr_list, PySortExpr};
 use crate::expr::PyExpr;
@@ -254,7 +254,7 @@ impl PyWindowFrameBound {
         matches!(self.frame_bound, WindowFrameBound::Following(_))
     }
     /// Returns the offset of the window frame
-    pub fn get_offset(&self) -> PyResult<Option<u64>> {
+    pub fn get_offset(&self) -> PyDataFusionResult<Option<u64>> {
         match &self.frame_bound {
             WindowFrameBound::Preceding(val) | WindowFrameBound::Following(val) => match val {
                 x if x.is_null() => Ok(None),
@@ -263,15 +263,14 @@ impl PyWindowFrameBound {
                 ScalarValue::Int64(v) => Ok(v.map(|n| n as u64)),
                 ScalarValue::Utf8(Some(s)) => match s.parse::<u64>() {
                     Ok(s) => Ok(Some(s)),
-                    Err(_e) => Err(PyDataFusionError::from(DataFusionError::Plan(format!(
+                    Err(_e) => Err(DataFusionError::Plan(format!(
                         "Unable to parse u64 from Utf8 value '{s}'"
-                    )))
+                    ))
                     .into()),
                 },
-                ref x => Err(PyDataFusionError::from(DataFusionError::Plan(format!(
-                    "Unexpected window frame bound: {x}"
-                )))
-                .into()),
+                ref x => {
+                    Err(DataFusionError::Plan(format!("Unexpected window frame bound: {x}")).into())
+                }
             },
             WindowFrameBound::CurrentRow => Ok(None),
         }

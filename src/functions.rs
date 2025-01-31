@@ -25,6 +25,7 @@ use crate::common::data_type::NullTreatment;
 use crate::common::data_type::PyScalarValue;
 use crate::context::PySessionContext;
 use crate::errors::PyDataFusionError;
+use crate::errors::PyDataFusionResult;
 use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::expr::sort_expr::PySortExpr;
@@ -45,7 +46,7 @@ fn add_builder_fns_to_aggregate(
     filter: Option<PyExpr>,
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     // Since ExprFuncBuilder::new() is private, we can guarantee initializing
     // a builder with an `null_treatment` with option None
     let mut builder = agg_fn.null_treatment(None);
@@ -65,7 +66,7 @@ fn add_builder_fns_to_aggregate(
 
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
 
-    Ok(builder.build().map_err(PyDataFusionError::from)?.into())
+    Ok(builder.build()?.into())
 }
 
 #[pyfunction]
@@ -229,7 +230,10 @@ fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
 /// 1) If no function has been found, search default aggregate functions.
 ///
 /// NOTE: we search the built-ins first because the `UDAF` versions currently do not have the same behavior.
-fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowFunctionDefinition> {
+fn find_window_fn(
+    name: &str,
+    ctx: Option<PySessionContext>,
+) -> PyDataFusionResult<WindowFunctionDefinition> {
     if let Some(ctx) = ctx {
         // search UDAFs
         let udaf = ctx
@@ -285,7 +289,9 @@ fn find_window_fn(name: &str, ctx: Option<PySessionContext>) -> PyResult<WindowF
         return Ok(window_fn);
     }
 
-    Err(PyDataFusionError::Common(format!("window function `{name}` not found")).into())
+    Err(PyDataFusionError::Common(format!(
+        "window function `{name}` not found"
+    )))
 }
 
 /// Creates a new Window function expression
@@ -342,7 +348,7 @@ macro_rules! aggregate_function {
             filter: Option<PyExpr>,
             order_by: Option<Vec<PySortExpr>>,
             null_treatment: Option<NullTreatment>
-        ) -> PyResult<PyExpr> {
+        ) -> PyDataFusionResult<PyExpr> {
             let agg_fn = functions_aggregate::expr_fn::$NAME($($arg.into()),*);
 
             add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
@@ -363,7 +369,7 @@ macro_rules! aggregate_function_vec_args {
             filter: Option<PyExpr>,
             order_by: Option<Vec<PySortExpr>>,
             null_treatment: Option<NullTreatment>
-        ) -> PyResult<PyExpr> {
+        ) -> PyDataFusionResult<PyExpr> {
             let agg_fn = functions_aggregate::expr_fn::$NAME(vec![$($arg.into()),*]);
 
             add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
@@ -643,7 +649,7 @@ pub fn approx_percentile_cont(
     percentile: f64,
     num_centroids: Option<i64>, // enforces optional arguments at the end, currently
     filter: Option<PyExpr>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let args = if let Some(num_centroids) = num_centroids {
         vec![expression.expr, lit(percentile), lit(num_centroids)]
     } else {
@@ -662,7 +668,7 @@ pub fn approx_percentile_cont_with_weight(
     weight: PyExpr,
     percentile: f64,
     filter: Option<PyExpr>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
         expression.expr,
         weight.expr,
@@ -684,7 +690,7 @@ pub fn first_value(
     filter: Option<PyExpr>,
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
     let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
 
@@ -701,7 +707,7 @@ pub fn nth_value(
     filter: Option<PyExpr>,
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(expr.expr, n, vec![]);
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
@@ -716,7 +722,7 @@ pub fn string_agg(
     filter: Option<PyExpr>,
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let agg_fn = datafusion::functions_aggregate::string_agg::string_agg(expr.expr, lit(delimiter));
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
@@ -727,7 +733,7 @@ pub(crate) fn add_builder_fns_to_window(
     window_frame: Option<PyWindowFrame>,
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let null_treatment = null_treatment.map(|n| n.into());
     let mut builder = window_fn.null_treatment(null_treatment);
 
@@ -749,10 +755,7 @@ pub(crate) fn add_builder_fns_to_window(
         builder = builder.window_frame(window_frame.into());
     }
 
-    builder
-        .build()
-        .map(|e| e.into())
-        .map_err(|err| PyDataFusionError::from(err).into())
+    Ok(builder.build().map(|e| e.into())?)
 }
 
 #[pyfunction]
@@ -763,7 +766,7 @@ pub fn lead(
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
 
@@ -778,7 +781,7 @@ pub fn lag(
     default_value: Option<PyScalarValue>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
     let window_fn = functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
 
@@ -790,7 +793,7 @@ pub fn lag(
 pub fn row_number(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::row_number();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -801,7 +804,7 @@ pub fn row_number(
 pub fn rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -812,7 +815,7 @@ pub fn rank(
 pub fn dense_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::dense_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -823,7 +826,7 @@ pub fn dense_rank(
 pub fn percent_rank(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::percent_rank();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -834,7 +837,7 @@ pub fn percent_rank(
 pub fn cume_dist(
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::cume_dist();
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
@@ -846,7 +849,7 @@ pub fn ntile(
     arg: PyExpr,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
-) -> PyResult<PyExpr> {
+) -> PyDataFusionResult<PyExpr> {
     let window_fn = functions_window::expr_fn::ntile(arg.into());
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)

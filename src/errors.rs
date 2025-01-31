@@ -24,7 +24,7 @@ use datafusion::error::DataFusionError as InnerDataFusionError;
 use prost::EncodeError;
 use pyo3::{exceptions::PyException, PyErr};
 
-pub type Result<T> = std::result::Result<T, PyDataFusionError>;
+pub type PyDataFusionResult<T> = std::result::Result<T, PyDataFusionError>;
 
 #[derive(Debug)]
 pub enum PyDataFusionError {

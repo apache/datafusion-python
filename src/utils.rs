@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::errors::PyDataFusionError;
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::TokioRuntime;
 use datafusion::logical_expr::Volatility;
 use pyo3::exceptions::PyValueError;
@@ -47,7 +47,7 @@ where
     py.allow_threads(|| runtime.block_on(f))
 }
 
-pub(crate) fn parse_volatility(value: &str) -> Result<Volatility, PyDataFusionError> {
+pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
     Ok(match value {
         "immutable" => Volatility::Immutable,
         "stable" => Volatility::Stable,

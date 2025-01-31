@@ -24,7 +24,7 @@ use std::result::Result;
 use datafusion::common::{Column, ScalarValue};
 use datafusion::logical_expr::{expr::InList, Between, BinaryExpr, Expr, Operator};
 
-use crate::errors::PyDataFusionError;
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::pyarrow_util::scalar_to_pyarrow;
 
 #[derive(Debug)]
@@ -34,7 +34,7 @@ pub(crate) struct PyArrowFilterExpression(PyObject);
 fn operator_to_py<'py>(
     operator: &Operator,
     op: &Bound<'py, PyModule>,
-) -> Result<Bound<'py, PyAny>, PyDataFusionError> {
+) -> PyDataFusionResult<Bound<'py, PyAny>> {
     let py_op: Bound<'_, PyAny> = match operator {
         Operator::Eq => op.getattr("eq")?,
         Operator::NotEq => op.getattr("ne")?,
@@ -53,8 +53,8 @@ fn operator_to_py<'py>(
     Ok(py_op)
 }
 
-fn extract_scalar_list(exprs: &[Expr], py: Python) -> Result<Vec<PyObject>, PyDataFusionError> {
-    let ret: Result<Vec<PyObject>, PyDataFusionError> = exprs
+fn extract_scalar_list(exprs: &[Expr], py: Python) -> PyDataFusionResult<Vec<PyObject>> {
+    let ret = exprs
         .iter()
         .map(|expr| match expr {
             // TODO: should we also leverage `ScalarValue::to_pyarrow` here?
@@ -100,7 +100,7 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
         Python::with_gil(|py| {
             let pc = Python::import_bound(py, "pyarrow.compute")?;
             let op_module = Python::import_bound(py, "operator")?;
-            let pc_expr: Result<Bound<'_, PyAny>, PyDataFusionError> = match expr {
+            let pc_expr: PyDataFusionResult<Bound<'_, PyAny>> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
                 Expr::Literal(scalar) => Ok(scalar_to_pyarrow(scalar, py)?.into_bound(py)),
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {

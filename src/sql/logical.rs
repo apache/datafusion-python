@@ -17,7 +17,7 @@
 
 use std::sync::Arc;
 
-use crate::errors::PyDataFusionError;
+use crate::errors::PyDataFusionResult;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
 use crate::expr::distinct::PyDistinct;
@@ -126,18 +126,20 @@ impl PyLogicalPlan {
         format!("{}", self.plan.display_graphviz())
     }
 
-    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
+    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
         let codec = DefaultLogicalExtensionCodec {};
         let proto =
-            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, &codec)
-                .map_err(PyDataFusionError::from)?;
+            datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, &codec)?;
 
         let bytes = proto.encode_to_vec();
         Ok(PyBytes::new_bound(py, &bytes))
     }
 
     #[staticmethod]
-    pub fn from_proto(ctx: PySessionContext, proto_msg: Bound<'_, PyBytes>) -> PyResult<Self> {
+    pub fn from_proto(
+        ctx: PySessionContext,
+        proto_msg: Bound<'_, PyBytes>,
+    ) -> PyDataFusionResult<Self> {
         let bytes: &[u8] = proto_msg.extract()?;
         let proto_plan =
             datafusion_proto::protobuf::LogicalPlanNode::decode(bytes).map_err(|e| {
@@ -148,9 +150,7 @@ impl PyLogicalPlan {
             })?;
 
         let codec = DefaultLogicalExtensionCodec {};
-        let plan = proto_plan
-            .try_into_logical_plan(&ctx.ctx, &codec)
-            .map_err(PyDataFusionError::from)?;
+        let plan = proto_plan.try_into_logical_plan(&ctx.ctx, &codec)?;
         Ok(Self::new(plan))
     }
 }

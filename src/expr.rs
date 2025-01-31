@@ -34,7 +34,9 @@ use datafusion::logical_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
-use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError};
+use crate::errors::{
+    py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError, PyDataFusionResult,
+};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -567,7 +569,7 @@ impl PyExpr {
         window_frame: Option<PyWindowFrame>,
         order_by: Option<Vec<PySortExpr>>,
         null_treatment: Option<NullTreatment>,
-    ) -> PyResult<PyExpr> {
+    ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
@@ -594,7 +596,6 @@ impl PyExpr {
                 PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
                     format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
                 ))
-                .into(),
             ),
         }
     }
@@ -648,35 +649,26 @@ impl PyExprFuncBuilder {
             .into()
     }
 
-    pub fn build(&self) -> PyResult<PyExpr> {
-        self.builder
-            .clone()
-            .build()
-            .map(|expr| expr.into())
-            .map_err(PyDataFusionError::from)
-            .map_err(PyErr::from)
+    pub fn build(&self) -> PyDataFusionResult<PyExpr> {
+        Ok(self.builder.clone().build().map(|expr| expr.into())?)
     }
 }
 
 impl PyExpr {
-    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, PyDataFusionError> {
+    pub fn _column_name(&self, plan: &LogicalPlan) -> PyDataFusionResult<String> {
         let field = Self::expr_to_field(&self.expr, plan)?;
         Ok(field.name().to_owned())
     }
 
     /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
-    pub fn expr_to_field(
-        expr: &Expr,
-        input_plan: &LogicalPlan,
-    ) -> Result<Arc<Field>, PyDataFusionError> {
+    pub fn expr_to_field(expr: &Expr, input_plan: &LogicalPlan) -> PyDataFusionResult<Arc<Field>> {
         match expr {
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(Arc::new(input_plan.schema().field(0).clone()))
             }
             _ => {
-                let fields = exprlist_to_fields(&[expr.clone()], input_plan)
-                    .map_err(PyDataFusionError::from)?;
+                let fields = exprlist_to_fields(&[expr.clone()], input_plan)?;
                 Ok(fields[0].1.clone())
             }
         }
