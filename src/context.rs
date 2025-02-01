@@ -38,6 +38,7 @@ use crate::errors::{py_datafusion_err, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
+use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
@@ -661,9 +662,9 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
-            return Err(crate::errors::PyDataFusionError::Common(
-                "Delimiter must be a single character".to_string(),
-            ));
+            return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
+                "Delimiter must be a single character",
+            )));
         }
 
         let mut options = CsvReadOptions::new()
@@ -881,9 +882,9 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyDataFrame> {
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
-            return Err(crate::errors::PyDataFusionError::Common(
-                "Delimiter must be a single character".to_string(),
-            ));
+            return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
+                "Delimiter must be a single character",
+            )));
         };
 
         let mut options = CsvReadOptions::new()
