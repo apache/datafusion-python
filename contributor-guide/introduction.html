@@ -380,6 +380,11 @@
    Update Dependencies
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#improving-build-speed">
+   Improving Build Speed
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -461,6 +466,50 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest
 <p>To change test dependencies, change the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and run</p>
 <p>To update dependencies, run</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
+</pre></div>
+</div>
+</section>
+<section id="improving-build-speed">
+<h2>Improving Build Speed<a class="headerlink" href="#improving-build-speed" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> dependency of this project contains a <code class="docutils literal notranslate"><span class="pre">build.rs</span></code> file which
+can cause it to rebuild frequently. You can prevent this from happening by defining a <code class="docutils literal notranslate"><span class="pre">PYO3_CONFIG_FILE</span></code>
+environment variable that points to a file with your build configuration. Whenever your build configuration
+changes, such as during some major version updates, you will need to regenerate this file. This variable
+should point to a fully resolved path on your build machine.</p>
+<p>To generate this file, use the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">PYO3_PRINT_CONFIG</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>cargo<span class="w"> </span>build
+</pre></div>
+</div>
+<p>This will generate some output that looks like the following. You will want to copy these contents intro
+a file. If you place this file in your project directory with filename <code class="docutils literal notranslate"><span class="pre">.pyo3_build_config</span></code> it will
+be ignored by <code class="docutils literal notranslate"><span class="pre">git</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">implementation</span><span class="o">=</span><span class="n">CPython</span>
+<span class="n">version</span><span class="o">=</span><span class="mf">3.8</span>
+<span class="n">shared</span><span class="o">=</span><span class="n">true</span>
+<span class="n">abi3</span><span class="o">=</span><span class="n">true</span>
+<span class="n">lib_name</span><span class="o">=</span><span class="n">python3</span><span class="mf">.12</span>
+<span class="n">lib_dir</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">homebrew</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">python</span><span class="o">@</span><span class="mf">3.12</span><span class="o">/</span><span class="n">Frameworks</span><span class="o">/</span><span class="n">Python</span><span class="o">.</span><span class="n">framework</span><span class="o">/</span><span class="n">Versions</span><span class="o">/</span><span class="mf">3.12</span><span class="o">/</span><span class="n">lib</span>
+<span class="n">executable</span><span class="o">=/</span><span class="n">Users</span><span class="o">/</span><span class="n">myusername</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">datafusion</span><span class="o">-</span><span class="n">python</span><span class="o">/.</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span>
+<span class="n">pointer_width</span><span class="o">=</span><span class="mi">64</span>
+<span class="n">build_flags</span><span class="o">=</span>
+<span class="n">suppress_build_script_link_lines</span><span class="o">=</span><span class="n">false</span>
+</pre></div>
+</div>
+<p>Add the environment variable to your system.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PYO3_CONFIG_FILE</span><span class="o">=</span><span class="s2">&quot;/Users//myusername/src/datafusion-python/.pyo3_build_config&quot;</span>
+</pre></div>
+</div>
+<p>If you are on a Mac and you use VS Code for your IDE, you will want to add these variables
+to your settings. You can find the appropriate rust flags by looking in the
+<code class="docutils literal notranslate"><span class="pre">.cargo/config.toml</span></code> file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;rust-analyzer.cargo.extraEnv&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;RUSTFLAGS&quot;</span><span class="p">:</span> <span class="s2">&quot;-C link-arg=-undefined -C link-arg=dynamic_lookup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PYO3_CONFIG_FILE&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/myusername/src/datafusion-python/.pyo3_build_config&quot;</span>
+<span class="p">},</span>
+<span class="s2">&quot;rust-analyzer.runnables.extraEnv&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;RUSTFLAGS&quot;</span><span class="p">:</span> <span class="s2">&quot;-C link-arg=-undefined -C link-arg=dynamic_lookup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PYO3_CONFIG_FILE&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/myusername/src/personal/datafusion-python/.pyo3_build_config&quot;</span>
+<span class="p">}</span>
 </pre></div>
 </div>
 </section>
