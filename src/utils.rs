@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::errors::DataFusionError;
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::TokioRuntime;
 use datafusion::logical_expr::Volatility;
 use pyo3::exceptions::PyValueError;
@@ -47,13 +47,13 @@ where
     py.allow_threads(|| runtime.block_on(f))
 }
 
-pub(crate) fn parse_volatility(value: &str) -> Result<Volatility, DataFusionError> {
+pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
     Ok(match value {
         "immutable" => Volatility::Immutable,
         "stable" => Volatility::Stable,
         "volatile" => Volatility::Volatile,
         value => {
-            return Err(DataFusionError::Common(format!(
+            return Err(PyDataFusionError::Common(format!(
                 "Unsupportad volatility type: `{value}`, supported \
                  values are: immutable, stable and volatile."
             )))

@@ -21,8 +21,9 @@ use datafusion::logical_expr::{Expr, Window, WindowFrame, WindowFrameBound, Wind
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
+use crate::common::data_type::PyScalarValue;
 use crate::common::df_schema::PyDFSchema;
-use crate::errors::py_type_err;
+use crate::errors::{py_type_err, PyDataFusionResult};
 use crate::expr::logical_node::LogicalNode;
 use crate::expr::sort_expr::{py_sort_expr_list, PySortExpr};
 use crate::expr::PyExpr;
@@ -171,8 +172,8 @@ impl PyWindowFrame {
     #[pyo3(signature=(unit, start_bound, end_bound))]
     pub fn new(
         unit: &str,
-        start_bound: Option<ScalarValue>,
-        end_bound: Option<ScalarValue>,
+        start_bound: Option<PyScalarValue>,
+        end_bound: Option<PyScalarValue>,
     ) -> PyResult<Self> {
         let units = unit.to_ascii_lowercase();
         let units = match units.as_str() {
@@ -187,7 +188,7 @@ impl PyWindowFrame {
             }
         };
         let start_bound = match start_bound {
-            Some(start_bound) => WindowFrameBound::Preceding(start_bound),
+            Some(start_bound) => WindowFrameBound::Preceding(start_bound.0),
             None => match units {
                 WindowFrameUnits::Range => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Rows => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
@@ -200,7 +201,7 @@ impl PyWindowFrame {
             },
         };
         let end_bound = match end_bound {
-            Some(end_bound) => WindowFrameBound::Following(end_bound),
+            Some(end_bound) => WindowFrameBound::Following(end_bound.0),
             None => match units {
                 WindowFrameUnits::Rows => WindowFrameBound::Following(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Range => WindowFrameBound::Following(ScalarValue::UInt64(None)),
@@ -253,7 +254,7 @@ impl PyWindowFrameBound {
         matches!(self.frame_bound, WindowFrameBound::Following(_))
     }
     /// Returns the offset of the window frame
-    pub fn get_offset(&self) -> PyResult<Option<u64>> {
+    pub fn get_offset(&self) -> PyDataFusionResult<Option<u64>> {
         match &self.frame_bound {
             WindowFrameBound::Preceding(val) | WindowFrameBound::Following(val) => match val {
                 x if x.is_null() => Ok(None),

@@ -26,6 +26,7 @@ use datafusion::scalar::ScalarValue;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+use crate::common::data_type::PyScalarValue;
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 use datafusion::arrow::datatypes::DataType;
@@ -133,7 +134,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
             self.evaluator
                 .bind(py)
                 .call_method1("evaluate", py_args)
-                .and_then(|v| v.extract())
+                .and_then(|v| v.extract::<PyScalarValue>())
+                .map(|v| v.0)
                 .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })
     }
