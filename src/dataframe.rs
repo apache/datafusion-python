@@ -546,7 +546,7 @@ impl PyDataFrame {
     /// Collect the batches and pass to Arrow Table
     fn to_arrow_table(&self, py: Python<'_>) -> PyResult<PyObject> {
         let batches = self.collect(py)?.to_object(py);
-        let schema: PyObject = self.schema().into_py(py);
+        let schema: PyObject = self.schema().into_pyobject(py)?.to_object(py);
 
         // Instantiate pyarrow Table object and use its from_batches method
         let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
