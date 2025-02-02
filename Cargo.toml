@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "44.0.0"
+version = "45.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
 authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
@@ -35,13 +35,13 @@ substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
 tokio = { version = "1.42", features = ["macros", "rt", "rt-multi-thread", "sync"] }
-pyo3 = { version = "0.22", features = ["extension-module", "abi3", "abi3-py38"] }
-pyo3-async-runtimes = { version = "0.22", features = ["tokio-runtime"]}
-arrow = { version = "53", features = ["pyarrow"] }
-datafusion = { version = "44.0.0", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "44.0.0", optional = true }
-datafusion-proto = { version = "44.0.0" }
-datafusion-ffi = { version = "44.0.0" }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
+pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"]}
+arrow = { version = "54", features = ["pyarrow"] }
+datafusion = { git = "https://github.com/apache/datafusion.git", rev = "1a29bd3", version = "45.0.0", features = ["avro", "pyarrow", "unicode_expressions"] }
+datafusion-substrait = { git = "https://github.com/apache/datafusion.git", rev = "1a29bd3", version = "45.0.0", optional = true }
+datafusion-proto = { git = "https://github.com/apache/datafusion.git", rev = "1a29bd3", version = "45.0.0" }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "1a29bd3", version = "45.0.0" }
 prost = "0.13" # keep in line with `datafusion-substrait`
 uuid = { version = "1.12", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
