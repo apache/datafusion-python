@@ -128,7 +128,6 @@ test_source_distribution() {
   python3 -m venv .venv
   source .venv/bin/activate
   python3 -m pip install -U pip
-  python3 -m pip install -r requirements-310.txt
   maturin develop
 
   #TODO: we should really run tests here as well
