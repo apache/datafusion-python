@@ -33,6 +33,7 @@ use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
+use futures::StreamExt;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -90,8 +91,16 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyResult<String> {
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
+        let df = self.df.as_ref().clone();
+
+        let stream = wait_for_future(py, df.execute_stream()).map_err(py_datafusion_err)?;
+
+        let batches: Vec<RecordBatch>  = wait_for_future(
+            py,
+            stream.take(10).collect::<Vec<_>>())
+            .into_iter()
+            .collect::<Result<Vec<_>,_>>()?;
+
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
