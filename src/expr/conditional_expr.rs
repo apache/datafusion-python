@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
+use crate::{errors::PyDataFusionResult, expr::PyExpr};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use pyo3::prelude::*;
 
@@ -44,11 +44,11 @@ impl PyCaseBuilder {
         }
     }
 
-    fn otherwise(&mut self, else_expr: PyExpr) -> PyResult<PyExpr> {
+    fn otherwise(&mut self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
         Ok(self.case_builder.otherwise(else_expr.expr)?.clone().into())
     }
 
-    fn end(&mut self) -> PyResult<PyExpr> {
+    fn end(&mut self) -> PyDataFusionResult<PyExpr> {
         Ok(self.case_builder.end()?.clone().into())
     }
 }
