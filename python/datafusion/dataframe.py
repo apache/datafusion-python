@@ -121,6 +121,12 @@ class DataFrame:
         """
         self.df = df
 
+    def into_view(self) -> pa.Table:
+        """Register this DataFrame as a view in the current session.
+
+        """
+        return self.df.into_view()
+        
     def __getitem__(self, key: str | List[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
 
