@@ -40,6 +40,7 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
+use crate::catalog::PyTable;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
@@ -63,6 +64,15 @@ impl PyTableProvider {
 
     pub fn get_provider(&self) -> Arc<dyn TableProvider> {
         self.provider.clone()
+    }
+
+    /// Convert this TableProvider into a concrete Table wrapper, if possible.
+    pub fn as_table(&self) -> PyDataFusionResult<PyTable> {
+        // Here, you’d write the logic to convert your inner Arc<dyn TableProvider>
+        // to a PyTable (which is a Python–exposed concrete table type).
+        let table: Arc<dyn TableProvider> = self.provider.clone();
+        // Convert the trait object into your PyTable wrapper (if you have one)
+        Ok(PyTable::new(table))
     }
 }
 
@@ -106,12 +116,14 @@ impl PyDataFrame {
     }
 
     /// Convert this DataFrame into a view (i.e. a TableProvider) that can be registered.
-    fn into_view(&self) -> PyDataFusionResult<PyTableProvider> {
+    fn into_view(&self) -> PyDataFusionResult<PyTable> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
         // so that we don’t invalidate this PyDataFrame.
         let table_provider = self.df.as_ref().clone().into_view();
-        Ok(PyTableProvider::new(table_provider))
+        let table_provider = PyTableProvider::new(table_provider);
+
+        Ok(table_provider.as_table()?)
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {

@@ -1,8 +1,3 @@
-"""
-This script demonstrates how to register a filtered DataFrame as a table
-using DataFusion's `ctx.register_table` method and then query it.
-"""
-
 from datafusion import SessionContext, col, literal
 import pyarrow as pa
 import pytest
@@ -23,7 +18,8 @@ def test_register_filtered_dataframe():
     # Filter the DataFrame (for example, keep rows where a > 2)
     df_filtered = df.filter(col("a") > literal(2))
     view = df_filtered.into_view()
-
+    
+ 
     # Register the filtered DataFrame as a table called "view1"
     ctx.register_table("view1", view)
 
@@ -43,3 +39,5 @@ def test_register_filtered_dataframe():
 
     # Assert the results match the expected results
     assert result_dicts == expected_results
+    
+    assert view.kind == "view"
