@@ -1,6 +1,4 @@
 from datafusion import SessionContext, col, literal
-import pyarrow as pa
-import pytest
 
 
 def test_register_filtered_dataframe():
