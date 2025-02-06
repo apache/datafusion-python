@@ -62,17 +62,9 @@ impl PyTableProvider {
         Self { provider }
     }
 
-    pub fn get_provider(&self) -> Arc<dyn TableProvider> {
-        self.provider.clone()
-    }
-
-    /// Convert this TableProvider into a concrete Table wrapper, if possible.
     pub fn as_table(&self) -> PyDataFusionResult<PyTable> {
-        // Here, you’d write the logic to convert your inner Arc<dyn TableProvider>
-        // to a PyTable (which is a Python–exposed concrete table type).
-        let table: Arc<dyn TableProvider> = self.provider.clone();
-        // Convert the trait object into your PyTable wrapper (if you have one)
-        Ok(PyTable::new(table))
+        let table_provider: Arc<dyn TableProvider> = self.provider.clone();
+        Ok(PyTable::new(table_provider))
     }
 }
 
@@ -115,7 +107,7 @@ impl PyDataFrame {
         }
     }
 
-    /// Convert this DataFrame into a view (i.e. a TableProvider) that can be registered.
+    /// Convert this DataFrame into a Table that can be used in register_table
     fn into_view(&self) -> PyDataFusionResult<PyTable> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
