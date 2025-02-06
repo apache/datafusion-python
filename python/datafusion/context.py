@@ -636,7 +636,7 @@ class SessionContext:
 
     def from_pydict(
         self, data: dict[str, list[Any]], name: str | None = None
-    ) -> DataFramee
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from a dictionary.
 
         Args:

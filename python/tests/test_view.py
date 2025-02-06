@@ -22,10 +22,10 @@ def test_register_filtered_dataframe():
 
     # Filter the DataFrame (for example, keep rows where a > 2)
     df_filtered = df.filter(col("a") > literal(2))
-    df_filtered = df_filtered.into_view()
+    view = df_filtered.into_view()
 
     # Register the filtered DataFrame as a table called "view1"
-    ctx.register_table("view1", df_filtered)
+    ctx.register_table("view1", view)
 
     # Now run a SQL query against the registered table "view1"
     df_view = ctx.sql("SELECT * FROM view1")

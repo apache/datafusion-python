@@ -30,10 +30,10 @@ use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
+use datafusion::datasource::TableProvider;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use datafusion::sql::sqlparser::ast::Table;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -50,6 +50,21 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
+
+#[pyclass(name = "TableProvider", module = "datafusion")]
+pub struct PyTableProvider {
+    provider: Arc<dyn TableProvider>,
+}
+
+impl PyTableProvider {
+    pub fn new(provider: Arc<dyn TableProvider>) -> Self {
+        Self { provider }
+    }
+
+    pub fn get_provider(&self) -> Arc<dyn TableProvider> {
+        self.provider.clone()
+    }
+}
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -88,6 +103,15 @@ impl PyDataFrame {
             let message = "DataFrame can only be indexed by string index or indices".to_string();
             Err(PyDataFusionError::Common(message))
         }
+    }
+
+    /// Convert this DataFrame into a view (i.e. a TableProvider) that can be registered.
+    fn into_view(&self) -> PyDataFusionResult<PyTableProvider> {
+        // Call the underlying Rust DataFrame::into_view method.
+        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+        // so that we don’t invalidate this PyDataFrame.
+        let table_provider = self.df.as_ref().clone().into_view();
+        Ok(PyTableProvider::new(table_provider))
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
