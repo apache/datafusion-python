@@ -62,9 +62,9 @@ impl PyTableProvider {
         Self { provider }
     }
 
-    pub fn as_table(&self) -> PyDataFusionResult<PyTable> {
+    pub fn as_table(&self) -> PyTable {
         let table_provider: Arc<dyn TableProvider> = self.provider.clone();
-        Ok(PyTable::new(table_provider))
+        PyTable::new(table_provider)
     }
 }
 
@@ -105,17 +105,6 @@ impl PyDataFrame {
             let message = "DataFrame can only be indexed by string index or indices".to_string();
             Err(PyDataFusionError::Common(message))
         }
-    }
-
-    /// Convert this DataFrame into a Table that can be used in register_table
-    fn into_view(&self) -> PyDataFusionResult<PyTable> {
-        // Call the underlying Rust DataFrame::into_view method.
-        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don’t invalidate this PyDataFrame.
-        let table_provider = self.df.as_ref().clone().into_view();
-        let table_provider = PyTableProvider::new(table_provider);
-
-        Ok(table_provider.as_table()?)
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
@@ -183,6 +172,20 @@ impl PyDataFrame {
     /// Returns the schema from the logical plan
     fn schema(&self) -> PyArrowType<Schema> {
         PyArrowType(self.df.schema().into())
+    }
+
+    /// Convert this DataFrame into a Table that can be used in register_table
+    fn _into_view(&self) -> PyDataFusionResult<PyTable> {
+        // Call the underlying Rust DataFrame::into_view method.
+        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+        // so that we don’t invalidate this PyDataFrame.
+        // _into_view because clippy says `into_*` usually take `self` by value
+        // but we cannot own self because Python objects are shared,
+        // so 'self' cannot be moved out of the Python interpreter
+        let table_provider = self.df.as_ref().clone().into_view();
+        let table_provider = PyTableProvider::new(table_provider);
+
+        Ok(table_provider.as_table())
     }
 
     #[pyo3(signature = (*args))]

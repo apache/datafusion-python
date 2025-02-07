@@ -123,7 +123,11 @@ class DataFrame:
 
     def into_view(self) -> pa.Table:
         """Convert DataFrame as a ViewTable which can be used in register_table."""
-        return self.df.into_view()
+        return self._into_view()
+    
+    def _into_view(self) -> pa.Table:
+        """Convert DataFrame as a ViewTable which can be used in register_table."""
+        return self.df._into_view()
 
     def __getitem__(self, key: str | List[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
