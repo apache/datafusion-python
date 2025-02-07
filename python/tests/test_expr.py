@@ -148,8 +148,7 @@ def test_relational_expr(test_ctx):
     assert df.filter(col("b") == "beta").count() == 1
     assert df.filter(col("b") != "beta").count() == 2
 
-    with pytest.raises(Exception):
-        df.filter(col("a") == "beta").count()
+    assert df.filter(col("a") == "beta").count() == 0
 
 
 def test_expr_to_variant():

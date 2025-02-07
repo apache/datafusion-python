@@ -732,7 +732,7 @@ def test_array_function_obj_tests(stmt, py_expr):
         ),
         (
             f.regexp_match(column("a"), literal("(ell|orl)")),
-            pa.array([["ell"], ["orl"], None]),
+            pa.array([["ell"], ["orl"], None], type=pa.list_(pa.string_view())),
         ),
         (
             f.regexp_replace(column("a"), literal("(ell|orl)"), literal("-")),
