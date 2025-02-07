@@ -81,6 +81,49 @@ This produces the following chart:
 
 ![Chart](examples/chart.png)
 
+## Registering a DataFrame as a View
+
+You can use the `into_view` method to convert a DataFrame into a view and register it with the context.
+
+```python
+from datafusion import SessionContext, col, literal
+
+# Create a DataFusion context
+ctx = SessionContext()
+
+# Create sample data
+data = {"a": [1, 2, 3, 4, 5], "b": [10, 20, 30, 40, 50]}
+
+# Create a DataFrame from the dictionary
+df = ctx.from_pydict(data, "my_table")
+
+# Filter the DataFrame (for example, keep rows where a > 2)
+df_filtered = df.filter(col("a") > literal(2))
+
+# Convert the filtered DataFrame into a view
+view = df_filtered.into_view()
+
+# Register the view with the context
+ctx.register_table("view1", view)
+
+# Now run a SQL query against the registered view
+df_view = ctx.sql("SELECT * FROM view1")
+
+# Collect the results
+results = df_view.collect()
+
+# Convert results to a list of dictionaries for display
+result_dicts = [batch.to_pydict() for batch in results]
+
+print(result_dicts)
+```
+
+This will output:
+
+```python
+[{'a': [3, 4, 5], 'b': [30, 40, 50]}]
+```
+
 ## Configuration
 
 It is possible to configure runtime (memory and disk settings) and configuration settings when creating a context.
