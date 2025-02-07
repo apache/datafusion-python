@@ -960,7 +960,6 @@ dependencies = [
  "object_store",
  "parquet",
  "paste",
- "pyo3",
  "recursive",
  "sqlparser",
  "tokio",
