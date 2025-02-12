@@ -22,6 +22,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
+from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -33,13 +34,14 @@ from typing import (
     overload,
 )
 
+import pyarrow as pa
 from typing_extensions import deprecated
 
+from datafusion import functions as f
+from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
-
-import pyarrow as pa
-from datafusion import functions as f
 
 if TYPE_CHECKING:
     import pathlib
@@ -47,11 +49,6 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl
-
-from enum import Enum
-
-from datafusion._internal import DataFrame as DataFrameInternal
-from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
 # excerpt from deltalake
@@ -868,14 +865,14 @@ class DataFrame:
 
         Examples:
             >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
-            >>> df = df.fill_null("missing", subset=["name", "category"])  # Fill string columns
+            >>> # Fill nulls in specific string columns
+            >>> df = df.fill_null("missing", subset=["name", "category"])
 
         Notes:
             - Only fills nulls in columns where the value can be cast to the column type
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
         """
-
         # Get columns to process
         if subset is None:
             subset = self.schema().names
@@ -916,15 +913,17 @@ class DataFrame:
         """Fill NaN values in specified numeric columns with a value.
 
         Args:
-            value: Numeric value to replace NaN values with
-            subset: Optional list of column names to fill. If None, fills all numeric columns.
+            value: Numeric value to replace NaN values with.
+            subset: Optional list of column names to fill. If None, fills all numeric
+                columns.
 
         Returns:
-            DataFrame with NaN values replaced in numeric columns
+            DataFrame with NaN values replaced in numeric columns.
 
         Examples:
             >>> df = df.fill_nan(0)  # Fill all NaNs with 0 in numeric columns
-            >>> df = df.fill_nan(99.9, subset=["price", "score"])  # Fill specific columns
+            >>> # Fill NaNs in specific numeric columns
+            >>> df = df.fill_nan(99.9, subset=["price", "score"])
 
         Notes:
             - Only fills NaN values in numeric columns (float32, float64)
@@ -932,7 +931,6 @@ class DataFrame:
             - For columns not in subset, the original column is kept unchanged
             - Value must be numeric (int or float)
         """
-
         if not isinstance(value, (int, float)):
             raise ValueError("Value must be numeric (int or float)")
 
