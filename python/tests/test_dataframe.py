@@ -1264,3 +1264,51 @@ def test_fill_null(df):
     )
     with pytest.raises(ValueError, match="Column 'f' not found in DataFrame"):
         df_with_nulls.fill_null("missing", subset=["e", "f"])
+    
+    def test_fill_nan(df):
+        # Test filling NaNs with integer value
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        df_filled = df_with_nans.fill_nan(0)
+        result = df_filled.to_pydict()
+        assert result["d"] == [0, 0, 0]
+
+        # Test filling NaNs with float value
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        df_filled = df_with_nans.fill_nan(99.9)
+        result = df_filled.to_pydict()
+        assert result["d"] == [99.9, 99.9, 99.9]
+
+        # Test filling NaNs with subset of columns
+        df_with_nans = df.with_columns(
+            literal(float("nan")).cast(pa.float64()).alias("d"),
+            literal(float("nan")).cast(pa.float64()).alias("e"),
+        )
+        df_filled = df_with_nans.fill_nan(99.9, subset=["e"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [float("nan"), float("nan"), float("nan")]
+        assert result["e"] == [99.9, 99.9, 99.9]
+
+        # Test filling NaNs with value that cannot be cast to column type
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        with pytest.raises(ValueError, match="Value must be numeric"):
+            df_with_nans.fill_nan("invalid")
+
+        # Test filling NaNs with subset of columns where some casts fail
+        df_with_nans = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal(float("nan")).alias("e").cast(pa.float64()),
+        )
+        df_filled = df_with_nans.fill_nan(0, subset=["d", "e"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [0, 0, 0]
+        assert result["e"] == [0, 0, 0]
+
+        # Test filling NaNs with subset of columns where all casts succeed
+        df_with_nans = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal(float("nan")).alias("e").cast(pa.float64()),
+        )
+        df_filled = df_with_nans.fill_nan(99.9, subset=["e"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [float("nan"), float("nan"), float("nan")]
+        assert result["e"] == [99.9, 99.9, 99.9]
