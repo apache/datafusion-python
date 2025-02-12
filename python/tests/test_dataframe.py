@@ -1198,24 +1198,23 @@ def test_dataframe_repr_html(df) -> None:
     assert output.replace(" ", "") == ref_html.replace(" ", "")
 
 
-    
 def test_fill_null(df):
     # Test filling nulls with integer value
-    df_with_nulls = df.with_column("d", literal(None).cast(pa.int64()))    
+    df_with_nulls = df.with_column("d", literal(None).cast(pa.int64()))
     df_filled = df_with_nulls.fill_null(0)
     result = df_filled.to_pydict()
     assert result["d"] == [0, 0, 0]
 
     # Test filling nulls with string value
-    df_with_nulls = df.with_column("d", literal(None).cast(pa.string()))   
+    df_with_nulls = df.with_column("d", literal(None).cast(pa.string()))
     df_filled = df_with_nulls.fill_null("missing")
     result = df_filled.to_pydict()
-    assert result["e"] == ["missing", "missing", "missing"]
+    assert result["d"] == ["missing", "missing", "missing"]
 
     # Test filling nulls with subset of columns
     df_with_nulls = df.with_columns(
-        literal(None).alias("d"),
-        literal(None).alias("e"),
+        literal(None).cast(pa.int64()).alias("d"),
+        literal(None).cast(pa.string()).alias("e"),
     )
     df_filled = df_with_nulls.fill_null("missing", subset=["e"])
     result = df_filled.to_pydict()
@@ -1230,8 +1229,8 @@ def test_fill_null(df):
 
     # Test filling nulls with value that can be cast to some columns but not others
     df_with_nulls = df.with_columns(
-        literal(None).alias("d"),
-        literal(None).alias("e"),
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
     )
     df_filled = df_with_nulls.fill_null(0)
     result = df_filled.to_pydict()
@@ -1240,8 +1239,8 @@ def test_fill_null(df):
 
     # Test filling nulls with subset of columns where some casts fail
     df_with_nulls = df.with_columns(
-        literal(None).alias("d"),
-        literal(None).alias("e"),
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
     )
     df_filled = df_with_nulls.fill_null(0, subset=["d", "e"])
     result = df_filled.to_pydict()
@@ -1250,8 +1249,8 @@ def test_fill_null(df):
 
     # Test filling nulls with subset of columns where all casts succeed
     df_with_nulls = df.with_columns(
-        literal(None).alias("d"),
-        literal(None).alias("e"),
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
     )
     df_filled = df_with_nulls.fill_null("missing", subset=["e"])
     result = df_filled.to_pydict()
@@ -1260,8 +1259,8 @@ def test_fill_null(df):
 
     # Test filling nulls with subset of columns where some columns do not exist
     df_with_nulls = df.with_columns(
-        literal(None).alias("d"),
-        literal(None).alias("e"),
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
     )
     with pytest.raises(ValueError, match="Column 'f' not found in DataFrame"):
         df_with_nulls.fill_null("missing", subset=["e", "f"])
