@@ -1297,11 +1297,21 @@ def test_fill_null(df):
         df_with_nans = df.with_columns(
             literal(float("nan")).alias("d").cast(pa.float64()),
             literal(float("nan")).alias("e").cast(pa.float64()),
+            literal("abc").alias("f").cast(pa.string()),  # non-numeric column
         )
-        df_filled = df_with_nans.fill_nan(0, subset=["d", "e"])
+        df_filled = df_with_nans.fill_nan(0, subset=["d", "e", "f"])
         result = df_filled.to_pydict()
-        assert result["d"] == [0, 0, 0]
-        assert result["e"] == [0, 0, 0]
+        assert result["d"] == [0, 0, 0]  # succeeds
+        assert result["e"] == [0, 0, 0]  # succeeds
+        assert result["f"] == ["abc", "abc", "abc"]  # skipped because not numeric
+
+        # Test filling NaNs fails on non-numeric columns
+        df_with_mixed = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal("abc").alias("e").cast(pa.string()),
+        )
+        with pytest.raises(ValueError, match="Column 'e' is not a numeric column"):
+            df_with_mixed.fill_nan(0, subset=["d", "e"])
 
         # Test filling NaNs with subset of columns where all casts succeed
         df_with_nans = df.with_columns(
