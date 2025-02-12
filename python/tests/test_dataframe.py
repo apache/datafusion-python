@@ -1207,7 +1207,7 @@ def test_fill_null(df):
     assert result["d"] == [0, 0, 0]
 
     # Test filling nulls with string value
-    df_with_nulls = df.with_column("d", literal(None).cast(pa.int64()))    
+    df_with_nulls = df.with_column("d", literal(None).cast(pa.string()))   
     df_filled = df_with_nulls.fill_null("missing")
     result = df_filled.to_pydict()
     assert result["e"] == ["missing", "missing", "missing"]
