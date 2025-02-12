@@ -1196,3 +1196,129 @@ def test_dataframe_repr_html(df) -> None:
 
     # Ignore whitespace just to make this test look cleaner
     assert output.replace(" ", "") == ref_html.replace(" ", "")
+
+
+def test_fill_null(df):
+    # Test filling nulls with integer value
+    df_with_nulls = df.with_column("d", literal(None).cast(pa.int64()))
+    df_filled = df_with_nulls.fill_null(0)
+    result = df_filled.to_pydict()
+    assert result["d"] == [0, 0, 0]
+
+    # Test filling nulls with string value
+    df_with_nulls = df.with_column("d", literal(None).cast(pa.string()))
+    df_filled = df_with_nulls.fill_null("missing")
+    result = df_filled.to_pydict()
+    assert result["d"] == ["missing", "missing", "missing"]
+
+    # Test filling nulls with subset of columns
+    df_with_nulls = df.with_columns(
+        literal(None).cast(pa.int64()).alias("d"),
+        literal(None).cast(pa.string()).alias("e"),
+    )
+    df_filled = df_with_nulls.fill_null("missing", subset=["e"])
+    result = df_filled.to_pydict()
+    assert result["d"] == [None, None, None]
+    assert result["e"] == ["missing", "missing", "missing"]
+
+    # Test filling nulls with value that cannot be cast to column type
+    df_with_nulls = df.with_column("d", literal(None))
+    df_filled = df_with_nulls.fill_null("invalid")
+    result = df_filled.to_pydict()
+    assert result["d"] == [None, None, None]
+
+    # Test filling nulls with value that can be cast to some columns but not others
+    df_with_nulls = df.with_columns(
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
+    )
+    df_filled = df_with_nulls.fill_null(0)
+    result = df_filled.to_pydict()
+    assert result["d"] == [0, 0, 0]
+    assert result["e"] == [None, None, None]
+
+    # Test filling nulls with subset of columns where some casts fail
+    df_with_nulls = df.with_columns(
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
+    )
+    df_filled = df_with_nulls.fill_null(0, subset=["d", "e"])
+    result = df_filled.to_pydict()
+    assert result["d"] == [0, 0, 0]
+    assert result["e"] == [None, None, None]
+
+    # Test filling nulls with subset of columns where all casts succeed
+    df_with_nulls = df.with_columns(
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
+    )
+    df_filled = df_with_nulls.fill_null("missing", subset=["e"])
+    result = df_filled.to_pydict()
+    assert result["d"] == [None, None, None]
+    assert result["e"] == ["missing", "missing", "missing"]
+
+    # Test filling nulls with subset of columns where some columns do not exist
+    df_with_nulls = df.with_columns(
+        literal(None).alias("d").cast(pa.int64()),
+        literal(None).alias("e").cast(pa.string()),
+    )
+    with pytest.raises(ValueError, match="Column 'f' not found in DataFrame"):
+        df_with_nulls.fill_null("missing", subset=["e", "f"])
+
+    def test_fill_nan(df):
+        # Test filling NaNs with integer value
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        df_filled = df_with_nans.fill_nan(0)
+        result = df_filled.to_pydict()
+        assert result["d"] == [0, 0, 0]
+
+        # Test filling NaNs with float value
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        df_filled = df_with_nans.fill_nan(99.9)
+        result = df_filled.to_pydict()
+        assert result["d"] == [99.9, 99.9, 99.9]
+
+        # Test filling NaNs with subset of columns
+        df_with_nans = df.with_columns(
+            literal(float("nan")).cast(pa.float64()).alias("d"),
+            literal(float("nan")).cast(pa.float64()).alias("e"),
+        )
+        df_filled = df_with_nans.fill_nan(99.9, subset=["e"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [float("nan"), float("nan"), float("nan")]
+        assert result["e"] == [99.9, 99.9, 99.9]
+
+        # Test filling NaNs with value that cannot be cast to column type
+        df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))
+        with pytest.raises(ValueError, match="Value must be numeric"):
+            df_with_nans.fill_nan("invalid")
+
+        # Test filling NaNs with subset of columns where some casts fail
+        df_with_nans = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal(float("nan")).alias("e").cast(pa.float64()),
+            literal("abc").alias("f").cast(pa.string()),  # non-numeric column
+        )
+        df_filled = df_with_nans.fill_nan(0, subset=["d", "e", "f"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [0, 0, 0]  # succeeds
+        assert result["e"] == [0, 0, 0]  # succeeds
+        assert result["f"] == ["abc", "abc", "abc"]  # skipped because not numeric
+
+        # Test filling NaNs fails on non-numeric columns
+        df_with_mixed = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal("abc").alias("e").cast(pa.string()),
+        )
+        with pytest.raises(ValueError, match="Column 'e' is not a numeric column"):
+            df_with_mixed.fill_nan(0, subset=["d", "e"])
+
+        # Test filling NaNs with subset of columns where all casts succeed
+        df_with_nans = df.with_columns(
+            literal(float("nan")).alias("d").cast(pa.float64()),
+            literal(float("nan")).alias("e").cast(pa.float64()),
+        )
+        df_filled = df_with_nans.fill_nan(99.9, subset=["e"])
+        result = df_filled.to_pydict()
+        assert result["d"] == [float("nan"), float("nan"), float("nan")]
+        assert result["e"] == [99.9, 99.9, 99.9]
