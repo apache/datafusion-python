@@ -38,13 +38,13 @@ from typing_extensions import deprecated
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
 
+
 if TYPE_CHECKING:
     import pathlib
     from typing import Callable, Sequence
 
     import pandas as pd
     import polars as pl
-    import pyarrow as pa
 
 from enum import Enum
 
@@ -853,3 +853,60 @@ class DataFrame:
             DataFrame: After applying func to the original dataframe.
         """
         return func(self, *args)
+
+    def fill_null(self, value: Any, subset: list[str] | None = None) -> "DataFrame":
+        """Fill null values in specified columns with a value.
+        
+        Args:
+            value: Value to replace nulls with. Will be cast to match column type.
+            subset: Optional list of column names to fill. If None, fills all columns.
+        
+        Returns:
+            DataFrame with null values replaced where type casting is possible
+        
+        Examples:
+            >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible 
+            >>> df = df.fill_null("missing", subset=["name", "category"])  # Fill string columns
+            
+        Notes:
+            - Only fills nulls in columns where the value can be cast to the column type
+            - For columns where casting fails, the original column is kept unchanged
+            - For columns not in subset, the original column is kept unchanged
+        """
+        import pyarrow as pa
+        from datafusion import functions as f
+        
+        # Get columns to process
+        if subset is None:
+            subset = self.schema().names
+        else:
+            schema_cols = self.schema().names
+            for col in subset:
+                if col not in schema_cols:
+                    raise ValueError(f"Column '{col}' not found in DataFrame")
+
+        # Build expressions for select
+        exprs = []
+        for col_name in self.schema().names:
+            if col_name in subset:
+                # Get column type
+                col_type = self.schema().field(col_name).type
+                
+                try:
+                    # Try casting value to column type
+                    typed_value = pa.scalar(value, type=col_type)
+                    literal_expr = f.Expr.literal(typed_value)
+                    
+                    # Build coalesce expression
+                    expr = f.coalesce(f.col(col_name), literal_expr)
+                    exprs.append(expr.alias(col_name))
+                
+                except (pa.ArrowTypeError, pa.ArrowInvalid):
+                    # If cast fails, keep original column
+                    exprs.append(f.col(col_name))
+            else:
+                # Keep columns not in subset unchanged
+                exprs.append(f.col(col_name))
+                
+        # Return new DataFrame with filled values
+        return self.select(exprs)
