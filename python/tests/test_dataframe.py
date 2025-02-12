@@ -1264,7 +1264,7 @@ def test_fill_null(df):
     )
     with pytest.raises(ValueError, match="Column 'f' not found in DataFrame"):
         df_with_nulls.fill_null("missing", subset=["e", "f"])
-    
+
     def test_fill_nan(df):
         # Test filling NaNs with integer value
         df_with_nans = df.with_column("d", literal(float("nan")).cast(pa.float64()))

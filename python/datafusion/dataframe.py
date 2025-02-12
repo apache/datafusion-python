@@ -38,6 +38,8 @@ from typing_extensions import deprecated
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
 
+import pyarrow as pa
+from datafusion import functions as f
 
 if TYPE_CHECKING:
     import pathlib
@@ -45,7 +47,6 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl
-    import pyarrow as pa
 
 from enum import Enum
 
@@ -874,8 +875,6 @@ class DataFrame:
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
         """
-        import pyarrow as pa
-        from datafusion import functions as f
 
         # Get columns to process
         if subset is None:
@@ -910,30 +909,30 @@ class DataFrame:
                 exprs.append(f.col(col_name))
 
         return self.select(*exprs)
-    
-    def fill_nan(self, value: float | int, subset: list[str] | None = None) -> "DataFrame":
+
+    def fill_nan(
+        self, value: float | int, subset: list[str] | None = None
+    ) -> "DataFrame":
         """Fill NaN values in specified numeric columns with a value.
-        
+
         Args:
             value: Numeric value to replace NaN values with
             subset: Optional list of column names to fill. If None, fills all numeric columns.
-        
+
         Returns:
             DataFrame with NaN values replaced in numeric columns
-        
+
         Examples:
             >>> df = df.fill_nan(0)  # Fill all NaNs with 0 in numeric columns
             >>> df = df.fill_nan(99.9, subset=["price", "score"])  # Fill specific columns
-        
+
         Notes:
             - Only fills NaN values in numeric columns (float32, float64)
             - Non-numeric columns are kept unchanged
             - For columns not in subset, the original column is kept unchanged
             - Value must be numeric (int or float)
         """
-        import pyarrow as pa
-        from datafusion import functions as f
-        
+
         if not isinstance(value, (int, float)):
             raise ValueError("Value must be numeric (int or float)")
 
@@ -941,7 +940,8 @@ class DataFrame:
         if subset is None:
             # Only get numeric columns if no subset specified
             subset = [
-                field.name for field in self.schema() 
+                field.name
+                for field in self.schema()
                 if pa.types.is_floating(field.type)
             ]
         else:
@@ -962,5 +962,5 @@ class DataFrame:
             else:
                 # Keep columns not in subset unchanged
                 exprs.append(f.col(col_name))
-                
+
         return self.select(*exprs)
