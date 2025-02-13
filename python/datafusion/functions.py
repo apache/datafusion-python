@@ -332,8 +332,8 @@ def list_join(expr: Expr, delimiter: Expr) -> Expr:
 
 def in_list(arg: Expr, values: list[Expr], negated: bool = False) -> Expr:
     """Returns whether the argument is contained within the list ``values``."""
-    values_inner = [v.expr for v in values]
-    return Expr(f.in_list(arg.expr, values_inner, negated))
+    values = [v.expr for v in values]
+    return Expr(f.in_list(arg.expr, values, negated))
 
 
 def digest(value: Expr, method: Expr) -> Expr:
@@ -350,8 +350,8 @@ def concat(*args: Expr) -> Expr:
 
     NULL arguments are ignored.
     """
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.concat(args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.concat(args))
 
 
 def concat_ws(separator: str, *args: Expr) -> Expr:
@@ -359,8 +359,8 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
 
     ``NULL`` arguments are ignored. ``separator`` should not be ``NULL``.
     """
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.concat_ws(separator, args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.concat_ws(separator, args))
 
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
@@ -428,23 +428,12 @@ def window(
 
         df.select(functions.lag(col("a")).partition_by(col("b")).build())
     """
-    args_inner = [a.expr for a in args]
-    partition_by_inner = expr_list_to_raw_expr_list(partition_by)
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
-    window_frame_inner = window_frame.window_frame if window_frame is not None else None
-    ctx_inner = ctx.ctx if ctx is not None else None
-    return Expr(
-        f.window(
-            name,
-            args_inner,
-            partition_by_inner,
-            order_by_raw,
-            window_frame_inner,
-            ctx_inner,
-        )
-    )
+    args = [a.expr for a in args]
+    partition_by = expr_list_to_raw_expr_list(partition_by)
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
+    window_frame = window_frame.window_frame if window_frame is not None else None
+    ctx = ctx.ctx if ctx is not None else None
+    return Expr(f.window(name, args, partition_by, order_by_raw, window_frame, ctx))
 
 
 # scalar functions
@@ -547,8 +536,8 @@ def chr(arg: Expr) -> Expr:
 
 def coalesce(*args: Expr) -> Expr:
     """Returns the value of the first expr in ``args`` which is not NULL."""
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.coalesce(*args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.coalesce(*args))
 
 
 def cos(arg: Expr) -> Expr:
@@ -756,10 +745,8 @@ def regexp_like(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
     false otherwise.
     """
     if flags is not None:
-        flags_inner = flags.expr
-    else:
-        flags_inner = None
-    return Expr(f.regexp_like(string.expr, regex.expr, flags_inner))
+        flags = flags.expr
+    return Expr(f.regexp_like(string.expr, regex.expr, flags))
 
 
 def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
@@ -769,10 +756,8 @@ def regexp_match(string: Expr, regex: Expr, flags: Expr | None = None) -> Expr:
     corresponding index in ``regex`` to string in ``string``.
     """
     if flags is not None:
-        flags_inner = flags.expr
-    else:
-        flags_inner = None
-    return Expr(f.regexp_match(string.expr, regex.expr, flags_inner))
+        flags = flags.expr
+    return Expr(f.regexp_match(string.expr, regex.expr, flags))
 
 
 def regexp_replace(
@@ -787,12 +772,8 @@ def regexp_replace(
     <https://docs.rs/regex/latest/regex/#grouping-and-flags>
     """
     if flags is not None:
-        flags_inner = flags.expr
-    else:
-        flags_inner = None
-    return Expr(
-        f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags_inner)
-    )
+        flags = flags.expr
+    return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
 
 
 def repeat(string: Expr, n: Expr) -> Expr:
@@ -951,8 +932,8 @@ def to_timestamp(arg: Expr, *formatters: Expr) -> Expr:
     if formatters is None:
         return f.to_timestamp(arg.expr)
 
-    formatters_inner = [f.expr for f in formatters]
-    return Expr(f.to_timestamp(arg.expr, *formatters_inner))
+    formatters = [f.expr for f in formatters]
+    return Expr(f.to_timestamp(arg.expr, *formatters))
 
 
 def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
@@ -960,8 +941,8 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters_inner = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_millis(arg.expr, *formatters_inner))
+    formatters = [f.expr for f in formatters]
+    return Expr(f.to_timestamp_millis(arg.expr, *formatters))
 
 
 def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
@@ -969,8 +950,17 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters_inner = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_micros(arg.expr, *formatters_inner))
+    formatters = [f.expr for f in formatters]
+    return Expr(f.to_timestamp_micros(arg.expr, *formatters))
+
+
+def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
+    """Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
+
+    See :py:func:`to_timestamp` for a description on how to use formatters.
+    """
+    formatters = [f.expr for f in formatters]
+    return Expr(f.to_timestamp_nanos(arg.expr, *formatters))
 
 
 def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
@@ -978,8 +968,8 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
-    formatters_inner = [f.expr for f in formatters]
-    return Expr(f.to_timestamp_seconds(arg.expr, *formatters_inner))
+    formatters = [f.expr for f in formatters]
+    return Expr(f.to_timestamp_seconds(arg.expr, *formatters))
 
 
 def to_unixtime(string: Expr, *format_arguments: Expr) -> Expr:
@@ -1066,8 +1056,8 @@ def upper(arg: Expr) -> Expr:
 
 def make_array(*args: Expr) -> Expr:
     """Returns an array using the specified input expressions."""
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.make_array(args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.make_array(args))
 
 
 def make_list(*args: Expr) -> Expr:
@@ -1098,8 +1088,8 @@ def uuid() -> Expr:
 
 def struct(*args: Expr) -> Expr:
     """Returns a struct with the given arguments."""
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.struct(*args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.struct(*args))
 
 
 def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
@@ -1110,8 +1100,8 @@ def named_struct(name_pairs: list[tuple[str, Expr]]) -> Expr:
     ]
 
     # flatten
-    name_pairs_inner = [x.expr for xs in name_pair_exprs for x in xs]
-    return Expr(f.named_struct(*name_pairs_inner))
+    name_pairs = [x.expr for xs in name_pair_exprs for x in xs]
+    return Expr(f.named_struct(*name_pairs))
 
 
 def from_unixtime(arg: Expr) -> Expr:
@@ -1165,8 +1155,8 @@ def list_push_back(array: Expr, element: Expr) -> Expr:
 
 def array_concat(*args: Expr) -> Expr:
     """Concatenates the input arrays."""
-    args_inner = [arg.expr for arg in args]
-    return Expr(f.array_concat(args_inner))
+    args = [arg.expr for arg in args]
+    return Expr(f.array_concat(args))
 
 
 def array_cat(*args: Expr) -> Expr:
@@ -1510,10 +1500,8 @@ def array_slice(
 ) -> Expr:
     """Returns a slice of the array."""
     if stride is not None:
-        stride_inner = stride.expr
-    else:
-        stride_inner = None
-    return Expr(f.array_slice(array.expr, begin.expr, end.expr, stride_inner))
+        stride = stride.expr
+    return Expr(f.array_slice(array.expr, begin.expr, end.expr, stride))
 
 
 def list_slice(array: Expr, begin: Expr, end: Expr, stride: Expr | None = None) -> Expr:
@@ -1723,9 +1711,7 @@ def array_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Order the resultant array values
     """
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2223,9 +2209,7 @@ def first_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2257,9 +2241,7 @@ def last_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2293,9 +2275,7 @@ def nth_value(
         order_by: Set the ordering of the expression to evaluate
         null_treatment: Assign whether to respect or ignore null values.
     """
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(
@@ -2436,9 +2416,7 @@ def lead(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.lead(
@@ -2490,9 +2468,7 @@ def lag(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.lag(
@@ -2531,9 +2507,7 @@ def row_number(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.row_number(
@@ -2574,9 +2548,7 @@ def rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.rank(
@@ -2612,9 +2584,7 @@ def dense_rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.dense_rank(
@@ -2651,9 +2621,7 @@ def percent_rank(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.percent_rank(
@@ -2690,9 +2658,7 @@ def cume_dist(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.cume_dist(
@@ -2733,9 +2699,7 @@ def ntile(
     partition_cols = (
         [col.expr for col in partition_by] if partition_by is not None else None
     )
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
 
     return Expr(
         f.ntile(
@@ -2767,9 +2731,7 @@ def string_agg(
         filter: If provided, only compute against rows for which the filter is True
         order_by: Set the ordering of the expression to evaluate
     """
-    order_by_raw = (
-        sort_list_to_raw_sort_list(order_by) if order_by is not None else None
-    )
+    order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
 
     return Expr(

@@ -873,6 +873,18 @@ def test_temporal_functions(df):
         f.to_timestamp_millis(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_micros(literal("2023-09-07 05:06:14.523952")),
         f.extract(literal("day"), column("d")),
+        f.to_timestamp(
+            literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
+        ),
+        f.to_timestamp_seconds(
+            literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
+        ),
+        f.to_timestamp_millis(
+            literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
+        ),
+        f.to_timestamp_micros(
+            literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
+        ),
     )
     result = df.collect()
     assert len(result) == 1
@@ -911,7 +923,18 @@ def test_temporal_functions(df):
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
     assert result.column(10) == pa.array([31, 26, 2], type=pa.int32())
-
+    assert result.column(11) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+    )
+    assert result.column(12) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s")
+    )
+    assert result.column(13) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms")
+    )
+    assert result.column(14) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
+    )
 
 def test_arrow_cast(df):
     df = df.select(

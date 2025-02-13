@@ -24,7 +24,7 @@ See https://datafusion.apache.org/python for more information.
 try:
     import importlib.metadata as importlib_metadata
 except ImportError:
-    import importlib_metadata  # type: ignore
+    import importlib_metadata
 
 from .context import (
     SessionContext,

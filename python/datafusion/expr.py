@@ -175,10 +175,10 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: list[Expr | SortExpr],
-) -> list[expr_internal.SortExpr]:
+    sort_list: Optional[list[Expr | SortExpr]],
+) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
-    return [sort_or_default(e) for e in sort_list]
+    return [sort_or_default(e) for e in sort_list] if sort_list is not None else None
 
 
 class Expr:
@@ -306,23 +306,23 @@ class Expr:
             )
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: Any) -> Expr:  # type: ignore
+    def __eq__(self, rhs: Any) -> Expr:
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__eq__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__eq__(rhs.expr))
 
-    def __ne__(self, rhs: Any) -> Expr:  # type: ignore
+    def __ne__(self, rhs: Any) -> Expr:
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ne__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__ne__(rhs.expr))
 
     def __ge__(self, rhs: Any) -> Expr:
         """Greater than or equal to.
@@ -331,7 +331,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__ge__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__ge__(rhs.expr))
 
     def __gt__(self, rhs: Any) -> Expr:
         """Greater than.
@@ -340,7 +340,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__gt__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__gt__(rhs.expr))
 
     def __le__(self, rhs: Any) -> Expr:
         """Less than or equal to.
@@ -349,7 +349,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__le__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__le__(rhs.expr))
 
     def __lt__(self, rhs: Any) -> Expr:
         """Less than.
@@ -358,7 +358,7 @@ class Expr:
         """
         if not isinstance(rhs, Expr):
             rhs = Expr.literal(rhs)
-        return Expr(self.expr.__lt__(rhs.expr))  # type: ignore
+        return Expr(self.expr.__lt__(rhs.expr))
 
     __radd__ = __add__
     __rand__ = __and__
@@ -584,9 +584,7 @@ class Expr:
             window: Window definition
         """
         partition_by_raw = expr_list_to_raw_expr_list(window._partition_by)
-        order_by_raw = (
-            sort_list_to_raw_sort_list(window._order_by) if window._order_by else None
-        )
+        order_by_raw = sort_list_to_raw_sort_list(window._order_by)
         window_frame_raw = (
             window._window_frame.window_frame
             if window._window_frame is not None

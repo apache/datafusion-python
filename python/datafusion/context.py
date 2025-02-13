@@ -30,8 +30,6 @@ from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.udf import ScalarUDF, AggregateUDF, WindowUDF
 
-import pyarrow.dataset
-
 from typing import Any, TYPE_CHECKING, Protocol
 from typing_extensions import deprecated
 
@@ -489,10 +487,10 @@ class SessionContext:
             ctx = SessionContext()
             df = ctx.read_csv("data.csv")
         """
-        config_internal = config.config_internal if config is not None else None
-        runtime_internal = runtime.config_internal if runtime is not None else None
+        config = config.config_internal if config is not None else None
+        runtime = runtime.config_internal if runtime is not None else None
 
-        self.ctx = SessionContextInternal(config_internal, runtime_internal)
+        self.ctx = SessionContextInternal(config, runtime)
 
     def enable_url_table(self) -> "SessionContext":
         """Control if local files can be queried as tables.
@@ -818,13 +816,13 @@ class SessionContext:
             file_compression_type: File compression type.
         """
         if isinstance(path, list):
-            path_inner = [str(p) for p in path]
+            path = [str(p) for p in path]
         else:
-            path_inner = str(path)
+            path = str(path)
 
         self.ctx.register_csv(
             name,
-            path_inner,
+            path,
             schema,
             has_header,
             delimiter,
@@ -1017,11 +1015,11 @@ class SessionContext:
         if table_partition_cols is None:
             table_partition_cols = []
 
-        path_inner = [str(p) for p in path] if isinstance(path, list) else str(path)
+        path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
         return DataFrame(
             self.ctx.read_csv(
-                path_inner,
+                path,
                 schema,
                 has_header,
                 delimiter,
@@ -1064,7 +1062,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
-        file_sort_order_raw = (
+        file_sort_order = (
             [sort_list_to_raw_sort_list(f) for f in file_sort_order]
             if file_sort_order is not None
             else None
@@ -1077,7 +1075,7 @@ class SessionContext:
                 file_extension,
                 skip_metadata,
                 schema,
-                file_sort_order_raw,
+                file_sort_order,
             )
         )
 
