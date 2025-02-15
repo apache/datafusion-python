@@ -240,6 +240,7 @@ Functions
    datafusion.functions.to_timestamp
    datafusion.functions.to_timestamp_micros
    datafusion.functions.to_timestamp_millis
+   datafusion.functions.to_timestamp_nanos
    datafusion.functions.to_timestamp_seconds
    datafusion.functions.to_unixtime
    datafusion.functions.translate
@@ -2054,6 +2055,13 @@ Module Contents
 .. py:function:: to_timestamp_millis(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in milliseconds.
+
+   See :py:func:`to_timestamp` for a description on how to use formatters.
+
+
+.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
 
    See :py:func:`to_timestamp` for a description on how to use formatters.
 

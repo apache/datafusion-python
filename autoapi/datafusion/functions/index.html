@@ -2405,6 +2405,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.functions.to_timestamp_nanos">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       to_timestamp_nanos()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.functions.to_timestamp_seconds">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -3229,43 +3238,46 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_millis" title="datafusion.functions.to_timestamp_millis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_millis</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in milliseconds.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_seconds" title="datafusion.functions.to_timestamp_seconds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_seconds</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_nanos" title="datafusion.functions.to_timestamp_nanos"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_nanos</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<td><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in nanoseconds.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_timestamp_seconds" title="datafusion.functions.to_timestamp_seconds"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_timestamp_seconds</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in seconds.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.to_unixtime" title="datafusion.functions.to_unixtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_unixtime</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.to_unixtime" title="datafusion.functions.to_unixtime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_unixtime</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string and optional formats to a Unixtime.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.translate" title="datafusion.functions.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.translate" title="datafusion.functions.translate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">translate</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Replaces the characters in <code class="docutils literal notranslate"><span class="pre">from_val</span></code> with the counterpart in <code class="docutils literal notranslate"><span class="pre">to_val</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.trim" title="datafusion.functions.trim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.trim" title="datafusion.functions.trim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trim</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Removes all characters, spaces by default, from both sides of a string.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.trunc" title="datafusion.functions.trunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trunc</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.trunc" title="datafusion.functions.trunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trunc</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Truncate the number toward zero with optional precision.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.upper" title="datafusion.functions.upper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.upper" title="datafusion.functions.upper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">upper</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Converts a string to uppercase.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.uuid" title="datafusion.functions.uuid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uuid</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.uuid" title="datafusion.functions.uuid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uuid</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns uuid v4 as a string value.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.var" title="datafusion.functions.var"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.var" title="datafusion.functions.var"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the sample variance of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.var_pop" title="datafusion.functions.var_pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_pop</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.var_pop" title="datafusion.functions.var_pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_pop</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the population variance of the argument.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.var_samp" title="datafusion.functions.var_samp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_samp</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.var_samp" title="datafusion.functions.var_samp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_samp</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the sample variance of the argument.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.var_sample" title="datafusion.functions.var_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_sample</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.var_sample" title="datafusion.functions.var_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">var_sample</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Computes the sample variance of the argument.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.when" title="datafusion.functions.when"><code class="xref py py-obj docutils literal notranslate"><span class="pre">when</span></code></a>(→ datafusion.expr.CaseBuilder)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.when" title="datafusion.functions.when"><code class="xref py py-obj docutils literal notranslate"><span class="pre">when</span></code></a>(→ datafusion.expr.CaseBuilder)</p></td>
 <td><p>Create a case expression that has no base expression.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(→ datafusion.expr.Expr)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.window" title="datafusion.functions.window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">window</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Creates a new Window function expression.</p></td>
 </tr>
 </tbody>
@@ -5372,6 +5384,13 @@ the options <code class="docutils literal notranslate"><span class="pre">order_b
 <dt class="sig sig-object py" id="datafusion.functions.to_timestamp_millis">
 <span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_millis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_timestamp_millis" title="Link to this definition">¶</a></dt>
 <dd><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in milliseconds.</p>
+<p>See <a class="reference internal" href="#datafusion.functions.to_timestamp" title="datafusion.functions.to_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_timestamp()</span></code></a> for a description on how to use formatters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.functions.to_timestamp_nanos">
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">to_timestamp_nanos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">formatters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.to_timestamp_nanos" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a string and optional formats to a <code class="docutils literal notranslate"><span class="pre">Timestamp</span></code> in nanoseconds.</p>
 <p>See <a class="reference internal" href="#datafusion.functions.to_timestamp" title="datafusion.functions.to_timestamp"><code class="xref py py-func docutils literal notranslate"><span class="pre">to_timestamp()</span></code></a> for a description on how to use formatters.</p>
 </dd></dl>
 
