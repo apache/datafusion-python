@@ -61,3 +61,9 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+[patch.crates-io]
+datafusion = { path = "../datafusion/datafusion/core" }
+datafusion-substrait = { path = "../datafusion/datafusion/substrait" }
+datafusion-proto = { path = "../datafusion/datafusion/proto" }
+datafusion-ffi = { path = "../datafusion/datafusion/ffi" }
