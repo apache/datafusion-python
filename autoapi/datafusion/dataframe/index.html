@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
@@ -370,6 +370,98 @@
    Module Contents
   </a>
   <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.dataframe.Compression">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Compression
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.from_str">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.from_str()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.get_default_level">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.get_default_level()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.BROTLI">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.BROTLI
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.GZIP">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.GZIP
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ4">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.LZ4
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.LZ4_RAW">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.LZ4_RAW
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.SNAPPY">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.SNAPPY
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.UNCOMPRESSED">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.UNCOMPRESSED
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.Compression.ZSTD">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Compression.ZSTD
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame">
      <code class="docutils literal notranslate">
@@ -862,7 +954,10 @@
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.Compression" title="datafusion.dataframe.Compression"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Compression</span></code></a></p></td>
+<td><p>Enum representing the available compression types for Parquet files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p></td>
 <td><p>Two dimensional table representation of data.</p></td>
 </tr>
 </tbody>
@@ -870,6 +965,76 @@
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">Compression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe.Compression" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Enum representing the available compression types for Parquet files.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.from_str">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.Compression" title="datafusion.dataframe.Compression"><span class="pre">Compression</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.Compression.from_str" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a string to a Compression enum value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> – The string representation of the compression type.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The Compression enum lowercase value.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the string does not match any Compression enum value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.get_default_level">
+<span class="sig-name descname"><span class="pre">get_default_level</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.Compression.get_default_level" title="Link to this definition">¶</a></dt>
+<dd><p>Get the default compression level for the compression type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The default compression level for the compression type.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.BROTLI">
+<span class="sig-name descname"><span class="pre">BROTLI</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'brotli'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.BROTLI" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.GZIP">
+<span class="sig-name descname"><span class="pre">GZIP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gzip'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.GZIP" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.LZ4">
+<span class="sig-name descname"><span class="pre">LZ4</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'lz4'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.LZ4" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.LZ4_RAW">
+<span class="sig-name descname"><span class="pre">LZ4_RAW</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'lz4_raw'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.LZ4_RAW" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.SNAPPY">
+<span class="sig-name descname"><span class="pre">SNAPPY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'snappy'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.SNAPPY" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.UNCOMPRESSED">
+<span class="sig-name descname"><span class="pre">UNCOMPRESSED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'uncompressed'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.UNCOMPRESSED" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.Compression.ZSTD">
+<span class="sig-name descname"><span class="pre">ZSTD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'zstd'</span></em><a class="headerlink" href="#datafusion.dataframe.Compression.ZSTD" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">DataFrame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.DataFrame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe.DataFrame" title="Link to this definition">¶</a></dt>
@@ -1432,10 +1597,10 @@ determined of the dataframe. This is done by collecting it.</p>
 <span class="sig-name descname"><span class="pre">transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.transform" title="Link to this definition">¶</a></dt>
 <dd><p>Apply a function to the current DataFrame which returns another DataFrame.</p>
 <p>This is useful for chaining together multiple functions. For example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">add_3</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">add_3</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;modified&quot;</span><span class="p">,</span> <span class="n">lit</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
 
-<span class="k">def</span> <span class="nf">within_limit</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">within_limit</span><span class="p">(</span><span class="n">df</span><span class="p">:</span> <span class="n">DataFrame</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">DataFrame</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">lit</span><span class="p">(</span><span class="n">limit</span><span class="p">))</span><span class="o">.</span><span class="n">distinct</span><span class="p">()</span>
 
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">modify_df</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">within_limit</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
@@ -1600,14 +1765,25 @@ pass named expressions use the form name=Expr.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_parquet">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'uncompressed'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.dataframe.Compression" title="datafusion.dataframe.Compression"><span class="pre">Compression</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Compression.ZSTD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and write the results to a Parquet file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> – Path of the Parquet file to write.</p></li>
-<li><p><strong>compression</strong> – Compression type to use.</p></li>
-<li><p><strong>compression_level</strong> – Compression level to use.</p></li>
+<li><p><strong>compression</strong> – Compression type to use. Default is “ZSTD”.
+Available compression types are:
+- “uncompressed”: No compression.
+- “snappy”: Snappy compression.
+- “gzip”: Gzip compression.
+- “brotli”: Brotli compression.
+- “lz4”: LZ4 compression.
+- “lz4_raw”: LZ4_RAW compression.
+- “zstd”: Zstandard compression.</p></li>
+<li><p><strong>Note</strong> – LZO is not yet implemented in arrow-rs and is therefore excluded.</p></li>
+<li><p><strong>compression_level</strong> – Compression level to use. For ZSTD, the
+recommended range is 1 to 22, with the default being 4. Higher levels
+provide better compression but slower speed.</p></li>
 </ul>
 </dd>
 </dl>

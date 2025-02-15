@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
@@ -380,6 +380,11 @@
    Update Dependencies
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#improving-build-speed">
+   Improving Build Speed
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -413,18 +418,19 @@
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.</p>
 <section id="how-to-develop">
 <h2>How to develop<a class="headerlink" href="#how-to-develop" title="Link to this heading">¶</a></h2>
-<p>This assumes that you have rust and cargo installed. We use the workflow recommended by <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>.</p>
+<p>This assumes that you have rust and cargo installed. We use the workflow recommended by
+<a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> and <a class="reference external" href="https://github.com/PyO3/maturin">maturin</a>. We recommend using
+<a class="reference external" href="https://docs.astral.sh/uv/">uv</a> for python package management.</p>
+<p>By default <cite>uv</cite> will attempt to build the datafusion python package. For our development we prefer to build manually. This means
+that when creating your virtual environment using <cite>uv sync</cite> you need to pass in the additional <cite>–no-install-package datafusion</cite>
+and for <cite>uv run</cite> commands the additional parameter <cite>–no-project</cite></p>
 <p>Bootstrap:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># fetch this repo</span>
-git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/arrow-datafusion-python.git
-<span class="c1"># prepare development environment (used to build wheel / install in development)</span>
-python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>venv
-<span class="c1"># activate the venv</span>
-<span class="nb">source</span><span class="w"> </span>venv/bin/activate
-<span class="c1"># update pip itself if necessary</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip
-<span class="c1"># install dependencies (for Python 3.8+)</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-310.txt
+git<span class="w"> </span>clone<span class="w"> </span>git@github.com:apache/datafusion-python.git
+<span class="c1"># create the virtual enviornment</span>
+uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
+<span class="c1"># activate the environment</span>
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
 </pre></div>
 </div>
 <p>The tests rely on test data in git submodules.</p>
@@ -433,8 +439,8 @@ git<span class="w"> </span>submodule<span class="w"> </span>update
 </pre></div>
 </div>
 <p>Whenever rust code changes (your changes or via <cite>git pull</cite>):</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source venv/bin/activate&quot; first</span>
-maturin<span class="w"> </span>develop
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># make sure you activate the venv using &quot;source .venv/bin/activate&quot; first</span>
+maturin<span class="w"> </span>develop<span class="w"> </span>-uv
 python<span class="w"> </span>-m<span class="w"> </span>pytest
 </pre></div>
 </div>
@@ -457,17 +463,55 @@ python<span class="w"> </span>-m<span class="w"> </span>pytest
 </section>
 <section id="update-dependencies">
 <h2>Update Dependencies<a class="headerlink" href="#update-dependencies" title="Link to this heading">¶</a></h2>
-<p>To change test dependencies, change the <cite>requirements.in</cite> and run</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># install pip-tools (this can be done only once), also consider running in venv</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pip-tools
-python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
+<p>To change test dependencies, change the <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> and run</p>
+<p>To update dependencies, run</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--dev<span class="w"> </span>--no-install-package<span class="w"> </span>datafusion
 </pre></div>
 </div>
-<p>To update dependencies, run with <cite>-U</cite></p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>piptools<span class="w"> </span>compile<span class="w"> </span>-U<span class="w"> </span>--generate-hashes<span class="w"> </span>-o<span class="w"> </span>requirements-310.txt
+</section>
+<section id="improving-build-speed">
+<h2>Improving Build Speed<a class="headerlink" href="#improving-build-speed" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference external" href="https://github.com/PyO3/pyo3">pyo3</a> dependency of this project contains a <code class="docutils literal notranslate"><span class="pre">build.rs</span></code> file which
+can cause it to rebuild frequently. You can prevent this from happening by defining a <code class="docutils literal notranslate"><span class="pre">PYO3_CONFIG_FILE</span></code>
+environment variable that points to a file with your build configuration. Whenever your build configuration
+changes, such as during some major version updates, you will need to regenerate this file. This variable
+should point to a fully resolved path on your build machine.</p>
+<p>To generate this file, use the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nv">PYO3_PRINT_CONFIG</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>cargo<span class="w"> </span>build
 </pre></div>
 </div>
-<p>More details about pip-tools <a class="reference external" href="https://github.com/jazzband/pip-tools">here</a></p>
+<p>This will generate some output that looks like the following. You will want to copy these contents intro
+a file. If you place this file in your project directory with filename <code class="docutils literal notranslate"><span class="pre">.pyo3_build_config</span></code> it will
+be ignored by <code class="docutils literal notranslate"><span class="pre">git</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">implementation</span><span class="o">=</span><span class="n">CPython</span>
+<span class="n">version</span><span class="o">=</span><span class="mf">3.8</span>
+<span class="n">shared</span><span class="o">=</span><span class="n">true</span>
+<span class="n">abi3</span><span class="o">=</span><span class="n">true</span>
+<span class="n">lib_name</span><span class="o">=</span><span class="n">python3</span><span class="mf">.12</span>
+<span class="n">lib_dir</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">homebrew</span><span class="o">/</span><span class="n">opt</span><span class="o">/</span><span class="n">python</span><span class="o">@</span><span class="mf">3.12</span><span class="o">/</span><span class="n">Frameworks</span><span class="o">/</span><span class="n">Python</span><span class="o">.</span><span class="n">framework</span><span class="o">/</span><span class="n">Versions</span><span class="o">/</span><span class="mf">3.12</span><span class="o">/</span><span class="n">lib</span>
+<span class="n">executable</span><span class="o">=/</span><span class="n">Users</span><span class="o">/</span><span class="n">myusername</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">datafusion</span><span class="o">-</span><span class="n">python</span><span class="o">/.</span><span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">python</span>
+<span class="n">pointer_width</span><span class="o">=</span><span class="mi">64</span>
+<span class="n">build_flags</span><span class="o">=</span>
+<span class="n">suppress_build_script_link_lines</span><span class="o">=</span><span class="n">false</span>
+</pre></div>
+</div>
+<p>Add the environment variable to your system.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">PYO3_CONFIG_FILE</span><span class="o">=</span><span class="s2">&quot;/Users//myusername/src/datafusion-python/.pyo3_build_config&quot;</span>
+</pre></div>
+</div>
+<p>If you are on a Mac and you use VS Code for your IDE, you will want to add these variables
+to your settings. You can find the appropriate rust flags by looking in the
+<code class="docutils literal notranslate"><span class="pre">.cargo/config.toml</span></code> file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;rust-analyzer.cargo.extraEnv&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;RUSTFLAGS&quot;</span><span class="p">:</span> <span class="s2">&quot;-C link-arg=-undefined -C link-arg=dynamic_lookup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PYO3_CONFIG_FILE&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/myusername/src/datafusion-python/.pyo3_build_config&quot;</span>
+<span class="p">},</span>
+<span class="s2">&quot;rust-analyzer.runnables.extraEnv&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;RUSTFLAGS&quot;</span><span class="p">:</span> <span class="s2">&quot;-C link-arg=-undefined -C link-arg=dynamic_lookup&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PYO3_CONFIG_FILE&quot;</span><span class="p">:</span> <span class="s2">&quot;/Users/myusername/src/personal/datafusion-python/.pyo3_build_config&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
 </section>
 

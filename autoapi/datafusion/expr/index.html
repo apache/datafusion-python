@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
@@ -796,6 +796,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.sort()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.string_literal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.string_literal()
         </span>
        </code>
       </a>
@@ -1848,8 +1857,8 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CaseBuilder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">case_builder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.expr.CaseBuilder</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.expr.CaseBuilder" title="Link to this definition">¶</a></dt>
 <dd><p>Builder class for constructing case statements.</p>
 <p>An example usage would be as follows:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datafusion.functions</span> <span class="k">as</span> <span class="nn">f</span>
-<span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">lit</span><span class="p">,</span> <span class="n">col</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">datafusion.functions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">f</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">lit</span><span class="p">,</span> <span class="n">col</span>
 <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
     <span class="n">f</span><span class="o">.</span><span class="n">case</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;column_a&quot;</span><span class="p">)</span>
     <span class="o">.</span><span class="n">when</span><span class="p">(</span><span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;One&quot;</span><span class="p">))</span>
@@ -2208,6 +2217,17 @@ row as one of the possible valid <code class="docutils literal notranslate"><spa
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.string_literal">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">string_literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.string_literal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a UTF8 literal value.</p>
+<p>It is different from <cite>literal</cite> because it is pa.string() instead of
+pa.string_view()</p>
+<p>This is needed for cases where DataFusion is expecting a UTF8 instead of
+UTF8View literal, like in:
+<a class="reference external" href="https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179">https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179</a></p>
 </dd></dl>
 
 <dl class="py method">

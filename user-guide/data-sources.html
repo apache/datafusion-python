@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
@@ -423,7 +423,7 @@
 <h2>Local file<a class="headerlink" href="#local-file" title="Link to this heading">¶</a></h2>
 <p>DataFusion has the abilty to read from a variety of popular file formats, such as <a class="reference internal" href="io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a>,
 <a class="reference internal" href="io/csv.html#io-csv"><span class="std std-ref">CSV</span></a>, <a class="reference internal" href="io/json.html#io-json"><span class="std std-ref">JSON</span></a>, and <a class="reference internal" href="io/avro.html#io-avro"><span class="std std-ref">AVRO</span></a>.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -469,7 +469,7 @@ To do this in DataFusion, you can use one of the three functions
 dictionary and list objects, respectively. <code class="docutils literal notranslate"><span class="pre">create_dataframe</span></code> assumes you will pass in a list
 of list of <a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.RecordBatch.html">PyArrow Record Batches</a>.</p>
 <p>The following three examples all will create identical DataFrames:</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pyarrow</span> <span class="k">as</span> <span class="nn">pa</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">5</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">6</span><span class="p">]:</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pylist</span><span class="p">([</span>
    <span class="o">...</span><span class="p">:</span>     <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="s2">&quot;alpha&quot;</span> <span class="p">},</span>
@@ -535,7 +535,7 @@ The example below requires an appropriate S3 account with access credentials.</p
 <li><p><a class="reference internal" href="../autoapi/datafusion/object_store/index.html#datafusion.object_store.LocalFileSystem" title="datafusion.object_store.LocalFileSystem"><code class="xref py py-class docutils literal notranslate"><span class="pre">LocalFileSystem</span></code></a></p></li>
 <li><p><a class="reference internal" href="../autoapi/datafusion/object_store/index.html#datafusion.object_store.MicrosoftAzure" title="datafusion.object_store.MicrosoftAzure"><code class="xref py py-class docutils literal notranslate"><span class="pre">MicrosoftAzure</span></code></a></p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datafusion.object_store</span> <span class="kn">import</span> <span class="n">AmazonS3</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.object_store</span><span class="w"> </span><span class="kn">import</span> <span class="n">AmazonS3</span>
 
 <span class="n">region</span> <span class="o">=</span> <span class="s2">&quot;us-east-1&quot;</span>
 <span class="n">bucket_name</span> <span class="o">=</span> <span class="s2">&quot;yellow-trips&quot;</span>
@@ -565,7 +565,7 @@ interface can be imported to DataFusion using the
 <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_arrow()</span></code></a> function. Older verions of Polars may
 not support the arrow interface. In those cases, you can still import via the
 <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_polars" title="datafusion.context.SessionContext.from_polars"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_polars()</span></code></a> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;alpha&quot;</span><span class="p">,</span> <span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="s2">&quot;gamma&quot;</span><span class="p">]</span> <span class="p">}</span>
 <span class="n">pandas_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -574,7 +574,7 @@ not support the arrow interface. In those cases, you can still import via the
 <span class="n">datafusion_df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">polars</span> <span class="k">as</span> <span class="nn">pl</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">polars</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pl</span>
 <span class="n">polars_df</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
 <span class="n">datafusion_df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_arrow</span><span class="p">(</span><span class="n">polars_df</span><span class="p">)</span>
@@ -587,7 +587,7 @@ not support the arrow interface. In those cases, you can still import via the
 <p>DataFusion 43.0.0 and later support the ability to register table providers from sources such
 as Delta Lake. This will require a recent version of
 <a class="reference external" href="https://delta-io.github.io/delta-rs/">deltalake</a> to provide the required interfaces.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deltalake</span> <span class="kn">import</span> <span class="n">DeltaTable</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deltalake</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeltaTable</span>
 
 <span class="n">delta_table</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="p">(</span><span class="s2">&quot;path_to_table&quot;</span><span class="p">)</span>
 <span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;my_delta_table&quot;</span><span class="p">,</span> <span class="n">delta_table</span><span class="p">)</span>
@@ -599,7 +599,7 @@ as Delta Lake. This will require a recent version of
 <a class="reference external" href="https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html">Arrow DataSet</a>
 interface to import to DataFusion, but this does not support features such as filter push down
 which can lead to a significant performance difference.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deltalake</span> <span class="kn">import</span> <span class="n">DeltaTable</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deltalake</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeltaTable</span>
 
 <span class="n">delta_table</span> <span class="o">=</span> <span class="n">DeltaTable</span><span class="p">(</span><span class="s2">&quot;path_to_table&quot;</span><span class="p">)</span>
 <span class="n">ctx</span><span class="o">.</span><span class="n">register_dataset</span><span class="p">(</span><span class="s2">&quot;my_delta_table&quot;</span><span class="p">,</span> <span class="n">delta_table</span><span class="o">.</span><span class="n">to_pyarrow_dataset</span><span class="p">())</span>

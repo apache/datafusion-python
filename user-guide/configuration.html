@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
@@ -379,15 +379,15 @@
   <section id="configuration">
 <h1>Configuration<a class="headerlink" href="#configuration" title="Link to this heading">¶</a></h1>
 <p>Let’s look at how we can configure DataFusion. When creating a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, you can pass in
-a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> and <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.RuntimeConfig" title="datafusion.context.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object. These two cover a wide range of options.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">RuntimeConfig</span><span class="p">,</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> and <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder" title="datafusion.context.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object. These two cover a wide range of options.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">RuntimeEnvBuilder</span><span class="p">,</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
 
 <span class="c1"># create a session context with default settings</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
 
 <span class="c1"># create a session context with explicit runtime and config settings</span>
-<span class="n">runtime</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_disk_manager_os</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">10000000</span><span class="p">)</span>
+<span class="n">runtime</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_disk_manager_os</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">10000000</span><span class="p">)</span>
 <span class="n">config</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">SessionConfig</span><span class="p">()</span>
     <span class="o">.</span><span class="n">with_create_default_catalog_and_schema</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
@@ -405,7 +405,7 @@ a <a class="reference internal" href="../autoapi/datafusion/context/index.html#d
 </pre></div>
 </div>
 <p>You can read more about available <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> options in the <a class="reference external" href="https://arrow.apache.org/datafusion/user-guide/configs.html">rust DataFusion Configuration guide</a>,
-and about <code class="code docutils literal notranslate"><span class="pre">RuntimeConfig</span></code> options in the rust <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeConfig.html">online API documentation</a>.</p>
+and about <code class="code docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code> options in the rust <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html">online API documentation</a>.</p>
 </section>
 
 

@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
@@ -379,7 +379,7 @@
   <section id="parquet">
 <span id="io-parquet"></span><h1>Parquet<a class="headerlink" href="#parquet" title="Link to this heading">¶</a></h1>
 <p>It is quite simple to read a parquet file using the <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.read_parquet" title="datafusion.context.SessionContext.read_parquet"><code class="xref py py-func docutils literal notranslate"><span class="pre">read_parquet()</span></code></a> function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;file.parquet&quot;</span><span class="p">)</span>

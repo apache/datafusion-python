@@ -29,22 +29,24 @@ Doing so is a great way to help the community as well as get more familiar with 
 How to develop
 --------------
 
-This assumes that you have rust and cargo installed. We use the workflow recommended by `pyo3 <https://github.com/PyO3/pyo3>`_ and `maturin <https://github.com/PyO3/maturin>`_.
+This assumes that you have rust and cargo installed. We use the workflow recommended by
+`pyo3 <https://github.com/PyO3/pyo3>`_ and `maturin <https://github.com/PyO3/maturin>`_. We recommend using
+`uv <https://docs.astral.sh/uv/>`_ for python package management.
+
+By default `uv` will attempt to build the datafusion python package. For our development we prefer to build manually. This means
+that when creating your virtual environment using `uv sync` you need to pass in the additional `--no-install-package datafusion`
+and for `uv run` commands the additional parameter `--no-project`
 
 Bootstrap:
 
 .. code-block:: shell
 
     # fetch this repo
-    git clone git@github.com:apache/arrow-datafusion-python.git
-    # prepare development environment (used to build wheel / install in development)
-    python3 -m venv venv
-    # activate the venv
-    source venv/bin/activate
-    # update pip itself if necessary
-    python -m pip install -U pip
-    # install dependencies (for Python 3.8+)
-    python -m pip install -r requirements-310.txt
+    git clone git@github.com:apache/datafusion-python.git
+    # create the virtual enviornment
+    uv sync --dev --no-install-package datafusion
+    # activate the environment
+    source .venv/bin/activate
 
 The tests rely on test data in git submodules.
 
@@ -58,8 +60,8 @@ Whenever rust code changes (your changes or via `git pull`):
 
 .. code-block:: shell
 
-   # make sure you activate the venv using "source venv/bin/activate" first
-   maturin develop
+   # make sure you activate the venv using "source .venv/bin/activate" first
+   maturin develop -uv
    python -m pytest
 
 Running & Installing pre-commit hooks
@@ -86,20 +88,63 @@ Mostly, the ``python`` code is limited to pure wrappers with type hints and good
 Update Dependencies
 -------------------
 
-To change test dependencies, change the `requirements.in` and run
+To change test dependencies, change the ``pyproject.toml`` and run
+
+To update dependencies, run
 
 .. code-block:: shell
 
-    # install pip-tools (this can be done only once), also consider running in venv
-    python -m pip install pip-tools
-    python -m piptools compile --generate-hashes -o requirements-310.txt
+    uv sync --dev --no-install-package datafusion
 
+Improving Build Speed
+---------------------
 
-To update dependencies, run with `-U`
+The `pyo3 <https://github.com/PyO3/pyo3>`_ dependency of this project contains a ``build.rs`` file which
+can cause it to rebuild frequently. You can prevent this from happening by defining a ``PYO3_CONFIG_FILE``
+environment variable that points to a file with your build configuration. Whenever your build configuration
+changes, such as during some major version updates, you will need to regenerate this file. This variable
+should point to a fully resolved path on your build machine.
+
+To generate this file, use the following command:
 
 .. code-block:: shell
 
-   python -m piptools compile -U --generate-hashes -o requirements-310.txt
+    PYO3_PRINT_CONFIG=1 cargo build
 
+This will generate some output that looks like the following. You will want to copy these contents intro
+a file. If you place this file in your project directory with filename ``.pyo3_build_config`` it will
+be ignored by ``git``.
 
-More details about pip-tools `here <https://github.com/jazzband/pip-tools>`_
+.. code-block::
+
+    implementation=CPython
+    version=3.8
+    shared=true
+    abi3=true
+    lib_name=python3.12
+    lib_dir=/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/lib
+    executable=/Users/myusername/src/datafusion-python/.venv/bin/python
+    pointer_width=64
+    build_flags=
+    suppress_build_script_link_lines=false
+
+Add the environment variable to your system.
+
+.. code-block:: shell
+
+    export PYO3_CONFIG_FILE="/Users//myusername/src/datafusion-python/.pyo3_build_config"
+
+If you are on a Mac and you use VS Code for your IDE, you will want to add these variables
+to your settings. You can find the appropriate rust flags by looking in the
+``.cargo/config.toml`` file.
+
+.. code-block::
+
+    "rust-analyzer.cargo.extraEnv": {
+        "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup",
+        "PYO3_CONFIG_FILE": "/Users/myusername/src/datafusion-python/.pyo3_build_config"
+    },
+    "rust-analyzer.runnables.extraEnv": {
+        "RUSTFLAGS": "-C link-arg=-undefined -C link-arg=dynamic_lookup",
+        "PYO3_CONFIG_FILE": "/Users/myusername/src/personal/datafusion-python/.pyo3_build_config"
+    }

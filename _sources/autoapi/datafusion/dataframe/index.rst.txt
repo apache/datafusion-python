@@ -16,11 +16,77 @@ Classes
 
 .. autoapisummary::
 
+   datafusion.dataframe.Compression
    datafusion.dataframe.DataFrame
 
 
 Module Contents
 ---------------
+
+.. py:class:: Compression(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Enum representing the available compression types for Parquet files.
+
+
+   .. py:method:: from_str(value: str) -> Compression
+      :classmethod:
+
+
+      Convert a string to a Compression enum value.
+
+      :param value: The string representation of the compression type.
+
+      :returns: The Compression enum lowercase value.
+
+      :raises ValueError: If the string does not match any Compression enum value.
+
+
+
+   .. py:method:: get_default_level() -> Optional[int]
+
+      Get the default compression level for the compression type.
+
+      :returns: The default compression level for the compression type.
+
+
+
+   .. py:attribute:: BROTLI
+      :value: 'brotli'
+
+
+
+   .. py:attribute:: GZIP
+      :value: 'gzip'
+
+
+
+   .. py:attribute:: LZ4
+      :value: 'lz4'
+
+
+
+   .. py:attribute:: LZ4_RAW
+      :value: 'lz4_raw'
+
+
+
+   .. py:attribute:: SNAPPY
+      :value: 'snappy'
+
+
+
+   .. py:attribute:: UNCOMPRESSED
+      :value: 'uncompressed'
+
+
+
+   .. py:attribute:: ZSTD
+      :value: 'zstd'
+
+
 
 .. py:class:: DataFrame(df: datafusion._internal.DataFrame)
 
@@ -578,13 +644,24 @@ Module Contents
 
 
 
-   .. py:method:: write_parquet(path: str | pathlib.Path, compression: str = 'uncompressed', compression_level: int | None = None) -> None
+   .. py:method:: write_parquet(path: str | pathlib.Path, compression: Union[str, Compression] = Compression.ZSTD, compression_level: int | None = None) -> None
 
       Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
       :param path: Path of the Parquet file to write.
-      :param compression: Compression type to use.
-      :param compression_level: Compression level to use.
+      :param compression: Compression type to use. Default is "ZSTD".
+                          Available compression types are:
+                          - "uncompressed": No compression.
+                          - "snappy": Snappy compression.
+                          - "gzip": Gzip compression.
+                          - "brotli": Brotli compression.
+                          - "lz4": LZ4 compression.
+                          - "lz4_raw": LZ4_RAW compression.
+                          - "zstd": Zstandard compression.
+      :param Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
+      :param compression_level: Compression level to use. For ZSTD, the
+                                recommended range is 1 to 22, with the default being 4. Higher levels
+                                provide better compression but slower speed.
 
 
 

@@ -52,6 +52,20 @@ Module Contents
    This constructor is typically not called by the end user.
 
 
+   .. py:method:: __aiter__() -> typing_extensions.Self
+
+      Async iterator function.
+
+
+
+   .. py:method:: __anext__() -> RecordBatch
+      :async:
+
+
+      Async iterator function.
+
+
+
    .. py:method:: __iter__() -> typing_extensions.Self
 
       Iterator function.
@@ -64,7 +78,7 @@ Module Contents
 
 
 
-   .. py:method:: next() -> RecordBatch | None
+   .. py:method:: next() -> RecordBatch
 
       See :py:func:`__next__` for the iterator function.
 

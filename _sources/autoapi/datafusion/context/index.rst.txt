@@ -17,9 +17,11 @@ Classes
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
    datafusion.context.RuntimeConfig
+   datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
    datafusion.context.SessionConfig
    datafusion.context.SessionContext
+   datafusion.context.TableProviderExportable
 
 
 Module Contents
@@ -53,38 +55,48 @@ Module Contents
 
 .. py:class:: RuntimeConfig
 
+   Bases: :py:obj:`RuntimeEnvBuilder`
+
+
+   See `RuntimeEnvBuilder`.
+
+   Create a new :py:class:`RuntimeEnvBuilder` with default values.
+
+
+.. py:class:: RuntimeEnvBuilder
+
    Runtime configuration options.
 
-   Create a new :py:class:`RuntimeConfig` with default values.
+   Create a new :py:class:`RuntimeEnvBuilder` with default values.
 
 
-   .. py:method:: with_disk_manager_disabled() -> RuntimeConfig
+   .. py:method:: with_disk_manager_disabled() -> RuntimeEnvBuilder
 
       Disable the disk manager, attempts to create temporary files will error.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_disk_manager_os() -> RuntimeConfig
+   .. py:method:: with_disk_manager_os() -> RuntimeEnvBuilder
 
       Use the operating system's temporary directory for disk manager.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_disk_manager_specified(*paths: str | pathlib.Path) -> RuntimeConfig
+   .. py:method:: with_disk_manager_specified(*paths: str | pathlib.Path) -> RuntimeEnvBuilder
 
       Use the specified paths for the disk manager's temporary files.
 
       :param paths: Paths to use for the disk manager's temporary files.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_fair_spill_pool(size: int) -> RuntimeConfig
+   .. py:method:: with_fair_spill_pool(size: int) -> RuntimeEnvBuilder
 
       Use a fair spill pool with the specified size.
 
@@ -104,15 +116,15 @@ Module Contents
 
       :param size: Size of the memory pool in bytes.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Examples usage::
 
-          config = RuntimeConfig().with_fair_spill_pool(1024)
+          config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
 
 
 
-   .. py:method:: with_greedy_memory_pool(size: int) -> RuntimeConfig
+   .. py:method:: with_greedy_memory_pool(size: int) -> RuntimeEnvBuilder
 
       Use a greedy memory pool with the specified size.
 
@@ -122,33 +134,33 @@ Module Contents
 
       :param size: Size of the memory pool in bytes.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Example usage::
 
-          config = RuntimeConfig().with_greedy_memory_pool(1024)
+          config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
 
 
 
-   .. py:method:: with_temp_file_path(path: str | pathlib.Path) -> RuntimeConfig
+   .. py:method:: with_temp_file_path(path: str | pathlib.Path) -> RuntimeEnvBuilder
 
       Use the specified path to create any needed temporary files.
 
       :param path: Path to use for temporary files.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Example usage::
 
-          config = RuntimeConfig().with_temp_file_path("/tmp")
+          config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
 
 
 
-   .. py:method:: with_unbounded_memory_pool() -> RuntimeConfig
+   .. py:method:: with_unbounded_memory_pool() -> RuntimeEnvBuilder
 
       Use an unbounded memory pool.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
@@ -373,7 +385,7 @@ Module Contents
    .. py:attribute:: config_internal
 
 
-.. py:class:: SessionContext(config: SessionConfig | None = None, runtime: RuntimeConfig | None = None)
+.. py:class:: SessionContext(config: SessionConfig | None = None, runtime: RuntimeEnvBuilder | None = None)
 
    This is the main interface for executing queries and creating DataFrames.
 
@@ -436,6 +448,14 @@ Module Contents
    .. py:method:: empty_table() -> datafusion.dataframe.DataFrame
 
       Create an empty :py:class:`~datafusion.dataframe.DataFrame`.
+
+
+
+   .. py:method:: enable_url_table() -> SessionContext
+
+      Control if local files can be queried as tables.
+
+      :returns: A new :py:class:`SessionContext` object with url table enabled.
 
 
 
@@ -735,7 +755,7 @@ Module Contents
 
 
 
-   .. py:method:: register_table_provider(name: str, provider: Any) -> None
+   .. py:method:: register_table_provider(name: str, provider: TableProviderExportable) -> None
 
       Register a table provider.
 
@@ -811,5 +831,18 @@ Module Contents
 
 
    .. py:attribute:: ctx
+
+
+.. py:class:: TableProviderExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object that has __datafusion_table_provider__ PyCapsule.
+
+   https://datafusion.apache.org/python/user-guide/io/table_provider.html
+
+
+   .. py:method:: __datafusion_table_provider__() -> object
 
 

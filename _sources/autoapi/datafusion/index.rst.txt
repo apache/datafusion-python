@@ -53,7 +53,7 @@ Classes
    datafusion.LogicalPlan
    datafusion.RecordBatch
    datafusion.RecordBatchStream
-   datafusion.RuntimeConfig
+   datafusion.RuntimeEnvBuilder
    datafusion.SQLOptions
    datafusion.ScalarUDF
    datafusion.SessionConfig
@@ -634,6 +634,21 @@ Package Contents
 
 
 
+   .. py:method:: string_literal(value: str) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a UTF8 literal value.
+
+      It is different from `literal` because it is pa.string() instead of
+      pa.string_view()
+
+      This is needed for cases where DataFusion is expecting a UTF8 instead of
+      UTF8View literal, like in:
+      https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179
+
+
+
    .. py:method:: to_variant() -> Any
 
       Convert this expression into a python object if possible.
@@ -806,6 +821,20 @@ Package Contents
    This constructor is typically not called by the end user.
 
 
+   .. py:method:: __aiter__() -> typing_extensions.Self
+
+      Async iterator function.
+
+
+
+   .. py:method:: __anext__() -> RecordBatch
+      :async:
+
+
+      Async iterator function.
+
+
+
    .. py:method:: __iter__() -> typing_extensions.Self
 
       Iterator function.
@@ -818,7 +847,7 @@ Package Contents
 
 
 
-   .. py:method:: next() -> RecordBatch | None
+   .. py:method:: next() -> RecordBatch
 
       See :py:func:`__next__` for the iterator function.
 
@@ -827,40 +856,40 @@ Package Contents
    .. py:attribute:: rbs
 
 
-.. py:class:: RuntimeConfig
+.. py:class:: RuntimeEnvBuilder
 
    Runtime configuration options.
 
-   Create a new :py:class:`RuntimeConfig` with default values.
+   Create a new :py:class:`RuntimeEnvBuilder` with default values.
 
 
-   .. py:method:: with_disk_manager_disabled() -> RuntimeConfig
+   .. py:method:: with_disk_manager_disabled() -> RuntimeEnvBuilder
 
       Disable the disk manager, attempts to create temporary files will error.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_disk_manager_os() -> RuntimeConfig
+   .. py:method:: with_disk_manager_os() -> RuntimeEnvBuilder
 
       Use the operating system's temporary directory for disk manager.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_disk_manager_specified(*paths: str | pathlib.Path) -> RuntimeConfig
+   .. py:method:: with_disk_manager_specified(*paths: str | pathlib.Path) -> RuntimeEnvBuilder
 
       Use the specified paths for the disk manager's temporary files.
 
       :param paths: Paths to use for the disk manager's temporary files.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 
-   .. py:method:: with_fair_spill_pool(size: int) -> RuntimeConfig
+   .. py:method:: with_fair_spill_pool(size: int) -> RuntimeEnvBuilder
 
       Use a fair spill pool with the specified size.
 
@@ -880,15 +909,15 @@ Package Contents
 
       :param size: Size of the memory pool in bytes.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Examples usage::
 
-          config = RuntimeConfig().with_fair_spill_pool(1024)
+          config = RuntimeEnvBuilder().with_fair_spill_pool(1024)
 
 
 
-   .. py:method:: with_greedy_memory_pool(size: int) -> RuntimeConfig
+   .. py:method:: with_greedy_memory_pool(size: int) -> RuntimeEnvBuilder
 
       Use a greedy memory pool with the specified size.
 
@@ -898,33 +927,33 @@ Package Contents
 
       :param size: Size of the memory pool in bytes.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Example usage::
 
-          config = RuntimeConfig().with_greedy_memory_pool(1024)
+          config = RuntimeEnvBuilder().with_greedy_memory_pool(1024)
 
 
 
-   .. py:method:: with_temp_file_path(path: str | pathlib.Path) -> RuntimeConfig
+   .. py:method:: with_temp_file_path(path: str | pathlib.Path) -> RuntimeEnvBuilder
 
       Use the specified path to create any needed temporary files.
 
       :param path: Path to use for temporary files.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
       Example usage::
 
-          config = RuntimeConfig().with_temp_file_path("/tmp")
+          config = RuntimeEnvBuilder().with_temp_file_path("/tmp")
 
 
 
-   .. py:method:: with_unbounded_memory_pool() -> RuntimeConfig
+   .. py:method:: with_unbounded_memory_pool() -> RuntimeEnvBuilder
 
       Use an unbounded memory pool.
 
-      :returns: A new :py:class:`RuntimeConfig` object with the updated setting.
+      :returns: A new :py:class:`RuntimeEnvBuilder` object with the updated setting.
 
 
 

@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
@@ -425,11 +425,11 @@ multiple rows to produce a result for each individual row, unlike an aggregate f
 provides a single value for multiple rows.</p>
 <p>The window functions are availble in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">SessionContext</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
@@ -557,7 +557,7 @@ parameter.</p></li>
 </ul>
 <p>In this example we perform a “rolling average” of the speed of the current Pokemon and the
 two preceeding rows.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.expr</span> <span class="kn">import</span> <span class="n">WindowFrame</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">WindowFrame</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
@@ -599,7 +599,7 @@ nulls will fill in with the value of the most recent non-null row. To do this, w
 the window frame so that we only process up to the current row.</p>
 <p>In this example, we filter down to one specific type of Pokemon that does have some entries in
 it’s <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> column that are null.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion.common</span> <span class="kn">import</span> <span class="n">NullTreatment</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullTreatment</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span>  <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">,</span>

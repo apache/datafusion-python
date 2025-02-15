@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
@@ -1008,6 +1008,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.string_literal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.string_literal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Expr.to_variant">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1266,6 +1275,24 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__aiter__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__aiter__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__anext__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         RecordBatchStream.__anext__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.RecordBatchStream.__iter__">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1304,82 +1331,82 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.RuntimeConfig">
+    <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder">
      <code class="docutils literal notranslate">
       <span class="pre">
-       RuntimeConfig
+       RuntimeEnvBuilder
       </span>
      </code>
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_disabled">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_disabled">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_disabled()
+         RuntimeEnvBuilder.with_disk_manager_disabled()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_os">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_os">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_os()
+         RuntimeEnvBuilder.with_disk_manager_os()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_disk_manager_specified">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_specified">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_disk_manager_specified()
+         RuntimeEnvBuilder.with_disk_manager_specified()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_fair_spill_pool">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_fair_spill_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_fair_spill_pool()
+         RuntimeEnvBuilder.with_fair_spill_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_greedy_memory_pool">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_greedy_memory_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_greedy_memory_pool()
+         RuntimeEnvBuilder.with_greedy_memory_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_temp_file_path">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_temp_file_path">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_temp_file_path()
+         RuntimeEnvBuilder.with_temp_file_path()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.with_unbounded_memory_pool">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.with_unbounded_memory_pool()
+         RuntimeEnvBuilder.with_unbounded_memory_pool()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.RuntimeConfig.config_internal">
+      <a class="reference internal nav-link" href="#datafusion.RuntimeEnvBuilder.config_internal">
        <code class="docutils literal notranslate">
         <span class="pre">
-         RuntimeConfig.config_internal
+         RuntimeEnvBuilder.config_internal
         </span>
        </code>
       </a>
@@ -1863,7 +1890,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.RecordBatchStream" title="datafusion.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
 <td><p>This class represents a stream of record batches.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a></p></td>
 <td><p>Runtime configuration options.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.SQLOptions" title="datafusion.SQLOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SQLOptions</span></code></a></p></td>
@@ -1964,26 +1991,26 @@ can simply pass it’s type as <code class="docutils literal notranslate"><span 
 to it’s constructor, you can define a lambda or a factory method. During runtime
 the <a class="reference internal" href="#datafusion.Accumulator" title="datafusion.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> will be constructed for every instance in
 which this UDAF is used. The following examples are all valid.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyarrow</span> <span class="k">as</span> <span class="nn">pa</span>
-<span class="kn">import</span> <span class="nn">pyarrow.compute</span> <span class="k">as</span> <span class="nn">pc</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
 
-<span class="k">class</span> <span class="nc">Summarize</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Summarize</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">]:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">]:</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">]</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
 
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span>
 
-<span class="k">def</span> <span class="nf">sum_bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Summarize</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Summarize</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">Summarize</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
 
 <span class="n">udaf1</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">Summarize</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
@@ -2446,6 +2473,17 @@ row as one of the possible valid <code class="docutils literal notranslate"><spa
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.string_literal">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">string_literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.string_literal" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a UTF8 literal value.</p>
+<p>It is different from <cite>literal</cite> because it is pa.string() instead of
+pa.string_view()</p>
+<p>This is needed for cases where DataFusion is expecting a UTF8 instead of
+UTF8View literal, like in:
+<a class="reference external" href="https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179">https://github.com/apache/datafusion/blob/86740bfd3d9831d6b7c1d0e1bf4a21d91598a0ac/datafusion/functions/src/core/arrow_cast.rs#L179</a></p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.to_variant">
 <span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.Expr.to_variant" title="Link to this definition">¶</a></dt>
 <dd><p>Convert this expression into a python object if possible.</p>
@@ -2631,6 +2669,18 @@ using the `DOT</cite> language. This format can be visualized using software fro
 <a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame.execute_stream" title="datafusion.dataframe.DataFrame.execute_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">execute_stream()</span></code></a> operation.</p>
 <p>This constructor is typically not called by the end user.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__aiter__">
+<span class="sig-name descname"><span class="pre">__aiter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__aiter__" title="Link to this definition">¶</a></dt>
+<dd><p>Async iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.RecordBatchStream.__anext__">
+<em class="property"><span class="pre">async</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">__anext__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__anext__" title="Link to this definition">¶</a></dt>
+<dd><p>Async iterator function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RecordBatchStream.__iter__">
 <span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">typing_extensions.Self</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.__iter__" title="Link to this definition">¶</a></dt>
 <dd><p>Iterator function.</p>
@@ -2644,7 +2694,7 @@ using the `DOT</cite> language. This format can be visualized using software fro
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.RecordBatchStream.next">
-<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.next" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><span class="pre">RecordBatch</span></a></span></span><a class="headerlink" href="#datafusion.RecordBatchStream.next" title="Link to this definition">¶</a></dt>
 <dd><p>See <a class="reference internal" href="#datafusion.RecordBatchStream.__next__" title="datafusion.RecordBatchStream.__next__"><code class="xref py py-func docutils literal notranslate"><span class="pre">__next__()</span></code></a> for the iterator function.</p>
 </dd></dl>
 
@@ -2656,49 +2706,49 @@ using the `DOT</cite> language. This format can be visualized using software fro
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RuntimeConfig</span></span><a class="headerlink" href="#datafusion.RuntimeConfig" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RuntimeEnvBuilder</span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder" title="Link to this definition">¶</a></dt>
 <dd><p>Runtime configuration options.</p>
-<p>Create a new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> with default values.</p>
+<p>Create a new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> with default values.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_disabled">
-<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_disk_manager_disabled">
+<span class="sig-name descname"><span class="pre">with_disk_manager_disabled</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_disabled" title="Link to this definition">¶</a></dt>
 <dd><p>Disable the disk manager, attempts to create temporary files will error.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_os">
-<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_os" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_disk_manager_os">
+<span class="sig-name descname"><span class="pre">with_disk_manager_os</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_os" title="Link to this definition">¶</a></dt>
 <dd><p>Use the operating system’s temporary directory for disk manager.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_disk_manager_specified">
-<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_disk_manager_specified">
+<span class="sig-name descname"><span class="pre">with_disk_manager_specified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">paths</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_disk_manager_specified" title="Link to this definition">¶</a></dt>
 <dd><p>Use the specified paths for the disk manager’s temporary files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>paths</strong> – Paths to use for the disk manager’s temporary files.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_fair_spill_pool">
-<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_fair_spill_pool">
+<span class="sig-name descname"><span class="pre">with_fair_spill_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_fair_spill_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use a fair spill pool with the specified size.</p>
 <p>This pool works best when you know beforehand the query has multiple spillable
 operators that will likely all need to spill. Sometimes it will cause spills
@@ -2719,68 +2769,68 @@ doing so:</p>
 <dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Examples usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_fair_spill_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_greedy_memory_pool">
-<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_greedy_memory_pool">
+<span class="sig-name descname"><span class="pre">with_greedy_memory_pool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_greedy_memory_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use a greedy memory pool with the specified size.</p>
 <p>This pool works well for queries that do not need to spill or have a single
-spillable operator. See <a class="reference internal" href="#datafusion.RuntimeConfig.with_fair_spill_pool" title="datafusion.RuntimeConfig.with_fair_spill_pool"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fair_spill_pool()</span></code></a> if there are
+spillable operator. See <a class="reference internal" href="#datafusion.RuntimeEnvBuilder.with_fair_spill_pool" title="datafusion.RuntimeEnvBuilder.with_fair_spill_pool"><code class="xref py py-func docutils literal notranslate"><span class="pre">with_fair_spill_pool()</span></code></a> if there are
 multiple spillable operators that all will spill.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>size</strong> – Size of the memory pool in bytes.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_greedy_memory_pool</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_temp_file_path">
-<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_temp_file_path" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_temp_file_path">
+<span class="sig-name descname"><span class="pre">with_temp_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_temp_file_path" title="Link to this definition">¶</a></dt>
 <dd><p>Use the specified path to create any needed temporary files.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>path</strong> – Path to use for temporary files.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-even"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 <p>Example usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">RuntimeEnvBuilder</span><span class="p">()</span><span class="o">.</span><span class="n">with_temp_file_path</span><span class="p">(</span><span class="s2">&quot;/tmp&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.with_unbounded_memory_pool">
-<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><span class="pre">RuntimeConfig</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeConfig.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.with_unbounded_memory_pool">
+<span class="sig-name descname"><span class="pre">with_unbounded_memory_pool</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><span class="pre">RuntimeEnvBuilder</span></a></span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.with_unbounded_memory_pool" title="Link to this definition">¶</a></dt>
 <dd><p>Use an unbounded memory pool.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeConfig" title="datafusion.RuntimeConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeConfig</span></code></a> object with the updated setting.</p>
+<dd class="field-odd"><p>A new <a class="reference internal" href="#datafusion.RuntimeEnvBuilder" title="datafusion.RuntimeEnvBuilder"><code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code></a> object with the updated setting.</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.RuntimeConfig.config_internal">
-<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.RuntimeConfig.config_internal" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.RuntimeEnvBuilder.config_internal">
+<span class="sig-name descname"><span class="pre">config_internal</span></span><a class="headerlink" href="#datafusion.RuntimeEnvBuilder.config_internal" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -3210,16 +3260,16 @@ can simply pass it’s type as <code class="docutils literal notranslate"><span 
 to it’s constructor, you can define a lambda or a factory method. During runtime
 the <code class="xref py py-class docutils literal notranslate"><span class="pre">WindowEvaluator</span></code> will be constructed for every instance in
 which this UDWF is used. The following examples are all valid.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyarrow</span> <span class="k">as</span> <span class="nn">pa</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
 
-<span class="k">class</span> <span class="nc">BiasedNumbers</span><span class="p">(</span><span class="n">WindowEvaluator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BiasedNumbers</span><span class="p">(</span><span class="n">WindowEvaluator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
 
-    <span class="k">def</span> <span class="nf">evaluate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span> <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span> <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_rows</span><span class="p">)])</span>
 
-<span class="k">def</span> <span class="nf">bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BiasedNumbers</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BiasedNumbers</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">BiasedNumbers</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
 <span class="n">udwf1</span> <span class="o">=</span> <span class="n">udwf</span><span class="p">(</span><span class="n">BiasedNumbers</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>

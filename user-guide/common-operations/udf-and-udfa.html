@@ -22,7 +22,7 @@
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
     <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../_static/theme_overrides.css?v=dca7052a" />
@@ -417,13 +417,13 @@ Functions. You can define your own scalar function by calling
 output. DataFusion scalar UDFs operate on an entire batch of records at a time, though the
 evaluation of those records should be on a row by row basis. In the following example, we compute
 if the input array contains null values.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pyarrow</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">datafusion</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">4</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
    <span class="o">...</span><span class="p">:</span>     <span class="k">return</span> <span class="n">array</span><span class="o">.</span><span class="n">is_null</span><span class="p">()</span>
    <span class="o">...</span><span class="p">:</span> 
 
@@ -461,13 +461,13 @@ and construct an array. This operation of converting the built in data type of t
 python object can be one of the slowest operations in DataFusion, so it should be done sparingly.</p>
 <p>The following example performs the same operation as before with <code class="docutils literal notranslate"><span class="pre">is_null</span></code> but demonstrates
 converting to Python objects to do the evaluation.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">pyarrow</span>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">import</span> <span class="nn">datafusion</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udf</span><span class="p">,</span> <span class="n">col</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="k">def</span> <span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">13</span><span class="p">]:</span> <span class="k">def</span><span class="w"> </span><span class="nf">is_null</span><span class="p">(</span><span class="n">array</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
    <span class="o">....</span><span class="p">:</span>     <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">value</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">array</span><span class="p">])</span>
    <span class="o">....</span><span class="p">:</span> 
 
@@ -511,29 +511,29 @@ different states. Finally <code class="docutils literal notranslate"><span class
 <p>In the following example we want to define a custom aggregate function that will return the
 difference between the sum of two columns. The state can be represented by a single value and we can
 also see how the inputs to <code class="docutils literal notranslate"><span class="pre">update</span></code> and <code class="docutils literal notranslate"><span class="pre">merge</span></code> differ.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyarrow</span>
-<span class="kn">import</span> <span class="nn">pyarrow.compute</span>
-<span class="kn">import</span> <span class="nn">datafusion</span>
-<span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">udaf</span><span class="p">,</span> <span class="n">Accumulator</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">datafusion</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">udaf</span><span class="p">,</span> <span class="n">Accumulator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span>
 
-<span class="k">class</span> <span class="nc">MyAccumulator</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MyAccumulator</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Interface of a user-defined accumulation.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values_a</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">values_b</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values_a</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">,</span> <span class="n">values_b</span><span class="p">:</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values_a</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">-</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values_b</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">+</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">compute</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">])</span>
 
-    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">pyarrow</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">)</span>
 
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">datafusion</span><span class="o">.</span><span class="n">SessionContext</span><span class="p">()</span>
@@ -606,15 +606,15 @@ your function depends upon the specified frame, set this to <code class="docutil
 <li><p><code class="docutils literal notranslate"><span class="pre">include_rank</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code> for window functions that can be computed only using the rank
 information.</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pyarrow</span> <span class="k">as</span> <span class="nn">pa</span>
-<span class="kn">from</span> <span class="nn">datafusion</span> <span class="kn">import</span> <span class="n">udwf</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">SessionContext</span>
-<span class="kn">from</span> <span class="nn">datafusion.udf</span> <span class="kn">import</span> <span class="n">WindowEvaluator</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">udwf</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">SessionContext</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.udf</span><span class="w"> </span><span class="kn">import</span> <span class="n">WindowEvaluator</span>
 
-<span class="k">class</span> <span class="nc">ExponentialSmooth</span><span class="p">(</span><span class="n">WindowEvaluator</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExponentialSmooth</span><span class="p">(</span><span class="n">WindowEvaluator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
 
-    <span class="k">def</span> <span class="nf">evaluate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span> <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span> <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">curr_value</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>

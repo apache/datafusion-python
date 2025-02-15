@@ -60,6 +60,7 @@ Functions
    datafusion.functions.array_sort
    datafusion.functions.array_to_string
    datafusion.functions.array_union
+   datafusion.functions.arrow_cast
    datafusion.functions.arrow_typeof
    datafusion.functions.ascii
    datafusion.functions.asin
@@ -587,6 +588,11 @@ Module Contents
    Returns an array of the elements in the union of array1 and array2.
 
    Duplicate rows will not be returned.
+
+
+.. py:function:: arrow_cast(expr: datafusion.expr.Expr, data_type: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Casts an expression to a specified data type.
 
 
 .. py:function:: arrow_typeof(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
