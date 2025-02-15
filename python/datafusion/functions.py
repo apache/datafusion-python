@@ -252,6 +252,7 @@ __all__ = [
     "to_hex",
     "to_timestamp",
     "to_timestamp_micros",
+    "to_timestamp_nanos",
     "to_timestamp_millis",
     "to_timestamp_seconds",
     "to_unixtime",
