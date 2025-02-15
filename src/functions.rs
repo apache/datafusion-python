@@ -682,7 +682,7 @@ pub fn approx_percentile_cont_with_weight(
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
 
-// We handle first_value explicitly because the signature expects an order_by
+// We handle last_value explicitly because the signature expects an order_by
 // https://github.com/apache/datafusion/issues/12376
 #[pyfunction]
 #[pyo3(signature = (expr, distinct=None, filter=None, order_by=None, null_treatment=None))]
