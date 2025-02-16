@@ -21,7 +21,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from typing_extensions import deprecated
+try:
+    from typing import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame

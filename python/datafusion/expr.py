@@ -25,7 +25,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional, Type
 
 import pyarrow as pa
-from typing_extensions import deprecated
+
+try:
+    from typing import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion.common import DataTypeMap, NullTreatment, RexType
 
