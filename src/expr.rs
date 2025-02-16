@@ -24,7 +24,6 @@ use std::convert::{From, Into};
 use std::sync::Arc;
 use window::PyWindowFrame;
 
-use arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
@@ -33,15 +32,17 @@ use datafusion::logical_expr::{
     expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
-use datafusion::scalar::ScalarValue;
 
-use crate::common::data_type::{DataTypeMap, NullTreatment, RexType};
-use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, DataFusionError};
+use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
+use crate::errors::{
+    py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError, PyDataFusionResult,
+};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
 use crate::expr::literal::PyLiteral;
 use crate::functions::add_builder_fns_to_window;
+use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
 
 use self::alias::PyAlias;
@@ -261,8 +262,8 @@ impl PyExpr {
     }
 
     #[staticmethod]
-    pub fn literal(value: ScalarValue) -> PyExpr {
-        lit(value).into()
+    pub fn literal(value: PyScalarValue) -> PyExpr {
+        lit(value.0).into()
     }
 
     #[staticmethod]
@@ -356,7 +357,7 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => Ok(scalar_value.to_pyarrow(py)?),
+            Expr::Literal(scalar_value) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr
@@ -568,7 +569,7 @@ impl PyExpr {
         window_frame: Option<PyWindowFrame>,
         order_by: Option<Vec<PySortExpr>>,
         null_treatment: Option<NullTreatment>,
-    ) -> PyResult<PyExpr> {
+    ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
@@ -592,10 +593,9 @@ impl PyExpr {
                 null_treatment,
             ),
             _ => Err(
-                DataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
+                PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
                     format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
                 ))
-                .into(),
             ),
         }
     }
@@ -649,34 +649,26 @@ impl PyExprFuncBuilder {
             .into()
     }
 
-    pub fn build(&self) -> PyResult<PyExpr> {
-        self.builder
-            .clone()
-            .build()
-            .map(|expr| expr.into())
-            .map_err(|err| err.into())
+    pub fn build(&self) -> PyDataFusionResult<PyExpr> {
+        Ok(self.builder.clone().build().map(|expr| expr.into())?)
     }
 }
 
 impl PyExpr {
-    pub fn _column_name(&self, plan: &LogicalPlan) -> Result<String, DataFusionError> {
+    pub fn _column_name(&self, plan: &LogicalPlan) -> PyDataFusionResult<String> {
         let field = Self::expr_to_field(&self.expr, plan)?;
         Ok(field.name().to_owned())
     }
 
     /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
-    pub fn expr_to_field(
-        expr: &Expr,
-        input_plan: &LogicalPlan,
-    ) -> Result<Arc<Field>, DataFusionError> {
+    pub fn expr_to_field(expr: &Expr, input_plan: &LogicalPlan) -> PyDataFusionResult<Arc<Field>> {
         match expr {
             Expr::Wildcard { .. } => {
                 // Since * could be any of the valid column names just return the first one
                 Ok(Arc::new(input_plan.schema().field(0).clone()))
             }
             _ => {
-                let fields =
-                    exprlist_to_fields(&[expr.clone()], input_plan).map_err(PyErr::from)?;
+                let fields = exprlist_to_fields(&[expr.clone()], input_plan)?;
                 Ok(fields[0].1.clone())
             }
         }

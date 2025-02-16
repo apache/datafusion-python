@@ -16,8 +16,9 @@
 # under the License.
 
 import argparse
-from datafusion import SessionContext
 import time
+
+from datafusion import SessionContext
 
 
 def bench(data_path, query_path):

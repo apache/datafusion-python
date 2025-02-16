@@ -22,7 +22,7 @@ use std::sync::Arc;
 
 use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
 
-use crate::{context::PySessionContext, errors::DataFusionError};
+use crate::{context::PySessionContext, errors::PyDataFusionResult};
 
 #[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -58,7 +58,7 @@ impl PyExecutionPlan {
         format!("{}", d.indent(false))
     }
 
-    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyResult<Bound<'py, PyBytes>> {
+    pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
         let codec = DefaultPhysicalExtensionCodec {};
         let proto = datafusion_proto::protobuf::PhysicalPlanNode::try_from_physical_plan(
             self.plan.clone(),
@@ -70,7 +70,10 @@ impl PyExecutionPlan {
     }
 
     #[staticmethod]
-    pub fn from_proto(ctx: PySessionContext, proto_msg: Bound<'_, PyBytes>) -> PyResult<Self> {
+    pub fn from_proto(
+        ctx: PySessionContext,
+        proto_msg: Bound<'_, PyBytes>,
+    ) -> PyDataFusionResult<Self> {
         let bytes: &[u8] = proto_msg.extract()?;
         let proto_plan =
             datafusion_proto::protobuf::PhysicalPlanNode::decode(bytes).map_err(|e| {
@@ -81,9 +84,7 @@ impl PyExecutionPlan {
             })?;
 
         let codec = DefaultPhysicalExtensionCodec {};
-        let plan = proto_plan
-            .try_into_physical_plan(&ctx.ctx, &ctx.ctx.runtime_env(), &codec)
-            .map_err(DataFusionError::from)?;
+        let plan = proto_plan.try_into_physical_plan(&ctx.ctx, &ctx.ctx.runtime_env(), &codec)?;
         Ok(Self::new(plan))
     }
 

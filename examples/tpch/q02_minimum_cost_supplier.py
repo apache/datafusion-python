@@ -30,7 +30,8 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import datafusion
-from datafusion import SessionContext, col, lit, functions as F
+from datafusion import SessionContext, col, lit
+from datafusion import functions as F
 from util import get_data_path
 
 # This is the part we're looking for. Values selected here differ from the spec in order to run

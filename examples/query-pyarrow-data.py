@@ -16,9 +16,8 @@
 # under the License.
 
 import datafusion
-from datafusion import col
 import pyarrow
-
+from datafusion import col
 
 # create a context
 ctx = datafusion.SessionContext()

@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+use crate::errors::PyDataFusionError;
 use crate::utils::wait_for_future;
 use datafusion::arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -90,7 +91,7 @@ async fn next_stream(
     let mut stream = stream.lock().await;
     match stream.next().await {
         Some(Ok(batch)) => Ok(batch.into()),
-        Some(Err(e)) => Err(e.into()),
+        Some(Err(e)) => Err(PyDataFusionError::from(e))?,
         None => {
             // Depending on whether the iteration is sync or not, we raise either a
             // StopIteration or a StopAsyncIteration

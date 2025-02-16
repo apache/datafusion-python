@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from datafusion import SessionContext, LogicalPlan, ExecutionPlan
 import pytest
+from datafusion import ExecutionPlan, LogicalPlan, SessionContext
 
 
 # Note: We must use CSV because memory tables are currently not supported for

@@ -18,11 +18,8 @@ import os
 from typing import Any
 
 import pyarrow as pa
-from pyarrow.csv import write_csv
 import pyarrow.parquet as pq
 import pytest
-
-from datafusion import functions as f
 from datafusion import (
     DataFrame,
     SessionContext,
@@ -30,7 +27,9 @@ from datafusion import (
     column,
     literal,
 )
+from datafusion import functions as f
 from datafusion.expr import Window
+from pyarrow.csv import write_csv
 
 
 @pytest.fixture
@@ -1107,12 +1106,24 @@ def test_write_compressed_parquet_wrong_compression_level(
         )
 
 
-@pytest.mark.parametrize("compression", ["brotli", "zstd", "wrong"])
-def test_write_compressed_parquet_missing_compression_level(df, tmp_path, compression):
+@pytest.mark.parametrize("compression", ["wrong"])
+def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression):
     path = tmp_path
 
     with pytest.raises(ValueError):
         df.write_parquet(str(path), compression=compression)
+
+
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
+@pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
+def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
+    path = tmp_path
+
+    df.write_parquet(str(path), compression=compression)
 
 
 def test_dataframe_export(df) -> None:

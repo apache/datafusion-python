@@ -27,7 +27,8 @@ as part of their TPC Benchmark H Specification revision 2.18.0.
 """
 
 import pyarrow as pa
-from datafusion import SessionContext, col, lit, udf, functions as F
+from datafusion import SessionContext, col, lit, udf
+from datafusion import functions as F
 from util import get_data_path
 
 items_of_interest = {

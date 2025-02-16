@@ -16,7 +16,8 @@
 # under the License.
 
 import pyarrow
-from datafusion import udf, SessionContext, functions as f
+from datafusion import SessionContext, udf
+from datafusion import functions as f
 
 
 def is_null(array: pyarrow.Array) -> pyarrow.Array:

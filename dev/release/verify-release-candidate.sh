@@ -106,7 +106,7 @@ setup_tempdir() {
 }
 
 test_source_distribution() {
-  # install rust toolchain in a similar fashion like test-miniconda
+  # install rust toolchain
   export RUSTUP_HOME=$PWD/test-rustup
   export CARGO_HOME=$PWD/test-rustup
 
@@ -125,10 +125,10 @@ test_source_distribution() {
   git clone https://github.com/apache/arrow-testing.git testing
   git clone https://github.com/apache/parquet-testing.git parquet-testing
 
-  python3 -m venv venv
-  source venv/bin/activate
+  python3 -m venv .venv
+  source .venv/bin/activate
   python3 -m pip install -U pip
-  python3 -m pip install -r requirements-310.txt
+  python3 -m pip install -U maturin
   maturin develop
 
   #TODO: we should really run tests here as well

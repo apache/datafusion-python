@@ -17,7 +17,6 @@
 
 import datafusion
 
-
 # create a context
 ctx = datafusion.SessionContext()
 

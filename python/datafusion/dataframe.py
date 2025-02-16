@@ -20,22 +20,92 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 """
 
 from __future__ import annotations
+
 import warnings
-from typing import Any, Iterable, List, TYPE_CHECKING, Literal, overload
-from datafusion.record_batch import RecordBatchStream
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Union,
+    overload,
+)
+
 from typing_extensions import deprecated
-from datafusion.plan import LogicalPlan, ExecutionPlan
+
+from datafusion.plan import ExecutionPlan, LogicalPlan
+from datafusion.record_batch import RecordBatchStream
 
 if TYPE_CHECKING:
-    import pyarrow as pa
-    import pandas as pd
-    import polars as pl
     import pathlib
     from typing import Callable, Sequence
+
+    import pandas as pd
+    import polars as pl
+    import pyarrow as pa
+
+from enum import Enum
 
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import expr as expr_internal
 from datafusion.expr import Expr, SortExpr, sort_or_default
+
+
+# excerpt from deltalake
+# https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
+class Compression(Enum):
+    """Enum representing the available compression types for Parquet files."""
+
+    UNCOMPRESSED = "uncompressed"
+    SNAPPY = "snappy"
+    GZIP = "gzip"
+    BROTLI = "brotli"
+    LZ4 = "lz4"
+    # lzo is not implemented yet
+    # https://github.com/apache/arrow-rs/issues/6970
+    # LZO = "lzo"
+    ZSTD = "zstd"
+    LZ4_RAW = "lz4_raw"
+
+    @classmethod
+    def from_str(cls, value: str) -> "Compression":
+        """Convert a string to a Compression enum value.
+
+        Args:
+            value: The string representation of the compression type.
+
+        Returns:
+            The Compression enum lowercase value.
+
+        Raises:
+            ValueError: If the string does not match any Compression enum value.
+        """
+        try:
+            return cls(value.lower())
+        except ValueError:
+            raise ValueError(
+                f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
+            )
+
+    def get_default_level(self) -> Optional[int]:
+        """Get the default compression level for the compression type.
+
+        Returns:
+            The default compression level for the compression type.
+        """
+        # GZIP, BROTLI default values from deltalake repo
+        # https://github.com/apache/datafusion-python/pull/981#discussion_r1905619163
+        # ZSTD default value from delta-rs
+        # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
+        if self == Compression.GZIP:
+            return 6
+        elif self == Compression.BROTLI:
+            return 1
+        elif self == Compression.ZSTD:
+            return 4
+        return None
 
 
 class DataFrame:
@@ -621,17 +691,36 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: str = "uncompressed",
+        compression: Union[str, Compression] = Compression.ZSTD,
         compression_level: int | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
         Args:
             path: Path of the Parquet file to write.
-            compression: Compression type to use.
-            compression_level: Compression level to use.
+            compression: Compression type to use. Default is "ZSTD".
+                Available compression types are:
+                - "uncompressed": No compression.
+                - "snappy": Snappy compression.
+                - "gzip": Gzip compression.
+                - "brotli": Brotli compression.
+                - "lz4": LZ4 compression.
+                - "lz4_raw": LZ4_RAW compression.
+                - "zstd": Zstandard compression.
+            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
+            compression_level: Compression level to use. For ZSTD, the
+                recommended range is 1 to 22, with the default being 4. Higher levels
+                provide better compression but slower speed.
         """
-        self.df.write_parquet(str(path), compression, compression_level)
+        # Convert string to Compression enum if necessary
+        if isinstance(compression, str):
+            compression = Compression.from_str(compression)
+
+        if compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
+            if compression_level is None:
+                compression_level = compression.get_default_level()
+
+        self.df.write_parquet(str(path), compression.value, compression_level)
 
     def write_json(self, path: str | pathlib.Path) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.

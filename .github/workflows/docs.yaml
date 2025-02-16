@@ -57,27 +57,24 @@ jobs:
           version: '27.4'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install dependencies
+      - name: Install dependencies and build
+        uses: astral-sh/setup-uv@v5
+        with:
+            enable-cache: true
+
+      - name: Build repo
         run: |
-          set -x
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install -r requirements-311.txt
-          pip install -r docs/requirements.txt
-      - name: Build Datafusion
-        run: |
-          set -x
-          source venv/bin/activate
-          maturin develop
+          uv venv
+          uv sync --dev --no-install-package datafusion --group docs
+          uv run --no-project maturin develop --uv
 
       - name: Build docs
         run: |
           set -x
-          source venv/bin/activate
           cd docs
           curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
           curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
-          make html
+          uv run --no-project make html
 
       - name: Copy & push the generated HTML
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')

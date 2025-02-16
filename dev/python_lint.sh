@@ -21,6 +21,6 @@
 # DataFusion CI does
 
 set -e
-source venv/bin/activate
+source .venv/bin/activate
 flake8 --exclude venv,benchmarks/db-benchmark --ignore=E501,W503
 black --line-length 79 .

@@ -16,11 +16,12 @@
 # limitations under the License.
 
 import argparse
-import sys
-from github import Github
 import os
 import re
 import subprocess
+import sys
+
+from github import Github
 
 
 def print_pulls(repo_name, title, pulls):

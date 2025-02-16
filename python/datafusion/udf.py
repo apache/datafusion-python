@@ -19,13 +19,14 @@
 
 from __future__ import annotations
 
+from abc import ABCMeta, abstractmethod
+from enum import Enum
+from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
+
+import pyarrow
+
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-from typing import Callable, TYPE_CHECKING, TypeVar
-from abc import ABCMeta, abstractmethod
-from typing import List, Optional
-from enum import Enum
-import pyarrow
 
 if TYPE_CHECKING:
     _R = TypeVar("_R", bound=pyarrow.DataType)
