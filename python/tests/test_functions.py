@@ -884,6 +884,9 @@ def test_temporal_functions(df):
             literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
         ),
         f.to_timestamp_nanos(literal("2023-09-07 05:06:14.523952")),
+        f.to_timestamp_nanos(
+            literal("2023-09-07 05:06:14.523952000"), literal("%Y-%m-%d %H:%M:%S.%f")
+        ),
     )
     result = df.collect()
     assert len(result) == 1
@@ -933,6 +936,12 @@ def test_temporal_functions(df):
     )
     assert result.column(14) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
+    )
+    assert result.column(15) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+    )
+    assert result.column(16) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
     )
 
 
