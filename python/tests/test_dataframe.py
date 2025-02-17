@@ -755,13 +755,20 @@ def test_execution_plan(aggregate_df):
     assert "CsvExec:" in indent
 
     ctx = SessionContext()
-    stream = ctx.execute(plan, 0)
-    # get the one and only batch
-    batch = stream.next()
-    assert batch is not None
-    # there should be no more batches
-    with pytest.raises(StopIteration):
-        stream.next()
+    rows_returned = 0
+    for idx in range(0, plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
 
 
 def test_repartition(df):
