@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Optional, Type
 import pyarrow as pa
 
 try:
-    from typing import deprecated  # Python 3.13+
+    from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
