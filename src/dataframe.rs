@@ -175,13 +175,15 @@ impl PyDataFrame {
     }
 
     /// Convert this DataFrame into a Table that can be used in register_table
-    fn _into_view(&self) -> PyDataFusionResult<PyTable> {
+    /// By convention, into_... methods consume self and return the new object.
+    /// Disabling the clippy lint, so we can use &self
+    /// because we're working with Python bindings
+    /// where objects are shared
+    #[allow(clippy::wrong_self_convention)]
+    fn into_view(&self) -> PyDataFusionResult<PyTable> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
         // so that we don’t invalidate this PyDataFrame.
-        // _into_view because clippy says `into_*` usually take `self` by value
-        // but we cannot own self because Python objects are shared,
-        // so 'self' cannot be moved out of the Python interpreter
         let table_provider = self.df.as_ref().clone().into_view();
         let table_provider = PyTableProvider::new(table_provider);
 
