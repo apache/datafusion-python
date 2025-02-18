@@ -33,7 +33,7 @@ use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use futures::StreamExt;
+use futures::{future, StreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -92,15 +92,7 @@ impl PyDataFrame {
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         let df = self.df.as_ref().clone();
-
-        let stream = wait_for_future(py, df.execute_stream()).map_err(py_datafusion_err)?;
-
-        let batches: Vec<RecordBatch>  = wait_for_future(
-            py,
-            stream.take(10).collect::<Vec<_>>())
-            .into_iter()
-            .collect::<Result<Vec<_>,_>>()?;
-
+        let batches: Vec<RecordBatch> = get_batches(py, df, 10)?;
         let batches_as_string = pretty::pretty_format_batches(&batches);
         match batches_as_string {
             Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
@@ -111,8 +103,8 @@ impl PyDataFrame {
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
         let mut html_str = "<table border='1'>\n".to_string();
 
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
+        let df = self.df.as_ref().clone();
+        let batches: Vec<RecordBatch> = get_batches(py, df, 10)?;
 
         if batches.is_empty() {
             html_str.push_str("</table>\n");
@@ -741,4 +733,39 @@ fn record_batch_into_schema(
     }
 
     RecordBatch::try_new(schema, data_arrays)
+}
+
+fn get_batches(
+    py: Python,
+    df: DataFrame,
+    max_rows: usize,
+) -> Result<Vec<RecordBatch>, PyDataFusionError> {
+    let partitioned_stream = wait_for_future(py, df.execute_stream_partitioned()).map_err(py_datafusion_err)?;
+    let stream = futures::stream::iter(partitioned_stream).flatten();
+    wait_for_future(
+        py,
+        stream
+            .scan(0, |state, x| {
+                let total = *state;
+                if total >= max_rows {
+                    future::ready(None)
+                } else {
+                    match x {
+                        Ok(batch) => {
+                            if total + batch.num_rows() <= max_rows {
+                                *state = total + batch.num_rows();
+                                future::ready(Some(Ok(batch)))
+                            } else {
+                                *state = max_rows;
+                                future::ready(Some(Ok(batch.slice(0, max_rows - total))))
+                            }
+                        }
+                        Err(err) => future::ready(Some(Err(PyDataFusionError::from(err)))),
+                    }
+                }
+            })
+            .collect::<Vec<_>>(),
+    )
+    .into_iter()
+    .collect::<Result<Vec<_>, _>>()
 }
