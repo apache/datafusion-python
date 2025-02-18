@@ -29,7 +29,7 @@ except ImportError:
 from . import functions, object_store, substrait
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
+from ._internal import Config, partition_stream
 from .catalog import Catalog, Database, Table
 from .common import (
     DFSchema,
@@ -86,6 +86,7 @@ __all__ = [
     "read_avro",
     "read_csv",
     "read_json",
+    "partition_stream",
 ]
 
 

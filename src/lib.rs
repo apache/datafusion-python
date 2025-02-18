@@ -116,6 +116,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     #[cfg(feature = "substrait")]
     setup_substrait_module(py, &m)?;
 
+    m.add_class::<dataframe::DistributedPlan>()?;
+    m.add_wrapped(wrap_pyfunction!(dataframe::partition_stream))?;
     Ok(())
 }
 

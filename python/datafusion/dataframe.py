@@ -805,6 +805,9 @@ class DataFrame:
         """
         return self.df.count()
 
+    def distributed_plan(self):
+        return self.df.distributed_plan()
+
     @deprecated("Use :py:func:`unnest_columns` instead.")
     def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
         """See :py:func:`unnest_columns`."""
