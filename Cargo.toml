@@ -17,7 +17,7 @@
 
 [package]
 name = "datafusion-python"
-version = "45.2.0"
+version = "46.0.0"
 homepage = "https://datafusion.apache.org/python"
 repository = "https://github.com/apache/datafusion-python"
 authors = ["Apache DataFusion <dev@datafusion.apache.org>"]
@@ -38,10 +38,10 @@ tokio = { version = "1.42", features = ["macros", "rt", "rt-multi-thread", "sync
 pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
 pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"]}
 arrow = { version = "54", features = ["pyarrow"] }
-datafusion = { version = "45.0.0", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "45.0.0", optional = true }
-datafusion-proto = { version = "45.0.0" }
-datafusion-ffi = { version = "45.0.0" }
+datafusion = { version = "46.0.0", features = ["avro", "unicode_expressions"] }
+datafusion-substrait = { version = "46.0.0", optional = true }
+datafusion-proto = { version = "46.0.0" }
+datafusion-ffi = { version = "46.0.0" }
 prost = "0.13" # keep in line with `datafusion-substrait`
 uuid = { version = "1.12", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
@@ -49,6 +49,8 @@ async-trait = "0.1"
 futures = "0.3"
 object_store = { version = "0.11.0", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
+deltalake = { version = "0.25.0", features = ["datafusion", "azure", "s3"] }
+
 
 [build-dependencies]
 prost-types = "0.13" # keep in line with `datafusion-substrait`
@@ -58,6 +60,66 @@ pyo3-build-config = "0.23"
 name = "datafusion_python"
 crate-type = ["cdylib", "rlib"]
 
-[profile.release]
-lto = true
-codegen-units = 1
+[patch.crates-io]
+datafusion = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-catalog = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-common-runtime = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-execution = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-expr = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-expr-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-aggregate = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-aggregate-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-nested = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-table = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-window = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-functions-window-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-optimizer = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-physical-expr = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-physical-expr-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-physical-optimizer = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-physical-plan = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-proto = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-proto-common = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-sql = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+datafusion-substrait = { git = 'https://github.com/hstack/arrow-datafusion.git', branch = 'main' }
+deltalake = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-catalog-glue = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-core = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-aws = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-azure = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-mount = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+deltalake-sql = { git = 'https://github.com/hstack/delta-rs.git', branch = 'main' }
+reqwest = { git = 'https://github.com/hstack/reqwest.git', branch = 'disable-proxy-tunnel' }
+#datafusion-table-providers = { git = "https://github.com/hstack/datafusion-table-providers", branch = "main" }
+#datafusion = { path = "../arrow-datafusion/datafusion/core" }
+#datafusion-catalog = { path = "../arrow-datafusion/datafusion/catalog" }
+#datafusion-common = { path = "../arrow-datafusion/datafusion/common" }
+#datafusion-common-runtime = { path = "../arrow-datafusion/datafusion/common-runtime" }
+#datafusion-execution = { path = "../arrow-datafusion/datafusion/execution" }
+#datafusion-expr = { path = "../arrow-datafusion/datafusion/expr" }
+#datafusion-expr-common = { path = "../arrow-datafusion/datafusion/expr-common" }
+#datafusion-functions = { path = "../arrow-datafusion/datafusion/functions" }
+#datafusion-functions-aggregate = { path = "../arrow-datafusion/datafusion/functions-aggregate" }
+#datafusion-functions-aggregate-common = { path = "../arrow-datafusion/datafusion/functions-aggregate-common" }
+#datafusion-functions-nested = { path = "../arrow-datafusion/datafusion/functions-nested" }
+#datafusion-functions-table = { path = "../arrow-datafusion/datafusion/functions-table" }
+#datafusion-functions-window = { path = "../arrow-datafusion/datafusion/functions-window" }
+#datafusion-functions-window-common = { path = "../arrow-datafusion/datafusion/functions-window-common" }
+#datafusion-optimizer = { path = "../arrow-datafusion/datafusion/optimizer" }
+#datafusion-physical-expr = { path = "../arrow-datafusion/datafusion/physical-expr" }
+#datafusion-physical-expr-common = { path = "../arrow-datafusion/datafusion/physical-expr-common" }
+#datafusion-physical-optimizer = { path = "../arrow-datafusion/datafusion/physical-optimizer" }
+#datafusion-physical-plan = { path = "../arrow-datafusion/datafusion/physical-plan" }
+#datafusion-proto = { path = "../arrow-datafusion/datafusion/proto" }
+#datafusion-proto-common = { path = "../arrow-datafusion/datafusion/proto-common" }
+#datafusion-sql = { path = "../arrow-datafusion/datafusion/sql" }
+#datafusion-substrait = { path = "../arrow-datafusion/datafusion/substrait" }
+#deltalake = { path = "../delta-rs/crates/deltalake" }
+#deltalake-catalog-glue = { path = "../delta-rs/crates/catalog-glue" }
+#deltalake-core = { path = "../delta-rs/crates/core" }
+#deltalake-aws = { path = "../delta-rs/crates/aws" }
+#deltalake-azure = { path = "../delta-rs/crates/azure" }
+#deltalake-mount = { path = "../delta-rs/crates/mount" }
+#deltalake-sql = { path = "../delta-rs/crates/sql" }

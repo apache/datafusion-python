@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::common::DataFusionError;
-use datafusion::logical_expr::expr::{AggregateFunction, Alias};
+use datafusion::logical_expr::expr::{AggregateFunction, AggregateFunctionParams, Alias};
 use datafusion::logical_expr::logical_plan::Aggregate;
 use datafusion::logical_expr::Expr;
 use pyo3::{prelude::*, IntoPyObjectExt};
@@ -126,7 +126,7 @@ impl PyAggregate {
         match expr {
             // TODO: This Alias logic seems to be returning some strange results that we should investigate
             Expr::Alias(Alias { expr, .. }) => self._aggregation_arguments(expr.as_ref()),
-            Expr::AggregateFunction(AggregateFunction { func: _, args, .. }) => {
+            Expr::AggregateFunction(AggregateFunction { func: _, params: AggregateFunctionParams { args, .. }}) => {
                 Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect())
             }
             _ => Err(py_type_err(

@@ -16,7 +16,7 @@
 // under the License.
 
 use datafusion::common::{DataFusionError, ScalarValue};
-use datafusion::logical_expr::expr::WindowFunction;
+use datafusion::logical_expr::expr::{WindowFunction, WindowFunctionParams};
 use datafusion::logical_expr::{Expr, Window, WindowFrame, WindowFrameBound, WindowFrameUnits};
 use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
@@ -118,7 +118,7 @@ impl PyWindowExpr {
     /// Returns order by columns in a window function expression
     pub fn get_sort_exprs(&self, expr: PyExpr) -> PyResult<Vec<PySortExpr>> {
         match expr.expr.unalias() {
-            Expr::WindowFunction(WindowFunction { order_by, .. }) => py_sort_expr_list(&order_by),
+            Expr::WindowFunction(WindowFunction { params: WindowFunctionParams { order_by, .. }, .. }) => py_sort_expr_list(&order_by),
             other => Err(not_window_function_err(other)),
         }
     }
@@ -126,7 +126,7 @@ impl PyWindowExpr {
     /// Return partition by columns in a window function expression
     pub fn get_partition_exprs(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
         match expr.expr.unalias() {
-            Expr::WindowFunction(WindowFunction { partition_by, .. }) => {
+            Expr::WindowFunction(WindowFunction { params: WindowFunctionParams { partition_by, .. }, .. }) => {
                 py_expr_list(&partition_by)
             }
             other => Err(not_window_function_err(other)),
@@ -136,7 +136,7 @@ impl PyWindowExpr {
     /// Return input args for window function
     pub fn get_args(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
         match expr.expr.unalias() {
-            Expr::WindowFunction(WindowFunction { args, .. }) => py_expr_list(&args),
+            Expr::WindowFunction(WindowFunction { params: WindowFunctionParams { args, .. }, .. }) => py_expr_list(&args),
             other => Err(not_window_function_err(other)),
         }
     }
@@ -152,7 +152,7 @@ impl PyWindowExpr {
     /// Returns a Pywindow frame for a given window function expression
     pub fn get_frame(&self, expr: PyExpr) -> Option<PyWindowFrame> {
         match expr.expr.unalias() {
-            Expr::WindowFunction(WindowFunction { window_frame, .. }) => Some(window_frame.into()),
+            Expr::WindowFunction(WindowFunction { params: WindowFunctionParams {window_frame, .. }, .. }) => Some(window_frame.into()),
             _ => None,
         }
     }

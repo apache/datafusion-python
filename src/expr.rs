@@ -30,10 +30,10 @@ use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
 use datafusion::logical_expr::{
     col,
-    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
+    expr::{AggregateFunction, AggregateFunctionParams, InList, InSubquery, ScalarFunction, WindowFunction},
     lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
 };
-
+use datafusion::logical_expr::expr::WindowFunctionParams;
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
 use crate::errors::{
     py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError, PyDataFusionResult,
@@ -394,9 +394,9 @@ impl PyExpr {
             | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
-            Expr::AggregateFunction(AggregateFunction { args, .. })
+            Expr::AggregateFunction(AggregateFunction { params: AggregateFunctionParams { args, .. }, .. })
             | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::WindowFunction(WindowFunction { args, .. }) => {
+            | Expr::WindowFunction(WindowFunction { params: WindowFunctionParams { args, .. }, .. }) => {
                 Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
             }
 
@@ -575,7 +575,7 @@ impl PyExpr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
-                    agg_fn.args.clone(),
+                    agg_fn.params.args.clone(),
                 ));
 
                 add_builder_fns_to_window(
