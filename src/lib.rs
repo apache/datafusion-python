@@ -121,7 +121,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
 
 #[cfg(feature = "substrait")]
 fn setup_substrait_module(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
-    let substrait = PyModule::new_bound(py, "substrait")?;
+    let substrait = PyModule::new(py, "substrait")?;
     substrait::init_module(&substrait)?;
     m.add_submodule(&substrait)?;
     Ok(())
