@@ -101,10 +101,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                     .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
             )?;
             let py_num_rows = num_rows.into_pyobject(py)?;
-            let py_args = PyTuple::new(
-                py,
-                PyTuple::new(py, vec![py_values.as_any(), &py_num_rows])?,
-            )?;
+            let py_args = PyTuple::new(py, vec![py_values.as_any(), &py_num_rows])?;
 
             self.evaluator
                 .bind(py)
@@ -125,14 +122,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                     .iter()
                     .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
             )?;
-            let range_tuple = PyTuple::new(
-                py,
-                vec![range.start.into_pyobject(py)?, range.end.into_pyobject(py)?],
-            )?;
-            let py_args = PyTuple::new(
-                py,
-                PyTuple::new(py, vec![py_values.as_any(), range_tuple.as_any()]),
-            )?;
+            let range_tuple = PyTuple::new(py, vec![range.start, range.end])?;
+            let py_args = PyTuple::new(py, vec![py_values.as_any(), range_tuple.as_any()])?;
 
             self.evaluator
                 .bind(py)
