@@ -28,6 +28,7 @@ use datafusion::logical_expr::function::ScalarFunctionImplementation;
 use datafusion::logical_expr::ScalarUDF;
 use datafusion::logical_expr::{create_udf, ColumnarValue};
 
+use crate::errors::to_datafusion_err;
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
@@ -46,11 +47,11 @@ fn pyarrow_function_to_rust(
                         .map_err(|e| DataFusionError::Execution(format!("{e:?}")))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
             // 2. call function
             let value = func
-                .call_bound(py, py_args, None)
+                .call(py, py_args, None)
                 .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
 
             // 3. cast to arrow::array::Array
