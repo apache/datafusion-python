@@ -1,0 +1,56 @@
+# syntax=docker/dockerfile:1
+
+FROM quay.io/pypa/manylinux_2_28_x86_64 AS base
+
+WORKDIR /root
+
+RUN <<EOF
+  dnf install -y epel-release
+  dnf install -y curl pkg-config openssl ca-certificates openssl-devel patchelf autoconf automake make libtool unzip clang libatomic openssh-clients wget
+EOF
+
+RUN <<EOF
+  # echo 1
+  wget https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.21.12.zip
+  unzip v3.21.12.zip
+  cd protobuf-3.21.12
+  autoupdate
+  ./autogen.sh
+  ./configure --prefix=/usr --disable-dependency-tracking
+  make -j8
+  make install
+EOF
+
+RUN <<EOF
+  curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
+EOF
+
+RUN --mount=type=ssh,mode=0666 \
+  <<EOF
+  mkdir -p -m 0700 ~/.ssh
+  ssh-keyscan git.corp.adobe.com >> ~/.ssh/known_hosts
+  ssh-keyscan github.com >> ~/.ssh/known_hosts
+EOF
+
+RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    --mount=type=bind,source=src,target=src,readwrite \
+    --mount=type=bind,source=python,target=python,readwrite \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    --mount=type=bind,source=build.rs,target=build.rs \
+    --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
+    --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+    --mount=type=bind,source=README.md,target=README.md \
+    --mount=type=bind,source=LICENSE.txt,target=LICENSE.txt \
+    --mount=type=cache,mode=0777,target=/root/target \
+    --mount=type=cache,mode=0777,target=/usr/local/cargo/registry/ \
+    --mount=type=ssh,mode=0666 \
+    <<EOF
+  export PATH="/root/.cargo/bin:/opt/python/cp312-cp312/bin:$PATH"
+  python3 -m venv venv
+  source venv/bin/activate
+  source /root/.cargo/env
+  pip3 install maturin==1.8.1
+  pip3 install -r requirements.txt
+  maturin build --release --manylinux 2_28 --features protoc,substrait
+  cp ./target/wheels/*.whl /
+EOF
