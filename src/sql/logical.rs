@@ -64,7 +64,7 @@ impl PyLogicalPlan {
 #[pymethods]
 impl PyLogicalPlan {
     /// Return the specific logical operator
-    pub fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+    pub fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         match self.plan.as_ref() {
             LogicalPlan::Aggregate(plan) => PyAggregate::from(plan.clone()).to_variant(py),
             LogicalPlan::Analyze(plan) => PyAnalyze::from(plan.clone()).to_variant(py),
@@ -132,7 +132,7 @@ impl PyLogicalPlan {
             datafusion_proto::protobuf::LogicalPlanNode::try_from_logical_plan(&self.plan, &codec)?;
 
         let bytes = proto.encode_to_vec();
-        Ok(PyBytes::new_bound(py, &bytes))
+        Ok(PyBytes::new(py, &bytes))
     }
 
     #[staticmethod]

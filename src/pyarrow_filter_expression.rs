@@ -16,7 +16,7 @@
 // under the License.
 
 /// Converts a Datafusion logical plan expression (Expr) into a PyArrow compute expression
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use std::convert::TryFrom;
 use std::result::Result;
@@ -53,24 +53,28 @@ fn operator_to_py<'py>(
     Ok(py_op)
 }
 
-fn extract_scalar_list(exprs: &[Expr], py: Python) -> PyDataFusionResult<Vec<PyObject>> {
+fn extract_scalar_list<'py>(
+    exprs: &[Expr],
+    py: Python<'py>,
+) -> PyDataFusionResult<Vec<Bound<'py, PyAny>>> {
     let ret = exprs
         .iter()
         .map(|expr| match expr {
             // TODO: should we also leverage `ScalarValue::to_pyarrow` here?
             Expr::Literal(v) => match v {
-                ScalarValue::Boolean(Some(b)) => Ok(b.into_py(py)),
-                ScalarValue::Int8(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::Int16(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::Int32(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::Int64(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::UInt8(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::UInt16(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::UInt32(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::UInt64(Some(i)) => Ok(i.into_py(py)),
-                ScalarValue::Float32(Some(f)) => Ok(f.into_py(py)),
-                ScalarValue::Float64(Some(f)) => Ok(f.into_py(py)),
-                ScalarValue::Utf8(Some(s)) => Ok(s.into_py(py)),
+                // The unwraps here are for infallible conversions
+                ScalarValue::Boolean(Some(b)) => Ok(b.into_bound_py_any(py)?),
+                ScalarValue::Int8(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::Int16(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::Int32(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::Int64(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::UInt8(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::UInt16(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::UInt32(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::UInt64(Some(i)) => Ok(i.into_bound_py_any(py)?),
+                ScalarValue::Float32(Some(f)) => Ok(f.into_bound_py_any(py)?),
+                ScalarValue::Float64(Some(f)) => Ok(f.into_bound_py_any(py)?),
+                ScalarValue::Utf8(Some(s)) => Ok(s.into_bound_py_any(py)?),
                 _ => Err(PyDataFusionError::Common(format!(
                     "PyArrow can't handle ScalarValue: {v:?}"
                 ))),
@@ -98,8 +102,8 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
     // https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Expression.html#pyarrow-dataset-expression
     fn try_from(expr: &Expr) -> Result<Self, Self::Error> {
         Python::with_gil(|py| {
-            let pc = Python::import_bound(py, "pyarrow.compute")?;
-            let op_module = Python::import_bound(py, "operator")?;
+            let pc = Python::import(py, "pyarrow.compute")?;
+            let op_module = Python::import(py, "operator")?;
             let pc_expr: PyDataFusionResult<Bound<'_, PyAny>> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
                 Expr::Literal(scalar) => Ok(scalar_to_pyarrow(scalar, py)?.into_bound(py)),

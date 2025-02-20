@@ -17,7 +17,7 @@
 
 use datafusion::common::DataFusionError;
 use datafusion::logical_expr::logical_plan::Sort;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
 
 use crate::common::df_schema::PyDFSchema;
@@ -96,7 +96,7 @@ impl LogicalNode for PySort {
         vec![PyLogicalPlan::from((*self.sort.input).clone())]
     }
 
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

@@ -104,7 +104,7 @@ impl DatasetExec {
             })
             .transpose()?;
 
-        let kwargs = PyDict::new_bound(py);
+        let kwargs = PyDict::new(py);
 
         kwargs.set_item("columns", columns.clone())?;
         kwargs.set_item(
@@ -121,7 +121,7 @@ impl DatasetExec {
                 .0,
         );
 
-        let builtins = Python::import_bound(py, "builtins")?;
+        let builtins = Python::import(py, "builtins")?;
         let pylist = builtins.getattr("list")?;
 
         // Get the fragments or partitions of the dataset
@@ -198,7 +198,7 @@ impl ExecutionPlan for DatasetExec {
             let dataset_schema = dataset
                 .getattr("schema")
                 .map_err(|err| InnerDataFusionError::External(Box::new(err)))?;
-            let kwargs = PyDict::new_bound(py);
+            let kwargs = PyDict::new(py);
             kwargs
                 .set_item("columns", self.columns.clone())
                 .map_err(|err| InnerDataFusionError::External(Box::new(err)))?;
@@ -223,7 +223,7 @@ impl ExecutionPlan for DatasetExec {
             let record_batches: Bound<'_, PyIterator> = scanner
                 .call_method0("to_batches")
                 .map_err(|err| InnerDataFusionError::External(Box::new(err)))?
-                .iter()
+                .try_iter()
                 .map_err(|err| InnerDataFusionError::External(Box::new(err)))?;
 
             let record_batches = PyArrowBatchesAdapter {

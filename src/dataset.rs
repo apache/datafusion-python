@@ -48,7 +48,7 @@ impl Dataset {
     // Creates a Python PyArrow.Dataset
     pub fn new(dataset: &Bound<'_, PyAny>, py: Python) -> PyResult<Self> {
         // Ensure that we were passed an instance of pyarrow.dataset.Dataset
-        let ds = PyModule::import_bound(py, "pyarrow.dataset")?;
+        let ds = PyModule::import(py, "pyarrow.dataset")?;
         let ds_attr = ds.getattr("Dataset")?;
         let ds_type = ds_attr.downcast::<PyType>()?;
         if dataset.is_instance(ds_type)? {

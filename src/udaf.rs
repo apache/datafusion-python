@@ -29,6 +29,7 @@ use datafusion::logical_expr::{
 };
 
 use crate::common::data_type::PyScalarValue;
+use crate::errors::to_datafusion_err;
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 
@@ -73,7 +74,7 @@ impl Accumulator for RustAccumulator {
                 .iter()
                 .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
             // 2. call function
             self.accum
@@ -119,7 +120,7 @@ impl Accumulator for RustAccumulator {
                 .iter()
                 .map(|arg| arg.into_data().to_pyarrow(py).unwrap())
                 .collect::<Vec<_>>();
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
             // 2. call function
             self.accum

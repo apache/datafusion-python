@@ -40,7 +40,7 @@ impl PyPlan {
         self.plan
             .encode(&mut proto_bytes)
             .map_err(PyDataFusionError::EncodeError)?;
-        Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
+        Ok(PyBytes::new(py, &proto_bytes).into())
     }
 }
 
@@ -95,7 +95,7 @@ impl PySubstraitSerializer {
         py: Python,
     ) -> PyDataFusionResult<PyObject> {
         let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))?;
-        Ok(PyBytes::new_bound(py, &proto_bytes).unbind().into())
+        Ok(PyBytes::new(py, &proto_bytes).into())
     }
 
     #[staticmethod]
