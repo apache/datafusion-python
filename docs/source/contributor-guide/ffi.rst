@@ -38,7 +38,7 @@ crate as a dependency and then provide a ``PyTable`` and then to register it wit
 ``SessionContext``. Unfortunately, this will not work.
 
 When you produce your code as a Python library and it needs to interact with the DataFusion
-library, at the lowest level they communicate through and Application Binary Interface (ABI).
+library, at the lowest level they communicate through an Application Binary Interface (ABI).
 The acronym sounds similar to API (Application Programming Interface), but it is distinctly
 different.
 

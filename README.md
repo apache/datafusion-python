@@ -30,10 +30,8 @@ DataFusion's Python bindings can be used as a foundation for building new data s
   planning, and logical plan optimizations, and then transpiles the logical plan to Dask operations for execution.
 - [DataFusion Ballista](https://github.com/apache/datafusion-ballista) is a distributed SQL query engine that extends
   DataFusion's Python bindings for distributed use cases.
-
-It is also possible to use these Python bindings directly for DataFrame and SQL operations, but you may find that
-[Polars](http://pola.rs/) and [DuckDB](http://www.duckdb.org/) are more suitable for this use case, since they have
-more of an end-user focus and are more actively maintained than these Python bindings.
+- [DataFusion Ray](https://github.com/apache/datafusion-ray) is another distributed query engine that uses
+  DataFusion's Python bindings.
 
 ## Features
 
@@ -113,6 +111,11 @@ Printing the context will show the current configuration settings.
 ```python
 print(ctx)
 ```
+
+## Extensions
+
+For information about how to extend DataFusion Python, please see the extensions page of the
+[online documentation](https://datafusion.apache.org/python/).
 
 ## More Examples
 
