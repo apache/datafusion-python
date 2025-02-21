@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Callable, List, Optional, Protocol, TypeVar
 
 import pyarrow
 
@@ -76,6 +76,15 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+class ScalarUDFExportable(Protocol):
+    """Type hint for object that has __datafusion_scalar_udf__ PyCapsule.
+
+    https://datafusion.apache.org/python/user-guide/common-operations/udf-and-udfa.html
+    """
+
+    def __datafusion_scalar_udf__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -86,20 +95,23 @@ class ScalarUDF:
     def __init__(
         self,
         name: Optional[str],
-        func: Callable[..., _R],
-        input_types: pyarrow.DataType | list[pyarrow.DataType],
-        return_type: _R,
-        volatility: Volatility | str,
+        func: Callable[..., _R] | df_internal.ScalarUDF,
+        input_types: pyarrow.DataType | list[pyarrow.DataType] | None,
+        return_type: Optional[_R],
+        volatility: Volatility | str | None,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
 
         See helper method :py:func:`udf` for argument details.
         """
-        if isinstance(input_types, pyarrow.DataType):
-            input_types = [input_types]
-        self._udf = df_internal.ScalarUDF(
-            name, func, input_types, return_type, str(volatility)
-        )
+        if isinstance(func, df_internal.ScalarUDF):
+            self._udf = func
+        else:
+            if isinstance(input_types, pyarrow.DataType):
+                input_types = [input_types]
+            self._udf = df_internal.ScalarUDF(
+                name, func, input_types, return_type, str(volatility)
+            )
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDF.
@@ -109,6 +121,12 @@ class ScalarUDF:
         """
         args_raw = [arg.expr for arg in args]
         return Expr(self._udf.__call__(*args_raw))
+
+    @staticmethod
+    def from_ffi(func: ScalarUDFExportable) -> ScalarUDF:
+        """Create a User-Defined Function from a provided PyCapsule."""
+        udf = df_internal.ScalarUDF.from_ffi(func)
+        return ScalarUDF(None, udf, None, None, None)
 
     @staticmethod
     def udf(
