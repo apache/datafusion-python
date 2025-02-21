@@ -34,7 +34,7 @@ as performant as possible and to utilize the features of DataFusion, you may dec
 your source in Rust and then expose it through `PyO3 <https://pyo3.rs>`_ as a Python library.
 
 At first glance, it may appear the best way to do this is to add the ``datafusion-python``
-crate as a dependency and then provide a ``PyTable`` and then to register it with the 
+crate as a dependency, provide a ``PyTable``, and then to register it with the 
 ``SessionContext``. Unfortunately, this will not work.
 
 When you produce your code as a Python library and it needs to interact with the DataFusion
@@ -74,7 +74,7 @@ code that does **not** require the ``datafusion-python`` crate as a dependency, 
 code in Python via PyO3, and have it interact with the DataFusion Python package.
 
 Early adopters of this approach include `delta-rs <https://delta-io.github.io/delta-rs/>`_
-who has adapted their Table Provider for use in `datafusion-python` with only a few lines
+who has adapted their Table Provider for use in ```datafusion-python``` with only a few lines
 of code. Also, the DataFusion Python project uses the existing definitions from
 `Apache Arrow CStream Interface <https://arrow.apache.org/docs/format/CStreamInterface.html>`_
 to support importing **and** exporting tables. Any Python package that supports reading
@@ -90,7 +90,7 @@ Inspiration from Arrow
 
 DataFusion is built upon `Apache Arrow <https://arrow.apache.org/>`_. The canonical Python
 Arrow implementation, `pyarrow <https://arrow.apache.org/docs/python/index.html>`_ provides
-and excellent way to share Arrow data between Python projects without performing any copy
+an excellent way to share Arrow data between Python projects without performing any copy
 operations on the data. They do this by using a well defined set of interfaces. You can
 find the details about their stream interface
 `here <https://arrow.apache.org/docs/format/CStreamInterface.html>`_. The
@@ -117,7 +117,7 @@ Implementation Details
 
 The bulk of the code necessary to perform our FFI operations is in the upstream 
 `DataFusion <https://datafusion.apache.org/>`_ core repository. You can review the code and
-documentation in the `datafusion-ffi <https://crates.io/crates/datafusion-ffi>`_ crate.
+documentation in the `datafusion-ffi`_ crate.
 
 Our FFI implementation is narrowly focused at sharing data and functions with Rust backed
 libraries. This allows us to use the `abi_stable crate <https://crates.io/crates/abi_stable>`_.
@@ -127,7 +127,7 @@ you can simply convert it to a ``RVec<RString>`` in an intuitive manner. It also
 features like ``RResult`` and ``ROption`` that do not have an obvious translation to a
 C equivalent.
 
-The `datafusion-ffi` crate has been designed to make it easy to convert from DataFusion
+The `datafusion-ffi`_ crate has been designed to make it easy to convert from DataFusion
 traits into their FFI counterparts. For example, if you have defined a custom
 `TableProvider <https://docs.rs/datafusion/45.0.0/datafusion/catalog/trait.TableProvider.html>`_
 and you want to create a sharable FFI counterpart, you could write:
@@ -145,7 +145,7 @@ you needed to turn it back into an ``TableProvider``, you can turn it into a
 
     let foreign_provider: ForeignTableProvider = ffi_provider.into();
 
-If you review the code in `datafusion-ffi` you will find that each of the traits we share
+If you review the code in `datafusion-ffi`_ you will find that each of the traits we share
 across the boundary has two portions, one with a ``FFI_`` prefix and one with a ``Foreign``
 prefix. This is used to distinguish which side of the FFI boundary that struct is
 designed to be used on. The structures with the ``FFI_`` prefix are to be used on the
@@ -156,7 +156,7 @@ it is the ``datafusion-python`` library.
 
 In order to share these FFI structures, we need to wrap them in some kind of Python object
 that can be used to interface from one package to another. As described in the above
-section on our inspiration from Arrow, we use `PyCapsule`. We can create a PyCapsule
+section on our inspiration from Arrow, we use ``PyCapsule``. We can create a ``PyCapsule``
 for our provider thusly:
 
 .. code-block:: rust
@@ -207,5 +207,6 @@ Status of Work
 --------------
 
 At the time of this writing, the FFI features are under active development. To see
-the latest status, we recommend reviewing the code in the
-`DataFusion repository <https://github.com/apache/datafusion/tree/main/datafusion/ffi/>`_.
+the latest status, we recommend reviewing the code in the `datafusion-ffi`_ crate.
+
+.. _datafusion-ffi: https://crates.io/crates/datafusion-ffi
