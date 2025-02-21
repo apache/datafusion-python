@@ -85,6 +85,7 @@ Example
    :caption: CONTRIBUTOR GUIDE
 
    contributor-guide/introduction
+   contributor-guide/ffi
 
 .. _toc.api:
 .. toctree::
