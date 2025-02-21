@@ -16,7 +16,7 @@
 # under the License.
 
 [package]
-name = "ffi-table-provider"
+name = "datafusion-ffi-library"
 version = "0.1.0"
 edition = "2021"
 
@@ -32,5 +32,5 @@ arrow-schema = { version = "54" }
 pyo3-build-config = "0.23"
 
 [lib]
-name = "ffi_table_provider"
+name = "datafusion_ffi_library"
 crate-type = ["cdylib", "rlib"]
