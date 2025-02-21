@@ -24,9 +24,9 @@ edition = "2021"
 datafusion = { version = "45.0.0" }
 datafusion-ffi = { version = "45.0.0" }
 pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
-arrow = { version = "54" }
-arrow-array = { version = "54" }
-arrow-schema = { version = "54" }
+arrow = { version = "54.2.0" }
+arrow-array = { version = "54.2.0" }
+arrow-schema = { version = "54.2.0" }
 
 [build-dependencies]
 pyo3-build-config = "0.23"
@@ -34,3 +34,8 @@ pyo3-build-config = "0.23"
 [lib]
 name = "datafusion_ffi_library"
 crate-type = ["cdylib", "rlib"]
+
+# TODO remove once we update datafusion versions to 46
+[patch.crates-io]
+datafusion = { git = "https://github.com/apache/datafusion.git", rev = "8ab0661a39bd69783b31b949e7a768fb518629e7", features = ["avro", "unicode_expressions"] }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "8ab0661a39bd69783b31b949e7a768fb518629e7" }

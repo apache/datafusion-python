@@ -108,7 +108,7 @@ impl PyScalarUDF {
     }
 
     #[staticmethod]
-    fn from_ffi(func: Bound<PyAny>) -> PyResult<Self> {
+    fn ffi_udf(func: Bound<PyAny>) -> PyResult<Self> {
         if func.hasattr("__datafusion_scalar_udf__")? {
             let capsule = func.getattr("__datafusion_scalar_udf__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>()?;
@@ -122,7 +122,7 @@ impl PyScalarUDF {
             })
         } else {
             Err(py_datafusion_err(
-                "__datafusion_table_provider__ does not exist on Table Provider object.",
+                "__datafusion_scalar_udf__ does not exist on Scalar UDF object.",
             ))
         }
     }

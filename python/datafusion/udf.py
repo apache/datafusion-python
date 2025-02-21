@@ -123,9 +123,9 @@ class ScalarUDF:
         return Expr(self._udf.__call__(*args_raw))
 
     @staticmethod
-    def from_ffi(func: ScalarUDFExportable) -> ScalarUDF:
+    def ffi_udf(func: ScalarUDFExportable) -> ScalarUDF:
         """Create a User-Defined Function from a provided PyCapsule."""
-        udf = df_internal.ScalarUDF.from_ffi(func)
+        udf = df_internal.ScalarUDF.ffi_udf(func)
         return ScalarUDF(None, udf, None, None, None)
 
     @staticmethod

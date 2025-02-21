@@ -31,7 +31,7 @@ use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyCapsule};
 
 /// In order to provide a test that demonstrates different sized record batches,
 /// the first batch will have num_rows, the second batch num_rows+1, and so on.
-#[pyclass(name = "MyTableProvider", module = "ffi_table_provider", subclass)]
+#[pyclass(name = "MyTableProvider", module = "datafusion_ffi_library", subclass)]
 #[derive(Clone)]
 pub struct MyTableProvider {
     num_cols: usize,

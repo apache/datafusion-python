@@ -16,11 +16,13 @@
 // under the License.
 
 use pyo3::prelude::*;
-use table_provider::MyTableProvider;
+mod scalar_udf;
 mod table_provider;
 
 #[pymodule]
 fn datafusion_ffi_library(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<MyTableProvider>()?;
+    m.add_class::<table_provider::MyTableProvider>()?;
+    m.add_class::<scalar_udf::IsEvenFunction>()?;
+
     Ok(())
 }
