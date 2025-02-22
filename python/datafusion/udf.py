@@ -158,7 +158,7 @@ class Accumulator(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def update(self, values: pyarrow.Array) -> None:
+    def update(self, *values: pyarrow.Array) -> None:
         """Evaluate an array of values and update state."""
         pass
 
