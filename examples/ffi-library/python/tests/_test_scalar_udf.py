@@ -15,22 +15,27 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "ffi-table-provider"
-version = "0.1.0"
-edition = "2021"
+import pyarrow as pa
+from datafusion import SessionContext, col, ffi_udf
+from datafusion_ffi_library import IsEvenFunction
 
-[dependencies]
-datafusion = { version = "45.0.0" }
-datafusion-ffi = { version = "45.0.0" }
-pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
-arrow = { version = "54" }
-arrow-array = { version = "54" }
-arrow-schema = { version = "54" }
 
-[build-dependencies]
-pyo3-build-config = "0.23"
+def test_table_loading():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"a": [-3, -2, None, 0, 1, 2]})
 
-[lib]
-name = "ffi_table_provider"
-crate-type = ["cdylib", "rlib"]
+    is_even = ffi_udf(IsEvenFunction())
+
+    result = df.select(is_even(col("a"))).collect()
+    df.with_column("is_even", is_even(col("a"))).show()
+    print(result)
+
+    assert len(result) == 1
+    assert result[0].num_columns == 1
+
+    result = [r.column(0) for r in result]
+    expected = [
+        pa.array([False, True, None, None, False, True], type=pa.bool_()),
+    ]
+
+    assert result == expected

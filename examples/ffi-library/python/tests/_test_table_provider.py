@@ -17,7 +17,7 @@
 
 import pyarrow as pa
 from datafusion import SessionContext
-from ffi_table_provider import MyTableProvider
+from datafusion_ffi_library import MyTableProvider
 
 
 def test_table_loading():

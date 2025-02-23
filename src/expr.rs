@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::logical_expr::expr::{AggregateFunctionParams, WindowFunctionParams};
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
@@ -393,12 +394,15 @@ impl PyExpr {
             | Expr::TryCast(TryCast { expr, .. })
             | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
-            // Expr variants containing a collection of Expr(s) for operands
-            Expr::AggregateFunction(AggregateFunction { args, .. })
+            Expr::AggregateFunction(AggregateFunction {
+                params: AggregateFunctionParams { args, .. },
+                ..
+            })
             | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::WindowFunction(WindowFunction { args, .. }) => {
-                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
-            }
+            | Expr::WindowFunction(WindowFunction {
+                params: WindowFunctionParams { args, .. },
+                ..
+            }) => Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect()),
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -575,7 +579,7 @@ impl PyExpr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
-                    agg_fn.args.clone(),
+                    agg_fn.params.args.clone(),
                 ));
 
                 add_builder_fns_to_window(

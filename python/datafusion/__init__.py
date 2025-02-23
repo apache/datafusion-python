@@ -118,6 +118,7 @@ def lit(value):
 
 
 udf = ScalarUDF.udf
+ffi_udf = ScalarUDF.ffi_udf
 
 udaf = AggregateUDF.udaf
 
