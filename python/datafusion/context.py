@@ -716,7 +716,7 @@ class SessionContext:
             name: Name of the resultant table.
             table: DataFusion table to add to the session context.
         """
-        self.ctx.register_table(name, table)
+        self.ctx.register_table(name, table.table)
 
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
@@ -755,7 +755,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pyarrow.Schema | None = None,
-        file_sort_order: list[list[Expr]] | None = None,
+        file_sort_order: list[list[SortExpr]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -786,7 +786,9 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            file_sort_order,
+            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+            if file_sort_order is not None
+            else None,
         )
 
     def register_csv(
@@ -922,7 +924,7 @@ class SessionContext:
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
-        return self.ctx.catalog(name)
+        return Catalog(self.ctx.catalog(name))
 
     @deprecated(
         "Use the catalog provider interface ``SessionContext.Catalog`` to "
@@ -1042,7 +1044,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pyarrow.Schema | None = None,
-        file_sort_order: list[list[Expr]] | None = None,
+        file_sort_order: list[list[Expr | SortExpr]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1066,6 +1068,11 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        file_sort_order = (
+            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
+            if file_sort_order is not None
+            else None
+        )
         return DataFrame(
             self.ctx.read_parquet(
                 str(path),
@@ -1109,7 +1116,7 @@ class SessionContext:
         :py:class:`~datafusion.catalog.ListingTable`, create a
         :py:class:`~datafusion.dataframe.DataFrame`.
         """
-        return DataFrame(self.ctx.read_table(table))
+        return DataFrame(self.ctx.read_table(table.table))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""

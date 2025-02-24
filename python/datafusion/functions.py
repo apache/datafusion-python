@@ -366,7 +366,7 @@ def concat_ws(separator: str, *args: Expr) -> Expr:
 
 def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
     """Creates a new sort expression."""
-    return SortExpr(expr.expr, ascending=ascending, nulls_first=nulls_first)
+    return SortExpr(expr, ascending=ascending, nulls_first=nulls_first)
 
 
 def alias(expr: Expr, name: str) -> Expr:
@@ -942,6 +942,7 @@ def to_timestamp_millis(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
+    formatters = [f.expr for f in formatters]
     return Expr(f.to_timestamp_millis(arg.expr, *formatters))
 
 
@@ -950,6 +951,7 @@ def to_timestamp_micros(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
+    formatters = [f.expr for f in formatters]
     return Expr(f.to_timestamp_micros(arg.expr, *formatters))
 
 
@@ -958,6 +960,7 @@ def to_timestamp_nanos(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
+    formatters = [f.expr for f in formatters]
     return Expr(f.to_timestamp_nanos(arg.expr, *formatters))
 
 
@@ -966,6 +969,7 @@ def to_timestamp_seconds(arg: Expr, *formatters: Expr) -> Expr:
 
     See :py:func:`to_timestamp` for a description on how to use formatters.
     """
+    formatters = [f.expr for f in formatters]
     return Expr(f.to_timestamp_seconds(arg.expr, *formatters))
 
 
@@ -1078,9 +1082,9 @@ def range(start: Expr, stop: Expr, step: Expr) -> Expr:
     return Expr(f.range(start.expr, stop.expr, step.expr))
 
 
-def uuid(arg: Expr) -> Expr:
+def uuid() -> Expr:
     """Returns uuid v4 as a string value."""
-    return Expr(f.uuid(arg.expr))
+    return Expr(f.uuid())
 
 
 def struct(*args: Expr) -> Expr:

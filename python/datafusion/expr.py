@@ -176,7 +176,7 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e.expr, True, True).raw_sort
+    return SortExpr(e, True, True).raw_sort
 
 
 def sort_list_to_raw_sort_list(
@@ -231,7 +231,7 @@ class Expr:
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""
-        return Expr(self.expr.__richcmp__(other, op))
+        return Expr(self.expr.__richcmp__(other.expr, op))
 
     def __repr__(self) -> str:
         """Generate a string representation of this expression."""
@@ -417,7 +417,7 @@ class Expr:
             ascending: If true, sort in ascending order.
             nulls_first: Return null values first.
         """
-        return SortExpr(self.expr, ascending=ascending, nulls_first=nulls_first)
+        return SortExpr(self, ascending=ascending, nulls_first=nulls_first)
 
     def is_null(self) -> Expr:
         """Returns ``True`` if this expression is null."""
@@ -789,7 +789,7 @@ class SortExpr:
 
     def __init__(self, expr: Expr, ascending: bool, nulls_first: bool) -> None:
         """This constructor should not be called by the end user."""
-        self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
+        self.raw_sort = expr_internal.SortExpr(expr.expr, ascending, nulls_first)
 
     def expr(self) -> Expr:
         """Return the raw expr backing the SortExpr."""

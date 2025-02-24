@@ -85,7 +85,7 @@ class ScalarUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[..., _R],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
@@ -182,7 +182,7 @@ class AggregateUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         accumulator: Callable[[], Accumulator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
@@ -277,6 +277,7 @@ class AggregateUDF:
             )
         if name is None:
             name = accum.__call__().__class__.__qualname__.lower()
+        assert name is not None
         if isinstance(input_types, pyarrow.DataType):
             input_types = [input_types]
         return AggregateUDF(
@@ -462,7 +463,7 @@ class WindowUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[[], WindowEvaluator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
