@@ -33,7 +33,10 @@ from typing import (
     overload,
 )
 
-from typing_extensions import deprecated
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
