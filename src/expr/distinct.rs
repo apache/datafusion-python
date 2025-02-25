@@ -18,7 +18,7 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::Distinct;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use crate::sql::logical::PyLogicalPlan;
 
@@ -89,7 +89,7 @@ impl LogicalNode for PyDistinct {
         }
     }
 
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

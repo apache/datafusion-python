@@ -19,6 +19,7 @@ use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
 };
+use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::convert::{From, Into};
 use std::sync::Arc;
@@ -126,35 +127,35 @@ pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
 #[pymethods]
 impl PyExpr {
     /// Return the specific expression
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         Python::with_gil(|_| {
             match &self.expr {
-            Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_py(py)),
-            Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_py(py)),
+            Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_bound_py_any(py)?),
+            Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_bound_py_any(py)?),
             Expr::ScalarVariable(data_type, variables) => {
-                Ok(PyScalarVariable::new(data_type, variables).into_py(py))
+                Ok(PyScalarVariable::new(data_type, variables).into_bound_py_any(py)?)
             }
-            Expr::Like(value) => Ok(PyLike::from(value.clone()).into_py(py)),
-            Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_py(py)),
-            Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_py(py)),
-            Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_py(py)),
-            Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_py(py)),
-            Expr::IsNull(expr) => Ok(PyIsNull::new(*expr.clone()).into_py(py)),
-            Expr::IsTrue(expr) => Ok(PyIsTrue::new(*expr.clone()).into_py(py)),
-            Expr::IsFalse(expr) => Ok(PyIsFalse::new(*expr.clone()).into_py(py)),
-            Expr::IsUnknown(expr) => Ok(PyIsUnknown::new(*expr.clone()).into_py(py)),
-            Expr::IsNotTrue(expr) => Ok(PyIsNotTrue::new(*expr.clone()).into_py(py)),
-            Expr::IsNotFalse(expr) => Ok(PyIsNotFalse::new(*expr.clone()).into_py(py)),
-            Expr::IsNotUnknown(expr) => Ok(PyIsNotUnknown::new(*expr.clone()).into_py(py)),
-            Expr::Negative(expr) => Ok(PyNegative::new(*expr.clone()).into_py(py)),
+            Expr::Like(value) => Ok(PyLike::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_bound_py_any(py)?),
+            Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_bound_py_any(py)?),
+            Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNull(expr) => Ok(PyIsNull::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsTrue(expr) => Ok(PyIsTrue::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsFalse(expr) => Ok(PyIsFalse::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsUnknown(expr) => Ok(PyIsUnknown::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNotTrue(expr) => Ok(PyIsNotTrue::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNotFalse(expr) => Ok(PyIsNotFalse::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::IsNotUnknown(expr) => Ok(PyIsNotUnknown::new(*expr.clone()).into_bound_py_any(py)?),
+            Expr::Negative(expr) => Ok(PyNegative::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::AggregateFunction(expr) => {
-                Ok(PyAggregateFunction::from(expr.clone()).into_py(py))
+                Ok(PyAggregateFunction::from(expr.clone()).into_bound_py_any(py)?)
             }
-            Expr::SimilarTo(value) => Ok(PySimilarTo::from(value.clone()).into_py(py)),
-            Expr::Between(value) => Ok(between::PyBetween::from(value.clone()).into_py(py)),
-            Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_py(py)),
-            Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_py(py)),
-            Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_py(py)),
+            Expr::SimilarTo(value) => Ok(PySimilarTo::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Between(value) => Ok(between::PyBetween::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Case(value) => Ok(case::PyCase::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_bound_py_any(py)?),
+            Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
                 value
@@ -163,29 +164,29 @@ impl PyExpr {
                 "Converting Expr::WindowFunction to a Python object is not implemented: {:?}",
                 value
             ))),
-            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_py(py)),
-            Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_py(py)),
+            Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_bound_py_any(py)?),
             Expr::InSubquery(value) => {
-                Ok(in_subquery::PyInSubquery::from(value.clone()).into_py(py))
+                Ok(in_subquery::PyInSubquery::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::ScalarSubquery(value) => {
-                Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_py(py))
+                Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
                 qualifier, options
             ))),
             Expr::GroupingSet(value) => {
-                Ok(grouping_set::PyGroupingSet::from(value.clone()).into_py(py))
+                Ok(grouping_set::PyGroupingSet::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::Placeholder(value) => {
-                Ok(placeholder::PyPlaceholder::from(value.clone()).into_py(py))
+                Ok(placeholder::PyPlaceholder::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {:?} - {:?}",
                 data_type, column
             ))),
-            Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_py(py)),
+            Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?),
         }
         })
     }

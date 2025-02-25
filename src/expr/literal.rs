@@ -17,7 +17,7 @@
 
 use crate::errors::PyDataFusionError;
 use datafusion::common::ScalarValue;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -144,8 +144,8 @@ impl PyLiteral {
     }
 
     #[allow(clippy::wrong_self_convention)]
-    fn into_type(&self, py: Python) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn into_type<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 
     fn __repr__(&self) -> PyResult<String> {

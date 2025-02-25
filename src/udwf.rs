@@ -27,6 +27,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::common::data_type::PyScalarValue;
+use crate::errors::to_datafusion_err;
 use crate::expr::PyExpr;
 use crate::utils::parse_volatility;
 use datafusion::arrow::datatypes::DataType;
@@ -56,8 +57,8 @@ impl PartitionEvaluator for RustPartitionEvaluator {
 
     fn get_range(&self, idx: usize, n_rows: usize) -> Result<Range<usize>> {
         Python::with_gil(|py| {
-            let py_args = vec![idx.to_object(py), n_rows.to_object(py)];
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = vec![idx.into_pyobject(py)?, n_rows.into_pyobject(py)?];
+            let py_args = PyTuple::new(py, py_args)?;
 
             self.evaluator
                 .bind(py)
@@ -93,17 +94,14 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
         println!("evaluate all called with number of values {}", values.len());
         Python::with_gil(|py| {
-            let py_values = PyList::new_bound(
+            let py_values = PyList::new(
                 py,
                 values
                     .iter()
                     .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
-            );
-            let py_num_rows = num_rows.to_object(py).into_bound(py);
-            let py_args = PyTuple::new_bound(
-                py,
-                PyTuple::new_bound(py, vec![py_values.as_any(), &py_num_rows]),
-            );
+            )?;
+            let py_num_rows = num_rows.into_pyobject(py)?;
+            let py_args = PyTuple::new(py, vec![py_values.as_any(), &py_num_rows])?;
 
             self.evaluator
                 .bind(py)
@@ -112,32 +110,28 @@ impl PartitionEvaluator for RustPartitionEvaluator {
                     let array_data = ArrayData::from_pyarrow_bound(&v).unwrap();
                     make_array(array_data)
                 })
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })
+        .map_err(to_datafusion_err)
     }
 
     fn evaluate(&mut self, values: &[ArrayRef], range: &Range<usize>) -> Result<ScalarValue> {
         Python::with_gil(|py| {
-            let py_values = PyList::new_bound(
+            let py_values = PyList::new(
                 py,
                 values
                     .iter()
                     .map(|arg| arg.into_data().to_pyarrow(py).unwrap()),
-            );
-            let range_tuple =
-                PyTuple::new_bound(py, vec![range.start.to_object(py), range.end.to_object(py)]);
-            let py_args = PyTuple::new_bound(
-                py,
-                PyTuple::new_bound(py, vec![py_values.as_any(), range_tuple.as_any()]),
-            );
+            )?;
+            let range_tuple = PyTuple::new(py, vec![range.start, range.end])?;
+            let py_args = PyTuple::new(py, vec![py_values.as_any(), range_tuple.as_any()])?;
 
             self.evaluator
                 .bind(py)
                 .call_method1("evaluate", py_args)
                 .and_then(|v| v.extract::<PyScalarValue>())
                 .map(|v| v.0)
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
         })
+        .map_err(to_datafusion_err)
     }
 
     fn evaluate_all_with_rank(
@@ -148,23 +142,27 @@ impl PartitionEvaluator for RustPartitionEvaluator {
         Python::with_gil(|py| {
             let ranks = ranks_in_partition
                 .iter()
-                .map(|r| PyTuple::new_bound(py, vec![r.start, r.end]));
+                .map(|r| PyTuple::new(py, vec![r.start, r.end]))
+                .collect::<PyResult<Vec<_>>>()?;
 
             // 1. cast args to Pyarrow array
-            let py_args = vec![num_rows.to_object(py), PyList::new_bound(py, ranks).into()];
+            let py_args = vec![
+                num_rows.into_pyobject(py)?.into_any(),
+                PyList::new(py, ranks)?.into_any(),
+            ];
 
-            let py_args = PyTuple::new_bound(py, py_args);
+            let py_args = PyTuple::new(py, py_args)?;
 
             // 2. call function
             self.evaluator
                 .bind(py)
                 .call_method1("evaluate_all_with_rank", py_args)
-                .map_err(|e| DataFusionError::Execution(format!("{e}")))
                 .map(|v| {
                     let array_data = ArrayData::from_pyarrow_bound(&v).unwrap();
                     make_array(array_data)
                 })
         })
+        .map_err(to_datafusion_err)
     }
 
     fn supports_bounded_execution(&self) -> bool {

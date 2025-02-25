@@ -458,8 +458,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pylist", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -478,8 +478,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pydict", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -533,8 +533,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pandas", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
