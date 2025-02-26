@@ -1,0 +1,41 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+[package]
+name = "datafusion-ffi-library"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+datafusion = { version = "45.0.0" }
+datafusion-ffi = { version = "45.0.0" }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
+arrow = { version = "54.2.0" }
+arrow-array = { version = "54.2.0" }
+arrow-schema = { version = "54.2.0" }
+
+[build-dependencies]
+pyo3-build-config = "0.23"
+
+[lib]
+name = "datafusion_ffi_library"
+crate-type = ["cdylib", "rlib"]
+
+# TODO remove once we update datafusion versions to 46
+[patch.crates-io]
+datafusion = { git = "https://github.com/apache/datafusion.git", rev = "8ab0661a39bd69783b31b949e7a768fb518629e7", features = ["avro", "unicode_expressions"] }
+datafusion-ffi = { git = "https://github.com/apache/datafusion.git", rev = "8ab0661a39bd69783b31b949e7a768fb518629e7" }

@@ -20,7 +20,7 @@ requires = ["maturin>=1.6,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "ffi_table_provider"
+name = "datafusion_ffi_library"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
