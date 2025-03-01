@@ -31,9 +31,11 @@ use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::TableProvider;
+use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
+use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
@@ -70,6 +72,7 @@ impl PyTableProvider {
         PyTable::new(table_provider)
     }
 }
+const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -121,46 +124,57 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let mut html_str = "<table border='1'>\n".to_string();
+        let (batch, mut has_more) =
+            wait_for_future(py, get_first_record_batch(self.df.as_ref().clone()))?;
+        let Some(batch) = batch else {
+            return Ok("No data to display".to_string());
+        };
 
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
+        let mut html_str = "
+        <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
+            <table style=\"border-collapse: collapse; min-width: 100%\">
+                <thead>\n".to_string();
 
-        if batches.is_empty() {
-            html_str.push_str("</table>\n");
-            return Ok(html_str);
-        }
-
-        let schema = batches[0].schema();
+        let schema = batch.schema();
 
         let mut header = Vec::new();
         for field in schema.fields() {
-            header.push(format!("<th>{}</td>", field.name()));
+            header.push(format!("<th style='border: 1px solid black; padding: 8px; text-align: left; background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; max-width: fit-content;'>{}</th>", field.name()));
         }
         let header_str = header.join("");
-        html_str.push_str(&format!("<tr>{}</tr>\n", header_str));
+        html_str.push_str(&format!("<tr>{}</tr></thead><tbody>\n", header_str));
 
-        for batch in batches {
-            let formatters = batch
-                .columns()
-                .iter()
-                .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
-                .map(|c| {
-                    c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
-                })
-                .collect::<Result<Vec<_>, _>>()?;
+        let formatters = batch
+            .columns()
+            .iter()
+            .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
+            .map(|c| c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string()))))
+            .collect::<Result<Vec<_>, _>>()?;
 
-            for row in 0..batch.num_rows() {
-                let mut cells = Vec::new();
-                for formatter in &formatters {
-                    cells.push(format!("<td>{}</td>", formatter.value(row)));
-                }
-                let row_str = cells.join("");
-                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
+        let batch_size = batch.get_array_memory_size();
+        let num_rows_to_display = match batch_size > MAX_TABLE_BYTES_TO_DISPLAY {
+            true => {
+                has_more = true;
+                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / batch_size as f32;
+                (batch.num_rows() as f32 * ratio).round() as usize
             }
+            false => batch.num_rows(),
+        };
+
+        for row in 0..num_rows_to_display {
+            let mut cells = Vec::new();
+            for formatter in &formatters {
+                cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(row)));
+            }
+            let row_str = cells.join("");
+            html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
         }
 
-        html_str.push_str("</table>\n");
+        html_str.push_str("</tbody></table></div>\n");
+
+        if has_more {
+            html_str.push_str("Data truncated due to size.");
+        }
 
         Ok(html_str)
     }
@@ -770,4 +784,30 @@ fn record_batch_into_schema(
     }
 
     RecordBatch::try_new(schema, data_arrays)
+}
+
+/// This is a helper function to return the first non-empty record batch from executing a DataFrame.
+/// It additionally returns a bool, which indicates if there are more record batches available.
+/// We do this so we can determine if we should indicate to the user that the data has been
+/// truncated.
+async fn get_first_record_batch(
+    df: DataFrame,
+) -> Result<(Option<RecordBatch>, bool), DataFusionError> {
+    let mut stream = df.execute_stream().await?;
+    loop {
+        let rb = match stream.next().await {
+            None => return Ok((None, false)),
+            Some(Ok(r)) => r,
+            Some(Err(e)) => return Err(e),
+        };
+
+        if rb.num_rows() > 0 {
+            let has_more = match stream.try_next().await {
+                Ok(None) => false, // reached end
+                Ok(Some(_)) => true,
+                Err(_) => false, // Stream disconnected
+            };
+            return Ok((Some(rb), has_more));
+        }
+    }
 }
