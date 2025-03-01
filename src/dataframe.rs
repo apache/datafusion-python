@@ -73,6 +73,8 @@ impl PyTableProvider {
     }
 }
 const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
+const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
+const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -130,7 +132,37 @@ impl PyDataFrame {
             return Ok("No data to display".to_string());
         };
 
+        let table_uuid = uuid::Uuid::new_v4().to_string();
+
         let mut html_str = "
+        <style>
+            .expandable-container {
+                display: inline-block;
+                max-width: 200px;
+            }
+            .expandable {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: block;
+            }
+            .full-text {
+                display: none;
+                white-space: normal;
+            }
+            .expand-btn {
+                cursor: pointer;
+                color: blue;
+                text-decoration: underline;
+                border: none;
+                background: none;
+                font-size: inherit;
+                display: block;
+                margin-top: 5px;
+            }
+        </style>
+
+
         <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
             <table style=\"border-collapse: collapse; min-width: 100%\">
                 <thead>\n".to_string();
@@ -154,23 +186,63 @@ impl PyDataFrame {
         let batch_size = batch.get_array_memory_size();
         let num_rows_to_display = match batch_size > MAX_TABLE_BYTES_TO_DISPLAY {
             true => {
-                has_more = true;
+                let num_batch_rows = batch.num_rows();
                 let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / batch_size as f32;
-                (batch.num_rows() as f32 * ratio).round() as usize
+                let mut reduced_row_num = (num_batch_rows as f32 * ratio).round() as usize;
+                if reduced_row_num < MIN_TABLE_ROWS_TO_DISPLAY {
+                    reduced_row_num = MIN_TABLE_ROWS_TO_DISPLAY.min(num_batch_rows);
+                }
+
+                has_more = has_more || reduced_row_num < num_batch_rows;
+                reduced_row_num
             }
             false => batch.num_rows(),
         };
 
         for row in 0..num_rows_to_display {
             let mut cells = Vec::new();
-            for formatter in &formatters {
-                cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(row)));
+            for (col, formatter) in formatters.iter().enumerate() {
+                let cell_data = formatter.value(row).to_string();
+                // From testing, primitive data types do not typically get larger than 21 characters
+                if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
+                    let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
+                    cells.push(format!("
+                        <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
+                            <div class=\"expandable-container\">
+                                <span class=\"expandable\" id=\"{table_uuid}-min-text-{row}-{col}\">{short_cell_data}</span>
+                                <span class=\"full-text\" id=\"{table_uuid}-full-text-{row}-{col}\">{cell_data}</span>
+                                <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{row},{col})\">...</button>
+                            </div>
+                        </td>"));
+                } else {
+                    cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(row)));
+                }
             }
             let row_str = cells.join("");
             html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
         }
 
         html_str.push_str("</tbody></table></div>\n");
+
+        html_str.push_str("
+            <script>
+            function toggleDataFrameCellText(table_uuid, row, col) {
+                var shortText = document.getElementById(table_uuid + \"-min-text-\" + row + \"-\" + col);
+                var fullText = document.getElementById(table_uuid + \"-full-text-\" + row + \"-\" + col);
+                var button = event.target;
+
+                if (fullText.style.display === \"none\") {
+                    shortText.style.display = \"none\";
+                    fullText.style.display = \"inline\";
+                    button.textContent = \"(less)\";
+                } else {
+                    shortText.style.display = \"inline\";
+                    fullText.style.display = \"none\";
+                    button.textContent = \"...\";
+                }
+            }
+            </script>
+        ");
 
         if has_more {
             html_str.push_str("Data truncated due to size.");
