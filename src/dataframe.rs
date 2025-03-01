@@ -126,11 +126,15 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let (batch, mut has_more) =
-            wait_for_future(py, get_first_record_batch(self.df.as_ref().clone()))?;
-        let Some(batch) = batch else {
+        let (batches, mut has_more) =
+            wait_for_future(py, get_first_few_record_batches(self.df.as_ref().clone()))?;
+        let Some(batches) = batches else {
             return Ok("No data to display".to_string());
         };
+        if batches.is_empty() {
+            // This should not be reached, but do it for safety since we index into the vector below
+            return Ok("No data to display".to_string());
+        }
 
         let table_uuid = uuid::Uuid::new_v4().to_string();
 
@@ -162,12 +166,11 @@ impl PyDataFrame {
             }
         </style>
 
-
         <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
             <table style=\"border-collapse: collapse; min-width: 100%\">
                 <thead>\n".to_string();
 
-        let schema = batch.schema();
+        let schema = batches[0].schema();
 
         let mut header = Vec::new();
         for field in schema.fields() {
@@ -176,52 +179,75 @@ impl PyDataFrame {
         let header_str = header.join("");
         html_str.push_str(&format!("<tr>{}</tr></thead><tbody>\n", header_str));
 
-        let formatters = batch
-            .columns()
+        let batch_formatters = batches
             .iter()
-            .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
-            .map(|c| c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string()))))
+            .map(|batch| {
+                batch
+                    .columns()
+                    .iter()
+                    .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
+                    .map(|c| {
+                        c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+            })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let batch_size = batch.get_array_memory_size();
-        let num_rows_to_display = match batch_size > MAX_TABLE_BYTES_TO_DISPLAY {
+        let total_memory: usize = batches
+            .iter()
+            .map(|batch| batch.get_array_memory_size())
+            .sum();
+        let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
+        let total_rows = rows_per_batch.clone().sum();
+
+        // let (total_memory, total_rows) = batches.iter().fold((0, 0), |acc, batch| {
+        //     (acc.0 + batch.get_array_memory_size(), acc.1 + batch.num_rows())
+        // });
+
+        let num_rows_to_display = match total_memory > MAX_TABLE_BYTES_TO_DISPLAY {
             true => {
-                let num_batch_rows = batch.num_rows();
-                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / batch_size as f32;
-                let mut reduced_row_num = (num_batch_rows as f32 * ratio).round() as usize;
+                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / total_memory as f32;
+                let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
                 if reduced_row_num < MIN_TABLE_ROWS_TO_DISPLAY {
-                    reduced_row_num = MIN_TABLE_ROWS_TO_DISPLAY.min(num_batch_rows);
+                    reduced_row_num = MIN_TABLE_ROWS_TO_DISPLAY.min(total_rows);
                 }
 
-                has_more = has_more || reduced_row_num < num_batch_rows;
+                has_more = has_more || reduced_row_num < total_rows;
                 reduced_row_num
             }
-            false => batch.num_rows(),
+            false => total_rows,
         };
 
-        for row in 0..num_rows_to_display {
-            let mut cells = Vec::new();
-            for (col, formatter) in formatters.iter().enumerate() {
-                let cell_data = formatter.value(row).to_string();
-                // From testing, primitive data types do not typically get larger than 21 characters
-                if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
-                    let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
-                    cells.push(format!("
-                        <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
-                            <div class=\"expandable-container\">
-                                <span class=\"expandable\" id=\"{table_uuid}-min-text-{row}-{col}\">{short_cell_data}</span>
-                                <span class=\"full-text\" id=\"{table_uuid}-full-text-{row}-{col}\">{cell_data}</span>
-                                <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{row},{col})\">...</button>
-                            </div>
-                        </td>"));
-                } else {
-                    cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(row)));
+        // We need to build up row by row for html
+        let mut table_row = 0;
+        for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
+            for batch_row in 0..num_rows_in_batch {
+                table_row += 1;
+                if table_row > num_rows_to_display {
+                    break;
                 }
+                let mut cells = Vec::new();
+                for (col, formatter) in batch_formatter.iter().enumerate() {
+                    let cell_data = formatter.value(batch_row).to_string();
+                    // From testing, primitive data types do not typically get larger than 21 characters
+                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
+                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
+                        cells.push(format!("
+                            <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
+                                <div class=\"expandable-container\">
+                                    <span class=\"expandable\" id=\"{table_uuid}-min-text-{table_row}-{col}\">{short_cell_data}</span>
+                                    <span class=\"full-text\" id=\"{table_uuid}-full-text-{table_row}-{col}\">{cell_data}</span>
+                                    <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{table_row},{col})\">...</button>
+                                </div>
+                            </td>"));
+                    } else {
+                        cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(batch_row)));
+                    }
+                }
+                let row_str = cells.join("");
+                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
             }
-            let row_str = cells.join("");
-            html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
         }
-
         html_str.push_str("</tbody></table></div>\n");
 
         html_str.push_str("
@@ -862,24 +888,36 @@ fn record_batch_into_schema(
 /// It additionally returns a bool, which indicates if there are more record batches available.
 /// We do this so we can determine if we should indicate to the user that the data has been
 /// truncated.
-async fn get_first_record_batch(
+async fn get_first_few_record_batches(
     df: DataFrame,
-) -> Result<(Option<RecordBatch>, bool), DataFusionError> {
+) -> Result<(Option<Vec<RecordBatch>>, bool), DataFusionError> {
     let mut stream = df.execute_stream().await?;
-    loop {
+    let mut size_estimate_so_far = 0;
+    let mut record_batches = Vec::default();
+    while size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY {
         let rb = match stream.next().await {
-            None => return Ok((None, false)),
+            None => {
+                break;
+            }
             Some(Ok(r)) => r,
             Some(Err(e)) => return Err(e),
         };
 
         if rb.num_rows() > 0 {
-            let has_more = match stream.try_next().await {
-                Ok(None) => false, // reached end
-                Ok(Some(_)) => true,
-                Err(_) => false, // Stream disconnected
-            };
-            return Ok((Some(rb), has_more));
+            size_estimate_so_far += rb.get_array_memory_size();
+            record_batches.push(rb);
         }
     }
+
+    if record_batches.is_empty() {
+        return Ok((None, false));
+    }
+
+    let has_more = match stream.try_next().await {
+        Ok(None) => false, // reached end
+        Ok(Some(_)) => true,
+        Err(_) => false, // Stream disconnected
+    };
+
+    Ok((Some(record_batches), has_more))
 }
