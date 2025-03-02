@@ -22,6 +22,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
+import functools
 
 import pyarrow
 
@@ -148,6 +149,27 @@ class ScalarUDF:
             volatility=volatility,
         )
 
+    @staticmethod
+    def udf_decorator(
+        input_types: list[pyarrow.DataType],
+        return_type: _R,
+        volatility: Volatility | str,
+        name: Optional[str] = None
+    ):
+        def decorator(func):
+            udf_caller = ScalarUDF.udf(
+                func,
+                input_types, 
+                return_type, 
+                volatility,
+                name
+            )
+            
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                return udf_caller(*args, **kwargs)
+            return wrapper
+        return decorator
 
 class Accumulator(metaclass=ABCMeta):
     """Defines how an :py:class:`AggregateUDF` accumulates values."""
@@ -287,6 +309,31 @@ class AggregateUDF:
             state_type=state_type,
             volatility=volatility,
         )
+        
+    @staticmethod
+    def udaf_decorator(
+        input_types: pyarrow.DataType | list[pyarrow.DataType],
+        return_type: pyarrow.DataType,
+        state_type: list[pyarrow.DataType],
+        volatility: Volatility | str,
+        name: Optional[str] = None
+    ):
+        def decorator(accum: Callable[[], Accumulator]):
+            udaf_caller = AggregateUDF.udaf(
+                accum,
+                input_types, 
+                return_type,
+                state_type,
+                volatility,
+                name
+            )
+            
+            @functools.wraps(accum)
+            def wrapper(*args, **kwargs):
+                return udaf_caller(*args, **kwargs)
+            return wrapper
+        return decorator
+
 
 
 class WindowEvaluator(metaclass=ABCMeta):
