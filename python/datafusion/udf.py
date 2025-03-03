@@ -136,14 +136,14 @@ class ScalarUDF:
 
         Example:
             **Using `udf` as a function:**
-            ```python
+            ```
             def double_func(x):
                 return x * 2
             double_udf = udf(double_func, [pyarrow.int32()], pyarrow.int32(), "volatile", "double_it")
             ```
 
             **Using `udf` as a decorator:**
-            ```python
+            ```
             @udf([pyarrow.int32()], pyarrow.int32(), "volatile", "double_it")
             def double_udf(x):
                 return x * 2
@@ -322,10 +322,10 @@ class AggregateUDF:
 
         Args:
             accum: The accumulator python function. **Only needed when calling as a function. Skip this argument when using `udaf` as a decorator.**
-            input_types: The data types of the arguments to `accum.
+            input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
-            volatility: See :py:class:Volatility for allowed values.
+            volatility: See :py:class:`Volatility` for allowed values.
             name: A descriptive name for the function.
 
         Returns:
@@ -333,8 +333,6 @@ class AggregateUDF:
             aggregation or window function calls.
         """
 
-
-            
         def __new__(cls, *args, **kwargs):
             if args and callable(args[0]):  
                 # Case 1: Used as a function, require the first parameter to be callable
