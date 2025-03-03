@@ -20,7 +20,7 @@ from typing import List
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
-from datafusion import Accumulator, column, udaf, udaf_decorator
+from datafusion import Accumulator, column, udaf
 
 
 class Summarize(Accumulator):
@@ -118,10 +118,7 @@ def test_udaf_aggregate(df):
 
 def test_udaf_decorator_aggregate(df):
     
-    @udaf_decorator(pa.float64(),
-        pa.float64(),
-        [pa.float64()],
-        "immutable")
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
     def summarize():
         return Summarize()
 
@@ -169,7 +166,7 @@ def test_udaf_aggregate_with_arguments(df):
 def test_udaf_decorator_aggregate_with_arguments(df):
     bias = 10.0
     
-    @udaf_decorator(pa.float64(),
+    @udaf(pa.float64(),
         pa.float64(),
         [pa.float64()],
         "immutable")

@@ -118,9 +118,7 @@ def lit(value):
 
 
 udf = ScalarUDF.udf
-udf_decorator = ScalarUDF.udf_decorator
 
 udaf = AggregateUDF.udaf
-udaf_decorator = AggregateUDF.udaf_decorator
 
 udwf = WindowUDF.udwf

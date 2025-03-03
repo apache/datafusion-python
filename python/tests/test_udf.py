@@ -17,7 +17,7 @@
 
 import pyarrow as pa
 import pytest
-from datafusion import column, udf, udf_decorator
+from datafusion import column, udf
 
 
 @pytest.fixture
@@ -46,7 +46,7 @@ def test_udf(df):
 
 
 def test_udf_decorator(df):
-    @udf_decorator([pa.int64()], pa.bool_(), "immutable")
+    @udf([pa.int64()], pa.bool_(), "immutable")
     def is_null(x: pa.Array) -> pa.Array:
         return x.is_null()
 
@@ -107,7 +107,7 @@ def test_udf_with_parameters(df) -> None:
 
 
 def test_udf_with_parameters(df) -> None:
-    @udf_decorator([pa.int64()], pa.bool_(), "immutable")
+    @udf([pa.int64()], pa.bool_(), "immutable")
     def udf_no_param(values: pa.Array) -> pa.Array:
         return OverThresholdUDF()(values)
 
@@ -116,7 +116,7 @@ def test_udf_with_parameters(df) -> None:
 
     assert result == pa.array([True, True, True])
 
-    @udf_decorator([pa.int64()], pa.bool_(), "immutable")
+    @udf([pa.int64()], pa.bool_(), "immutable")
     def udf_with_param(values: pa.Array) -> pa.Array:
         return OverThresholdUDF(2)(values)
 
