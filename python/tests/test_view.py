@@ -27,11 +27,8 @@ def test_register_filtered_dataframe():
     df = ctx.from_pydict(data, "my_table")
 
     df_filtered = df.filter(col("a") > literal(2))
-    view = df_filtered.into_view()
 
-    assert view.kind == "view"
-
-    ctx.register_table("view1", view)
+    ctx.register_view("view1", df_filtered)
 
     df_view = ctx.sql("SELECT * FROM view1")
 
