@@ -74,57 +74,6 @@ impl PyTableProvider {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
-///
-/// # Methods
-///
-/// - `new`: Creates a new PyDataFrame.
-/// - `__getitem__`: Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`.
-/// - `__repr__`: Returns a string representation of the DataFrame.
-/// - `_repr_html_`: Returns an HTML representation of the DataFrame.
-/// - `describe`: Calculate summary statistics for a DataFrame.
-/// - `schema`: Returns the schema from the logical plan.
-/// - `into_view`: Convert this DataFrame into a Table that can be used in register_table. We have not finalized on PyTableProvider approach yet.
-/// - `select_columns`: Select columns from the DataFrame.
-/// - `select`: Select expressions from the DataFrame.
-/// - `drop`: Drop columns from the DataFrame.
-/// - `filter`: Filter the DataFrame based on a predicate.
-/// - `with_column`: Add a new column to the DataFrame.
-/// - `with_columns`: Add multiple new columns to the DataFrame.
-/// - `with_column_renamed`: Rename a column in the DataFrame.
-/// - `aggregate`: Aggregate the DataFrame based on group by and aggregation expressions.
-/// - `sort`: Sort the DataFrame based on expressions.
-/// - `limit`: Limit the number of rows in the DataFrame.
-/// - `collect`: Executes the plan, returning a list of `RecordBatch`es.
-/// - `cache`: Cache the DataFrame.
-/// - `collect_partitioned`: Executes the DataFrame and collects all results into a vector of vector of RecordBatch maintaining the input partitioning.
-/// - `show`: Print the result, 20 lines by default.
-/// - `distinct`: Filter out duplicate rows.
-/// - `join`: Join two DataFrames.
-/// - `join_on`: Join two DataFrames based on expressions.
-/// - `explain`: Print the query plan.
-/// - `logical_plan`: Get the logical plan for this DataFrame.
-/// - `optimized_logical_plan`: Get the optimized logical plan for this DataFrame.
-/// - `execution_plan`: Get the execution plan for this DataFrame.
-/// - `repartition`: Repartition the DataFrame based on a logical partitioning scheme.
-/// - `repartition_by_hash`: Repartition the DataFrame based on a hash partitioning scheme.
-/// - `union`: Calculate the union of two DataFrames, preserving duplicate rows.
-/// - `union_distinct`: Calculate the distinct union of two DataFrames.
-/// - `unnest_column`: Unnest a column in the DataFrame.
-/// - `unnest_columns`: Unnest multiple columns in the DataFrame.
-/// - `intersect`: Calculate the intersection of two DataFrames.
-/// - `except_all`: Calculate the exception of two DataFrames.
-/// - `write_csv`: Write the DataFrame to a CSV file.
-/// - `write_parquet`: Write the DataFrame to a Parquet file.
-/// - `write_json`: Write the DataFrame to a JSON file.
-/// - `to_arrow_table`: Convert the DataFrame to an Arrow Table.
-/// - `__arrow_c_stream__`: Convert the DataFrame to an Arrow C Stream.
-/// - `execute_stream`: Execute the DataFrame and return a RecordBatchStream.
-/// - `execute_stream_partitioned`: Execute the DataFrame and return partitioned RecordBatchStreams.
-/// - `to_pandas`: Convert the DataFrame to a Pandas DataFrame.
-/// - `to_pylist`: Convert the DataFrame to a Python list.
-/// - `to_pydict`: Convert the DataFrame to a Python dictionary.
-/// - `to_polars`: Convert the DataFrame to a Polars DataFrame.
-/// - `count`: Execute the DataFrame to get the total number of rows.
 #[pyclass(name = "DataFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PyDataFrame {
