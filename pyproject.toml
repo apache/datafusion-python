@@ -89,6 +89,7 @@ dev = [
     "pytest>=7.4.4",
     "ruff>=0.9.1",
     "toml>=0.10.2",
+    "pygithub==2.5.0",
 ]
 docs = [
     "sphinx>=7.1.2",

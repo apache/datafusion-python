@@ -94,21 +94,21 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<record_batch::PyRecordBatchStream>()?;
 
     // Register `common` as a submodule. Matching `datafusion-common` https://docs.rs/datafusion-common/latest/datafusion_common/
-    let common = PyModule::new_bound(py, "common")?;
+    let common = PyModule::new(py, "common")?;
     common::init_module(&common)?;
     m.add_submodule(&common)?;
 
     // Register `expr` as a submodule. Matching `datafusion-expr` https://docs.rs/datafusion-expr/latest/datafusion_expr/
-    let expr = PyModule::new_bound(py, "expr")?;
+    let expr = PyModule::new(py, "expr")?;
     expr::init_module(&expr)?;
     m.add_submodule(&expr)?;
 
     // Register the functions as a submodule
-    let funcs = PyModule::new_bound(py, "functions")?;
+    let funcs = PyModule::new(py, "functions")?;
     functions::init_module(&funcs)?;
     m.add_submodule(&funcs)?;
 
-    let store = PyModule::new_bound(py, "object_store")?;
+    let store = PyModule::new(py, "object_store")?;
     store::init_module(&store)?;
     m.add_submodule(&store)?;
 
@@ -121,7 +121,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
 
 #[cfg(feature = "substrait")]
 fn setup_substrait_module(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
-    let substrait = PyModule::new_bound(py, "substrait")?;
+    let substrait = PyModule::new(py, "substrait")?;
     substrait::init_module(&substrait)?;
     m.add_submodule(&substrait)?;
     Ok(())

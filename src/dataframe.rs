@@ -579,12 +579,12 @@ impl PyDataFrame {
     /// Convert to Arrow Table
     /// Collect the batches and pass to Arrow Table
     fn to_arrow_table(&self, py: Python<'_>) -> PyResult<PyObject> {
-        let batches = self.collect(py)?.to_object(py);
-        let schema: PyObject = self.schema().into_py(py);
+        let batches = self.collect(py)?.into_pyobject(py)?;
+        let schema = self.schema().into_pyobject(py)?;
 
         // Instantiate pyarrow Table object and use its from_batches method
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[batches, schema]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[batches, schema])?;
         let table: PyObject = table_class.call_method1("from_batches", args)?.into();
         Ok(table)
     }
@@ -619,8 +619,7 @@ impl PyDataFrame {
 
         let ffi_stream = FFI_ArrowArrayStream::new(reader);
         let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
-        PyCapsule::new_bound(py, ffi_stream, Some(stream_capsule_name))
-            .map_err(PyDataFusionError::from)
+        PyCapsule::new(py, ffi_stream, Some(stream_capsule_name)).map_err(PyDataFusionError::from)
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
@@ -683,8 +682,8 @@ impl PyDataFrame {
     /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
     fn to_polars(&self, py: Python<'_>) -> PyResult<PyObject> {
         let table = self.to_arrow_table(py)?;
-        let dataframe = py.import_bound("polars")?.getattr("DataFrame")?;
-        let args = PyTuple::new_bound(py, &[table]);
+        let dataframe = py.import("polars")?.getattr("DataFrame")?;
+        let args = PyTuple::new(py, &[table])?;
         let result: PyObject = dataframe.call1(args)?.into();
         Ok(result)
     }
@@ -707,7 +706,7 @@ fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
 
     // Import the Python 'builtins' module to access the print function
     // Note that println! does not print to the Python debug console and is not visible in notebooks for instance
-    let print = py.import_bound("builtins")?.getattr("print")?;
+    let print = py.import("builtins")?.getattr("print")?;
     print.call1((result,))?;
     Ok(())
 }

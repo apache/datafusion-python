@@ -66,7 +66,7 @@ impl PyExecutionPlan {
         )?;
 
         let bytes = proto.encode_to_vec();
-        Ok(PyBytes::new_bound(py, &bytes))
+        Ok(PyBytes::new(py, &bytes))
     }
 
     #[staticmethod]

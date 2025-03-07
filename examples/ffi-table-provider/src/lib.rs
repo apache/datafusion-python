@@ -102,7 +102,7 @@ impl MyTableProvider {
         let provider = self
             .create_table()
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        let provider = FFI_TableProvider::new(Arc::new(provider), false);
+        let provider = FFI_TableProvider::new(Arc::new(provider), false, None);
 
         PyCapsule::new_bound(py, provider, Some(name.clone()))
     }

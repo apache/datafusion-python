@@ -732,7 +732,7 @@ def test_array_function_obj_tests(stmt, py_expr):
         ),
         (
             f.regexp_match(column("a"), literal("(ell|orl)")),
-            pa.array([["ell"], ["orl"], None]),
+            pa.array([["ell"], ["orl"], None], type=pa.list_(pa.string_view())),
         ),
         (
             f.regexp_replace(column("a"), literal("(ell|orl)"), literal("-")),
@@ -871,6 +871,7 @@ def test_temporal_functions(df):
         f.to_timestamp_millis(literal("2023-09-07 05:06:14.523952")),
         f.to_timestamp_micros(literal("2023-09-07 05:06:14.523952")),
         f.extract(literal("day"), column("d")),
+        f.to_timestamp_nanos(literal("2023-09-07 05:06:14.523952")),
     )
     result = df.collect()
     assert len(result) == 1
@@ -909,6 +910,9 @@ def test_temporal_functions(df):
         [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
     )
     assert result.column(10) == pa.array([31, 26, 2], type=pa.int32())
+    assert result.column(11) == pa.array(
+        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+    )
 
 
 def test_arrow_cast(df):

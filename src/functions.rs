@@ -553,6 +553,7 @@ expr_fn!(
 expr_fn!(now);
 expr_fn_vec!(to_timestamp);
 expr_fn_vec!(to_timestamp_millis);
+expr_fn_vec!(to_timestamp_nanos);
 expr_fn_vec!(to_timestamp_micros);
 expr_fn_vec!(to_timestamp_seconds);
 expr_fn_vec!(to_unixtime);
@@ -977,6 +978,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(to_hex))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_millis))?;
+    m.add_wrapped(wrap_pyfunction!(to_timestamp_nanos))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_micros))?;
     m.add_wrapped(wrap_pyfunction!(to_timestamp_seconds))?;
     m.add_wrapped(wrap_pyfunction!(to_unixtime))?;

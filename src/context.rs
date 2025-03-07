@@ -48,7 +48,7 @@ use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog_common::TableReference;
+use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
 use datafusion::datasource::file_format::parquet::ParquetFormat;
@@ -458,8 +458,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pylist", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -478,8 +478,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pydict", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -533,8 +533,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pandas", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
