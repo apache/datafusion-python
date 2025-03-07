@@ -19,7 +19,7 @@
 Registering Views
 ======================
 
-You can use the ``into_view`` method to convert a DataFrame into a view and register it with the context.
+You can use the context's ``register_view`` method to register a DataFrame as a view
 
 .. code-block:: python
 
@@ -37,11 +37,8 @@ You can use the ``into_view`` method to convert a DataFrame into a view and regi
     # Filter the DataFrame (for example, keep rows where a > 2)
     df_filtered = df.filter(col("a") > literal(2))
 
-    # Convert the filtered DataFrame into a view
-    view = df_filtered.into_view()
-
-    # Register the view with the context
-    ctx.register_table("view1", view)
+    # Register the dataframe as a view with the context
+    ctx.register_view("view1", df_filtered)
 
     # Now run a SQL query against the registered view
     df_view = ctx.sql("SELECT * FROM view1")

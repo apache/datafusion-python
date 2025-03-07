@@ -81,7 +81,7 @@ This produces the following chart:
 
 ## Registering a DataFrame as a View
 
-You can use the `into_view` method to convert a DataFrame into a view and register it with the context.
+You can use SessionContext's `register_view` method to convert a DataFrame into a view and register it with the context.
 
 ```python
 from datafusion import SessionContext, col, literal
@@ -98,11 +98,8 @@ df = ctx.from_pydict(data, "my_table")
 # Filter the DataFrame (for example, keep rows where a > 2)
 df_filtered = df.filter(col("a") > literal(2))
 
-# Convert the filtered DataFrame into a view
-view = df_filtered.into_view()
-
-# Register the view with the context
-ctx.register_table("view1", view)
+# Register the dataframe as a view with the context
+ctx.register_view("view1", df_filtered)
 
 # Now run a SQL query against the registered view
 df_view = ctx.sql("SELECT * FROM view1")
