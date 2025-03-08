@@ -117,6 +117,26 @@ def test_udaf_aggregate(df):
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
 
+def test_udaf_decorator_aggregate(df):
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+    def summarize():
+        return Summarize()
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
 def test_udaf_aggregate_with_arguments(df):
     bias = 10.0
 
@@ -127,6 +147,28 @@ def test_udaf_aggregate_with_arguments(df):
         [pa.float64()],
         volatility="immutable",
     )
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+
+def test_udaf_decorator_aggregate_with_arguments(df):
+    bias = 10.0
+
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+    def summarize():
+        return Summarize(bias)
 
     df1 = df.aggregate([], [summarize(column("a"))])
 
