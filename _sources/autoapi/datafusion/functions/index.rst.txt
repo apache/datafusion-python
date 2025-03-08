@@ -2098,7 +2098,7 @@ Module Contents
    Converts a string to uppercase.
 
 
-.. py:function:: uuid(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: uuid() -> datafusion.expr.Expr
 
    Returns uuid v4 as a string value.
 

@@ -586,7 +586,7 @@ Module Contents
 
 
 
-   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
 
       Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -710,7 +710,7 @@ Module Contents
 
 
 
-   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> None
+   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
 
       Register a Parquet file as a table.
 
@@ -779,6 +779,17 @@ Module Contents
    .. py:method:: register_udwf(udwf: datafusion.udf.WindowUDF) -> None
 
       Register a user-defined window function (UDWF) with the context.
+
+
+
+   .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame)
+
+      Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+
+      :param name: The name to register the view under.
+      :type name: str
+      :param df: The DataFrame to be converted into a view and registered.
+      :type df: DataFrame
 
 
 

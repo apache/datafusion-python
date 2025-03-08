@@ -30,7 +30,7 @@ Module Contents
    This can be read in from a file (on disk, remote etc.).
 
 
-   .. py:method:: build_table(input_file: str, table_name: str, **kwargs) -> datafusion.common.SqlTable
+   .. py:method:: build_table(input_item: str, table_name: str, **kwargs) -> datafusion.common.SqlTable
 
       Create a table from the input source.
 

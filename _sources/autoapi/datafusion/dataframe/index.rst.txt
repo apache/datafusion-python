@@ -319,6 +319,12 @@ Module Contents
 
 
 
+   .. py:method:: into_view() -> pyarrow.Table
+
+      Convert DataFrame as a ViewTable which can be used in register_table.
+
+
+
    .. py:method:: join(right: DataFrame, on: str | Sequence[str], how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: None = None, right_on: None = None, join_keys: None = None) -> DataFrame
                   join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, left_on: str | Sequence[str], right_on: str | Sequence[str], join_keys: tuple[list[str], list[str]] | None = None) -> DataFrame
                   join(right: DataFrame, on: None = None, how: Literal['inner', 'left', 'right', 'full', 'semi', 'anti'] = 'inner', *, join_keys: tuple[list[str], list[str]], left_on: None = None, right_on: None = None) -> DataFrame

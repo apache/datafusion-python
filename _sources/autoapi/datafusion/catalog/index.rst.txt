@@ -73,17 +73,18 @@ Module Contents
    This constructor is not typically called by the end user.
 
 
-   .. py:method:: schema() -> pyarrow.Schema
-
-      Returns the schema associated with this table.
-
-
-
    .. py:property:: kind
       :type: str
 
 
       Returns the kind of table.
+
+
+   .. py:property:: schema
+      :type: pyarrow.Schema
+
+
+      Returns the schema associated with this table.
 
 
    .. py:attribute:: table

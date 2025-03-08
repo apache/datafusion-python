@@ -113,7 +113,7 @@ Package Contents
 
 
 
-.. py:class:: AggregateUDF(name: Optional[str], accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
+.. py:class:: AggregateUDF(name: str, accumulator: Callable[[], Accumulator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -1022,7 +1022,7 @@ Package Contents
    .. py:attribute:: options_internal
 
 
-.. py:class:: ScalarUDF(name: Optional[str], func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
+.. py:class:: ScalarUDF(name: str, func: Callable[Ellipsis, _R], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: _R, volatility: Volatility | str)
 
    Class for performing scalar user-defined functions (UDF).
 
@@ -1230,17 +1230,18 @@ Package Contents
    This constructor is not typically called by the end user.
 
 
-   .. py:method:: schema() -> pyarrow.Schema
-
-      Returns the schema associated with this table.
-
-
-
    .. py:property:: kind
       :type: str
 
 
       Returns the kind of table.
+
+
+   .. py:property:: schema
+      :type: pyarrow.Schema
+
+
+      Returns the schema associated with this table.
 
 
    .. py:attribute:: table
@@ -1282,7 +1283,7 @@ Package Contents
    .. py:attribute:: window_frame
 
 
-.. py:class:: WindowUDF(name: Optional[str], func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
+.. py:class:: WindowUDF(name: str, func: Callable[[], WindowEvaluator], input_types: list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str)
 
    Class for performing window user-defined functions (UDF).
 

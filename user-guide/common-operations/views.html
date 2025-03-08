@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>IO &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>Registering Views &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,8 +34,8 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Arrow" href="arrow.html" />
-    <link rel="prev" title="User-Defined Functions" href="../common-operations/udf-and-udfa.html" />
+    <link rel="next" title="Basic Operations" href="basic-info.html" />
+    <link rel="prev" title="Common Operations" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -117,100 +117,100 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../common-operations/index.html">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/views.html">
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
      Registering Views
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/basic-info.html">
+    <a class="reference internal" href="basic-info.html">
      Basic Operations
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/select-and-filter.html">
+    <a class="reference internal" href="select-and-filter.html">
      Column Selections
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/expressions.html">
+    <a class="reference internal" href="expressions.html">
      Expressions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/joins.html">
+    <a class="reference internal" href="joins.html">
      Joins
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/functions.html">
+    <a class="reference internal" href="functions.html">
      Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/aggregations.html">
+    <a class="reference internal" href="aggregations.html">
      Aggregation
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/windows.html">
+    <a class="reference internal" href="windows.html">
      Window Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/udf-and-udfa.html">
+    <a class="reference internal" href="udf-and-udfa.html">
      User-Defined Functions
     </a>
    </li>
   </ul>
  </li>
- <li class="toctree-l1 current active has-children">
-  <a class="current reference internal" href="#">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../io/index.html">
    IO
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
   <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="arrow.html">
+    <a class="reference internal" href="../io/arrow.html">
      Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="avro.html">
+    <a class="reference internal" href="../io/avro.html">
      Avro
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="csv.html">
+    <a class="reference internal" href="../io/csv.html">
      CSV
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="json.html">
+    <a class="reference internal" href="../io/json.html">
      JSON
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="parquet.html">
+    <a class="reference internal" href="../io/parquet.html">
      Parquet
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="table_provider.html">
+    <a class="reference internal" href="../io/table_provider.html">
      Custom Table Provider
     </a>
    </li>
@@ -386,21 +386,41 @@
               
               <div>
                 
-  <section id="io">
-<h1>IO<a class="headerlink" href="#io" title="Link to this heading">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="arrow.html">Arrow</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="arrow.html#importing-to-datafusion">Importing to DataFusion</a></li>
-<li class="toctree-l2"><a class="reference internal" href="arrow.html#exporting-from-datafusion">Exporting from DataFusion</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="avro.html">Avro</a></li>
-<li class="toctree-l1"><a class="reference internal" href="csv.html">CSV</a></li>
-<li class="toctree-l1"><a class="reference internal" href="json.html">JSON</a></li>
-<li class="toctree-l1"><a class="reference internal" href="parquet.html">Parquet</a></li>
-<li class="toctree-l1"><a class="reference internal" href="table_provider.html">Custom Table Provider</a></li>
-</ul>
+  <section id="registering-views">
+<h1>Registering Views<a class="headerlink" href="#registering-views" title="Link to this heading">¶</a></h1>
+<p>You can use the context’s <code class="docutils literal notranslate"><span class="pre">register_view</span></code> method to register a DataFrame as a view</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span>
+
+<span class="c1"># Create a DataFusion context</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+
+<span class="c1"># Create sample data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]}</span>
+
+<span class="c1"># Create a DataFrame from the dictionary</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;my_table&quot;</span><span class="p">)</span>
+
+<span class="c1"># Filter the DataFrame (for example, keep rows where a &gt; 2)</span>
+<span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Register the dataframe as a view with the context</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_view</span><span class="p">(</span><span class="s2">&quot;view1&quot;</span><span class="p">,</span> <span class="n">df_filtered</span><span class="p">)</span>
+
+<span class="c1"># Now run a SQL query against the registered view</span>
+<span class="n">df_view</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM view1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Collect the results</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">df_view</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># Convert results to a list of dictionaries for display</span>
+<span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result_dicts</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]}]</span>
+</pre></div>
 </div>
 </section>
 
@@ -410,17 +430,17 @@
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../common-operations/udf-and-udfa.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">User-Defined Functions</p>
+            <p class="prev-next-title">Common Operations</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="arrow.html" title="next page">
+    <a class='right-next' id="next-link" href="basic-info.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Arrow</p>
+        <p class="prev-next-title">Basic Operations</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
