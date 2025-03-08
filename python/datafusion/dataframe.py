@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 from enum import Enum
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import expr as expr_internal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
@@ -277,7 +278,7 @@ class DataFrame:
 
         def _simplify_expression(
             *exprs: Expr | Iterable[Expr], **named_exprs: Expr
-        ) -> list[Expr]:
+        ) -> list[expr_internal.Expr]:
             expr_list = []
             for expr in exprs:
                 if isinstance(expr, Expr):
