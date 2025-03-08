@@ -34,6 +34,8 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         return
 
     for attr in dir(internal_obj):
+        if attr in ["_global_ctx"]:
+            continue
         assert attr in dir(wrapped_obj)
 
         internal_attr = getattr(internal_obj, attr)
