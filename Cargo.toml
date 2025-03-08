@@ -40,7 +40,7 @@ pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"]}
 arrow = { version = "54", features = ["pyarrow"] }
 datafusion = { version = "45.0.0", features = ["avro", "unicode_expressions"] }
 datafusion-substrait = { version = "45.0.0", optional = true }
-datafusion-proto = { version = "45.0.0" }
+datafusion-proto = { version = "46.0.0" }
 datafusion-ffi = { version = "45.0.0" }
 prost = "0.13" # keep in line with `datafusion-substrait`
 uuid = { version = "1.12", features = ["v4"] }
