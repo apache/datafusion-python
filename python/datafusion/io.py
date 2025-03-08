@@ -38,6 +38,10 @@ def read_parquet(
 ) -> DataFrame:
     """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
+    This function will use the global context. Any functions or tables registered
+    with another context may not be accessible when used with a DataFrame created
+    using this function.
+
     Args:
         path: Path to the Parquet file.
         table_partition_cols: Partition columns.
@@ -81,6 +85,10 @@ def read_json(
 ) -> DataFrame:
     """Read a line-delimited JSON data source.
 
+    This function will use the global context. Any functions or tables registered
+    with another context may not be accessible when used with a DataFrame created
+    using this function.
+
     Args:
         path: Path to the JSON file.
         schema: The data source schema.
@@ -119,6 +127,10 @@ def read_csv(
     file_compression_type: str | None = None,
 ) -> DataFrame:
     """Read a CSV data source.
+
+    This function will use the global context. Any functions or tables registered
+    with another context may not be accessible when used with a DataFrame created
+    using this function.
 
     Args:
         path: Path to the CSV file
@@ -164,6 +176,10 @@ def read_avro(
     file_extension: str = ".avro",
 ) -> DataFrame:
     """Create a :py:class:`DataFrame` for reading Avro data source.
+
+    This function will use the global context. Any functions or tables registered
+    with another context may not be accessible when used with a DataFrame created
+    using this function.
 
     Args:
         path: Path to the Avro file.
