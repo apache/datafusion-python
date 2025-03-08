@@ -80,7 +80,7 @@ class OverThresholdUDF:
         return pa.array(v.as_py() >= self.threshold for v in values)
 
 
-def test_udf_with_parameters(df) -> None:
+def test_udf_with_parameters_function(df) -> None:
     udf_no_param = udf(
         OverThresholdUDF(),
         pa.int64(),
@@ -106,7 +106,7 @@ def test_udf_with_parameters(df) -> None:
     assert result == pa.array([False, True, True])
 
 
-def test_udf_with_parameters(df) -> None:
+def test_udf_with_parameters_decorator(df) -> None:
     @udf([pa.int64()], pa.bool_(), "immutable")
     def udf_no_param(values: pa.Array) -> pa.Array:
         return OverThresholdUDF()(values)

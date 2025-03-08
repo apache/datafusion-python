@@ -116,8 +116,8 @@ def test_udaf_aggregate(df):
 
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
+
 def test_udaf_decorator_aggregate(df):
-    
     @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
     def summarize():
         return Summarize()
@@ -165,11 +165,8 @@ def test_udaf_aggregate_with_arguments(df):
 
 def test_udaf_decorator_aggregate_with_arguments(df):
     bias = 10.0
-    
-    @udaf(pa.float64(),
-        pa.float64(),
-        [pa.float64()],
-        "immutable")
+
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
     def summarize():
         return Summarize(bias)
 
