@@ -131,29 +131,28 @@ Package Contents
    descriptions.
 
 
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+   .. py:class:: udaf
 
-      Execute the UDAF.
+      Create a new User-Defined Aggregate Function (UDAF).
 
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
+      This class allows you to define an **aggregate function** that can be used in
+      data aggregation or window function calls.
 
+      Usage:
+          - **As a function**: Call `udaf(accum, input_types, return_type, state_type,
+              volatility, name)`.
+          - **As a decorator**: Use `@udaf(input_types, return_type, state_type,
+              volatility, name)`.
+          When using `udaf` as a decorator, **do not pass `accum` explicitly**.
 
+      **Function example:**
 
-   .. py:method:: udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Aggregate Function.
-
-      If your :py:class:`Accumulator` can be instantiated with no arguments, you
-      can simply pass it's type as ``accum``. If you need to pass additional arguments
-      to it's constructor, you can define a lambda or a factory method. During runtime
-      the :py:class:`Accumulator` will be constructed for every instance in
-      which this UDAF is used. The following examples are all valid.
-
-      .. code-block:: python
-
+          If your `:py:class:Accumulator` can be instantiated with no arguments, you
+          can simply pass it's type as `accum`. If you need to pass additional
+          arguments to it's constructor, you can define a lambda or a factory method.
+          During runtime the `:py:class:Accumulator` will be constructed for every
+          instance in which this UDAF is used. The following examples are all valid.
+          ```
           import pyarrow as pa
           import pyarrow.compute as pc
 
@@ -176,11 +175,23 @@ Package Contents
           def sum_bias_10() -> Summarize:
               return Summarize(10.0)
 
-          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()], "immutable")
-          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()], "immutable")
-          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(), [pa.float64()], "immutable")
+          udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()],
+              "immutable")
+          udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
+              "immutable")
+          udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
+              [pa.float64()], "immutable")
+          ```
 
-      :param accum: The accumulator python function.
+      **Decorator example:**
+          ```
+          @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+          def udf4() -> Summarize:
+              return Summarize(10.0)
+          ```
+
+      :param accum: The accumulator python function. **Only needed when calling as a
+                    function. Skip this argument when using `udaf` as a decorator.**
       :param input_types: The data types of the arguments to ``accum``.
       :param return_type: The data type of the return value.
       :param state_type: The data types of the intermediate accumulation.
@@ -189,6 +200,30 @@ Package Contents
 
       :returns: A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
+
+      Create a new UDAF.
+
+      Trigger UDAF function or decorator depending on if the first args is
+      callable
+
+
+      .. py:method:: _decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None)
+         :staticmethod:
+
+
+
+      .. py:method:: _function(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
+         :staticmethod:
+
+
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDAF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
 
 
 
@@ -1039,33 +1074,74 @@ Package Contents
    See helper method :py:func:`udf` for argument details.
 
 
+   .. py:class:: udf
+
+      Create a new User-Defined Function (UDF).
+
+      This class can be used both as a **function** and as a **decorator**.
+
+      Usage:
+          - **As a function**: Call `udf(func, input_types, return_type, volatility,
+            name)`.
+          - **As a decorator**: Use `@udf(input_types, return_type, volatility,
+            name)`. In this case, do **not** pass `func` explicitly.
+
+      :param func: **Only needed when calling as a function.**
+                   Skip this argument when using `udf` as a decorator.
+      :type func: Callable, optional
+      :param input_types: The data types of the arguments
+                          to `func`. This list must be of the same length as the number of
+                          arguments.
+      :type input_types: list[pyarrow.DataType]
+      :param return_type: The data type of the return value from the function.
+      :type return_type: _R
+      :param volatility: See `Volatility` for allowed values.
+      :type volatility: Volatility | str
+      :param name: A descriptive name for the function.
+      :type name: Optional[str]
+
+      :returns: A user-defined function that can be used in SQL expressions,
+                data aggregation, or window function calls.
+
+      .. rubric:: Example
+
+      **Using `udf` as a function:**
+      ```
+      def double_func(x):
+          return x * 2
+      double_udf = udf(double_func, [pyarrow.int32()], pyarrow.int32(),
+      "volatile", "double_it")
+      ```
+
+      **Using `udf` as a decorator:**
+      ```
+      @udf([pyarrow.int32()], pyarrow.int32(), "volatile", "double_it")
+      def double_udf(x):
+          return x * 2
+      ```
+
+      Create a new UDF.
+
+      Trigger UDF function or decorator depending on if the first args is callable
+
+
+      .. py:method:: _decorator(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None)
+         :staticmethod:
+
+
+
+      .. py:method:: _function(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
+         :staticmethod:
+
+
+
+
    .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
 
       Execute the UDF.
 
       This function is not typically called by an end user. These calls will
       occur during the evaluation of the dataframe.
-
-
-
-   .. py:method:: udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
-      :staticmethod:
-
-
-      Create a new User-Defined Function.
-
-      :param func: A callable python function.
-      :param input_types: The data types of the arguments to ``func``. This list
-                          must be of the same length as the number of arguments.
-      :param return_type: The data type of the return value from the python
-                          function.
-      :param volatility: See ``Volatility`` for allowed values.
-      :param name: A descriptive name for the function.
-
-      :returns:
-
-                A user-defined aggregate function, which can be used in either data
-                    aggregation or window function calls.
 
 
 
