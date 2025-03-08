@@ -45,6 +45,7 @@ from .expr import (
     Expr,
     WindowFrame,
 )
+from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF
@@ -81,6 +82,10 @@ __all__ = [
     "functions",
     "object_store",
     "substrait",
+    "read_parquet",
+    "read_avro",
+    "read_csv",
+    "read_json",
 ]
 
 

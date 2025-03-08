@@ -86,7 +86,7 @@ class ScalarUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[..., _R],
         input_types: pyarrow.DataType | list[pyarrow.DataType],
         return_type: _R,
@@ -242,7 +242,7 @@ class AggregateUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         accumulator: Callable[[], Accumulator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,
@@ -580,7 +580,7 @@ class WindowUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[[], WindowEvaluator],
         input_types: list[pyarrow.DataType],
         return_type: pyarrow.DataType,

@@ -52,6 +52,7 @@ if TYPE_CHECKING:
 from enum import Enum
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import expr as expr_internal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
@@ -123,6 +124,10 @@ class DataFrame:
         create a :py:class:`DataFrame`.
         """
         self.df = df
+
+    def into_view(self) -> pa.Table:
+        """Convert DataFrame as a ViewTable which can be used in register_table."""
+        return self.df.into_view()
 
     def __getitem__(self, key: str | List[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
@@ -273,7 +278,7 @@ class DataFrame:
 
         def _simplify_expression(
             *exprs: Expr | Iterable[Expr], **named_exprs: Expr
-        ) -> list[Expr]:
+        ) -> list[expr_internal.Expr]:
             expr_list = []
             for expr in exprs:
                 if isinstance(expr, Expr):

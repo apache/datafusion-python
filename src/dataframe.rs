@@ -30,6 +30,7 @@ use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
+use datafusion::datasource::TableProvider;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
@@ -39,6 +40,7 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
+use crate::catalog::PyTable;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
@@ -49,6 +51,25 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
+
+// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
+// - we have not decided on the table_provider approach yet
+// this is an interim implementation
+#[pyclass(name = "TableProvider", module = "datafusion")]
+pub struct PyTableProvider {
+    provider: Arc<dyn TableProvider>,
+}
+
+impl PyTableProvider {
+    pub fn new(provider: Arc<dyn TableProvider>) -> Self {
+        Self { provider }
+    }
+
+    pub fn as_table(&self) -> PyTable {
+        let table_provider: Arc<dyn TableProvider> = self.provider.clone();
+        PyTable::new(table_provider)
+    }
+}
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -154,6 +175,24 @@ impl PyDataFrame {
     /// Returns the schema from the logical plan
     fn schema(&self) -> PyArrowType<Schema> {
         PyArrowType(self.df.schema().into())
+    }
+
+    /// Convert this DataFrame into a Table that can be used in register_table
+    /// By convention, into_... methods consume self and return the new object.
+    /// Disabling the clippy lint, so we can use &self
+    /// because we're working with Python bindings
+    /// where objects are shared
+    /// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
+    /// - we have not decided on the table_provider approach yet
+    #[allow(clippy::wrong_self_convention)]
+    fn into_view(&self) -> PyDataFusionResult<PyTable> {
+        // Call the underlying Rust DataFrame::into_view method.
+        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+        // so that we don’t invalidate this PyDataFrame.
+        let table_provider = self.df.as_ref().clone().into_view();
+        let table_provider = PyTableProvider::new(table_provider);
+
+        Ok(table_provider.as_table())
     }
 
     #[pyo3(signature = (*args))]
