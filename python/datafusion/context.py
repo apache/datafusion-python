@@ -394,7 +394,6 @@ class RuntimeConfig(RuntimeEnvBuilder):
     """See `RuntimeEnvBuilder`."""
 
 
-
 class SQLOptions:
     """Options to be used when performing SQL queries."""
 

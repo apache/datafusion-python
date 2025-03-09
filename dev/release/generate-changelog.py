@@ -30,9 +30,7 @@ def print_pulls(repo_name, title, pulls):
         print()
         for pull, commit in pulls:
             url = f"https://github.com/{repo_name}/pull/{pull.number}"
-            print(
-                f"- {pull.title} [#{pull.number}]({url}) ({commit.author.login})"
-            )
+            print(f"- {pull.title} [#{pull.number}]({url}) ({commit.author.login})")
         print()
 
 
