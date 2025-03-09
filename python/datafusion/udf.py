@@ -656,3 +656,9 @@ class WindowUDF:
             return_type=return_type,
             volatility=volatility,
         )
+
+# Convenience exports so we can import instead of treating as
+# variables at the package root
+udf = ScalarUDF.udf
+udaf = AggregateUDF.udaf
+udwf = WindowUDF.udwf
