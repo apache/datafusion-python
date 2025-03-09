@@ -67,7 +67,13 @@ features = ["substrait"]
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
 select = ["ALL" ]
-ignore = ["COM812", "ISC001", "TD002"]  # Recommended to ignore these rules when using with ruff-format
+ignore = [
+    "ANN401",  # Allow Any for wrapper classes
+    "COM812",  # Recommended to ignore these rules when using with ruff-format
+    "ISC001",  # Recommended to ignore these rules when using with ruff-format
+    "TD002",
+    "UP007"    # Disallowing Union is pedantic
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
