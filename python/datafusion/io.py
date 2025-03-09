@@ -17,6 +17,8 @@
 
 """IO read functions using global context."""
 
+from __future__ import annotations
+
 import pathlib
 
 import pyarrow
