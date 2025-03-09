@@ -16,44 +16,88 @@
 # under the License.
 
 import pyarrow as pa
-from datafusion import SessionContext, udf
+from datafusion import SessionContext, udf, DataFrame
+
+# Print version information for debugging
+import datafusion
+import pyarrow
+
+print(f"DataFusion version: {datafusion.__version__}")
+print(f"PyArrow version: {pyarrow.__version__}")
 
 
-# Define a user-defined function (UDF)
+# Define a user-defined function (UDF) that checks if a value is null
 def is_null(array: pa.Array) -> pa.Array:
+    """
+    A UDF that checks if elements in an array are null.
+    Args:
+        array (pa.Array): Input PyArrow array
+    Returns:
+        pa.Array: Boolean array indicating which elements are null
+    """
     return array.is_null()
 
 
+# Create the UDF definition
 is_null_arr = udf(
-    is_null,
-    [pa.int64()],
-    pa.bool_(),
-    "stable",
-    # This will be the name of the UDF in SQL
-    # If not specified it will by default the same as Python function name
-    name="is_null",
+    is_null,  # The Python function to use
+    [pa.int64()],  # Input type(s) - here we expect one int64 column
+    pa.bool_(),  # Output type - returns boolean
+    "stable",  # Volatility - "stable" means same input = same output
+    name="is_null"  # SQL name for the function
 )
 
-# Create a context
+# Create a DataFusion session context
 ctx = SessionContext()
 
-# Create a datafusion DataFrame from a Python dictionary
-ctx.from_pydict({"a": [1, 2, 3], "b": [4, None, 6]}, name="t")
-# Dataframe:
-# +---+---+
-# | a | b |
-# +---+---+
-# | 1 | 4 |
-# | 2 |   |
-# | 3 | 6 |
-# +---+---+
+try:
+    # Method 1: Using DataFrame.from_pydict (for newer DataFusion versions)
+    print("\nTrying Method 1: DataFrame.from_pydict")
+    df = DataFrame.from_pydict(ctx, {
+        "a": [1, 2, 3],
+        "b": [4, None, 6]
+    })
+    df.create_or_replace_table("t")
+except Exception as e:
+    print(f"Method 1 failed: {e}")
 
-# Register UDF for use in SQL
+    try:
+        # Method 2: Using arrow table directly
+        print("\nTrying Method 2: Register arrow table")
+        table = pa.table({
+            "a": [1, 2, 3],
+            "b": [4, None, 6]
+        })
+        ctx.register_table("t", table)
+    except Exception as e:
+        print(f"Method 2 failed: {e}")
+
+        # Method 3: Using explicit record batch creation
+        print("\nTrying Method 3: Explicit record batch creation")
+        # Define the schema for our data
+        schema = pa.schema([
+            ('a', pa.int64()),  # Column 'a' is int64
+            ('b', pa.int64())  # Column 'b' is int64
+        ])
+
+        # Create a record batch with our data
+        batch = pa.record_batch([
+            pa.array([1, 2, 3], type=pa.int64()),  # Data for column 'a'
+            pa.array([4, None, 6], type=pa.int64())  # Data for column 'b'
+        ], schema=schema)
+
+        # Register the record batch with DataFusion
+        # Note: The double list [[batch]] is required by the API
+        ctx.register_record_batches("t", [[batch]])
+
+# Register our UDF with the context
 ctx.register_udf(is_null_arr)
 
-# Query the DataFrame using SQL
+print("\nExecuting SQL query...")
+# Execute a SQL query that uses our UDF
 result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
-# Dataframe:
+
+# Expected output:
 # +---+-----------+
 # | a | b_is_null |
 # +---+-----------+
@@ -61,4 +105,22 @@ result_df = ctx.sql("select a, is_null(b) as b_is_null from t")
 # | 2 | true      |
 # | 3 | false     |
 # +---+-----------+
-assert result_df.to_pydict()["b_is_null"] == [False, True, False]
+
+# Convert result to dictionary and display
+result_dict = result_df.to_pydict()
+print("\nQuery Results:")
+print("Result:", result_dict)
+
+# Verify the results
+assert result_dict["b_is_null"] == [False, True, False], "Unexpected results from UDF"
+print("\nAssert passed - UDF working as expected!")
+
+# Print a formatted version of the results
+print("\nFormatted Results:")
+print("+---+-----------+")
+print("| a | b_is_null |")
+print("+---+-----------+")
+for i in range(len(result_dict["a"])):
+    print(f"| {result_dict['a'][i]} | {str(result_dict['b_is_null'][i]).lower():9} |")
+print("+---+-----------+")
+
