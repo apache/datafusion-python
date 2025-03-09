@@ -43,7 +43,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         wrapped_attr = getattr(wrapped_obj, attr)
 
         if internal_attr is not None and wrapped_attr is None:
-                pytest.fail(f"Missing attribute: {attr}")
+            pytest.fail(f"Missing attribute: {attr}")
 
         if attr in ["__self__", "__class__"]:
             continue

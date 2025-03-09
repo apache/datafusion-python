@@ -214,7 +214,7 @@ def test_register_json(ctx, tmp_path):
 
     with (
         Path.open(test_data_path, "rb") as json_file,
-        gzip.open(gzip_path, "wb") as gzipped_file
+        gzip.open(gzip_path, "wb") as gzipped_file,
     ):
         gzipped_file.writelines(json_file)
 
@@ -478,10 +478,9 @@ def test_simple_select(ctx, tmp_path, arr):
     np.testing.assert_equal(result, arr)
 
 
-@pytest.mark.parametrize("file_sort_order", [
-    None,
-    [[col("int").sort(ascending=True, nulls_first=True)]]
-    ])
+@pytest.mark.parametrize(
+    "file_sort_order", [None, [[col("int").sort(ascending=True, nulls_first=True)]]]
+)
 @pytest.mark.parametrize("pass_schema", [True, False])
 @pytest.mark.parametrize("path_to_str", [True, False])
 def test_register_listing_table(
