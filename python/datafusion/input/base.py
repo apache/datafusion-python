@@ -40,9 +40,7 @@ class BaseInputSource(ABC):
     @abstractmethod
     def is_correct_input(self, input_item: Any, table_name: str, **kwargs) -> bool:
         """Returns `True` if the input is valid."""
-        pass
 
     @abstractmethod
     def build_table(self, input_item: Any, table_name: str, **kwarg) -> SqlTable:
         """Create a table from the input source."""
-        pass

@@ -69,7 +69,7 @@ class LocationInputPlugin(BaseInputSource):
             # to get that information. However, this should only be occurring
             # at table creation time and therefore shouldn't
             # slow down query performance.
-            with open(input_item, "r") as file:
+            with open(input_item) as file:
                 reader = csv.reader(file)
                 header_row = next(reader)
                 print(header_row)

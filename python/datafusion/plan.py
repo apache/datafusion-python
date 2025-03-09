@@ -27,8 +27,8 @@ if TYPE_CHECKING:
     from datafusion.context import SessionContext
 
 __all__ = [
-    "LogicalPlan",
     "ExecutionPlan",
+    "LogicalPlan",
 ]
 
 

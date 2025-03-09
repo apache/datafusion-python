@@ -38,15 +38,15 @@ __all__ = [
     "DFSchema",
     "DataType",
     "DataTypeMap",
-    "RexType",
-    "PythonType",
-    "SqlType",
     "NullTreatment",
-    "SqlTable",
-    "SqlSchema",
-    "SqlView",
-    "SqlStatistics",
+    "PythonType",
+    "RexType",
     "SqlFunction",
+    "SqlSchema",
+    "SqlStatistics",
+    "SqlTable",
+    "SqlType",
+    "SqlView",
 ]
 
 

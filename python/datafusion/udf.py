@@ -161,9 +161,8 @@ class ScalarUDF:
             if args and callable(args[0]):
                 # Case 1: Used as a function, require the first parameter to be callable
                 return cls._function(*args, **kwargs)
-            else:
-                # Case 2: Used as a decorator with parameters
-                return cls._decorator(*args, **kwargs)
+            # Case 2: Used as a decorator with parameters
+            return cls._decorator(*args, **kwargs)
 
         @staticmethod
         def _function(
@@ -215,22 +214,18 @@ class Accumulator(metaclass=ABCMeta):
     @abstractmethod
     def state(self) -> List[pyarrow.Scalar]:
         """Return the current state."""
-        pass
 
     @abstractmethod
     def update(self, *values: pyarrow.Array) -> None:
         """Evaluate an array of values and update state."""
-        pass
 
     @abstractmethod
     def merge(self, states: List[pyarrow.Array]) -> None:
         """Merge a set of states."""
-        pass
 
     @abstractmethod
     def evaluate(self) -> pyarrow.Scalar:
         """Return the resultant value."""
-        pass
 
 
 class AggregateUDF:
@@ -353,9 +348,8 @@ class AggregateUDF:
             if args and callable(args[0]):
                 # Case 1: Used as a function, require the first parameter to be callable
                 return cls._function(*args, **kwargs)
-            else:
-                # Case 2: Used as a decorator with parameters
-                return cls._decorator(*args, **kwargs)
+            # Case 2: Used as a decorator with parameters
+            return cls._decorator(*args, **kwargs)
 
         @staticmethod
         def _function(
@@ -436,7 +430,6 @@ class WindowEvaluator(metaclass=ABCMeta):
         `memoize` is called after each input batch is processed, and
         such functions can save whatever they need
         """
-        pass
 
     def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:
         """Return the range for the window fuction.
@@ -500,7 +493,6 @@ class WindowEvaluator(metaclass=ABCMeta):
 
             avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
         """  # noqa: W505
-        pass
 
     def evaluate(
         self, values: list[pyarrow.Array], eval_range: tuple[int, int]
@@ -519,7 +511,6 @@ class WindowEvaluator(metaclass=ABCMeta):
         and evaluation results of ORDER BY expressions. If function has a
         single argument, `values[1..]` will contain ORDER BY expression results.
         """
-        pass
 
     def evaluate_all_with_rank(
         self, num_rows: int, ranks_in_partition: list[tuple[int, int]]
@@ -552,7 +543,6 @@ class WindowEvaluator(metaclass=ABCMeta):
 
         The user must implement this method if ``include_rank`` returns True.
         """
-        pass
 
     def supports_bounded_execution(self) -> bool:
         """Can the window function be incrementally computed using bounded memory?"""

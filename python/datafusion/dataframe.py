@@ -73,7 +73,7 @@ class Compression(Enum):
     LZ4_RAW = "lz4_raw"
 
     @classmethod
-    def from_str(cls, value: str) -> "Compression":
+    def from_str(cls, value: str) -> Compression:
         """Convert a string to a Compression enum value.
 
         Args:
@@ -104,9 +104,9 @@ class Compression(Enum):
         # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
         if self == Compression.GZIP:
             return 6
-        elif self == Compression.BROTLI:
+        if self == Compression.BROTLI:
             return 1
-        elif self == Compression.ZSTD:
+        if self == Compression.ZSTD:
             return 4
         return None
 

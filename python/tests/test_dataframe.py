@@ -731,7 +731,7 @@ def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
     expected = (
-        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"  # noqa: E501
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
     )
 
     assert expected == plan.display()
@@ -756,7 +756,7 @@ def test_execution_plan(aggregate_df):
 
     ctx = SessionContext()
     rows_returned = 0
-    for idx in range(0, plan.partition_count):
+    for idx in range(plan.partition_count):
         stream = ctx.execute(plan, idx)
         try:
             batch = stream.next()
@@ -969,7 +969,7 @@ def test_execute_stream_to_arrow_table(df, schema):
             (batch.to_pyarrow() for batch in stream), schema=df.schema()
         )
     else:
-        pyarrow_table = pa.Table.from_batches((batch.to_pyarrow() for batch in stream))
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
 
     assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (3, 3)
@@ -1152,7 +1152,7 @@ def test_dataframe_export(df) -> None:
     table = pa.table(df, schema=desired_schema)
     assert table.num_columns == 1
     assert table.num_rows == 3
-    for i in range(0, 3):
+    for i in range(3):
         assert table[0][i].as_py() is None
 
     # Expect an error when we cannot convert schema
@@ -1186,8 +1186,8 @@ def test_dataframe_transform(df):
     result = df.to_pydict()
 
     assert result["a"] == [1, 2, 3]
-    assert result["string_col"] == ["string data" for _i in range(0, 3)]
-    assert result["new_col"] == [3 for _i in range(0, 3)]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
 
 
 def test_dataframe_repr_html(df) -> None:
