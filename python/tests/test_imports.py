@@ -169,14 +169,14 @@ def test_class_module_is_datafusion():
 
 
 def test_import_from_functions_submodule():
-    from datafusion.functions import abs, sin  # noqa
+    from datafusion.functions import abs, sin  # noqa: A004
 
     assert functions.abs is abs
     assert functions.sin is sin
 
     msg = "cannot import name 'foobar' from 'datafusion.functions'"
     with pytest.raises(ImportError, match=msg):
-        from datafusion.functions import foobar  # noqa
+        from datafusion.functions import foobar  # noqa: F401
 
 
 def test_classes_are_inheritable():
