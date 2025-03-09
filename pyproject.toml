@@ -66,7 +66,8 @@ features = ["substrait"]
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "FA", "D", "W", "I"]
+select = ["ALL" ]
+ignore = ["COM812", "ISC001"]  # Recommended to ignore these rules when using with ruff-format
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
