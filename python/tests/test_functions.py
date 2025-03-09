@@ -901,7 +901,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 1, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 1, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("us"),
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(3) == pa.array(
         [
@@ -909,7 +909,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("us"),
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(4) == pa.array(
         [
@@ -917,7 +917,7 @@ def test_temporal_functions(df):
             datetime(2027, 6, 25, 23, 47, 30, tzinfo=DEFAULT_TZ),
             datetime(2020, 7, 1, 23, 47, 30, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(5) == pa.array(
         [datetime(2023, 1, 10, 20, 52, 54, tzinfo=DEFAULT_TZ)] * 3,
@@ -928,7 +928,7 @@ def test_temporal_functions(df):
         type=pa.timestamp("ns"),
     )
     assert result.column(7) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 1, tzinfo=DEFAULT_TZ)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 9, 7, 5, 6, 14, tzinfo=DEFAULT_TZ)] * 3, type=pa.timestamp("s")
     )
     assert result.column(8) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523000, tzinfo=DEFAULT_TZ)] * 3,
@@ -944,7 +944,8 @@ def test_temporal_functions(df):
         type=pa.timestamp("ns"),
     )
     assert result.column(12) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, tzinfo=DEFAULT_TZ)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 9, 7, 5, 6, 14, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("s"),
     )
     assert result.column(13) == pa.array(
         [datetime(2023, 9, 7, 5, 6, 14, 523000, tzinfo=DEFAULT_TZ)] * 3,
