@@ -39,8 +39,8 @@ if TYPE_CHECKING:
     from datafusion.context import SessionContext
 
 __all__ = [
-    "Plan",
     "Consumer",
+    "Plan",
     "Producer",
     "Serde",
 ]
@@ -71,7 +71,6 @@ class Plan:
 class plan(Plan):
     """See `Plan`."""
 
-    pass
 
 
 class Serde:
@@ -143,7 +142,6 @@ class Serde:
 class serde(Serde):
     """See `Serde` instead."""
 
-    pass
 
 
 class Producer:
@@ -171,7 +169,6 @@ class Producer:
 class producer(Producer):
     """Use `Producer` instead."""
 
-    pass
 
 
 class Consumer:
@@ -197,4 +194,3 @@ class Consumer:
 class consumer(Consumer):
     """Use `Consumer` instead."""
 
-    pass

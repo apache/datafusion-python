@@ -27,6 +27,6 @@ def test_location_input():
     input_file = cwd + "/testing/data/parquet/generated_simple_numerics/blogs.parquet"
     table_name = "blog"
     tbl = location_input.build_table(input_file, table_name)
-    assert "blog" == tbl.name
-    assert 3 == len(tbl.columns)
+    assert tbl.name == "blog"
+    assert len(tbl.columns) == 3
     assert "blogs.parquet" in tbl.filepaths[0]

@@ -393,7 +393,6 @@ class RuntimeEnvBuilder:
 class RuntimeConfig(RuntimeEnvBuilder):
     """See `RuntimeEnvBuilder`."""
 
-    pass
 
 
 class SQLOptions:
@@ -498,7 +497,7 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
-    def enable_url_table(self) -> "SessionContext":
+    def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
 
         Returns:
