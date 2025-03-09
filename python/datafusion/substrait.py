@@ -72,7 +72,6 @@ class plan(Plan):
     """See `Plan`."""
 
 
-
 class Serde:
     """Provides the ``Substrait`` serialization and deserialization."""
 
@@ -143,7 +142,6 @@ class serde(Serde):
     """See `Serde` instead."""
 
 
-
 class Producer:
     """Generates substrait plans from a logical plan."""
 
@@ -170,7 +168,6 @@ class producer(Producer):
     """Use `Producer` instead."""
 
 
-
 class Consumer:
     """Generates a logical plan from a substrait plan."""
 
@@ -193,4 +190,3 @@ class Consumer:
 @deprecated("Use `Consumer` instead.")
 class consumer(Consumer):
     """Use `Consumer` instead."""
-
