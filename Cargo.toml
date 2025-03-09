@@ -35,7 +35,7 @@ substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
 tokio = { version = "1.42", features = ["macros", "rt", "rt-multi-thread", "sync"] }
-pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
 pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"]}
 arrow = { version = "54", features = ["pyarrow"] }
 datafusion = { version = "45.0.0", features = ["avro", "unicode_expressions"] }
