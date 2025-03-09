@@ -299,7 +299,7 @@ data_test_bitwise_and_boolean_functions = [
 ]
 
 
-@pytest.mark.parametrize("name,expr,result", data_test_bitwise_and_boolean_functions)
+@pytest.mark.parametrize(("name","expr","result"), data_test_bitwise_and_boolean_functions)
 def test_bit_and_bool_fns(df, name, expr, result):
     df = df.aggregate([], [expr.alias(name)])
 

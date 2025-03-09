@@ -86,7 +86,7 @@ def test_errors(df):
         "evaluate, merge, update)"
     )
     with pytest.raises(Exception, match=msg):
-        accum = udaf(  # noqa F841
+        accum = udaf(  # noqa: F841
             MissingMethods,
             pa.int64(),
             pa.int64(),
