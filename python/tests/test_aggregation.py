@@ -66,7 +66,7 @@ def df_aggregate_100():
 
 
 @pytest.mark.parametrize(
-    "agg_expr, calc_expected",
+    ("agg_expr", "calc_expected"),
     [
         (f.avg(column("a")), lambda a, b, c, d: np.array(np.average(a))),
         (
@@ -88,7 +88,7 @@ def df_aggregate_100():
             f.covar_samp(column("b"), column("c")),
             lambda a, b, c, d: np.array(np.cov(b, c, ddof=1)[0][1]),
         ),
-        # f.grouping(col_a),  # No physical plan implemented yet
+        # f.grouping(col_a),  # No physical plan implemented yet  # noqa: ERA001
         (f.max(column("a")), lambda a, b, c, d: np.array(np.max(a))),
         (f.mean(column("b")), lambda a, b, c, d: np.array(np.mean(b))),
         (f.median(column("b")), lambda a, b, c, d: np.array(np.median(b))),
@@ -114,7 +114,7 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
 
 
 @pytest.mark.parametrize(
-    "agg_expr, expected, array_sort",
+    ("agg_expr", "expected", "array_sort"),
     [
         (f.approx_distinct(column("b")), pa.array([2], type=pa.uint64()), False),
         (
@@ -182,12 +182,11 @@ def test_aggregation(df, agg_expr, expected, array_sort):
     agg_df.show()
     result = agg_df.collect()[0]
 
-    print(result)
     assert result.column(0) == expected
 
 
 @pytest.mark.parametrize(
-    "name,expr,expected",
+    ("name", "expr", "expected"),
     [
         (
             "approx_percentile_cont",
@@ -313,7 +312,7 @@ def test_bit_and_bool_fns(df, name, expr, result):
 
 
 @pytest.mark.parametrize(
-    "name,expr,result",
+    ("name", "expr", "result"),
     [
         ("first_value", f.first_value(column("a")), [0, 4]),
         (
@@ -363,7 +362,6 @@ def test_bit_and_bool_fns(df, name, expr, result):
             ),
             [8, 9],
         ),
-        ("first_value", f.first_value(column("a")), [0, 4]),
         (
             "nth_value_ordered",
             f.nth_value(column("a"), 2, order_by=[column("a").sort(ascending=False)]),
@@ -403,7 +401,7 @@ def test_first_last_value(df_partitioned, name, expr, result) -> None:
 
 
 @pytest.mark.parametrize(
-    "name,expr,result",
+    ("name", "expr", "result"),
     [
         ("string_agg", f.string_agg(column("a"), ","), "one,two,three,two"),
         ("string_agg", f.string_agg(column("b"), ""), "03124"),
