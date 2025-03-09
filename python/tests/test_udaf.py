@@ -17,8 +17,6 @@
 
 from __future__ import annotations
 
-from typing import List
-
 import pyarrow as pa
 import pyarrow.compute as pc
 import pytest
@@ -31,7 +29,7 @@ class Summarize(Accumulator):
     def __init__(self, initial_value: float = 0.0):
         self._sum = pa.scalar(initial_value)
 
-    def state(self) -> List[pa.Scalar]:
+    def state(self) -> list[pa.Scalar]:
         return [self._sum]
 
     def update(self, values: pa.Array) -> None:
@@ -39,7 +37,7 @@ class Summarize(Accumulator):
         # This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
 
-    def merge(self, states: List[pa.Array]) -> None:
+    def merge(self, states: list[pa.Array]) -> None:
         # Not nice since pyarrow scalars can't be summed yet.
         # This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
@@ -56,7 +54,7 @@ class MissingMethods(Accumulator):
     def __init__(self):
         self._sum = pa.scalar(0)
 
-    def state(self) -> List[pa.Scalar]:
+    def state(self) -> list[pa.Scalar]:
         return [self._sum]
 
 

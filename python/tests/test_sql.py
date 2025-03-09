@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import gzip
-import os
+from pathlib import Path
 
 import numpy as np
 import pyarrow as pa
@@ -47,9 +47,8 @@ def test_register_csv(ctx, tmp_path):
     )
     write_csv(table, path)
 
-    with open(path, "rb") as csv_file:
-        with gzip.open(gzip_path, "wb") as gzipped_file:
-            gzipped_file.writelines(csv_file)
+    with Path.open(path, "rb") as csv_file, gzip.open(gzip_path, "wb") as gzipped_file:
+        gzipped_file.writelines(csv_file)
 
     ctx.register_csv("csv", path)
     ctx.register_csv("csv1", str(path))
@@ -158,7 +157,7 @@ def test_register_parquet(ctx, tmp_path):
     assert result.to_pydict() == {"cnt": [100]}
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
@@ -194,7 +193,7 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
     assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_register_dataset(ctx, tmp_path, path_to_str):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     path = str(path) if path_to_str else path
@@ -209,13 +208,15 @@ def test_register_dataset(ctx, tmp_path, path_to_str):
 
 
 def test_register_json(ctx, tmp_path):
-    path = os.path.dirname(os.path.abspath(__file__))
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    path = Path(__file__).parent.resolve()
+    test_data_path = Path(path) / "data_test_context" / "data.json"
     gzip_path = tmp_path / "data.json.gz"
 
-    with open(test_data_path, "rb") as json_file:
-        with gzip.open(gzip_path, "wb") as gzipped_file:
-            gzipped_file.writelines(json_file)
+    with (
+        Path.open(test_data_path, "rb") as json_file,
+        gzip.open(gzip_path, "wb") as gzipped_file
+    ):
+        gzipped_file.writelines(json_file)
 
     ctx.register_json("json", test_data_path)
     ctx.register_json("json1", str(test_data_path))
@@ -470,16 +471,19 @@ def test_simple_select(ctx, tmp_path, arr):
     # In DF 43.0.0 we now default to having BinaryView and StringView
     # so the array that is saved to the parquet is slightly different
     # than the array read. Convert to values for comparison.
-    if isinstance(result, pa.BinaryViewArray) or isinstance(result, pa.StringViewArray):
+    if isinstance(result, (pa.BinaryViewArray, pa.StringViewArray)):
         arr = arr.tolist()
         result = result.tolist()
 
     np.testing.assert_equal(result, arr)
 
 
-@pytest.mark.parametrize("file_sort_order", (None, [[col("int").sort(True, True)]]))
-@pytest.mark.parametrize("pass_schema", (True, False))
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("file_sort_order", [
+    None,
+    [[col("int").sort(ascending=True, nulls_first=True)]]
+    ])
+@pytest.mark.parametrize("pass_schema", [True, False])
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_register_listing_table(
     ctx, tmp_path, pass_schema, file_sort_order, path_to_str
 ):
@@ -528,7 +532,7 @@ def test_register_listing_table(
     assert dict(zip(rd["grp"], rd["count"])) == {"a": 5, "b": 2}
 
     result = ctx.sql(
-        "SELECT grp, COUNT(*) AS count FROM my_table WHERE date_id=20201005 GROUP BY grp"
+        "SELECT grp, COUNT(*) AS count FROM my_table WHERE date_id=20201005 GROUP BY grp"  # noqa: E501
     ).collect()
     result = pa.Table.from_batches(result)
 

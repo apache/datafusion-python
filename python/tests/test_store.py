@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
+from pathlib import Path
 
 import pytest
 from datafusion import SessionContext
@@ -23,17 +23,16 @@ from datafusion import SessionContext
 
 @pytest.fixture
 def ctx():
-    ctx = SessionContext()
-    return ctx
+    return SessionContext()
 
 
 def test_read_parquet(ctx):
     ctx.register_parquet(
         "test",
-        f"file://{os.getcwd()}/parquet/data/alltypes_plain.parquet",
-        [],
-        True,
-        ".parquet",
+        f"file://{Path.cwd()}/parquet/data/alltypes_plain.parquet",
+        table_partition_cols=[],
+        parquet_pruning=True,
+        file_extension=".parquet",
     )
     df = ctx.sql("SELECT * FROM test")
     assert isinstance(df.collect(), list)
