@@ -86,6 +86,9 @@ __all__ = [
     "read_json",
     "read_parquet",
     "substrait",
+    "udaf",
+    "udf",
+    "udwf",
 ]
 
 
