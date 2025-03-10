@@ -97,7 +97,7 @@ impl PyProjection {
     /// Projection: Gets the names of the fields that should be projected
     pub fn projected_expressions(local_expr: &PyExpr) -> Vec<PyExpr> {
         let mut projs: Vec<PyExpr> = Vec::new();
-        match &local_expr.expr {
+        match &local_expr.raw_expr.expr {
             Expr::Alias(alias) => {
                 let py_expr: PyExpr = PyExpr::from(*alias.expr.clone());
                 projs.extend_from_slice(Self::projected_expressions(&py_expr).as_slice());

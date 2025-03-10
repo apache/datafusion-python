@@ -117,7 +117,7 @@ impl PyWindowExpr {
 
     /// Returns order by columns in a window function expression
     pub fn get_sort_exprs(&self, expr: PyExpr) -> PyResult<Vec<PySortExpr>> {
-        match expr.expr.unalias() {
+        match expr.raw_expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { order_by, .. }) => py_sort_expr_list(&order_by),
             other => Err(not_window_function_err(other)),
         }
@@ -125,7 +125,7 @@ impl PyWindowExpr {
 
     /// Return partition by columns in a window function expression
     pub fn get_partition_exprs(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
-        match expr.expr.unalias() {
+        match expr.raw_expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { partition_by, .. }) => {
                 py_expr_list(&partition_by)
             }
@@ -135,7 +135,7 @@ impl PyWindowExpr {
 
     /// Return input args for window function
     pub fn get_args(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
-        match expr.expr.unalias() {
+        match expr.raw_expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { args, .. }) => py_expr_list(&args),
             other => Err(not_window_function_err(other)),
         }
@@ -143,7 +143,7 @@ impl PyWindowExpr {
 
     /// Return window function name
     pub fn window_func_name(&self, expr: PyExpr) -> PyResult<String> {
-        match expr.expr.unalias() {
+        match expr.raw_expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { fun, .. }) => Ok(fun.to_string()),
             other => Err(not_window_function_err(other)),
         }
@@ -151,7 +151,7 @@ impl PyWindowExpr {
 
     /// Returns a Pywindow frame for a given window function expression
     pub fn get_frame(&self, expr: PyExpr) -> Option<PyWindowFrame> {
-        match expr.expr.unalias() {
+        match expr.raw_expr.expr.unalias() {
             Expr::WindowFunction(WindowFunction { window_frame, .. }) => Some(window_frame.into()),
             _ => None,
         }

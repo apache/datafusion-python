@@ -241,7 +241,7 @@ impl PyWindowUDF {
     /// creates a new PyExpr with the call of the udf
     #[pyo3(signature = (*args))]
     fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyExpr> {
-        let args = args.iter().map(|e| e.expr.clone()).collect();
+        let args = args.iter().map(|e| e.raw_expr.expr.clone()).collect();
         Ok(self.function.call(args).into())
     }
 

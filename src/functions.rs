@@ -30,7 +30,7 @@ use crate::expr::conditional_expr::PyCaseBuilder;
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::expr::sort_expr::PySortExpr;
 use crate::expr::window::PyWindowFrame;
-use crate::expr::PyExpr;
+use crate::expr::{PyExpr, RawExpr};
 use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions;
@@ -61,7 +61,7 @@ fn add_builder_fns_to_aggregate(
     }
 
     if let Some(filter) = filter {
-        builder = builder.filter(filter.expr);
+        builder = builder.filter(filter.raw_expr.expr);
     }
 
     builder = builder.null_treatment(null_treatment.map(DFNullTreatment::from));
@@ -72,8 +72,8 @@ fn add_builder_fns_to_aggregate(
 #[pyfunction]
 fn in_list(expr: PyExpr, value: Vec<PyExpr>, negated: bool) -> PyExpr {
     datafusion::logical_expr::in_list(
-        expr.expr,
-        value.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
+        expr.raw_expr.expr,
+        value.into_iter().map(|x| x.raw_expr.expr).collect::<Vec<_>>(),
         negated,
     )
     .into()
@@ -123,7 +123,7 @@ fn array_slice(array: PyExpr, begin: PyExpr, end: PyExpr, stride: Option<PyExpr>
 #[pyfunction]
 fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
     PyExpr {
-        expr: functions::expr_fn::digest(value.expr, method.expr),
+        raw_expr: RawExpr { expr: functions::expr_fn::digest(value.raw_expr.expr, method.raw_expr.expr) },
     }
 }
 
@@ -131,7 +131,7 @@ fn digest(value: PyExpr, method: PyExpr) -> PyExpr {
 /// NULL arguments are ignored.
 #[pyfunction]
 fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
-    let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
+    let args = args.into_iter().map(|e| e.raw_expr.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat(args).into())
 }
 
@@ -140,20 +140,20 @@ fn concat(args: Vec<PyExpr>) -> PyResult<PyExpr> {
 /// Other NULL arguments are ignored.
 #[pyfunction]
 fn concat_ws(sep: String, args: Vec<PyExpr>) -> PyResult<PyExpr> {
-    let args = args.into_iter().map(|e| e.expr).collect::<Vec<_>>();
+    let args = args.into_iter().map(|e| e.raw_expr.expr).collect::<Vec<_>>();
     Ok(functions::string::expr_fn::concat_ws(lit(sep), args).into())
 }
 
 #[pyfunction]
 #[pyo3(signature = (values, regex, flags=None))]
 fn regexp_like(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
-    Ok(functions::expr_fn::regexp_like(values.expr, regex.expr, flags.map(|x| x.expr)).into())
+    Ok(functions::expr_fn::regexp_like(values.raw_expr.expr, regex.raw_expr.expr, flags.map(|x| x.raw_expr.expr)).into())
 }
 
 #[pyfunction]
 #[pyo3(signature = (values, regex, flags=None))]
 fn regexp_match(values: PyExpr, regex: PyExpr, flags: Option<PyExpr>) -> PyResult<PyExpr> {
-    Ok(functions::expr_fn::regexp_match(values.expr, regex.expr, flags.map(|x| x.expr)).into())
+    Ok(functions::expr_fn::regexp_match(values.raw_expr.expr, regex.raw_expr.expr, flags.map(|x| x.raw_expr.expr)).into())
 }
 
 #[pyfunction]
@@ -169,7 +169,7 @@ fn regexp_replace(
         string.into(),
         pattern.into(),
         replacement.into(),
-        flags.map(|x| x.expr),
+        flags.map(|x| x.raw_expr.expr),
     )
     .into())
 }
@@ -177,7 +177,7 @@ fn regexp_replace(
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> {
     Ok(PySortExpr::from(datafusion::logical_expr::expr::Sort {
-        expr: expr.expr,
+        expr: expr.raw_expr.expr,
         asc,
         nulls_first,
     }))
@@ -188,7 +188,7 @@ fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> 
 fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
     let relation: Option<TableReference> = None;
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Alias(Alias::new(expr.expr, relation, name)),
+        raw_expr: RawExpr { expr:datafusion::logical_expr::Expr::Alias(Alias::new(expr.raw_expr.expr, relation, name)) },
     })
 }
 
@@ -196,10 +196,10 @@ fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
 #[pyfunction]
 fn col(name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Column(Column {
+        raw_expr: RawExpr { expr: datafusion::logical_expr::Expr::Column(Column {
             relation: None,
             name: name.to_string(),
-        }),
+        }) },
     })
 }
 
@@ -207,7 +207,7 @@ fn col(name: &str) -> PyResult<PyExpr> {
 #[pyfunction]
 fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
     Ok(PyCaseBuilder {
-        case_builder: datafusion::logical_expr::case(expr.expr),
+        case_builder: datafusion::logical_expr::case(expr.raw_expr.expr),
     })
 }
 
@@ -215,7 +215,7 @@ fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
 #[pyfunction]
 fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
     Ok(PyCaseBuilder {
-        case_builder: datafusion::logical_expr::when(when.expr, then.expr),
+        case_builder: datafusion::logical_expr::when(when.raw_expr.expr, then.raw_expr.expr),
     })
 }
 
@@ -312,13 +312,13 @@ fn window(
         .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
 
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
+        raw_expr: RawExpr { expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
             fun,
-            args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
+            args: args.into_iter().map(|x| x.raw_expr.expr).collect::<Vec<_>>(),
             partition_by: partition_by
                 .unwrap_or_default()
                 .into_iter()
-                .map(|x| x.expr)
+                .map(|x| x.raw_expr.expr)
                 .collect::<Vec<_>>(),
             order_by: order_by
                 .unwrap_or_default()
@@ -327,7 +327,7 @@ fn window(
                 .collect::<Vec<_>>(),
             window_frame,
             null_treatment: None,
-        }),
+        }) },
     })
 }
 
@@ -652,9 +652,9 @@ pub fn approx_percentile_cont(
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let args = if let Some(num_centroids) = num_centroids {
-        vec![expression.expr, lit(percentile), lit(num_centroids)]
+        vec![expression.raw_expr.expr, lit(percentile), lit(num_centroids)]
     } else {
-        vec![expression.expr, lit(percentile)]
+        vec![expression.raw_expr.expr, lit(percentile)]
     };
     let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
     let agg_fn = udaf.call(args);
@@ -671,8 +671,8 @@ pub fn approx_percentile_cont_with_weight(
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
-        expression.expr,
-        weight.expr,
+        expression.raw_expr.expr,
+        weight.raw_expr.expr,
         lit(percentile),
     );
 
@@ -693,7 +693,7 @@ pub fn first_value(
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.raw_expr.expr, None);
 
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
@@ -709,7 +709,7 @@ pub fn nth_value(
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
-    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(expr.expr, n, vec![]);
+    let agg_fn = datafusion::functions_aggregate::nth_value::nth_value(expr.raw_expr.expr, n, vec![]);
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
@@ -724,7 +724,7 @@ pub fn string_agg(
     order_by: Option<Vec<PySortExpr>>,
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
-    let agg_fn = datafusion::functions_aggregate::string_agg::string_agg(expr.expr, lit(delimiter));
+    let agg_fn = datafusion::functions_aggregate::string_agg::string_agg(expr.raw_expr.expr, lit(delimiter));
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
 
@@ -769,7 +769,7 @@ pub fn lead(
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
-    let window_fn = functions_window::expr_fn::lead(arg.expr, Some(shift_offset), default_value);
+    let window_fn = functions_window::expr_fn::lead(arg.raw_expr.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }
@@ -784,7 +784,7 @@ pub fn lag(
     order_by: Option<Vec<PySortExpr>>,
 ) -> PyDataFusionResult<PyExpr> {
     let default_value = default_value.map(|v| v.into());
-    let window_fn = functions_window::expr_fn::lag(arg.expr, Some(shift_offset), default_value);
+    let window_fn = functions_window::expr_fn::lag(arg.raw_expr.expr, Some(shift_offset), default_value);
 
     add_builder_fns_to_window(window_fn, partition_by, None, order_by, None)
 }

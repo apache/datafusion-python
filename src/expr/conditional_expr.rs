@@ -40,12 +40,12 @@ impl From<CaseBuilder> for PyCaseBuilder {
 impl PyCaseBuilder {
     fn when(&mut self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
         PyCaseBuilder {
-            case_builder: self.case_builder.when(when.expr, then.expr),
+            case_builder: self.case_builder.when(when.raw_expr.expr, then.raw_expr.expr),
         }
     }
 
     fn otherwise(&mut self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        Ok(self.case_builder.otherwise(else_expr.expr)?.clone().into())
+        Ok(self.case_builder.otherwise(else_expr.raw_expr.expr)?.clone().into())
     }
 
     fn end(&mut self) -> PyDataFusionResult<PyExpr> {
