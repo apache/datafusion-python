@@ -71,6 +71,8 @@ ignore = [
     "ANN401",  # Allow Any for wrapper classes
     "COM812",  # Recommended to ignore these rules when using with ruff-format
     "FIX002",  # Allow TODO lines - consider removing at some point
+    "FBT001",  # Allow boolean positional args
+    "FBT002",  # Allow boolean positional args
     "ISC001",  # Recommended to ignore these rules when using with ruff-format
     "SLF001",  # Allow accessing private members
     "TD002",

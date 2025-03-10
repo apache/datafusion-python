@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
 def read_parquet(  # noqa: PLR0913
     path: str | pathlib.Path,
-    *,
     table_partition_cols: list[tuple[str, str]] | None = None,
     parquet_pruning: bool = True,
     file_extension: str = ".parquet",
@@ -84,7 +83,6 @@ def read_parquet(  # noqa: PLR0913
 
 def read_json(  # noqa: PLR0913
     path: str | pathlib.Path,
-    *,
     schema: pa.Schema | None = None,
     schema_infer_max_records: int = 1000,
     file_extension: str = ".json",
@@ -126,7 +124,6 @@ def read_json(  # noqa: PLR0913
 
 def read_csv(  # noqa: PLR0913
     path: str | pathlib.Path | list[str] | list[pathlib.Path],
-    *,
     schema: pa.Schema | None = None,
     has_header: bool = True,
     delimiter: str = ",",
