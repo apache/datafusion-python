@@ -42,5 +42,5 @@ class BaseInputSource(ABC):
         """Returns `True` if the input is valid."""
 
     @abstractmethod
-    def build_table(self, input_item: Any, table_name: str, **kwarg: Any) -> SqlTable: # type: ignore[invalid-type-form]
+    def build_table(self, input_item: Any, table_name: str, **kwarg: Any) -> SqlTable:  # type: ignore[invalid-type-form]
         """Create a table from the input source."""
