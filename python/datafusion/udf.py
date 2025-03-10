@@ -575,10 +575,12 @@ class WindowEvaluator(metaclass=ABCMeta):
         The user must implement this method if ``include_rank`` returns True.
         """
 
+    @abstractmethod
     def supports_bounded_execution(self) -> bool:
         """Can the window function be incrementally computed using bounded memory?"""
         return False
 
+    @abstractmethod
     def uses_window_frame(self) -> bool:
         """Does the window function use the values from the window frame?"""
         return False

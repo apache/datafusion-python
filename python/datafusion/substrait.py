@@ -23,7 +23,6 @@ information about substrait.
 
 from __future__ import annotations
 
-import pathlib
 from typing import TYPE_CHECKING
 
 try:
@@ -36,6 +35,8 @@ from datafusion.plan import LogicalPlan
 from ._internal import substrait as substrait_internal
 
 if TYPE_CHECKING:
+    import pathlib
+
     from datafusion.context import SessionContext
 
 __all__ = [
@@ -68,7 +69,7 @@ class Plan:
 
 
 @deprecated("Use `Plan` instead.")
-class plan(Plan):
+class plan(Plan):  # noqa: N801
     """See `Plan`."""
 
 
@@ -138,7 +139,7 @@ class Serde:
 
 
 @deprecated("Use `Serde` instead.")
-class serde(Serde):
+class serde(Serde):  # noqa: N801
     """See `Serde` instead."""
 
 
@@ -164,7 +165,7 @@ class Producer:
 
 
 @deprecated("Use `Producer` instead.")
-class producer(Producer):
+class producer(Producer):  # noqa: N801
     """Use `Producer` instead."""
 
 
@@ -188,5 +189,5 @@ class Consumer:
 
 
 @deprecated("Use `Consumer` instead.")
-class consumer(Consumer):
+class consumer(Consumer):  # noqa: N801
     """Use `Consumer` instead."""

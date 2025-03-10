@@ -71,6 +71,7 @@ ignore = [
     "ANN401",  # Allow Any for wrapper classes
     "COM812",  # Recommended to ignore these rules when using with ruff-format
     "ISC001",  # Recommended to ignore these rules when using with ruff-format
+    "SLF001",  # Allow accessing private members
     "TD002",
     "UP007"    # Disallowing Union is pedantic
 ]
