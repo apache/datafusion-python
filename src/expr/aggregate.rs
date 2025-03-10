@@ -98,11 +98,11 @@ impl PyAggregate {
     }
 
     pub fn agg_func_name(&self, expr: PyExpr) -> PyResult<String> {
-        Self::_agg_func_name(&expr.expr)
+        Self::_agg_func_name(&expr.raw_expr.expr)
     }
 
     pub fn aggregation_arguments(&self, expr: PyExpr) -> PyResult<Vec<PyExpr>> {
-        self._aggregation_arguments(&expr.expr)
+        self._aggregation_arguments(&expr.raw_expr.expr)
     }
 
     // Retrieves the input `LogicalPlan` to this `Aggregate` node

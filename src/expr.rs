@@ -100,22 +100,37 @@ pub mod window;
 
 use sort_expr::{to_sort_expressions, PySortExpr};
 
+// Define the new RawExpr struct and implement Debug trait
+#[derive(Debug, Clone)]
+pub struct RawExpr {
+    pub expr: Expr,
+}
+
+// Implement conversion from RawExpr to Expr
+impl From<RawExpr> for Expr {
+    fn from(raw_expr: RawExpr) -> Expr {
+        raw_expr.expr
+    }
+}
+
 /// A PyExpr that can be used on a DataFrame
 #[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
-    pub expr: Expr,
+    pub raw_expr: RawExpr,
 }
 
 impl From<PyExpr> for Expr {
     fn from(expr: PyExpr) -> Expr {
-        expr.expr
+        expr.raw_expr.expr
     }
 }
 
 impl From<Expr> for PyExpr {
     fn from(expr: Expr) -> PyExpr {
-        PyExpr { expr }
+        PyExpr { 
+            raw_expr : RawExpr { expr }
+        }
     }
 }
 
@@ -129,7 +144,7 @@ impl PyExpr {
     /// Return the specific expression
     fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         Python::with_gil(|_| {
-            match &self.expr {
+            match &self.raw_expr.expr {
             Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_bound_py_any(py)?),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_bound_py_any(py)?),
             Expr::ScalarVariable(data_type, variables) => {
@@ -194,72 +209,72 @@ impl PyExpr {
     /// Returns the name of this expression as it should appear in a schema. This name
     /// will not include any CAST expressions.
     fn schema_name(&self) -> PyResult<String> {
-        Ok(format!("{}", self.expr.schema_name()))
+        Ok(format!("{}", self.raw_expr.expr.schema_name()))
     }
 
     /// Returns a full and complete string representation of this expression.
     fn canonical_name(&self) -> PyResult<String> {
-        Ok(format!("{}", self.expr))
+        Ok(format!("{}", self.raw_expr.expr))
     }
 
     /// Returns the name of the Expr variant.
     /// Ex: 'IsNotNull', 'Literal', 'BinaryExpr', etc
     fn variant_name(&self) -> PyResult<&str> {
-        Ok(self.expr.variant_name())
+        Ok(self.raw_expr.expr.variant_name())
     }
 
     fn __richcmp__(&self, other: PyExpr, op: CompareOp) -> PyExpr {
         let expr = match op {
-            CompareOp::Lt => self.expr.clone().lt(other.expr),
-            CompareOp::Le => self.expr.clone().lt_eq(other.expr),
-            CompareOp::Eq => self.expr.clone().eq(other.expr),
-            CompareOp::Ne => self.expr.clone().not_eq(other.expr),
-            CompareOp::Gt => self.expr.clone().gt(other.expr),
-            CompareOp::Ge => self.expr.clone().gt_eq(other.expr),
+            CompareOp::Lt => self.raw_expr.expr.clone().lt(other.raw_expr.expr),
+            CompareOp::Le => self.raw_expr.expr.clone().lt_eq(other.raw_expr.expr),
+            CompareOp::Eq => self.raw_expr.expr.clone().eq(other.raw_expr.expr),
+            CompareOp::Ne => self.raw_expr.expr.clone().not_eq(other.raw_expr.expr),
+            CompareOp::Gt => self.raw_expr.expr.clone().gt(other.raw_expr.expr),
+            CompareOp::Ge => self.raw_expr.expr.clone().gt_eq(other.raw_expr.expr),
         };
         expr.into()
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Expr({})", self.expr))
+        Ok(format!("Expr({})", self.raw_expr.expr))
     }
 
     fn __add__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok((self.expr.clone() + rhs.expr).into())
+        Ok((self.raw_expr.expr.clone() + rhs.raw_expr.expr).into())
     }
 
     fn __sub__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok((self.expr.clone() - rhs.expr).into())
+        Ok((self.raw_expr.expr.clone() - rhs.raw_expr.expr).into())
     }
 
     fn __truediv__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok((self.expr.clone() / rhs.expr).into())
+        Ok((self.raw_expr.expr.clone() / rhs.raw_expr.expr).into())
     }
 
     fn __mul__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok((self.expr.clone() * rhs.expr).into())
+        Ok((self.raw_expr.expr.clone() * rhs.raw_expr.expr).into())
     }
 
     fn __mod__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        let expr = self.expr.clone() % rhs.expr;
+        let expr = self.raw_expr.expr.clone() % rhs.raw_expr.expr;
         Ok(expr.into())
     }
 
     fn __and__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().and(rhs.expr).into())
+        Ok(self.raw_expr.expr.clone().and(rhs.raw_expr.expr).into())
     }
 
     fn __or__(&self, rhs: PyExpr) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().or(rhs.expr).into())
+        Ok(self.raw_expr.expr.clone().or(rhs.raw_expr.expr).into())
     }
 
     fn __invert__(&self) -> PyResult<PyExpr> {
-        let expr = !self.expr.clone();
+        let expr = !self.raw_expr.expr.clone();
         Ok(expr.into())
     }
 
     fn __getitem__(&self, key: &str) -> PyResult<PyExpr> {
-        Ok(self.expr.clone().field(key).into())
+        Ok(self.raw_expr.expr.clone().field(key).into())
     }
 
     #[staticmethod]
@@ -274,34 +289,34 @@ impl PyExpr {
 
     /// assign a name to the PyExpr
     pub fn alias(&self, name: &str) -> PyExpr {
-        self.expr.clone().alias(name).into()
+        self.raw_expr.expr.clone().alias(name).into()
     }
 
     /// Create a sort PyExpr from an existing PyExpr.
     #[pyo3(signature = (ascending=true, nulls_first=true))]
     pub fn sort(&self, ascending: bool, nulls_first: bool) -> PySortExpr {
-        self.expr.clone().sort(ascending, nulls_first).into()
+        self.raw_expr.expr.clone().sort(ascending, nulls_first).into()
     }
 
     pub fn is_null(&self) -> PyExpr {
-        self.expr.clone().is_null().into()
+        self.raw_expr.expr.clone().is_null().into()
     }
 
     pub fn is_not_null(&self) -> PyExpr {
-        self.expr.clone().is_not_null().into()
+        self.raw_expr.expr.clone().is_not_null().into()
     }
 
     pub fn cast(&self, to: PyArrowType<DataType>) -> PyExpr {
         // self.expr.cast_to() requires DFSchema to validate that the cast
         // is supported, omit that for now
-        let expr = Expr::Cast(Cast::new(Box::new(self.expr.clone()), to.0));
+        let expr = Expr::Cast(Cast::new(Box::new(self.raw_expr.expr.clone()), to.0));
         expr.into()
     }
 
     #[pyo3(signature = (low, high, negated=false))]
     pub fn between(&self, low: PyExpr, high: PyExpr, negated: bool) -> PyExpr {
         let expr = Expr::Between(Between::new(
-            Box::new(self.expr.clone()),
+            Box::new(self.raw_expr.expr.clone()),
             negated,
             Box::new(low.into()),
             Box::new(high.into()),
@@ -313,7 +328,7 @@ impl PyExpr {
     /// could include user defined functions or types. RexType identifies the row
     /// as one of the possible valid `RexTypes`.
     pub fn rex_type(&self) -> PyResult<RexType> {
-        Ok(match self.expr {
+        Ok(match self.raw_expr.expr {
             Expr::Alias(..) => RexType::Alias,
             Expr::Column(..) => RexType::Reference,
             Expr::ScalarVariable(..) | Expr::Literal(..) => RexType::Literal,
@@ -352,16 +367,16 @@ impl PyExpr {
     /// Given the current `Expr` return the DataTypeMap which represents the
     /// PythonType, Arrow DataType, and SqlType Enum which represents
     pub fn types(&self) -> PyResult<DataTypeMap> {
-        Self::_types(&self.expr)
+        Self::_types(&self.raw_expr.expr)
     }
 
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
-        match &self.expr {
+        match &self.raw_expr.expr {
             Expr::Literal(scalar_value) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
-                &self.expr
+                &self.raw_expr.expr
             ))),
         }
     }
@@ -370,10 +385,10 @@ impl PyExpr {
     /// store those operands in different datastructures. This function examines the Expr variant and returns
     /// the operands to the calling logic as a Vec of PyExpr instances.
     pub fn rex_call_operands(&self) -> PyResult<Vec<PyExpr>> {
-        match &self.expr {
+        match &self.raw_expr.expr {
             // Expr variants that are themselves the operand to return
             Expr::Column(..) | Expr::ScalarVariable(..) | Expr::Literal(..) => {
-                Ok(vec![PyExpr::from(self.expr.clone())])
+                Ok(vec![PyExpr::from(self.raw_expr.expr.clone())])
             }
 
             Expr::Alias(alias) => Ok(vec![PyExpr::from(*alias.expr.clone())]),
@@ -470,14 +485,14 @@ impl PyExpr {
             | Expr::Placeholder { .. }
             | Expr::Exists { .. } => Err(py_runtime_err(format!(
                 "Unimplemented Expr type: {}",
-                self.expr
+                self.raw_expr.expr
             ))),
         }
     }
 
     /// Extracts the operator associated with a RexType::Call
     pub fn rex_call_operator(&self) -> PyResult<String> {
-        Ok(match &self.expr {
+        Ok(match &self.raw_expr.expr {
             Expr::BinaryExpr(BinaryExpr {
                 left: _,
                 op,
@@ -520,7 +535,7 @@ impl PyExpr {
             _ => {
                 return Err(py_type_err(format!(
                     "Catch all triggered in get_operator_name: {:?}",
-                    &self.expr
+                    &self.raw_expr.expr
                 )))
             }
         })
@@ -533,34 +548,34 @@ impl PyExpr {
     // Expression Function Builder functions
 
     pub fn order_by(&self, order_by: Vec<PySortExpr>) -> PyExprFuncBuilder {
-        self.expr
+        self.raw_expr.expr
             .clone()
             .order_by(to_sort_expressions(order_by))
             .into()
     }
 
     pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        self.expr.clone().filter(filter.expr.clone()).into()
+        self.raw_expr.expr.clone().filter(filter.raw_expr.expr.clone()).into()
     }
 
     pub fn distinct(&self) -> PyExprFuncBuilder {
-        self.expr.clone().distinct().into()
+        self.raw_expr.expr.clone().distinct().into()
     }
 
     pub fn null_treatment(&self, null_treatment: NullTreatment) -> PyExprFuncBuilder {
-        self.expr
+        self.raw_expr.expr
             .clone()
             .null_treatment(Some(null_treatment.into()))
             .into()
     }
 
     pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
-        self.expr.clone().partition_by(partition_by).into()
+        let partition_by = partition_by.iter().map(|e| e.raw_expr.expr.clone()).collect();
+        self.raw_expr.expr.clone().partition_by(partition_by).into()
     }
 
     pub fn window_frame(&self, window_frame: PyWindowFrame) -> PyExprFuncBuilder {
-        self.expr.clone().window_frame(window_frame.into()).into()
+        self.raw_expr.expr.clone().window_frame(window_frame.into()).into()
     }
 
     #[pyo3(signature = (partition_by=None, window_frame=None, order_by=None, null_treatment=None))]
@@ -571,7 +586,7 @@ impl PyExpr {
         order_by: Option<Vec<PySortExpr>>,
         null_treatment: Option<NullTreatment>,
     ) -> PyDataFusionResult<PyExpr> {
-        match &self.expr {
+        match &self.raw_expr.expr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
@@ -587,7 +602,7 @@ impl PyExpr {
                 )
             }
             Expr::WindowFunction(_) => add_builder_fns_to_window(
-                self.expr.clone(),
+                self.raw_expr.expr.clone(),
                 partition_by,
                 window_frame,
                 order_by,
@@ -595,7 +610,7 @@ impl PyExpr {
             ),
             _ => Err(
                 PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
-                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
+                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.raw_expr.expr.variant_name()),
                 ))
             ),
         }
@@ -624,7 +639,7 @@ impl PyExprFuncBuilder {
     }
 
     pub fn filter(&self, filter: PyExpr) -> PyExprFuncBuilder {
-        self.builder.clone().filter(filter.expr.clone()).into()
+        self.builder.clone().filter(filter.raw_expr.expr.clone()).into()
     }
 
     pub fn distinct(&self) -> PyExprFuncBuilder {
@@ -639,7 +654,7 @@ impl PyExprFuncBuilder {
     }
 
     pub fn partition_by(&self, partition_by: Vec<PyExpr>) -> PyExprFuncBuilder {
-        let partition_by = partition_by.iter().map(|e| e.expr.clone()).collect();
+        let partition_by = partition_by.iter().map(|e| e.raw_expr.expr.clone()).collect();
         self.builder.clone().partition_by(partition_by).into()
     }
 
@@ -657,7 +672,7 @@ impl PyExprFuncBuilder {
 
 impl PyExpr {
     pub fn _column_name(&self, plan: &LogicalPlan) -> PyDataFusionResult<String> {
-        let field = Self::expr_to_field(&self.expr, plan)?;
+        let field = Self::expr_to_field(&self.raw_expr.expr, plan)?;
         Ok(field.name().to_owned())
     }
 
