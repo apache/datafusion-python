@@ -429,7 +429,7 @@ class AggregateUDF:
         return _decorator(*args, **kwargs)
 
 
-class WindowEvaluator(metaclass=ABCMeta):
+class WindowEvaluator:
     """Evaluator class for user-defined window functions (UDWF).
 
     It is up to the user to decide which evaluate function is appropriate.
@@ -447,7 +447,7 @@ class WindowEvaluator(metaclass=ABCMeta):
     +------------------------+--------------------------------+------------------+---------------------------+
     """  # noqa: W505, E501
 
-    def memoize(self) -> None:  # noqa: B027
+    def memoize(self) -> None:
         """Perform a memoize operation to improve performance.
 
         When the window frame has a fixed beginning (e.g UNBOUNDED
@@ -481,7 +481,7 @@ class WindowEvaluator(metaclass=ABCMeta):
         """Get whether evaluator needs future data for its result."""
         return False
 
-    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:  # noqa: B027
+    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
         """Evaluate a window function on an entire input partition.
 
         This function is called once per input *partition* for window functions that
@@ -525,7 +525,7 @@ class WindowEvaluator(metaclass=ABCMeta):
             avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
         """  # noqa: W505, E501
 
-    def evaluate(  # noqa: B027
+    def evaluate(
         self, values: list[pa.Array], eval_range: tuple[int, int]
     ) -> pa.Scalar:
         """Evaluate window function on a range of rows in an input partition.
@@ -543,7 +543,7 @@ class WindowEvaluator(metaclass=ABCMeta):
         single argument, `values[1..]` will contain ORDER BY expression results.
         """
 
-    def evaluate_all_with_rank(  # noqa: B027
+    def evaluate_all_with_rank(
         self, num_rows: int, ranks_in_partition: list[tuple[int, int]]
     ) -> pa.Array:
         """Called for window functions that only need the rank of a row.
@@ -575,12 +575,10 @@ class WindowEvaluator(metaclass=ABCMeta):
         The user must implement this method if ``include_rank`` returns True.
         """
 
-    @abstractmethod
     def supports_bounded_execution(self) -> bool:
         """Can the window function be incrementally computed using bounded memory?"""
         return False
 
-    @abstractmethod
     def uses_window_frame(self) -> bool:
         """Does the window function use the values from the window frame?"""
         return False
