@@ -529,9 +529,10 @@ def test_read_json_compressed(ctx, tmp_path):
     # File compression type
     gzip_path = tmp_path / "data.json.gz"
 
-    with pathlib.Path.open(test_data_path, "rb") as csv_file, gzip.open(
-        gzip_path, "wb"
-    ) as gzipped_file:
+    with (
+        pathlib.Path.open(test_data_path, "rb") as csv_file,
+        gzip.open(gzip_path, "wb") as gzipped_file,
+    ):
         gzipped_file.writelines(csv_file)
 
     df = ctx.read_json(gzip_path, file_extension=".gz", file_compression_type="gz")
@@ -568,9 +569,10 @@ def test_read_csv_compressed(ctx, tmp_path):
     # File compression type
     gzip_path = tmp_path / "aggregate_test_100.csv.gz"
 
-    with pathlib.Path.open(test_data_path, "rb") as csv_file, gzip.open(
-        gzip_path, "wb"
-    ) as gzipped_file:
+    with (
+        pathlib.Path.open(test_data_path, "rb") as csv_file,
+        gzip.open(gzip_path, "wb") as gzipped_file,
+    ):
         gzipped_file.writelines(csv_file)
 
     csv_df = ctx.read_csv(gzip_path, file_extension=".gz", file_compression_type="gz")
