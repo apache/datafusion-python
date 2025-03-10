@@ -68,6 +68,8 @@ features = ["substrait"]
 [tool.ruff.lint]
 select = ["ALL" ]
 ignore = [
+    "A001",    # Allow using words like min as variable names
+    "A002",    # Allow using words like filter as variable names
     "ANN401",  # Allow Any for wrapper classes
     "COM812",  # Recommended to ignore these rules when using with ruff-format
     "FIX002",  # Allow TODO lines - consider removing at some point
@@ -78,6 +80,7 @@ ignore = [
     "TD002",
     "TD003",   # Allow TODO lines
     "UP007"    # Disallowing Union is pedantic
+    # TODO: Enable all of the following, but this PR is getting too large already
 ]
 
 [tool.ruff.lint.pydocstyle]
