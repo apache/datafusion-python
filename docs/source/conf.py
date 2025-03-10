@@ -73,7 +73,7 @@ suppress_warnings = ["autoapi.python_import_resolution"]
 autoapi_python_class_content = "both"
 
 
-def autoapi_skip_member_fn(app, what, name, obj, skip, options):
+def autoapi_skip_member_fn(app, what, name, obj, skip, options):  # noqa: ARG001
     skip_contents = [
         # Re-exports
         ("class", "datafusion.DataFrame"),

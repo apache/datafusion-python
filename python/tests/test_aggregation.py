@@ -88,7 +88,7 @@ def df_aggregate_100():
             f.covar_samp(column("b"), column("c")),
             lambda a, b, c, d: np.array(np.cov(b, c, ddof=1)[0][1]),
         ),
-        # f.grouping(col_a),  # No physical plan implemented yet  # noqa: ERA001
+        # f.grouping(col_a),  # No physical plan implemented yet
         (f.max(column("a")), lambda a, b, c, d: np.array(np.max(a))),
         (f.mean(column("b")), lambda a, b, c, d: np.array(np.mean(b))),
         (f.median(column("b")), lambda a, b, c, d: np.array(np.median(b))),

@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     from datafusion.expr import Expr
 
 
-def read_parquet(  # noqa: PLR0913
+def read_parquet(
     path: str | pathlib.Path,
     table_partition_cols: list[tuple[str, str]] | None = None,
     parquet_pruning: bool = True,
@@ -81,7 +81,7 @@ def read_parquet(  # noqa: PLR0913
     )
 
 
-def read_json(  # noqa: PLR0913
+def read_json(
     path: str | pathlib.Path,
     schema: pa.Schema | None = None,
     schema_infer_max_records: int = 1000,
@@ -122,7 +122,7 @@ def read_json(  # noqa: PLR0913
     )
 
 
-def read_csv(  # noqa: PLR0913
+def read_csv(
     path: str | pathlib.Path | list[str] | list[pathlib.Path],
     schema: pa.Schema | None = None,
     has_header: bool = True,

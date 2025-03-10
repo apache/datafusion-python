@@ -79,8 +79,42 @@ ignore = [
     "SLF001",  # Allow accessing private members
     "TD002",
     "TD003",   # Allow TODO lines
-    "UP007"    # Disallowing Union is pedantic
+    "UP007",   # Disallowing Union is pedantic
     # TODO: Enable all of the following, but this PR is getting too large already
+    "PT001",
+    "ANN101",
+    "ANN204",
+    "B008",
+    "EM101",
+    "PLR0913",
+    "PLR1714",
+    "ANN201",
+    "C400",
+    "TRY003",
+    "B904",
+    "UP006",
+    "RUF012",
+    "FBT003",
+    "C416",
+    "SIM102",
+    "PGH003",
+    "PLR2004",
+    "PERF401",
+    "PD901",
+    "EM102",
+    "ERA001",
+    "SIM108",
+    "ICN001",
+    "ANN001",
+    "ANN202",
+    "PTH",
+    "N812",
+    "INP001",
+    "DTZ007",
+    "PLW2901",
+    "RET503",
+    "RUF015",
+    "TCH001",
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -103,11 +137,12 @@ max-doc-length = 88
     "PT011",
     "RUF015",
     "S608",
-    "PLR0913"
+    "PLR0913",
+    "PT004",
 ]
-"examples/*" = ["D", "W505"]
-"dev/*" = ["D"]
-"benchmarks/*" = ["D", "F"]
+"examples/*" = ["D", "W505", "E501", "T201", "S101"]
+"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817"]
+"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
 "docs/*" = ["D"]
 
 [dependency-groups]

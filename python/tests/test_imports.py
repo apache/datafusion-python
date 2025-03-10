@@ -169,9 +169,10 @@ def test_class_module_is_datafusion():
 
 
 def test_import_from_functions_submodule():
-    from datafusion.functions import abs, sin  # noqa: A004
+    from datafusion.functions import abs as df_abs
+    from datafusion.functions import sin
 
-    assert functions.abs is abs
+    assert functions.abs is df_abs
     assert functions.sin is sin
 
     msg = "cannot import name 'foobar' from 'datafusion.functions'"

@@ -29,6 +29,7 @@ from typing import (
     List,
     Literal,
     Optional,
+    Type,
     Union,
     overload,
 )
@@ -49,10 +50,11 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
+    from datafusion._internal import DataFrame as DataFrameInternal
+    from datafusion._internal import expr as expr_internal
+
 from enum import Enum
 
-from datafusion._internal import DataFrame as DataFrameInternal
-from datafusion._internal import expr as expr_internal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
@@ -73,7 +75,7 @@ class Compression(Enum):
     LZ4_RAW = "lz4_raw"
 
     @classmethod
-    def from_str(cls, value: str) -> Compression:
+    def from_str(cls: Type[Compression], value: str) -> Compression:
         """Convert a string to a Compression enum value.
 
         Args:
@@ -88,8 +90,9 @@ class Compression(Enum):
         try:
             return cls(value.lower())
         except ValueError:
+            valid_values = str([item.value for item in Compression])
             raise ValueError(
-                f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
+                f"{value} is not a valid Compression. Valid values are: {valid_values}"
             )
 
     def get_default_level(self) -> Optional[int]:
