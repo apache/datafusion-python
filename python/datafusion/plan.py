@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, List
+from typing import TYPE_CHECKING, Any
 
 import datafusion._internal as df_internal
 
@@ -54,7 +54,7 @@ class LogicalPlan:
         """Convert the logical plan into its specific variant."""
         return self._raw_plan.to_variant()
 
-    def inputs(self) -> List[LogicalPlan]:
+    def inputs(self) -> list[LogicalPlan]:
         """Returns the list of inputs to the logical plan."""
         return [LogicalPlan(p) for p in self._raw_plan.inputs()]
 
@@ -106,7 +106,7 @@ class ExecutionPlan:
         """This constructor should not be called by the end user."""
         self._raw_plan = plan
 
-    def children(self) -> List[ExecutionPlan]:
+    def children(self) -> list[ExecutionPlan]:
         """Get a list of children `ExecutionPlan` that act as inputs to this plan.
 
         The returned list will be empty for leaf nodes such as scans, will contain a
