@@ -70,9 +70,11 @@ select = ["ALL" ]
 ignore = [
     "ANN401",  # Allow Any for wrapper classes
     "COM812",  # Recommended to ignore these rules when using with ruff-format
+    "FIX002",  # Allow TODO lines - consider removing at some point
     "ISC001",  # Recommended to ignore these rules when using with ruff-format
     "SLF001",  # Allow accessing private members
     "TD002",
+    "TD003",   # Allow TODO lines
     "UP007"    # Disallowing Union is pedantic
 ]
 
