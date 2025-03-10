@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import datafusion
 import pyarrow as pa
 from datafusion import col, lit, udwf
