@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import datafusion
 import pyarrow as pa
 from datafusion import col, lit, udwf
@@ -57,7 +59,7 @@ class SmoothBoundedFromPreviousRow(WindowEvaluator):
     def supports_bounded_execution(self) -> bool:
         return True
 
-    def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:
+    def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:  # noqa: ARG002
         # Override the default range of current row since uses_window_frame is False
         # So for the purpose of this test we just smooth from the previous row to
         # current.

@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import pyarrow as pa
 import pytest
 from datafusion import SessionContext, column, lit, udwf
@@ -296,7 +298,7 @@ data_test_udwf_functions = [
 ]
 
 
-@pytest.mark.parametrize("name,expr,expected", data_test_udwf_functions)
+@pytest.mark.parametrize(("name", "expr", "expected"), data_test_udwf_functions)
 def test_udwf_functions(df, name, expr, expected):
     df = df.select("a", "b", f.round(expr, lit(3)).alias(name))
 

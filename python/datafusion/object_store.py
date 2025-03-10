@@ -24,4 +24,4 @@ LocalFileSystem = object_store.LocalFileSystem
 MicrosoftAzure = object_store.MicrosoftAzure
 Http = object_store.Http
 
-__all__ = ["AmazonS3", "GoogleCloud", "LocalFileSystem", "MicrosoftAzure", "Http"]
+__all__ = ["AmazonS3", "GoogleCloud", "Http", "LocalFileSystem", "MicrosoftAzure"]
