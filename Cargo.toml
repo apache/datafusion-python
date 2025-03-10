@@ -34,7 +34,7 @@ protoc = [ "datafusion-substrait/protoc" ]
 substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
-tokio = { version = "1.42", features = ["macros", "rt", "rt-multi-thread", "sync"] }
+tokio = { version = "1.44", features = ["macros", "rt", "rt-multi-thread", "sync"] }
 pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
 pyo3-async-runtimes = { version = "0.23", features = ["tokio-runtime"]}
 arrow = { version = "54", features = ["pyarrow"] }
