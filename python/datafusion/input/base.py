@@ -38,9 +38,9 @@ class BaseInputSource(ABC):
     """
 
     @abstractmethod
-    def is_correct_input(self, input_item: Any, table_name: str, **kwargs) -> bool:
+    def is_correct_input(self, input_item: Any, table_name: str, **kwargs: Any) -> bool:
         """Returns `True` if the input is valid."""
 
     @abstractmethod
-    def build_table(self, input_item: Any, table_name: str, **kwarg) -> SqlTable:
+    def build_table(self, input_item: Any, table_name: str, **kwarg: Any) -> SqlTable: # type: ignore[invalid-type-form]
         """Create a table from the input source."""

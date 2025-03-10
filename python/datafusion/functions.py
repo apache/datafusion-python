@@ -18,13 +18,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import pyarrow as pa
 
 from datafusion._internal import functions as f
 from datafusion.common import NullTreatment
-from datafusion.context import SessionContext
 from datafusion.expr import (
     CaseBuilder,
     Expr,
@@ -33,6 +32,9 @@ from datafusion.expr import (
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
 )
+
+if TYPE_CHECKING:
+    from datafusion.context import SessionContext
 
 __all__ = [
     "abs",
