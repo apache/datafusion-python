@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
+import pathlib
 
 from datafusion.input.location import LocationInputPlugin
 
@@ -23,10 +23,10 @@ from datafusion.input.location import LocationInputPlugin
 def test_location_input():
     location_input = LocationInputPlugin()
 
-    cwd = os.getcwd()
-    input_file = cwd + "/testing/data/parquet/generated_simple_numerics/blogs.parquet"
+    cwd = pathlib.Path.cwd()
+    input_file = cwd / "testing/data/parquet/generated_simple_numerics/blogs.parquet"
     table_name = "blog"
-    tbl = location_input.build_table(input_file, table_name)
-    assert "blog" == tbl.name
-    assert 3 == len(tbl.columns)
+    tbl = location_input.build_table(str(input_file), table_name)
+    assert tbl.name == "blog"
+    assert len(tbl.columns) == 3
     assert "blogs.parquet" in tbl.filepaths[0]

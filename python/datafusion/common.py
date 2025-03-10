@@ -20,7 +20,7 @@ from enum import Enum
 
 from ._internal import common as common_internal
 
-# TODO these should all have proper wrapper classes
+# TODO: these should all have proper wrapper classes
 
 DFSchema = common_internal.DFSchema
 DataType = common_internal.DataType
@@ -38,15 +38,15 @@ __all__ = [
     "DFSchema",
     "DataType",
     "DataTypeMap",
-    "RexType",
-    "PythonType",
-    "SqlType",
     "NullTreatment",
-    "SqlTable",
-    "SqlSchema",
-    "SqlView",
-    "SqlStatistics",
+    "PythonType",
+    "RexType",
     "SqlFunction",
+    "SqlSchema",
+    "SqlStatistics",
+    "SqlTable",
+    "SqlType",
+    "SqlView",
 ]
 
 

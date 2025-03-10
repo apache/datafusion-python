@@ -14,8 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-import os
-import pathlib
+from pathlib import Path
 
 import pyarrow as pa
 from datafusion import column
@@ -23,10 +22,10 @@ from datafusion.io import read_avro, read_csv, read_json, read_parquet
 
 
 def test_read_json_global_ctx(ctx):
-    path = os.path.dirname(os.path.abspath(__file__))
+    path = Path(__file__).parent.resolve()
 
     # Default
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    test_data_path = Path(path) / "data_test_context" / "data.json"
     df = read_json(test_data_path)
     result = df.collect()
 
@@ -46,7 +45,7 @@ def test_read_json_global_ctx(ctx):
     assert result[0].schema == schema
 
     # File extension
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    test_data_path = Path(path) / "data_test_context" / "data.json"
     df = read_json(test_data_path, file_extension=".json")
     result = df.collect()
 
@@ -59,7 +58,7 @@ def test_read_parquet_global():
     parquet_df.show()
     assert parquet_df is not None
 
-    path = pathlib.Path.cwd() / "parquet/data/alltypes_plain.parquet"
+    path = Path.cwd() / "parquet/data/alltypes_plain.parquet"
     parquet_df = read_parquet(path=path)
     assert parquet_df is not None
 
@@ -90,6 +89,6 @@ def test_read_avro():
     avro_df.show()
     assert avro_df is not None
 
-    path = pathlib.Path.cwd() / "testing/data/avro/alltypes_plain.avro"
+    path = Path.cwd() / "testing/data/avro/alltypes_plain.avro"
     avro_df = read_avro(path=path)
     assert avro_df is not None
