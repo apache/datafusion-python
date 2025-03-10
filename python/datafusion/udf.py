@@ -202,13 +202,13 @@ class ScalarUDF:
             volatility: Volatility | str,
             name: Optional[str] = None,
         ) -> Callable:
-            def decorator(func: Callable):  # noqa: ANN202
+            def decorator(func: Callable):
                 udf_caller = ScalarUDF.udf(
                     func, input_types, return_type, volatility, name
                 )
 
                 @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any):  # noqa: ANN202
+                def wrapper(*args: Any, **kwargs: Any):
                     return udf_caller(*args, **kwargs)
 
                 return wrapper
@@ -249,7 +249,7 @@ class AggregateUDF:
     also :py:class:`ScalarUDF` for operating on a row by row basis.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         name: str,
         accumulator: Callable[[], Accumulator],
@@ -375,7 +375,7 @@ class AggregateUDF:
             aggregation or window function calls.
         """
 
-        def _function(  # noqa: PLR0913
+        def _function(
             accum: Callable[[], Accumulator],
             input_types: pa.DataType | list[pa.DataType],
             return_type: pa.DataType,

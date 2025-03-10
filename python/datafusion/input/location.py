@@ -84,6 +84,6 @@ class LocationInputPlugin(BaseInputSource):
             raise RuntimeError(msg)
 
         # Input could possibly be multiple files. Create a list if so
-        input_files = glob.glob(input_item)  # noqa: PTH207
+        input_files = glob.glob(input_item)
 
         return SqlTable(table_name, columns, num_rows, input_files)

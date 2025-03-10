@@ -81,7 +81,7 @@ def test_literal(df):
         literal("1"),
         literal("OK"),
         literal(3.14),
-        literal(True),  # noqa: FBT003
+        literal(True),
         literal(b"hello world"),
     )
     result = df.collect()
