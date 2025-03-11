@@ -86,6 +86,7 @@ Not = expr_internal.Not
 Partitioning = expr_internal.Partitioning
 Placeholder = expr_internal.Placeholder
 Projection = expr_internal.Projection
+RawExpr = expr_internal.RawExpr
 Repartition = expr_internal.Repartition
 ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
@@ -102,6 +103,7 @@ WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
     "Expr",
+    "RawExpr",
     "Column",
     "Literal",
     "BinaryExpr",
