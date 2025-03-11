@@ -499,11 +499,11 @@ class SessionContext:
         self.ctx = SessionContextInternal(config, runtime)
 
     @classmethod
-    def global_ctx(cls) -> "SessionContext":
-        """Retrieve the global context
+    def global_ctx(cls) -> "SessionContextInternal":
+        """Retrieve the global context.
 
         Returns:
-            A `SessionContext` object that corresponds to the global context
+            A `SessionContextInternal` object that corresponds to the global context
         """
         return SessionContextInternal.global_ctx()
 
