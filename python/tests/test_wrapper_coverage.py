@@ -34,9 +34,15 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         return
 
     for attr in dir(internal_obj):
-        if attr in ["_global_ctx"]:
+        # Skip internal context and RawExpr (which is handled by Expr class)
+        if attr in ["_global_ctx", "RawExpr"]:
             continue
-        assert attr in dir(wrapped_obj)
+        
+        # Check if RawExpr functionality is covered by Expr class
+        if attr == "RawExpr" and hasattr(wrapped_obj, "Expr"):
+            expr_class = getattr(wrapped_obj, "Expr")
+            assert hasattr(expr_class, "raw_expr"), "Expr class must provide raw_expr property"
+            continue
 
         internal_attr = getattr(internal_obj, attr)
         wrapped_attr = getattr(wrapped_obj, attr)

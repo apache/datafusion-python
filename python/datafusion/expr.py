@@ -86,7 +86,6 @@ Not = expr_internal.Not
 Partitioning = expr_internal.Partitioning
 Placeholder = expr_internal.Placeholder
 Projection = expr_internal.Projection
-RawExpr = expr_internal.RawExpr
 Repartition = expr_internal.Repartition
 ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
@@ -198,6 +197,11 @@ class Expr:
     def __init__(self, expr: expr_internal.RawExpr) -> None:
         """This constructor should not be called by the end user."""
         self.expr = expr
+
+    @property 
+    def raw_expr(self) -> expr_internal.RawExpr:
+        """Returns the underlying RawExpr instance."""
+        return self.expr
 
     def to_variant(self) -> Any:
         """Convert this expression into a python object if possible."""
