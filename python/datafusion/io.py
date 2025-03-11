@@ -26,7 +26,7 @@ import pyarrow
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr
 
-from ._internal import SessionContext as SessionContextInternal
+from datafusion.context import SessionContext
 
 
 def read_parquet(
@@ -65,7 +65,7 @@ def read_parquet(
     if table_partition_cols is None:
         table_partition_cols = []
     return DataFrame(
-        SessionContextInternal._global_ctx().read_parquet(
+        SessionContext.global_ctx().read_parquet(
             str(path),
             table_partition_cols,
             parquet_pruning,
@@ -107,7 +107,7 @@ def read_json(
     if table_partition_cols is None:
         table_partition_cols = []
     return DataFrame(
-        SessionContextInternal._global_ctx().read_json(
+        SessionContext.global_ctx().read_json(
             str(path),
             schema,
             schema_infer_max_records,
@@ -158,7 +158,7 @@ def read_csv(
     path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
     return DataFrame(
-        SessionContextInternal._global_ctx().read_csv(
+        SessionContext.global_ctx().read_csv(
             path,
             schema,
             has_header,
@@ -195,7 +195,7 @@ def read_avro(
     if file_partition_cols is None:
         file_partition_cols = []
     return DataFrame(
-        SessionContextInternal._global_ctx().read_avro(
+        SessionContext.global_ctx().read_avro(
             str(path), schema, file_partition_cols, file_extension
         )
     )
