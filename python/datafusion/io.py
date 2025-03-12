@@ -68,14 +68,14 @@ def read_parquet(
     if table_partition_cols is None:
         table_partition_cols = []
     return SessionContext.global_ctx().read_parquet(
-            str(path),
-            table_partition_cols,
-            parquet_pruning,
-            file_extension,
-            skip_metadata,
-            schema,
-            file_sort_order,
-        )
+        str(path),
+        table_partition_cols,
+        parquet_pruning,
+        file_extension,
+        skip_metadata,
+        schema,
+        file_sort_order,
+    )
 
 
 def read_json(
@@ -108,13 +108,13 @@ def read_json(
     if table_partition_cols is None:
         table_partition_cols = []
     return SessionContext.global_ctx().read_json(
-            str(path),
-            schema,
-            schema_infer_max_records,
-            file_extension,
-            table_partition_cols,
-            file_compression_type,
-        )
+        str(path),
+        schema,
+        schema_infer_max_records,
+        file_extension,
+        table_partition_cols,
+        file_compression_type,
+    )
 
 
 def read_csv(
@@ -157,15 +157,15 @@ def read_csv(
     path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
     return SessionContext.global_ctx().read_csv(
-            path,
-            schema,
-            has_header,
-            delimiter,
-            schema_infer_max_records,
-            file_extension,
-            table_partition_cols,
-            file_compression_type,
-        )
+        path,
+        schema,
+        has_header,
+        delimiter,
+        schema_infer_max_records,
+        file_extension,
+        table_partition_cols,
+        file_compression_type,
+    )
 
 
 def read_avro(
@@ -192,5 +192,5 @@ def read_avro(
     if file_partition_cols is None:
         file_partition_cols = []
     return SessionContext.global_ctx().read_avro(
-            str(path), schema, file_partition_cols, file_extension
-        )
+        str(path), schema, file_partition_cols, file_extension
+    )
