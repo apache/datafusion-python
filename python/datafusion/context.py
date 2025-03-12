@@ -810,11 +810,9 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            (
-                [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
-                if file_sort_order is not None
-                else None
-            ),
+            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+            if file_sort_order is not None
+            else None
         )
 
     def register_csv(
