@@ -468,6 +468,8 @@ class SessionContext:
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
 
+    _global_instance = None
+
     def __init__(
         self,
         config: SessionConfig | None = None,
@@ -505,7 +507,10 @@ class SessionContext:
         Returns:
             A `SessionContextInternal` object that corresponds to the global context
         """
-        return SessionContextInternal.global_ctx()
+        if cls._global_instance is None:
+            internal_ctx = SessionContextInternal.global_ctx()
+            cls._global_instance = internal_ctx
+        return cls._global_instance
 
     def enable_url_table(self) -> "SessionContext":
         """Control if local files can be queried as tables.
