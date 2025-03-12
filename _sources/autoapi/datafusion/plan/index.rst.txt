@@ -34,7 +34,7 @@ Module Contents
 
 
 
-   .. py:method:: children() -> List[ExecutionPlan]
+   .. py:method:: children() -> list[ExecutionPlan]
 
       Get a list of children `ExecutionPlan` that act as inputs to this plan.
 
@@ -144,7 +144,7 @@ Module Contents
 
 
 
-   .. py:method:: inputs() -> List[LogicalPlan]
+   .. py:method:: inputs() -> list[LogicalPlan]
 
       Returns the list of inputs to the logical plan.
 

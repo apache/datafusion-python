@@ -380,6 +380,47 @@
    Submodules
   </a>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#classes">
+   Classes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#package-contents">
+   Package Contents
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.input.LocationInputPlugin">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       LocationInputPlugin
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.input.LocationInputPlugin.build_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LocationInputPlugin.build_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.input.LocationInputPlugin.is_correct_input">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         LocationInputPlugin.is_correct_input()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
 </ul>
 
 </nav>
@@ -413,6 +454,39 @@
 <li class="toctree-l1"><a class="reference internal" href="location/index.html">datafusion.input.location</a></li>
 </ul>
 </div>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.input.LocationInputPlugin" title="datafusion.input.LocationInputPlugin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LocationInputPlugin</span></code></a></p></td>
+<td><p>Input Plugin for everything.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="package-contents">
+<h2>Package Contents<a class="headerlink" href="#package-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.input.LocationInputPlugin">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.input.</span></span><span class="sig-name descname"><span class="pre">LocationInputPlugin</span></span><a class="headerlink" href="#datafusion.input.LocationInputPlugin" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="base/index.html#datafusion.input.base.BaseInputSource" title="datafusion.input.base.BaseInputSource"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datafusion.input.base.BaseInputSource</span></code></a></p>
+<p>Input Plugin for everything.</p>
+<p>This can be read in from a file (on disk, remote etc.).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.input.LocationInputPlugin.build_table">
+<span class="sig-name descname"><span class="pre">build_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">datafusion.common.SqlTable</span></span></span><a class="headerlink" href="#datafusion.input.LocationInputPlugin.build_table" title="Link to this definition">¶</a></dt>
+<dd><p>Create a table from the input source.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.input.LocationInputPlugin.is_correct_input">
+<span class="sig-name descname"><span class="pre">is_correct_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.input.LocationInputPlugin.is_correct_input" title="Link to this definition">¶</a></dt>
+<dd><p>Returns <cite>True</cite> if the input is valid.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 

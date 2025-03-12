@@ -512,7 +512,7 @@
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.record_batch.RecordBatch" title="datafusion.record_batch.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
-<td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p></td>
+<td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a></p></td>
 <td><p>This class represents a stream of record batches.</p></td>
@@ -525,13 +525,13 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatch">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.record_batch.</span></span><span class="sig-name descname"><span class="pre">RecordBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.RecordBatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.record_batch.RecordBatch" title="Link to this definition">¶</a></dt>
-<dd><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p>
+<dd><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p>
 <p>This constructor is generally not called by the end user.</p>
 <p>See the <a class="reference internal" href="#datafusion.record_batch.RecordBatchStream" title="datafusion.record_batch.RecordBatchStream"><code class="xref py py-class docutils literal notranslate"><span class="pre">RecordBatchStream</span></code></a> iterator for generating this class.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.record_batch.RecordBatch.to_pyarrow">
 <span class="sig-name descname"><span class="pre">to_pyarrow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.RecordBatch</span></span></span><a class="headerlink" href="#datafusion.record_batch.RecordBatch.to_pyarrow" title="Link to this definition">¶</a></dt>
-<dd><p>Convert to <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code>.</p>
+<dd><p>Convert to <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p>
 </dd></dl>
 
 <dl class="py attribute">

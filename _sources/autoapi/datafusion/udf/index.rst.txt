@@ -15,7 +15,9 @@ Attributes
 .. autoapisummary::
 
    datafusion.udf._R
-   datafusion.udf._W
+   datafusion.udf.udaf
+   datafusion.udf.udf
+   datafusion.udf.udwf
 
 
 Classes
@@ -47,7 +49,7 @@ Module Contents
 
 
 
-   .. py:method:: merge(states: List[pyarrow.Array]) -> None
+   .. py:method:: merge(states: list[pyarrow.Array]) -> None
       :abstractmethod:
 
 
@@ -55,7 +57,7 @@ Module Contents
 
 
 
-   .. py:method:: state() -> List[pyarrow.Scalar]
+   .. py:method:: state() -> list[pyarrow.Scalar]
       :abstractmethod:
 
 
@@ -84,7 +86,19 @@ Module Contents
    descriptions.
 
 
-   .. py:class:: udaf
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDAF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
+                  udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
+      :staticmethod:
+
 
       Create a new User-Defined Aggregate Function (UDAF).
 
@@ -113,13 +127,13 @@ Module Contents
               def __init__(self, bias: float = 0.0):
                   self._sum = pa.scalar(bias)
 
-              def state(self) -> List[pa.Scalar]:
+              def state(self) -> list[pa.Scalar]:
                   return [self._sum]
 
               def update(self, values: pa.Array) -> None:
                   self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
 
-              def merge(self, states: List[pa.Array]) -> None:
+              def merge(self, states: list[pa.Array]) -> None:
                   self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
 
               def evaluate(self) -> pa.Scalar:
@@ -154,30 +168,6 @@ Module Contents
       :returns: A user-defined aggregate function, which can be used in either data
                 aggregation or window function calls.
 
-      Create a new UDAF.
-
-      Trigger UDAF function or decorator depending on if the first args is
-      callable
-
-
-      .. py:method:: _decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None)
-         :staticmethod:
-
-
-
-      .. py:method:: _function(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
-         :staticmethod:
-
-
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDAF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
-
 
 
    .. py:attribute:: _udaf
@@ -195,7 +185,19 @@ Module Contents
    See helper method :py:func:`udf` for argument details.
 
 
-   .. py:class:: udf
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+      Execute the UDF.
+
+      This function is not typically called by an end user. These calls will
+      occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, ScalarUDF]
+                  udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
+      :staticmethod:
+
 
       Create a new User-Defined Function (UDF).
 
@@ -213,7 +215,7 @@ Module Contents
       :param input_types: The data types of the arguments
                           to `func`. This list must be of the same length as the number of
                           arguments.
-      :type input_types: list[pyarrow.DataType]
+      :type input_types: list[pa.DataType]
       :param return_type: The data type of the return value from the function.
       :type return_type: _R
       :param volatility: See `Volatility` for allowed values.
@@ -230,39 +232,16 @@ Module Contents
       ```
       def double_func(x):
           return x * 2
-      double_udf = udf(double_func, [pyarrow.int32()], pyarrow.int32(),
+      double_udf = udf(double_func, [pa.int32()], pa.int32(),
       "volatile", "double_it")
       ```
 
       **Using `udf` as a decorator:**
       ```
-      @udf([pyarrow.int32()], pyarrow.int32(), "volatile", "double_it")
+      @udf([pa.int32()], pa.int32(), "volatile", "double_it")
       def double_udf(x):
           return x * 2
       ```
-
-      Create a new UDF.
-
-      Trigger UDF function or decorator depending on if the first args is callable
-
-
-      .. py:method:: _decorator(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None)
-         :staticmethod:
-
-
-
-      .. py:method:: _function(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
-         :staticmethod:
-
-
-
-
-   .. py:method:: __call__(*args: datafusion.expr.Expr) -> datafusion.expr.Expr
-
-      Execute the UDF.
-
-      This function is not typically called by an end user. These calls will
-      occur during the evaluation of the dataframe.
 
 
 
@@ -281,7 +260,7 @@ Module Contents
    name (`"immutable"`, `"stable"`, or `"volatile"`).
 
 
-   .. py:method:: __str__()
+   .. py:method:: __str__() -> str
 
       Returns the string equivalent.
 
@@ -369,9 +348,12 @@ Module Contents
 
       This function is called once per input *partition* for window functions that
       *do not use* values from the window frame, such as
-      :py:func:`~datafusion.functions.row_number`, :py:func:`~datafusion.functions.rank`,
-      :py:func:`~datafusion.functions.dense_rank`, :py:func:`~datafusion.functions.percent_rank`,
-      :py:func:`~datafusion.functions.cume_dist`, :py:func:`~datafusion.functions.lead`,
+      :py:func:`~datafusion.functions.row_number`,
+      :py:func:`~datafusion.functions.rank`,
+      :py:func:`~datafusion.functions.dense_rank`,
+      :py:func:`~datafusion.functions.percent_rank`,
+      :py:func:`~datafusion.functions.cume_dist`,
+      :py:func:`~datafusion.functions.lead`,
       and :py:func:`~datafusion.functions.lag`.
 
       It produces the result of all rows in a single pass. It
@@ -562,5 +544,9 @@ Module Contents
 
 .. py:data:: _R
 
-.. py:data:: _W
+.. py:data:: udaf
+
+.. py:data:: udf
+
+.. py:data:: udwf
 

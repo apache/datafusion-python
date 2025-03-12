@@ -156,7 +156,7 @@ Module Contents
 
 
 
-   .. py:method:: __eq__(rhs: Any) -> Expr
+   .. py:method:: __eq__(rhs: object) -> Expr
 
       Equal to.
 
@@ -228,7 +228,7 @@ Module Contents
 
 
 
-   .. py:method:: __ne__(rhs: Any) -> Expr
+   .. py:method:: __ne__(rhs: object) -> Expr
 
       Not equal to.
 

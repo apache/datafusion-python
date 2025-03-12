@@ -936,7 +936,7 @@ Module Contents
    This is an alias for :py:func:`date_trunc`.
 
 
-.. py:function:: decode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: decode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
@@ -980,7 +980,7 @@ Module Contents
    This is an alias for :py:func:`array_empty`.
 
 
-.. py:function:: encode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: encode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
