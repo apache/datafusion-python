@@ -23,10 +23,9 @@ import pathlib
 
 import pyarrow
 
+from datafusion.context import SessionContext
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr
-
-from datafusion.context import SessionContext
 
 
 def read_parquet(

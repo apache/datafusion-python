@@ -499,7 +499,7 @@ class SessionContext:
         self.ctx = SessionContextInternal(config, runtime)
 
     @classmethod
-    def global_ctx(cls) -> "SessionContext":
+    def global_ctx(cls) -> SessionContext:
         """Retrieve the global context as a `SessionContext` wrapper.
 
         Returns:
@@ -510,7 +510,7 @@ class SessionContext:
         wrapper.ctx = internal_ctx
         return wrapper
 
-    def enable_url_table(self) -> "SessionContext":
+    def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
 
         Returns:
