@@ -26,15 +26,11 @@ from github import Github
 
 def print_pulls(repo_name, title, pulls):
     if len(pulls) > 0:
-        print("**{}:**".format(title))
+        print(f"**{title}:**")
         print()
         for pull, commit in pulls:
-            url = "https://github.com/{}/pull/{}".format(repo_name, pull.number)
-            print(
-                "- {} [#{}]({}) ({})".format(
-                    pull.title, pull.number, url, commit.author.login
-                )
-            )
+            url = f"https://github.com/{repo_name}/pull/{pull.number}"
+            print(f"- {pull.title} [#{pull.number}]({url}) ({commit.author.login})")
         print()
 
 

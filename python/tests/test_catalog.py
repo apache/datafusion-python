@@ -19,6 +19,9 @@ import pyarrow as pa
 import pytest
 
 
+# Note we take in `database` as a variable even though we don't use
+# it because that will cause the fixture to set up the context with
+# the tables we need.
 def test_basic(ctx, database):
     with pytest.raises(KeyError):
         ctx.catalog("non-existent")
@@ -26,10 +29,10 @@ def test_basic(ctx, database):
     default = ctx.catalog()
     assert default.names() == ["public"]
 
-    for database in [default.database("public"), default.database()]:
-        assert database.names() == {"csv1", "csv", "csv2"}
+    for db in [default.database("public"), default.database()]:
+        assert db.names() == {"csv1", "csv", "csv2"}
 
-    table = database.table("csv")
+    table = db.table("csv")
     assert table.kind == "physical"
     assert table.schema == pa.schema(
         [

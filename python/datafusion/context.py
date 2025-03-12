@@ -393,8 +393,6 @@ class RuntimeEnvBuilder:
 class RuntimeConfig(RuntimeEnvBuilder):
     """See `RuntimeEnvBuilder`."""
 
-    pass
-
 
 class SQLOptions:
     """Options to be used when performing SQL queries."""

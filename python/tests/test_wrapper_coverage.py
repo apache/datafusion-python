@@ -19,6 +19,7 @@ import datafusion
 import datafusion.functions
 import datafusion.object_store
 import datafusion.substrait
+import pytest
 
 # EnumType introduced in 3.11. 3.10 and prior it was called EnumMeta.
 try:
@@ -41,10 +42,8 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         internal_attr = getattr(internal_obj, attr)
         wrapped_attr = getattr(wrapped_obj, attr)
 
-        if internal_attr is not None:
-            if wrapped_attr is None:
-                print("Missing attribute: ", attr)
-                assert False
+        if internal_attr is not None and wrapped_attr is None:
+            pytest.fail(f"Missing attribute: {attr}")
 
         if attr in ["__self__", "__class__"]:
             continue

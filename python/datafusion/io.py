@@ -19,13 +19,17 @@
 
 from __future__ import annotations
 
-import pathlib
-
-import pyarrow
+from typing import TYPE_CHECKING
 
 from datafusion.context import SessionContext
 from datafusion.dataframe import DataFrame
-from datafusion.expr import Expr
+
+if TYPE_CHECKING:
+    import pathlib
+
+    import pyarrow as pa
+
+    from datafusion.expr import Expr
 
 
 def read_parquet(
@@ -34,7 +38,7 @@ def read_parquet(
     parquet_pruning: bool = True,
     file_extension: str = ".parquet",
     skip_metadata: bool = True,
-    schema: pyarrow.Schema | None = None,
+    schema: pa.Schema | None = None,
     file_sort_order: list[list[Expr]] | None = None,
 ) -> DataFrame:
     """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
@@ -76,7 +80,7 @@ def read_parquet(
 
 def read_json(
     path: str | pathlib.Path,
-    schema: pyarrow.Schema | None = None,
+    schema: pa.Schema | None = None,
     schema_infer_max_records: int = 1000,
     file_extension: str = ".json",
     table_partition_cols: list[tuple[str, str]] | None = None,
@@ -115,7 +119,7 @@ def read_json(
 
 def read_csv(
     path: str | pathlib.Path | list[str] | list[pathlib.Path],
-    schema: pyarrow.Schema | None = None,
+    schema: pa.Schema | None = None,
     has_header: bool = True,
     delimiter: str = ",",
     schema_infer_max_records: int = 1000,
@@ -166,7 +170,7 @@ def read_csv(
 
 def read_avro(
     path: str | pathlib.Path,
-    schema: pyarrow.Schema | None = None,
+    schema: pa.Schema | None = None,
     file_partition_cols: list[tuple[str, str]] | None = None,
     file_extension: str = ".avro",
 ) -> DataFrame:
