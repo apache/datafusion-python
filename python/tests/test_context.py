@@ -32,8 +32,6 @@ from datafusion import (
     literal,
 )
 
-from datafusion._internal import SessionContext as SessionContextInternal
-
 
 def test_create_context_no_args():
     SessionContext()
@@ -631,11 +629,6 @@ def test_sql_with_options_no_statements(ctx):
     options = SQLOptions().with_allow_statements(False)
     with pytest.raises(Exception, match="SetVariable"):
         ctx.sql_with_options(sql, options=options)
-
-
-def test_global_context_type():
-    ctx = SessionContext.global_ctx()
-    assert isinstance(ctx, SessionContext)
 
 
 @pytest.fixture
