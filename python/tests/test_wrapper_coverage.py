@@ -36,12 +36,14 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
     for attr in dir(internal_obj):
         if attr in ["_global_ctx"]:
             continue
-        
+
         # Check if Raw* classes have corresponding wrapper classes
         if attr.startswith("Raw"):
             base_class = attr[3:]  # Remove "Raw" prefix
-            assert hasattr(wrapped_obj, base_class), f"Missing implementation for {attr}"
+            assert hasattr(wrapped_obj, base_class)
             continue
+
+        assert attr in dir(wrapped_obj)
 
         internal_attr = getattr(internal_obj, attr)
         wrapped_attr = getattr(wrapped_obj, attr)

@@ -102,7 +102,6 @@ WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
     "Expr",
-    "RawExpr",
     "Column",
     "Literal",
     "BinaryExpr",
@@ -197,11 +196,6 @@ class Expr:
     def __init__(self, expr: expr_internal.RawExpr) -> None:
         """This constructor should not be called by the end user."""
         self.expr = expr
-
-    @property 
-    def raw_expr(self) -> expr_internal.RawExpr:
-        """Returns the underlying RawExpr instance."""
-        return self.expr
 
     def to_variant(self) -> Any:
         """Convert this expression into a python object if possible."""
