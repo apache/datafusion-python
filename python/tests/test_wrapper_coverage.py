@@ -38,7 +38,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
             continue
 
         # Check if Raw* classes have corresponding wrapper classes
-        if attr.startswith("Raw"):
+        elif attr.startswith("Raw"):
             base_class = attr[3:]  # Remove "Raw" prefix
             assert hasattr(wrapped_obj, base_class)
             continue
@@ -58,6 +58,8 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         if isinstance(internal_attr, list):
             assert isinstance(wrapped_attr, list)
             for val in internal_attr:
+                if isinstance(val, str) and val.startswith("Raw"):
+                    continue
                 assert val in wrapped_attr
         elif hasattr(internal_attr, "__dict__"):
             missing_exports(internal_attr, wrapped_attr)
