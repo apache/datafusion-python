@@ -42,7 +42,7 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
 #[inline]
 pub(crate) fn get_global_ctx() -> &'static SessionContext {
     static CTX: OnceLock<SessionContext> = OnceLock::new();
-    CTX.get_or_init(|| SessionContext::new())
+    CTX.get_or_init(SessionContext::new)
 }
 
 /// Utility to collect rust futures with GIL released
