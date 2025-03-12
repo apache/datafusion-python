@@ -116,21 +116,37 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        let (batches, has_more) = wait_for_future(
+            py,
+            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10),
+        )?;
+        if batches.is_empty() {
+            // This should not be reached, but do it for safety since we index into the vector below
+            return Ok("No data to display".to_string());
+        }
+
         let df = self.df.as_ref().clone().limit(0, Some(10))?;
         let batches = wait_for_future(py, df.collect())?;
-        let batches_as_string = pretty::pretty_format_batches(&batches);
-        match batches_as_string {
-            Ok(batch) => Ok(format!("DataFrame()\n{batch}")),
-            Err(err) => Ok(format!("Error: {:?}", err.to_string())),
-        }
+        let batches_as_displ =
+            pretty::pretty_format_batches(&batches).map_err(py_datafusion_err)?;
+
+        let additional_str = match has_more {
+            true => "\nData truncated.",
+            false => "",
+        };
+
+        Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let (batches, mut has_more) =
-            wait_for_future(py, get_first_few_record_batches(self.df.as_ref().clone()))?;
-        let Some(batches) = batches else {
-            return Ok("No data to display".to_string());
-        };
+        let (batches, mut has_more) = wait_for_future(
+            py,
+            collect_record_batches_to_display(
+                self.df.as_ref().clone(),
+                MIN_TABLE_ROWS_TO_DISPLAY,
+                usize::MAX,
+            ),
+        )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -199,10 +215,6 @@ impl PyDataFrame {
             .sum();
         let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
         let total_rows = rows_per_batch.clone().sum();
-
-        // let (total_memory, total_rows) = batches.iter().fold((0, 0), |acc, batch| {
-        //     (acc.0 + batch.get_array_memory_size(), acc.1 + batch.num_rows())
-        // });
 
         let num_rows_to_display = match total_memory > MAX_TABLE_BYTES_TO_DISPLAY {
             true => {
@@ -887,15 +899,28 @@ fn record_batch_into_schema(
 /// This is a helper function to return the first non-empty record batch from executing a DataFrame.
 /// It additionally returns a bool, which indicates if there are more record batches available.
 /// We do this so we can determine if we should indicate to the user that the data has been
-/// truncated.
-async fn get_first_few_record_batches(
+/// truncated. This collects until we have achived both of these two conditions
+///
+/// - We have collected our minimum number of rows
+/// - We have reached our limit, either data size or maximum number of rows
+///
+/// Otherwise it will return when the stream has exhausted. If you want a specific number of
+/// rows, set min_rows == max_rows.
+async fn collect_record_batches_to_display(
     df: DataFrame,
-) -> Result<(Option<Vec<RecordBatch>>, bool), DataFusionError> {
+    min_rows: usize,
+    max_rows: usize,
+) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
     let mut stream = df.execute_stream().await?;
     let mut size_estimate_so_far = 0;
+    let mut rows_so_far = 0;
     let mut record_batches = Vec::default();
-    while size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY {
-        let rb = match stream.next().await {
+    let mut has_more = false;
+
+    while (size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY && rows_so_far < max_rows)
+        || rows_so_far < min_rows
+    {
+        let mut rb = match stream.next().await {
             None => {
                 break;
             }
@@ -903,21 +928,49 @@ async fn get_first_few_record_batches(
             Some(Err(e)) => return Err(e),
         };
 
-        if rb.num_rows() > 0 {
+        let mut rows_in_rb = rb.num_rows();
+        if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
+
+            if size_estimate_so_far > MAX_TABLE_BYTES_TO_DISPLAY {
+                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / size_estimate_so_far as f32;
+                let total_rows = rows_in_rb + rows_so_far;
+
+                let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
+                if reduced_row_num < min_rows {
+                    reduced_row_num = min_rows.min(total_rows);
+                }
+
+                let limited_rows_this_rb = reduced_row_num - rows_so_far;
+                if limited_rows_this_rb < rows_in_rb {
+                    rows_in_rb = limited_rows_this_rb;
+                    rb = rb.slice(0, limited_rows_this_rb);
+                    has_more = true;
+                }
+            }
+
+            if rows_in_rb + rows_so_far > max_rows {
+                rb = rb.slice(0, max_rows - rows_so_far);
+                has_more = true;
+            }
+
+            rows_so_far += rb.num_rows();
             record_batches.push(rb);
         }
     }
 
     if record_batches.is_empty() {
-        return Ok((None, false));
+        return Ok((Vec::default(), false));
     }
 
-    let has_more = match stream.try_next().await {
-        Ok(None) => false, // reached end
-        Ok(Some(_)) => true,
-        Err(_) => false, // Stream disconnected
-    };
+    if !has_more {
+        // Data was not already truncated, so check to see if more record batches remain
+        has_more = match stream.try_next().await {
+            Ok(None) => false, // reached end
+            Ok(Some(_)) => true,
+            Err(_) => false, // Stream disconnected
+        };
+    }
 
-    Ok((Some(record_batches), has_more))
+    Ok((record_batches, has_more))
 }
