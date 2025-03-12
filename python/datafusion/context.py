@@ -468,8 +468,6 @@ class SessionContext:
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
 
-    _global_instance = None
-
     def __init__(
         self,
         config: SessionConfig | None = None,
@@ -501,16 +499,16 @@ class SessionContext:
         self.ctx = SessionContextInternal(config, runtime)
 
     @classmethod
-    def global_ctx(cls) -> "SessionContextInternal":
-        """Retrieve the global context.
+    def global_ctx(cls) -> "SessionContext":
+        """Retrieve the global context as a `SessionContext` wrapper.
 
         Returns:
-            A `SessionContextInternal` object that corresponds to the global context
+            A `SessionContext` object that wraps the global `SessionContextInternal`.
         """
-        if cls._global_instance is None:
-            internal_ctx = SessionContextInternal.global_ctx()
-            cls._global_instance = internal_ctx
-        return cls._global_instance
+        internal_ctx = SessionContextInternal.global_ctx()
+        wrapper = cls()
+        wrapper.ctx = internal_ctx
+        return wrapper
 
     def enable_url_table(self) -> "SessionContext":
         """Control if local files can be queried as tables.
@@ -812,9 +810,11 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
-            if file_sort_order is not None
-            else None,
+            (
+                [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+                if file_sort_order is not None
+                else None
+            ),
         )
 
     def register_csv(

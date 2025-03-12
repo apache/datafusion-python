@@ -635,13 +635,7 @@ def test_sql_with_options_no_statements(ctx):
 
 def test_global_context_type():
     ctx = SessionContext.global_ctx()
-    assert isinstance(ctx, SessionContextInternal)
-
-
-def test_global_context_is_singleton():
-    ctx1 = SessionContext.global_ctx()
-    ctx2 = SessionContext.global_ctx()
-    assert ctx1 is ctx2
+    assert isinstance(ctx, SessionContext)
 
 
 @pytest.fixture
