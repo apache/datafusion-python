@@ -30,7 +30,6 @@ from datafusion import (
     SQLOptions,
     column,
     literal,
-    udf,
 )
 
 from datafusion._internal import SessionContext as SessionContextInternal
