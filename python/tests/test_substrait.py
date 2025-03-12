@@ -50,7 +50,7 @@ def test_substrait_serialization(ctx):
     substrait_plan = ss.Producer.to_substrait_plan(df.logical_plan(), ctx)
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_substrait_file_serialization(ctx, tmp_path, path_to_str):
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],

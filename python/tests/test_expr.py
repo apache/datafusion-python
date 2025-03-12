@@ -85,18 +85,14 @@ def test_limit(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    # TODO: Upstream now has expressions for skip and fetch
-    # REF: https://github.com/apache/datafusion/pull/12836
-    # assert plan.skip() == 0
+    assert "Skip: None" in str(plan)
 
     df = test_ctx.sql("select c1 from test LIMIT 10 OFFSET 5")
     plan = df.logical_plan()
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    # TODO: Upstream now has expressions for skip and fetch
-    # REF: https://github.com/apache/datafusion/pull/12836
-    # assert plan.skip() == 5
+    assert "Skip: Some(Literal(Int64(5)))" in str(plan)
 
 
 def test_aggregate_query(test_ctx):
@@ -165,6 +161,7 @@ def test_expr_to_variant():
                 res = traverse_logical_plan(input_plan)
                 if res is not None:
                     return res
+        return None
 
     ctx = SessionContext()
     data = {"id": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]}
@@ -176,7 +173,7 @@ def test_expr_to_variant():
     assert variant.expr().to_variant().qualified_name() == "table1.name"
     assert (
         str(variant.list())
-        == '[Expr(Utf8("dfa")), Expr(Utf8("ad")), Expr(Utf8("dfre")), Expr(Utf8("vsa"))]'
+        == '[Expr(Utf8("dfa")), Expr(Utf8("ad")), Expr(Utf8("dfre")), Expr(Utf8("vsa"))]'  # noqa: E501
     )
     assert not variant.negated()
 

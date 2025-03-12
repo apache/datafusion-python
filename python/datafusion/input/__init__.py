@@ -23,5 +23,5 @@ The primary class used within DataFusion is ``LocationInputPlugin``.
 from .location import LocationInputPlugin
 
 __all__ = [
-    LocationInputPlugin,
+    "LocationInputPlugin",
 ]

@@ -16,7 +16,6 @@
 # under the License.
 import datetime as dt
 import gzip
-import os
 import pathlib
 
 import pyarrow as pa
@@ -45,7 +44,7 @@ def test_create_context_runtime_config_only():
     SessionContext(runtime=RuntimeEnvBuilder())
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_runtime_configs(tmp_path, path_to_str):
     path1 = tmp_path / "dir1"
     path2 = tmp_path / "dir2"
@@ -62,7 +61,7 @@ def test_runtime_configs(tmp_path, path_to_str):
     assert db is not None
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_temporary_files(tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
@@ -79,14 +78,14 @@ def test_create_context_with_all_valid_args():
     runtime = RuntimeEnvBuilder().with_disk_manager_os().with_fair_spill_pool(10000000)
     config = (
         SessionConfig()
-        .with_create_default_catalog_and_schema(True)
+        .with_create_default_catalog_and_schema(enabled=True)
         .with_default_catalog_and_schema("foo", "bar")
         .with_target_partitions(1)
-        .with_information_schema(True)
-        .with_repartition_joins(False)
-        .with_repartition_aggregations(False)
-        .with_repartition_windows(False)
-        .with_parquet_pruning(False)
+        .with_information_schema(enabled=True)
+        .with_repartition_joins(enabled=False)
+        .with_repartition_aggregations(enabled=False)
+        .with_repartition_windows(enabled=False)
+        .with_parquet_pruning(enabled=False)
     )
 
     ctx = SessionContext(config, runtime)
@@ -167,7 +166,7 @@ def test_from_arrow_table(ctx):
 
 def record_batch_generator(num_batches: int):
     schema = pa.schema([("a", pa.int64()), ("b", pa.int64())])
-    for i in range(num_batches):
+    for _i in range(num_batches):
         yield pa.RecordBatch.from_arrays(
             [pa.array([1, 2, 3]), pa.array([4, 5, 6])], schema=schema
         )
@@ -492,10 +491,10 @@ def test_table_not_found(ctx):
 
 
 def test_read_json(ctx):
-    path = os.path.dirname(os.path.abspath(__file__))
+    path = pathlib.Path(__file__).parent.resolve()
 
     # Default
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    test_data_path = path / "data_test_context" / "data.json"
     df = ctx.read_json(test_data_path)
     result = df.collect()
 
@@ -515,7 +514,7 @@ def test_read_json(ctx):
     assert result[0].schema == schema
 
     # File extension
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    test_data_path = path / "data_test_context" / "data.json"
     df = ctx.read_json(test_data_path, file_extension=".json")
     result = df.collect()
 
@@ -524,15 +523,17 @@ def test_read_json(ctx):
 
 
 def test_read_json_compressed(ctx, tmp_path):
-    path = os.path.dirname(os.path.abspath(__file__))
-    test_data_path = os.path.join(path, "data_test_context", "data.json")
+    path = pathlib.Path(__file__).parent.resolve()
+    test_data_path = path / "data_test_context" / "data.json"
 
     # File compression type
     gzip_path = tmp_path / "data.json.gz"
 
-    with open(test_data_path, "rb") as csv_file:
-        with gzip.open(gzip_path, "wb") as gzipped_file:
-            gzipped_file.writelines(csv_file)
+    with (
+        pathlib.Path.open(test_data_path, "rb") as csv_file,
+        gzip.open(gzip_path, "wb") as gzipped_file,
+    ):
+        gzipped_file.writelines(csv_file)
 
     df = ctx.read_json(gzip_path, file_extension=".gz", file_compression_type="gz")
     result = df.collect()
@@ -563,14 +564,16 @@ def test_read_csv_list(ctx):
 
 
 def test_read_csv_compressed(ctx, tmp_path):
-    test_data_path = "testing/data/csv/aggregate_test_100.csv"
+    test_data_path = pathlib.Path("testing/data/csv/aggregate_test_100.csv")
 
     # File compression type
     gzip_path = tmp_path / "aggregate_test_100.csv.gz"
 
-    with open(test_data_path, "rb") as csv_file:
-        with gzip.open(gzip_path, "wb") as gzipped_file:
-            gzipped_file.writelines(csv_file)
+    with (
+        pathlib.Path.open(test_data_path, "rb") as csv_file,
+        gzip.open(gzip_path, "wb") as gzipped_file,
+    ):
+        gzipped_file.writelines(csv_file)
 
     csv_df = ctx.read_csv(gzip_path, file_extension=".gz", file_compression_type="gz")
     csv_df.select(column("c1")).show()
@@ -603,7 +606,7 @@ def test_create_sql_options():
 def test_sql_with_options_no_ddl(ctx):
     sql = "CREATE TABLE IF NOT EXISTS valuetable AS VALUES(1,'HELLO'),(12,'DATAFUSION')"
     ctx.sql(sql)
-    options = SQLOptions().with_allow_ddl(False)
+    options = SQLOptions().with_allow_ddl(allow=False)
     with pytest.raises(Exception, match="DDL"):
         ctx.sql_with_options(sql, options=options)
 
@@ -618,7 +621,7 @@ def test_sql_with_options_no_dml(ctx):
     ctx.register_dataset(table_name, dataset)
     sql = f'INSERT INTO "{table_name}" VALUES (1, 2), (2, 3);'
     ctx.sql(sql)
-    options = SQLOptions().with_allow_dml(False)
+    options = SQLOptions().with_allow_dml(allow=False)
     with pytest.raises(Exception, match="DML"):
         ctx.sql_with_options(sql, options=options)
 
@@ -626,6 +629,6 @@ def test_sql_with_options_no_dml(ctx):
 def test_sql_with_options_no_statements(ctx):
     sql = "SET time zone = 1;"
     ctx.sql(sql)
-    options = SQLOptions().with_allow_statements(False)
+    options = SQLOptions().with_allow_statements(allow=False)
     with pytest.raises(Exception, match="SetVariable"):
         ctx.sql_with_options(sql, options=options)

@@ -16,6 +16,7 @@
 # under the License.
 
 import datetime
+from datetime import timezone
 
 import numpy as np
 import pyarrow as pa
@@ -26,29 +27,29 @@ import pyarrow.parquet as pq
 
 
 def data():
-    np.random.seed(1)
+    rng = np.random.default_rng(1)
     data = np.concatenate(
         [
-            np.random.normal(0, 0.01, size=50),
-            np.random.normal(50, 0.01, size=50),
+            rng.normal(0, 0.01, size=50),
+            rng.normal(50, 0.01, size=50),
         ]
     )
     return pa.array(data)
 
 
 def data_with_nans():
-    np.random.seed(0)
-    data = np.random.normal(0, 0.01, size=50)
-    mask = np.random.randint(0, 2, size=50)
+    rng = np.random.default_rng(0)
+    data = rng.normal(0, 0.01, size=50)
+    mask = rng.normal(0, 2, size=50)
     data[mask == 0] = np.nan
     return data
 
 
 def data_datetime(f):
     data = [
-        datetime.datetime.now(),
-        datetime.datetime.now() - datetime.timedelta(days=1),
-        datetime.datetime.now() + datetime.timedelta(days=1),
+        datetime.datetime.now(tz=timezone.utc),
+        datetime.datetime.now(tz=timezone.utc) - datetime.timedelta(days=1),
+        datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(days=1),
     ]
     return pa.array(data, type=pa.timestamp(f), mask=np.array([False, True, False]))
 

@@ -18,13 +18,12 @@
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 import pyarrow as pa
 
 from datafusion._internal import functions as f
 from datafusion.common import NullTreatment
-from datafusion.context import SessionContext
 from datafusion.expr import (
     CaseBuilder,
     Expr,
@@ -33,6 +32,9 @@ from datafusion.expr import (
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
 )
+
+if TYPE_CHECKING:
+    from datafusion.context import SessionContext
 
 __all__ = [
     "abs",
@@ -81,8 +83,8 @@ __all__ = [
     "array_sort",
     "array_to_string",
     "array_union",
-    "arrow_typeof",
     "arrow_cast",
+    "arrow_typeof",
     "ascii",
     "asin",
     "asinh",
@@ -97,6 +99,7 @@ __all__ = [
     "bool_and",
     "bool_or",
     "btrim",
+    "cardinality",
     "case",
     "cbrt",
     "ceil",
@@ -116,6 +119,7 @@ __all__ = [
     "covar",
     "covar_pop",
     "covar_samp",
+    "cume_dist",
     "current_date",
     "current_time",
     "date_bin",
@@ -125,17 +129,17 @@ __all__ = [
     "datetrunc",
     "decode",
     "degrees",
+    "dense_rank",
     "digest",
     "empty",
     "encode",
     "ends_with",
-    "extract",
     "exp",
+    "extract",
     "factorial",
     "find_in_set",
     "first_value",
     "flatten",
-    "cardinality",
     "floor",
     "from_unixtime",
     "gcd",
@@ -143,8 +147,10 @@ __all__ = [
     "initcap",
     "isnan",
     "iszero",
+    "lag",
     "last_value",
     "lcm",
+    "lead",
     "left",
     "length",
     "levenshtein",
@@ -166,10 +172,10 @@ __all__ = [
     "list_prepend",
     "list_push_back",
     "list_push_front",
-    "list_repeat",
     "list_remove",
     "list_remove_all",
     "list_remove_n",
+    "list_repeat",
     "list_replace",
     "list_replace_all",
     "list_replace_n",
@@ -180,14 +186,14 @@ __all__ = [
     "list_union",
     "ln",
     "log",
-    "log10",
     "log2",
+    "log10",
     "lower",
     "lpad",
     "ltrim",
     "make_array",
-    "make_list",
     "make_date",
+    "make_list",
     "max",
     "md5",
     "mean",
@@ -195,19 +201,22 @@ __all__ = [
     "min",
     "named_struct",
     "nanvl",
-    "nvl",
     "now",
     "nth_value",
+    "ntile",
     "nullif",
+    "nvl",
     "octet_length",
     "order_by",
     "overlay",
+    "percent_rank",
     "pi",
     "pow",
     "power",
     "radians",
     "random",
     "range",
+    "rank",
     "regexp_like",
     "regexp_match",
     "regexp_replace",
@@ -225,6 +234,7 @@ __all__ = [
     "reverse",
     "right",
     "round",
+    "row_number",
     "rpad",
     "rtrim",
     "sha224",
@@ -252,8 +262,8 @@ __all__ = [
     "to_hex",
     "to_timestamp",
     "to_timestamp_micros",
-    "to_timestamp_nanos",
     "to_timestamp_millis",
+    "to_timestamp_nanos",
     "to_timestamp_seconds",
     "to_unixtime",
     "translate",
@@ -268,14 +278,6 @@ __all__ = [
     "when",
     # Window Functions
     "window",
-    "lead",
-    "lag",
-    "row_number",
-    "rank",
-    "dense_rank",
-    "percent_rank",
-    "cume_dist",
-    "ntile",
 ]
 
 
@@ -292,14 +294,14 @@ def nullif(expr1: Expr, expr2: Expr) -> Expr:
     return Expr(f.nullif(expr1.expr, expr2.expr))
 
 
-def encode(input: Expr, encoding: Expr) -> Expr:
+def encode(expr: Expr, encoding: Expr) -> Expr:
     """Encode the ``input``, using the ``encoding``. encoding can be base64 or hex."""
-    return Expr(f.encode(input.expr, encoding.expr))
+    return Expr(f.encode(expr.expr, encoding.expr))
 
 
-def decode(input: Expr, encoding: Expr) -> Expr:
+def decode(expr: Expr, encoding: Expr) -> Expr:
     """Decode the ``input``, using the ``encoding``. encoding can be base64 or hex."""
-    return Expr(f.decode(input.expr, encoding.expr))
+    return Expr(f.decode(expr.expr, encoding.expr))
 
 
 def array_to_string(expr: Expr, delimiter: Expr) -> Expr:
