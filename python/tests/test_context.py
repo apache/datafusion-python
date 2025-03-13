@@ -632,3 +632,21 @@ def test_sql_with_options_no_statements(ctx):
     options = SQLOptions().with_allow_statements(allow=False)
     with pytest.raises(Exception, match="SetVariable"):
         ctx.sql_with_options(sql, options=options)
+
+
+@pytest.fixture
+def batch():
+    return pa.RecordBatch.from_arrays(
+        [pa.array([4, 5, 6])],
+        names=["a"],
+    )
+
+
+def test_create_dataframe_with_global_ctx(batch):
+    ctx = SessionContext.global_ctx()
+
+    df = ctx.create_dataframe([[batch]])
+
+    result = df.collect()[0].column(0)
+
+    assert result == pa.array([4, 5, 6])

@@ -308,7 +308,7 @@ impl PySessionContext {
 
     #[classmethod]
     #[pyo3(signature = ())]
-    fn _global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
+    fn global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
         Ok(Self {
             ctx: get_global_ctx().clone(),
         })
