@@ -534,6 +534,16 @@ Module Contents
 
 
 
+   .. py:method:: global_ctx() -> SessionContext
+      :classmethod:
+
+
+      Retrieve the global context as a `SessionContext` wrapper.
+
+      :returns: A `SessionContext` object that wraps the global `SessionContextInternal`.
+
+
+
    .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`DataFrame` for reading Avro data source.
