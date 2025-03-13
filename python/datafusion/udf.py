@@ -626,6 +626,27 @@ class WindowUDF:
         args_raw = [arg.expr for arg in args]
         return Expr(self._udwf.__call__(*args_raw))
 
+    @overload
+    @staticmethod
+    def udwf(
+        input_type: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
+        volatility: str,
+        name: Optional[str] = None,
+    ) -> Callable[..., WindowUDF]: ...
+
+    @overload
+    @staticmethod
+    def udwf(
+        windown: Callable[[], WindowEvaluator],
+        input_type: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
+        volatility: str,
+        name: Optional[str] = None,
+    ) -> WindowUDF: ...
+
     @staticmethod
     def udwf(
         *args: Any, **kwargs: Any
