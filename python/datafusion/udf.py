@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+from ast import Call
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -631,7 +632,6 @@ class WindowUDF:
     def udwf(
         input_type: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
-        state_type: list[pa.DataType],
         volatility: str,
         name: Optional[str] = None,
     ) -> Callable[..., WindowUDF]: ...
@@ -642,7 +642,6 @@ class WindowUDF:
         func: Callable[[], WindowEvaluator],
         input_type: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
-        state_type: list[pa.DataType],
         volatility: str,
         name: Optional[str] = None,
     ) -> WindowUDF: ...
@@ -700,7 +699,7 @@ class WindowUDF:
         def _function(
             func: Callable[[], WindowEvaluator],
             input_types: pa.DataType | list[pa.DataType],
-            return_type: pa.DataType,
+            return_type: _R,
             volatility: Volatility | str,
             name: Optional[str] = None,
         ) -> WindowUDF:
@@ -727,12 +726,20 @@ class WindowUDF:
 
         def _decorator(
             input_types: pa.DataType | list[pa.DataType],
-            return_type: pa.DataType,
+            return_type: _R,
             volatility: Volatility | str,
             name: Optional[str] = None,
-        ) -> Callable[[Callable[[], WindowEvaluator]], WindowUDF]:
-            def decorator(func: Callable[[], WindowEvaluator]) -> WindowUDF:
-                return _function(func, input_types, return_type, volatility, name)
+        ) -> Callable[..., Callable[..., Expr]]:
+            def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
+                udwf_caller = WindowUDF.udwf(
+                    func, input_types, return_type, volatility, name
+                )
+
+                @functools.wraps(func)
+                def wrapper(*args: Any, **kwargs: Any) -> Expr:
+                    return udwf_caller(*args, **kwargs)
+
+                return wrapper
 
             return decorator
 
