@@ -799,13 +799,15 @@ def right(string: Expr, n: Expr) -> Expr:
     return Expr(f.right(string.expr, n.expr))
 
 
-def round(value: Expr, decimal_places: Expr = Expr.literal(0)) -> Expr:
+def round(value: Expr, decimal_places: Expr | None = None) -> Expr:
     """Round the argument to the nearest integer.
 
     If the optional ``decimal_places`` is specified, round to the nearest number of
     decimal places. You can specify a negative number of decimal places. For example
     ``round(lit(125.2345), lit(-2))`` would yield a value of ``100.0``.
     """
+    if decimal_places is None:
+        decimal_places = Expr.literal(0)
     return Expr(f.round(value.expr, decimal_places.expr))
 
 
