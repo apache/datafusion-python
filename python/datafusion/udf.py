@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Union, overload
 
 import pyarrow as pa
 
@@ -30,7 +30,9 @@ import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    _R = TypeVar("_R", bound=pa.DataType)
+    from typing import TypeAlias
+
+    _R: TypeAlias = pa.DataType
 
 
 class Volatility(Enum):
@@ -684,9 +686,103 @@ class WindowUDF:
             volatility=volatility,
         )
 
+    @staticmethod
+    def create_udwf(
+        *args: Any, **kwargs: Any
+    ) -> Union[WindowUDF, Callable[[Callable[[], WindowEvaluator]], WindowUDF]]:
+        """Create a new User-Defined Window Function (UDWF).
+
+        This class can be used both as a **function** and as a **decorator**.
+
+        Usage:
+            - **As a function**: Call `udwf(func, input_types, return_type, volatility, name)`.
+            - **As a decorator**: Use `@udwf(input_types, return_type, volatility, name)`.
+                When using `udwf` as a decorator, **do not pass `func` explicitly**.
+
+        **Function example:**
+            ```
+            import pyarrow as pa
+
+            class BiasedNumbers(WindowEvaluator):
+                def __init__(self, start: int = 0) -> None:
+                    self.start = start
+
+                def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+                    return pa.array([self.start + i for i in range(num_rows)])
+
+            def bias_10() -> BiasedNumbers:
+                return BiasedNumbers(10)
+
+            udwf1 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+            ```
+
+        **Decorator example:**
+            ```
+            @udwf(pa.int64(), pa.int64(), "immutable")
+            def biased_numbers() -> BiasedNumbers:
+                return BiasedNumbers(10)
+            ```
+
+        Args:
+            func: **Only needed when calling as a function. Skip this argument when using
+                `udwf` as a decorator.**
+            input_types: The data types of the arguments.
+            return_type: The data type of the return value.
+            volatility: See :py:class:`Volatility` for allowed values.
+            name: A descriptive name for the function.
+
+        Returns:
+            A user-defined window function that can be used in window function calls.
+        """
+
+        def _function(
+            func: Callable[[], WindowEvaluator],
+            input_types: pa.DataType | list[pa.DataType],
+            return_type: pa.DataType,
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> WindowUDF:
+            if not callable(func):
+                msg = "`func` argument must be callable"
+                raise TypeError(msg)
+            if not isinstance(func(), WindowEvaluator):
+                msg = "`func` must implement the abstract base class WindowEvaluator"
+                raise TypeError(msg)
+            if name is None:
+                if hasattr(func, "__qualname__"):
+                    name = func.__qualname__.lower()
+                else:
+                    name = func.__class__.__name__.lower()
+            if isinstance(input_types, pa.DataType):
+                input_types = [input_types]
+            return WindowUDF(
+                name=name,
+                func=func,
+                input_types=input_types,
+                return_type=return_type,
+                volatility=volatility,
+            )
+
+        def _decorator(
+            input_types: pa.DataType | list[pa.DataType],
+            return_type: pa.DataType,
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> Callable[[Callable[[], WindowEvaluator]], WindowUDF]:
+            def decorator(func: Callable[[], WindowEvaluator]) -> WindowUDF:
+                return _function(func, input_types, return_type, volatility, name)
+
+            return decorator
+
+        if args and callable(args[0]):
+            # Case 1: Used as a function, require the first parameter to be callable
+            return _function(*args, **kwargs)
+        # Case 2: Used as a decorator with parameters
+        return _decorator(*args, **kwargs)
+
 
 # Convenience exports so we can import instead of treating as
 # variables at the package root
 udf = ScalarUDF.udf
 udaf = AggregateUDF.udaf
-udwf = WindowUDF.udwf
+udwf = WindowUDF.create_udwf
