@@ -454,9 +454,8 @@ class Expr:
             try:
                 to = self._to_pyarrow_types[to]
             except KeyError:
-                raise TypeError(
-                    "Expected instance of pyarrow.DataType or builtins.type"
-                )
+                error_msg = "Expected instance of pyarrow.DataType or builtins.type"
+                raise TypeError(error_msg)
 
         return Expr(self.expr.cast(to))
 

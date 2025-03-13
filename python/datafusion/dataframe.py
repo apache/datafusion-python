@@ -529,18 +529,17 @@ class DataFrame:
 
         if on is not None:
             if left_on is not None or right_on is not None:
-                raise ValueError(
-                    "`left_on` or `right_on` should not provided with `on`"
-                )
+                error_msg = "`left_on` or `right_on` should not provided with `on`"
+                raise ValueError(error_msg)
             left_on = on
             right_on = on
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
-                raise ValueError("`left_on` and `right_on` should both be provided.")
+                error_msg = "`left_on` and `right_on` should both be provided."
+                raise ValueError(error_msg)
         else:
-            raise ValueError(
-                "either `on` or `left_on` and `right_on` should be provided."
-            )
+            error_msg = "either `on` or `left_on` and `right_on` should be provided."
+            raise ValueError(error_msg)
         if isinstance(left_on, str):
             left_on = [left_on]
         if isinstance(right_on, str):
