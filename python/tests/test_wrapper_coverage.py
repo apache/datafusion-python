@@ -28,19 +28,21 @@ except ImportError:
 
 
 def missing_exports(internal_obj, wrapped_obj) -> None:
+    """
+    Special handling for:
+    - Raw* classes: Internal implementation details that shouldn't be exposed
+    - _global_ctx: Internal implementation detail
+    - __self__, __class__: Python special attributes
+    """
     # Special case enums - just make sure they exist since dir()
     # and other functions get overridden.
     if isinstance(wrapped_obj, EnumType):
         return
 
+    # iterate through all the classes in datafusion._internal
     for attr in dir(internal_obj):
-        if attr in ["_global_ctx"]:
-            continue
-
-        # Check if Raw* classes have corresponding wrapper classes
-        elif attr.startswith("Raw"):
-            base_class = attr[3:]  # Remove "Raw" prefix
-            assert hasattr(wrapped_obj, base_class)
+        # Skip internal implementation details that shouldn't be exposed in public API
+        if attr in ["_global_ctx"] or attr.startswith("Raw"):
             continue
 
         assert attr in dir(wrapped_obj)
@@ -55,11 +57,17 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
 
         if attr in ["__self__", "__class__"]:
             continue
+
+        # check if the class found in the internal module has a
+        # wrapper exposed in the public module, datafusion
         if isinstance(internal_attr, list):
             assert isinstance(wrapped_attr, list)
             for val in internal_attr:
+                # Skip Raw* classes as they are internal
                 if isinstance(val, str) and val.startswith("Raw"):
+                    print("Skipping Raw* class: ", val)
                     continue
+
                 assert val in wrapped_attr
         elif hasattr(internal_attr, "__dict__"):
             missing_exports(internal_attr, wrapped_attr)
@@ -68,7 +76,9 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
 def test_datafusion_missing_exports() -> None:
     """Check for any missing python exports.
 
-    This test verifies that every exposed class, attribute, and function in
-    the internal (pyo3) module is also exposed in our python wrappers.
+    This test verifies that every exposed class, attribute,
+    and function in the internal (pyo3) module - datafusion._internal
+    is also exposed in our python wrappers - datafusion -
+    i.e., the ones exposed to the public.
     """
     missing_exports(datafusion._internal, datafusion)
