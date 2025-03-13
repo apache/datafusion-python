@@ -624,7 +624,7 @@ class WindowUDF:
     @overload
     @staticmethod
     def udwf(
-        input_type: pa.DataType | list[pa.DataType],
+        input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
         name: Optional[str] = None,
@@ -634,7 +634,7 @@ class WindowUDF:
     @staticmethod
     def udwf(
         func: Callable[[], WindowEvaluator],
-        input_type: pa.DataType | list[pa.DataType],
+        input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
         name: Optional[str] = None,
@@ -702,13 +702,13 @@ class WindowUDF:
     def _create_window_udf(
         func: Callable[[], WindowEvaluator],
         input_types: pa.DataType | list[pa.DataType],
-        return_type: _R,
+        return_type: pa.DataType,
         volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> WindowUDF:
         """Create a WindowUDF instance from function arguments."""
         if not callable(func):
-            msg = "`func` argument must be callable"
+            msg = "`func` must be callable."
             raise TypeError(msg)
         if not isinstance(func(), WindowEvaluator):
             msg = "`func` must implement the abstract base class WindowEvaluator"
