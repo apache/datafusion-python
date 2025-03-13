@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
 
 import pyarrow as pa
 
@@ -30,12 +30,7 @@ import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    # for python 3.10 and above, we can use
-    # from typing import TypeAlias
-    # but for python 3.9, we use the following
-    from typing_extensions import TypeAlias
-
-    _R: TypeAlias = pa.DataType
+    _R = TypeVar("_R", bound=pa.DataType)
 
 
 class Volatility(Enum):
@@ -719,18 +714,12 @@ class WindowUDF:
             msg = "`func` must implement the abstract base class WindowEvaluator"
             raise TypeError(msg)
 
-        if name is None:
-            name = WindowUDF._get_default_name(func)
-
-        input_types_list = WindowUDF._normalize_input_types(input_types)
-
-        return WindowUDF(
-            name=name,
-            func=func,
-            input_types=input_types_list,
-            return_type=return_type,
-            volatility=volatility,
+        name = name or func.__qualname__.lower()
+        input_types = (
+            [input_types] if isinstance(input_types, pa.DataType) else input_types
         )
+
+        return WindowUDF(name, func, input_types, return_type, volatility)
 
     @staticmethod
     def _get_default_name(func: Callable) -> str:
@@ -751,10 +740,10 @@ class WindowUDF:
     @staticmethod
     def _create_window_udf_decorator(
         input_types: pa.DataType | list[pa.DataType],
-        return_type: _R,
+        return_type: pa.DataType,
         volatility: Volatility | str,
         name: Optional[str] = None,
-    ) -> Callable[..., Callable[..., Expr]]:
+    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
         """Create a decorator for a WindowUDF."""
 
         def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:

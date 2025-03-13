@@ -428,55 +428,24 @@ def test_udwf_functions(complex_window_df, name, expr, expected):
     assert result.column(0) == pa.array(expected)
 
 
-def test_udwf_overloads(count_window_df):
-    """Test different overload patterns for UDWF function."""
-    # Single input type syntax
-    single_input = udwf(
-        SimpleWindowCount, pa.int64(), pa.int64(), volatility="immutable"
-    )
-
-    # List of input types syntax
-    list_input = udwf(
-        SimpleWindowCount, [pa.int64()], pa.int64(), volatility="immutable"
-    )
-
-    # Decorator syntax with single input type
-    @udwf(pa.int64(), pa.int64(), "immutable")
-    def window_count_single() -> WindowEvaluator:
-        return SimpleWindowCount()
-
-    # Decorator syntax with list of input types
-    @udwf([pa.int64()], pa.int64(), "immutable")
-    def window_count_list() -> WindowEvaluator:
-        return SimpleWindowCount()
-
-    # Test all variants produce the same result
+@pytest.mark.parametrize(
+    "udwf_func",
+    [
+        udwf(SimpleWindowCount, pa.int64(), pa.int64(), "immutable"),
+        udwf(SimpleWindowCount, [pa.int64()], pa.int64(), "immutable"),
+        udwf([pa.int64()], pa.int64(), "immutable")(lambda: SimpleWindowCount()),
+        udwf(pa.int64(), pa.int64(), "immutable")(lambda: SimpleWindowCount()),
+    ],
+)
+def test_udwf_overloads(udwf_func, count_window_df):
     df = count_window_df.select(
-        single_input(column("a"))
+        udwf_func(column("a"))
         .window_frame(WindowFrame("rows", None, None))
         .build()
-        .alias("single"),
-        list_input(column("a"))
-        .window_frame(WindowFrame("rows", None, None))
-        .build()
-        .alias("list"),
-        window_count_single(column("a"))
-        .window_frame(WindowFrame("rows", None, None))
-        .build()
-        .alias("decorator_single"),
-        window_count_list(column("a"))
-        .window_frame(WindowFrame("rows", None, None))
-        .build()
-        .alias("decorator_list"),
+        .alias("count")
     )
-
     result = df.collect()[0]
-    expected = pa.array([0, 1, 2])
-
-    assert result.column(0) == expected
-    assert result.column(1) == expected
-    assert result.column(2) == expected
-    assert result.column(3) == expected
+    assert result.column(0) == pa.array([0, 1, 2])
 
 
 def test_udwf_named_function(ctx, count_window_df):
