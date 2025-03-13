@@ -26,7 +26,7 @@ class MyAccumulator(Accumulator):
     Interface of a user-defined accumulation.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._sum = pyarrow.scalar(0.0)
 
     def update(self, values: pyarrow.Array) -> None:

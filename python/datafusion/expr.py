@@ -610,7 +610,7 @@ class Expr:
 
 
 class ExprFuncBuilder:
-    def __init__(self, builder: expr_internal.ExprFuncBuilder):
+    def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
         self.builder = builder
 
     def order_by(self, *exprs: Expr) -> ExprFuncBuilder:

@@ -80,8 +80,8 @@ ignore = [
     "TD003",   # Allow TODO lines
     "UP007",   # Disallowing Union is pedantic
     # TODO: Enable all of the following, but this PR is getting too large already
-    "PT001",
-    "ANN204",
+    #"PT001",
+    # "ANN204",
     "B008",
     "EM101",
     "PLR0913",
