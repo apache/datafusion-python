@@ -125,8 +125,6 @@ impl PyDataFrame {
             return Ok("No data to display".to_string());
         }
 
-        let df = self.df.as_ref().clone().limit(0, Some(10))?;
-        let batches = wait_for_future(py, df.collect())?;
         let batches_as_displ =
             pretty::pretty_format_batches(&batches).map_err(py_datafusion_err)?;
 
@@ -139,7 +137,7 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let (batches, mut has_more) = wait_for_future(
+        let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
@@ -209,35 +207,13 @@ impl PyDataFrame {
             })
             .collect::<Result<Vec<_>, _>>()?;
 
-        let total_memory: usize = batches
-            .iter()
-            .map(|batch| batch.get_array_memory_size())
-            .sum();
         let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
-        let total_rows = rows_per_batch.clone().sum();
-
-        let num_rows_to_display = match total_memory > MAX_TABLE_BYTES_TO_DISPLAY {
-            true => {
-                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / total_memory as f32;
-                let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
-                if reduced_row_num < MIN_TABLE_ROWS_TO_DISPLAY {
-                    reduced_row_num = MIN_TABLE_ROWS_TO_DISPLAY.min(total_rows);
-                }
-
-                has_more = has_more || reduced_row_num < total_rows;
-                reduced_row_num
-            }
-            false => total_rows,
-        };
 
         // We need to build up row by row for html
         let mut table_row = 0;
         for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
             for batch_row in 0..num_rows_in_batch {
                 table_row += 1;
-                if table_row > num_rows_to_display {
-                    break;
-                }
                 let mut cells = Vec::new();
                 for (col, formatter) in batch_formatter.iter().enumerate() {
                     let cell_data = formatter.value(batch_row).to_string();
