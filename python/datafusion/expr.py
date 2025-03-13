@@ -692,11 +692,11 @@ class WindowFrame:
         """
         if not isinstance(start_bound, pa.Scalar) and start_bound is not None:
             start_bound = pa.scalar(start_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 start_bound = start_bound.cast(pa.uint64())
         if not isinstance(end_bound, pa.Scalar) and end_bound is not None:
             end_bound = pa.scalar(end_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 end_bound = end_bound.cast(pa.uint64())
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
