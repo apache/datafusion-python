@@ -653,7 +653,10 @@ class WindowUDF:
             def bias_10() -> BiasedNumbers:
                 return BiasedNumbers(10)
 
-            udwf1 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+            udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
+            udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
+            udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
+
             ```
 
         **Decorator example:**
