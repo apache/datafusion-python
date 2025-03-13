@@ -646,7 +646,7 @@ class WindowUDF:
     ) -> WindowUDF: ...
 
     @staticmethod
-    def udwf(*args: Any, **kwargs: Any):  # noqa: D417, C901
+    def udwf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Window Function (UDWF).
 
         This class can be used both as a **function** and as a **decorator**.
@@ -697,59 +697,78 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
-
-        def _function(
-            func: Callable[[], WindowEvaluator],
-            input_types: pa.DataType | list[pa.DataType],
-            return_type: _R,
-            volatility: Volatility | str,
-            name: Optional[str] = None,
-        ) -> WindowUDF:
-            if not callable(func):
-                msg = "`func` argument must be callable"
-                raise TypeError(msg)
-            if not isinstance(func(), WindowEvaluator):
-                msg = "`func` must implement the abstract base class WindowEvaluator"
-                raise TypeError(msg)
-            if name is None:
-                if hasattr(func, "__qualname__"):
-                    name = func.__qualname__.lower()
-                else:
-                    name = func.__class__.__name__.lower()
-            if isinstance(input_types, pa.DataType):
-                input_types = [input_types]
-            return WindowUDF(
-                name=name,
-                func=func,
-                input_types=input_types,
-                return_type=return_type,
-                volatility=volatility,
-            )
-
-        def _decorator(
-            input_types: pa.DataType | list[pa.DataType],
-            return_type: _R,
-            volatility: Volatility | str,
-            name: Optional[str] = None,
-        ) -> Callable[..., Callable[..., Expr]]:
-            def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
-                udwf_caller = WindowUDF.udwf(
-                    func, input_types, return_type, volatility, name
-                )
-
-                @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any) -> Expr:
-                    return udwf_caller(*args, **kwargs)
-
-                return wrapper
-
-            return decorator
-
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
-            return _function(*args, **kwargs)
+            return WindowUDF._create_window_udf(*args, **kwargs)
         # Case 2: Used as a decorator with parameters
-        return _decorator(*args, **kwargs)
+        return WindowUDF._create_window_udf_decorator(*args, **kwargs)
+
+    @staticmethod
+    def _create_window_udf(
+        func: Callable[[], WindowEvaluator],
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: _R,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> WindowUDF:
+        """Create a WindowUDF instance from function arguments."""
+        if not callable(func):
+            msg = "`func` argument must be callable"
+            raise TypeError(msg)
+        if not isinstance(func(), WindowEvaluator):
+            msg = "`func` must implement the abstract base class WindowEvaluator"
+            raise TypeError(msg)
+
+        if name is None:
+            name = WindowUDF._get_default_name(func)
+
+        input_types_list = WindowUDF._normalize_input_types(input_types)
+
+        return WindowUDF(
+            name=name,
+            func=func,
+            input_types=input_types_list,
+            return_type=return_type,
+            volatility=volatility,
+        )
+
+    @staticmethod
+    def _get_default_name(func: Callable) -> str:
+        """Get the default name for a function based on its attributes."""
+        if hasattr(func, "__qualname__"):
+            return func.__qualname__.lower()
+        return func.__class__.__name__.lower()
+
+    @staticmethod
+    def _normalize_input_types(
+        input_types: pa.DataType | list[pa.DataType],
+    ) -> list[pa.DataType]:
+        """Convert a single DataType to a list if needed."""
+        if isinstance(input_types, pa.DataType):
+            return [input_types]
+        return input_types
+
+    @staticmethod
+    def _create_window_udf_decorator(
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: _R,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> Callable[..., Callable[..., Expr]]:
+        """Create a decorator for a WindowUDF."""
+
+        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
+            udwf_caller = WindowUDF._create_window_udf(
+                func, input_types, return_type, volatility, name
+            )
+
+            @functools.wraps(func)
+            def wrapper(*args: Any, **kwargs: Any) -> Expr:
+                return udwf_caller(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
 
 
 # Convenience exports so we can import instead of treating as
