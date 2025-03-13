@@ -30,7 +30,10 @@ import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    from typing import TypeAlias
+    # for python 3.10 and above, we can use
+    # from typing import TypeAlias
+    # but for python 3.9, we use the following
+    from typing_extensions import TypeAlias
 
     _R: TypeAlias = pa.DataType
 
