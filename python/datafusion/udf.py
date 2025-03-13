@@ -632,7 +632,7 @@ class WindowUDF:
     def udwf(
         input_type: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
-        volatility: str,
+        volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> Callable[..., WindowUDF]: ...
 
@@ -642,7 +642,7 @@ class WindowUDF:
         func: Callable[[], WindowEvaluator],
         input_type: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
-        volatility: str,
+        volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> WindowUDF: ...
 
