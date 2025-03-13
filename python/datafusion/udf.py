@@ -628,69 +628,6 @@ class WindowUDF:
 
     @staticmethod
     def udwf(
-        func: Callable[[], WindowEvaluator],
-        input_types: pa.DataType | list[pa.DataType],
-        return_type: pa.DataType,
-        volatility: Volatility | str,
-        name: Optional[str] = None,
-    ) -> WindowUDF:
-        """Create a new User-Defined Window Function.
-
-        If your :py:class:`WindowEvaluator` can be instantiated with no arguments, you
-        can simply pass it's type as ``func``. If you need to pass additional arguments
-        to it's constructor, you can define a lambda or a factory method. During runtime
-        the :py:class:`WindowEvaluator` will be constructed for every instance in
-        which this UDWF is used. The following examples are all valid.
-
-        .. code-block:: python
-
-            import pyarrow as pa
-
-            class BiasedNumbers(WindowEvaluator):
-                def __init__(self, start: int = 0) -> None:
-                    self.start = start
-
-                def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
-                    return pa.array([self.start + i for i in range(num_rows)])
-
-            def bias_10() -> BiasedNumbers:
-                return BiasedNumbers(10)
-
-            udwf1 = udwf(BiasedNumbers, pa.int64(), pa.int64(), "immutable")
-            udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
-            udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
-
-        Args:
-            func: A callable to create the window function.
-            input_types: The data types of the arguments to ``func``.
-            return_type: The data type of the return value.
-            volatility: See :py:class:`Volatility` for allowed values.
-            arguments: A list of arguments to pass in to the __init__ method for accum.
-            name: A descriptive name for the function.
-
-        Returns:
-            A user-defined window function.
-        """  # noqa: W505, E501
-        if not callable(func):
-            msg = "`func` must be callable."
-            raise TypeError(msg)
-        if not isinstance(func(), WindowEvaluator):
-            msg = "`func` must implement the abstract base class WindowEvaluator"
-            raise TypeError(msg)
-        if name is None:
-            name = func().__class__.__qualname__.lower()
-        if isinstance(input_types, pa.DataType):
-            input_types = [input_types]
-        return WindowUDF(
-            name=name,
-            func=func,
-            input_types=input_types,
-            return_type=return_type,
-            volatility=volatility,
-        )
-
-    @staticmethod
-    def create_udwf(
         *args: Any, **kwargs: Any
     ) -> Union[WindowUDF, Callable[[Callable[[], WindowEvaluator]], WindowUDF]]:
         """Create a new User-Defined Window Function (UDWF).
@@ -788,4 +725,4 @@ class WindowUDF:
 # variables at the package root
 udf = ScalarUDF.udf
 udaf = AggregateUDF.udaf
-udwf = WindowUDF.create_udwf
+udwf = WindowUDF.udwf
