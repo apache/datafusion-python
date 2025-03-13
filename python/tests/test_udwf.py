@@ -303,7 +303,11 @@ def test_register_udwf(ctx, count_window_df):
 
     ctx.register_udwf(window_count)
     result = ctx.sql(
-        "SELECT window_count(a) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM test_table"
+        """
+        SELECT window_count(a)
+        OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED
+        FOLLOWING) FROM test_table
+        """
     ).collect()[0]
     assert result.column(0) == pa.array([0, 1, 2])
 
@@ -487,6 +491,9 @@ def test_udwf_named_function(ctx, count_window_df):
 
     ctx.register_udwf(window_count)
     result = ctx.sql(
-        "SELECT my_custom_counter(a) OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) FROM test_table"
+        """
+        SELECT my_custom_counter(a)
+        OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED
+        FOLLOWING) FROM test_table"""
     ).collect()[0]
     assert result.column(0) == pa.array([0, 1, 2])

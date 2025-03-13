@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-from ast import Call
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
@@ -647,15 +646,17 @@ class WindowUDF:
     ) -> WindowUDF: ...
 
     @staticmethod
-    def udwf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udwf(*args: Any, **kwargs: Any):  # noqa: D417, C901
         """Create a new User-Defined Window Function (UDWF).
 
         This class can be used both as a **function** and as a **decorator**.
 
         Usage:
-            - **As a function**: Call `udwf(func, input_types, return_type, volatility, name)`.
-            - **As a decorator**: Use `@udwf(input_types, return_type, volatility, name)`.
-                When using `udwf` as a decorator, **do not pass `func` explicitly**.
+            - **As a function**: Call `udwf(func, input_types, return_type, volatility,
+              name)`.
+            - **As a decorator**: Use `@udwf(input_types, return_type, volatility,
+              name)`. When using `udwf` as a decorator, **do not pass `func`
+              explicitly**.
 
         **Function example:**
             ```
@@ -665,7 +666,8 @@ class WindowUDF:
                 def __init__(self, start: int = 0) -> None:
                     self.start = start
 
-                def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+                def evaluate_all(self, values: list[pa.Array],
+                    num_rows: int) -> pa.Array:
                     return pa.array([self.start + i for i in range(num_rows)])
 
             def bias_10() -> BiasedNumbers:
@@ -685,8 +687,8 @@ class WindowUDF:
             ```
 
         Args:
-            func: **Only needed when calling as a function. Skip this argument when using
-                `udwf` as a decorator.**
+            func: **Only needed when calling as a function. Skip this argument when
+                using `udwf` as a decorator.**
             input_types: The data types of the arguments.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
