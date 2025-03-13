@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, overload
 
 import pyarrow as pa
 
@@ -639,7 +639,7 @@ class WindowUDF:
     @overload
     @staticmethod
     def udwf(
-        windown: Callable[[], WindowEvaluator],
+        func: Callable[[], WindowEvaluator],
         input_type: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         state_type: list[pa.DataType],
@@ -648,9 +648,7 @@ class WindowUDF:
     ) -> WindowUDF: ...
 
     @staticmethod
-    def udwf(
-        *args: Any, **kwargs: Any
-    ) -> Union[WindowUDF, Callable[[Callable[[], WindowEvaluator]], WindowUDF]]:
+    def udwf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Window Function (UDWF).
 
         This class can be used both as a **function** and as a **decorator**.
