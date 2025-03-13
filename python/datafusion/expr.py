@@ -708,7 +708,7 @@ class WindowFrame:
         """Returns starting bound."""
         return WindowFrameBound(self.window_frame.get_lower_bound())
 
-    def get_upper_bound(self):
+    def get_upper_bound(self) -> WindowFrameBound:
         """Returns end bound."""
         return WindowFrameBound(self.window_frame.get_upper_bound())
 

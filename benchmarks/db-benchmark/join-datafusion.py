@@ -29,7 +29,7 @@ print("# join-datafusion.py", flush=True)
 exec(open("./_helpers/helpers.py").read())
 
 
-def ans_shape(batches):
+def ans_shape(batches) -> tuple[int, int]:
     rows, cols = 0, 0
     for batch in batches:
         rows += batch.num_rows

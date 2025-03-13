@@ -21,7 +21,7 @@ import time
 from datafusion import SessionContext
 
 
-def bench(data_path, query_path):
+def bench(data_path, query_path) -> None:
     with open("results.csv", "w") as results:
         # register tables
         start = time.time()

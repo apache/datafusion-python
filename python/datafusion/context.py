@@ -719,7 +719,7 @@ class SessionContext:
 
     # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
     # is the discussion on how we arrived at adding register_view
-    def register_view(self, name: str, df: DataFrame):
+    def register_view(self, name: str, df: DataFrame) -> None:
         """Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
 
         Args:

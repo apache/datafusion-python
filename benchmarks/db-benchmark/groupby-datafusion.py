@@ -37,7 +37,7 @@ print("# groupby-datafusion.py", flush=True)
 exec(open("./_helpers/helpers.py").read())
 
 
-def ans_shape(batches):
+def ans_shape(batches) -> tuple[int, int]:
     rows, cols = 0, 0
     for batch in batches:
         rows += batch.num_rows
@@ -48,7 +48,7 @@ def ans_shape(batches):
     return rows, cols
 
 
-def execute(df):
+def execute(df) -> list:
     print(df.execution_plan().display_indent())
     return df.collect()
 
