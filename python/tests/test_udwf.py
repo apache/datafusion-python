@@ -218,7 +218,7 @@ def test_udwf_errors(complex_window_df):
 def test_udwf_errors_with_message():
     """Test error cases for UDWF creation."""
     with pytest.raises(
-        TypeError, match="`func` must implement the abstract base class WindowEvaluator"
+        TypeError, match="`func` must implement the WindowEvaluator protocol"
     ):
         udwf(
             NotSubclassOfWindowEvaluator, pa.int64(), pa.int64(), volatility="immutable"
@@ -466,3 +466,51 @@ def test_udwf_named_function(ctx, count_window_df):
         FOLLOWING) FROM test_table"""
     ).collect()[0]
     assert result.column(0) == pa.array([0, 1, 2])
+
+
+def test_window_evaluator_protocol(count_window_df):
+    """Test that WindowEvaluator works as a Protocol without explicit inheritance."""
+
+    # Define a class that implements the Protocol interface without inheriting
+    class CounterWithoutInheritance:
+        def __init__(self, base: int = 0) -> None:
+            self.base = base
+
+        def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+            return pa.array([self.base + i for i in range(num_rows)])
+
+        # Protocol methods with default implementations don't need to be defined
+
+    # Create a UDWF using the class that doesn't inherit from WindowEvaluator
+    protocol_counter = udwf(
+        CounterWithoutInheritance, pa.int64(), pa.int64(), volatility="immutable"
+    )
+
+    # Use the window function
+    df = count_window_df.select(
+        protocol_counter(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])
+
+    # Also test with constructor args
+    protocol_counter_with_args = udwf(
+        lambda: CounterWithoutInheritance(10),
+        pa.int64(),
+        pa.int64(),
+        volatility="immutable",
+    )
+
+    df = count_window_df.select(
+        protocol_counter_with_args(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([10, 11, 12])
