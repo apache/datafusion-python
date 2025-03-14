@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pyarrow as pa
 
@@ -439,7 +439,7 @@ class Expr:
             value = Expr.literal(value)
         return Expr(functions_internal.nvl(self.expr, value.expr))
 
-    _to_pyarrow_types = {
+    _to_pyarrow_types: ClassVar[dict[type, pa.DataType]] = {
         float: pa.float64(),
         int: pa.int64(),
         str: pa.string(),
