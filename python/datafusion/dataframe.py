@@ -517,7 +517,8 @@ class DataFrame:
             and isinstance(on[0], list)
             and isinstance(on[1], list)
         ):
-            join_keys = on  # type: ignore
+            # We know this is safe because we've checked the types
+            join_keys = on  # type: ignore[assignment]
             on = None
 
         if join_keys is not None:
