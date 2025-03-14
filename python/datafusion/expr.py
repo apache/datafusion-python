@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import TYPE_CHECKING, Any, Optional
 
 import pyarrow as pa
 
@@ -446,9 +446,7 @@ class Expr:
         bool: pa.bool_(),
     }
 
-    def cast(
-        self, to: pa.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]
-    ) -> Expr:
+    def cast(self, to: pa.DataType[Any] | type[float | int | str | bool]) -> Expr:
         """Cast to a new data type."""
         if not isinstance(to, pa.DataType):
             try:

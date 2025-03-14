@@ -26,10 +26,8 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
-    List,
     Literal,
     Optional,
-    Type,
     Union,
     overload,
 )
@@ -75,7 +73,7 @@ class Compression(Enum):
     LZ4_RAW = "lz4_raw"
 
     @classmethod
-    def from_str(cls: Type[Compression], value: str) -> Compression:
+    def from_str(cls: type[Compression], value: str) -> Compression:
         """Convert a string to a Compression enum value.
 
         Args:
@@ -132,7 +130,7 @@ class DataFrame:
         """Convert DataFrame as a ViewTable which can be used in register_table."""
         return self.df.into_view()
 
-    def __getitem__(self, key: str | List[str]) -> DataFrame:
+    def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
 
         Args:
