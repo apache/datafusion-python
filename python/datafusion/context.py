@@ -844,7 +844,7 @@ class SessionContext:
             file_compression_type: File compression type.
         """
         if isinstance(path, list):
-            path = [str(p) for p in path]
+            path = [str(p) for p in path] if isinstance(path, list) else str(path)
         else:
             path = str(path)
 
