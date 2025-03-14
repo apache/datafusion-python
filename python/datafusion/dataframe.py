@@ -821,7 +821,7 @@ class DataFrame:
         Returns:
             A DataFrame with the columns expanded.
         """
-        columns = [c for c in columns]
+        columns = list(columns)
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
 
     def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:
