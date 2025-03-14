@@ -22,16 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Optional,
-    Protocol,
-    runtime_checkable,
-    overload,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
 
 import pyarrow as pa
 
@@ -438,9 +429,8 @@ class AggregateUDF:
         return _decorator(*args, **kwargs)
 
 
-@runtime_checkable
-class WindowEvaluator(Protocol):
-    """Protocol defining interface for user-defined window functions (UDWF).
+class WindowEvaluator:
+    """Evaluator class for user-defined window functions (UDWF).
 
     It is up to the user to decide which evaluate function is appropriate.
 
@@ -721,7 +711,7 @@ class WindowUDF:
             msg = "`func` must be callable."
             raise TypeError(msg)
         if not isinstance(func(), WindowEvaluator):
-            msg = "`func` must implement the WindowEvaluator protocol"
+            msg = "`func` must implement the abstract base class WindowEvaluator"
             raise TypeError(msg)
 
         name = name or func.__qualname__.lower()
