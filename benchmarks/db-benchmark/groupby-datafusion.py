@@ -20,7 +20,7 @@ import os
 import timeit
 
 import datafusion as df
-import pyarrow
+import pyarrow as pa
 from datafusion import (
     RuntimeEnvBuilder,
     SessionConfig,
@@ -68,14 +68,14 @@ data_name = os.environ["SRC_DATANAME"]
 src_grp = os.path.join("data", data_name + ".csv")
 print("loading dataset %s" % src_grp, flush=True)
 
-schema = pyarrow.schema(
+schema = pa.schema(
     [
-        ("id4", pyarrow.int32()),
-        ("id5", pyarrow.int32()),
-        ("id6", pyarrow.int32()),
-        ("v1", pyarrow.int32()),
-        ("v2", pyarrow.int32()),
-        ("v3", pyarrow.float64()),
+        ("id4", pa.int32()),
+        ("id5", pa.int32()),
+        ("id6", pa.int32()),
+        ("v1", pa.int32()),
+        ("v2", pa.int32()),
+        ("v3", pa.float64()),
     ]
 )
 

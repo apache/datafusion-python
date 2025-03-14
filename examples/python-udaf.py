@@ -16,7 +16,7 @@
 # under the License.
 
 import datafusion
-import pyarrow
+import pyarrow as pa
 import pyarrow.compute
 from datafusion import Accumulator, col, udaf
 
@@ -27,24 +27,20 @@ class MyAccumulator(Accumulator):
     """
 
     def __init__(self) -> None:
-        self._sum = pyarrow.scalar(0.0)
+        self._sum = pa.scalar(0.0)
 
-    def update(self, values: pyarrow.Array) -> None:
+    def update(self, values: pa.Array) -> None:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pyarrow.scalar(
-            self._sum.as_py() + pyarrow.compute.sum(values).as_py()
-        )
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(values).as_py())
 
-    def merge(self, states: pyarrow.Array) -> None:
+    def merge(self, states: pa.Array) -> None:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pyarrow.scalar(
-            self._sum.as_py() + pyarrow.compute.sum(states).as_py()
-        )
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states).as_py())
 
-    def state(self) -> pyarrow.Array:
-        return pyarrow.array([self._sum.as_py()])
+    def state(self) -> pa.Array:
+        return pa.array([self._sum.as_py()])
 
-    def evaluate(self) -> pyarrow.Scalar:
+    def evaluate(self) -> pa.Scalar:
         return self._sum
 
 
@@ -52,17 +48,17 @@ class MyAccumulator(Accumulator):
 ctx = datafusion.SessionContext()
 
 # create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+batch = pa.RecordBatch.from_arrays(
+    [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
     names=["a", "b"],
 )
 df = ctx.create_dataframe([[batch]])
 
 my_udaf = udaf(
     MyAccumulator,
-    pyarrow.float64(),
-    pyarrow.float64(),
-    [pyarrow.float64()],
+    pa.float64(),
+    pa.float64(),
+    [pa.float64()],
     "stable",
 )
 
@@ -70,4 +66,4 @@ df = df.aggregate([], [my_udaf(col("a"))])
 
 result = df.collect()[0]
 
-assert result.column(0) == pyarrow.array([6.0])
+assert result.column(0) == pa.array([6.0])
