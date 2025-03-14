@@ -564,9 +564,7 @@ class Expr:
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(
-            self.expr.partition_by(list(e.expr for e in partition_by))
-        )
+        return ExprFuncBuilder(self.expr.partition_by([e.expr for e in partition_by]))
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
         """Set the frame fora  window function.
@@ -637,7 +635,7 @@ class ExprFuncBuilder:
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set partitioning for window functions."""
         return ExprFuncBuilder(
-            self.builder.partition_by(list(e.expr for e in partition_by))
+            self.builder.partition_by([e.expr for e in partition_by])
         )
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
