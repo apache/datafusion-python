@@ -27,28 +27,25 @@ from util import get_answer_file
 def df_selection(col_name, col_type):
     if col_type == pa.float64() or isinstance(col_type, pa.Decimal128Type):
         return F.round(col(col_name), lit(2)).alias(col_name)
-    elif col_type == pa.string() or col_type == pa.string_view():
+    if col_type == pa.string() or col_type == pa.string_view():
         return F.trim(col(col_name)).alias(col_name)
-    else:
-        return col(col_name)
+    return col(col_name)
 
 
 def load_schema(col_name, col_type):
     if col_type == pa.int64() or col_type == pa.int32():
         return col_name, pa.string()
-    elif isinstance(col_type, pa.Decimal128Type):
+    if isinstance(col_type, pa.Decimal128Type):
         return col_name, pa.float64()
-    else:
-        return col_name, col_type
+    return col_name, col_type
 
 
 def expected_selection(col_name, col_type):
     if col_type == pa.int64() or col_type == pa.int32():
         return F.trim(col(col_name)).cast(col_type).alias(col_name)
-    elif col_type == pa.string() or col_type == pa.string_view():
+    if col_type == pa.string() or col_type == pa.string_view():
         return F.trim(col(col_name)).alias(col_name)
-    else:
-        return col(col_name)
+    return col(col_name)
 
 
 def selections_and_schema(original_schema):

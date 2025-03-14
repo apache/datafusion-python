@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import math
-from datetime import datetime
+from datetime import datetime, timezone
 
 import numpy as np
 import pyarrow as pa
@@ -24,6 +24,8 @@ from datafusion import SessionContext, column, literal, string_literal
 from datafusion import functions as f
 
 np.seterr(invalid="ignore")
+
+DEFAULT_TZ = timezone.utc
 
 
 @pytest.fixture
@@ -37,9 +39,9 @@ def df():
             pa.array(["hello ", " world ", " !"], type=pa.string_view()),
             pa.array(
                 [
-                    datetime(2022, 12, 31),
-                    datetime(2027, 6, 26),
-                    datetime(2020, 7, 2),
+                    datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+                    datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
+                    datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
                 ]
             ),
             pa.array([False, True, True]),
@@ -221,12 +223,12 @@ def py_indexof(arr, v):
 def py_arr_remove(arr, v, n=None):
     new_arr = arr[:]
     found = 0
-    while found != n:
-        try:
+    try:
+        while found != n:
             new_arr.remove(v)
             found += 1
-        except ValueError:
-            break
+    except ValueError:
+        pass
 
     return new_arr
 
@@ -234,13 +236,13 @@ def py_arr_remove(arr, v, n=None):
 def py_arr_replace(arr, from_, to, n=None):
     new_arr = arr[:]
     found = 0
-    while found != n:
-        try:
+    try:
+        while found != n:
             idx = new_arr.index(from_)
             new_arr[idx] = to
             found += 1
-        except ValueError:
-            break
+    except ValueError:
+        pass
 
     return new_arr
 
@@ -268,266 +270,266 @@ def py_flatten(arr):
 @pytest.mark.parametrize(
     ("stmt", "py_expr"),
     [
-        [
+        (
             lambda col: f.array_append(col, literal(99.0)),
             lambda data: [np.append(arr, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_push_back(col, literal(99.0)),
             lambda data: [np.append(arr, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_append(col, literal(99.0)),
             lambda data: [np.append(arr, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_push_back(col, literal(99.0)),
             lambda data: [np.append(arr, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_concat(col, col),
             lambda data: [np.concatenate([arr, arr]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_cat(col, col),
             lambda data: [np.concatenate([arr, arr]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_cat(col, col),
             lambda data: [np.concatenate([arr, arr]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_concat(col, col),
             lambda data: [np.concatenate([arr, arr]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_dims(col),
             lambda data: [[len(r)] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_distinct(col),
             lambda data: [list(set(r)) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_distinct(col),
             lambda data: [list(set(r)) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_dims(col),
             lambda data: [[len(r)] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_element(col, literal(1)),
             lambda data: [r[0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_empty(col),
             lambda data: [len(r) == 0 for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.empty(col),
             lambda data: [len(r) == 0 for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_element(col, literal(1)),
             lambda data: [r[0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_extract(col, literal(1)),
             lambda data: [r[0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_length(col),
             lambda data: [len(r) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_length(col),
             lambda data: [len(r) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_has(col, literal(1.0)),
             lambda data: [1.0 in r for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_has_all(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.all([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_has_any(
                 col, f.make_array(*[literal(v) for v in [1.0, 3.0, 5.0]])
             ),
             lambda data: [np.any([v in r for v in [1.0, 3.0, 5.0]]) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_position(col, literal(1.0)),
             lambda data: [py_indexof(r, 1.0) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_indexof(col, literal(1.0)),
             lambda data: [py_indexof(r, 1.0) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_position(col, literal(1.0)),
             lambda data: [py_indexof(r, 1.0) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_indexof(col, literal(1.0)),
             lambda data: [py_indexof(r, 1.0) for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_positions(col, literal(1.0)),
             lambda data: [[i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_positions(col, literal(1.0)),
             lambda data: [[i + 1 for i, _v in enumerate(r) if _v == 1.0] for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_ndims(col),
             lambda data: [np.array(r).ndim for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_ndims(col),
             lambda data: [np.array(r).ndim for r in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_prepend(literal(99.0), col),
             lambda data: [np.insert(arr, 0, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_push_front(literal(99.0), col),
             lambda data: [np.insert(arr, 0, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_prepend(literal(99.0), col),
             lambda data: [np.insert(arr, 0, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_push_front(literal(99.0), col),
             lambda data: [np.insert(arr, 0, 99.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_pop_back(col),
             lambda data: [arr[:-1] for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_pop_front(col),
             lambda data: [arr[1:] for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_remove(col, literal(3.0)),
             lambda data: [py_arr_remove(arr, 3.0, 1) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_remove(col, literal(3.0)),
             lambda data: [py_arr_remove(arr, 3.0, 1) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_remove_n(col, literal(3.0), literal(2)),
             lambda data: [py_arr_remove(arr, 3.0, 2) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_remove_n(col, literal(3.0), literal(2)),
             lambda data: [py_arr_remove(arr, 3.0, 2) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_remove_all(col, literal(3.0)),
             lambda data: [py_arr_remove(arr, 3.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_remove_all(col, literal(3.0)),
             lambda data: [py_arr_remove(arr, 3.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_repeat(col, literal(2)),
             lambda data: [[arr] * 2 for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_repeat(col, literal(2)),
             lambda data: [[arr] * 2 for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_replace(col, literal(3.0), literal(4.0)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_replace(col, literal(3.0), literal(4.0)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_replace_n(col, literal(3.0), literal(4.0), literal(1)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0, 1) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_replace_n(col, literal(3.0), literal(4.0), literal(2)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0, 2) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_replace_all(col, literal(3.0), literal(4.0)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_replace_all(col, literal(3.0), literal(4.0)),
             lambda data: [py_arr_replace(arr, 3.0, 4.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_sort(col, descending=True, null_first=True),
             lambda data: [np.sort(arr)[::-1] for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_sort(col, descending=False, null_first=False),
             lambda data: [np.sort(arr) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_slice(col, literal(2), literal(4)),
             lambda data: [arr[1:4] for arr in data],
-        ],
+        ),
         pytest.param(
             lambda col: f.list_slice(col, literal(-1), literal(2)),
             lambda data: [arr[-1:2] for arr in data],
         ),
-        [
+        (
             lambda col: f.array_intersect(col, literal([3.0, 4.0])),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_intersect(col, literal([3.0, 4.0])),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_union(col, literal([12.0, 999.0])),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_union(col, literal([12.0, 999.0])),
             lambda data: [np.union1d(arr, [12.0, 999.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_except(col, literal([3.0])),
             lambda data: [np.setdiff1d(arr, [3.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_except(col, literal([3.0])),
             lambda data: [np.setdiff1d(arr, [3.0]) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.array_resize(col, literal(10), literal(0.0)),
             lambda data: [py_arr_resize(arr, 10, 0.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.list_resize(col, literal(10), literal(0.0)),
             lambda data: [py_arr_resize(arr, 10, 0.0) for arr in data],
-        ],
-        [
+        ),
+        (
             lambda col: f.range(literal(1), literal(5), literal(2)),
             lambda data: [np.arange(1, 5, 2)],
-        ],
+        ),
     ],
 )
 def test_array_functions(stmt, py_expr):
@@ -611,22 +613,22 @@ def test_make_array_functions(make_func):
 @pytest.mark.parametrize(
     ("stmt", "py_expr"),
     [
-        [
+        (
             f.array_to_string(column("arr"), literal(",")),
             lambda data: [",".join([str(int(v)) for v in r]) for r in data],
-        ],
-        [
+        ),
+        (
             f.array_join(column("arr"), literal(",")),
             lambda data: [",".join([str(int(v)) for v in r]) for r in data],
-        ],
-        [
+        ),
+        (
             f.list_to_string(column("arr"), literal(",")),
             lambda data: [",".join([str(int(v)) for v in r]) for r in data],
-        ],
-        [
+        ),
+        (
             f.list_join(column("arr"), literal(",")),
             lambda data: [",".join([str(int(v)) for v in r]) for r in data],
-        ],
+        ),
     ],
 )
 def test_array_function_obj_tests(stmt, py_expr):
@@ -640,7 +642,7 @@ def test_array_function_obj_tests(stmt, py_expr):
 
 
 @pytest.mark.parametrize(
-    "function, expected_result",
+    ("function", "expected_result"),
     [
         (
             f.ascii(column("a")),
@@ -894,54 +896,72 @@ def test_temporal_functions(df):
     assert result.column(0) == pa.array([12, 6, 7], type=pa.int32())
     assert result.column(1) == pa.array([2022, 2027, 2020], type=pa.int32())
     assert result.column(2) == pa.array(
-        [datetime(2022, 12, 1), datetime(2027, 6, 1), datetime(2020, 7, 1)],
-        type=pa.timestamp("us"),
+        [
+            datetime(2022, 12, 1, tzinfo=DEFAULT_TZ),
+            datetime(2027, 6, 1, tzinfo=DEFAULT_TZ),
+            datetime(2020, 7, 1, tzinfo=DEFAULT_TZ),
+        ],
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(3) == pa.array(
-        [datetime(2022, 12, 31), datetime(2027, 6, 26), datetime(2020, 7, 2)],
-        type=pa.timestamp("us"),
+        [
+            datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+            datetime(2027, 6, 26, tzinfo=DEFAULT_TZ),
+            datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
+        ],
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(4) == pa.array(
         [
-            datetime(2022, 12, 30, 23, 47, 30),
-            datetime(2027, 6, 25, 23, 47, 30),
-            datetime(2020, 7, 1, 23, 47, 30),
+            datetime(2022, 12, 30, 23, 47, 30, tzinfo=DEFAULT_TZ),
+            datetime(2027, 6, 25, 23, 47, 30, tzinfo=DEFAULT_TZ),
+            datetime(2020, 7, 1, 23, 47, 30, tzinfo=DEFAULT_TZ),
         ],
-        type=pa.timestamp("ns"),
+        type=pa.timestamp("ns", tz=DEFAULT_TZ),
     )
     assert result.column(5) == pa.array(
-        [datetime(2023, 1, 10, 20, 52, 54)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 1, 10, 20, 52, 54, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("s"),
     )
     assert result.column(6) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ns"),
     )
     assert result.column(7) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 9, 7, 5, 6, 14, tzinfo=DEFAULT_TZ)] * 3, type=pa.timestamp("s")
     )
     assert result.column(8) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms")
+        [datetime(2023, 9, 7, 5, 6, 14, 523000, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ms"),
     )
     assert result.column(9) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("us"),
     )
     assert result.column(10) == pa.array([31, 26, 2], type=pa.int32())
     assert result.column(11) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ns"),
     )
     assert result.column(12) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14)] * 3, type=pa.timestamp("s")
+        [datetime(2023, 9, 7, 5, 6, 14, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("s"),
     )
     assert result.column(13) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523000)] * 3, type=pa.timestamp("ms")
+        [datetime(2023, 9, 7, 5, 6, 14, 523000, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ms"),
     )
     assert result.column(14) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("us")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("us"),
     )
     assert result.column(15) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ns"),
     )
     assert result.column(16) == pa.array(
-        [datetime(2023, 9, 7, 5, 6, 14, 523952)] * 3, type=pa.timestamp("ns")
+        [datetime(2023, 9, 7, 5, 6, 14, 523952, tzinfo=DEFAULT_TZ)] * 3,
+        type=pa.timestamp("ns"),
     )
 
 
@@ -1057,7 +1077,7 @@ def test_regr_funcs_sql_2():
 
 
 @pytest.mark.parametrize(
-    "func, expected",
+    ("func", "expected"),
     [
         pytest.param(f.regr_slope(column("c2"), column("c1")), [4.6], id="regr_slope"),
         pytest.param(
@@ -1160,7 +1180,7 @@ def test_binary_string_functions(df):
 
 
 @pytest.mark.parametrize(
-    "python_datatype, name, expected",
+    ("python_datatype", "name", "expected"),
     [
         pytest.param(bool, "e", pa.bool_(), id="bool"),
         pytest.param(int, "b", pa.int64(), id="int"),
@@ -1179,7 +1199,7 @@ def test_cast(df, python_datatype, name: str, expected):
 
 
 @pytest.mark.parametrize(
-    "negated, low, high, expected",
+    ("negated", "low", "high", "expected"),
     [
         pytest.param(False, 3, 5, {"filtered": [4, 5]}),
         pytest.param(False, 4, 5, {"filtered": [4, 5]}),

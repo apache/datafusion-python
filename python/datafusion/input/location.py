@@ -18,7 +18,7 @@
 """The default input source for DataFusion."""
 
 import glob
-import os
+from pathlib import Path
 from typing import Any
 
 from datafusion.common import DataTypeMap, SqlTable
@@ -31,7 +31,7 @@ class LocationInputPlugin(BaseInputSource):
     This can be read in from a file (on disk, remote etc.).
     """
 
-    def is_correct_input(self, input_item: Any, table_name: str, **kwargs):
+    def is_correct_input(self, input_item: Any, table_name: str, **kwargs: Any) -> bool:  # noqa: ARG002
         """Returns `True` if the input is valid."""
         return isinstance(input_item, str)
 
@@ -39,27 +39,28 @@ class LocationInputPlugin(BaseInputSource):
         self,
         input_item: str,
         table_name: str,
-        **kwargs,
-    ) -> SqlTable:
+        **kwargs: Any,  # noqa: ARG002
+    ) -> SqlTable:  # type: ignore[invalid-type-form]
         """Create a table from the input source."""
-        _, extension = os.path.splitext(input_item)
-        format = extension.lstrip(".").lower()
+        extension = Path(input_item).suffix
+        file_format = extension.lstrip(".").lower()
         num_rows = 0  # Total number of rows in the file. Used for statistics
         columns = []
-        if format == "parquet":
+        if file_format == "parquet":
             import pyarrow.parquet as pq
 
             # Read the Parquet metadata
             metadata = pq.read_metadata(input_item)
             num_rows = metadata.num_rows
             # Iterate through the schema and build the SqlTable
-            for col in metadata.schema:
-                columns.append(
-                    (
-                        col.name,
-                        DataTypeMap.from_parquet_type_str(col.physical_type),
-                    )
+            columns = [
+                (
+                    col.name,
+                    DataTypeMap.from_parquet_type_str(col.physical_type),
                 )
+                for col in metadata.schema
+            ]
+
         elif format == "csv":
             import csv
 
@@ -69,19 +70,18 @@ class LocationInputPlugin(BaseInputSource):
             # to get that information. However, this should only be occurring
             # at table creation time and therefore shouldn't
             # slow down query performance.
-            with open(input_item, "r") as file:
+            with Path(input_item).open() as file:
                 reader = csv.reader(file)
-                header_row = next(reader)
-                print(header_row)
+                _header_row = next(reader)
                 for _ in reader:
                     num_rows += 1
             # TODO: Need to actually consume this row into reasonable columns
-            raise RuntimeError("TODO: Currently unable to support CSV input files.")
+            msg = "TODO: Currently unable to support CSV input files."
+            raise RuntimeError(msg)
         else:
-            raise RuntimeError(
-                f"Input of format: `{format}` is currently not supported.\
+            msg = f"Input of format: `{format}` is currently not supported.\
                 Only Parquet and CSV."
-            )
+            raise RuntimeError(msg)
 
         # Input could possibly be multiple files. Create a list if so
         input_files = glob.glob(input_item)

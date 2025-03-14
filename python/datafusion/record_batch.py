@@ -26,14 +26,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import pyarrow
+    import pyarrow as pa
     import typing_extensions
 
     import datafusion._internal as df_internal
 
 
 class RecordBatch:
-    """This class is essentially a wrapper for :py:class:`pyarrow.RecordBatch`."""
+    """This class is essentially a wrapper for :py:class:`pa.RecordBatch`."""
 
     def __init__(self, record_batch: df_internal.RecordBatch) -> None:
         """This constructor is generally not called by the end user.
@@ -42,8 +42,8 @@ class RecordBatch:
         """
         self.record_batch = record_batch
 
-    def to_pyarrow(self) -> pyarrow.RecordBatch:
-        """Convert to :py:class:`pyarrow.RecordBatch`."""
+    def to_pyarrow(self) -> pa.RecordBatch:
+        """Convert to :py:class:`pa.RecordBatch`."""
         return self.record_batch.to_pyarrow()
 
 
