@@ -193,7 +193,7 @@ class Expr:
     :ref:`Expressions` in the online documentation for more information.
     """
 
-    def __init__(self, expr: expr_internal.Expr) -> None:
+    def __init__(self, expr: expr_internal.RawExpr) -> None:
         """This constructor should not be called by the end user."""
         self.expr = expr
 
@@ -383,7 +383,7 @@ class Expr:
             value = pa.scalar(value, type=pa.string_view())
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
-        return Expr(expr_internal.Expr.literal(value))
+        return Expr(expr_internal.RawExpr.literal(value))
 
     @staticmethod
     def string_literal(value: str) -> Expr:
@@ -398,13 +398,13 @@ class Expr:
         """
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string())
-            return Expr(expr_internal.Expr.literal(value))
+            return Expr(expr_internal.RawExpr.literal(value))
         return Expr.literal(value)
 
     @staticmethod
     def column(value: str) -> Expr:
         """Creates a new expression representing a column."""
-        return Expr(expr_internal.Expr.column(value))
+        return Expr(expr_internal.RawExpr.column(value))
 
     def alias(self, name: str) -> Expr:
         """Assign a name to the expression."""
