@@ -28,7 +28,7 @@ except ImportError:
     from enum import EnumMeta as EnumType
 
 
-def missing_exports(internal_obj, wrapped_obj) -> None:
+def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
     """
     Identify if any of the rust exposted structs or functions do not have wrappers.
 
@@ -46,11 +46,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         return
 
     for internal_attr_name in dir(internal_obj):
-        wrapped_attr_name = (
-            internal_attr_name[3:]
-            if internal_attr_name.startswith("Raw")
-            else internal_attr_name
-        )
+        wrapped_attr_name = internal_attr_name.removeprefix("Raw")
         assert wrapped_attr_name in dir(wrapped_obj)
 
         internal_attr = getattr(internal_obj, internal_attr_name)
