@@ -511,10 +511,14 @@ class DataFrame:
         # This check is to prevent breaking API changes where users prior to
         # DF 43.0.0 would  pass the join_keys as a positional argument instead
         # of a keyword argument.
-        if isinstance(on, tuple) and len(on) == 2:
-            if isinstance(on[0], list) and isinstance(on[1], list):
-                join_keys = on  # type: ignore
-                on = None
+        if (
+            isinstance(on, tuple)
+            and len(on) == 2
+            and isinstance(on[0], list)
+            and isinstance(on[1], list)
+        ):
+            join_keys = on  # type: ignore
+            on = None
 
         if join_keys is not None:
             warnings.warn(
@@ -723,9 +727,11 @@ class DataFrame:
         if isinstance(compression, str):
             compression = Compression.from_str(compression)
 
-        if compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
-            if compression_level is None:
-                compression_level = compression.get_default_level()
+        if (
+            compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}
+            and compression_level is None
+        ):
+            compression_level = compression.get_default_level()
 
         self.df.write_parquet(str(path), compression.value, compression_level)
 
