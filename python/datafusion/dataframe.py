@@ -285,8 +285,7 @@ class DataFrame:
                 if isinstance(expr, Expr):
                     expr_list.append(expr.expr)
                 elif isinstance(expr, Iterable):
-                    for inner_expr in expr:
-                        expr_list.append(inner_expr.expr)
+                    expr_list.extend(inner_expr.expr for inner_expr in expr)
                 else:
                     raise NotImplementedError
             if named_exprs:
