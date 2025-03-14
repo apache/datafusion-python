@@ -29,47 +29,60 @@ except ImportError:
 
 def missing_exports(internal_obj, wrapped_obj) -> None:
     """
+    Identify if any of the rust exposted structs or functions do not have wrappers.
+
     Special handling for:
     - Raw* classes: Internal implementation details that shouldn't be exposed
     - _global_ctx: Internal implementation detail
     - __self__, __class__: Python special attributes
     """
-    # Special case enums - just make sure they exist since dir()
-    # and other functions get overridden.
+    # Special case enums - EnumType overrides a some of the internal functions,
+    # so check all of the values exist and move on
     if isinstance(wrapped_obj, EnumType):
+        expected_values = [v for v in dir(internal_obj) if not v.startswith("__")]
+        for value in expected_values:
+            assert value in dir(wrapped_obj)
         return
 
-    # iterate through all the classes in datafusion._internal
-    for attr in dir(internal_obj):
+    for internal_attr_name in dir(internal_obj):
         # Skip internal implementation details that shouldn't be exposed in public API
-        if attr in ["_global_ctx"] or attr.startswith("Raw"):
+        if internal_attr_name in ["_global_ctx"]:
             continue
 
-        assert attr in dir(wrapped_obj)
+        wrapped_attr_name = (
+            internal_attr_name[3:]
+            if internal_attr_name.startswith("Raw")
+            else internal_attr_name
+        )
+        assert wrapped_attr_name in dir(wrapped_obj)
 
-        internal_attr = getattr(internal_obj, attr)
-        wrapped_attr = getattr(wrapped_obj, attr)
+        internal_attr = getattr(internal_obj, internal_attr_name)
+        wrapped_attr = getattr(wrapped_obj, wrapped_attr_name)
 
+        # There are some auto generated attributes that can be None, such as
+        # __kwdefaults__ and __doc__. As long as these are None on the internal
+        # object, it's okay to skip them. However if they do exist on the internal
+        # object they must also exist on the wrapped object.
         if internal_attr is not None:
             if wrapped_attr is None:
-                print("Missing attribute: ", attr)
+                print("Missing attribute: ", internal_attr_name)
                 assert False
 
-        if attr in ["__self__", "__class__"]:
+        if internal_attr_name in ["__self__", "__class__"]:
             continue
 
-        # check if the class found in the internal module has a
-        # wrapper exposed in the public module, datafusion
         if isinstance(internal_attr, list):
             assert isinstance(wrapped_attr, list)
-            for val in internal_attr:
-                # Skip Raw* classes as they are internal
-                if isinstance(val, str) and val.startswith("Raw"):
-                    print("Skipping Raw* class: ", val)
-                    continue
 
-                assert val in wrapped_attr
+            # We have cases like __all__ that are a list and we want to be certain that
+            # every value in the list in the internal object is also in the wrapper list
+            for val in internal_attr:
+                if isinstance(val, str) and val.startswith("Raw"):
+                    assert val[3:] in wrapped_attr
+                else:
+                    assert val in wrapped_attr
         elif hasattr(internal_attr, "__dict__"):
+            # Check all submodules recursively
             missing_exports(internal_attr, wrapped_attr)
 
 
