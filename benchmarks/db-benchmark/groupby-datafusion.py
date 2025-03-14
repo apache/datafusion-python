@@ -93,8 +93,8 @@ runtime = (
 )
 config = (
     SessionConfig()
-    .with_repartition_joins(False)
-    .with_repartition_aggregations(False)
+    .with_repartition_joins(enabled=False)
+    .with_repartition_aggregations(enabled=False)
     .set("datafusion.execution.coalesce_batches", "false")
 )
 ctx = SessionContext(config, runtime)

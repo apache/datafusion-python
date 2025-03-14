@@ -150,7 +150,7 @@ df = df_regional_customers.join(
 df = df.with_column(
     "national_volume",
     F.case(col("s_suppkey").is_null())
-    .when(lit(False), col("volume"))
+    .when(lit(value=False), col("volume"))
     .otherwise(lit(0.0)),
 )
 
