@@ -327,7 +327,7 @@ Package Contents
       Returns the number of partitions in the physical plan.
 
 
-.. py:class:: Expr(expr: datafusion._internal.expr.Expr)
+.. py:class:: Expr(expr: datafusion._internal.expr.RawExpr)
 
    Expression object.
 

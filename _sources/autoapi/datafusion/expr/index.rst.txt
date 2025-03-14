@@ -132,7 +132,7 @@ Module Contents
    .. py:attribute:: case_builder
 
 
-.. py:class:: Expr(expr: datafusion._internal.expr.Expr)
+.. py:class:: Expr(expr: datafusion._internal.expr.RawExpr)
 
    Expression object.
 
