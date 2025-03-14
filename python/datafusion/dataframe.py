@@ -89,11 +89,11 @@ class Compression(Enum):
         """
         try:
             return cls(value.lower())
-        except ValueError:
+        except ValueError as err:
             valid_values = str([item.value for item in Compression])
             raise ValueError(
                 f"{value} is not a valid Compression. Valid values are: {valid_values}"
-            )
+            ) from err
 
     def get_default_level(self) -> Optional[int]:
         """Get the default compression level for the compression type.

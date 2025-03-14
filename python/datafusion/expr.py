@@ -453,9 +453,9 @@ class Expr:
         if not isinstance(to, pa.DataType):
             try:
                 to = self._to_pyarrow_types[to]
-            except KeyError:
+            except KeyError as err:
                 error_msg = "Expected instance of pyarrow.DataType or builtins.type"
-                raise TypeError(error_msg)
+                raise TypeError(error_msg) from err
 
         return Expr(self.expr.cast(to))
 
