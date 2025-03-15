@@ -162,10 +162,7 @@ def udf_using_pyarrow_compute_impl(
         resultant_arr = pc.and_(filtered_partkey_arr, filtered_suppkey_arr)
         resultant_arr = pc.and_(resultant_arr, filtered_returnflag_arr)
 
-        if results is None:
-            results = (
-                resultant_arr if results is None else pc.or_(results, resultant_arr)
-            )
+        results = resultant_arr if results is None else pc.or_(results, resultant_arr)
 
     return results
 

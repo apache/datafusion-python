@@ -841,10 +841,7 @@ class SessionContext:
                 selected for data input.
             file_compression_type: File compression type.
         """
-        if isinstance(path, list):
-            path = [str(p) for p in path] if isinstance(path, list) else str(path)
-        else:
-            path = str(path)
+        path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
         self.ctx.register_csv(
             name,
