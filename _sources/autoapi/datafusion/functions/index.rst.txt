@@ -194,6 +194,7 @@ Functions
    datafusion.functions.random
    datafusion.functions.range
    datafusion.functions.rank
+   datafusion.functions.regexp_count
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -1654,6 +1655,14 @@ Module Contents
 
    :param partition_by: Expressions to partition the window frame on.
    :param order_by: Set ordering within the window frame.
+
+
+.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns the number of matches in a string.
+
+   Optional start position (the first position is 1) to search for the regular
+   expression.
 
 
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
