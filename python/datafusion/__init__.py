@@ -92,17 +92,17 @@ __all__ = [
 ]
 
 
-def column(value: str):
+def column(value: str) -> Expr:
     """Create a column expression."""
     return Expr.column(value)
 
 
-def col(value: str):
+def col(value: str) -> Expr:
     """Create a column expression."""
     return Expr.column(value)
 
 
-def literal(value):
+def literal(value) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
 
@@ -120,6 +120,6 @@ def str_lit(value):
     return string_literal(value)
 
 
-def lit(value):
+def lit(value) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)

@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 import datafusion._internal as df_internal
 
 if TYPE_CHECKING:
-    import pyarrow
+    import pyarrow as pa
 
 
 class Catalog:
@@ -67,7 +67,7 @@ class Table:
         self.table = table
 
     @property
-    def schema(self) -> pyarrow.Schema:
+    def schema(self) -> pa.Schema:
         """Returns the schema associated with this table."""
         return self.table.schema
 

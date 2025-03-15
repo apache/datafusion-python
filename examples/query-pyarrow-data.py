@@ -16,15 +16,15 @@
 # under the License.
 
 import datafusion
-import pyarrow
+import pyarrow as pa
 from datafusion import col
 
 # create a context
 ctx = datafusion.SessionContext()
 
 # create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+batch = pa.RecordBatch.from_arrays(
+    [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
     names=["a", "b"],
 )
 df = ctx.create_dataframe([[batch]])
@@ -38,5 +38,5 @@ df = df.select(
 # execute and collect the first (and only) batch
 result = df.collect()[0]
 
-assert result.column(0) == pyarrow.array([5, 7, 9])
-assert result.column(1) == pyarrow.array([-3, -3, -3])
+assert result.column(0) == pa.array([5, 7, 9])
+assert result.column(1) == pa.array([-3, -3, -3])

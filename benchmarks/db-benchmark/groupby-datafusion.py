@@ -20,7 +20,7 @@ import os
 import timeit
 
 import datafusion as df
-import pyarrow
+import pyarrow as pa
 from datafusion import (
     RuntimeEnvBuilder,
     SessionConfig,
@@ -37,7 +37,7 @@ print("# groupby-datafusion.py", flush=True)
 exec(open("./_helpers/helpers.py").read())
 
 
-def ans_shape(batches):
+def ans_shape(batches) -> tuple[int, int]:
     rows, cols = 0, 0
     for batch in batches:
         rows += batch.num_rows
@@ -48,7 +48,7 @@ def ans_shape(batches):
     return rows, cols
 
 
-def execute(df):
+def execute(df) -> list:
     print(df.execution_plan().display_indent())
     return df.collect()
 
@@ -68,14 +68,14 @@ data_name = os.environ["SRC_DATANAME"]
 src_grp = os.path.join("data", data_name + ".csv")
 print("loading dataset %s" % src_grp, flush=True)
 
-schema = pyarrow.schema(
+schema = pa.schema(
     [
-        ("id4", pyarrow.int32()),
-        ("id5", pyarrow.int32()),
-        ("id6", pyarrow.int32()),
-        ("v1", pyarrow.int32()),
-        ("v2", pyarrow.int32()),
-        ("v3", pyarrow.float64()),
+        ("id4", pa.int32()),
+        ("id5", pa.int32()),
+        ("id6", pa.int32()),
+        ("v1", pa.int32()),
+        ("v2", pa.int32()),
+        ("v3", pa.float64()),
     ]
 )
 
@@ -93,8 +93,8 @@ runtime = (
 )
 config = (
     SessionConfig()
-    .with_repartition_joins(False)
-    .with_repartition_aggregations(False)
+    .with_repartition_joins(enabled=False)
+    .with_repartition_aggregations(enabled=False)
     .set("datafusion.execution.coalesce_batches", "false")
 )
 ctx = SessionContext(config, runtime)

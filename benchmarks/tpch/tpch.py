@@ -21,7 +21,7 @@ import time
 from datafusion import SessionContext
 
 
-def bench(data_path, query_path):
+def bench(data_path, query_path) -> None:
     with open("results.csv", "w") as results:
         # register tables
         start = time.time()
@@ -68,10 +68,7 @@ def bench(data_path, query_path):
             with open(f"{query_path}/q{query}.sql") as f:
                 text = f.read()
                 tmp = text.split(";")
-                queries = []
-                for str in tmp:
-                    if len(str.strip()) > 0:
-                        queries.append(str.strip())
+                queries = [s.strip() for s in tmp if len(s.strip()) > 0]
 
                 try:
                     start = time.time()

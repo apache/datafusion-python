@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pyarrow as pa
 
@@ -176,7 +176,7 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e, True, True).raw_sort
+    return SortExpr(e, ascending=True, nulls_first=True).raw_sort
 
 
 def sort_list_to_raw_sort_list(
@@ -439,24 +439,21 @@ class Expr:
             value = Expr.literal(value)
         return Expr(functions_internal.nvl(self.expr, value.expr))
 
-    _to_pyarrow_types = {
+    _to_pyarrow_types: ClassVar[dict[type, pa.DataType]] = {
         float: pa.float64(),
         int: pa.int64(),
         str: pa.string(),
         bool: pa.bool_(),
     }
 
-    def cast(
-        self, to: pa.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]
-    ) -> Expr:
+    def cast(self, to: pa.DataType[Any] | type[float | int | str | bool]) -> Expr:
         """Cast to a new data type."""
         if not isinstance(to, pa.DataType):
             try:
                 to = self._to_pyarrow_types[to]
-            except KeyError:
-                raise TypeError(
-                    "Expected instance of pyarrow.DataType or builtins.type"
-                )
+            except KeyError as err:
+                error_msg = "Expected instance of pyarrow.DataType or builtins.type"
+                raise TypeError(error_msg) from err
 
         return Expr(self.expr.cast(to))
 
@@ -565,9 +562,7 @@ class Expr:
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(
-            self.expr.partition_by(list(e.expr for e in partition_by))
-        )
+        return ExprFuncBuilder(self.expr.partition_by([e.expr for e in partition_by]))
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
         """Set the frame fora  window function.
@@ -610,7 +605,7 @@ class Expr:
 
 
 class ExprFuncBuilder:
-    def __init__(self, builder: expr_internal.ExprFuncBuilder):
+    def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
         self.builder = builder
 
     def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
@@ -638,7 +633,7 @@ class ExprFuncBuilder:
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set partitioning for window functions."""
         return ExprFuncBuilder(
-            self.builder.partition_by(list(e.expr for e in partition_by))
+            self.builder.partition_by([e.expr for e in partition_by])
         )
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
@@ -693,11 +688,11 @@ class WindowFrame:
         """
         if not isinstance(start_bound, pa.Scalar) and start_bound is not None:
             start_bound = pa.scalar(start_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 start_bound = start_bound.cast(pa.uint64())
         if not isinstance(end_bound, pa.Scalar) and end_bound is not None:
             end_bound = pa.scalar(end_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 end_bound = end_bound.cast(pa.uint64())
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
@@ -709,7 +704,7 @@ class WindowFrame:
         """Returns starting bound."""
         return WindowFrameBound(self.window_frame.get_lower_bound())
 
-    def get_upper_bound(self):
+    def get_upper_bound(self) -> WindowFrameBound:
         """Returns end bound."""
         return WindowFrameBound(self.window_frame.get_upper_bound())
 
