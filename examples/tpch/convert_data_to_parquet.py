@@ -117,9 +117,9 @@ all_schemas["supplier"] = [
 ]
 
 curr_dir = os.path.dirname(os.path.abspath(__file__))
-for filename, curr_schema in all_schemas.items():
+for filename, curr_schema_val in all_schemas.items():
     # For convenience, go ahead and convert the schema column names to lowercase
-    curr_schema = [(s[0].lower(), s[1]) for s in curr_schema]
+    curr_schema = [(s[0].lower(), s[1]) for s in curr_schema_val]
 
     # Pre-collect the output columns so we can ignore the null field we add
     # in to handle the trailing | in the file

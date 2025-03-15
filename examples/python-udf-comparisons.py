@@ -112,8 +112,8 @@ def is_of_interest_impl(
     returnflag_arr: pa.Array,
 ) -> pa.Array:
     result = []
-    for idx, partkey in enumerate(partkey_arr):
-        partkey = partkey.as_py()
+    for idx, partkey_val in enumerate(partkey_arr):
+        partkey = partkey_val.as_py()
         suppkey = suppkey_arr[idx].as_py()
         returnflag = returnflag_arr[idx].as_py()
         value = (partkey, suppkey, returnflag)
