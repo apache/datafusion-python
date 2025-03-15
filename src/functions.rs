@@ -176,7 +176,7 @@ fn regexp_replace(
 
 #[pyfunction]
 #[pyo3(signature = (string, pattern, start, flags=None))]
-/// Replaces substring(s) matching a POSIX regular expression.
+/// Returns the number of matches found in the string.
 fn regexp_count(
     string: PyExpr,
     pattern: PyExpr,
