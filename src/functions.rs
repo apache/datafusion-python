@@ -173,6 +173,25 @@ fn regexp_replace(
     )
     .into())
 }
+
+#[pyfunction]
+#[pyo3(signature = (string, pattern, start, flags=None))]
+/// Returns the number of matches found in the string.
+fn regexp_count(
+    string: PyExpr,
+    pattern: PyExpr,
+    start: Option<PyExpr>,
+    flags: Option<PyExpr>,
+) -> PyResult<PyExpr> {
+    Ok(functions::expr_fn::regexp_count(
+        string.expr,
+        pattern.expr,
+        start.map(|x| x.expr),
+        flags.map(|x| x.expr),
+    )
+    .into())
+}
+
 /// Creates a new Sort Expr
 #[pyfunction]
 fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> {
@@ -943,6 +962,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(power))?;
     m.add_wrapped(wrap_pyfunction!(radians))?;
     m.add_wrapped(wrap_pyfunction!(random))?;
+    m.add_wrapped(wrap_pyfunction!(regexp_count))?;
     m.add_wrapped(wrap_pyfunction!(regexp_like))?;
     m.add_wrapped(wrap_pyfunction!(regexp_match))?;
     m.add_wrapped(wrap_pyfunction!(regexp_replace))?;
