@@ -498,27 +498,64 @@ Module Contents
 
 
 
-   .. py:method:: udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+   .. py:method:: _create_window_udf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
       :staticmethod:
 
 
-      Create a new User-Defined Window Function.
+      Create a WindowUDF instance from function arguments.
 
-      If your :py:class:`WindowEvaluator` can be instantiated with no arguments, you
-      can simply pass it's type as ``func``. If you need to pass additional arguments
-      to it's constructor, you can define a lambda or a factory method. During runtime
-      the :py:class:`WindowEvaluator` will be constructed for every instance in
-      which this UDWF is used. The following examples are all valid.
 
-      .. code-block:: python
 
+   .. py:method:: _create_window_udf_decorator(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+      :staticmethod:
+
+
+      Create a decorator for a WindowUDF.
+
+
+
+   .. py:method:: _get_default_name(func: Callable) -> str
+      :staticmethod:
+
+
+      Get the default name for a function based on its attributes.
+
+
+
+   .. py:method:: _normalize_input_types(input_types: pyarrow.DataType | list[pyarrow.DataType]) -> list[pyarrow.DataType]
+      :staticmethod:
+
+
+      Convert a single DataType to a list if needed.
+
+
+
+   .. py:method:: udwf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, WindowUDF]
+                  udwf(func: Callable[[], WindowEvaluator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, volatility: Volatility | str, name: Optional[str] = None) -> WindowUDF
+      :staticmethod:
+
+
+      Create a new User-Defined Window Function (UDWF).
+
+      This class can be used both as a **function** and as a **decorator**.
+
+      Usage:
+          - **As a function**: Call `udwf(func, input_types, return_type, volatility,
+            name)`.
+          - **As a decorator**: Use `@udwf(input_types, return_type, volatility,
+            name)`. When using `udwf` as a decorator, **do not pass `func`
+            explicitly**.
+
+      **Function example:**
+          ```
           import pyarrow as pa
 
           class BiasedNumbers(WindowEvaluator):
               def __init__(self, start: int = 0) -> None:
                   self.start = start
 
-              def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+              def evaluate_all(self, values: list[pa.Array],
+                  num_rows: int) -> pa.Array:
                   return pa.array([self.start + i for i in range(num_rows)])
 
           def bias_10() -> BiasedNumbers:
@@ -528,14 +565,23 @@ Module Contents
           udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
           udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
 
-      :param func: A callable to create the window function.
-      :param input_types: The data types of the arguments to ``func``.
+          ```
+
+      **Decorator example:**
+          ```
+          @udwf(pa.int64(), pa.int64(), "immutable")
+          def biased_numbers() -> BiasedNumbers:
+              return BiasedNumbers(10)
+          ```
+
+      :param func: **Only needed when calling as a function. Skip this argument when
+                   using `udwf` as a decorator.**
+      :param input_types: The data types of the arguments.
       :param return_type: The data type of the return value.
       :param volatility: See :py:class:`Volatility` for allowed values.
-      :param arguments: A list of arguments to pass in to the __init__ method for accum.
       :param name: A descriptive name for the function.
 
-      :returns: A user-defined window function.
+      :returns: A user-defined window function that can be used in window function calls.
 
 
 
