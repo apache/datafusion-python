@@ -50,6 +50,8 @@ from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
 
+ctx = SessionContext()
+
 __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
@@ -76,6 +78,7 @@ __all__ = [
     "col",
     "column",
     "common",
+    "ctx",
     "expr",
     "functions",
     "lit",
