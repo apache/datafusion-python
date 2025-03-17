@@ -28,7 +28,7 @@ except ImportError:
     from enum import EnumMeta as EnumType
 
 
-def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
+def missing_exports(internal_obj, wrapped_obj) -> None:
     """
     Identify if any of the rust exposted structs or functions do not have wrappers.
 
@@ -56,9 +56,8 @@ def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
         # __kwdefaults__ and __doc__. As long as these are None on the internal
         # object, it's okay to skip them. However if they do exist on the internal
         # object they must also exist on the wrapped object.
-        if internal_attr is not None:
-            if wrapped_attr is None:
-                pytest.fail(f"Missing attribute: {internal_attr_name}")
+        if internal_attr is not None and wrapped_attr is None:
+            pytest.fail(f"Missing attribute: {internal_attr_name}")
 
         if internal_attr_name in ["__self__", "__class__"]:
             continue

@@ -89,8 +89,8 @@ def is_of_interest(
     same number of rows in the output.
     """
     result = []
-    for idx, brand in enumerate(brand_arr):
-        brand = brand.as_py()
+    for idx, brand_val in enumerate(brand_arr):
+        brand = brand_val.as_py()
         if brand in items_of_interest:
             values_of_interest = items_of_interest[brand]
 
