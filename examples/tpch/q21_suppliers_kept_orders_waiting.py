@@ -65,7 +65,7 @@ df = df_lineitem.join(df, left_on="l_orderkey", right_on="o_orderkey", how="inne
 df = df.with_column(
     "failed_supp",
     F.case(col("l_receiptdate") > col("l_commitdate"))
-    .when(lit(True), col("l_suppkey"))
+    .when(lit(value=True), col("l_suppkey"))
     .end(),
 )
 

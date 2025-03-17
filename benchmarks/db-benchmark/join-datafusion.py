@@ -29,7 +29,7 @@ print("# join-datafusion.py", flush=True)
 exec(open("./_helpers/helpers.py").read())
 
 
-def ans_shape(batches):
+def ans_shape(batches) -> tuple[int, int]:
     rows, cols = 0, 0
     for batch in batches:
         rows += batch.num_rows
@@ -57,7 +57,8 @@ src_jn_y = [
     os.path.join("data", y_data_name[2] + ".csv"),
 ]
 if len(src_jn_y) != 3:
-    raise Exception("Something went wrong in preparing files used for join")
+    error_msg = "Something went wrong in preparing files used for join"
+    raise Exception(error_msg)
 
 print(
     "loading datasets "

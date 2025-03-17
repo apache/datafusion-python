@@ -24,7 +24,7 @@ import sys
 from github import Github
 
 
-def print_pulls(repo_name, title, pulls):
+def print_pulls(repo_name, title, pulls) -> None:
     if len(pulls) > 0:
         print(f"**{title}:**")
         print()
@@ -34,7 +34,7 @@ def print_pulls(repo_name, title, pulls):
         print()
 
 
-def generate_changelog(repo, repo_name, tag1, tag2, version):
+def generate_changelog(repo, repo_name, tag1, tag2, version) -> None:
     # get a list of commits between two tags
     print(f"Fetching list of commits between {tag1} and {tag2}", file=sys.stderr)
     comparison = repo.compare(tag1, tag2)
@@ -154,7 +154,7 @@ under the License.
     )
 
 
-def cli(args=None):
+def cli(args=None) -> None:
     """Process command line arguments."""
     if not args:
         args = sys.argv[1:]

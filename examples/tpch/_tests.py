@@ -91,7 +91,7 @@ def check_q17(df):
         ("q22_global_sales_opportunity", "q22"),
     ],
 )
-def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
+def test_tpch_query_vs_answer_file(query_code: str, answer_file: str) -> None:
     module = import_module(query_code)
     df: DataFrame = module.df
 
@@ -122,3 +122,5 @@ def test_tpch_query_vs_answer_file(query_code: str, answer_file: str):
 
     assert df.join(df_expected, on=cols, how="anti").count() == 0
     assert df.count() == df_expected.count()
+
+    return None
