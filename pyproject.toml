@@ -81,6 +81,7 @@ ignore = [
     "UP007",   # Disallowing Union is pedantic
     # TODO: Enable all of the following, but this PR is getting too large already
     "PLR0913",
+    "SIM102",
     "TRY003",
     "PLR2004",
     "PD901",
