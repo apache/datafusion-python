@@ -1628,7 +1628,7 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>partitions</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.RecordBatch</span></code> partitions to register.</p></li>
+<li><p><strong>partitions</strong> – <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code> partitions to register.</p></li>
 <li><p><strong>name</strong> – Resultant dataframe name.</p></li>
 <li><p><strong>schema</strong> – Schema for the partitions.</p></li>
 </ul>
@@ -1944,7 +1944,7 @@ selected for data input.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_dataset">
 <span class="sig-name descname"><span class="pre">register_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_dataset" title="Link to this definition">¶</a></dt>
-<dd><p>Register a <code class="xref py py-class docutils literal notranslate"><span class="pre">pyarrow.dataset.Dataset</span></code> as a table.</p>
+<dd><p>Register a <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.dataset.Dataset</span></code> as a table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -2099,7 +2099,7 @@ which returns a PyCapsule that exposes a <code class="docutils literal notransla
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_view">
-<span class="sig-name descname"><span class="pre">register_view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.context.SessionContext.register_view" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_view</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_view" title="Link to this definition">¶</a></dt>
 <dd><p>Register a :py:class: <cite>~datafusion.detaframe.DataFrame</cite> as a view.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>

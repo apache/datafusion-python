@@ -2042,16 +2042,16 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a>(value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a>(→ expr.Expr)</p></td>
 <td><p>Create a column expression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.column" title="datafusion.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(value)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.column" title="datafusion.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(→ expr.Expr)</p></td>
 <td><p>Create a column expression.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.lit" title="datafusion.lit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lit</span></code></a>(value)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.lit" title="datafusion.lit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lit</span></code></a>(→ expr.Expr)</p></td>
 <td><p>Create a literal expression.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.literal" title="datafusion.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(value)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.literal" title="datafusion.literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">literal</span></code></a>(→ expr.Expr)</p></td>
 <td><p>Create a literal expression.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.read_avro" title="datafusion.read_avro"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_avro</span></code></a>(→ datafusion.dataframe.DataFrame)</p></td>
@@ -2471,7 +2471,7 @@ element index begins at <code class="docutils literal notranslate"><span class="
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.cast">
-<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.cast" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.cast" title="Link to this definition">¶</a></dt>
 <dd><p>Cast to a new data type.</p>
 </dd></dl>
 
@@ -2724,7 +2724,7 @@ type of expression, an error will be generated when <code class="docutils litera
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.Expr._to_pyarrow_types">
-<span class="sig-name descname"><span class="pre">_to_pyarrow_types</span></span><a class="headerlink" href="#datafusion.Expr._to_pyarrow_types" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">_to_pyarrow_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">type</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#datafusion.Expr._to_pyarrow_types" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -3421,7 +3421,7 @@ parameter must be set.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.WindowFrame.get_upper_bound">
-<span class="sig-name descname"><span class="pre">get_upper_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.WindowFrame.get_upper_bound" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_upper_bound</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.WindowFrameBound" title="datafusion.expr.WindowFrameBound"><span class="pre">WindowFrameBound</span></a></span></span><a class="headerlink" href="#datafusion.WindowFrame.get_upper_bound" title="Link to this definition">¶</a></dt>
 <dd><p>Returns end bound.</p>
 </dd></dl>
 
@@ -3543,25 +3543,25 @@ using `udwf` as a decorator.</strong></p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.col">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.col" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.col" title="Link to this definition">¶</a></dt>
 <dd><p>Create a column expression.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.column">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.column" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.column" title="Link to this definition">¶</a></dt>
 <dd><p>Create a column expression.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.lit">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">lit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.lit" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">lit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.lit" title="Link to this definition">¶</a></dt>
 <dd><p>Create a literal expression.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.literal">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.literal" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.literal" title="Link to this definition">¶</a></dt>
 <dd><p>Create a literal expression.</p>
 </dd></dl>
 

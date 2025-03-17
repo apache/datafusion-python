@@ -1847,7 +1847,7 @@ Module Contents
    Returns the last ``n`` characters in the ``string``.
 
 
-.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr = Expr.literal(0)) -> datafusion.expr.Expr
+.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Round the argument to the nearest integer.
 

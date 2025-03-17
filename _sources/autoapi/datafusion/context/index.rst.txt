@@ -421,7 +421,7 @@ Module Contents
 
       Create and return a dataframe using the provided partitions.
 
-      :param partitions: :py:class:`pyarrow.RecordBatch` partitions to register.
+      :param partitions: :py:class:`pa.RecordBatch` partitions to register.
       :param name: Resultant dataframe name.
       :param schema: Schema for the partitions.
 
@@ -667,7 +667,7 @@ Module Contents
 
    .. py:method:: register_dataset(name: str, dataset: pyarrow.dataset.Dataset) -> None
 
-      Register a :py:class:`pyarrow.dataset.Dataset` as a table.
+      Register a :py:class:`pa.dataset.Dataset` as a table.
 
       :param name: Name of the table to register.
       :param dataset: PyArrow dataset.
@@ -792,7 +792,7 @@ Module Contents
 
 
 
-   .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame)
+   .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame) -> None
 
       Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
 

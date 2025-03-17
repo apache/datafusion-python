@@ -292,7 +292,7 @@ Module Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]) -> Expr
+   .. py:method:: cast(to: pyarrow.DataType[Any] | type[float | int | str | bool]) -> Expr
 
       Cast to a new data type.
 
@@ -540,6 +540,7 @@ Module Contents
 
 
    .. py:attribute:: _to_pyarrow_types
+      :type:  ClassVar[dict[type, pyarrow.DataType]]
 
 
    .. py:attribute:: expr
@@ -638,7 +639,7 @@ Module Contents
 
 
 
-   .. py:method:: get_upper_bound()
+   .. py:method:: get_upper_bound() -> WindowFrameBound
 
       Returns end bound.
 

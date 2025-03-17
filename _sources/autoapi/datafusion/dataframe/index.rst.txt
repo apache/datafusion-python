@@ -115,7 +115,7 @@ Module Contents
 
 
 
-   .. py:method:: __getitem__(key: str | List[str]) -> DataFrame
+   .. py:method:: __getitem__(key: str | list[str]) -> DataFrame
 
       Return a new :py:class`DataFrame` with the specified column or columns.
 
