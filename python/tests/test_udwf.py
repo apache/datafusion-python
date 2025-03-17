@@ -162,14 +162,27 @@ class SmoothTwoColumn(WindowEvaluator):
         return pa.array(results)
 
 
+class SimpleWindowCount(WindowEvaluator):
+    """A simple window evaluator that counts rows."""
+
+    def __init__(self, base: int = 0) -> None:
+        self.base = base
+
+    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+        return pa.array([self.base + i for i in range(num_rows)])
+
+
 class NotSubclassOfWindowEvaluator:
     pass
 
 
 @pytest.fixture
-def df():
-    ctx = SessionContext()
+def ctx():
+    return SessionContext()
 
+
+@pytest.fixture
+def complex_window_df(ctx):
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [
@@ -182,7 +195,17 @@ def df():
     return ctx.create_dataframe([[batch]])
 
 
-def test_udwf_errors(df):
+@pytest.fixture
+def count_window_df(ctx):
+    # create a RecordBatch and a new DataFrame from it
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 4, 6])],
+        names=["a", "b"],
+    )
+    return ctx.create_dataframe([[batch]], name="test_table")
+
+
+def test_udwf_errors(complex_window_df):
     with pytest.raises(TypeError):
         udwf(
             NotSubclassOfWindowEvaluator,
@@ -190,6 +213,103 @@ def test_udwf_errors(df):
             pa.float64(),
             volatility="immutable",
         )
+
+
+def test_udwf_errors_with_message():
+    """Test error cases for UDWF creation."""
+    with pytest.raises(
+        TypeError, match="`func` must implement the abstract base class WindowEvaluator"
+    ):
+        udwf(
+            NotSubclassOfWindowEvaluator, pa.int64(), pa.int64(), volatility="immutable"
+        )
+
+
+def test_udwf_basic_usage(count_window_df):
+    """Test basic UDWF usage with a simple counting window function."""
+    simple_count = udwf(
+        SimpleWindowCount, pa.int64(), pa.int64(), volatility="immutable"
+    )
+
+    df = count_window_df.select(
+        simple_count(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])
+
+
+def test_udwf_with_args(count_window_df):
+    """Test UDWF with constructor arguments."""
+    count_base10 = udwf(
+        lambda: SimpleWindowCount(10), pa.int64(), pa.int64(), volatility="immutable"
+    )
+
+    df = count_window_df.select(
+        count_base10(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([10, 11, 12])
+
+
+def test_udwf_decorator_basic(count_window_df):
+    """Test UDWF used as a decorator."""
+
+    @udwf([pa.int64()], pa.int64(), "immutable")
+    def window_count() -> WindowEvaluator:
+        return SimpleWindowCount()
+
+    df = count_window_df.select(
+        window_count(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])
+
+
+def test_udwf_decorator_with_args(count_window_df):
+    """Test UDWF decorator with constructor arguments."""
+
+    @udwf([pa.int64()], pa.int64(), "immutable")
+    def window_count_base10() -> WindowEvaluator:
+        return SimpleWindowCount(10)
+
+    df = count_window_df.select(
+        window_count_base10(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([10, 11, 12])
+
+
+def test_register_udwf(ctx, count_window_df):
+    """Test registering and using UDWF in SQL context."""
+    window_count = udwf(
+        SimpleWindowCount,
+        [pa.int64()],
+        pa.int64(),
+        volatility="immutable",
+        name="window_count",
+    )
+
+    ctx.register_udwf(window_count)
+    result = ctx.sql(
+        """
+        SELECT window_count(a)
+        OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED
+        FOLLOWING) FROM test_table
+        """
+    ).collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])
 
 
 smooth_default = udwf(
@@ -299,10 +419,50 @@ data_test_udwf_functions = [
 
 
 @pytest.mark.parametrize(("name", "expr", "expected"), data_test_udwf_functions)
-def test_udwf_functions(df, name, expr, expected):
-    df = df.select("a", "b", f.round(expr, lit(3)).alias(name))
+def test_udwf_functions(complex_window_df, name, expr, expected):
+    df = complex_window_df.select("a", "b", f.round(expr, lit(3)).alias(name))
 
     # execute and collect the first (and only) batch
     result = df.sort(column("a")).select(column(name)).collect()[0]
 
     assert result.column(0) == pa.array(expected)
+
+
+@pytest.mark.parametrize(
+    "udwf_func",
+    [
+        udwf(SimpleWindowCount, pa.int64(), pa.int64(), "immutable"),
+        udwf(SimpleWindowCount, [pa.int64()], pa.int64(), "immutable"),
+        udwf([pa.int64()], pa.int64(), "immutable")(lambda: SimpleWindowCount()),
+        udwf(pa.int64(), pa.int64(), "immutable")(lambda: SimpleWindowCount()),
+    ],
+)
+def test_udwf_overloads(udwf_func, count_window_df):
+    df = count_window_df.select(
+        udwf_func(column("a"))
+        .window_frame(WindowFrame("rows", None, None))
+        .build()
+        .alias("count")
+    )
+    result = df.collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])
+
+
+def test_udwf_named_function(ctx, count_window_df):
+    """Test UDWF with explicit name parameter."""
+    window_count = udwf(
+        SimpleWindowCount,
+        pa.int64(),
+        pa.int64(),
+        volatility="immutable",
+        name="my_custom_counter",
+    )
+
+    ctx.register_udwf(window_count)
+    result = ctx.sql(
+        """
+        SELECT my_custom_counter(a)
+        OVER (ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED
+        FOLLOWING) FROM test_table"""
+    ).collect()[0]
+    assert result.column(0) == pa.array([0, 1, 2])

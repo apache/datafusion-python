@@ -101,7 +101,7 @@ pub mod window;
 use sort_expr::{to_sort_expressions, PySortExpr};
 
 /// A PyExpr that can be used on a DataFrame
-#[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
+#[pyclass(name = "RawExpr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
     pub expr: Expr,

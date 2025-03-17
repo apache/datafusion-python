@@ -217,6 +217,7 @@ __all__ = [
     "random",
     "range",
     "rank",
+    "regexp_count",
     "regexp_like",
     "regexp_match",
     "regexp_replace",
@@ -777,6 +778,23 @@ def regexp_replace(
     if flags is not None:
         flags = flags.expr
     return Expr(f.regexp_replace(string.expr, pattern.expr, replacement.expr, flags))
+
+
+def regexp_count(
+    string: Expr, pattern: Expr, start: Expr, flags: Expr | None = None
+) -> Expr:
+    """Returns the number of matches in a string.
+
+    Optional start position (the first position is 1) to search for the regular
+    expression.
+    """
+    if flags is not None:
+        flags = flags.expr
+    if start is not None:
+        start = start.expr
+    else:
+        start = Expr.expr
+    return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
 
 
 def repeat(string: Expr, n: Expr) -> Expr:
