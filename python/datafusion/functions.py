@@ -790,10 +790,7 @@ def regexp_count(
     """
     if flags is not None:
         flags = flags.expr
-    if start is not None:
-        start = start.expr
-    else:
-        start = Expr.expr
+    start = start.expr if start is not None else Expr.expr
     return Expr(f.regexp_count(string.expr, pattern.expr, start, flags))
 
 
