@@ -291,6 +291,8 @@ impl PySessionContext {
         };
         deltalake::azure::register_handlers(None);
         deltalake::aws::register_handlers(None);
+        let _ = env_logger::try_init();
+
         let config = config.set_bool("datafusion.sql_parser.enable_ident_normalization", false);
 
         let runtime = Arc::new(runtime_env_builder.build()?);

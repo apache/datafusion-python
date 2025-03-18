@@ -50,7 +50,7 @@ futures = "0.3"
 object_store = { version = "0.11.0", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
 deltalake = { version = "0.25.0", features = ["datafusion", "azure", "s3"] }
-
+env_logger = "0.11.7"
 
 [build-dependencies]
 prost-types = "0.13" # keep in line with `datafusion-substrait`
