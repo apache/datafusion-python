@@ -896,9 +896,9 @@ dependencies = [
 
 [[package]]
 name = "backon"
-version = "1.4.0"
+version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49fef586913a57ff189f25c9b3d034356a5bf6b3fa9a7f067588fe1698ba1f5d"
+checksum = "970d91570c01a8a5959b36ad7dd1c30642df24b6b3068710066f6809f7033bb7"
 dependencies = [
  "fastrand",
  "tokio",
@@ -1384,7 +1384,7 @@ dependencies = [
 [[package]]
 name = "datafusion"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "apache-avro",
  "arrow",
@@ -1436,7 +1436,7 @@ dependencies = [
 [[package]]
 name = "datafusion-catalog"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "async-trait",
@@ -1455,7 +1455,7 @@ dependencies = [
 [[package]]
 name = "datafusion-catalog-listing"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "async-trait",
@@ -1476,7 +1476,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "apache-avro",
@@ -1502,7 +1502,7 @@ dependencies = [
 [[package]]
 name = "datafusion-common-runtime"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "log",
  "tokio",
@@ -1511,7 +1511,7 @@ dependencies = [
 [[package]]
 name = "datafusion-datasource"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "async-compression",
@@ -1544,12 +1544,12 @@ dependencies = [
 [[package]]
 name = "datafusion-doc"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 
 [[package]]
 name = "datafusion-execution"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "dashmap",
@@ -1567,7 +1567,7 @@ dependencies = [
 [[package]]
 name = "datafusion-expr"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "chrono",
@@ -1588,7 +1588,7 @@ dependencies = [
 [[package]]
 name = "datafusion-expr-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -1619,7 +1619,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "arrow-buffer",
@@ -1647,7 +1647,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-aggregate"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "arrow",
@@ -1667,7 +1667,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-aggregate-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "arrow",
@@ -1679,7 +1679,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-nested"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "arrow-ord",
@@ -1699,7 +1699,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-table"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "async-trait",
@@ -1714,7 +1714,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-window"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "datafusion-common",
  "datafusion-doc",
@@ -1730,7 +1730,7 @@ dependencies = [
 [[package]]
 name = "datafusion-functions-window-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "datafusion-common",
  "datafusion-physical-expr-common",
@@ -1739,7 +1739,7 @@ dependencies = [
 [[package]]
 name = "datafusion-macros"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "datafusion-expr",
  "quote",
@@ -1749,7 +1749,7 @@ dependencies = [
 [[package]]
 name = "datafusion-optimizer"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "chrono",
@@ -1770,7 +1770,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "arrow",
@@ -1791,7 +1791,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-expr-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "arrow",
@@ -1804,7 +1804,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-optimizer"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -1822,7 +1822,7 @@ dependencies = [
 [[package]]
 name = "datafusion-physical-plan"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "ahash",
  "arrow",
@@ -1851,7 +1851,7 @@ dependencies = [
 [[package]]
 name = "datafusion-proto"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "chrono",
@@ -1866,7 +1866,7 @@ dependencies = [
 [[package]]
 name = "datafusion-proto-common"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "datafusion-common",
@@ -1901,7 +1901,7 @@ dependencies = [
 [[package]]
 name = "datafusion-sql"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "arrow",
  "bigdecimal",
@@ -1917,7 +1917,7 @@ dependencies = [
 [[package]]
 name = "datafusion-substrait"
 version = "46.0.0"
-source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#6bea2358c770e6c02edb7b108a434fb0f5758b64"
+source = "git+https://github.com/hstack/arrow-datafusion.git?branch=main#4b23a6fb47238f64b0704fef2e9d9e90271422e9"
 dependencies = [
  "async-recursion",
  "async-trait",
@@ -4693,9 +4693,9 @@ checksum = "61c41af27dd6d1e27b1b16b489db798443478cef1f06a660c96db617ba5de3b1"
 
 [[package]]
 name = "tempfile"
-version = "3.19.0"
+version = "3.19.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "488960f40a3fd53d72c2a29a58722561dee8afdd175bd88e3db4677d7b2ba600"
+checksum = "7437ac7763b9b123ccf33c338a5cc1bac6f69b45a136c19bdd8a65e3916435bf"
 dependencies = [
  "fastrand",
  "getrandom 0.3.2",
