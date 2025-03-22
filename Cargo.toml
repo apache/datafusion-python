@@ -47,7 +47,7 @@ uuid = { version = "1.12", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
 async-trait = "0.1.73"
 futures = "0.3"
-object_store = { version = "0.11.0", features = ["aws", "gcp", "azure", "http"] }
+object_store = { version = "0.12.0", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
 
 [build-dependencies]
