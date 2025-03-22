@@ -1377,7 +1377,7 @@ dependencies = [
 
 [[package]]
 name = "datafusion-python"
-version = "45.2.0"
+version = "46.0.0"
 dependencies = [
  "arrow",
  "async-trait",
