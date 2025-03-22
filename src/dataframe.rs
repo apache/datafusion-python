@@ -887,7 +887,8 @@ async fn collect_record_batches_to_display(
     min_rows: usize,
     max_rows: usize,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
-    let mut stream = df.execute_stream().await?;
+    let partitioned_stream = df.execute_stream_partitioned().await?;
+    let mut stream = futures::stream::iter(partitioned_stream).flatten();
     let mut size_estimate_so_far = 0;
     let mut rows_so_far = 0;
     let mut record_batches = Vec::default();
