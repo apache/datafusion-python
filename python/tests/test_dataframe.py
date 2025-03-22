@@ -753,7 +753,8 @@ def test_execution_plan(aggregate_df):
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
-    assert "CsvExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
 
     ctx = SessionContext()
     rows_returned = 0
