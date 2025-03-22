@@ -17,6 +17,7 @@
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion::functions_window::all_default_window_functions;
+use datafusion::logical_expr::expr::WindowFunctionParams;
 use datafusion::logical_expr::ExprFunctionExt;
 use datafusion::logical_expr::WindowFrame;
 use pyo3::{prelude::*, wrap_pyfunction};
@@ -215,10 +216,7 @@ fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
 #[pyfunction]
 fn col(name: &str) -> PyResult<PyExpr> {
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Column(Column {
-            relation: None,
-            name: name.to_string(),
-        }),
+        expr: datafusion::logical_expr::Expr::Column(Column::new_unqualified(name)),
     })
 }
 
@@ -333,19 +331,21 @@ fn window(
     Ok(PyExpr {
         expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
             fun,
-            args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
-            partition_by: partition_by
-                .unwrap_or_default()
-                .into_iter()
-                .map(|x| x.expr)
-                .collect::<Vec<_>>(),
-            order_by: order_by
-                .unwrap_or_default()
-                .into_iter()
-                .map(|x| x.into())
-                .collect::<Vec<_>>(),
-            window_frame,
-            null_treatment: None,
+            params: WindowFunctionParams {
+                args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
+                partition_by: partition_by
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|x| x.expr)
+                    .collect::<Vec<_>>(),
+                order_by: order_by
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|x| x.into())
+                    .collect::<Vec<_>>(),
+                window_frame,
+                null_treatment: None,
+            },
         }),
     })
 }
