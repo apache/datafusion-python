@@ -15,35 +15,34 @@
 # specific language governing permissions and limitations
 # under the License.
 
+
+import os
 from datafusion import SessionContext
 from datafusion import substrait as ss
+
+# Get the directory of the current script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the path to the CSV file
+# Using os.path.join for cross-platform compatibility
+csv_file_path = os.path.join(script_dir, '..', 'testing', 'data', 'csv', 'aggregate_test_100.csv')
 
 # Create a DataFusion context
 ctx = SessionContext()
 
 # Register table with context
 ctx.register_csv("aggregate_test_data", "./testing/data/csv/aggregate_test_100.csv")
+try:
+    # Register table with context
+    ctx.register_csv("aggregate_test_data", csv_file_path)
+except Exception as e:
+    print(f"Error registering CSV file: {e}")
+    print(f"Looking for file at: {csv_file_path}")
+    raise
 
+# Create Substrait plan from SQL query
 substrait_plan = ss.Serde.serialize_to_plan("SELECT * FROM aggregate_test_data", ctx)
 # type(substrait_plan) -> <class 'datafusion.substrait.plan'>
 
-# Encode it to bytes
-substrait_bytes = substrait_plan.encode()
-# type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
-# where they could subsequently be deserialized on the receiving end.
 
-# Alternative serialization approaches
-# type(substrait_bytes) -> <class 'bytes'>, at this point the bytes can be distributed to file, network, etc safely
-# where they could subsequently be deserialized on the receiving end.
-substrait_bytes = ss.Serde.serialize_bytes("SELECT * FROM aggregate_test_data", ctx)
 
-# Imagine here bytes would be read from network, file, etc ... for example brevity this is omitted and variable is simply reused
-# type(substrait_plan) -> <class 'datafusion.substrait.plan'>
-substrait_plan = ss.Serde.deserialize_bytes(substrait_bytes)
-
-# type(df_logical_plan) -> <class 'substrait.LogicalPlan'>
-df_logical_plan = ss.Consumer.from_substrait_plan(ctx, substrait_plan)
-
-# Back to Substrait Plan just for demonstration purposes
-# type(substrait_plan) -> <class 'datafusion.substrait.plan'>
-substrait_plan = ss.Producer.to_substrait_plan(df_logical_plan, ctx)
