@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import os
+import re
 from typing import Any
 
 import pyarrow as pa
@@ -752,7 +753,8 @@ def test_execution_plan(aggregate_df):
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
-    assert "CsvExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
 
     ctx = SessionContext()
     rows_returned = 0
@@ -1245,13 +1247,17 @@ def test_dataframe_transform(df):
 def test_dataframe_repr_html(df) -> None:
     output = df._repr_html_()
 
-    ref_html = """<table border='1'>
-        <tr><th>a</td><th>b</td><th>c</td></tr>
-        <tr><td>1</td><td>4</td><td>8</td></tr>
-        <tr><td>2</td><td>5</td><td>5</td></tr>
-        <tr><td>3</td><td>6</td><td>8</td></tr>
-        </table>
-        """
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
 
-    # Ignore whitespace just to make this test look cleaner
-    assert output.replace(" ", "") == ref_html.replace(" ", "")
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    assert len(re.findall(header_pattern, output, re.DOTALL)) == 1
+
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+    body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
+    body_pattern = "(.*?)".join(body_lines)
+    assert len(re.findall(body_pattern, output, re.DOTALL)) == 1
