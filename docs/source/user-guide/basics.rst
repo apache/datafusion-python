@@ -20,8 +20,9 @@
 Concepts
 ========
 
-In this section, we will cover a basic example to introduce a few key concepts. We will use the same
-source file as described in the :ref:`Introduction <guide>`, the Pokemon data set.
+In this section, we will cover a basic example to introduce a few key concepts. We will use the
+[2021 Yellow Taxi Trip Records](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet) dataset
+from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
 .. ipython:: python
 
