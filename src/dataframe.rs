@@ -56,7 +56,7 @@ use crate::catalog::PyTable;
 use crate::common::df_schema::PyDFSchema;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
-use crate::physical_plan::PyExecutionPlan;
+use crate::physical_plan::{ codec, PyExecutionPlan } ;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
@@ -863,11 +863,6 @@ pub fn partition_stream(serialized_plan: &[u8], partition: usize, py: Python) ->
         .map_err(py_datafusion_err)?
         .map(PyRecordBatchStream::new)
         .map_err(py_datafusion_err)
-}
-
-fn codec() -> &'static dyn PhysicalExtensionCodec {
-    static CODEC: DeltaPhysicalCodec = DeltaPhysicalCodec {};
-    &CODEC
 }
 
 /// Print DataFrame

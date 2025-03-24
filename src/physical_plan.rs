@@ -16,11 +16,11 @@
 // under the License.
 
 use datafusion::physical_plan::{displayable, ExecutionPlan, ExecutionPlanProperties};
-use datafusion_proto::physical_plan::{AsExecutionPlan, DefaultPhysicalExtensionCodec};
+use datafusion_proto::physical_plan::{AsExecutionPlan, PhysicalExtensionCodec};
+use deltalake::delta_datafusion::DeltaPhysicalCodec;
 use prost::Message;
-use std::sync::Arc;
-
 use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
+use std::sync::Arc;
 
 use crate::{context::PySessionContext, errors::PyDataFusionResult};
 
@@ -59,10 +59,9 @@ impl PyExecutionPlan {
     }
 
     pub fn to_proto<'py>(&'py self, py: Python<'py>) -> PyDataFusionResult<Bound<'py, PyBytes>> {
-        let codec = DefaultPhysicalExtensionCodec {};
         let proto = datafusion_proto::protobuf::PhysicalPlanNode::try_from_physical_plan(
             self.plan.clone(),
-            &codec,
+            codec(),
         )?;
 
         let bytes = proto.encode_to_vec();
@@ -83,8 +82,7 @@ impl PyExecutionPlan {
                 ))
             })?;
 
-        let codec = DefaultPhysicalExtensionCodec {};
-        let plan = proto_plan.try_into_physical_plan(&ctx.ctx, &ctx.ctx.runtime_env(), &codec)?;
+        let plan = proto_plan.try_into_physical_plan(&ctx.ctx, &ctx.ctx.runtime_env(), codec())?;
         Ok(Self::new(plan))
     }
 
@@ -108,4 +106,9 @@ impl From<Arc<dyn ExecutionPlan>> for PyExecutionPlan {
     fn from(plan: Arc<dyn ExecutionPlan>) -> PyExecutionPlan {
         PyExecutionPlan { plan: plan.clone() }
     }
+}
+
+pub(crate) fn codec() -> &'static dyn PhysicalExtensionCodec {
+    static CODEC: DeltaPhysicalCodec = DeltaPhysicalCodec {};
+    &CODEC
 }
