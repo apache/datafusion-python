@@ -29,38 +29,37 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::common::stats::Precision;
-use datafusion::common::{DFSchema, DataFusionError, Statistics, UnnestOptions};
 use datafusion::common::tree_node::{Transformed, TreeNode};
+use datafusion::common::{DFSchema, DataFusionError, Statistics, UnnestOptions};
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::memory::DataSourceExec;
-use datafusion::datasource::TableProvider;
 use datafusion::datasource::physical_plan::FileScanConfig;
 use datafusion::datasource::source::DataSource;
-use datafusion::execution::{SendableRecordBatchStream};
+use datafusion::datasource::TableProvider;
+use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::physical_plan::{ExecutionPlan, ExecutionPlanProperties};
 use datafusion::prelude::*;
 
-use datafusion_proto::physical_plan::{AsExecutionPlan, PhysicalExtensionCodec};
-use datafusion_proto::protobuf::PhysicalPlanNode;
-use deltalake::delta_datafusion::DeltaPhysicalCodec;
-use prost::Message;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::{PyBytes, PyCapsule, PyDict, PyTuple, PyTupleMethods};
+use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
 use crate::common::df_schema::PyDFSchema;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
-use crate::physical_plan::{ codec, PyExecutionPlan } ;
+use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
-use crate::{errors::PyDataFusionResult, expr::{sort_expr::PySortExpr, PyExpr}};
+use crate::{
+    errors::PyDataFusionResult,
+    expr::{sort_expr::PySortExpr, PyExpr},
+};
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
@@ -712,7 +711,6 @@ impl PyDataFrame {
         let future_plan = DistributedPlan::try_new(self.df.as_ref());
         wait_for_future(py, future_plan).map_err(py_datafusion_err)
     }
-
 }
 
 #[pyclass(get_all)]
@@ -724,37 +722,16 @@ pub struct DistributedPlan {
 
 #[pymethods]
 impl DistributedPlan {
-
-    fn marshal(&self, py: Python) -> PyResult<PyObject> {
-        let bytes = PhysicalPlanNode::try_from_physical_plan(self.plan().clone(), codec())
-            .map(|node| node.encode_to_vec())
-            .map_err(py_datafusion_err)?;
-        let state = PyDict::new(py);
-        state.set_item("plan", PyBytes::new(py, bytes.as_slice()))?;
-        state.set_item("min_size", self.min_size)?;
-        Ok(state.into())
-    }
-
     #[new]
-    fn unmarshal(state: Bound<PyDict>) -> PyResult<Self>{
-        let ctx = SessionContext::new();
-        let serialized_plan = state.get_item("plan")?
-            .expect("missing key `plan` from state");
-        let serialized_plan = serialized_plan
-            .downcast::<PyBytes>()?
-            .as_bytes();
-        let min_size = state.get_item("min_size")?
-            .expect("missing key `min_size` from state")
-            .extract::<usize>()?;
-        let plan = deserialize_plan(serialized_plan, &ctx)?;
+    fn new(physical_plan: PyExecutionPlan, min_size: usize) -> PyResult<Self> {
         Ok(Self {
             min_size,
-            physical_plan: PyExecutionPlan::new(plan),
+            physical_plan,
         })
     }
 
     fn partition_count(&self) -> usize {
-        self.plan().output_partitioning().partition_count()
+        self.physical_plan.partition_count()
     }
 
     fn num_bytes(&self) -> Option<usize> {
@@ -772,51 +749,68 @@ impl DistributedPlan {
     }
 
     fn set_desired_parallelism(&mut self, desired_parallelism: usize) -> PyResult<()> {
-        let updated_plan = self.plan().clone().transform_up(|node| {
-            if let Some(exec) = node.as_any().downcast_ref::<DataSourceExec>() {
-                // Remove redundant ranges from partition files because FileScanConfig refuses to repartition
-                // if any file has a range defined (even when the range actually covers the entire file).
-                // The EnforceDistribution optimizer rule adds ranges for both full and partial files,
-                // so this tries to revert that in order to trigger a repartition when no files are actually split.
-                if let Some(file_scan) = exec.data_source().as_any().downcast_ref::<FileScanConfig>() {
-                    let mut range_free_file_scan = file_scan.clone();
-                    let mut total_size: usize = 0;
-                    for group in range_free_file_scan.file_groups.iter_mut() {
-                        for file in group.iter_mut() {
-                            if let Some(range) = &file.range {
-                                total_size += (range.end - range.start) as usize;
-                                if range.start == 0 && range.end == file.object_meta.size as i64 {
-                                    file.range = None;  // remove redundant range
+        let updated_plan = self
+            .plan()
+            .clone()
+            .transform_up(|node| {
+                if let Some(exec) = node.as_any().downcast_ref::<DataSourceExec>() {
+                    // Remove redundant ranges from partition files because FileScanConfig refuses to repartition
+                    // if any file has a range defined (even when the range actually covers the entire file).
+                    // The EnforceDistribution optimizer rule adds ranges for both full and partial files,
+                    // so this tries to revert that in order to trigger a repartition when no files are actually split.
+                    if let Some(file_scan) =
+                        exec.data_source().as_any().downcast_ref::<FileScanConfig>()
+                    {
+                        let mut range_free_file_scan = file_scan.clone();
+                        let mut total_size: usize = 0;
+                        for group in range_free_file_scan.file_groups.iter_mut() {
+                            for file in group.iter_mut() {
+                                if let Some(range) = &file.range {
+                                    total_size += (range.end - range.start) as usize;
+                                    if range.start == 0 && range.end == file.object_meta.size as i64
+                                    {
+                                        file.range = None; // remove redundant range
+                                    }
+                                } else {
+                                    total_size += file.object_meta.size;
                                 }
-                            } else {
-                                total_size += file.object_meta.size;
                             }
                         }
-                    }
-                    let min_size_buckets = max(1, total_size.div_ceil(self.min_size));
-                    let partitions = min(min_size_buckets, desired_parallelism);
-                    let ordering = range_free_file_scan.eq_properties().output_ordering();
-                    if let Some(repartitioned) = range_free_file_scan
-                        .repartitioned(partitions, 1, ordering)? {
-                        return Ok(Transformed::yes(Arc::new(DataSourceExec::new(repartitioned))))
+                        let min_size_buckets = max(1, total_size.div_ceil(self.min_size));
+                        let partitions = min(min_size_buckets, desired_parallelism);
+                        let ordering = range_free_file_scan.eq_properties().output_ordering();
+                        if let Some(repartitioned) =
+                            range_free_file_scan.repartitioned(partitions, 1, ordering)?
+                        {
+                            return Ok(Transformed::yes(Arc::new(DataSourceExec::new(
+                                repartitioned,
+                            ))));
+                        }
                     }
                 }
-            }
-            Ok(Transformed::no(node))
-        }).map_err(py_datafusion_err)?.data;
+                Ok(Transformed::no(node))
+            })
+            .map_err(py_datafusion_err)?
+            .data;
         self.physical_plan = PyExecutionPlan::new(updated_plan);
         Ok(())
     }
 }
 
 impl DistributedPlan {
-
     async fn try_new(df: &DataFrame) -> Result<Self, DataFusionError> {
         let (mut session_state, logical_plan) = df.clone().into_parts();
-        let min_size = session_state.config_options().optimizer.repartition_file_min_size;
+        let min_size = session_state
+            .config_options()
+            .optimizer
+            .repartition_file_min_size;
         // Create the physical plan with a single partition, to ensure that no files are split into ranges.
         // Otherwise, any subsequent repartition attempt would fail (see the comment in `set_desired_parallelism`)
-        session_state.config_mut().options_mut().execution.target_partitions = 1;
+        session_state
+            .config_mut()
+            .options_mut()
+            .execution
+            .target_partitions = 1;
         let physical_plan = session_state.create_physical_plan(&logical_plan).await?;
         let physical_plan = PyExecutionPlan::new(physical_plan);
         Ok(Self {
@@ -830,7 +824,7 @@ impl DistributedPlan {
     }
 
     fn stats_field(&self, field: fn(Statistics) -> Precision<usize>) -> Option<usize> {
-        if let Ok(stats) = self.physical_plan.plan.statistics() {
+        if let Ok(stats) = self.plan().statistics() {
             match field(stats) {
                 Precision::Exact(n) => Some(n),
                 _ => None,
@@ -839,30 +833,6 @@ impl DistributedPlan {
             None
         }
     }
-
-}
-
-fn deserialize_plan(serialized_plan: &[u8], ctx: &SessionContext) -> PyResult<Arc<dyn ExecutionPlan>> {
-    deltalake::ensure_initialized();
-    let node = PhysicalPlanNode::decode(serialized_plan)
-        .map_err(|e| DataFusionError::External(Box::new(e)))
-        .map_err(py_datafusion_err)?;
-    let plan = node.try_into_physical_plan(ctx, ctx.runtime_env().as_ref(), codec())
-        .map_err(py_datafusion_err)?;
-    Ok(plan)
-}
-
-#[pyfunction]
-pub fn partition_stream(serialized_plan: &[u8], partition: usize, py: Python) -> PyResult<PyRecordBatchStream> {
-    let ctx = SessionContext::new();
-    let plan = deserialize_plan(serialized_plan, &ctx)?;
-    let stream_with_runtime = get_tokio_runtime().0.spawn(async move {
-        plan.execute(partition, ctx.task_ctx())
-    });
-    wait_for_future(py, stream_with_runtime)
-        .map_err(py_datafusion_err)?
-        .map(PyRecordBatchStream::new)
-        .map_err(py_datafusion_err)
 }
 
 /// Print DataFrame
