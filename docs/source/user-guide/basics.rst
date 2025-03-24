@@ -21,7 +21,7 @@ Concepts
 ========
 
 In this section, we will cover a basic example to introduce a few key concepts. We will use the
-2021 Yellow Taxi Trip Records that you can download [here](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet), from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
+2021 Yellow Taxi Trip Records ([download](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet)), from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
 
 .. ipython:: python
 
