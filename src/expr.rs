@@ -96,6 +96,21 @@ pub mod union;
 pub mod unnest;
 pub mod unnest_expr;
 pub mod window;
+pub mod statement;
+pub mod values;
+pub mod dml;
+pub mod create_external_table;
+pub mod copy_to;
+pub mod create_catalog_schema;
+pub mod drop_view;
+pub mod create_catalog;
+pub mod drop_catalog_schema;
+pub mod drop_function;
+pub mod create_function;
+pub mod create_index;
+pub mod describe_table;
+pub mod recursive_query;
+pub mod constraints;
 
 use sort_expr::{to_sort_expressions, PySortExpr};
 
@@ -784,5 +799,33 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<window::PyWindowExpr>()?;
     m.add_class::<window::PyWindowFrame>()?;
     m.add_class::<window::PyWindowFrameBound>()?;
+    m.add_class::<copy_to::PyCopyTo>()?;
+    m.add_class::<copy_to::PyFileType>()?;
+    m.add_class::<create_catalog::PyCreateCatalog>()?;
+    m.add_class::<create_catalog_schema::PyCreateCatalogSchema>()?;
+    m.add_class::<create_external_table::PyCreateExternalTable>()?;
+    m.add_class::<constraints::PyConstraints>()?;
+    m.add_class::<create_function::PyCreateFunction>()?;
+    m.add_class::<create_function::PyOperateFunctionArg>()?;
+    m.add_class::<create_function::PyCreateFunctionBody>()?;
+    m.add_class::<create_index::PyCreateIndex>()?;
+    m.add_class::<describe_table::PyDescribeTable>()?;
+    m.add_class::<dml::PyDmlStatement>()?;
+    m.add_class::<drop_catalog_schema::PyDropCatalogSchema>()?;
+    m.add_class::<drop_function::PyDropFunction>()?;
+    m.add_class::<drop_view::PyDropView>()?;
+    m.add_class::<recursive_query::PyRecursiveQuery>()?;
+
+    m.add_class::<statement::PyTransactionStart>()?;
+    m.add_class::<statement::PyTransactionEnd>()?;
+    m.add_class::<statement::PySetVariable>()?;
+    m.add_class::<statement::PyPrepare>()?;
+    m.add_class::<statement::PyExecute>()?;
+    m.add_class::<statement::PyDeallocate>()?;
+    m.add_class::<values::PyValues>()?;
+    m.add_class::<statement::PyTransactionAccessMode>()?;
+    m.add_class::<statement::PyTransactionConclusion>()?;
+    m.add_class::<statement::PyTransactionIsolationLevel>()?;
+
     Ok(())
 }

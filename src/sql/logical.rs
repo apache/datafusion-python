@@ -20,7 +20,21 @@ use std::sync::Arc;
 use crate::errors::PyDataFusionResult;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
+use crate::expr::copy_to::PyCopyTo;
+use crate::expr::create_catalog::PyCreateCatalog;
+use crate::expr::create_catalog_schema::PyCreateCatalogSchema;
+use crate::expr::create_external_table::PyCreateExternalTable;
+use crate::expr::create_function::PyCreateFunction;
+use crate::expr::create_index::PyCreateIndex;
+use crate::expr::create_memory_table::PyCreateMemoryTable;
+use crate::expr::create_view::PyCreateView;
+use crate::expr::describe_table::PyDescribeTable;
 use crate::expr::distinct::PyDistinct;
+use crate::expr::dml::PyDmlStatement;
+use crate::expr::drop_catalog_schema::PyDropCatalogSchema;
+use crate::expr::drop_function::PyDropFunction;
+use crate::expr::drop_table::PyDropTable;
+use crate::expr::drop_view::PyDropView;
 use crate::expr::empty_relation::PyEmptyRelation;
 use crate::expr::explain::PyExplain;
 use crate::expr::extension::PyExtension;
@@ -28,14 +42,19 @@ use crate::expr::filter::PyFilter;
 use crate::expr::join::PyJoin;
 use crate::expr::limit::PyLimit;
 use crate::expr::projection::PyProjection;
+use crate::expr::recursive_query::PyRecursiveQuery;
+use crate::expr::repartition::PyRepartition;
 use crate::expr::sort::PySort;
+use crate::expr::statement::{PyDeallocate, PyExecute, PyPrepare, PySetVariable, PyTransactionEnd, PyTransactionStart};
 use crate::expr::subquery::PySubquery;
 use crate::expr::subquery_alias::PySubqueryAlias;
 use crate::expr::table_scan::PyTableScan;
+use crate::expr::union::PyUnion;
 use crate::expr::unnest::PyUnnest;
+use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
 use crate::{context::PySessionContext, errors::py_unsupported_variant_err};
-use datafusion::logical_expr::LogicalPlan;
+use datafusion::logical_expr::{DdlStatement, LogicalPlan, Statement};
 use datafusion_proto::logical_plan::{AsLogicalPlan, DefaultLogicalExtensionCodec};
 use prost::Message;
 use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
@@ -82,18 +101,34 @@ impl PyLogicalPlan {
             LogicalPlan::SubqueryAlias(plan) => PySubqueryAlias::from(plan.clone()).to_variant(py),
             LogicalPlan::Unnest(plan) => PyUnnest::from(plan.clone()).to_variant(py),
             LogicalPlan::Window(plan) => PyWindowExpr::from(plan.clone()).to_variant(py),
-            LogicalPlan::Repartition(_)
-            | LogicalPlan::Union(_)
-            | LogicalPlan::Statement(_)
-            | LogicalPlan::Values(_)
-            | LogicalPlan::Dml(_)
-            | LogicalPlan::Ddl(_)
-            | LogicalPlan::Copy(_)
-            | LogicalPlan::DescribeTable(_)
-            | LogicalPlan::RecursiveQuery(_) => Err(py_unsupported_variant_err(format!(
-                "Conversion of variant not implemented: {:?}",
-                self.plan
-            ))),
+            LogicalPlan::Repartition(plan) => PyRepartition::from(plan.clone()).to_variant(py),
+            LogicalPlan::Union(plan) => PyUnion::from(plan.clone()).to_variant(py),
+            LogicalPlan::Statement(plan) => match plan {
+                Statement::TransactionStart(plan) => PyTransactionStart::from(plan.clone()).to_variant(py),
+                Statement::TransactionEnd(plan) => PyTransactionEnd::from(plan.clone()).to_variant(py),
+                Statement::SetVariable(plan) => PySetVariable::from(plan.clone()).to_variant(py),
+                Statement::Prepare(plan) => PyPrepare::from(plan.clone()).to_variant(py),
+                Statement::Execute(plan) => PyExecute::from(plan.clone()).to_variant(py),
+                Statement::Deallocate(plan) => PyDeallocate::from(plan.clone()).to_variant(py),
+            },
+            LogicalPlan::Values(plan) => PyValues::from(plan.clone()).to_variant(py),
+            LogicalPlan::Dml(plan) => PyDmlStatement::from(plan.clone()).to_variant(py),
+            LogicalPlan::Ddl(plan) => match plan {
+                DdlStatement::CreateExternalTable(plan) => PyCreateExternalTable::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateMemoryTable(plan) => PyCreateMemoryTable::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateView(plan) => PyCreateView::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateCatalogSchema(plan) => PyCreateCatalogSchema::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateCatalog(plan) => PyCreateCatalog::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateIndex(plan) => PyCreateIndex::from(plan.clone()).to_variant(py),
+                DdlStatement::DropTable(plan) => PyDropTable::from(plan.clone()).to_variant(py),
+                DdlStatement::DropView(plan) => PyDropView::from(plan.clone()).to_variant(py),
+                DdlStatement::DropCatalogSchema(plan) => PyDropCatalogSchema::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateFunction(plan) => PyCreateFunction::from(plan.clone()).to_variant(py),
+                DdlStatement::DropFunction(plan) => PyDropFunction::from(plan.clone()).to_variant(py),
+            },
+            LogicalPlan::Copy(plan) => PyCopyTo::from(plan.clone()).to_variant(py),
+            LogicalPlan::DescribeTable(plan) => PyDescribeTable::from(plan.clone()).to_variant(py),
+            LogicalPlan::RecursiveQuery(plan) => PyRecursiveQuery::from(plan.clone()).to_variant(py),
         }
     }
 
