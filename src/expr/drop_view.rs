@@ -1,4 +1,7 @@
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::DropView;
 use pyo3::prelude::*;
@@ -14,7 +17,6 @@ pub struct PyDropView {
     drop: DropView,
 }
 
-
 impl From<PyDropView> for DropView {
     fn from(drop: PyDropView) -> Self {
         drop.drop
@@ -29,7 +31,12 @@ impl From<DropView> for PyDropView {
 
 impl Display for PyDropView {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "DropView: {name:?} if not exist:={if_exists}", name = self.drop.name, if_exists = self.drop.if_exists)
+        write!(
+            f,
+            "DropView: {name:?} if not exist:={if_exists}",
+            name = self.drop.name,
+            if_exists = self.drop.if_exists
+        )
     }
 }
 
@@ -37,7 +44,13 @@ impl Display for PyDropView {
 impl PyDropView {
     #[new]
     fn new(name: String, schema: PyDFSchema, if_exists: bool) -> PyResult<Self> {
-        Ok(PyDropView { drop: DropView { name: name.into(), schema: Arc::new(schema.into()), if_exists } })
+        Ok(PyDropView {
+            drop: DropView {
+                name: name.into(),
+                schema: Arc::new(schema.into()),
+                if_exists,
+            },
+        })
     }
 
     fn name(&self) -> PyResult<String> {

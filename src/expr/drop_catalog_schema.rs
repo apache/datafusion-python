@@ -1,4 +1,7 @@
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::{common::SchemaReference, logical_expr::DropCatalogSchema, sql::TableReference};
 use pyo3::{exceptions::PyValueError, prelude::*};
@@ -35,10 +38,17 @@ impl Display for PyDropCatalogSchema {
 fn parse_schema_reference(name: String) -> PyResult<SchemaReference> {
     match name.into() {
         TableReference::Bare { table } => Ok(SchemaReference::Bare { schema: table }),
-        TableReference::Partial { schema, table } => Ok(SchemaReference::Full { schema: table, catalog: schema }),
-        TableReference::Full { catalog: _, schema: _, table: _ } => {
-            Err(PyErr::new::<PyValueError, String>("Invalid schema specifier (has 3 parts)".to_string()))
-        }
+        TableReference::Partial { schema, table } => Ok(SchemaReference::Full {
+            schema: table,
+            catalog: schema,
+        }),
+        TableReference::Full {
+            catalog: _,
+            schema: _,
+            table: _,
+        } => Err(PyErr::new::<PyValueError, String>(
+            "Invalid schema specifier (has 3 parts)".to_string(),
+        )),
     }
 }
 
@@ -47,12 +57,14 @@ impl PyDropCatalogSchema {
     #[new]
     fn new(name: String, schema: PyDFSchema, if_exists: bool, cascade: bool) -> PyResult<Self> {
         let name = parse_schema_reference(name)?;
-        Ok(PyDropCatalogSchema { drop: DropCatalogSchema {
-            name,
-            schema: Arc::new(schema.into()),
-            if_exists,
-            cascade
-        } })
+        Ok(PyDropCatalogSchema {
+            drop: DropCatalogSchema {
+                name,
+                schema: Arc::new(schema.into()),
+                if_exists,
+                cascade,
+            },
+        })
     }
 
     fn name(&self) -> PyResult<String> {
@@ -74,9 +86,7 @@ impl PyDropCatalogSchema {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("DropCatalogSchema({})", self))
     }
-
 }
-
 
 impl LogicalNode for PyDropCatalogSchema {
     fn inputs(&self) -> Vec<PyLogicalPlan> {

@@ -15,7 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::CreateCatalogSchema;
 use pyo3::prelude::*;
@@ -29,7 +32,6 @@ use super::logical_node::LogicalNode;
 pub struct PyCreateCatalogSchema {
     create: CreateCatalogSchema,
 }
-
 
 impl From<PyCreateCatalogSchema> for CreateCatalogSchema {
     fn from(create: PyCreateCatalogSchema) -> Self {
@@ -49,18 +51,20 @@ impl Display for PyCreateCatalogSchema {
     }
 }
 
-
 #[pymethods]
 impl PyCreateCatalogSchema {
-
     #[new]
-    pub fn new(schema_name: String, if_not_exists: bool, schema: PyDFSchema) -> PyResult<PyCreateCatalogSchema> {
+    pub fn new(
+        schema_name: String,
+        if_not_exists: bool,
+        schema: PyDFSchema,
+    ) -> PyResult<PyCreateCatalogSchema> {
         Ok(PyCreateCatalogSchema {
             create: CreateCatalogSchema {
                 schema_name,
                 if_not_exists,
                 schema: Arc::new(schema.into()),
-            }
+            },
         })
     }
 

@@ -16,7 +16,11 @@
 // under the License.
 
 use crate::{expr::PyExpr, sql::logical::PyLogicalPlan};
-use std::{collections::HashMap, fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::CreateExternalTable;
 use pyo3::prelude::*;
@@ -45,7 +49,11 @@ impl From<CreateExternalTable> for PyCreateExternalTable {
 
 impl Display for PyCreateExternalTable {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "CreateExternalTable: {:?}{}", self.create.name, self.create.constraints)
+        write!(
+            f,
+            "CreateExternalTable: {:?}{}",
+            self.create.name, self.create.constraints
+        )
     }
 }
 
@@ -92,61 +100,53 @@ impl PyCreateExternalTable {
         PyCreateExternalTable { create: create }
     }
 
-
     pub fn schema(&self) -> PyDFSchema {
         (*self.create.schema).clone().into()
     }
-
 
     pub fn name(&self) -> PyResult<String> {
         Ok(self.create.name.to_string())
     }
 
-
     pub fn location(&self) -> String {
         self.create.location.clone()
     }
-
 
     pub fn file_type(&self) -> String {
         self.create.file_type.clone()
     }
 
-
     pub fn table_partition_cols(&self) -> Vec<String> {
         self.create.table_partition_cols.clone()
     }
-
 
     pub fn if_not_exists(&self) -> bool {
         self.create.if_not_exists
     }
 
-
     pub fn temporary(&self) -> bool {
         self.create.temporary
     }
-
 
     pub fn definition(&self) -> Option<String> {
         self.create.definition.clone()
     }
 
-
     pub fn order_exprs(&self) -> Vec<Vec<PySortExpr>> {
-        self.create.order_exprs.iter().map(|vec| vec.iter().map(|s| s.clone().into()).collect()).collect()
+        self.create
+            .order_exprs
+            .iter()
+            .map(|vec| vec.iter().map(|s| s.clone().into()).collect())
+            .collect()
     }
-
 
     pub fn unbounded(&self) -> bool {
         self.create.unbounded
     }
 
-
     pub fn options(&self) -> HashMap<String, String> {
         self.create.options.clone()
     }
-
 
     pub fn constraints(&self) -> PyConstraints {
         PyConstraints {
@@ -154,14 +154,12 @@ impl PyCreateExternalTable {
         }
     }
 
-
     pub fn column_defaults(&self) -> HashMap<String, PyExpr> {
         self.create
             .column_defaults
             .iter()
             .map(|(k, v)| (k.clone(), v.clone().into()))
             .collect()
-
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -173,7 +171,6 @@ impl PyCreateExternalTable {
     }
 }
 
-
 impl LogicalNode for PyCreateExternalTable {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![]
@@ -183,4 +180,3 @@ impl LogicalNode for PyCreateExternalTable {
         Ok(self.clone().into_py(py))
     }
 }
-

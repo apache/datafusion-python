@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use datafusion::logical_expr::Values;
-use pyo3::{pyclass, Bound, IntoPyObjectExt, PyAny, PyErr, PyResult, Python};
 use pyo3::prelude::*;
+use pyo3::{pyclass, Bound, IntoPyObjectExt, PyAny, PyErr, PyResult, Python};
 
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
@@ -11,7 +11,7 @@ use super::{logical_node::LogicalNode, PyExpr};
 #[pyclass(name = "Values", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyValues {
-    values: Values
+    values: Values,
 }
 
 impl From<Values> for PyValues {
@@ -40,11 +40,18 @@ impl LogicalNode for PyValues {
 
 #[pymethods]
 impl PyValues {
-
     #[new]
     pub fn new(schema: PyDFSchema, values: Vec<Vec<PyExpr>>) -> PyResult<Self> {
-        let values = values.into_iter().map(|row| row.into_iter().map(|expr| expr.into()).collect()).collect();
-        Ok(PyValues { values: Values {schema: Arc::new(schema.into()), values} })
+        let values = values
+            .into_iter()
+            .map(|row| row.into_iter().map(|expr| expr.into()).collect())
+            .collect();
+        Ok(PyValues {
+            values: Values {
+                schema: Arc::new(schema.into()),
+                values,
+            },
+        })
     }
 
     pub fn schema(&self) -> PyResult<PyDFSchema> {
@@ -52,7 +59,11 @@ impl PyValues {
     }
 
     pub fn values(&self) -> Vec<Vec<PyExpr>> {
-        self.values.values.clone().into_iter().map(|row| row.into_iter().map(|expr| expr.into()).collect()).collect()
+        self.values
+            .values
+            .clone()
+            .into_iter()
+            .map(|row| row.into_iter().map(|expr| expr.into()).collect())
+            .collect()
     }
 }
-

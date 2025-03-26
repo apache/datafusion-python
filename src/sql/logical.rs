@@ -45,7 +45,9 @@ use crate::expr::projection::PyProjection;
 use crate::expr::recursive_query::PyRecursiveQuery;
 use crate::expr::repartition::PyRepartition;
 use crate::expr::sort::PySort;
-use crate::expr::statement::{PyDeallocate, PyExecute, PyPrepare, PySetVariable, PyTransactionEnd, PyTransactionStart};
+use crate::expr::statement::{
+    PyDeallocate, PyExecute, PyPrepare, PySetVariable, PyTransactionEnd, PyTransactionStart,
+};
 use crate::expr::subquery::PySubquery;
 use crate::expr::subquery_alias::PySubqueryAlias;
 use crate::expr::table_scan::PyTableScan;
@@ -104,8 +106,12 @@ impl PyLogicalPlan {
             LogicalPlan::Repartition(plan) => PyRepartition::from(plan.clone()).to_variant(py),
             LogicalPlan::Union(plan) => PyUnion::from(plan.clone()).to_variant(py),
             LogicalPlan::Statement(plan) => match plan {
-                Statement::TransactionStart(plan) => PyTransactionStart::from(plan.clone()).to_variant(py),
-                Statement::TransactionEnd(plan) => PyTransactionEnd::from(plan.clone()).to_variant(py),
+                Statement::TransactionStart(plan) => {
+                    PyTransactionStart::from(plan.clone()).to_variant(py)
+                }
+                Statement::TransactionEnd(plan) => {
+                    PyTransactionEnd::from(plan.clone()).to_variant(py)
+                }
                 Statement::SetVariable(plan) => PySetVariable::from(plan.clone()).to_variant(py),
                 Statement::Prepare(plan) => PyPrepare::from(plan.clone()).to_variant(py),
                 Statement::Execute(plan) => PyExecute::from(plan.clone()).to_variant(py),
@@ -114,21 +120,37 @@ impl PyLogicalPlan {
             LogicalPlan::Values(plan) => PyValues::from(plan.clone()).to_variant(py),
             LogicalPlan::Dml(plan) => PyDmlStatement::from(plan.clone()).to_variant(py),
             LogicalPlan::Ddl(plan) => match plan {
-                DdlStatement::CreateExternalTable(plan) => PyCreateExternalTable::from(plan.clone()).to_variant(py),
-                DdlStatement::CreateMemoryTable(plan) => PyCreateMemoryTable::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateExternalTable(plan) => {
+                    PyCreateExternalTable::from(plan.clone()).to_variant(py)
+                }
+                DdlStatement::CreateMemoryTable(plan) => {
+                    PyCreateMemoryTable::from(plan.clone()).to_variant(py)
+                }
                 DdlStatement::CreateView(plan) => PyCreateView::from(plan.clone()).to_variant(py),
-                DdlStatement::CreateCatalogSchema(plan) => PyCreateCatalogSchema::from(plan.clone()).to_variant(py),
-                DdlStatement::CreateCatalog(plan) => PyCreateCatalog::from(plan.clone()).to_variant(py),
+                DdlStatement::CreateCatalogSchema(plan) => {
+                    PyCreateCatalogSchema::from(plan.clone()).to_variant(py)
+                }
+                DdlStatement::CreateCatalog(plan) => {
+                    PyCreateCatalog::from(plan.clone()).to_variant(py)
+                }
                 DdlStatement::CreateIndex(plan) => PyCreateIndex::from(plan.clone()).to_variant(py),
                 DdlStatement::DropTable(plan) => PyDropTable::from(plan.clone()).to_variant(py),
                 DdlStatement::DropView(plan) => PyDropView::from(plan.clone()).to_variant(py),
-                DdlStatement::DropCatalogSchema(plan) => PyDropCatalogSchema::from(plan.clone()).to_variant(py),
-                DdlStatement::CreateFunction(plan) => PyCreateFunction::from(plan.clone()).to_variant(py),
-                DdlStatement::DropFunction(plan) => PyDropFunction::from(plan.clone()).to_variant(py),
+                DdlStatement::DropCatalogSchema(plan) => {
+                    PyDropCatalogSchema::from(plan.clone()).to_variant(py)
+                }
+                DdlStatement::CreateFunction(plan) => {
+                    PyCreateFunction::from(plan.clone()).to_variant(py)
+                }
+                DdlStatement::DropFunction(plan) => {
+                    PyDropFunction::from(plan.clone()).to_variant(py)
+                }
             },
             LogicalPlan::Copy(plan) => PyCopyTo::from(plan.clone()).to_variant(py),
             LogicalPlan::DescribeTable(plan) => PyDescribeTable::from(plan.clone()).to_variant(py),
-            LogicalPlan::RecursiveQuery(plan) => PyRecursiveQuery::from(plan.clone()).to_variant(py),
+            LogicalPlan::RecursiveQuery(plan) => {
+                PyRecursiveQuery::from(plan.clone()).to_variant(py)
+            }
         }
     }
 

@@ -15,22 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
-use datafusion::logical_expr::{CreateFunction, CreateFunctionBody, OperateFunctionArg, Volatility};
+use datafusion::logical_expr::{
+    CreateFunction, CreateFunctionBody, OperateFunctionArg, Volatility,
+};
 use pyo3::prelude::*;
 
-use crate::common::{data_type::PyDataType, df_schema::PyDFSchema};
 use super::logical_node::LogicalNode;
-use crate::sql::logical::PyLogicalPlan;
 use super::PyExpr;
+use crate::common::{data_type::PyDataType, df_schema::PyDFSchema};
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(name = "CreateFunction", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateFunction {
     create: CreateFunction,
 }
-
 
 impl From<PyCreateFunction> for CreateFunction {
     fn from(create: PyCreateFunction) -> Self {
@@ -67,17 +71,17 @@ pub enum PyVolatility {
 #[pyclass(name = "CreateFunctionBody", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateFunctionBody {
-    body: CreateFunctionBody
+    body: CreateFunctionBody,
 }
 
 #[pymethods]
 impl PyCreateFunctionBody {
-
-
     pub fn language(&self) -> Option<String> {
-        self.body.language.as_ref().map(|language| language.to_string())
+        self.body
+            .language
+            .as_ref()
+            .map(|language| language.to_string())
     }
-
 
     pub fn behavior(&self) -> Option<PyVolatility> {
         self.body.behavior.as_ref().map(|behavior| match behavior {
@@ -88,13 +92,15 @@ impl PyCreateFunctionBody {
     }
 
     pub fn function_body(&self) -> Option<PyExpr> {
-        self.body.function_body.as_ref().map(|function_body| function_body.clone().into())
+        self.body
+            .function_body
+            .as_ref()
+            .map(|function_body| function_body.clone().into())
     }
 }
 
 #[pymethods]
 impl PyCreateFunction {
-
     #[new]
     #[pyo3(signature = (or_replace, temporary, name, params, schema, return_type=None, args=None))]
     pub fn new(
@@ -105,7 +111,7 @@ impl PyCreateFunction {
         schema: PyDFSchema,
         return_type: Option<PyDataType>,
         args: Option<Vec<PyOperateFunctionArg>>,
-        ) -> Self {
+    ) -> Self {
         PyCreateFunction {
             create: CreateFunction {
                 or_replace,
@@ -115,45 +121,45 @@ impl PyCreateFunction {
                 return_type: return_type.map(|return_type| return_type.data_type),
                 params: params.body,
                 schema: Arc::new(schema.into()),
-            }
+            },
         }
     }
-
 
     pub fn or_replace(&self) -> bool {
         self.create.or_replace
     }
 
-
     pub fn temporary(&self) -> bool {
         self.create.temporary
     }
-
 
     pub fn name(&self) -> String {
         self.create.name.clone()
     }
 
-
     pub fn params(&self) -> PyCreateFunctionBody {
         PyCreateFunctionBody {
-            body: self.create.params.clone()
+            body: self.create.params.clone(),
         }
     }
-
 
     pub fn schema(&self) -> PyDFSchema {
         (*self.create.schema).clone().into()
     }
 
-
     pub fn return_type(&self) -> Option<PyDataType> {
-        self.create.return_type.as_ref().map(|return_type| return_type.clone().into())
+        self.create
+            .return_type
+            .as_ref()
+            .map(|return_type| return_type.clone().into())
     }
 
-
     pub fn args(&self) -> Option<Vec<PyOperateFunctionArg>> {
-        self.create.args.as_ref().map(|args| args.iter().map(|arg| PyOperateFunctionArg { arg: arg.clone() }).collect())
+        self.create.args.as_ref().map(|args| {
+            args.iter()
+                .map(|arg| PyOperateFunctionArg { arg: arg.clone() })
+                .collect()
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -164,7 +170,6 @@ impl PyCreateFunction {
         Ok("CreateFunction".to_string())
     }
 }
-
 
 impl LogicalNode for PyCreateFunction {
     fn inputs(&self) -> Vec<PyLogicalPlan> {

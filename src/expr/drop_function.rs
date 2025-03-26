@@ -1,10 +1,13 @@
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::DropFunction;
 use pyo3::prelude::*;
 
-use crate::common::df_schema::PyDFSchema;
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(name = "DropFunction", module = "datafusion.expr", subclass)]
@@ -12,7 +15,6 @@ use crate::sql::logical::PyLogicalPlan;
 pub struct PyDropFunction {
     drop: DropFunction,
 }
-
 
 impl From<PyDropFunction> for DropFunction {
     fn from(drop: PyDropFunction) -> Self {
@@ -36,11 +38,13 @@ impl Display for PyDropFunction {
 impl PyDropFunction {
     #[new]
     fn new(name: String, schema: PyDFSchema, if_exists: bool) -> PyResult<Self> {
-        Ok(PyDropFunction { drop: DropFunction {
-            name: name.into(),
-            schema: Arc::new(schema.into()),
-            if_exists,
-        } })
+        Ok(PyDropFunction {
+            drop: DropFunction {
+                name: name.into(),
+                schema: Arc::new(schema.into()),
+                if_exists,
+            },
+        })
     }
     fn name(&self) -> PyResult<String> {
         Ok(self.drop.name.clone())
@@ -72,4 +76,3 @@ impl LogicalNode for PyDropFunction {
         Ok(self.clone().into_py(py))
     }
 }
-

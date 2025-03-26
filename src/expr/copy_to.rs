@@ -15,7 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{collections::HashMap, fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    collections::HashMap,
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::{common::file_options::file_type::FileType, logical_expr::dml::CopyTo};
 use pyo3::prelude::*;
@@ -49,7 +53,6 @@ impl Display for PyCopyTo {
 }
 
 impl LogicalNode for PyCopyTo {
-
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.copy.input).clone())]
     }
@@ -67,7 +70,8 @@ impl PyCopyTo {
         output_url: String,
         partition_by: Vec<String>,
         file_type: PyFileType,
-        options: HashMap<String, String>) -> Self {
+        options: HashMap<String, String>,
+    ) -> Self {
         return PyCopyTo {
             copy: CopyTo {
                 input: input.plan(),
@@ -76,7 +80,7 @@ impl PyCopyTo {
                 file_type: file_type.file_type,
                 options,
             },
-        }
+        };
     }
 
     fn input(&self) -> PyLogicalPlan {
@@ -92,7 +96,9 @@ impl PyCopyTo {
     }
 
     fn file_type(&self) -> PyFileType {
-        PyFileType { file_type: self.copy.file_type.clone() }
+        PyFileType {
+            file_type: self.copy.file_type.clone(),
+        }
     }
 
     fn options(&self) -> HashMap<String, String> {

@@ -15,7 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::CreateIndex;
 use pyo3::prelude::*;
@@ -69,41 +72,38 @@ impl PyCreateIndex {
                 columns: columns.iter().map(|c| c.clone().into()).collect(),
                 unique,
                 if_not_exists,
-                schema: Arc::new(schema.into())
-            }
+                schema: Arc::new(schema.into()),
+            },
         })
     }
-
 
     pub fn name(&self) -> Option<String> {
         self.create.name.clone()
     }
 
-
     pub fn table(&self) -> PyResult<String> {
         Ok(self.create.table.to_string())
     }
-
 
     pub fn using(&self) -> Option<String> {
         self.create.using.clone()
     }
 
-
     pub fn columns(&self) -> Vec<PySortExpr> {
-        self.create.columns.iter().map(|c| c.clone().into()).collect()
+        self.create
+            .columns
+            .iter()
+            .map(|c| c.clone().into())
+            .collect()
     }
-
 
     pub fn unique(&self) -> bool {
         self.create.unique
     }
 
-
     pub fn if_not_exists(&self) -> bool {
         self.create.if_not_exists
     }
-
 
     pub fn schema(&self) -> PyDFSchema {
         (*self.create.schema).clone().into()
@@ -126,5 +126,4 @@ impl LogicalNode for PyCreateIndex {
     fn to_variant(&self, py: Python) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
-
 }

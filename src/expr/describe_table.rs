@@ -1,4 +1,7 @@
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use arrow::{datatypes::Schema, pyarrow::PyArrowType};
 use datafusion::logical_expr::DescribeTable;
@@ -7,7 +10,6 @@ use pyo3::prelude::*;
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
-
 
 #[pyclass(name = "DescribeTable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -26,8 +28,11 @@ impl PyDescribeTable {
     #[new]
     fn new(schema: PyArrowType<Schema>, output_schema: PyDFSchema) -> Self {
         Self {
-            describe: DescribeTable { schema: Arc::new(schema.0), output_schema: Arc::new(output_schema.into())}
-         }
+            describe: DescribeTable {
+                schema: Arc::new(schema.0),
+                output_schema: Arc::new(output_schema.into()),
+            },
+        }
     }
 
     pub fn schema(&self) -> PyArrowType<Schema> {
@@ -46,7 +51,6 @@ impl PyDescribeTable {
         Ok("DescribeTable".to_string())
     }
 }
-
 
 impl From<PyDescribeTable> for DescribeTable {
     fn from(describe: PyDescribeTable) -> Self {

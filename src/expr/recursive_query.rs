@@ -10,7 +10,7 @@ use super::logical_node::LogicalNode;
 #[pyclass(name = "RecursiveQuery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyRecursiveQuery {
-    query: RecursiveQuery
+    query: RecursiveQuery,
 }
 
 impl From<PyRecursiveQuery> for RecursiveQuery {
@@ -27,7 +27,12 @@ impl From<RecursiveQuery> for PyRecursiveQuery {
 
 impl Display for PyRecursiveQuery {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "RecursiveQuery {name:?} is_distinct:={is_distinct}", name = self.query.name, is_distinct = self.query.is_distinct)
+        write!(
+            f,
+            "RecursiveQuery {name:?} is_distinct:={is_distinct}",
+            name = self.query.name,
+            is_distinct = self.query.is_distinct
+        )
     }
 }
 
@@ -38,15 +43,16 @@ impl PyRecursiveQuery {
         name: String,
         static_term: PyLogicalPlan,
         recursive_term: PyLogicalPlan,
-        is_distinct: bool) -> Self {
-            Self {
-                query: RecursiveQuery{
-                    name,
-                    static_term: static_term.plan(),
-                    recursive_term: recursive_term.plan(),
-                    is_distinct
-                }
-            }
+        is_distinct: bool,
+    ) -> Self {
+        Self {
+            query: RecursiveQuery {
+                name,
+                static_term: static_term.plan(),
+                recursive_term: recursive_term.plan(),
+                is_distinct,
+            },
+        }
     }
 
     fn name(&self) -> PyResult<String> {
@@ -78,7 +84,7 @@ impl LogicalNode for PyRecursiveQuery {
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![
             PyLogicalPlan::from((*self.query.static_term).clone()),
-            PyLogicalPlan::from((*self.query.recursive_term).clone())
+            PyLogicalPlan::from((*self.query.recursive_term).clone()),
         ]
     }
 

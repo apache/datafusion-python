@@ -15,7 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{fmt::{self, Display, Formatter}, sync::Arc};
+use std::{
+    fmt::{self, Display, Formatter},
+    sync::Arc,
+};
 
 use datafusion::logical_expr::CreateCatalog;
 use pyo3::prelude::*;
@@ -50,15 +53,18 @@ impl Display for PyCreateCatalog {
 
 #[pymethods]
 impl PyCreateCatalog {
-
     #[new]
-    pub fn new(catalog_name: String, if_not_exists: bool, schema: PyDFSchema) -> PyResult<PyCreateCatalog> {
+    pub fn new(
+        catalog_name: String,
+        if_not_exists: bool,
+        schema: PyDFSchema,
+    ) -> PyResult<PyCreateCatalog> {
         Ok(PyCreateCatalog {
             create: CreateCatalog {
                 catalog_name,
                 if_not_exists,
                 schema: Arc::new(schema.into()),
-            }
+            },
         })
     }
 

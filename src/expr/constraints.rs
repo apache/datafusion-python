@@ -26,4 +26,3 @@ impl Display for PyConstraints {
         write!(f, "Constraints: {:?}", self.constraints)
     }
 }
-

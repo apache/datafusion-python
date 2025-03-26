@@ -1,4 +1,7 @@
-use datafusion::logical_expr::{Deallocate, Execute, Prepare, SetVariable, TransactionAccessMode, TransactionConclusion, TransactionEnd, TransactionIsolationLevel, TransactionStart};
+use datafusion::logical_expr::{
+    Deallocate, Execute, Prepare, SetVariable, TransactionAccessMode, TransactionConclusion,
+    TransactionEnd, TransactionIsolationLevel, TransactionStart,
+};
 use pyo3::prelude::*;
 
 use crate::{common::data_type::PyDataType, sql::logical::PyLogicalPlan};
@@ -8,7 +11,7 @@ use super::{logical_node::LogicalNode, PyExpr};
 #[pyclass(name = "TransactionStart", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTransactionStart {
-    transaction_start: TransactionStart
+    transaction_start: TransactionStart,
 }
 
 impl From<TransactionStart> for PyTransactionStart {
@@ -63,7 +66,12 @@ impl TryFrom<PyTransactionAccessMode> for TransactionAccessMode {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "TransactionIsolationLevel", module = "datafusion.expr")]
+#[pyclass(
+    eq,
+    eq_int,
+    name = "TransactionIsolationLevel",
+    module = "datafusion.expr"
+)]
 pub enum PyTransactionIsolationLevel {
     ReadUncommitted,
     ReadCommitted,
@@ -74,9 +82,13 @@ pub enum PyTransactionIsolationLevel {
 impl From<TransactionIsolationLevel> for PyTransactionIsolationLevel {
     fn from(isolation_level: TransactionIsolationLevel) -> PyTransactionIsolationLevel {
         match isolation_level {
-            TransactionIsolationLevel::ReadUncommitted => PyTransactionIsolationLevel::ReadUncommitted,
+            TransactionIsolationLevel::ReadUncommitted => {
+                PyTransactionIsolationLevel::ReadUncommitted
+            }
             TransactionIsolationLevel::ReadCommitted => PyTransactionIsolationLevel::ReadCommitted,
-            TransactionIsolationLevel::RepeatableRead => PyTransactionIsolationLevel::RepeatableRead,
+            TransactionIsolationLevel::RepeatableRead => {
+                PyTransactionIsolationLevel::RepeatableRead
+            }
             TransactionIsolationLevel::Serializable => PyTransactionIsolationLevel::Serializable,
         }
     }
@@ -87,24 +99,38 @@ impl TryFrom<PyTransactionIsolationLevel> for TransactionIsolationLevel {
 
     fn try_from(value: PyTransactionIsolationLevel) -> Result<Self, Self::Error> {
         match value {
-            PyTransactionIsolationLevel::ReadUncommitted => Ok(TransactionIsolationLevel::ReadUncommitted),
-            PyTransactionIsolationLevel::ReadCommitted => Ok(TransactionIsolationLevel::ReadCommitted),
-            PyTransactionIsolationLevel::RepeatableRead => Ok(TransactionIsolationLevel::RepeatableRead),
-            PyTransactionIsolationLevel::Serializable => Ok(TransactionIsolationLevel::Serializable),
+            PyTransactionIsolationLevel::ReadUncommitted => {
+                Ok(TransactionIsolationLevel::ReadUncommitted)
+            }
+            PyTransactionIsolationLevel::ReadCommitted => {
+                Ok(TransactionIsolationLevel::ReadCommitted)
+            }
+            PyTransactionIsolationLevel::RepeatableRead => {
+                Ok(TransactionIsolationLevel::RepeatableRead)
+            }
+            PyTransactionIsolationLevel::Serializable => {
+                Ok(TransactionIsolationLevel::Serializable)
+            }
         }
     }
 }
 
 #[pymethods]
 impl PyTransactionStart {
-
     #[new]
-    pub fn new(access_mode: PyTransactionAccessMode, isolation_level: PyTransactionIsolationLevel) -> PyResult<Self> {
+    pub fn new(
+        access_mode: PyTransactionAccessMode,
+        isolation_level: PyTransactionIsolationLevel,
+    ) -> PyResult<Self> {
         let access_mode = access_mode.try_into()?;
         let isolation_level = isolation_level.try_into()?;
-        Ok(PyTransactionStart { transaction_start: TransactionStart {access_mode, isolation_level} })
+        Ok(PyTransactionStart {
+            transaction_start: TransactionStart {
+                access_mode,
+                isolation_level,
+            },
+        })
     }
-
 
     pub fn access_mode(&self) -> PyResult<PyTransactionAccessMode> {
         Ok(self.transaction_start.access_mode.clone().into())
@@ -118,7 +144,7 @@ impl PyTransactionStart {
 #[pyclass(name = "TransactionEnd", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTransactionEnd {
-    transaction_end: TransactionEnd
+    transaction_end: TransactionEnd,
 }
 
 impl From<TransactionEnd> for PyTransactionEnd {
@@ -176,7 +202,9 @@ impl PyTransactionEnd {
     #[new]
     pub fn new(conclusion: PyTransactionConclusion, chain: bool) -> PyResult<Self> {
         let conclusion = conclusion.try_into()?;
-        Ok(PyTransactionEnd { transaction_end: TransactionEnd {conclusion, chain} })
+        Ok(PyTransactionEnd {
+            transaction_end: TransactionEnd { conclusion, chain },
+        })
     }
 
     pub fn conclusion(&self) -> PyResult<PyTransactionConclusion> {
@@ -191,7 +219,7 @@ impl PyTransactionEnd {
 #[pyclass(name = "SetVariable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySetVariable {
-    set_variable: SetVariable
+    set_variable: SetVariable,
 }
 
 impl From<SetVariable> for PySetVariable {
@@ -222,7 +250,9 @@ impl LogicalNode for PySetVariable {
 impl PySetVariable {
     #[new]
     pub fn new(variable: String, value: String) -> Self {
-        PySetVariable { set_variable: SetVariable{variable, value} }
+        PySetVariable {
+            set_variable: SetVariable { variable, value },
+        }
     }
 
     pub fn variable(&self) -> String {
@@ -232,13 +262,12 @@ impl PySetVariable {
     pub fn value(&self) -> String {
         self.set_variable.value.clone()
     }
-
 }
 
 #[pyclass(name = "Prepare", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyPrepare {
-    prepare: Prepare
+    prepare: Prepare,
 }
 
 impl From<Prepare> for PyPrepare {
@@ -270,8 +299,17 @@ impl PyPrepare {
     #[new]
     pub fn new(name: String, data_types: Vec<PyDataType>, input: PyLogicalPlan) -> Self {
         let input = input.plan().clone();
-        let data_types = data_types.into_iter().map(|data_type| data_type.try_into().unwrap()).collect();
-        PyPrepare { prepare: Prepare {name, data_types, input} }
+        let data_types = data_types
+            .into_iter()
+            .map(|data_type| data_type.try_into().unwrap())
+            .collect();
+        PyPrepare {
+            prepare: Prepare {
+                name,
+                data_types,
+                input,
+            },
+        }
     }
 
     pub fn name(&self) -> String {
@@ -279,19 +317,25 @@ impl PyPrepare {
     }
 
     pub fn data_types(&self) -> Vec<PyDataType> {
-        self.prepare.data_types.clone().into_iter().map(|t| t.into()).collect()
+        self.prepare
+            .data_types
+            .clone()
+            .into_iter()
+            .map(|t| t.into())
+            .collect()
     }
 
     pub fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan{plan: self.prepare.input.clone()}
+        PyLogicalPlan {
+            plan: self.prepare.input.clone(),
+        }
     }
 }
-
 
 #[pyclass(name = "Execute", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyExecute {
-    execute: Execute
+    execute: Execute,
 }
 
 impl From<Execute> for PyExecute {
@@ -322,8 +366,13 @@ impl LogicalNode for PyExecute {
 impl PyExecute {
     #[new]
     pub fn new(name: String, parameters: Vec<PyExpr>) -> Self {
-        let parameters = parameters.into_iter().map(|parameter| parameter.try_into().unwrap()).collect();
-        PyExecute { execute: Execute {name, parameters} }
+        let parameters = parameters
+            .into_iter()
+            .map(|parameter| parameter.try_into().unwrap())
+            .collect();
+        PyExecute {
+            execute: Execute { name, parameters },
+        }
     }
 
     pub fn name(&self) -> String {
@@ -331,14 +380,19 @@ impl PyExecute {
     }
 
     pub fn parameters(&self) -> Vec<PyExpr> {
-        self.execute.parameters.clone().into_iter().map(|t| t.into()).collect()
+        self.execute
+            .parameters
+            .clone()
+            .into_iter()
+            .map(|t| t.into())
+            .collect()
     }
 }
 
 #[pyclass(name = "Deallocate", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyDeallocate {
-    deallocate: Deallocate
+    deallocate: Deallocate,
 }
 
 impl From<Deallocate> for PyDeallocate {
@@ -369,7 +423,9 @@ impl LogicalNode for PyDeallocate {
 impl PyDeallocate {
     #[new]
     pub fn new(name: String) -> Self {
-        PyDeallocate { deallocate: Deallocate {name} }
+        PyDeallocate {
+            deallocate: Deallocate { name },
+        }
     }
 
     pub fn name(&self) -> String {

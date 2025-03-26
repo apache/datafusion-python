@@ -6,11 +6,10 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
 
-
 #[pyclass(name = "DmlStatement", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyDmlStatement {
-    dml: DmlStatement
+    dml: DmlStatement,
 }
 
 impl From<PyDmlStatement> for DmlStatement {
@@ -26,7 +25,6 @@ impl From<DmlStatement> for PyDmlStatement {
 }
 
 impl LogicalNode for PyDmlStatement {
-
     fn inputs(&self) -> Vec<PyLogicalPlan> {
         vec![PyLogicalPlan::from((*self.dml.input).clone())]
     }
@@ -38,21 +36,22 @@ impl LogicalNode for PyDmlStatement {
 
 #[pymethods]
 impl PyDmlStatement {
-
     pub fn table_name(&self) -> PyResult<String> {
         Ok(self.dml.table_name.to_string())
     }
 
-    pub fn  table_schema(&self) -> PyDFSchema {
+    pub fn table_schema(&self) -> PyDFSchema {
         (*self.dml.table_schema).clone().into()
     }
 
-    pub fn  op(&self) -> PyWriteOp {
+    pub fn op(&self) -> PyWriteOp {
         self.dml.op.clone().into()
     }
 
     pub fn input(&self) -> PyLogicalPlan {
-        PyLogicalPlan{plan: self.dml.input.clone()}
+        PyLogicalPlan {
+            plan: self.dml.input.clone(),
+        }
     }
 
     pub fn output_schema(&self) -> PyDFSchema {
@@ -67,7 +66,6 @@ impl PyDmlStatement {
         Ok("DmlStatement".to_string())
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(eq, eq_int, name = "WriteOp", module = "datafusion.expr")]
@@ -96,7 +94,6 @@ impl From<WriteOp> for PyWriteOp {
 }
 
 impl From<PyWriteOp> for WriteOp {
-
     fn from(py: PyWriteOp) -> Self {
         match py {
             PyWriteOp::Append => WriteOp::Insert(InsertOp::Append),
