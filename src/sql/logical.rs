@@ -17,6 +17,7 @@
 
 use std::sync::Arc;
 
+use crate::context::PySessionContext;
 use crate::errors::PyDataFusionResult;
 use crate::expr::aggregate::PyAggregate;
 use crate::expr::analyze::PyAnalyze;
@@ -55,7 +56,6 @@ use crate::expr::union::PyUnion;
 use crate::expr::unnest::PyUnnest;
 use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
-use crate::context::PySessionContext;
 use datafusion::logical_expr::{DdlStatement, LogicalPlan, Statement};
 use datafusion_proto::logical_plan::{AsLogicalPlan, DefaultLogicalExtensionCodec};
 use prost::Message;
