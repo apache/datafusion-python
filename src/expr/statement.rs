@@ -33,7 +33,7 @@ impl LogicalNode for PyTransactionStart {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }
@@ -166,7 +166,7 @@ impl LogicalNode for PyTransactionEnd {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }
@@ -241,7 +241,7 @@ impl LogicalNode for PySetVariable {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }
@@ -289,7 +289,7 @@ impl LogicalNode for PyPrepare {
         vec![PyLogicalPlan::from((*self.prepare.input).clone())]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }
@@ -301,7 +301,7 @@ impl PyPrepare {
         let input = input.plan().clone();
         let data_types = data_types
             .into_iter()
-            .map(|data_type| data_type.try_into().unwrap())
+            .map(|data_type| data_type.into())
             .collect();
         PyPrepare {
             prepare: Prepare {
@@ -357,7 +357,7 @@ impl LogicalNode for PyExecute {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }
@@ -368,7 +368,7 @@ impl PyExecute {
     pub fn new(name: String, parameters: Vec<PyExpr>) -> Self {
         let parameters = parameters
             .into_iter()
-            .map(|parameter| parameter.try_into().unwrap())
+            .map(|parameter| parameter.into())
             .collect();
         PyExecute {
             execute: Execute { name, parameters },
@@ -414,7 +414,7 @@ impl LogicalNode for PyDeallocate {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }

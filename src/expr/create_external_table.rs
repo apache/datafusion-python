@@ -97,7 +97,7 @@ impl PyCreateExternalTable {
                 .map(|(k, v)| (k, v.into()))
                 .collect(),
         };
-        PyCreateExternalTable { create: create }
+        PyCreateExternalTable { create }
     }
 
     pub fn schema(&self) -> PyDFSchema {
@@ -176,7 +176,7 @@ impl LogicalNode for PyCreateExternalTable {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }

@@ -55,7 +55,7 @@ use crate::expr::union::PyUnion;
 use crate::expr::unnest::PyUnnest;
 use crate::expr::values::PyValues;
 use crate::expr::window::PyWindowExpr;
-use crate::{context::PySessionContext, errors::py_unsupported_variant_err};
+use crate::context::PySessionContext;
 use datafusion::logical_expr::{DdlStatement, LogicalPlan, Statement};
 use datafusion_proto::logical_plan::{AsLogicalPlan, DefaultLogicalExtensionCodec};
 use prost::Message;

@@ -40,7 +40,7 @@ impl PyDropFunction {
     fn new(name: String, schema: PyDFSchema, if_exists: bool) -> PyResult<Self> {
         Ok(PyDropFunction {
             drop: DropFunction {
-                name: name.into(),
+                name,
                 schema: Arc::new(schema.into()),
                 if_exists,
             },
@@ -72,7 +72,7 @@ impl LogicalNode for PyDropFunction {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }

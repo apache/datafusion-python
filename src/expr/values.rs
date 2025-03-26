@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use datafusion::logical_expr::Values;
 use pyo3::prelude::*;
-use pyo3::{pyclass, Bound, IntoPyObjectExt, PyAny, PyErr, PyResult, Python};
+use pyo3::{pyclass, PyErr, PyResult, Python};
 
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
@@ -33,7 +33,7 @@ impl LogicalNode for PyValues {
         vec![]
     }
 
-    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<PyObject> {
+    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
         Ok(self.clone().into_py(py))
     }
 }

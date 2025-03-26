@@ -72,7 +72,7 @@ impl PyCopyTo {
         file_type: PyFileType,
         options: HashMap<String, String>,
     ) -> Self {
-        return PyCopyTo {
+        PyCopyTo {
             copy: CopyTo {
                 input: input.plan(),
                 output_url,
@@ -80,7 +80,7 @@ impl PyCopyTo {
                 file_type: file_type.file_type,
                 options,
             },
-        };
+        }
     }
 
     fn input(&self) -> PyLogicalPlan {
