@@ -38,6 +38,7 @@ TableSource = common_internal.TableSource
 Constraints = common_internal.Constraints
 
 __all__ = [
+    "Constraints",
     "DFSchema",
     "DataType",
     "DataTypeMap",
@@ -50,9 +51,8 @@ __all__ = [
     "SqlTable",
     "SqlType",
     "SqlView",
-    "TableType",
     "TableSource",
-    "Constraints",
+    "TableType",
 ]
 
 
