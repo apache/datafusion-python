@@ -21,7 +21,7 @@ use std::{
 };
 
 use datafusion::logical_expr::DropFunction;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
@@ -89,7 +89,7 @@ impl LogicalNode for PyDropFunction {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

@@ -66,7 +66,6 @@ pub mod case;
 pub mod cast;
 pub mod column;
 pub mod conditional_expr;
-pub mod constraints;
 pub mod copy_to;
 pub mod create_catalog;
 pub mod create_catalog_schema;
@@ -810,7 +809,6 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<create_catalog::PyCreateCatalog>()?;
     m.add_class::<create_catalog_schema::PyCreateCatalogSchema>()?;
     m.add_class::<create_external_table::PyCreateExternalTable>()?;
-    m.add_class::<constraints::PyConstraints>()?;
     m.add_class::<create_function::PyCreateFunction>()?;
     m.add_class::<create_function::PyOperateFunctionArg>()?;
     m.add_class::<create_function::PyCreateFunctionBody>()?;

@@ -19,7 +19,7 @@ use datafusion::logical_expr::{
     Deallocate, Execute, Prepare, SetVariable, TransactionAccessMode, TransactionConclusion,
     TransactionEnd, TransactionIsolationLevel, TransactionStart,
 };
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use crate::{common::data_type::PyDataType, sql::logical::PyLogicalPlan};
 
@@ -50,8 +50,8 @@ impl LogicalNode for PyTransactionStart {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -94,6 +94,7 @@ pub enum PyTransactionIsolationLevel {
     ReadCommitted,
     RepeatableRead,
     Serializable,
+    Snapshot,
 }
 
 impl From<TransactionIsolationLevel> for PyTransactionIsolationLevel {
@@ -107,6 +108,7 @@ impl From<TransactionIsolationLevel> for PyTransactionIsolationLevel {
                 PyTransactionIsolationLevel::RepeatableRead
             }
             TransactionIsolationLevel::Serializable => PyTransactionIsolationLevel::Serializable,
+            TransactionIsolationLevel::Snapshot => PyTransactionIsolationLevel::Snapshot,
         }
     }
 }
@@ -128,6 +130,7 @@ impl TryFrom<PyTransactionIsolationLevel> for TransactionIsolationLevel {
             PyTransactionIsolationLevel::Serializable => {
                 Ok(TransactionIsolationLevel::Serializable)
             }
+            PyTransactionIsolationLevel::Snapshot => Ok(TransactionIsolationLevel::Snapshot),
         }
     }
 }
@@ -183,8 +186,8 @@ impl LogicalNode for PyTransactionEnd {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -258,8 +261,8 @@ impl LogicalNode for PySetVariable {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -306,8 +309,8 @@ impl LogicalNode for PyPrepare {
         vec![PyLogicalPlan::from((*self.prepare.input).clone())]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -374,8 +377,8 @@ impl LogicalNode for PyExecute {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -431,8 +434,8 @@ impl LogicalNode for PyDeallocate {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 

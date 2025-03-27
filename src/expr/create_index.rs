@@ -21,7 +21,7 @@ use std::{
 };
 
 use datafusion::logical_expr::CreateIndex;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
@@ -123,7 +123,7 @@ impl LogicalNode for PyCreateIndex {
         vec![]
     }
 
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

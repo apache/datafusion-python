@@ -21,7 +21,7 @@ use std::{
 };
 
 use datafusion::{common::SchemaReference, logical_expr::DropCatalogSchema, sql::TableReference};
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::{exceptions::PyValueError, prelude::*, IntoPyObjectExt};
 
 use crate::common::df_schema::PyDFSchema;
 
@@ -110,7 +110,7 @@ impl LogicalNode for PyDropCatalogSchema {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

@@ -17,8 +17,9 @@
 
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::{DmlStatement, WriteOp};
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
+use crate::common::schema::PyTableSource;
 use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
@@ -46,8 +47,8 @@ impl LogicalNode for PyDmlStatement {
         vec![PyLogicalPlan::from((*self.dml.input).clone())]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
 
@@ -57,8 +58,10 @@ impl PyDmlStatement {
         Ok(self.dml.table_name.to_string())
     }
 
-    pub fn table_schema(&self) -> PyDFSchema {
-        (*self.dml.table_schema).clone().into()
+    pub fn target(&self) -> PyResult<PyTableSource> {
+        Ok(PyTableSource {
+            table_source: self.dml.target.clone(),
+        })
     }
 
     pub fn op(&self) -> PyWriteOp {

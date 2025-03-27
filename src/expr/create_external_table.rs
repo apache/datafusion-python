@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::{expr::PyExpr, sql::logical::PyLogicalPlan};
+use crate::{common::schema::PyConstraints, expr::PyExpr, sql::logical::PyLogicalPlan};
 use std::{
     collections::HashMap,
     fmt::{self, Display, Formatter},
@@ -23,11 +23,11 @@ use std::{
 };
 
 use datafusion::logical_expr::CreateExternalTable;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 
 use crate::common::df_schema::PyDFSchema;
 
-use super::{constraints::PyConstraints, logical_node::LogicalNode, sort_expr::PySortExpr};
+use super::{logical_node::LogicalNode, sort_expr::PySortExpr};
 
 #[pyclass(name = "CreateExternalTable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
@@ -59,6 +59,7 @@ impl Display for PyCreateExternalTable {
 
 #[pymethods]
 impl PyCreateExternalTable {
+    #[allow(clippy::too_many_arguments)]
     #[new]
     #[pyo3(signature = (schema, name, location, file_type, table_partition_cols, if_not_exists, temporary, order_exprs, unbounded, options, constraints, column_defaults, definition=None))]
     pub fn new(
@@ -176,7 +177,7 @@ impl LogicalNode for PyCreateExternalTable {
         vec![]
     }
 
-    fn to_variant(&self, py: Python<'_>) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }
