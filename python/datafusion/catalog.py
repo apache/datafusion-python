@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 import datafusion._internal as df_internal
 
 if TYPE_CHECKING:
-    import pyarrow
+    import pyarrow as pa
 
 
 class Catalog:
@@ -66,11 +66,12 @@ class Table:
         """This constructor is not typically called by the end user."""
         self.table = table
 
-    def schema(self) -> pyarrow.Schema:
+    @property
+    def schema(self) -> pa.Schema:
         """Returns the schema associated with this table."""
-        return self.table.schema()
+        return self.table.schema
 
     @property
     def kind(self) -> str:
         """Returns the kind of table."""
-        return self.table.kind()
+        return self.table.kind

@@ -16,10 +16,10 @@
 // under the License.
 
 use datafusion::common::DataFusionError;
-use datafusion::logical_expr::expr::{AggregateFunction, Alias};
+use datafusion::logical_expr::expr::{AggregateFunction, AggregateFunctionParams, Alias};
 use datafusion::logical_expr::logical_plan::Aggregate;
 use datafusion::logical_expr::Expr;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
 
 use super::logical_node::LogicalNode;
@@ -126,9 +126,11 @@ impl PyAggregate {
         match expr {
             // TODO: This Alias logic seems to be returning some strange results that we should investigate
             Expr::Alias(Alias { expr, .. }) => self._aggregation_arguments(expr.as_ref()),
-            Expr::AggregateFunction(AggregateFunction { func: _, args, .. }) => {
-                Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect())
-            }
+            Expr::AggregateFunction(AggregateFunction {
+                func: _,
+                params: AggregateFunctionParams { args, .. },
+                ..
+            }) => Ok(args.iter().map(|e| PyExpr::from(e.clone())).collect()),
             _ => Err(py_type_err(
                 "Encountered a non Aggregate type in aggregation_arguments",
             )),
@@ -151,7 +153,7 @@ impl LogicalNode for PyAggregate {
         vec![PyLogicalPlan::from((*self.aggregate.input).clone())]
     }
 
-    fn to_variant(&self, py: Python) -> PyResult<PyObject> {
-        Ok(self.clone().into_py(py))
+    fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        self.clone().into_bound_py_any(py)
     }
 }

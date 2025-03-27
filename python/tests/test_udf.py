@@ -24,7 +24,7 @@ from datafusion import column, udf
 def df(ctx):
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2, 3]), pa.array([4, 4, 6])],
+        [pa.array([1, 2, 3]), pa.array([4, 4, None])],
         names=["a", "b"],
     )
     return ctx.create_dataframe([[batch]], name="test_table")
@@ -39,10 +39,20 @@ def test_udf(df):
         volatility="immutable",
     )
 
-    df = df.select(is_null(column("a")))
+    df = df.select(is_null(column("b")))
     result = df.collect()[0].column(0)
 
-    assert result == pa.array([False, False, False])
+    assert result == pa.array([False, False, True])
+
+
+def test_udf_decorator(df):
+    @udf([pa.int64()], pa.bool_(), "immutable")
+    def is_null(x: pa.Array) -> pa.Array:
+        return x.is_null()
+
+    df = df.select(is_null(column("b")))
+    result = df.collect()[0].column(0)
+    assert result == pa.array([False, False, True])
 
 
 def test_register_udf(ctx, df) -> None:
@@ -56,10 +66,10 @@ def test_register_udf(ctx, df) -> None:
 
     ctx.register_udf(is_null)
 
-    df_result = ctx.sql("select is_null(a) from test_table")
+    df_result = ctx.sql("select is_null(b) from test_table")
     result = df_result.collect()[0].column(0)
 
-    assert result == pa.array([False, False, False])
+    assert result == pa.array([False, False, True])
 
 
 class OverThresholdUDF:
@@ -70,7 +80,7 @@ class OverThresholdUDF:
         return pa.array(v.as_py() >= self.threshold for v in values)
 
 
-def test_udf_with_parameters(df) -> None:
+def test_udf_with_parameters_function(df) -> None:
     udf_no_param = udf(
         OverThresholdUDF(),
         pa.int64(),
@@ -89,6 +99,26 @@ def test_udf_with_parameters(df) -> None:
         pa.bool_(),
         volatility="immutable",
     )
+
+    df2 = df.select(udf_with_param(column("a")))
+    result = df2.collect()[0].column(0)
+
+    assert result == pa.array([False, True, True])
+
+
+def test_udf_with_parameters_decorator(df) -> None:
+    @udf([pa.int64()], pa.bool_(), "immutable")
+    def udf_no_param(values: pa.Array) -> pa.Array:
+        return OverThresholdUDF()(values)
+
+    df1 = df.select(udf_no_param(column("a")))
+    result = df1.collect()[0].column(0)
+
+    assert result == pa.array([True, True, True])
+
+    @udf([pa.int64()], pa.bool_(), "immutable")
+    def udf_with_param(values: pa.Array) -> pa.Array:
+        return OverThresholdUDF(2)(values)
 
     df2 = df.select(udf_with_param(column("a")))
     result = df2.collect()[0].column(0)

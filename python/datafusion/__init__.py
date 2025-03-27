@@ -45,56 +45,64 @@ from .expr import (
     Expr,
     WindowFrame,
 )
+from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
-from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF
+from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
 
 __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
     "Accumulator",
-    "Config",
-    "DataFrame",
-    "SessionContext",
-    "SessionConfig",
-    "SQLOptions",
-    "RuntimeEnvBuilder",
-    "Expr",
-    "ScalarUDF",
-    "WindowFrame",
-    "column",
-    "col",
-    "literal",
-    "lit",
-    "DFSchema",
-    "Catalog",
-    "Database",
-    "Table",
     "AggregateUDF",
-    "WindowUDF",
-    "LogicalPlan",
+    "Catalog",
+    "Config",
+    "DFSchema",
+    "DataFrame",
+    "Database",
     "ExecutionPlan",
+    "Expr",
+    "LogicalPlan",
     "RecordBatch",
     "RecordBatchStream",
+    "RuntimeEnvBuilder",
+    "SQLOptions",
+    "ScalarUDF",
+    "SessionConfig",
+    "SessionContext",
+    "Table",
+    "WindowFrame",
+    "WindowUDF",
+    "col",
+    "column",
     "common",
     "expr",
     "functions",
+    "lit",
+    "literal",
     "object_store",
+    "read_avro",
+    "read_csv",
+    "read_json",
+    "read_parquet",
     "substrait",
+    "udaf",
+    "udf",
+    "udwf",
 ]
 
 
-def column(value: str):
+def column(value: str) -> Expr:
     """Create a column expression."""
     return Expr.column(value)
 
 
-def col(value: str):
+def col(value: str) -> Expr:
     """Create a column expression."""
     return Expr.column(value)
 
 
-def literal(value):
+def literal(value) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
 
@@ -112,13 +120,6 @@ def str_lit(value):
     return string_literal(value)
 
 
-def lit(value):
+def lit(value) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
-
-
-udf = ScalarUDF.udf
-
-udaf = AggregateUDF.udaf
-
-udwf = WindowUDF.udwf

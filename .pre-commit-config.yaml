@@ -22,7 +22,7 @@ repos:
           - id: actionlint-docker
       - repo: https://github.com/astral-sh/ruff-pre-commit
         # Ruff version.
-        rev: v0.3.0
+        rev: v0.9.10
         hooks:
           # Run the linter.
           - id: ruff
@@ -40,7 +40,7 @@ repos:
           - id: rust-clippy
             name: Rust clippy
             description: Run cargo clippy on files included in the commit. clippy should be installed before-hand.
-            entry: cargo clippy --all-targets --all-features -- -Dclippy::all -Aclippy::redundant_closure
+            entry: cargo clippy --all-targets --all-features -- -Dclippy::all -D warnings -Aclippy::redundant_closure
             pass_filenames: false
             types: [file, rust]
             language: system

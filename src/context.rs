@@ -44,7 +44,7 @@ use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -69,7 +69,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
-use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple};
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -306,6 +306,14 @@ impl PySessionContext {
         })
     }
 
+    #[classmethod]
+    #[pyo3(signature = ())]
+    fn global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
+        Ok(Self {
+            ctx: get_global_ctx().clone(),
+        })
+    }
+
     /// Register an object store with the given name
     #[pyo3(signature = (scheme, store, host=None))]
     pub fn register_object_store(
@@ -458,8 +466,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pylist", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -478,8 +486,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pydict", args)?;
 
         // Convert Arrow Table to datafusion DataFrame
@@ -533,8 +541,8 @@ impl PySessionContext {
         let py = data.py();
 
         // Instantiate pyarrow Table object & convert to Arrow Table
-        let table_class = py.import_bound("pyarrow")?.getattr("Table")?;
-        let args = PyTuple::new_bound(py, &[data]);
+        let table_class = py.import("pyarrow")?.getattr("Table")?;
+        let args = PyTuple::new(py, &[data])?;
         let table = table_class.call_method1("from_pandas", args)?;
 
         // Convert Arrow Table to datafusion DataFrame

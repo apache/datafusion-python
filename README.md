@@ -30,10 +30,8 @@ DataFusion's Python bindings can be used as a foundation for building new data s
   planning, and logical plan optimizations, and then transpiles the logical plan to Dask operations for execution.
 - [DataFusion Ballista](https://github.com/apache/datafusion-ballista) is a distributed SQL query engine that extends
   DataFusion's Python bindings for distributed use cases.
-
-It is also possible to use these Python bindings directly for DataFrame and SQL operations, but you may find that
-[Polars](http://pola.rs/) and [DuckDB](http://www.duckdb.org/) are more suitable for this use case, since they have
-more of an end-user focus and are more actively maintained than these Python bindings.
+- [DataFusion Ray](https://github.com/apache/datafusion-ray) is another distributed query engine that uses
+  DataFusion's Python bindings.
 
 ## Features
 
@@ -81,6 +79,46 @@ This produces the following chart:
 
 ![Chart](examples/chart.png)
 
+## Registering a DataFrame as a View
+
+You can use SessionContext's `register_view` method to convert a DataFrame into a view and register it with the context.
+
+```python
+from datafusion import SessionContext, col, literal
+
+# Create a DataFusion context
+ctx = SessionContext()
+
+# Create sample data
+data = {"a": [1, 2, 3, 4, 5], "b": [10, 20, 30, 40, 50]}
+
+# Create a DataFrame from the dictionary
+df = ctx.from_pydict(data, "my_table")
+
+# Filter the DataFrame (for example, keep rows where a > 2)
+df_filtered = df.filter(col("a") > literal(2))
+
+# Register the dataframe as a view with the context
+ctx.register_view("view1", df_filtered)
+
+# Now run a SQL query against the registered view
+df_view = ctx.sql("SELECT * FROM view1")
+
+# Collect the results
+results = df_view.collect()
+
+# Convert results to a list of dictionaries for display
+result_dicts = [batch.to_pydict() for batch in results]
+
+print(result_dicts)
+```
+
+This will output:
+
+```python
+[{'a': [3, 4, 5], 'b': [30, 40, 50]}]
+```
+
 ## Configuration
 
 It is possible to configure runtime (memory and disk settings) and configuration settings when creating a context.
@@ -113,6 +151,11 @@ Printing the context will show the current configuration settings.
 ```python
 print(ctx)
 ```
+
+## Extensions
+
+For information about how to extend DataFusion Python, please see the extensions page of the
+[online documentation](https://datafusion.apache.org/python/).
 
 ## More Examples
 

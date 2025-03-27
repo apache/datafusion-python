@@ -73,7 +73,7 @@ suppress_warnings = ["autoapi.python_import_resolution"]
 autoapi_python_class_content = "both"
 
 
-def autoapi_skip_member_fn(app, what, name, obj, skip, options):
+def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa: ARG001
     skip_contents = [
         # Re-exports
         ("class", "datafusion.DataFrame"),
@@ -93,7 +93,7 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options):
     return skip
 
 
-def setup(sphinx):
+def setup(sphinx) -> None:
     sphinx.connect("autoapi-skip-member", autoapi_skip_member_fn)
 
 

@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import os
+import re
 from typing import Any
 
 import pyarrow as pa
@@ -339,7 +340,7 @@ def test_join():
 
     # Verify we don't make a breaking change to pre-43.0.0
     # where users would pass join_keys as a positional argument
-    df2 = df.join(df1, (["a"], ["a"]), how="inner")  # type: ignore
+    df2 = df.join(df1, (["a"], ["a"]), how="inner")
     df2.show()
     df2 = df2.sort(column("l.a"))
     table = pa.Table.from_batches(df2.collect())
@@ -375,17 +376,17 @@ def test_join_invalid_params():
     with pytest.raises(
         ValueError, match=r"`left_on` or `right_on` should not provided with `on`"
     ):
-        df2 = df.join(df1, on="a", how="inner", right_on="test")  # type: ignore
+        df2 = df.join(df1, on="a", how="inner", right_on="test")
 
     with pytest.raises(
         ValueError, match=r"`left_on` and `right_on` should both be provided."
     ):
-        df2 = df.join(df1, left_on="a", how="inner")  # type: ignore
+        df2 = df.join(df1, left_on="a", how="inner")
 
     with pytest.raises(
         ValueError, match=r"either `on` or `left_on` and `right_on` should be provided."
     ):
-        df2 = df.join(df1, how="inner")  # type: ignore
+        df2 = df.join(df1, how="inner")
 
 
 def test_join_on():
@@ -567,7 +568,7 @@ data_test_window_functions = [
 ]
 
 
-@pytest.mark.parametrize("name,expr,result", data_test_window_functions)
+@pytest.mark.parametrize(("name", "expr", "result"), data_test_window_functions)
 def test_window_functions(partitioned_df, name, expr, result):
     df = partitioned_df.select(
         column("a"), column("b"), column("c"), f.alias(expr, name)
@@ -731,7 +732,7 @@ def test_execution_plan(aggregate_df):
     plan = aggregate_df.execution_plan()
 
     expected = (
-        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"  # noqa: E501
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
     )
 
     assert expected == plan.display()
@@ -752,16 +753,34 @@ def test_execution_plan(aggregate_df):
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
-    assert "CsvExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
 
     ctx = SessionContext()
-    stream = ctx.execute(plan, 0)
-    # get the one and only batch
-    batch = stream.next()
-    assert batch is not None
-    # there should be no more batches
-    with pytest.raises(StopIteration):
-        stream.next()
+    rows_returned = 0
+    for idx in range(plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
+
+
+@pytest.mark.asyncio
+async def test_async_iteration_of_df(aggregate_df):
+    rows_returned = 0
+    async for batch in aggregate_df.execute_stream():
+        assert batch is not None
+        rows_returned += len(batch.to_pyarrow()[0])
+
+    assert rows_returned == 5
 
 
 def test_repartition(df):
@@ -878,7 +897,7 @@ def test_union_distinct(ctx):
     )
     df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
 
-    df_a_u_b = df_a.union(df_b, True).sort(column("a"))
+    df_a_u_b = df_a.union(df_b, distinct=True).sort(column("a"))
 
     assert df_c.collect() == df_a_u_b.collect()
     assert df_c.collect() == df_a_u_b.collect()
@@ -947,10 +966,20 @@ def test_to_arrow_table(df):
 
 def test_execute_stream(df):
     stream = df.execute_stream()
-    for s in stream:
-        print(type(s))
     assert all(batch is not None for batch in stream)
     assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_async(df):
+    stream = df.execute_stream()
+    batches = [batch async for batch in stream]
+
+    assert all(batch is not None for batch in batches)
+
+    # After consuming all batches, the stream should be exhausted
+    remaining_batches = [batch async for batch in stream]
+    assert not remaining_batches
 
 
 @pytest.mark.parametrize("schema", [True, False])
@@ -962,7 +991,26 @@ def test_execute_stream_to_arrow_table(df, schema):
             (batch.to_pyarrow() for batch in stream), schema=df.schema()
         )
     else:
-        pyarrow_table = pa.Table.from_batches((batch.to_pyarrow() for batch in stream))
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema", [True, False])
+async def test_execute_stream_to_arrow_table_async(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream], schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream]
+        )
 
     assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (3, 3)
@@ -975,6 +1023,19 @@ def test_execute_stream_partitioned(df):
     assert all(
         not list(stream) for stream in streams
     )  # after one iteration all generators must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_partitioned_async(df):
+    streams = df.execute_stream_partitioned()
+
+    for stream in streams:
+        batches = [batch async for batch in stream]
+        assert all(batch is not None for batch in batches)
+
+        # Ensure the stream is exhausted after iteration
+        remaining_batches = [batch async for batch in stream]
+        assert not remaining_batches
 
 
 def test_empty_to_arrow_table(df):
@@ -1026,7 +1087,7 @@ def test_describe(df):
     }
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_write_csv(ctx, df, tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
@@ -1039,7 +1100,7 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
     assert result == expected
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_write_json(ctx, df, tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
@@ -1052,7 +1113,7 @@ def test_write_json(ctx, df, tmp_path, path_to_str):
     assert result == expected
 
 
-@pytest.mark.parametrize("path_to_str", (True, False))
+@pytest.mark.parametrize("path_to_str", [True, False])
 def test_write_parquet(df, tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
 
@@ -1064,7 +1125,7 @@ def test_write_parquet(df, tmp_path, path_to_str):
 
 
 @pytest.mark.parametrize(
-    "compression, compression_level",
+    ("compression", "compression_level"),
     [("gzip", 6), ("brotli", 7), ("zstd", 15)],
 )
 def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
@@ -1075,7 +1136,7 @@ def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
     )
 
     # test that the actual compression scheme is the one written
-    for root, dirs, files in os.walk(path):
+    for _root, _dirs, files in os.walk(path):
         for file in files:
             if file.endswith(".parquet"):
                 metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
@@ -1090,7 +1151,7 @@ def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
 
 
 @pytest.mark.parametrize(
-    "compression, compression_level",
+    ("compression", "compression_level"),
     [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
 )
 def test_write_compressed_parquet_wrong_compression_level(
@@ -1145,7 +1206,7 @@ def test_dataframe_export(df) -> None:
     table = pa.table(df, schema=desired_schema)
     assert table.num_columns == 1
     assert table.num_rows == 3
-    for i in range(0, 3):
+    for i in range(3):
         assert table[0][i].as_py() is None
 
     # Expect an error when we cannot convert schema
@@ -1179,20 +1240,24 @@ def test_dataframe_transform(df):
     result = df.to_pydict()
 
     assert result["a"] == [1, 2, 3]
-    assert result["string_col"] == ["string data" for _i in range(0, 3)]
-    assert result["new_col"] == [3 for _i in range(0, 3)]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
 
 
 def test_dataframe_repr_html(df) -> None:
     output = df._repr_html_()
 
-    ref_html = """<table border='1'>
-        <tr><th>a</td><th>b</td><th>c</td></tr>
-        <tr><td>1</td><td>4</td><td>8</td></tr>
-        <tr><td>2</td><td>5</td><td>5</td></tr>
-        <tr><td>3</td><td>6</td><td>8</td></tr>
-        </table>
-        """
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
 
-    # Ignore whitespace just to make this test look cleaner
-    assert output.replace(" ", "") == ref_html.replace(" ", "")
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    assert len(re.findall(header_pattern, output, re.DOTALL)) == 1
+
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+    body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
+    body_pattern = "(.*?)".join(body_lines)
+    assert len(re.findall(body_pattern, output, re.DOTALL)) == 1

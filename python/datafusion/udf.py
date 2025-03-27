@@ -19,17 +19,18 @@
 
 from __future__ import annotations
 
+import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Callable, List, Optional, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
 
-import pyarrow
+import pyarrow as pa
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
-    _R = TypeVar("_R", bound=pyarrow.DataType)
+    _R = TypeVar("_R", bound=pa.DataType)
 
 
 class Volatility(Enum):
@@ -71,7 +72,7 @@ class Volatility(Enum):
     for each output row, resulting in a unique random value for each row.
     """
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns the string equivalent."""
         return self.name.lower()
 
@@ -85,9 +86,9 @@ class ScalarUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[..., _R],
-        input_types: pyarrow.DataType | list[pyarrow.DataType],
+        input_types: pa.DataType | list[pa.DataType],
         return_type: _R,
         volatility: Volatility | str,
     ) -> None:
@@ -95,7 +96,7 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
-        if isinstance(input_types, pyarrow.DataType):
+        if isinstance(input_types, pa.DataType):
             input_types = [input_types]
         self._udf = df_internal.ScalarUDF(
             name, func, input_types, return_type, str(volatility)
@@ -110,67 +111,135 @@ class ScalarUDF:
         args_raw = [arg.expr for arg in args]
         return Expr(self._udf.__call__(*args_raw))
 
+    @overload
     @staticmethod
     def udf(
-        func: Callable[..., _R],
-        input_types: list[pyarrow.DataType],
+        input_types: list[pa.DataType],
         return_type: _R,
         volatility: Volatility | str,
         name: Optional[str] = None,
-    ) -> ScalarUDF:
-        """Create a new User-Defined Function.
+    ) -> Callable[..., ScalarUDF]: ...
+
+    @overload
+    @staticmethod
+    def udf(
+        func: Callable[..., _R],
+        input_types: list[pa.DataType],
+        return_type: _R,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> ScalarUDF: ...
+
+    @staticmethod
+    def udf(*args: Any, **kwargs: Any):  # noqa: D417
+        """Create a new User-Defined Function (UDF).
+
+        This class can be used both as a **function** and as a **decorator**.
+
+        Usage:
+            - **As a function**: Call `udf(func, input_types, return_type, volatility,
+              name)`.
+            - **As a decorator**: Use `@udf(input_types, return_type, volatility,
+              name)`. In this case, do **not** pass `func` explicitly.
 
         Args:
-            func: A callable python function.
-            input_types: The data types of the arguments to ``func``. This list
-                must be of the same length as the number of arguments.
-            return_type: The data type of the return value from the python
-                function.
-            volatility: See ``Volatility`` for allowed values.
-            name: A descriptive name for the function.
+            func (Callable, optional): **Only needed when calling as a function.**
+                Skip this argument when using `udf` as a decorator.
+            input_types (list[pa.DataType]): The data types of the arguments
+                to `func`. This list must be of the same length as the number of
+                arguments.
+            return_type (_R): The data type of the return value from the function.
+            volatility (Volatility | str): See `Volatility` for allowed values.
+            name (Optional[str]): A descriptive name for the function.
 
         Returns:
-            A user-defined aggregate function, which can be used in either data
-                aggregation or window function calls.
+            A user-defined function that can be used in SQL expressions,
+            data aggregation, or window function calls.
+
+        Example:
+            **Using `udf` as a function:**
+            ```
+            def double_func(x):
+                return x * 2
+            double_udf = udf(double_func, [pa.int32()], pa.int32(),
+            "volatile", "double_it")
+            ```
+
+            **Using `udf` as a decorator:**
+            ```
+            @udf([pa.int32()], pa.int32(), "volatile", "double_it")
+            def double_udf(x):
+                return x * 2
+            ```
         """
-        if not callable(func):
-            raise TypeError("`func` argument must be callable")
-        if name is None:
-            if hasattr(func, "__qualname__"):
-                name = func.__qualname__.lower()
-            else:
-                name = func.__class__.__name__.lower()
-        return ScalarUDF(
-            name=name,
-            func=func,
-            input_types=input_types,
-            return_type=return_type,
-            volatility=volatility,
-        )
+
+        def _function(
+            func: Callable[..., _R],
+            input_types: list[pa.DataType],
+            return_type: _R,
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> ScalarUDF:
+            if not callable(func):
+                msg = "`func` argument must be callable"
+                raise TypeError(msg)
+            if name is None:
+                if hasattr(func, "__qualname__"):
+                    name = func.__qualname__.lower()
+                else:
+                    name = func.__class__.__name__.lower()
+            return ScalarUDF(
+                name=name,
+                func=func,
+                input_types=input_types,
+                return_type=return_type,
+                volatility=volatility,
+            )
+
+        def _decorator(
+            input_types: list[pa.DataType],
+            return_type: _R,
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> Callable:
+            def decorator(func: Callable):
+                udf_caller = ScalarUDF.udf(
+                    func, input_types, return_type, volatility, name
+                )
+
+                @functools.wraps(func)
+                def wrapper(*args: Any, **kwargs: Any):
+                    return udf_caller(*args, **kwargs)
+
+                return wrapper
+
+            return decorator
+
+        if args and callable(args[0]):
+            # Case 1: Used as a function, require the first parameter to be callable
+            return _function(*args, **kwargs)
+        # Case 2: Used as a decorator with parameters
+        return _decorator(*args, **kwargs)
 
 
 class Accumulator(metaclass=ABCMeta):
     """Defines how an :py:class:`AggregateUDF` accumulates values."""
 
     @abstractmethod
-    def state(self) -> List[pyarrow.Scalar]:
+    def state(self) -> list[pa.Scalar]:
         """Return the current state."""
-        pass
 
     @abstractmethod
-    def update(self, *values: pyarrow.Array) -> None:
+    def update(self, *values: pa.Array) -> None:
         """Evaluate an array of values and update state."""
-        pass
 
     @abstractmethod
-    def merge(self, states: List[pyarrow.Array]) -> None:
+    def merge(self, states: list[pa.Array]) -> None:
         """Merge a set of states."""
-        pass
 
     @abstractmethod
-    def evaluate(self) -> pyarrow.Scalar:
+    def evaluate(self) -> pa.Scalar:
         """Return the resultant value."""
-        pass
 
 
 class AggregateUDF:
@@ -182,11 +251,11 @@ class AggregateUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         accumulator: Callable[[], Accumulator],
-        input_types: list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
-        state_type: list[pyarrow.DataType],
+        input_types: list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
@@ -212,25 +281,49 @@ class AggregateUDF:
         args_raw = [arg.expr for arg in args]
         return Expr(self._udaf.__call__(*args_raw))
 
+    @overload
+    @staticmethod
+    def udaf(
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> Callable[..., AggregateUDF]: ...
+
+    @overload
     @staticmethod
     def udaf(
         accum: Callable[[], Accumulator],
-        input_types: pyarrow.DataType | list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
-        state_type: list[pyarrow.DataType],
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
         volatility: Volatility | str,
         name: Optional[str] = None,
-    ) -> AggregateUDF:
-        """Create a new User-Defined Aggregate Function.
+    ) -> AggregateUDF: ...
 
-        If your :py:class:`Accumulator` can be instantiated with no arguments, you
-        can simply pass it's type as ``accum``. If you need to pass additional arguments
-        to it's constructor, you can define a lambda or a factory method. During runtime
-        the :py:class:`Accumulator` will be constructed for every instance in
-        which this UDAF is used. The following examples are all valid.
+    @staticmethod
+    def udaf(*args: Any, **kwargs: Any):  # noqa: D417
+        """Create a new User-Defined Aggregate Function (UDAF).
 
-        .. code-block:: python
+        This class allows you to define an **aggregate function** that can be used in
+        data aggregation or window function calls.
 
+        Usage:
+            - **As a function**: Call `udaf(accum, input_types, return_type, state_type,
+                volatility, name)`.
+            - **As a decorator**: Use `@udaf(input_types, return_type, state_type,
+                volatility, name)`.
+            When using `udaf` as a decorator, **do not pass `accum` explicitly**.
+
+        **Function example:**
+
+            If your `:py:class:Accumulator` can be instantiated with no arguments, you
+            can simply pass it's type as `accum`. If you need to pass additional
+            arguments to it's constructor, you can define a lambda or a factory method.
+            During runtime the `:py:class:Accumulator` will be constructed for every
+            instance in which this UDAF is used. The following examples are all valid.
+            ```
             import pyarrow as pa
             import pyarrow.compute as pc
 
@@ -238,13 +331,13 @@ class AggregateUDF:
                 def __init__(self, bias: float = 0.0):
                     self._sum = pa.scalar(bias)
 
-                def state(self) -> List[pa.Scalar]:
+                def state(self) -> list[pa.Scalar]:
                     return [self._sum]
 
                 def update(self, values: pa.Array) -> None:
                     self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
 
-                def merge(self, states: List[pa.Array]) -> None:
+                def merge(self, states: list[pa.Array]) -> None:
                     self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
 
                 def evaluate(self) -> pa.Scalar:
@@ -253,12 +346,24 @@ class AggregateUDF:
             def sum_bias_10() -> Summarize:
                 return Summarize(10.0)
 
-            udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()], "immutable")
-            udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()], "immutable")
-            udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(), [pa.float64()], "immutable")
+            udaf1 = udaf(Summarize, pa.float64(), pa.float64(), [pa.float64()],
+                "immutable")
+            udaf2 = udaf(sum_bias_10, pa.float64(), pa.float64(), [pa.float64()],
+                "immutable")
+            udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
+                [pa.float64()], "immutable")
+            ```
+
+        **Decorator example:**
+            ```
+            @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+            def udf4() -> Summarize:
+                return Summarize(10.0)
+            ```
 
         Args:
-            accum: The accumulator python function.
+            accum: The accumulator python function. **Only needed when calling as a
+                function. Skip this argument when using `udaf` as a decorator.**
             input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
@@ -268,28 +373,63 @@ class AggregateUDF:
         Returns:
             A user-defined aggregate function, which can be used in either data
             aggregation or window function calls.
-        """  # noqa W505
-        if not callable(accum):
-            raise TypeError("`func` must be callable.")
-        if not isinstance(accum.__call__(), Accumulator):
-            raise TypeError(
-                "Accumulator must implement the abstract base class Accumulator"
+        """
+
+        def _function(
+            accum: Callable[[], Accumulator],
+            input_types: pa.DataType | list[pa.DataType],
+            return_type: pa.DataType,
+            state_type: list[pa.DataType],
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> AggregateUDF:
+            if not callable(accum):
+                msg = "`func` must be callable."
+                raise TypeError(msg)
+            if not isinstance(accum(), Accumulator):
+                msg = "Accumulator must implement the abstract base class Accumulator"
+                raise TypeError(msg)
+            if name is None:
+                name = accum().__class__.__qualname__.lower()
+            if isinstance(input_types, pa.DataType):
+                input_types = [input_types]
+            return AggregateUDF(
+                name=name,
+                accumulator=accum,
+                input_types=input_types,
+                return_type=return_type,
+                state_type=state_type,
+                volatility=volatility,
             )
-        if name is None:
-            name = accum.__call__().__class__.__qualname__.lower()
-        if isinstance(input_types, pyarrow.DataType):
-            input_types = [input_types]
-        return AggregateUDF(
-            name=name,
-            accumulator=accum,
-            input_types=input_types,
-            return_type=return_type,
-            state_type=state_type,
-            volatility=volatility,
-        )
+
+        def _decorator(
+            input_types: pa.DataType | list[pa.DataType],
+            return_type: pa.DataType,
+            state_type: list[pa.DataType],
+            volatility: Volatility | str,
+            name: Optional[str] = None,
+        ) -> Callable[..., Callable[..., Expr]]:
+            def decorator(accum: Callable[[], Accumulator]) -> Callable[..., Expr]:
+                udaf_caller = AggregateUDF.udaf(
+                    accum, input_types, return_type, state_type, volatility, name
+                )
+
+                @functools.wraps(accum)
+                def wrapper(*args: Any, **kwargs: Any) -> Expr:
+                    return udaf_caller(*args, **kwargs)
+
+                return wrapper
+
+            return decorator
+
+        if args and callable(args[0]):
+            # Case 1: Used as a function, require the first parameter to be callable
+            return _function(*args, **kwargs)
+        # Case 2: Used as a decorator with parameters
+        return _decorator(*args, **kwargs)
 
 
-class WindowEvaluator(metaclass=ABCMeta):
+class WindowEvaluator:
     """Evaluator class for user-defined window functions (UDWF).
 
     It is up to the user to decide which evaluate function is appropriate.
@@ -305,7 +445,7 @@ class WindowEvaluator(metaclass=ABCMeta):
     +------------------------+--------------------------------+------------------+---------------------------+
     | True                   | True/False                     | True/False       | ``evaluate``              |
     +------------------------+--------------------------------+------------------+---------------------------+
-    """  # noqa: W505
+    """  # noqa: W505, E501
 
     def memoize(self) -> None:
         """Perform a memoize operation to improve performance.
@@ -318,9 +458,8 @@ class WindowEvaluator(metaclass=ABCMeta):
         `memoize` is called after each input batch is processed, and
         such functions can save whatever they need
         """
-        pass
 
-    def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:
+    def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:  # noqa: ARG002
         """Return the range for the window fuction.
 
         If `uses_window_frame` flag is `false`. This method is used to
@@ -342,14 +481,17 @@ class WindowEvaluator(metaclass=ABCMeta):
         """Get whether evaluator needs future data for its result."""
         return False
 
-    def evaluate_all(self, values: list[pyarrow.Array], num_rows: int) -> pyarrow.Array:
+    def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
         """Evaluate a window function on an entire input partition.
 
         This function is called once per input *partition* for window functions that
         *do not use* values from the window frame, such as
-        :py:func:`~datafusion.functions.row_number`, :py:func:`~datafusion.functions.rank`,
-        :py:func:`~datafusion.functions.dense_rank`, :py:func:`~datafusion.functions.percent_rank`,
-        :py:func:`~datafusion.functions.cume_dist`, :py:func:`~datafusion.functions.lead`,
+        :py:func:`~datafusion.functions.row_number`,
+        :py:func:`~datafusion.functions.rank`,
+        :py:func:`~datafusion.functions.dense_rank`,
+        :py:func:`~datafusion.functions.percent_rank`,
+        :py:func:`~datafusion.functions.cume_dist`,
+        :py:func:`~datafusion.functions.lead`,
         and :py:func:`~datafusion.functions.lag`.
 
         It produces the result of all rows in a single pass. It
@@ -381,12 +523,11 @@ class WindowEvaluator(metaclass=ABCMeta):
         .. code-block:: text
 
             avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
-        """  # noqa: W505
-        pass
+        """  # noqa: W505, E501
 
     def evaluate(
-        self, values: list[pyarrow.Array], eval_range: tuple[int, int]
-    ) -> pyarrow.Scalar:
+        self, values: list[pa.Array], eval_range: tuple[int, int]
+    ) -> pa.Scalar:
         """Evaluate window function on a range of rows in an input partition.
 
         This is the simplest and most general function to implement
@@ -401,11 +542,10 @@ class WindowEvaluator(metaclass=ABCMeta):
         and evaluation results of ORDER BY expressions. If function has a
         single argument, `values[1..]` will contain ORDER BY expression results.
         """
-        pass
 
     def evaluate_all_with_rank(
         self, num_rows: int, ranks_in_partition: list[tuple[int, int]]
-    ) -> pyarrow.Array:
+    ) -> pa.Array:
         """Called for window functions that only need the rank of a row.
 
         Evaluate the partition evaluator against the partition using
@@ -434,7 +574,6 @@ class WindowEvaluator(metaclass=ABCMeta):
 
         The user must implement this method if ``include_rank`` returns True.
         """
-        pass
 
     def supports_bounded_execution(self) -> bool:
         """Can the window function be incrementally computed using bounded memory?"""
@@ -449,10 +588,6 @@ class WindowEvaluator(metaclass=ABCMeta):
         return False
 
 
-if TYPE_CHECKING:
-    _W = TypeVar("_W", bound=WindowEvaluator)
-
-
 class WindowUDF:
     """Class for performing window user-defined functions (UDF).
 
@@ -462,10 +597,10 @@ class WindowUDF:
 
     def __init__(
         self,
-        name: Optional[str],
+        name: str,
         func: Callable[[], WindowEvaluator],
-        input_types: list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
+        input_types: list[pa.DataType],
+        return_type: pa.DataType,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a user-defined window function (UDWF).
@@ -486,31 +621,48 @@ class WindowUDF:
         args_raw = [arg.expr for arg in args]
         return Expr(self._udwf.__call__(*args_raw))
 
+    @overload
+    @staticmethod
+    def udwf(
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> Callable[..., WindowUDF]: ...
+
+    @overload
     @staticmethod
     def udwf(
         func: Callable[[], WindowEvaluator],
-        input_types: pyarrow.DataType | list[pyarrow.DataType],
-        return_type: pyarrow.DataType,
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
         volatility: Volatility | str,
         name: Optional[str] = None,
-    ) -> WindowUDF:
-        """Create a new User-Defined Window Function.
+    ) -> WindowUDF: ...
 
-        If your :py:class:`WindowEvaluator` can be instantiated with no arguments, you
-        can simply pass it's type as ``func``. If you need to pass additional arguments
-        to it's constructor, you can define a lambda or a factory method. During runtime
-        the :py:class:`WindowEvaluator` will be constructed for every instance in
-        which this UDWF is used. The following examples are all valid.
+    @staticmethod
+    def udwf(*args: Any, **kwargs: Any):  # noqa: D417
+        """Create a new User-Defined Window Function (UDWF).
 
-        .. code-block:: python
+        This class can be used both as a **function** and as a **decorator**.
 
+        Usage:
+            - **As a function**: Call `udwf(func, input_types, return_type, volatility,
+              name)`.
+            - **As a decorator**: Use `@udwf(input_types, return_type, volatility,
+              name)`. When using `udwf` as a decorator, **do not pass `func`
+              explicitly**.
+
+        **Function example:**
+            ```
             import pyarrow as pa
 
             class BiasedNumbers(WindowEvaluator):
                 def __init__(self, start: int = 0) -> None:
                     self.start = start
 
-                def evaluate_all(self, values: list[pa.Array], num_rows: int) -> pa.Array:
+                def evaluate_all(self, values: list[pa.Array],
+                    num_rows: int) -> pa.Array:
                     return pa.array([self.start + i for i in range(num_rows)])
 
             def bias_10() -> BiasedNumbers:
@@ -520,31 +672,96 @@ class WindowUDF:
             udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
             udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
 
+            ```
+
+        **Decorator example:**
+            ```
+            @udwf(pa.int64(), pa.int64(), "immutable")
+            def biased_numbers() -> BiasedNumbers:
+                return BiasedNumbers(10)
+            ```
+
         Args:
-            func: A callable to create the window function.
-            input_types: The data types of the arguments to ``func``.
+            func: **Only needed when calling as a function. Skip this argument when
+                using `udwf` as a decorator.**
+            input_types: The data types of the arguments.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
-            arguments: A list of arguments to pass in to the __init__ method for accum.
             name: A descriptive name for the function.
 
         Returns:
-            A user-defined window function.
-        """  # noqa W505
+            A user-defined window function that can be used in window function calls.
+        """
+        if args and callable(args[0]):
+            # Case 1: Used as a function, require the first parameter to be callable
+            return WindowUDF._create_window_udf(*args, **kwargs)
+        # Case 2: Used as a decorator with parameters
+        return WindowUDF._create_window_udf_decorator(*args, **kwargs)
+
+    @staticmethod
+    def _create_window_udf(
+        func: Callable[[], WindowEvaluator],
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> WindowUDF:
+        """Create a WindowUDF instance from function arguments."""
         if not callable(func):
-            raise TypeError("`func` must be callable.")
-        if not isinstance(func.__call__(), WindowEvaluator):
-            raise TypeError(
-                "`func` must implement the abstract base class WindowEvaluator"
-            )
-        if name is None:
-            name = func.__call__().__class__.__qualname__.lower()
-        if isinstance(input_types, pyarrow.DataType):
-            input_types = [input_types]
-        return WindowUDF(
-            name=name,
-            func=func,
-            input_types=input_types,
-            return_type=return_type,
-            volatility=volatility,
+            msg = "`func` must be callable."
+            raise TypeError(msg)
+        if not isinstance(func(), WindowEvaluator):
+            msg = "`func` must implement the abstract base class WindowEvaluator"
+            raise TypeError(msg)
+
+        name = name or func.__qualname__.lower()
+        input_types = (
+            [input_types] if isinstance(input_types, pa.DataType) else input_types
         )
+
+        return WindowUDF(name, func, input_types, return_type, volatility)
+
+    @staticmethod
+    def _get_default_name(func: Callable) -> str:
+        """Get the default name for a function based on its attributes."""
+        if hasattr(func, "__qualname__"):
+            return func.__qualname__.lower()
+        return func.__class__.__name__.lower()
+
+    @staticmethod
+    def _normalize_input_types(
+        input_types: pa.DataType | list[pa.DataType],
+    ) -> list[pa.DataType]:
+        """Convert a single DataType to a list if needed."""
+        if isinstance(input_types, pa.DataType):
+            return [input_types]
+        return input_types
+
+    @staticmethod
+    def _create_window_udf_decorator(
+        input_types: pa.DataType | list[pa.DataType],
+        return_type: pa.DataType,
+        volatility: Volatility | str,
+        name: Optional[str] = None,
+    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
+        """Create a decorator for a WindowUDF."""
+
+        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
+            udwf_caller = WindowUDF._create_window_udf(
+                func, input_types, return_type, volatility, name
+            )
+
+            @functools.wraps(func)
+            def wrapper(*args: Any, **kwargs: Any) -> Expr:
+                return udwf_caller(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
+
+
+# Convenience exports so we can import instead of treating as
+# variables at the package root
+udf = ScalarUDF.udf
+udaf = AggregateUDF.udaf
+udwf = WindowUDF.udwf

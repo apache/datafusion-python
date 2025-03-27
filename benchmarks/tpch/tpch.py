@@ -21,7 +21,7 @@ import time
 from datafusion import SessionContext
 
 
-def bench(data_path, query_path):
+def bench(data_path, query_path) -> None:
     with open("results.csv", "w") as results:
         # register tables
         start = time.time()
@@ -59,19 +59,16 @@ def bench(data_path, query_path):
         end = time.time()
         time_millis = (end - start) * 1000
         total_time_millis += time_millis
-        print("setup,{}".format(round(time_millis, 1)))
-        results.write("setup,{}\n".format(round(time_millis, 1)))
+        print(f"setup,{round(time_millis, 1)}")
+        results.write(f"setup,{round(time_millis, 1)}\n")
         results.flush()
 
         # run queries
         for query in range(1, 23):
-            with open("{}/q{}.sql".format(query_path, query)) as f:
+            with open(f"{query_path}/q{query}.sql") as f:
                 text = f.read()
                 tmp = text.split(";")
-                queries = []
-                for str in tmp:
-                    if len(str.strip()) > 0:
-                        queries.append(str.strip())
+                queries = [s.strip() for s in tmp if len(s.strip()) > 0]
 
                 try:
                     start = time.time()
@@ -83,14 +80,14 @@ def bench(data_path, query_path):
                     end = time.time()
                     time_millis = (end - start) * 1000
                     total_time_millis += time_millis
-                    print("q{},{}".format(query, round(time_millis, 1)))
-                    results.write("q{},{}\n".format(query, round(time_millis, 1)))
+                    print(f"q{query},{round(time_millis, 1)}")
+                    results.write(f"q{query},{round(time_millis, 1)}\n")
                     results.flush()
                 except Exception as e:
                     print("query", query, "failed", e)
 
-        print("total,{}".format(round(total_time_millis, 1)))
-        results.write("total,{}\n".format(round(total_time_millis, 1)))
+        print(f"total,{round(total_time_millis, 1)}")
+        results.write(f"total,{round(total_time_millis, 1)}\n")
 
 
 if __name__ == "__main__":

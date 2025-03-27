@@ -15,23 +15,23 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow
+import pyarrow as pa
 from datafusion import SessionContext, udf
 from datafusion import functions as f
 
 
-def is_null(array: pyarrow.Array) -> pyarrow.Array:
+def is_null(array: pa.Array) -> pa.Array:
     return array.is_null()
 
 
-is_null_arr = udf(is_null, [pyarrow.int64()], pyarrow.bool_(), "stable")
+is_null_arr = udf(is_null, [pa.int64()], pa.bool_(), "stable")
 
 # create a context
 ctx = SessionContext()
 
 # create a RecordBatch and a new DataFrame from it
-batch = pyarrow.RecordBatch.from_arrays(
-    [pyarrow.array([1, 2, 3]), pyarrow.array([4, 5, 6])],
+batch = pa.RecordBatch.from_arrays(
+    [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
     names=["a", "b"],
 )
 df = ctx.create_dataframe([[batch]])
@@ -40,4 +40,4 @@ df = df.select(is_null_arr(f.col("a")))
 
 result = df.collect()[0]
 
-assert result.column(0) == pyarrow.array([False] * 3)
+assert result.column(0) == pa.array([False] * 3)
