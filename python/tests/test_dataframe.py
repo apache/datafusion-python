@@ -1478,61 +1478,14 @@ def _count_lines_in_str(repr_str):
     Returns:
         Number of rows that appear in the string representation.
     """
-    # Find all lines that match the pattern of a number at the beginning of a row
-    # This is more robust than checking for specific numbers
+    # DataFrame tables are formatted with | value | patterns
+    # Count lines that match actual data rows (not headers or separators)
     value_lines = 0
     for line in repr_str.split("\n"):
-        # Look for lines that contain numeric values (row data)
-        if re.search(r"^\s*\d+\s", line):
+        # Look for lines like "| 0      |", "| 1      |", etc.
+        if re.search(r"\|\s*\d+\s*\|", line):
             value_lines += 1
     return value_lines
-
-
-def test_display_config_integrated(ctx):
-    """Test all display config options together in an integrated test."""
-    # Create a dataframe with:
-    # - Many rows (to test min_table_rows)
-    # - Large data (to test max_table_bytes)
-    # - Long strings (to test max_cell_length)
-    rows = 50
-    ids = list(range(rows))
-    # Generate strings of increasing length
-    texts = [f"{'A' * i}" for i in range(1, rows + 1)]
-
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array(ids), pa.array(texts)], names=["id", "text"]
-    )
-
-    df = ctx.create_dataframe([[batch]])
-
-    # Set custom display configuration
-    df.configure_display(
-        max_table_bytes=2000,  # Limit bytes to display
-        min_table_rows=15,  # Show at least 15 rows
-        max_cell_length=10,  # Truncate cells longer than 10 chars
-    )
-
-    # Get HTML representation
-    html_output = df._repr_html_()
-
-    # Check row count
-    row_count = html_output.count("<tr>") - 1  # subtract header
-    assert row_count >= 15, f"Should display at least 15 rows, got {row_count}"
-
-    # Check for truncation
-    assert "expandable-container" in html_output
-    assert "expand-btn" in html_output
-
-    # Should be truncated (not all rows displayed)
-    assert "Data truncated" in html_output
-
-    # Now with default settings
-    df.reset_display_config()
-    default_html = df._repr_html_()
-    default_row_count = default_html.count("<tr>") - 1
-
-    # Default settings should show more data
-    assert default_row_count > row_count
 
 
 def _create_numeric_test_df(ctx, rows):

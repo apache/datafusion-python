@@ -162,7 +162,12 @@ impl PyDataFrame {
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10, &self.config),
+            collect_record_batches_to_display(
+                self.df.as_ref().clone(),
+                self.config.min_table_rows,
+                10,
+                &self.config,
+            ),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
