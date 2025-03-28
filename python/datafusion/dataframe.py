@@ -813,6 +813,33 @@ class DataFrame:
         """
         return self.df.count()
 
+    def configure_display(
+        self,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+    ) -> None:
+        """Configure display options for DataFrame representation.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB).
+                             Set to lower value for large tables to limit memory usage.
+            min_table_rows: Minimum number of table rows to display (default: 20).
+                            This is used for initial display and in notebooks.
+            max_cell_length: Maximum length of a cell before it gets minimized (default: 25).
+                             Longer cells will be truncated with an expand button.
+        """
+        self.df.configure_display(max_table_bytes, min_table_rows, max_cell_length)
+
+    def reset_display_config(self) -> None:
+        """Reset display configuration to default values."""
+        self.df.reset_display_config()
+
+    @property
+    def display_config(self):
+        """Get the current display configuration."""
+        return self.df.display_config
+
     @deprecated("Use :py:func:`unnest_columns` instead.")
     def unnest_column(self, column: str, preserve_nulls: bool = True) -> DataFrame:
         """See :py:func:`unnest_columns`."""

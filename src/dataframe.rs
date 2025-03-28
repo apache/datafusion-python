@@ -882,6 +882,7 @@ impl PyDataFrame {
     }
 
     /// Reset display configuration to default values
+    #[pyo3(text_signature = "($self)")]
     fn reset_display_config(&mut self) {
         self.config = Arc::new(DisplayConfig::default());
     }
