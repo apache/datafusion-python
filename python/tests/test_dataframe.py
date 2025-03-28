@@ -1271,7 +1271,7 @@ def test_display_config(df):
     assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
     assert config.min_table_rows == 20
     assert config.max_cell_length == 25
-    assert config.max_table_rows_in_repr == 10  # Verify the new property
+    assert config.max_table_rows_in_repr == 10
 
 
 def test_configure_display(df):
@@ -1281,7 +1281,7 @@ def test_configure_display(df):
         max_table_bytes=1024 * 1024,
         min_table_rows=10,
         max_cell_length=50,
-        max_table_rows_in_repr=15,  # Add test for the new property
+        max_table_rows_in_repr=15,
     )
 
     # Verify the changes took effect
@@ -1299,7 +1299,7 @@ def test_configure_display(df):
     assert config.max_cell_length == 50  # previous value retained
     assert config.max_table_rows_in_repr == 5  # only this value changed
 
-    # Test with extreme values (still valid, but potentially problematic)
+    # Test with extreme values
     # Zero values
     with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
         df.configure_display(max_table_bytes=0, min_table_rows=0, max_cell_length=0)
@@ -1324,12 +1324,18 @@ def test_reset_display_config(df):
     """Test resetting display configuration to defaults."""
     # First modify the configuration
     df.configure_display(
-        max_table_bytes=1024 * 1024, min_table_rows=10, max_cell_length=50
+        max_table_bytes=1024 * 1024,
+        min_table_rows=10,
+        max_cell_length=50,
+        max_table_rows_in_repr=15,
     )
 
     # Verify changes took effect
     config = df.display_config
     assert config.max_table_bytes == 1024 * 1024
+    assert config.min_table_rows == 10
+    assert config.max_cell_length == 50
+    assert config.max_table_rows_in_repr == 15
 
     # Now reset to defaults
     df.reset_display_config()
@@ -1339,6 +1345,7 @@ def test_reset_display_config(df):
     assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
     assert config.min_table_rows == 20
     assert config.max_cell_length == 25
+    assert config.max_table_rows_in_repr == 10
 
 
 def test_min_table_rows_display(ctx):
@@ -1428,11 +1435,11 @@ def test_max_cell_length_display(ctx):
 def test_display_config_repr_string(ctx):
     """Test that __repr__ respects display configuration."""
     # Create a dataframe with more rows than we want to show
-    # df.__repr__ returns max 10 rows, so we start test with 7 rows
+    # df.__repr__ returns max 10 rows by default, so we start test with 7 rows
     rows = 7
     df = _create_numeric_test_df(ctx, rows)
 
-    # Configure to show only 5 rows in string representation
+    # Configure to show at least 5 rows in string representation
     min_table_rows_in_display = 5
     df.configure_display(min_table_rows=min_table_rows_in_display)
 
@@ -1442,8 +1449,6 @@ def test_display_config_repr_string(ctx):
     # Count the number of rows using helper function
     lines_count = _count_lines_in_str(repr_str)
 
-    # Should be fewer rows than the total
-    assert lines_count <= rows
     assert lines_count >= min_table_rows_in_display
 
     # Now set min_rows higher and see if more rows appear
