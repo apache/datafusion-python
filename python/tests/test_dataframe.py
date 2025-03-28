@@ -1261,3 +1261,55 @@ def test_dataframe_repr_html(df) -> None:
     body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
     body_pattern = "(.*?)".join(body_lines)
     assert len(re.findall(body_pattern, output, re.DOTALL)) == 1
+
+
+def test_display_config(df):
+    """Test the display configuration properties are accessible."""
+    config = df.display_config
+
+    # Verify default values
+    assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
+    assert config.min_table_rows == 20
+    assert config.max_cell_length == 25
+
+
+def test_configure_display(df):
+    """Test setting display configuration properties."""
+    # Modify the display configuration
+    df.configure_display(
+        max_table_bytes=1024 * 1024, min_table_rows=10, max_cell_length=50  # 1 MB
+    )
+
+    # Verify the changes took effect
+    config = df.display_config
+    assert config.max_table_bytes == 1024 * 1024  # 1 MB
+    assert config.min_table_rows == 10
+    assert config.max_cell_length == 50
+
+    # Test partial update (only changing one property)
+    df.configure_display(min_table_rows=5)
+    config = df.display_config
+    assert config.max_table_bytes == 1024 * 1024  # previous value retained
+    assert config.min_table_rows == 5  # only this value changed
+    assert config.max_cell_length == 50  # previous value retained
+
+
+def test_reset_display_config(df):
+    """Test resetting display configuration to defaults."""
+    # First modify the configuration
+    df.configure_display(
+        max_table_bytes=1024 * 1024, min_table_rows=10, max_cell_length=50
+    )
+
+    # Verify changes took effect
+    config = df.display_config
+    assert config.max_table_bytes == 1024 * 1024
+
+    # Now reset to defaults
+    df.reset_display_config()
+
+    # Verify defaults are restored
+    config = df.display_config
+    assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
+    assert config.min_table_rows == 20
+    assert config.max_cell_length == 25
