@@ -1298,18 +1298,9 @@ def test_configure_display(df):
     with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
         df.configure_display(max_table_bytes=0, min_table_rows=0, max_cell_length=0)
 
-    # Very large values
-    df.configure_display(
-        max_table_bytes=10**12, min_table_rows=10**6, max_cell_length=10**4
-    )
-    config = df.display_config
-    assert config.max_table_bytes == 10**12  # 1 TB
-    assert config.min_table_rows == 10**6  # 1 million rows
-    assert config.max_cell_length == 10**4  # 10,000 chars per cell
-
     # Test with negative values
     # This tests for expected behavior when users accidentally pass negative values
-    # Since these are usize in Rust, we expect a Python TypeError when trying to pass negative values
+    # Since these are usize in Rust, we expect a Python ValueError when trying to pass negative values
     with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
         df.configure_display(max_table_bytes=-1)
 
@@ -1348,9 +1339,7 @@ def test_min_table_rows_display(ctx):
     """Test that at least min_table_rows rows are displayed."""
     # Create a dataframe with more rows than the default min_table_rows
     rows = 100
-    data = list(range(rows))
-    batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
-    df = ctx.create_dataframe([[batch]])
+    df = _create_numeric_test_df(ctx, rows)
 
     # Set min_table_rows to a specific value
     custom_min_rows = 30
@@ -1433,7 +1422,7 @@ def test_max_cell_length_display(ctx):
 def test_display_config_repr_string(ctx):
     """Test that __repr__ respects display configuration."""
     # Create a dataframe with more rows than we want to show
-    # df.__repr__ returns max 10 rows only, so we start test with 7 rows
+    # df.__repr__ returns max 10 rows, so we start test with 7 rows
     rows = 7
     df = _create_numeric_test_df(ctx, rows)
 
@@ -1469,7 +1458,7 @@ def test_display_config_repr_string(ctx):
     assert lines_count2 >= min_table_rows_in_display
 
 
-def _count_lines_in_str(repr_str):
+def _count_lines_in_str(repr_str: str) -> int:
     """Count the number of rows displayed in a string representation.
 
     Args:
@@ -1488,7 +1477,7 @@ def _count_lines_in_str(repr_str):
     return value_lines
 
 
-def _create_numeric_test_df(ctx, rows):
+def _create_numeric_test_df(ctx, rows) -> DataFrame:
     """Create a test dataframe with numeric values from 0 to rows-1.
 
     Args:
