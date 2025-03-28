@@ -1271,13 +1271,17 @@ def test_display_config(df):
     assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
     assert config.min_table_rows == 20
     assert config.max_cell_length == 25
+    assert config.max_table_rows_in_repr == 10  # Verify the new property
 
 
 def test_configure_display(df):
     """Test setting display configuration properties."""
     # Modify the display configuration
     df.configure_display(
-        max_table_bytes=1024 * 1024, min_table_rows=10, max_cell_length=50  # 1 MB
+        max_table_bytes=1024 * 1024,
+        min_table_rows=10,
+        max_cell_length=50,
+        max_table_rows_in_repr=15,  # Add test for the new property
     )
 
     # Verify the changes took effect
@@ -1285,13 +1289,15 @@ def test_configure_display(df):
     assert config.max_table_bytes == 1024 * 1024  # 1 MB
     assert config.min_table_rows == 10
     assert config.max_cell_length == 50
+    assert config.max_table_rows_in_repr == 15
 
     # Test partial update (only changing one property)
-    df.configure_display(min_table_rows=5)
+    df.configure_display(max_table_rows_in_repr=5)
     config = df.display_config
     assert config.max_table_bytes == 1024 * 1024  # previous value retained
-    assert config.min_table_rows == 5  # only this value changed
+    assert config.min_table_rows == 10  # previous value retained
     assert config.max_cell_length == 50  # previous value retained
+    assert config.max_table_rows_in_repr == 5  # only this value changed
 
     # Test with extreme values (still valid, but potentially problematic)
     # Zero values
@@ -1490,3 +1496,40 @@ def _create_numeric_test_df(ctx, rows) -> DataFrame:
     data = list(range(rows))
     batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
     return ctx.create_dataframe([[batch]])
+
+
+def test_max_table_rows_in_repr(ctx):
+    """Test that max_table_rows_in_repr controls the number of rows in string representation."""
+    # Create a dataframe with more rows than the default max_table_rows_in_repr (10)
+    rows = 20
+    df = _create_numeric_test_df(ctx, rows)
+
+    # First test with default setting (should limit to 10 rows)
+    repr_str = df.__repr__()
+    lines_default = _count_lines_in_str(repr_str)
+
+    # Default should be 10 rows max
+    assert lines_default <= 10
+    assert "Data truncated" in repr_str
+
+    # Now set a custom max_table_rows_in_repr value
+    custom_max_rows = 15
+    df.configure_display(max_table_rows_in_repr=custom_max_rows)
+
+    # Get the string representation with new configuration
+    repr_str_more = df.__repr__()
+    lines_custom = _count_lines_in_str(repr_str_more)
+
+    # Should show more rows than default but not more than configured max
+    assert lines_custom > lines_default
+    assert lines_custom <= custom_max_rows
+    assert "Data truncated" in repr_str_more
+
+    # Now set max_rows higher than total rows - should show all rows
+    df.configure_display(max_table_rows_in_repr=25)
+    repr_str_all = df.__repr__()
+    lines_all = _count_lines_in_str(repr_str_all)
+
+    # Should show all rows (20)
+    assert lines_all == rows
+    assert "Data truncated" not in repr_str_all

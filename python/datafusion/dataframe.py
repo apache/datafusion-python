@@ -818,6 +818,7 @@ class DataFrame:
         max_table_bytes: Optional[int] = None,
         min_table_rows: Optional[int] = None,
         max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
     ) -> None:
         """Configure display options for DataFrame representation.
 
@@ -828,17 +829,26 @@ class DataFrame:
                             This is used for initial display and in notebooks.
             max_cell_length: Maximum length of a cell before it gets minimized (default: 25).
                              Longer cells will be truncated with an expand button.
+            max_table_rows_in_repr: Maximum number of rows to display in string representation
+                                   (default: 10).
 
         Raises:
             ValueError: If any of the provided values are less than or equal to 0.
         """
         if any(
             value is not None and value <= 0
-            for value in (max_table_bytes, min_table_rows, max_cell_length)
+            for value in (
+                max_table_bytes,
+                min_table_rows,
+                max_cell_length,
+                max_table_rows_in_repr,
+            )
         ):
             raise ValueError("All values must be greater than 0.")
 
-        self.df.configure_display(max_table_bytes, min_table_rows, max_cell_length)
+        self.df.configure_display(
+            max_table_bytes, min_table_rows, max_cell_length, max_table_rows_in_repr
+        )
 
     def reset_display_config(self) -> None:
         """Reset display configuration to default values."""

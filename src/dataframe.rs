@@ -86,22 +86,28 @@ pub struct DisplayConfig {
     /// Maximum length of a cell before it gets minimized (default: 25)
     #[pyo3(get, set)]
     pub max_cell_length: usize,
+    /// Maximum number of rows to display in repr string output (default: 10)
+    #[pyo3(get, set)]
+    pub max_table_rows_in_repr: usize,
 }
 
 #[pymethods]
 impl DisplayConfig {
     #[new]
-    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None))]
+    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None, max_table_rows_in_repr=None))]
     fn new(
         max_table_bytes: Option<usize>,
         min_table_rows: Option<usize>,
         max_cell_length: Option<usize>,
+        max_table_rows_in_repr: Option<usize>,
     ) -> Self {
         let default = DisplayConfig::default();
         Self {
             max_table_bytes: max_table_bytes.unwrap_or(default.max_table_bytes),
             min_table_rows: min_table_rows.unwrap_or(default.min_table_rows),
             max_cell_length: max_cell_length.unwrap_or(default.max_cell_length),
+            max_table_rows_in_repr: max_table_rows_in_repr
+                .unwrap_or(default.max_table_rows_in_repr),
         }
     }
 }
@@ -112,6 +118,7 @@ impl Default for DisplayConfig {
             max_table_bytes: 2 * 1024 * 1024, // 2 MB
             min_table_rows: 20,
             max_cell_length: 25,
+            max_table_rows_in_repr: 10,
         }
     }
 }
@@ -165,7 +172,7 @@ impl PyDataFrame {
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
                 self.config.min_table_rows,
-                10,
+                self.config.max_table_rows_in_repr,
                 &self.config,
             ),
         )?;
@@ -858,12 +865,18 @@ impl PyDataFrame {
     }
 
     /// Update display configuration
-    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None))]
+    #[pyo3(signature = (
+        max_table_bytes=None,
+        min_table_rows=None,
+        max_cell_length=None,
+        max_table_rows_in_repr=None
+    ))]
     fn configure_display(
         &mut self,
         max_table_bytes: Option<usize>,
         min_table_rows: Option<usize>,
         max_cell_length: Option<usize>,
+        max_table_rows_in_repr: Option<usize>,
     ) {
         let mut new_config = (*self.config).clone();
 
@@ -877,6 +890,10 @@ impl PyDataFrame {
 
         if let Some(length) = max_cell_length {
             new_config.max_cell_length = length;
+        }
+
+        if let Some(rows) = max_table_rows_in_repr {
+            new_config.max_table_rows_in_repr = rows;
         }
 
         self.config = Arc::new(new_config);
