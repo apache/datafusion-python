@@ -49,6 +49,7 @@ from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
+from .unparser import Dialect, Unparser
 
 __version__ = importlib_metadata.version(__name__)
 
@@ -60,6 +61,7 @@ __all__ = [
     "DFSchema",
     "DataFrame",
     "Database",
+    "Dialect",
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",
@@ -71,6 +73,7 @@ __all__ = [
     "SessionConfig",
     "SessionContext",
     "Table",
+    "Unparser",
     "WindowFrame",
     "WindowUDF",
     "col",
