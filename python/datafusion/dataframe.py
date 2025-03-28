@@ -828,7 +828,16 @@ class DataFrame:
                             This is used for initial display and in notebooks.
             max_cell_length: Maximum length of a cell before it gets minimized (default: 25).
                              Longer cells will be truncated with an expand button.
+
+        Raises:
+            ValueError: If any of the provided values are less than or equal to 0.
         """
+        if any(
+            value is not None and value <= 0
+            for value in (max_table_bytes, min_table_rows, max_cell_length)
+        ):
+            raise ValueError("All values must be greater than 0.")
+
         self.df.configure_display(max_table_bytes, min_table_rows, max_cell_length)
 
     def reset_display_config(self) -> None:

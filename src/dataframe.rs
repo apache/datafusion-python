@@ -847,11 +847,7 @@ impl PyDataFrame {
     #[getter]
     fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
         Python::with_gil(|py| {
-            let config = DisplayConfig {
-                max_table_bytes: self.config.max_table_bytes,
-                min_table_rows: self.config.min_table_rows,
-                max_cell_length: self.config.max_cell_length,
-            };
+            let config = (*self.config).clone();
             Py::new(py, config).map_err(PyErr::from)
         })
     }
@@ -924,7 +920,7 @@ fn record_batch_into_schema(
 ) -> Result<RecordBatch, ArrowError> {
     let schema = Arc::new(schema.clone());
     let base_schema = record_batch.schema();
-    if base_schema.fields().len() == 0 {
+    if (base_schema.fields().len() == 0) {
         // Nothing to project
         return Ok(RecordBatch::new_empty(schema));
     }
@@ -984,11 +980,36 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
+    println!(
+        "==> Starting loop with min_rows: {}, max_rows: {}, max_table_bytes: {}",
+        min_rows, max_rows, config.max_table_bytes
+    );
+
     while (size_estimate_so_far < config.max_table_bytes && rows_so_far < max_rows)
         || rows_so_far < min_rows
     {
+        println!(
+            "==> Loop condition: size_estimate_so_far ({}) < max_table_bytes ({})? {}",
+            size_estimate_so_far,
+            config.max_table_bytes,
+            size_estimate_so_far < config.max_table_bytes
+        );
+        println!(
+            "==> Loop condition: rows_so_far ({}) < max_rows ({})? {}",
+            rows_so_far,
+            max_rows,
+            rows_so_far < max_rows
+        );
+        println!(
+            "==> Loop condition: rows_so_far ({}) < min_rows ({})? {}",
+            rows_so_far,
+            min_rows,
+            rows_so_far < min_rows
+        );
+
         let mut rb = match stream.next().await {
             None => {
+                println!("==> Exiting loop: stream.next() returned None (no more data)");
                 break;
             }
             Some(Ok(r)) => r,
@@ -996,48 +1017,123 @@ async fn collect_record_batches_to_display(
         };
 
         let mut rows_in_rb = rb.num_rows();
+        println!("==> Received batch with {} rows", rows_in_rb);
+
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
+            println!("==> New size_estimate_so_far: {}", size_estimate_so_far);
 
             if size_estimate_so_far > config.max_table_bytes {
+                println!(
+                    "==> Size limit reached: {} > {}",
+                    size_estimate_so_far, config.max_table_bytes
+                );
                 let ratio = config.max_table_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
                 if reduced_row_num < min_rows {
                     reduced_row_num = min_rows.min(total_rows);
+                    println!(
+                        "==> Adjusted reduced_row_num to {} to meet min_rows",
+                        reduced_row_num
+                    );
                 }
 
                 let limited_rows_this_rb = reduced_row_num - rows_so_far;
+                println!(
+                    "==> Limiting to {} rows in this batch (reduced_row_num: {}, rows_so_far: {})",
+                    limited_rows_this_rb, reduced_row_num, rows_so_far
+                );
+
                 if limited_rows_this_rb < rows_in_rb {
                     rows_in_rb = limited_rows_this_rb;
                     rb = rb.slice(0, limited_rows_this_rb);
                     has_more = true;
+                    println!("==> Sliced batch to {} rows", limited_rows_this_rb);
                 }
             }
 
             if rows_in_rb + rows_so_far > max_rows {
+                println!(
+                    "==> Row limit reached: {} + {} > {}",
+                    rows_in_rb, rows_so_far, max_rows
+                );
                 rb = rb.slice(0, max_rows - rows_so_far);
                 has_more = true;
+                println!(
+                    "==> Sliced batch to {} rows to meet max_rows",
+                    max_rows - rows_so_far
+                );
             }
 
             rows_so_far += rb.num_rows();
             record_batches.push(rb);
+            println!(
+                "==> Added batch: size_estimate_so_far: {}, rows_so_far: {}",
+                size_estimate_so_far, rows_so_far
+            );
+        } else {
+            println!("==> Skipping empty batch");
         }
     }
 
+    println!("==> Exited while loop: size_estimate_so_far: {}, rows_so_far: {}, min_rows: {}, max_rows: {}", 
+             size_estimate_so_far, rows_so_far, min_rows, max_rows);
+    println!("==> Loop condition evaluation at exit:");
+    println!(
+        "==> size_estimate_so_far < config.max_table_bytes: {} < {} = {}",
+        size_estimate_so_far,
+        config.max_table_bytes,
+        size_estimate_so_far < config.max_table_bytes
+    );
+    println!(
+        "==> rows_so_far < max_rows: {} < {} = {}",
+        rows_so_far,
+        max_rows,
+        rows_so_far < max_rows
+    );
+    println!(
+        "==> rows_so_far < min_rows: {} < {} = {}",
+        rows_so_far,
+        min_rows,
+        rows_so_far < min_rows
+    );
+    println!(
+        "==> Combined condition: {} || {} = {}",
+        (size_estimate_so_far < config.max_table_bytes && rows_so_far < max_rows),
+        rows_so_far < min_rows,
+        (size_estimate_so_far < config.max_table_bytes && rows_so_far < max_rows)
+            || rows_so_far < min_rows
+    );
+
     if record_batches.is_empty() {
+        println!("==> No record batches collected");
         return Ok((Vec::default(), false));
     }
 
     if !has_more {
         // Data was not already truncated, so check to see if more record batches remain
         has_more = match stream.try_next().await {
-            Ok(None) => false, // reached end
-            Ok(Some(_)) => true,
-            Err(_) => false, // Stream disconnected
+            Ok(None) => {
+                println!("==> No more record batches in stream");
+                false
+            } // reached end
+            Ok(Some(_)) => {
+                println!("==> More record batches available in stream");
+                true
+            }
+            Err(_) => {
+                println!("==> Stream error or disconnected");
+                false
+            } // Stream disconnected
         };
     }
 
+    println!(
+        "==> Returning {} record batches, has_more: {}",
+        record_batches.len(),
+        has_more
+    );
     Ok((record_batches, has_more))
 }

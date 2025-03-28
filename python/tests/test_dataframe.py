@@ -1293,6 +1293,35 @@ def test_configure_display(df):
     assert config.min_table_rows == 5  # only this value changed
     assert config.max_cell_length == 50  # previous value retained
 
+    # Test with extreme values (still valid, but potentially problematic)
+    # Zero values
+    with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
+        df.configure_display(max_table_bytes=0, min_table_rows=0, max_cell_length=0)
+
+    # Very large values
+    df.configure_display(
+        max_table_bytes=10**12, min_table_rows=10**6, max_cell_length=10**4
+    )
+    config = df.display_config
+    assert config.max_table_bytes == 10**12  # 1 TB
+    assert config.min_table_rows == 10**6  # 1 million rows
+    assert config.max_cell_length == 10**4  # 10,000 chars per cell
+
+    # Test with negative values
+    # This tests for expected behavior when users accidentally pass negative values
+    # Since these are usize in Rust, we expect a Python TypeError when trying to pass negative values
+    with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
+        df.configure_display(max_table_bytes=-1)
+
+    with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
+        df.configure_display(min_table_rows=-5)
+
+    with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
+        df.configure_display(max_cell_length=-10)
+
+    # Reset for next tests
+    df.reset_display_config()
+
 
 def test_reset_display_config(df):
     """Test resetting display configuration to defaults."""
@@ -1313,3 +1342,175 @@ def test_reset_display_config(df):
     assert config.max_table_bytes == 2 * 1024 * 1024  # 2 MB
     assert config.min_table_rows == 20
     assert config.max_cell_length == 25
+
+
+def test_min_table_rows_display(ctx):
+    """Test that at least min_table_rows rows are displayed."""
+    # Create a dataframe with more rows than the default min_table_rows
+    rows = 100
+    data = list(range(rows))
+    batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
+    df = ctx.create_dataframe([[batch]])
+
+    # Set min_table_rows to a specific value
+    custom_min_rows = 30
+    df.configure_display(min_table_rows=custom_min_rows)
+
+    # Get HTML representation
+    html_output = df._repr_html_()
+
+    # Count table rows in the HTML (excluding header row)
+    # Each row has a <tr> tag
+    row_count = html_output.count("<tr>") - 1  # subtract 1 for the header row
+
+    # Verify at least min_table_rows rows are displayed
+    assert (
+        row_count >= custom_min_rows
+    ), f"Expected at least {custom_min_rows} rows, got {row_count}"
+
+    # If data was truncated, "Data truncated" message should be present
+    if row_count < rows:
+        assert "Data truncated" in html_output
+
+
+def test_max_table_bytes_display(ctx):
+    """Test that reducing max_table_bytes limits the amount of data displayed."""
+    # Create a dataframe with large string values to consume memory
+    # Each string is approximately 1000 bytes
+    large_strings = ["x" * 1000 for _ in range(50)]
+    batch = pa.RecordBatch.from_arrays([pa.array(large_strings)], names=["large_data"])
+    df = ctx.create_dataframe([[batch]])
+
+    # First test with default settings
+    default_html = df._repr_html_()
+    default_row_count = default_html.count("<tr>") - 1  # subtract header row
+
+    # Now set a very small max_table_bytes
+    df.configure_display(max_table_bytes=5000)  # 5KB should only fit a few rows
+    limited_html = df._repr_html_()
+    limited_row_count = limited_html.count("<tr>") - 1
+
+    # Verify fewer rows are displayed with the byte limit
+    assert (
+        limited_row_count < default_row_count
+    ), f"Expected fewer rows with byte limit. Default: {default_row_count}, Limited: {limited_row_count}"
+
+    # "Data truncated" should be present when limited
+    assert "Data truncated" in limited_html
+
+
+def test_max_cell_length_display(ctx):
+    """Test that cells longer than max_cell_length are truncated in display."""
+    # Create a dataframe with long string values
+    long_strings = [
+        "short",
+        "medium text",
+        "this is a very long string that should be truncated",
+    ]
+    batch = pa.RecordBatch.from_arrays([pa.array(long_strings)], names=["text"])
+    df = ctx.create_dataframe([[batch]])
+
+    # Set a small max_cell_length
+    max_length = 10
+    df.configure_display(max_cell_length=max_length)
+
+    # Get HTML representation
+    html_output = df._repr_html_()
+
+    # Check for expand button for long text
+    assert "expandable-container" in html_output
+
+    # Check that expandable class is used for long text
+    assert 'class="expandable"' in html_output
+
+    # Look for the truncated text and expand button
+    long_text = long_strings[2]
+    assert long_text[:max_length] in html_output  # Truncated text should be present
+    assert "expand-btn" in html_output  # Expand button should be present
+    assert long_text in html_output  # Full text should also be in the HTML (hidden)
+
+
+def test_display_config_repr_string(ctx):
+    """Test that __repr__ respects display configuration."""
+    # Create a dataframe with more rows than we want to show
+    rows = 30
+    data = list(range(rows))
+    batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
+    df = ctx.create_dataframe([[batch]])
+
+    # Configure to show only 5 rows in string representation
+    df.configure_display(min_table_rows=5)
+
+    # Get the string representation
+    repr_str = df.__repr__()
+
+    # The string should contain "Data truncated"
+    assert "Data truncated" in repr_str
+
+    # Count the number of rows (each value should be on a separate line)
+    # This is an approximation since we don't parse the actual ASCII table
+    value_lines = 0
+    for i in range(rows):
+        if str(i) in repr_str:
+            value_lines += 1
+
+    # Should be fewer rows than the total
+    assert value_lines < rows
+
+    # Now set min_rows higher and see if more rows appear
+    df.configure_display(min_table_rows=20)
+    repr_str_more = df.__repr__()
+
+    value_lines_more = 0
+    for i in range(rows):
+        if str(i) in repr_str_more:
+            value_lines_more += 1
+
+    assert value_lines_more > value_lines
+
+
+def test_display_config_integrated(ctx):
+    """Test all display config options together in an integrated test."""
+    # Create a dataframe with:
+    # - Many rows (to test min_table_rows)
+    # - Large data (to test max_table_bytes)
+    # - Long strings (to test max_cell_length)
+    rows = 50
+    ids = list(range(rows))
+    # Generate strings of increasing length
+    texts = [f"{'A' * i}" for i in range(1, rows + 1)]
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array(ids), pa.array(texts)], names=["id", "text"]
+    )
+
+    df = ctx.create_dataframe([[batch]])
+
+    # Set custom display configuration
+    df.configure_display(
+        max_table_bytes=2000,  # Limit bytes to display
+        min_table_rows=15,  # Show at least 15 rows
+        max_cell_length=10,  # Truncate cells longer than 10 chars
+    )
+
+    # Get HTML representation
+    html_output = df._repr_html_()
+
+    # Check row count
+    row_count = html_output.count("<tr>") - 1  # subtract header
+    assert row_count >= 15, f"Should display at least 15 rows, got {row_count}"
+
+    # Check for truncation
+    assert "expandable-container" in html_output
+    assert "expand-btn" in html_output
+
+    # Should be truncated (not all rows displayed)
+    assert "Data truncated" in html_output
+
+    # Now with default settings
+    df.reset_display_config()
+    default_html = df._repr_html_()
+    default_row_count = default_html.count("<tr>") - 1
+
+    # Default settings should show more data
+    assert default_row_count > row_count
