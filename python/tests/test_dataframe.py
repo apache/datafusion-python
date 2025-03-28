@@ -1367,9 +1367,9 @@ def test_min_table_rows_display(ctx):
     row_count = html_output.count("<tr>") - 1  # subtract 1 for the header row
 
     # Verify at least min_table_rows rows are displayed
-    assert (
-        row_count >= custom_min_rows
-    ), f"Expected at least {custom_min_rows} rows, got {row_count}"
+    assert row_count >= custom_min_rows, (
+        f"Expected at least {custom_min_rows} rows, got {row_count}"
+    )
 
     # If data was truncated, "Data truncated" message should be present
     if row_count < rows:
