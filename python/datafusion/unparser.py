@@ -63,6 +63,7 @@ class Unparser:
         """Convert a logical plan to a SQL string."""
         return self.unparser.plan_to_sql(plan._raw_plan)
 
+
 __all__ = [
     "Dialect",
     "Unparser",
