@@ -860,7 +860,7 @@ impl PyDataFrame {
     fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
         Python::with_gil(|py| {
             let config = (*self.config).clone();
-            Py::new(py, config).map_err(PyErr::from)
+            Py::new(py, config)
         })
     }
 
