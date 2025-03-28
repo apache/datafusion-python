@@ -74,14 +74,36 @@ impl PyTableProvider {
 }
 
 /// Configuration for DataFrame display in Python environment
+#[pyclass(name = "DisplayConfig", module = "datafusion")]
 #[derive(Debug, Clone)]
 pub struct DisplayConfig {
     /// Maximum bytes to display for table presentation (default: 2MB)
+    #[pyo3(get, set)]
     pub max_table_bytes: usize,
     /// Minimum number of table rows to display (default: 20)
+    #[pyo3(get, set)]
     pub min_table_rows: usize,
     /// Maximum length of a cell before it gets minimized (default: 25)
+    #[pyo3(get, set)]
     pub max_cell_length: usize,
+}
+
+#[pymethods]
+impl DisplayConfig {
+    #[new]
+    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None))]
+    fn new(
+        max_table_bytes: Option<usize>,
+        min_table_rows: Option<usize>,
+        max_cell_length: Option<usize>,
+    ) -> Self {
+        let default = DisplayConfig::default();
+        Self {
+            max_table_bytes: max_table_bytes.unwrap_or(default.max_table_bytes),
+            min_table_rows: min_table_rows.unwrap_or(default.min_table_rows),
+            max_cell_length: max_cell_length.unwrap_or(default.max_cell_length),
+        }
+    }
 }
 
 impl Default for DisplayConfig {
@@ -823,8 +845,15 @@ impl PyDataFrame {
 
     /// Get the current display configuration
     #[getter]
-    fn display_config(&self) -> DisplayConfig {
-        (*self.config).clone()
+    fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
+        Python::with_gil(|py| {
+            let config = DisplayConfig {
+                max_table_bytes: self.config.max_table_bytes,
+                min_table_rows: self.config.min_table_rows,
+                max_cell_length: self.config.max_cell_length,
+            };
+            Py::new(py, config).map_err(PyErr::from)
+        })
     }
 
     /// Update display configuration
