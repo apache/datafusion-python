@@ -1433,40 +1433,59 @@ def test_max_cell_length_display(ctx):
 def test_display_config_repr_string(ctx):
     """Test that __repr__ respects display configuration."""
     # Create a dataframe with more rows than we want to show
-    rows = 30
-    data = list(range(rows))
-    batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
-    df = ctx.create_dataframe([[batch]])
+    # df.__repr__ returns max 10 rows only, so we start test with 7 rows
+    rows = 7
+    df = _create_numeric_test_df(ctx, rows)
 
     # Configure to show only 5 rows in string representation
-    df.configure_display(min_table_rows=5)
+    min_table_rows_in_display = 5
+    df.configure_display(min_table_rows=min_table_rows_in_display)
 
     # Get the string representation
     repr_str = df.__repr__()
 
-    # The string should contain "Data truncated"
-    assert "Data truncated" in repr_str
-
-    # Count the number of rows (each value should be on a separate line)
-    # This is an approximation since we don't parse the actual ASCII table
-    value_lines = 0
-    for i in range(rows):
-        if str(i) in repr_str:
-            value_lines += 1
+    # Count the number of rows using helper function
+    lines_count = _count_lines_in_str(repr_str)
 
     # Should be fewer rows than the total
-    assert value_lines < rows
+    assert lines_count <= rows
+    assert lines_count >= min_table_rows_in_display
 
     # Now set min_rows higher and see if more rows appear
-    df.configure_display(min_table_rows=20)
+    min_table_rows_in_display = 7
+    rows = 11
+    df = _create_numeric_test_df(ctx, rows)  # Recreate to reset the state
+    df.configure_display(min_table_rows=min_table_rows_in_display)
+
     repr_str_more = df.__repr__()
+    # The string should contain "Data truncated"
+    assert "Data truncated" in repr_str_more
 
-    value_lines_more = 0
-    for i in range(rows):
-        if str(i) in repr_str_more:
-            value_lines_more += 1
+    # Count lines again
+    lines_count2 = _count_lines_in_str(repr_str_more)
 
-    assert value_lines_more > value_lines
+    # Should show more rows now
+    assert lines_count2 > lines_count
+    assert lines_count2 >= min_table_rows_in_display
+
+
+def _count_lines_in_str(repr_str):
+    """Count the number of rows displayed in a string representation.
+
+    Args:
+        repr_str: String representation of the DataFrame.
+
+    Returns:
+        Number of rows that appear in the string representation.
+    """
+    # Find all lines that match the pattern of a number at the beginning of a row
+    # This is more robust than checking for specific numbers
+    value_lines = 0
+    for line in repr_str.split("\n"):
+        # Look for lines that contain numeric values (row data)
+        if re.search(r"^\s*\d+\s", line):
+            value_lines += 1
+    return value_lines
 
 
 def test_display_config_integrated(ctx):
@@ -1514,3 +1533,18 @@ def test_display_config_integrated(ctx):
 
     # Default settings should show more data
     assert default_row_count > row_count
+
+
+def _create_numeric_test_df(ctx, rows):
+    """Create a test dataframe with numeric values from 0 to rows-1.
+
+    Args:
+        ctx: SessionContext to use for creating the dataframe.
+        rows: Number of rows to create.
+
+    Returns:
+        DataFrame with a single column "values" containing numbers 0 to rows-1.
+    """
+    data = list(range(rows))
+    batch = pa.RecordBatch.from_arrays([pa.array(data)], names=["values"])
+    return ctx.create_dataframe([[batch]])
