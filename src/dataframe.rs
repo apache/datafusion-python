@@ -152,111 +152,23 @@ impl PyDataFrame {
 
         let table_uuid = uuid::Uuid::new_v4().to_string();
 
-        let mut html_str = "
-        <style>
-            .expandable-container {
-                display: inline-block;
-                max-width: 200px;
-            }
-            .expandable {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
-            }
-            .full-text {
-                display: none;
-                white-space: normal;
-            }
-            .expand-btn {
-                cursor: pointer;
-                color: blue;
-                text-decoration: underline;
-                border: none;
-                background: none;
-                font-size: inherit;
-                display: block;
-                margin-top: 5px;
-            }
-        </style>
+        let mut html_str = String::new();
+        html_str.push_str(&get_html_style_definitions());
+        html_str.push_str(&get_html_table_opening());
 
-        <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
-            <table style=\"border-collapse: collapse; min-width: 100%\">
-                <thead>\n".to_string();
+        html_str.push_str(&get_html_table_header(&batches[0].schema()));
 
-        let schema = batches[0].schema();
-
-        let mut header = Vec::new();
-        for field in schema.fields() {
-            header.push(format!("<th style='border: 1px solid black; padding: 8px; text-align: left; background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; max-width: fit-content;'>{}</th>", field.name()));
-        }
-        let header_str = header.join("");
-        html_str.push_str(&format!("<tr>{}</tr></thead><tbody>\n", header_str));
-
-        let batch_formatters = batches
-            .iter()
-            .map(|batch| {
-                batch
-                    .columns()
-                    .iter()
-                    .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
-                    .map(|c| {
-                        c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
-                    })
-                    .collect::<Result<Vec<_>, _>>()
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
+        let batch_formatters = create_batch_formatters(&batches)?;
         let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
 
-        // We need to build up row by row for html
-        let mut table_row = 0;
-        for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
-            for batch_row in 0..num_rows_in_batch {
-                table_row += 1;
-                let mut cells = Vec::new();
-                for (col, formatter) in batch_formatter.iter().enumerate() {
-                    let cell_data = formatter.value(batch_row).to_string();
-                    // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
-                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
-                        cells.push(format!("
-                            <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
-                                <div class=\"expandable-container\">
-                                    <span class=\"expandable\" id=\"{table_uuid}-min-text-{table_row}-{col}\">{short_cell_data}</span>
-                                    <span class=\"full-text\" id=\"{table_uuid}-full-text-{table_row}-{col}\">{cell_data}</span>
-                                    <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{table_row},{col})\">...</button>
-                                </div>
-                            </td>"));
-                    } else {
-                        cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(batch_row)));
-                    }
-                }
-                let row_str = cells.join("");
-                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
-            }
-        }
+        html_str.push_str(&get_html_table_rows(
+            &batch_formatters,
+            rows_per_batch,
+            &table_uuid,
+        )?);
+
         html_str.push_str("</tbody></table></div>\n");
-
-        html_str.push_str("
-            <script>
-            function toggleDataFrameCellText(table_uuid, row, col) {
-                var shortText = document.getElementById(table_uuid + \"-min-text-\" + row + \"-\" + col);
-                var fullText = document.getElementById(table_uuid + \"-full-text-\" + row + \"-\" + col);
-                var button = event.target;
-
-                if (fullText.style.display === \"none\") {
-                    shortText.style.display = \"none\";
-                    fullText.style.display = \"inline\";
-                    button.textContent = \"(less)\";
-                } else {
-                    shortText.style.display = \"inline\";
-                    fullText.style.display = \"none\";
-                    button.textContent = \"...\";
-                }
-            }
-            </script>
-        ");
+        html_str.push_str(&get_html_js_functions());
 
         if has_more {
             html_str.push_str("Data truncated due to size.");
@@ -950,4 +862,140 @@ async fn collect_record_batches_to_display(
     }
 
     Ok((record_batches, has_more))
+}
+
+/// Returns the HTML style definitions for the table
+fn get_html_style_definitions() -> String {
+    "
+    <style>
+        .expandable-container {
+            display: inline-block;
+            max-width: 200px;
+        }
+        .expandable {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+        .full-text {
+            display: none;
+            white-space: normal;
+        }
+        .expand-btn {
+            cursor: pointer;
+            color: blue;
+            text-decoration: underline;
+            border: none;
+            background: none;
+            font-size: inherit;
+            display: block;
+            margin-top: 5px;
+        }
+    </style>
+
+    <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
+        <table style=\"border-collapse: collapse; min-width: 100%\">
+    ".to_string()
+}
+
+/// Returns the opening HTML table tags
+fn get_html_table_opening() -> String {
+    "<thead>\n".to_string()
+}
+
+/// Returns the HTML table headers based on the schema
+fn get_html_table_header(schema: &Schema) -> String {
+    let mut header = Vec::new();
+    for field in schema.fields() {
+        header.push(format!("<th style='border: 1px solid black; padding: 8px; text-align: left; background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; max-width: fit-content;'>{}</th>", field.name()));
+    }
+    let header_str = header.join("");
+    format!("<tr>{}</tr></thead><tbody>\n", header_str)
+}
+
+/// Creates array formatters for each batch
+fn create_batch_formatters(
+    batches: &[RecordBatch],
+) -> PyDataFusionResult<Vec<Vec<ArrayFormatter<'_>>>> {
+    batches
+        .iter()
+        .map(|batch| {
+            batch
+                .columns()
+                .iter()
+                .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
+                .map(|c| {
+                    c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
+                })
+                .collect::<Result<Vec<_>, _>>()
+        })
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(PyDataFusionError::from)
+}
+
+/// Returns the HTML table rows based on the batch formatters
+fn get_html_table_rows(
+    batch_formatters: &[Vec<ArrayFormatter<'_>>],
+    rows_per_batch: impl Iterator<Item = usize>,
+    table_uuid: &str,
+) -> PyDataFusionResult<String> {
+    let mut html_str = String::new();
+    let mut table_row = 0;
+
+    for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
+        for batch_row in 0..num_rows_in_batch {
+            table_row += 1;
+            let mut cells = Vec::new();
+            for (col, formatter) in batch_formatter.iter().enumerate() {
+                let cell_data = formatter.value(batch_row).to_string();
+                cells.push(format_table_cell(cell_data, table_uuid, table_row, col));
+            }
+            let row_str = cells.join("");
+            html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
+        }
+    }
+
+    Ok(html_str)
+}
+
+/// Formats a single table cell, handling large content with expansion buttons
+fn format_table_cell(cell_data: String, table_uuid: &str, table_row: usize, col: usize) -> String {
+    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
+        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
+        format!("
+            <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
+                <div class=\"expandable-container\">
+                    <span class=\"expandable\" id=\"{table_uuid}-min-text-{table_row}-{col}\">{short_cell_data}</span>
+                    <span class=\"full-text\" id=\"{table_uuid}-full-text-{table_row}-{col}\">{cell_data}</span>
+                    <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{table_row},{col})\">...</button>
+                </div>
+            </td>")
+    } else {
+        format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", cell_data)
+    }
+}
+
+/// Returns the JavaScript functions for handling cell text expansion
+fn get_html_js_functions() -> String {
+    "
+    <script>
+    function toggleDataFrameCellText(table_uuid, row, col) {
+        var shortText = document.getElementById(table_uuid + \"-min-text-\" + row + \"-\" + col);
+        var fullText = document.getElementById(table_uuid + \"-full-text-\" + row + \"-\" + col);
+        var button = event.target;
+
+        if (fullText.style.display === \"none\") {
+            shortText.style.display = \"none\";
+            fullText.style.display = \"inline\";
+            button.textContent = \"(less)\";
+        } else {
+            shortText.style.display = \"inline\";
+            fullText.style.display = \"none\";
+            button.textContent = \"...\";
+        }
+    }
+    </script>
+    "
+    .to_string()
 }
