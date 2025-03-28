@@ -49,6 +49,7 @@ if TYPE_CHECKING:
     import pyarrow as pa
 
     from datafusion._internal import DataFrame as DataFrameInternal
+    from datafusion._internal import DisplayConfig
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
@@ -823,14 +824,17 @@ class DataFrame:
         """Configure display options for DataFrame representation.
 
         Args:
-            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB).
+            max_table_bytes: Maximum bytes to display for table presentation
+                             (default: 2MB).
                              Set to lower value for large tables to limit memory usage.
             min_table_rows: Minimum number of table rows to display (default: 20).
                             This is used for initial display and in notebooks.
-            max_cell_length: Maximum length of a cell before it gets minimized (default: 25).
+            max_cell_length: Maximum length of a cell before it gets minimized
+                             (default: 25).
                              Longer cells will be truncated with an expand button.
-            max_table_rows_in_repr: Maximum number of rows to display in string representation
-                                   (default: 10).
+            max_table_rows_in_repr: Maximum number of rows to display in string
+                                    representation
+                                    (default: 10).
 
         Raises:
             ValueError: If any of the provided values are less than or equal to 0.
@@ -844,7 +848,8 @@ class DataFrame:
                 max_table_rows_in_repr,
             )
         ):
-            raise ValueError("All values must be greater than 0.")
+            error_msg = "All values must be greater than 0."
+            raise ValueError(error_msg)
 
         self.df.configure_display(
             max_table_bytes, min_table_rows, max_cell_length, max_table_rows_in_repr
@@ -855,8 +860,12 @@ class DataFrame:
         self.df.reset_display_config()
 
     @property
-    def display_config(self):
-        """Get the current display configuration."""
+    def display_config(self) -> DisplayConfig:
+        """Get the current display configuration.
+
+        Returns:
+            DisplayConfig: The current display configuration settings
+        """
         return self.df.display_config
 
     @deprecated("Use :py:func:`unnest_columns` instead.")

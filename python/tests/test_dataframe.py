@@ -1306,7 +1306,8 @@ def test_configure_display(df):
 
     # Test with negative values
     # This tests for expected behavior when users accidentally pass negative values
-    # Since these are usize in Rust, we expect a Python ValueError when trying to pass negative values
+    # Since these are usize in Rust, we expect a Python ValueError when trying to pass
+    # negative values.
     with pytest.raises(ValueError, match=r".*must be greater than 0.*"):
         df.configure_display(max_table_bytes=-1)
 
@@ -1393,9 +1394,10 @@ def test_max_table_bytes_display(ctx):
     limited_row_count = limited_html.count("<tr>") - 1
 
     # Verify fewer rows are displayed with the byte limit
-    assert (
-        limited_row_count < default_row_count
-    ), f"Expected fewer rows with byte limit. Default: {default_row_count}, Limited: {limited_row_count}"
+    assert limited_row_count < default_row_count, (
+        f"Expected fewer rows with byte limit. "
+        f"Default: {default_row_count}, Limited: {limited_row_count}"
+    )
 
     # "Data truncated" should be present when limited
     assert "Data truncated" in limited_html
@@ -1504,7 +1506,9 @@ def _create_numeric_test_df(ctx, rows) -> DataFrame:
 
 
 def test_max_table_rows_in_repr(ctx):
-    """Test that max_table_rows_in_repr controls the number of rows in string representation."""
+    """Test that max_table_rows_in_repr controls the number of rows in string
+    representation.
+    """
     # Create a dataframe with more rows than the default max_table_rows_in_repr (10)
     rows = 20
     df = _create_numeric_test_df(ctx, rows)
