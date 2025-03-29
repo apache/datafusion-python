@@ -32,6 +32,11 @@ class Dialect:
         self.dialect = dialect
 
     @staticmethod
+    def default() -> "Dialect":
+        """Create a new default dialect."""
+        return Dialect(unparser_internal.Dialect.default())
+
+    @staticmethod
     def mysql() -> "Dialect":
         """Create a new MySQL dialect."""
         return Dialect(unparser_internal.Dialect.mysql())
@@ -62,6 +67,11 @@ class Unparser:
     def plan_to_sql(self, plan: LogicalPlan) -> str:
         """Convert a logical plan to a SQL string."""
         return self.unparser.plan_to_sql(plan._raw_plan)
+
+    def with_pretty(self, pretty: bool) -> "Unparser":
+        """Set the pretty flag."""
+        self.unparser = self.unparser.with_pretty(pretty)
+        return self
 
 
 __all__ = [

@@ -26,7 +26,7 @@ try:
 except ImportError:
     import importlib_metadata
 
-from . import functions, object_store, substrait
+from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
@@ -49,7 +49,6 @@ from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
-from .unparser import Dialect, Unparser
 
 __version__ = importlib_metadata.version(__name__)
 
@@ -61,7 +60,6 @@ __all__ = [
     "DFSchema",
     "DataFrame",
     "Database",
-    "Dialect",
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",
@@ -73,7 +71,6 @@ __all__ = [
     "SessionConfig",
     "SessionContext",
     "Table",
-    "Unparser",
     "WindowFrame",
     "WindowUDF",
     "col",
@@ -92,6 +89,7 @@ __all__ = [
     "udaf",
     "udf",
     "udwf",
+    "unparser",
 ]
 
 
