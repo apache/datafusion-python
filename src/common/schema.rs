@@ -15,13 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 use std::{any::Any, borrow::Cow};
 
+use arrow::datatypes::Schema;
+use arrow::pyarrow::PyArrowType;
 use datafusion::arrow::datatypes::SchemaRef;
+use datafusion::common::Constraints;
+use datafusion::datasource::TableType;
 use datafusion::logical_expr::{Expr, TableProviderFilterPushDown, TableSource};
 use pyo3::prelude::*;
 
 use datafusion::logical_expr::utils::split_conjunction;
+
+use crate::sql::logical::PyLogicalPlan;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 
@@ -216,5 +224,86 @@ impl SqlStatistics {
     #[pyo3(name = "getRowCount")]
     pub fn get_row_count(&self) -> f64 {
         self.row_count
+    }
+}
+
+#[pyclass(name = "Constraints", module = "datafusion.expr", subclass)]
+#[derive(Clone)]
+pub struct PyConstraints {
+    pub constraints: Constraints,
+}
+
+impl From<PyConstraints> for Constraints {
+    fn from(constraints: PyConstraints) -> Self {
+        constraints.constraints
+    }
+}
+
+impl From<Constraints> for PyConstraints {
+    fn from(constraints: Constraints) -> Self {
+        PyConstraints { constraints }
+    }
+}
+
+impl Display for PyConstraints {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        write!(f, "Constraints: {:?}", self.constraints)
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[pyclass(eq, eq_int, name = "TableType", module = "datafusion.common")]
+pub enum PyTableType {
+    Base,
+    View,
+    Temporary,
+}
+
+impl From<PyTableType> for datafusion::logical_expr::TableType {
+    fn from(table_type: PyTableType) -> Self {
+        match table_type {
+            PyTableType::Base => datafusion::logical_expr::TableType::Base,
+            PyTableType::View => datafusion::logical_expr::TableType::View,
+            PyTableType::Temporary => datafusion::logical_expr::TableType::Temporary,
+        }
+    }
+}
+
+impl From<TableType> for PyTableType {
+    fn from(table_type: TableType) -> Self {
+        match table_type {
+            datafusion::logical_expr::TableType::Base => PyTableType::Base,
+            datafusion::logical_expr::TableType::View => PyTableType::View,
+            datafusion::logical_expr::TableType::Temporary => PyTableType::Temporary,
+        }
+    }
+}
+
+#[pyclass(name = "TableSource", module = "datafusion.common", subclass)]
+#[derive(Clone)]
+pub struct PyTableSource {
+    pub table_source: Arc<dyn TableSource>,
+}
+
+#[pymethods]
+impl PyTableSource {
+    pub fn schema(&self) -> PyArrowType<Schema> {
+        (*self.table_source.schema()).clone().into()
+    }
+
+    pub fn constraints(&self) -> Option<PyConstraints> {
+        self.table_source.constraints().map(|c| PyConstraints {
+            constraints: c.clone(),
+        })
+    }
+
+    pub fn table_type(&self) -> PyTableType {
+        self.table_source.table_type().into()
+    }
+
+    pub fn get_logical_plan(&self) -> Option<PyLogicalPlan> {
+        self.table_source
+            .get_logical_plan()
+            .map(|plan| PyLogicalPlan::new(plan.into_owned()))
     }
 }
