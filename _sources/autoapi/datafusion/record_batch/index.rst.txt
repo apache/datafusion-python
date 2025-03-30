@@ -26,7 +26,7 @@ Module Contents
 
 .. py:class:: RecordBatch(record_batch: datafusion._internal.RecordBatch)
 
-   This class is essentially a wrapper for :py:class:`pyarrow.RecordBatch`.
+   This class is essentially a wrapper for :py:class:`pa.RecordBatch`.
 
    This constructor is generally not called by the end user.
 
@@ -35,7 +35,7 @@ Module Contents
 
    .. py:method:: to_pyarrow() -> pyarrow.RecordBatch
 
-      Convert to :py:class:`pyarrow.RecordBatch`.
+      Convert to :py:class:`pa.RecordBatch`.
 
 
 

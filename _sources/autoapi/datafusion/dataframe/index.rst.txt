@@ -115,7 +115,7 @@ Module Contents
 
 
 
-   .. py:method:: __getitem__(key: str | List[str]) -> DataFrame
+   .. py:method:: __getitem__(key: str | list[str]) -> DataFrame
 
       Return a new :py:class`DataFrame` with the specified column or columns.
 
@@ -316,6 +316,12 @@ Module Contents
       :param other: DataFrame to intersect with.
 
       :returns: DataFrame after intersection.
+
+
+
+   .. py:method:: into_view() -> pyarrow.Table
+
+      Convert DataFrame as a ViewTable which can be used in register_table.
 
 
 

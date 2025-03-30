@@ -118,7 +118,7 @@ be ignored by ``git``.
 .. code-block::
 
     implementation=CPython
-    version=3.8
+    version=3.9
     shared=true
     abi3=true
     lib_name=python3.12

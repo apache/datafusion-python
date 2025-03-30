@@ -194,6 +194,7 @@ Functions
    datafusion.functions.random
    datafusion.functions.range
    datafusion.functions.rank
+   datafusion.functions.regexp_count
    datafusion.functions.regexp_like
    datafusion.functions.regexp_match
    datafusion.functions.regexp_replace
@@ -240,6 +241,7 @@ Functions
    datafusion.functions.to_timestamp
    datafusion.functions.to_timestamp_micros
    datafusion.functions.to_timestamp_millis
+   datafusion.functions.to_timestamp_nanos
    datafusion.functions.to_timestamp_seconds
    datafusion.functions.to_unixtime
    datafusion.functions.translate
@@ -935,7 +937,7 @@ Module Contents
    This is an alias for :py:func:`date_trunc`.
 
 
-.. py:function:: decode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: decode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Decode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
@@ -979,7 +981,7 @@ Module Contents
    This is an alias for :py:func:`array_empty`.
 
 
-.. py:function:: encode(input: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: encode(expr: datafusion.expr.Expr, encoding: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Encode the ``input``, using the ``encoding``. encoding can be base64 or hex.
 
@@ -1655,6 +1657,14 @@ Module Contents
    :param order_by: Set ordering within the window frame.
 
 
+.. py:function:: regexp_count(string: datafusion.expr.Expr, pattern: datafusion.expr.Expr, start: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
+
+   Returns the number of matches in a string.
+
+   Optional start position (the first position is 1) to search for the regular
+   expression.
+
+
 .. py:function:: regexp_like(string: datafusion.expr.Expr, regex: datafusion.expr.Expr, flags: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Find if any regular expression (regex) matches exist.
@@ -1837,7 +1847,7 @@ Module Contents
    Returns the last ``n`` characters in the ``string``.
 
 
-.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr = Expr.literal(0)) -> datafusion.expr.Expr
+.. py:function:: round(value: datafusion.expr.Expr, decimal_places: datafusion.expr.Expr | None = None) -> datafusion.expr.Expr
 
    Round the argument to the nearest integer.
 
@@ -2058,6 +2068,13 @@ Module Contents
    See :py:func:`to_timestamp` for a description on how to use formatters.
 
 
+.. py:function:: to_timestamp_nanos(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
+
+   Converts a string and optional formats to a ``Timestamp`` in nanoseconds.
+
+   See :py:func:`to_timestamp` for a description on how to use formatters.
+
+
 .. py:function:: to_timestamp_seconds(arg: datafusion.expr.Expr, *formatters: datafusion.expr.Expr) -> datafusion.expr.Expr
 
    Converts a string and optional formats to a ``Timestamp`` in seconds.
@@ -2090,7 +2107,7 @@ Module Contents
    Converts a string to uppercase.
 
 
-.. py:function:: uuid(arg: datafusion.expr.Expr) -> datafusion.expr.Expr
+.. py:function:: uuid() -> datafusion.expr.Expr
 
    Returns uuid v4 as a string value.
 

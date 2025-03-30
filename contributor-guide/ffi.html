@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Python Extensions &#8212; Apache Arrow DataFusion  documentation</title>
+    
+    <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
+    
+    <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../autoapi/index.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/data-sources.html">
+   Data Sources
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/views.html">
+     Registering Views
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/expressions.html">
+     Expressions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">
+     User-Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/arrow.html">
+     Arrow
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/configuration.html">
+   Configuration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1 current active">
+  <a class="current reference internal" href="#">
+   Python Extensions
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../autoapi/index.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../autoapi/datafusion/index.html">
+     datafusion
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/context/index.html">
+       datafusion.context
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/io/index.html">
+       datafusion.io
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/udf/index.html">
+       datafusion.udf
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-primary-issue">
+   The Primary Issue
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#the-ffi-approach">
+   The FFI Approach
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#inspiration-from-arrow">
+   Inspiration from Arrow
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#implementation-details">
+   Implementation Details
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#alternative-approach">
+   Alternative Approach
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#status-of-work">
+   Status of Work
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="python-extensions">
+<h1>Python Extensions<a class="headerlink" href="#python-extensions" title="Link to this heading">¶</a></h1>
+<p>The DataFusion in Python project is designed to allow users to extend its functionality in a few core
+areas. Ideally many users would like to package their extensions as a Python package and easily
+integrate that package with this project. This page serves to describe some of the challenges we face
+when doing these integrations and the approach our project uses.</p>
+<section id="the-primary-issue">
+<h2>The Primary Issue<a class="headerlink" href="#the-primary-issue" title="Link to this heading">¶</a></h2>
+<p>Suppose you wish to use DataFusion and you have a custom data source that can produce tables that
+can then be queried against, similar to how you can register a <a class="reference internal" href="../user-guide/io/csv.html#io-csv"><span class="std std-ref">CSV</span></a> or
+<a class="reference internal" href="../user-guide/io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a> file. In DataFusion terminology, you likely want to implement a
+<a class="reference internal" href="../user-guide/io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a>. In an effort to make your data source
+as performant as possible and to utilize the features of DataFusion, you may decide to write
+your source in Rust and then expose it through <a class="reference external" href="https://pyo3.rs">PyO3</a> as a Python library.</p>
+<p>At first glance, it may appear the best way to do this is to add the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code>
+crate as a dependency, provide a <code class="docutils literal notranslate"><span class="pre">PyTable</span></code>, and then to register it with the
+<code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>. Unfortunately, this will not work.</p>
+<p>When you produce your code as a Python library and it needs to interact with the DataFusion
+library, at the lowest level they communicate through an Application Binary Interface (ABI).
+The acronym sounds similar to API (Application Programming Interface), but it is distinctly
+different.</p>
+<p>The ABI sets the standard for how these libraries can share data and functions between each
+other. One of the key differences between Rust and other programming languages is that Rust
+does not have a stable ABI. What this means in practice is that if you compile a Rust library
+with one version of the <code class="docutils literal notranslate"><span class="pre">rustc</span></code> compiler and I compile another library to interface with it
+but I use a different version of the compiler, there is no guarantee the interface will be
+the same.</p>
+<p>In practice, this means that a Python library built with <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> as a Rust
+dependency will generally <strong>not</strong> be compatible with the DataFusion Python package, even
+if they reference the same version of <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code>. If you attempt to do this, it may
+work on your local computer if you have built both packages with the same optimizations.
+This can sometimes lead to a false expectation that the code will work, but it frequently
+breaks the moment you try to use your package against the released packages.</p>
+<p>You can find more information about the Rust ABI in their
+<a class="reference external" href="https://doc.rust-lang.org/reference/abi.html">online documentation</a>.</p>
+</section>
+<section id="the-ffi-approach">
+<h2>The FFI Approach<a class="headerlink" href="#the-ffi-approach" title="Link to this heading">¶</a></h2>
+<p>Rust supports interacting with other programming languages through it’s Foreign Function
+Interface (FFI). The advantage of using the FFI is that it enables you to write data structures
+and functions that have a stable ABI. The allows you to use Rust code with C, Python, and
+other languages. In fact, the <a class="reference external" href="https://pyo3.rs">PyO3</a> library uses the FFI to share data
+and functions between Python and Rust.</p>
+<p>The approach we are taking in the DataFusion in Python project is to incrementally expose
+more portions of the DataFusion project via FFI interfaces. This allows users to write Rust
+code that does <strong>not</strong> require the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> crate as a dependency, expose their
+code in Python via PyO3, and have it interact with the DataFusion Python package.</p>
+<p>Early adopters of this approach include <a class="reference external" href="https://delta-io.github.io/delta-rs/">delta-rs</a>
+who has adapted their Table Provider for use in <code class="docutils literal notranslate"><span class="pre">`datafusion-python`</span></code> with only a few lines
+of code. Also, the DataFusion Python project uses the existing definitions from
+<a class="reference external" href="https://arrow.apache.org/docs/format/CStreamInterface.html">Apache Arrow CStream Interface</a>
+to support importing <strong>and</strong> exporting tables. Any Python package that supports reading
+the Arrow C Stream interface can work with DataFusion Python out of the box! You can read
+more about working with Arrow sources in the <a class="reference internal" href="../user-guide/data-sources.html#user-guide-data-sources"><span class="std std-ref">Data Sources</span></a>
+page.</p>
+<p>To learn more about the Foreign Function Interface in Rust, the
+<a class="reference external" href="https://doc.rust-lang.org/nomicon/ffi.html">Rustonomicon</a> is a good resource.</p>
+</section>
+<section id="inspiration-from-arrow">
+<h2>Inspiration from Arrow<a class="headerlink" href="#inspiration-from-arrow" title="Link to this heading">¶</a></h2>
+<p>DataFusion is built upon <a class="reference external" href="https://arrow.apache.org/">Apache Arrow</a>. The canonical Python
+Arrow implementation, <a class="reference external" href="https://arrow.apache.org/docs/python/index.html">pyarrow</a> provides
+an excellent way to share Arrow data between Python projects without performing any copy
+operations on the data. They do this by using a well defined set of interfaces. You can
+find the details about their stream interface
+<a class="reference external" href="https://arrow.apache.org/docs/format/CStreamInterface.html">here</a>. The
+<a class="reference external" href="https://github.com/apache/arrow-rs">Rust Arrow Implementation</a> also supports these
+<code class="docutils literal notranslate"><span class="pre">C</span></code> style definitions via the Foreign Function Interface.</p>
+<p>In addition to using these interfaces to transfer Arrow data between libraries, <code class="docutils literal notranslate"><span class="pre">pyarrow</span></code>
+goes one step further to make sharing the interfaces easier in Python. They do this
+by exposing PyCapsules that contain the expected functionality.</p>
+<p>You can learn more about PyCapsules from the official
+<a class="reference external" href="https://docs.python.org/3/c-api/capsule.html">Python online documentation</a>. PyCapsules
+have excellent support in PyO3 already. The
+<a class="reference external" href="https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule">PyO3 online documentation</a> is a good source
+for more details on using PyCapsules in Rust.</p>
+<p>Two lessons we leverage from the Arrow project in DataFusion Python are:</p>
+<ul class="simple">
+<li><p>We reuse the existing Arrow FFI functionality wherever possible.</p></li>
+<li><p>We expose PyCapsules that contain a FFI stable struct.</p></li>
+</ul>
+</section>
+<section id="implementation-details">
+<h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Link to this heading">¶</a></h2>
+<p>The bulk of the code necessary to perform our FFI operations is in the upstream
+<a class="reference external" href="https://datafusion.apache.org/">DataFusion</a> core repository. You can review the code and
+documentation in the <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> crate.</p>
+<p>Our FFI implementation is narrowly focused at sharing data and functions with Rust backed
+libraries. This allows us to use the <a class="reference external" href="https://crates.io/crates/abi_stable">abi_stable crate</a>.
+This is an excellent crate that allows for easy conversion between Rust native types
+and FFI-safe alternatives. For example, if you needed to pass a <code class="docutils literal notranslate"><span class="pre">Vec&lt;String&gt;</span></code> via FFI,
+you can simply convert it to a <code class="docutils literal notranslate"><span class="pre">RVec&lt;RString&gt;</span></code> in an intuitive manner. It also supports
+features like <code class="docutils literal notranslate"><span class="pre">RResult</span></code> and <code class="docutils literal notranslate"><span class="pre">ROption</span></code> that do not have an obvious translation to a
+C equivalent.</p>
+<p>The <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> crate has been designed to make it easy to convert from DataFusion
+traits into their FFI counterparts. For example, if you have defined a custom
+<a class="reference external" href="https://docs.rs/datafusion/45.0.0/datafusion/catalog/trait.TableProvider.html">TableProvider</a>
+and you want to create a sharable FFI counterpart, you could write:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">my_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">MyTableProvider</span><span class="p">::</span><span class="n">default</span><span class="p">();</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">ffi_provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">my_provider</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w"> </span><span class="nb">None</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>If you were interfacing with a library that provided the above <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code> and
+you needed to turn it back into an <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code>, you can turn it into a
+<code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code> with implements the <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> trait.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">foreign_provider</span><span class="p">:</span><span class="w"> </span><span class="nc">ForeignTableProvider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi_provider</span><span class="p">.</span><span class="n">into</span><span class="p">();</span>
+</pre></div>
+</div>
+<p>If you review the code in <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> you will find that each of the traits we share
+across the boundary has two portions, one with a <code class="docutils literal notranslate"><span class="pre">FFI_</span></code> prefix and one with a <code class="docutils literal notranslate"><span class="pre">Foreign</span></code>
+prefix. This is used to distinguish which side of the FFI boundary that struct is
+designed to be used on. The structures with the <code class="docutils literal notranslate"><span class="pre">FFI_</span></code> prefix are to be used on the
+<strong>provider</strong> of the structure. In the example we’re showing, this means the code that has
+written the underlying <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> implementation to access your custom data source.
+The structures with the <code class="docutils literal notranslate"><span class="pre">Foreign</span></code> prefix are to be used by the receiver. In this case,
+it is the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> library.</p>
+<p>In order to share these FFI structures, we need to wrap them in some kind of Python object
+that can be used to interface from one package to another. As described in the above
+section on our inspiration from Arrow, we use <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>. We can create a <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>
+for our provider thusly:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CString</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">my_capsule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_bound</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">))</span><span class="o">?</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>On the receiving side, turn this pycapsule object into the <code class="docutils literal notranslate"><span class="pre">FFI_TableProvider</span></code>, which
+can then be turned into a <code class="docutils literal notranslate"><span class="pre">ForeignTableProvider</span></code> the associated code is:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="n">capsule</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">downcast</span><span class="p">::</span><span class="o">&lt;</span><span class="n">PyCapsule</span><span class="o">&gt;</span><span class="p">()</span><span class="o">?</span><span class="p">;</span>
+<span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">capsule</span><span class="p">.</span><span class="n">reference</span><span class="p">::</span><span class="o">&lt;</span><span class="n">FFI_TableProvider</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+</pre></div>
+</div>
+<p>By convention the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> library expects a Python object that has a
+<code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> PyCapsule to have this capsule accessible by calling a function named
+<code class="docutils literal notranslate"><span class="pre">__datafusion_table_provider__</span></code>. You can see a complete working example of how to
+share a <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> from one python library to DataFusion Python in the
+<a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/ffi-table-provider">repository examples folder</a>.</p>
+<p>This section has been written using <code class="docutils literal notranslate"><span class="pre">TableProvider</span></code> as an example. It is the first
+extension that has been written using this approach and the most thoroughly implemented.
+As we continue to expose more of the DataFusion features, we intend to follow this same
+design pattern.</p>
+</section>
+<section id="alternative-approach">
+<h2>Alternative Approach<a class="headerlink" href="#alternative-approach" title="Link to this heading">¶</a></h2>
+<p>Suppose you needed to expose some other features of DataFusion and you could not wait
+for the upstream repository to implement the FFI approach we describe. In this case
+you decide to create your dependency on the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> crate instead.</p>
+<p>As we discussed, this is not guaranteed to work across different compiler versions and
+optimization levels. If you wish to go down this route, there are two approaches we
+have identified you can use.</p>
+<ol class="arabic simple">
+<li><p>Re-export all of <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> yourself with your extensions built in.</p></li>
+<li><p>Carefully synchonize your software releases with the <code class="docutils literal notranslate"><span class="pre">datafusion-python</span></code> CI build
+system so that your libraries use the exact same compiler, features, and
+optimization level.</p></li>
+</ol>
+<p>We currently do not recommend either of these approaches as they are difficult to
+maintain over a long period. Additionally, they require a tight version coupling
+between libraries.</p>
+</section>
+<section id="status-of-work">
+<h2>Status of Work<a class="headerlink" href="#status-of-work" title="Link to this heading">¶</a></h2>
+<p>At the time of this writing, the FFI features are under active development. To see
+the latest status, we recommend reviewing the code in the <a class="reference external" href="https://crates.io/crates/datafusion-ffi">datafusion-ffi</a> crate.</p>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="introduction.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">Introduction</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../autoapi/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

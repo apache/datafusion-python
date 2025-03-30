@@ -421,7 +421,7 @@ Module Contents
 
       Create and return a dataframe using the provided partitions.
 
-      :param partitions: :py:class:`pyarrow.RecordBatch` partitions to register.
+      :param partitions: :py:class:`pa.RecordBatch` partitions to register.
       :param name: Resultant dataframe name.
       :param schema: Schema for the partitions.
 
@@ -534,6 +534,16 @@ Module Contents
 
 
 
+   .. py:method:: global_ctx() -> SessionContext
+      :classmethod:
+
+
+      Retrieve the global context as a `SessionContext` wrapper.
+
+      :returns: A `SessionContext` object that wraps the global `SessionContextInternal`.
+
+
+
    .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`DataFrame` for reading Avro data source.
@@ -586,7 +596,7 @@ Module Contents
 
 
 
-   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
 
       Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -657,7 +667,7 @@ Module Contents
 
    .. py:method:: register_dataset(name: str, dataset: pyarrow.dataset.Dataset) -> None
 
-      Register a :py:class:`pyarrow.dataset.Dataset` as a table.
+      Register a :py:class:`pa.dataset.Dataset` as a table.
 
       :param name: Name of the table to register.
       :param dataset: PyArrow dataset.
@@ -710,7 +720,7 @@ Module Contents
 
 
 
-   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> None
+   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
 
       Register a Parquet file as a table.
 
@@ -779,6 +789,17 @@ Module Contents
    .. py:method:: register_udwf(udwf: datafusion.udf.WindowUDF) -> None
 
       Register a user-defined window function (UDWF) with the context.
+
+
+
+   .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame) -> None
+
+      Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+
+      :param name: The name to register the view under.
+      :type name: str
+      :param df: The DataFrame to be converted into a view and registered.
+      :type df: DataFrame
 
 
 

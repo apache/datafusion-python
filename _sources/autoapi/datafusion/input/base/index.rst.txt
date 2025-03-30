@@ -37,7 +37,7 @@ Module Contents
    to obtain the SqlTable information from the custom datasource.
 
 
-   .. py:method:: build_table(input_item: Any, table_name: str, **kwarg) -> datafusion.common.SqlTable
+   .. py:method:: build_table(input_item: Any, table_name: str, **kwarg: Any) -> datafusion.common.SqlTable
       :abstractmethod:
 
 
@@ -45,7 +45,7 @@ Module Contents
 
 
 
-   .. py:method:: is_correct_input(input_item: Any, table_name: str, **kwargs) -> bool
+   .. py:method:: is_correct_input(input_item: Any, table_name: str, **kwargs: Any) -> bool
       :abstractmethod:
 
 

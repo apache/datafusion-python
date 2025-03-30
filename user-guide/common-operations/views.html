@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Custom Table Provider &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>Registering Views &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,8 +34,8 @@
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Configuration" href="../configuration.html" />
-    <link rel="prev" title="Parquet" href="parquet.html" />
+    <link rel="next" title="Basic Operations" href="basic-info.html" />
+    <link rel="prev" title="Common Operations" href="index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -117,100 +117,100 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../common-operations/index.html">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
   <label for="toctree-checkbox-1">
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul>
-   <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/views.html">
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
      Registering Views
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/basic-info.html">
+    <a class="reference internal" href="basic-info.html">
      Basic Operations
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/select-and-filter.html">
+    <a class="reference internal" href="select-and-filter.html">
      Column Selections
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/expressions.html">
+    <a class="reference internal" href="expressions.html">
      Expressions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/joins.html">
+    <a class="reference internal" href="joins.html">
      Joins
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/functions.html">
+    <a class="reference internal" href="functions.html">
      Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/aggregations.html">
+    <a class="reference internal" href="aggregations.html">
      Aggregation
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/windows.html">
+    <a class="reference internal" href="windows.html">
      Window Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../common-operations/udf-and-udfa.html">
+    <a class="reference internal" href="udf-and-udfa.html">
      User-Defined Functions
     </a>
    </li>
   </ul>
  </li>
- <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="index.html">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../io/index.html">
    IO
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
   <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul class="current">
+  <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="arrow.html">
+    <a class="reference internal" href="../io/arrow.html">
      Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="avro.html">
+    <a class="reference internal" href="../io/avro.html">
      Avro
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="csv.html">
+    <a class="reference internal" href="../io/csv.html">
      CSV
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="json.html">
+    <a class="reference internal" href="../io/json.html">
      JSON
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="parquet.html">
+    <a class="reference internal" href="../io/parquet.html">
      Parquet
     </a>
    </li>
-   <li class="toctree-l2 current active">
-    <a class="current reference internal" href="#">
+   <li class="toctree-l2">
+    <a class="reference internal" href="../io/table_provider.html">
      Custom Table Provider
     </a>
    </li>
@@ -391,38 +391,40 @@
               
               <div>
                 
-  <section id="custom-table-provider">
-<span id="io-custom-table-provider"></span><h1>Custom Table Provider<a class="headerlink" href="#custom-table-provider" title="Link to this heading">¶</a></h1>
-<p>If you have a custom data source that you want to integrate with DataFusion, you can do so by
-implementing the <a class="reference external" href="https://datafusion.apache.org/library-user-guide/custom-table-providers.html">TableProvider</a>
-interface in Rust and then exposing it in Python. To do so,
-you must use DataFusion 43.0.0 or later and expose a <a class="reference external" href="https://crates.io/crates/datafusion-ffi">FFI_TableProvider</a>
-via <a class="reference external" href="https://pyo3.rs/main/doc/pyo3/types/struct.pycapsule">PyCapsule</a>.</p>
-<p>A complete example can be found in the <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">examples folder</a>.</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pymethods]</span>
-<span class="k">impl</span><span class="w"> </span><span class="n">MyTableProvider</span><span class="w"> </span><span class="p">{</span>
+  <section id="registering-views">
+<h1>Registering Views<a class="headerlink" href="#registering-views" title="Link to this heading">¶</a></h1>
+<p>You can use the context’s <code class="docutils literal notranslate"><span class="pre">register_view</span></code> method to register a DataFrame as a view</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">literal</span>
 
-<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_table_provider__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
-<span class="w">        </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">CString</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">&quot;datafusion_table_provider&quot;</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span>
+<span class="c1"># Create a DataFusion context</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
 
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">())</span>
-<span class="w">            </span><span class="p">.</span><span class="n">map_err</span><span class="p">(</span><span class="o">|</span><span class="n">e</span><span class="o">|</span><span class="w"> </span><span class="n">PyRuntimeError</span><span class="p">::</span><span class="n">new_err</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">to_string</span><span class="p">()))</span><span class="o">?</span><span class="p">;</span>
-<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableProvider</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">provider</span><span class="p">),</span><span class="w"> </span><span class="kc">false</span><span class="p">);</span>
+<span class="c1"># Create sample data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]}</span>
 
-<span class="w">        </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new_bound</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">clone</span><span class="p">()))</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<span class="c1"># Create a DataFrame from the dictionary</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pydict</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;my_table&quot;</span><span class="p">)</span>
+
+<span class="c1"># Filter the DataFrame (for example, keep rows where a &gt; 2)</span>
+<span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">literal</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+<span class="c1"># Register the dataframe as a view with the context</span>
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_view</span><span class="p">(</span><span class="s2">&quot;view1&quot;</span><span class="p">,</span> <span class="n">df_filtered</span><span class="p">)</span>
+
+<span class="c1"># Now run a SQL query against the registered view</span>
+<span class="n">df_view</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM view1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Collect the results</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">df_view</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># Convert results to a list of dictionaries for display</span>
+<span class="n">result_dicts</span> <span class="o">=</span> <span class="p">[</span><span class="n">batch</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span> <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">result_dicts</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Once you have this library available, in python you can register your table provider
-to the <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provider</span> <span class="o">=</span> <span class="n">MyTableProvider</span><span class="p">()</span>
-<span class="n">ctx</span><span class="o">.</span><span class="n">register_table_provider</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">,</span> <span class="n">provider</span><span class="p">)</span>
-
-<span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;my_table&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<p>This will output:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[{</span><span class="s1">&#39;a&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="s1">&#39;b&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">]}]</span>
 </pre></div>
 </div>
 </section>
@@ -433,17 +435,17 @@ to the <code class="docutils literal notranslate"><span class="pre">SessionConte
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="parquet.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">Parquet</p>
+            <p class="prev-next-title">Common Operations</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../configuration.html" title="next page">
+    <a class='right-next' id="next-link" href="basic-info.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Configuration</p>
+        <p class="prev-next-title">Basic Operations</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

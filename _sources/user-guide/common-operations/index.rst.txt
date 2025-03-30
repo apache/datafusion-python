@@ -23,6 +23,7 @@ The contents of this section are designed to guide a new user through how to use
 .. toctree::
    :maxdepth: 2
 
+   views
    basic-info
    select-and-filter
    expressions
