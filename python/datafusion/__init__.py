@@ -26,7 +26,7 @@ try:
 except ImportError:
     import importlib_metadata
 
-from . import functions, object_store, substrait
+from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
@@ -89,6 +89,7 @@ __all__ = [
     "udaf",
     "udf",
     "udwf",
+    "unparser",
 ]
 
 
