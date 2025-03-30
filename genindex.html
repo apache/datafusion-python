@@ -344,6 +344,11 @@
        datafusion.udf
       </a>
      </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="autoapi/datafusion/unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
     </ul>
    </li>
   </ul>
@@ -1160,12 +1165,19 @@
         <li><a href="autoapi/datafusion/udf/index.html#module-datafusion.udf">module</a>
 </li>
       </ul></li>
+      <li>
+    datafusion.unparser
+
+      <ul>
+        <li><a href="autoapi/datafusion/unparser/index.html#module-datafusion.unparser">module</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_bin">date_bin() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_part">date_part() (in module datafusion.functions)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_part">date_part() (in module datafusion.functions)</a>
-</li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.date_trunc">date_trunc() (in module datafusion.functions)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datepart">datepart() (in module datafusion.functions)</a>
@@ -1179,6 +1191,8 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.default">default() (datafusion.unparser.Dialect static method)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.degrees">degrees() (in module datafusion.functions)</a>
 </li>
@@ -1195,6 +1209,10 @@
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.df">df (datafusion.dataframe.DataFrame attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.DFSchema">DFSchema (in module datafusion)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect">Dialect (class in datafusion.unparser)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.dialect">dialect (datafusion.unparser.Dialect attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.digest">digest() (in module datafusion.functions)</a>
 </li>
@@ -1249,6 +1267,8 @@
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.drop">drop() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.DropTable">DropTable (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.duckdb">duckdb() (datafusion.unparser.Dialect static method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -1766,7 +1786,13 @@
 </li>
         <li><a href="autoapi/datafusion/udf/index.html#module-datafusion.udf">datafusion.udf</a>
 </li>
+        <li><a href="autoapi/datafusion/unparser/index.html#module-datafusion.unparser">datafusion.unparser</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.mysql">mysql() (datafusion.unparser.Dialect static method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -1879,11 +1905,15 @@
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Placeholder">Placeholder (in module datafusion.expr)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan">Plan (class in datafusion.substrait)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/substrait/index.html#datafusion.substrait.Plan.plan_internal">plan_internal (datafusion.substrait.Plan attribute)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.plan_to_sql">plan_to_sql() (datafusion.unparser.Unparser method)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.postgres">postgres() (datafusion.unparser.Dialect static method)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.pow">pow() (in module datafusion.functions)</a>
 </li>
@@ -2153,10 +2183,10 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sinh">sinh() (in module datafusion.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.SNAPPY">SNAPPY (datafusion.dataframe.Compression attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Sort">Sort (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.sort">sort() (datafusion.dataframe.DataFrame method)</a>
@@ -2174,6 +2204,8 @@
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.sql">sql() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.sql_with_options">sql_with_options() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.sqlite">sqlite() (datafusion.unparser.Dialect static method)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.SQLOptions">SQLOptions (class in datafusion)</a>
 
@@ -2375,10 +2407,10 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.udwf">(datafusion.WindowUDF static method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.UNCOMPRESSED">UNCOMPRESSED (datafusion.dataframe.Compression attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Union">Union (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union">union() (datafusion.dataframe.DataFrame method)</a>
@@ -2390,6 +2422,10 @@
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.unnest_columns">unnest_columns() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.UnnestExpr">UnnestExpr (in module datafusion.expr)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser">Unparser (class in datafusion.unparser)</a>
+</li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.unparser">unparser (datafusion.unparser.Unparser attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.update">update() (datafusion.Accumulator method)</a>
 
@@ -2523,14 +2559,14 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeEnvBuilder.with_disk_manager_disabled">(datafusion.RuntimeEnvBuilder method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.with_disk_manager_os">with_disk_manager_os() (datafusion.context.RuntimeEnvBuilder method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.RuntimeEnvBuilder.with_disk_manager_os">(datafusion.RuntimeEnvBuilder method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.RuntimeEnvBuilder.with_disk_manager_specified">with_disk_manager_specified() (datafusion.context.RuntimeEnvBuilder method)</a>
 
       <ul>
@@ -2561,6 +2597,8 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.SessionConfig.with_parquet_pruning">(datafusion.SessionConfig method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Unparser.with_pretty">with_pretty() (datafusion.unparser.Unparser method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionConfig.with_repartition_aggregations">with_repartition_aggregations() (datafusion.context.SessionConfig method)</a>
 
       <ul>

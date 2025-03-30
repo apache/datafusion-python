@@ -30,6 +30,7 @@ Submodules
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
    /autoapi/datafusion/udf/index
+   /autoapi/datafusion/unparser/index
 
 
 Attributes

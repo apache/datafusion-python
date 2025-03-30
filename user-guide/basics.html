@@ -347,6 +347,11 @@
        datafusion.udf
       </a>
      </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
     </ul>
    </li>
   </ul>
@@ -413,8 +418,8 @@
                 
   <section id="concepts">
 <span id="user-guide-concepts"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">¶</a></h1>
-<p>In this section, we will cover a basic example to introduce a few key concepts. We will use the same
-source file as described in the <a class="reference internal" href="introduction.html#guide"><span class="std std-ref">Introduction</span></a>, the Pokemon data set.</p>
+<p>In this section, we will cover a basic example to introduce a few key concepts. We will use the
+2021 Yellow Taxi Trip Records ([download](<a class="reference external" href="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet">https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet</a>)), from the [TLC Trip Record Data](<a class="reference external" href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page</a>).</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>

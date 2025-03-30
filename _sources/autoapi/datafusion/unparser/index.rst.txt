@@ -1,0 +1,97 @@
+datafusion.unparser
+===================
+
+.. py:module:: datafusion.unparser
+
+.. autoapi-nested-parse::
+
+   This module provides support for unparsing datafusion plans to SQL.
+
+   For additional information about unparsing, see https://docs.rs/datafusion-sql/latest/datafusion_sql/unparser/index.html
+
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   datafusion.unparser.Dialect
+   datafusion.unparser.Unparser
+
+
+Module Contents
+---------------
+
+.. py:class:: Dialect(dialect: datafusion._internal.unparser.Dialect)
+
+   DataFusion data catalog.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: default() -> Dialect
+      :staticmethod:
+
+
+      Create a new default dialect.
+
+
+
+   .. py:method:: duckdb() -> Dialect
+      :staticmethod:
+
+
+      Create a new DuckDB dialect.
+
+
+
+   .. py:method:: mysql() -> Dialect
+      :staticmethod:
+
+
+      Create a new MySQL dialect.
+
+
+
+   .. py:method:: postgres() -> Dialect
+      :staticmethod:
+
+
+      Create a new PostgreSQL dialect.
+
+
+
+   .. py:method:: sqlite() -> Dialect
+      :staticmethod:
+
+
+      Create a new SQLite dialect.
+
+
+
+   .. py:attribute:: dialect
+
+
+.. py:class:: Unparser(dialect: Dialect)
+
+   DataFusion unparser.
+
+   This constructor is not typically called by the end user.
+
+
+   .. py:method:: plan_to_sql(plan: datafusion.plan.LogicalPlan) -> str
+
+      Convert a logical plan to a SQL string.
+
+
+
+   .. py:method:: with_pretty(pretty: bool) -> Unparser
+
+      Set the pretty flag.
+
+
+
+   .. py:attribute:: unparser
+
+
