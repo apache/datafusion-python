@@ -135,10 +135,10 @@ pub struct PyDataFrame {
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
-    pub fn new(df: DataFrame) -> Self {
+    pub fn new(df: DataFrame, display_config: Arc<DisplayConfig>) -> Self {
         Self {
             df: Arc::new(df),
-            config: Arc::new(DisplayConfig::default()),
+            config: display_config,
         }
     }
 }
@@ -858,10 +858,7 @@ impl PyDataFrame {
     /// Get the current display configuration
     #[getter]
     fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
-        Python::with_gil(|py| {
-            let config = (*self.config).clone();
-            Py::new(py, config)
-        })
+        Python::with_gil(|py| Py::new(py, (*self.display_config).clone()))
     }
 
     /// Update display configuration
@@ -878,7 +875,7 @@ impl PyDataFrame {
         max_cell_length: Option<usize>,
         max_table_rows_in_repr: Option<usize>,
     ) {
-        let mut new_config = (*self.config).clone();
+        let mut new_config = (*self.display_config).clone();
 
         if let Some(bytes) = max_table_bytes {
             new_config.max_table_bytes = bytes;
@@ -896,13 +893,13 @@ impl PyDataFrame {
             new_config.max_table_rows_in_repr = rows;
         }
 
-        self.config = Arc::new(new_config);
+        self.display_config = Arc::new(new_config);
     }
 
     /// Reset display configuration to default values
     #[pyo3(text_signature = "($self)")]
     fn reset_display_config(&mut self) {
-        self.config = Arc::new(DisplayConfig::default());
+        self.display_config = Arc::new(DisplayConfig::default());
     }
 }
 

@@ -1367,9 +1367,9 @@ def test_min_table_rows_display(ctx):
     row_count = html_output.count("<tr>") - 1  # subtract 1 for the header row
 
     # Verify at least min_table_rows rows are displayed
-    assert row_count >= custom_min_rows, (
-        f"Expected at least {custom_min_rows} rows, got {row_count}"
-    )
+    assert (
+        row_count >= custom_min_rows
+    ), f"Expected at least {custom_min_rows} rows, got {row_count}"
 
     # If data was truncated, "Data truncated" message should be present
     if row_count < rows:
@@ -1542,3 +1542,63 @@ def test_max_table_rows_in_repr(ctx):
     # Should show all rows (20)
     assert lines_all == rows
     assert "Data truncated" not in repr_str_all
+
+
+def test_session_context_display_config(ctx):
+    """Test that display configuration is shared at session context level."""
+    # Create two dataframes from the same context
+    batch1 = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df1 = ctx.create_dataframe([[batch1]])
+
+    batch2 = pa.RecordBatch.from_arrays(
+        [pa.array([7, 8, 9]), pa.array([10, 11, 12])],
+        names=["c", "d"],
+    )
+    df2 = ctx.create_dataframe([[batch2]])
+
+    # Set display config on first dataframe
+    custom_max_rows = 25
+    df1.configure_display(max_table_rows_in_repr=custom_max_rows)
+
+    # Check that both dataframes have the same config
+    assert df1.display_config.max_table_rows_in_repr == custom_max_rows
+    assert df2.display_config.max_table_rows_in_repr == custom_max_rows
+
+    # Change config on second dataframe
+    df2.configure_display(max_cell_length=40)
+
+    # Both dataframes should reflect the change
+    assert df1.display_config.max_cell_length == 40
+    assert df2.display_config.max_cell_length == 40
+
+
+def test_session_context_display_config_independence(ctx):
+    """Test that display configurations in different contexts are independent."""
+    # Create two contexts with different configurations
+    ctx1 = SessionContext()
+    ctx2 = SessionContext()
+
+    # Create dataframes from each context
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df1 = ctx1.create_dataframe([[batch]])
+    df2 = ctx2.create_dataframe([[batch]])
+
+    # Set different display configurations
+    df1.configure_display(max_table_rows_in_repr=15)
+    df2.configure_display(max_table_rows_in_repr=30)
+
+    # Verify configurations are independent
+    assert df1.display_config.max_table_rows_in_repr == 15
+    assert df2.display_config.max_table_rows_in_repr == 30
+
+    # Create another dataframe from first context
+    df3 = ctx1.create_dataframe([[batch]])
+
+    # It should have the same config as the first dataframe
+    assert df3.display_config.max_table_rows_in_repr == 15

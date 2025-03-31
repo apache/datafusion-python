@@ -823,6 +823,10 @@ class DataFrame:
     ) -> None:
         """Configure display options for DataFrame representation.
 
+        Note: The display configuration is now set at the session context level,
+        so changes to one DataFrame's display configuration will affect all
+        DataFrames created from the same context.
+
         Args:
             max_table_bytes: Maximum bytes to display for table presentation
                              (default: 2MB).
