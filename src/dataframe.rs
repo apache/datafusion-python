@@ -15,412 +15,106 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::ffi::CString;
+use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
-use arrow::compute::can_cast_types;
-use arrow::error::ArrowError;
-use arrow::ffi::FFI_ArrowSchema;
-use arrow::ffi_stream::FFI_ArrowArrayStream;
-use arrow::util::display::{ArrayFormatter, FormatOptions};
-use datafusion::arrow::datatypes::Schema;
-use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
-use datafusion::arrow::util::pretty;
-use datafusion::common::UnnestOptions;
-use datafusion::config::{CsvOptions, TableParquetOptions};
-use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
-use datafusion::datasource::TableProvider;
-use datafusion::error::DataFusionError;
-use datafusion::execution::SendableRecordBatchStream;
-use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
-use datafusion::prelude::*;
-use futures::{StreamExt, TryStreamExt};
-use pyo3::exceptions::PyValueError;
+use datafusion::arrow::csv::WriterBuilder;
+use datafusion::arrow::datatypes::SchemaRef;
+use datafusion::arrow::pyarrow::FromPyArrow;
+use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::common::TableReference;
+use datafusion::prelude::DataFrame;
+
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
-use pyo3::pybacked::PyBackedStr;
-use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
-use tokio::task::JoinHandle;
+use pyo3::types::{PyList, PyString, PyTuple};
 
-use crate::catalog::PyTable;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
-use crate::expr::sort_expr::to_sort_expressions;
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::expr::expr::PyExpr;
+use crate::expr::window_expr::PyWindowExpr;
 use crate::physical_plan::PyExecutionPlan;
-use crate::record_batch::PyRecordBatchStream;
+use crate::record_batch::{PyRecordBatch, TableData};
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
-use crate::{
-    errors::PyDataFusionResult,
-    expr::{sort_expr::PySortExpr, PyExpr},
-};
+use crate::utils::{get_tokio_runtime, wait_for_future};
+use crate::Dataset;
 
-// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-// - we have not decided on the table_provider approach yet
-// this is an interim implementation
-#[pyclass(name = "TableProvider", module = "datafusion")]
-pub struct PyTableProvider {
-    provider: Arc<dyn TableProvider>,
-}
-
-impl PyTableProvider {
-    pub fn new(provider: Arc<dyn TableProvider>) -> Self {
-        Self { provider }
-    }
-
-    pub fn as_table(&self) -> PyTable {
-        let table_provider: Arc<dyn TableProvider> = self.provider.clone();
-        PyTable::new(table_provider)
-    }
-}
-
-/// Configuration for DataFrame display in Python environment
-#[pyclass(name = "DisplayConfig", module = "datafusion")]
-#[derive(Debug, Clone)]
-pub struct DisplayConfig {
-    /// Maximum bytes to display for table presentation (default: 2MB)
-    #[pyo3(get, set)]
-    pub max_table_bytes: usize,
-    /// Minimum number of table rows to display (default: 20)
-    #[pyo3(get, set)]
-    pub min_table_rows: usize,
-    /// Maximum length of a cell before it gets minimized (default: 25)
-    #[pyo3(get, set)]
-    pub max_cell_length: usize,
-    /// Maximum number of rows to display in repr string output (default: 10)
-    #[pyo3(get, set)]
-    pub max_table_rows_in_repr: usize,
-}
-
-#[pymethods]
-impl DisplayConfig {
-    #[new]
-    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None, max_table_rows_in_repr=None))]
-    fn new(
-        max_table_bytes: Option<usize>,
-        min_table_rows: Option<usize>,
-        max_cell_length: Option<usize>,
-        max_table_rows_in_repr: Option<usize>,
-    ) -> Self {
-        let default = DisplayConfig::default();
-        Self {
-            max_table_bytes: max_table_bytes.unwrap_or(default.max_table_bytes),
-            min_table_rows: min_table_rows.unwrap_or(default.min_table_rows),
-            max_cell_length: max_cell_length.unwrap_or(default.max_cell_length),
-            max_table_rows_in_repr: max_table_rows_in_repr
-                .unwrap_or(default.max_table_rows_in_repr),
-        }
-    }
-}
-
-impl Default for DisplayConfig {
-    fn default() -> Self {
-        Self {
-            max_table_bytes: 2 * 1024 * 1024, // 2 MB
-            min_table_rows: 20,
-            max_cell_length: 25,
-            max_table_rows_in_repr: 10,
-        }
-    }
-}
-
-/// A PyDataFrame is a representation of a logical plan and an API to compose statements.
-/// Use it to build a plan and `.collect()` to execute the plan and collect the result.
-/// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
+/// Represents a DataFrame in DataFusion.
 #[pyclass(name = "DataFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
-    config: Arc<DisplayConfig>,
-}
-
-impl PyDataFrame {
-    /// creates a new PyDataFrame
-    pub fn new(df: DataFrame) -> Self {
-        Self {
-            df: Arc::new(df),
-            config: Arc::new(DisplayConfig::default()),
-        }
-    }
 }
 
 #[pymethods]
 impl PyDataFrame {
-    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
-    fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        if let Ok(key) = key.extract::<PyBackedStr>() {
-            // df[col]
-            self.select_columns(vec![key])
-        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
-            // df[col1, col2, col3]
-            let keys = tuple
-                .iter()
-                .map(|item| item.extract::<PyBackedStr>())
-                .collect::<PyResult<Vec<PyBackedStr>>>()?;
-            self.select_columns(keys)
-        } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
-            // df[[col1, col2, col3]]
-            self.select_columns(keys)
-        } else {
-            let message = "DataFrame can only be indexed by string index or indices".to_string();
-            Err(PyDataFusionError::Common(message))
-        }
-    }
-
-    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        let (batches, has_more) = wait_for_future(
-            py,
-            collect_record_batches_to_display(
-                self.df.as_ref().clone(),
-                self.config.min_table_rows,
-                self.config.max_table_rows_in_repr,
-                &self.config,
-            ),
-        )?;
-        if batches.is_empty() {
-            // This should not be reached, but do it for safety since we index into the vector below
-            return Ok("No data to display".to_string());
-        }
-
-        let batches_as_displ =
-            pretty::pretty_format_batches(&batches).map_err(py_datafusion_err)?;
-
-        let additional_str = match has_more {
-            true => "\nData truncated.",
-            false => "",
-        };
-
-        Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
-    }
-
-    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let (batches, has_more) = wait_for_future(
-            py,
-            collect_record_batches_to_display(
-                self.df.as_ref().clone(),
-                self.config.min_table_rows,
-                usize::MAX,
-                &self.config,
-            ),
-        )?;
-        if batches.is_empty() {
-            // This should not be reached, but do it for safety since we index into the vector below
-            return Ok("No data to display".to_string());
-        }
-
-        let table_uuid = uuid::Uuid::new_v4().to_string();
-
-        let mut html_str = "
-        <style>
-            .expandable-container {
-                display: inline-block;
-                max-width: 200px;
-            }
-            .expandable {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
-            }
-            .full-text {
-                display: none;
-                white-space: normal;
-            }
-            .expand-btn {
-                cursor: pointer;
-                color: blue;
-                text-decoration: underline;
-                border: none;
-                background: none;
-                font-size: inherit;
-                display: block;
-                margin-top: 5px;
-            }
-        </style>
-
-        <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
-            <table style=\"border-collapse: collapse; min-width: 100%\">
-                <thead>\n".to_string();
-
-        let schema = batches[0].schema();
-
-        let mut header = Vec::new();
-        for field in schema.fields() {
-            header.push(format!("<th style='border: 1px solid black; padding: 8px; text-align: left; background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; max-width: fit-content;'>{}</th>", field.name()));
-        }
-        let header_str = header.join("");
-        html_str.push_str(&format!("<tr>{}</tr></thead><tbody>\n", header_str));
-
-        let batch_formatters = batches
-            .iter()
-            .map(|batch| {
-                batch
-                    .columns()
-                    .iter()
-                    .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
-                    .map(|c| {
-                        c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
-                    })
-                    .collect::<Result<Vec<_>, _>>()
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
-
-        // We need to build up row by row for html
-        let mut table_row = 0;
-        for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
-            for batch_row in 0..num_rows_in_batch {
-                table_row += 1;
-                let mut cells = Vec::new();
-                for (col, formatter) in batch_formatter.iter().enumerate() {
-                    let cell_data = formatter.value(batch_row).to_string();
-                    // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > self.config.max_cell_length {
-                        let short_cell_data = &cell_data[0..self.config.max_cell_length];
-                        cells.push(format!("
-                            <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
-                                <div class=\"expandable-container\">
-                                    <span class=\"expandable\" id=\"{table_uuid}-min-text-{table_row}-{col}\">{short_cell_data}</span>
-                                    <span class=\"full-text\" id=\"{table_uuid}-full-text-{table_row}-{col}\">{cell_data}</span>
-                                    <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{table_row},{col})\">...</button>
-                                </div>
-                            </td>"));
-                    } else {
-                        cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(batch_row)));
-                    }
-                }
-                let row_str = cells.join("");
-                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
-            }
-        }
-        html_str.push_str("</tbody></table></div>\n");
-
-        html_str.push_str("
-            <script>
-            function toggleDataFrameCellText(table_uuid, row, col) {
-                var shortText = document.getElementById(table_uuid + \"-min-text-\" + row + \"-\" + col);
-                var fullText = document.getElementById(table_uuid + \"-full-text-\" + row + \"-\" + col);
-                var button = event.target;
-
-                if (fullText.style.display === \"none\") {
-                    shortText.style.display = \"none\";
-                    fullText.style.display = \"inline\";
-                    button.textContent = \"(less)\";
-                } else {
-                    shortText.style.display = \"inline\";
-                    fullText.style.display = \"none\";
-                    button.textContent = \"...\";
-                }
-            }
-            </script>
-        ");
-
-        if has_more {
-            html_str.push_str("Data truncated due to size.");
-        }
-
-        Ok(html_str)
-    }
-
-    /// Calculate summary statistics for a DataFrame
-    fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?;
-        Ok(Self::new(stat_df))
-    }
-
-    /// Returns the schema from the logical plan
-    fn schema(&self) -> PyArrowType<Schema> {
-        PyArrowType(self.df.schema().into())
-    }
-
-    /// Convert this DataFrame into a Table that can be used in register_table
-    /// By convention, into_... methods consume self and return the new object.
-    /// Disabling the clippy lint, so we can use &self
-    /// because we're working with Python bindings
-    /// where objects are shared
-    /// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-    /// - we have not decided on the table_provider approach yet
-    #[allow(clippy::wrong_self_convention)]
-    fn into_view(&self) -> PyDataFusionResult<PyTable> {
-        // Call the underlying Rust DataFrame::into_view method.
-        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don’t invalidate this PyDataFrame.
-        let table_provider = self.df.as_ref().clone().into_view();
-        let table_provider = PyTableProvider::new(table_provider);
-
-        Ok(table_provider.as_table())
-    }
-
-    #[pyo3(signature = (*args))]
-    fn select_columns(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
-        let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
-        let df = self.df.as_ref().clone().select_columns(&args)?;
+    fn select(&mut self, expr: Vec<PyExpr>) -> PyDataFusion<Self> {
+        let expr = expr.into_iter().map(|e| e.into()).collect::<Vec<_>>();
+        let df = self.df.select(expr).map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
-    #[pyo3(signature = (*args))]
-    fn select(&self, args: Vec<PyExpr>) -> PyDataFusionResult<Self> {
-        let expr = args.into_iter().map(|e| e.into()).collect();
-        let df = self.df.as_ref().clone().select(expr)?;
+    fn filter(&mut self, predicate: PyExpr) -> PyDataFusionResult<Self> {
+        let df = self
+            .df
+            .filter(predicate.into())
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
-    #[pyo3(signature = (*args))]
-    fn drop(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
-        let cols = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
-        let df = self.df.as_ref().clone().drop_columns(&cols)?;
+    fn with_column(&mut self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
+        let df = self
+            .df
+            .with_column(name, expr.into())
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
-    fn filter(&self, predicate: PyExpr) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone().filter(predicate.into())?;
-        Ok(Self::new(df))
-    }
-
-    fn with_column(&self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone().with_column(name, expr.into())?;
-        Ok(Self::new(df))
-    }
-
-    fn with_columns(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
-        let mut df = self.df.as_ref().clone();
+    fn with_columns(&mut self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+        let mut df = self.df.clone();
         for expr in exprs {
             let expr: Expr = expr.into();
             let name = format!("{}", expr.schema_name());
-            df = df.with_column(name.as_str(), expr)?
+            df = df
+                .with_column(name.as_str(), expr)
+                .map_err(py_datafusion_err)?
         }
         Ok(Self::new(df))
     }
 
     /// Rename one column by applying a new projection. This is a no-op if the column to be
     /// renamed does not exist.
-    fn with_column_renamed(&self, old_name: &str, new_name: &str) -> PyDataFusionResult<Self> {
+    fn with_column_renamed(&mut self, old_name: &str, new_name: &str) -> PyDataFusionResult<Self> {
         let df = self
             .df
-            .as_ref()
-            .clone()
-            .with_column_renamed(old_name, new_name)?;
+            .with_column_renamed(old_name, new_name)
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
-    fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
+    fn aggregate(&mut self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();
-        let df = self.df.as_ref().clone().aggregate(group_by, aggs)?;
+        let df = self
+            .df
+            .aggregate(group_by, aggs)
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (*exprs))]
-    fn sort(&self, exprs: Vec<PySortExpr>) -> PyDataFusionResult<Self> {
+    fn sort(&mut self, exprs: Vec<PyWindowExpr>) -> PyDataFusionResult<Self> {
         let exprs = to_sort_expressions(exprs);
-        let df = self.df.as_ref().clone().sort(exprs)?;
+        let df = self.df.sort(exprs).map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
     #[pyo3(signature = (count, offset=0))]
-    fn limit(&self, count: usize, offset: usize) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone().limit(offset, Some(count))?;
+    fn limit(&mut self, count: usize, offset: usize) -> PyDataFusionResult<Self> {
+        let df = self
+            .df
+            .limit(offset, Some(count))
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
@@ -428,23 +122,23 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())
-            .map_err(PyDataFusionError::from)?;
+        let batches =
+            wait_for_future(py, self.df.clone().collect()).map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
     }
 
     /// Cache DataFrame.
-    fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
-        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
+    fn cache(&mut self, py: Python) -> PyDataFusionResult<Self> {
+        let df = wait_for_future(py, self.df.clone().cache())?;
         Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())
+        let batches = wait_for_future(py, self.df.clone().collect_partitioned())
             .map_err(PyDataFusionError::from)?;
 
         batches
@@ -456,18 +150,22 @@ impl PyDataFrame {
     /// Print the result, 20 lines by default
     #[pyo3(signature = (num=20))]
     fn show(&self, py: Python, num: usize) -> PyDataFusionResult<()> {
-        let df = self.df.as_ref().clone().limit(0, Some(num))?;
+        let df = self
+            .df
+            .clone()
+            .limit(0, Some(num))
+            .map_err(py_datafusion_err)?;
         print_dataframe(py, df)
     }
 
     /// Filter out duplicate rows
-    fn distinct(&self) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone().distinct()?;
+    fn distinct(&mut self) -> PyDataFusionResult<Self> {
+        let df = self.df.clone().distinct().map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
     fn join(
-        &self,
+        &mut self,
         right: PyDataFrame,
         how: &str,
         left_on: Vec<PyBackedStr>,
@@ -490,18 +188,14 @@ impl PyDataFrame {
         let left_keys = left_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let right_keys = right_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
 
-        let df = self.df.as_ref().clone().join(
-            right.df.as_ref().clone(),
-            join_type,
-            &left_keys,
-            &right_keys,
-            None,
-        )?;
+        let df = self
+            .df
+            .join(right.df.clone(), join_type, &left_keys, &right_keys, None)?;
         Ok(Self::new(df))
     }
 
     fn join_on(
-        &self,
+        &mut self,
         right: PyDataFrame,
         on_exprs: Vec<PyExpr>,
         how: &str,
@@ -523,32 +217,34 @@ impl PyDataFrame {
 
         let df = self
             .df
-            .as_ref()
-            .clone()
-            .join_on(right.df.as_ref().clone(), join_type, exprs)?;
+            .join_on(right.df.clone(), join_type, exprs)
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
     /// Print the query plan
     #[pyo3(signature = (verbose=false, analyze=false))]
     fn explain(&self, py: Python, verbose: bool, analyze: bool) -> PyDataFusionResult<()> {
-        let df = self.df.as_ref().clone().explain(verbose, analyze)?;
+        let df = self
+            .df
+            .explain(verbose, analyze)
+            .map_err(py_datafusion_err)?;
         print_dataframe(py, df)
     }
 
     /// Get the logical plan for this `DataFrame`
     fn logical_plan(&self) -> PyResult<PyLogicalPlan> {
-        Ok(self.df.as_ref().clone().logical_plan().clone().into())
+        Ok(self.df.logical_plan().clone().into())
     }
 
     /// Get the optimized logical plan for this `DataFrame`
     fn optimized_logical_plan(&self) -> PyDataFusionResult<PyLogicalPlan> {
-        Ok(self.df.as_ref().clone().into_optimized_plan()?.into())
+        Ok(self.df.clone().into_optimized_plan()?.into())
     }
 
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
-        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
+        let plan = wait_for_future(py, self.df.clone().create_physical_plan())?;
         Ok(plan.into())
     }
 
@@ -556,9 +252,8 @@ impl PyDataFrame {
     fn repartition(&self, num: usize) -> PyDataFusionResult<Self> {
         let new_df = self
             .df
-            .as_ref()
-            .clone()
-            .repartition(Partitioning::RoundRobinBatch(num))?;
+            .repartition(Partitioning::RoundRobinBatch(num))
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(new_df))
     }
 
@@ -568,9 +263,8 @@ impl PyDataFrame {
         let expr = args.into_iter().map(|py_expr| py_expr.into()).collect();
         let new_df = self
             .df
-            .as_ref()
-            .clone()
-            .repartition(Partitioning::Hash(expr, num))?;
+            .repartition(Partitioning::Hash(expr, num))
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(new_df))
     }
 
@@ -580,11 +274,13 @@ impl PyDataFrame {
     fn union(&self, py_df: PyDataFrame, distinct: bool) -> PyDataFusionResult<Self> {
         let new_df = if distinct {
             self.df
-                .as_ref()
-                .clone()
-                .union_distinct(py_df.df.as_ref().clone())?
+                .union_distinct(py_df.df.clone())
+                .map_err(py_datafusion_err)?
         } else {
-            self.df.as_ref().clone().union(py_df.df.as_ref().clone())?
+            self.df
+                .clone()
+                .union(py_df.df.clone())
+                .map_err(py_datafusion_err)?
         };
 
         Ok(Self::new(new_df))
@@ -595,9 +291,8 @@ impl PyDataFrame {
     fn union_distinct(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
         let new_df = self
             .df
-            .as_ref()
-            .clone()
-            .union_distinct(py_df.df.as_ref().clone())?;
+            .union_distinct(py_df.df.clone())
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(new_df))
     }
 
@@ -608,9 +303,8 @@ impl PyDataFrame {
         let unnest_options = UnnestOptions::default().with_preserve_nulls(preserve_nulls);
         let df = self
             .df
-            .as_ref()
-            .clone()
-            .unnest_columns_with_options(&[column], unnest_options)?;
+            .unnest_columns_with_options(&[column], unnest_options)
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
@@ -626,9 +320,8 @@ impl PyDataFrame {
         let cols = columns.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self
             .df
-            .as_ref()
-            .clone()
-            .unnest_columns_with_options(&cols, unnest_options)?;
+            .unnest_columns_with_options(&cols, unnest_options)
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(df))
     }
 
@@ -636,15 +329,18 @@ impl PyDataFrame {
     fn intersect(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
         let new_df = self
             .df
-            .as_ref()
-            .clone()
-            .intersect(py_df.df.as_ref().clone())?;
+            .intersect(py_df.df.clone())
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(new_df))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn except_all(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
-        let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
+        let new_df = self
+            .df
+            .clone()
+            .except(py_df.df.clone())
+            .map_err(py_datafusion_err)?;
         Ok(Self::new(new_df))
     }
 
@@ -656,11 +352,9 @@ impl PyDataFrame {
         };
         wait_for_future(
             py,
-            self.df.as_ref().clone().write_csv(
-                path,
-                DataFrameWriteOptions::new(),
-                Some(csv_options),
-            ),
+            self.df
+                .clone()
+                .write_csv(path, DataFrameWriteOptions::new(), Some(csv_options)),
         )?;
         Ok(())
     }
@@ -717,7 +411,7 @@ impl PyDataFrame {
 
         wait_for_future(
             py,
-            self.df.as_ref().clone().write_parquet(
+            self.df.clone().write_parquet(
                 path,
                 DataFrameWriteOptions::new(),
                 Option::from(options),
@@ -731,7 +425,6 @@ impl PyDataFrame {
         wait_for_future(
             py,
             self.df
-                .as_ref()
                 .clone()
                 .write_json(path, DataFrameWriteOptions::new(), None),
         )?;
@@ -757,7 +450,7 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut batches = wait_for_future(py, self.df.clone().collect())?;
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
@@ -787,7 +480,7 @@ impl PyDataFrame {
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime().0;
-        let df = self.df.as_ref().clone();
+        let df = self.df.clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
@@ -797,7 +490,7 @@ impl PyDataFrame {
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
         // create a Tokio runtime to run the async code
         let rt = &get_tokio_runtime().0;
-        let df = self.df.as_ref().clone();
+        let df = self.df.clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
@@ -852,210 +545,43 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+        Ok(wait_for_future(py, self.df.clone().count())?)
     }
 
-    /// Get the current display configuration
-    #[getter]
-    fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
-        Python::with_gil(|py| {
-            let config = (*self.config).clone();
-            Py::new(py, config)
-        })
+    #[pyo3(signature = (max_width=None, max_rows=None, show_nulls=None))]
+    pub fn to_string(
+        &self,
+        max_width: Option<usize>,
+        max_rows: Option<usize>,
+        show_nulls: Option<bool>,
+        py: Python,
+    ) -> PyDataFusionResult<String> {
+        let batches = wait_for_future(py, self.df.clone().collect())?;
+
+        let mut table = TableData::new(&batches)?;
+
+        // Use the display configuration provided or default values
+        let max_width = max_width.unwrap_or(80);
+        let max_rows = max_rows;
+        let show_nulls = show_nulls.unwrap_or(false);
+
+        table.set_display_options(max_width, max_rows, show_nulls);
+
+        Ok(table.to_string())
     }
 
-    /// Update display configuration
-    #[pyo3(signature = (
-        max_table_bytes=None,
-        min_table_rows=None,
-        max_cell_length=None,
-        max_table_rows_in_repr=None
-    ))]
-    fn configure_display(
-        &mut self,
-        max_table_bytes: Option<usize>,
-        min_table_rows: Option<usize>,
-        max_cell_length: Option<usize>,
-        max_table_rows_in_repr: Option<usize>,
-    ) {
-        let mut new_config = (*self.config).clone();
-
-        if let Some(bytes) = max_table_bytes {
-            new_config.max_table_bytes = bytes;
-        }
-
-        if let Some(rows) = min_table_rows {
-            new_config.min_table_rows = rows;
-        }
-
-        if let Some(length) = max_cell_length {
-            new_config.max_cell_length = length;
-        }
-
-        if let Some(rows) = max_table_rows_in_repr {
-            new_config.max_table_rows_in_repr = rows;
-        }
-
-        self.config = Arc::new(new_config);
-    }
-
-    /// Reset display configuration to default values
-    #[pyo3(text_signature = "($self)")]
-    fn reset_display_config(&mut self) {
-        self.config = Arc::new(DisplayConfig::default());
+    pub fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        // Use default display configuration
+        self.to_string(None, None, None, py)
     }
 }
 
-/// Print DataFrame
-fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
-    // Get string representation of record batches
-    let batches = wait_for_future(py, df.collect())?;
-    let batches_as_string = pretty::pretty_format_batches(&batches);
-    let result = match batches_as_string {
-        Ok(batch) => format!("DataFrame()\n{batch}"),
-        Err(err) => format!("Error: {:?}", err.to_string()),
-    };
-
-    // Import the Python 'builtins' module to access the print function
-    // Note that println! does not print to the Python debug console and is not visible in notebooks for instance
-    let print = py.import("builtins")?.getattr("print")?;
-    print.call1((result,))?;
-    Ok(())
-}
-
-fn project_schema(from_schema: Schema, to_schema: Schema) -> Result<Schema, ArrowError> {
-    let merged_schema = Schema::try_merge(vec![from_schema, to_schema.clone()])?;
-
-    let project_indices: Vec<usize> = to_schema
-        .fields
-        .iter()
-        .map(|field| field.name())
-        .filter_map(|field_name| merged_schema.index_of(field_name).ok())
-        .collect();
-
-    merged_schema.project(&project_indices)
-}
-
-fn record_batch_into_schema(
-    record_batch: RecordBatch,
-    schema: &Schema,
-) -> Result<RecordBatch, ArrowError> {
-    let schema = Arc::new(schema.clone());
-    let base_schema = record_batch.schema();
-    if base_schema.fields().len() == 0 {
-        // Nothing to project
-        return Ok(RecordBatch::new_empty(schema));
+impl PyDataFrame {
+    pub fn new(df: DataFrame) -> Self {
+        Self { df: Arc::new(df) }
     }
 
-    let array_size = record_batch.column(0).len();
-    let mut data_arrays = Vec::with_capacity(schema.fields().len());
-
-    for field in schema.fields() {
-        let desired_data_type = field.data_type();
-        if let Some(original_data) = record_batch.column_by_name(field.name()) {
-            let original_data_type = original_data.data_type();
-
-            if can_cast_types(original_data_type, desired_data_type) {
-                data_arrays.push(arrow::compute::kernels::cast(
-                    original_data,
-                    desired_data_type,
-                )?);
-            } else if field.is_nullable() {
-                data_arrays.push(new_null_array(desired_data_type, array_size));
-            } else {
-                return Err(ArrowError::CastError(format!("Attempting to cast to non-nullable and non-castable field {} during schema projection.", field.name())));
-            }
-        } else {
-            if !field.is_nullable() {
-                return Err(ArrowError::CastError(format!(
-                    "Attempting to set null to non-nullable field {} during schema projection.",
-                    field.name()
-                )));
-            }
-            data_arrays.push(new_null_array(desired_data_type, array_size));
-        }
+    pub fn dataframe(&self) -> Arc<DataFrame> {
+        self.df.clone()
     }
-
-    RecordBatch::try_new(schema, data_arrays)
-}
-
-/// This is a helper function to return the first non-empty record batch from executing a DataFrame.
-/// It additionally returns a bool, which indicates if there are more record batches available.
-/// We do this so we can determine if we should indicate to the user that the data has been
-/// truncated. This collects until we have achived both of these two conditions
-///
-/// - We have collected our minimum number of rows
-/// - We have reached our limit, either data size or maximum number of rows
-///
-/// Otherwise it will return when the stream has exhausted. If you want a specific number of
-/// rows, set min_rows == max_rows.
-async fn collect_record_batches_to_display(
-    df: DataFrame,
-    min_rows: usize,
-    max_rows: usize,
-    config: &DisplayConfig,
-) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
-    let partitioned_stream = df.execute_stream_partitioned().await?;
-    let mut stream = futures::stream::iter(partitioned_stream).flatten();
-    let mut size_estimate_so_far = 0;
-    let mut rows_so_far = 0;
-    let mut record_batches = Vec::default();
-    let mut has_more = false;
-
-    while (size_estimate_so_far < config.max_table_bytes && rows_so_far < max_rows)
-        || rows_so_far < min_rows
-    {
-        let mut rb = match stream.next().await {
-            None => {
-                break;
-            }
-            Some(Ok(r)) => r,
-            Some(Err(e)) => return Err(e),
-        };
-
-        let mut rows_in_rb = rb.num_rows();
-        if rows_in_rb > 0 {
-            size_estimate_so_far += rb.get_array_memory_size();
-
-            if size_estimate_so_far > config.max_table_bytes {
-                let ratio = config.max_table_bytes as f32 / size_estimate_so_far as f32;
-                let total_rows = rows_in_rb + rows_so_far;
-
-                let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
-                if reduced_row_num < min_rows {
-                    reduced_row_num = min_rows.min(total_rows);
-                }
-
-                let limited_rows_this_rb = reduced_row_num - rows_so_far;
-                if limited_rows_this_rb < rows_in_rb {
-                    rows_in_rb = limited_rows_this_rb;
-                    rb = rb.slice(0, limited_rows_this_rb);
-                    has_more = true;
-                }
-            }
-
-            if rows_in_rb + rows_so_far > max_rows {
-                rb = rb.slice(0, max_rows - rows_so_far);
-                has_more = true;
-            }
-
-            rows_so_far += rb.num_rows();
-            record_batches.push(rb);
-        }
-    }
-
-    if record_batches.is_empty() {
-        return Ok((Vec::default(), false));
-    }
-
-    if !has_more {
-        // Data was not already truncated, so check to see if more record batches remain
-        has_more = match stream.try_next().await {
-            Ok(None) => false, // reached end
-            Ok(Some(_)) => true,
-            Err(_) => false, // Stream disconnected
-        };
-    }
-
-    Ok((record_batches, has_more))
 }
