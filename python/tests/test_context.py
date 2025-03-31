@@ -36,6 +36,19 @@ def test_create_context_no_args():
     SessionContext()
 
 
+def test_default_ctx_instance():
+    """Test that the default ctx instance works correctly"""
+    from datafusion import SessionContext, ctx
+
+    # Test that ctx is an instance of SessionContext
+    assert isinstance(ctx, SessionContext)
+
+    # Test basic functionality
+    df = ctx.sql("SELECT 1 as num")
+    result = df.collect()
+    assert len(result) == 1
+
+
 def test_create_context_session_config_only():
     SessionContext(config=SessionConfig())
 
