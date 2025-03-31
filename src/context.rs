@@ -72,59 +72,24 @@ use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use tokio::task::JoinHandle;
 
-/// Display configuration for DataFrames
-#[pyclass(name = "DisplayConfig", module = "datafusion", subclass)]
-#[derive(Clone, Debug)]
-pub struct DisplayConfig {
-    #[pyo3(get, set)]
-    pub max_width: usize,
-    #[pyo3(get, set)]
-    pub max_rows: Option<usize>,
-    #[pyo3(get, set)]
-    pub show_nulls: bool,
-}
-
-#[pymethods]
-impl DisplayConfig {
-    #[new]
-    pub fn new(
-        max_width: Option<usize>,
-        max_rows: Option<usize>,
-        show_nulls: Option<bool>,
-    ) -> Self {
-        Self {
-            max_width: max_width.unwrap_or(80),
-            max_rows,
-            show_nulls: show_nulls.unwrap_or(false),
-        }
-    }
-}
-
 /// Configuration options for a SessionContext
 #[pyclass(name = "SessionConfig", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PySessionConfig {
     pub config: SessionConfig,
-    pub display_config: DisplayConfig,
 }
 
 impl From<SessionConfig> for PySessionConfig {
     fn from(config: SessionConfig) -> Self {
-        Self {
-            config,
-            display_config: DisplayConfig::new(Some(80), None, Some(false)),
-        }
+        Self { config }
     }
 }
 
 #[pymethods]
 impl PySessionConfig {
-    #[pyo3(signature = (config_options=None, display_config=None))]
+    #[pyo3(signature = (config_options=None))]
     #[new]
-    fn new(
-        config_options: Option<HashMap<String, String>>,
-        display_config: Option<DisplayConfig>,
-    ) -> Self {
+    fn new(config_options: Option<HashMap<String, String>>) -> Self {
         let mut config = SessionConfig::new();
         if let Some(hash_map) = config_options {
             for (k, v) in &hash_map {
@@ -132,23 +97,7 @@ impl PySessionConfig {
             }
         }
 
-        Self {
-            config,
-            display_config: display_config
-                .unwrap_or_else(|| DisplayConfig::new(Some(80), None, Some(false))),
-        }
-    }
-
-    // Get the display configuration
-    pub fn get_display_config(&self) -> DisplayConfig {
-        self.display_config.clone()
-    }
-
-    // Set the display configuration
-    pub fn with_display_config(&self, display_config: DisplayConfig) -> Self {
-        let mut new_config = self.clone();
-        new_config.display_config = display_config;
-        new_config
+        Self { config }
     }
 
     fn with_create_default_catalog_and_schema(&self, enabled: bool) -> Self {
@@ -725,6 +674,226 @@ impl PySessionContext {
                 "Delimiter must be a single character",
             )));
         }
+
+        let mut options = CsvReadOptions::new()
+            .has_header(has_header)
+            .delimiter(delimiter[0])
+            .schema_infer_max_records(schema_infer_max_records)
+            .file_extension(file_extension)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        if path.is_instance_of::<PyList>() {
+            let paths = path.extract::<Vec<String>>()?;
+            let result = self.register_csv_from_multiple_paths(name, paths, options);
+            wait_for_future(py, result)?;
+        } else {
+            let path = path.extract::<String>()?;
+            let result = self.ctx.register_csv(name, &path, options);
+            wait_for_future(py, result)?;
+        }
+
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        schema_infer_max_records=1000,
+                        file_extension=".json",
+                        table_partition_cols=vec![],
+                        file_compression_type=None))]
+    pub fn register_json(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = NdJsonReadOptions::default()
+            .file_compression_type(parse_file_compression_type(file_compression_type)?)
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        options.schema_infer_max_records = schema_infer_max_records;
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_json(name, path, options);
+        wait_for_future(py, result)?;
+
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (name,
+                        path,
+                        schema=None,
+                        file_extension=".avro",
+                        table_partition_cols=vec![]))]
+    pub fn register_avro(
+        &mut self,
+        name: &str,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        let mut options = AvroReadOptions::default()
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        options.file_extension = file_extension;
+        options.schema = schema.as_ref().map(|x| &x.0);
+
+        let result = self.ctx.register_avro(name, path, options);
+        wait_for_future(py, result)?;
+
+        Ok(())
+    }
+
+    // Registers a PyArrow.Dataset
+    pub fn register_dataset(
+        &self,
+        name: &str,
+        dataset: &Bound<'_, PyAny>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
+
+        self.ctx.register_table(name, table)?;
+
+        Ok(())
+    }
+
+    pub fn register_udf(&mut self, udf: PyScalarUDF) -> PyResult<()> {
+        self.ctx.register_udf(udf.function);
+        Ok(())
+    }
+
+    pub fn register_udaf(&mut self, udaf: PyAggregateUDF) -> PyResult<()> {
+        self.ctx.register_udaf(udaf.function);
+        Ok(())
+    }
+
+    pub fn register_udwf(&mut self, udwf: PyWindowUDF) -> PyResult<()> {
+        self.ctx.register_udwf(udwf.function);
+        Ok(())
+    }
+
+    #[pyo3(signature = (name="datafusion"))]
+    pub fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
+        match self.ctx.catalog(name) {
+            Some(catalog) => Ok(PyCatalog::new(catalog)),
+            None => Err(PyKeyError::new_err(format!(
+                "Catalog with name {} doesn't exist.",
+                &name,
+            ))),
+        }
+    }
+
+    pub fn tables(&self) -> HashSet<String> {
+        self.ctx
+            .catalog_names()
+            .into_iter()
+            .filter_map(|name| self.ctx.catalog(&name))
+            .flat_map(move |catalog| {
+                catalog
+                    .schema_names()
+                    .into_iter()
+                    .filter_map(move |name| catalog.schema(&name))
+            })
+            .flat_map(|schema| schema.table_names())
+            .collect()
+    }
+
+    pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
+        let x = wait_for_future(py, self.ctx.table(name))
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?;
+        Ok(PyDataFrame::new(x))
+    }
+
+    pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
+        Ok(self.ctx.table_exist(name)?)
+    }
+
+    pub fn empty_table(&self) -> PyDataFusionResult<PyDataFrame> {
+        Ok(PyDataFrame::new(self.ctx.read_empty()?))
+    }
+
+    pub fn session_id(&self) -> String {
+        self.ctx.session_id()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
+    pub fn read_json(
+        &mut self,
+        path: PathBuf,
+        schema: Option<PyArrowType<Schema>>,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let path = path
+            .to_str()
+            .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+        let mut options = NdJsonReadOptions::default()
+            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .file_compression_type(parse_file_compression_type(file_compression_type)?);
+        options.schema_infer_max_records = schema_infer_max_records;
+        options.file_extension = file_extension;
+        let df = if let Some(schema) = schema {
+            options.schema = Some(&schema.0);
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result)?
+        } else {
+            let result = self.ctx.read_json(path, options);
+            wait_for_future(py, result)?
+        };
+        Ok(PyDataFrame::new(df))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (
+        path,
+        schema=None,
+        has_header=true,
+        delimiter=",",
+        schema_infer_max_records=1000,
+        file_extension=".csv",
+        table_partition_cols=vec![],
+        file_compression_type=None))]
+    pub fn read_csv(
+        &self,
+        path: &Bound<'_, PyAny>,
+        schema: Option<PyArrowType<Schema>>,
+        has_header: bool,
+        delimiter: &str,
+        schema_infer_max_records: usize,
+        file_extension: &str,
+        table_partition_cols: Vec<(String, String)>,
+        file_compression_type: Option<String>,
+        py: Python,
+    ) -> PyDataFusionResult<PyDataFrame> {
+        let delimiter = delimiter.as_bytes();
+        if delimiter.len() != 1 {
+            return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
+                "Delimiter must be a single character",
+            )));
+        };
 
         let mut options = CsvReadOptions::new()
             .has_header(has_header)
