@@ -80,6 +80,13 @@ jobs:
         with:
             enable-cache: true
 
+      - name: Create Virtualenv (3.13)
+        if: ${{ matrix.python-version == '3.13' }}
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements-313.txt
+
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
