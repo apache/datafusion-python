@@ -82,7 +82,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<context::PyRuntimeEnvBuilder>()?;
     m.add_class::<context::PySessionConfig>()?;
     m.add_class::<context::PySessionContext>()?;
-    m.add_class::<context::DataframeDisplayConfig>()?;
+    m.add_class::<context::PyDataframeDisplayConfig>()?;
     m.add_class::<context::PySQLOptions>()?;
     m.add_class::<dataframe::PyDataFrame>()?;
     m.add_class::<udf::PyScalarUDF>()?;
