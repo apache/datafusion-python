@@ -1358,3 +1358,151 @@ def test_dataframe_repr_html(df) -> None:
     body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
     body_pattern = "(.*?)".join(body_lines)
     assert len(re.findall(body_pattern, output, re.DOTALL)) == 1
+
+
+def test_display_config_affects_repr():
+    max_table_rows_in_repr = 3
+    # Create a context with custom display config
+    ctx = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows_in_repr
+    )
+
+    # Create a DataFrame with more rows than the display limit
+    data = [{"a": i, "b": f"value_{i}", "c": i * 10} for i in range(10)]
+    df = ctx.from_pylist(data)
+
+    # Get the string representation
+    # +---+---------+----+
+    # | a | b       | c  |
+    # +---+---------+----+
+    # | 0 | value_0 | 0  |
+    # | 1 | value_1 | 10 |
+    # | 2 | value_2 | 20 |
+    # +---+---------+----+
+    # Data truncated.
+    repr_str = repr(df)
+    print("==> repr_str", repr_str)
+
+    # The representation should show truncated data (3 rows as specified)
+    assert (
+        repr_str.count("\n") <= max_table_rows_in_repr + 5
+    )  # header row + separator lines + data rows + possibly truncation message
+    assert "Data truncated" in repr_str
+
+    # Create a context with larger display limit
+    ctx2 = SessionContext().with_display_config(max_table_rows_in_repr=15)
+
+    df2 = ctx2.from_pylist(data)
+    repr_str2 = repr(df2)
+
+    # Should show all data without truncation message
+    assert repr_str2.count("\n") >= 10  # All rows should be shown
+    assert "Data truncated" not in repr_str2
+
+
+def test_display_config_affects_html_repr():
+    # Create a context with custom display config to show only a small cell length
+    ctx = SessionContext().with_display_config(max_cell_length=5)
+
+    # Create a DataFrame with a column containing long strings
+    data = [
+        {"a": 1, "b": "This is a very long string that should be truncated", "c": 100}
+    ]
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # The cell should be truncated to 5 characters and have expansion button
+    assert ">This " in html_str  # 5 character limit
+    assert "expandable" in html_str
+    assert "expand-btn" in html_str
+
+    # Create a context with larger cell length limit
+    ctx2 = SessionContext().with_display_config(max_cell_length=50)
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # String shouldn't be truncated (or at least not in the same way)
+    if "expandable" in html_str2:
+        # If it still has an expandable div, it should contain more characters
+        assert ">This is a very long string that" in html_str2
+    else:
+        # Or it might not need expansion at all
+        assert "This is a very long string that should be truncated" in html_str2
+
+
+def test_display_config_rows_limit_in_html():
+    max_table_rows = 5
+    # Create a context with custom display config to limit rows
+    ctx = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows,
+    )
+
+    # Create a DataFrame with 10 rows
+    data = [{"a": i, "b": f"value_{i}", "c": i * 10} for i in range(10)]
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # Only a few rows should be shown and there should be a truncation message
+    row_count = html_str.count("<tr>") - 1  # Subtract 1 for header row
+    print("==> html_str", html_str)
+    assert row_count <= max_table_rows
+    assert "Data truncated" in html_str
+
+    # Create a context with larger row limit
+    max_table_rows = 20
+    ctx2 = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows
+    )  # Show more rows
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # Should show all rows
+    row_count2 = html_str2.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count2 == 10  # Should show all 10 rows
+    assert "Data truncated" not in html_str2
+
+
+def test_display_config_max_bytes_limit():
+    min_table_rows = 10
+    max_table_rows = 20
+    # Create a context with custom display config with very small byte limit
+    ctx = SessionContext().with_display_config(
+        min_table_rows=min_table_rows,
+        max_table_rows_in_repr=max_table_rows,
+        max_table_bytes=100,
+    )  # Very small limit
+
+    # Create a DataFrame with large content
+    # Generate some data with long strings to hit the byte limit quickly
+    large_string = "x" * 50
+    data = [
+        {"a": i, "b": large_string, "c": large_string}
+        for i in range(20)  # 20 rows with long strings
+    ]
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # Due to small byte limit, we should see truncation
+    row_count = html_str.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count <= min_table_rows  # Should not show all 10 rows
+    assert "Data truncated" in html_str
+
+    # With a larger byte limit
+    ctx2 = SessionContext().with_display_config(
+        max_table_bytes=10 * 1024 * 1024  # 10 MB, much more than needed
+    )
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # Should show all rows
+    row_count2 = html_str2.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count2 >= min_table_rows  # Should show more than min_table_rows
