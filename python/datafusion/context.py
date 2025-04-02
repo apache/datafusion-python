@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Optional, Protocol
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -87,18 +87,22 @@ class DataframeDisplayConfig:
 
     def __init__(
         self,
-        max_table_bytes: int = None,
-        min_table_rows: int = None,
-        max_cell_length: int = None,
-        max_table_rows_in_repr: int = None,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
     ) -> None:
         """Create a new :py:class:`DataframeDisplayConfig` instance.
 
         Args:
-            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB)
-            min_table_rows: Minimum number of table rows to display (default: 20)
-            max_cell_length: Maximum length of a cell before it gets minimized (default: 25)
-            max_table_rows_in_repr: Maximum number of rows to display in repr string output (default: 10)
+            max_table_bytes: Maximum bytes to display for table presentation
+                (default: 2MB)
+            min_table_rows: Minimum number of table rows to display
+                (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized
+                (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr
+                string output (default: 10)
         """
         self.config_internal = DataframeDisplayConfigInternal(
             max_table_bytes=max_table_bytes,
@@ -161,22 +165,31 @@ class SessionConfig:
 
     def with_dataframe_display_config(
         self,
-        max_table_bytes: int = None,
-        min_table_rows: int = None,
-        max_cell_length: int = None,
-        max_table_rows_in_repr: int = None,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
     ) -> SessionConfig:
         """Configure the display options for DataFrames.
 
         Args:
-            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB)
+            max_table_bytes: Maximum bytes to display for table presentation
+                     (default: 2MB)
             min_table_rows: Minimum number of table rows to display (default: 20)
-            max_cell_length: Maximum length of a cell before it gets minimized (default: 25)
-            max_table_rows_in_repr: Maximum number of rows to display in repr string output (default: 10)
+            max_cell_length: Maximum length of a cell before it gets minimized
+                     (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr string
+                        output (default: 10)
 
         Returns:
             A new :py:class:`SessionConfig` object with the updated display settings.
         """
+        display_config = DataframeDisplayConfigInternal(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
 
         display_config = DataframeDisplayConfigInternal(
             max_table_bytes=max_table_bytes,
