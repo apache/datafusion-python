@@ -214,6 +214,12 @@ impl PySessionConfig {
         Self::from(self.config.clone().with_repartition_file_min_size(size))
     }
 
+    fn with_dataframe_display_config(&self, display_config: DataframeDisplayConfig) -> Self {
+        let mut config = self.clone();
+        config.display_config = display_config;
+        config
+    }
+
     fn with_parquet_pruning(&self, enabled: bool) -> Self {
         Self::from(self.config.clone().with_parquet_pruning(enabled))
     }
