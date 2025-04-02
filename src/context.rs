@@ -127,7 +127,6 @@ impl Default for PyDataframeDisplayConfig {
 #[derive(Clone, Default)]
 pub struct PySessionConfig {
     pub config: SessionConfig,
-    #[pyo3(get, set)]
     pub display_config: PyDataframeDisplayConfig,
 }
 

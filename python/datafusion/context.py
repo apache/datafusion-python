@@ -79,6 +79,75 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
 
 
+class DataframeDisplayConfig:
+    """Configuration for displaying DataFrame results.
+
+    This class allows you to control how DataFrames are displayed in Python.
+    """
+
+    def __init__(
+        self,
+        max_table_bytes: int = None,
+        min_table_rows: int = None,
+        max_cell_length: int = None,
+        max_table_rows_in_repr: int = None,
+    ) -> None:
+        """Create a new :py:class:`DataframeDisplayConfig` instance.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB)
+            min_table_rows: Minimum number of table rows to display (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr string output (default: 10)
+        """
+        self.config_internal = DataframeDisplayConfigInternal(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
+
+    @property
+    def max_table_bytes(self) -> int:
+        """Get the maximum bytes to display for table presentation."""
+        return self.config_internal.max_table_bytes
+
+    @max_table_bytes.setter
+    def max_table_bytes(self, value: int) -> None:
+        """Set the maximum bytes to display for table presentation."""
+        self.config_internal.max_table_bytes = value
+
+    @property
+    def min_table_rows(self) -> int:
+        """Get the minimum number of table rows to display."""
+        return self.config_internal.min_table_rows
+
+    @min_table_rows.setter
+    def min_table_rows(self, value: int) -> None:
+        """Set the minimum number of table rows to display."""
+        self.config_internal.min_table_rows = value
+
+    @property
+    def max_cell_length(self) -> int:
+        """Get the maximum length of a cell before it gets minimized."""
+        return self.config_internal.max_cell_length
+
+    @max_cell_length.setter
+    def max_cell_length(self, value: int) -> None:
+        """Set the maximum length of a cell before it gets minimized."""
+        self.config_internal.max_cell_length = value
+
+    @property
+    def max_table_rows_in_repr(self) -> int:
+        """Get the maximum number of rows to display in repr string output."""
+        return self.config_internal.max_table_rows_in_repr
+
+    @max_table_rows_in_repr.setter
+    def max_table_rows_in_repr(self, value: int) -> None:
+        """Set the maximum number of rows to display in repr string output."""
+        self.config_internal.max_table_rows_in_repr = value
+
+
 class SessionConfig:
     """Session configuration options."""
 

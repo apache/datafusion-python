@@ -38,6 +38,7 @@ from .context import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
+    DataframeDisplayConfig,
     SQLOptions,
 )
 from .dataframe import DataFrame
@@ -70,6 +71,7 @@ __all__ = [
     "ScalarUDF",
     "SessionConfig",
     "SessionContext",
+    "DataframeDisplayConfig",
     "Table",
     "WindowFrame",
     "WindowUDF",
