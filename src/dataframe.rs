@@ -72,56 +72,9 @@ impl PyTableProvider {
         PyTable::new(table_provider)
     }
 }
-
-/// Configuration for DataFrame display in Python environment
-#[pyclass(name = "DisplayConfig", module = "datafusion")]
-#[derive(Debug, Clone)]
-pub struct DisplayConfig {
-    /// Maximum bytes to display for table presentation (default: 2MB)
-    #[pyo3(get, set)]
-    pub max_table_bytes: usize,
-    /// Minimum number of table rows to display (default: 20)
-    #[pyo3(get, set)]
-    pub min_table_rows: usize,
-    /// Maximum length of a cell before it gets minimized (default: 25)
-    #[pyo3(get, set)]
-    pub max_cell_length: usize,
-    /// Maximum number of rows to display in repr string output (default: 10)
-    #[pyo3(get, set)]
-    pub max_table_rows_in_repr: usize,
-}
-
-#[pymethods]
-impl DisplayConfig {
-    #[new]
-    #[pyo3(signature = (max_table_bytes=None, min_table_rows=None, max_cell_length=None, max_table_rows_in_repr=None))]
-    fn new(
-        max_table_bytes: Option<usize>,
-        min_table_rows: Option<usize>,
-        max_cell_length: Option<usize>,
-        max_table_rows_in_repr: Option<usize>,
-    ) -> Self {
-        let default = DisplayConfig::default();
-        Self {
-            max_table_bytes: max_table_bytes.unwrap_or(default.max_table_bytes),
-            min_table_rows: min_table_rows.unwrap_or(default.min_table_rows),
-            max_cell_length: max_cell_length.unwrap_or(default.max_cell_length),
-            max_table_rows_in_repr: max_table_rows_in_repr
-                .unwrap_or(default.max_table_rows_in_repr),
-        }
-    }
-}
-
-impl Default for DisplayConfig {
-    fn default() -> Self {
-        Self {
-            max_table_bytes: 2 * 1024 * 1024, // 2 MB
-            min_table_rows: 20,
-            max_cell_length: 25,
-            max_table_rows_in_repr: 10,
-        }
-    }
-}
+const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
+const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
+const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -130,16 +83,12 @@ impl Default for DisplayConfig {
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
-    config: Arc<DisplayConfig>,
 }
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
     pub fn new(df: DataFrame) -> Self {
-        Self {
-            df: Arc::new(df),
-            config: Arc::new(DisplayConfig::default()),
-        }
+        Self { df: Arc::new(df) }
     }
 }
 
@@ -169,12 +118,7 @@ impl PyDataFrame {
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(
-                self.df.as_ref().clone(),
-                self.config.min_table_rows,
-                self.config.max_table_rows_in_repr,
-                &self.config,
-            ),
+            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
@@ -197,9 +141,8 @@ impl PyDataFrame {
             py,
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
-                self.config.min_table_rows,
+                MIN_TABLE_ROWS_TO_DISPLAY,
                 usize::MAX,
-                &self.config,
             ),
         )?;
         if batches.is_empty() {
@@ -275,8 +218,8 @@ impl PyDataFrame {
                 for (col, formatter) in batch_formatter.iter().enumerate() {
                     let cell_data = formatter.value(batch_row).to_string();
                     // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > self.config.max_cell_length {
-                        let short_cell_data = &cell_data[0..self.config.max_cell_length];
+                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
+                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
                         cells.push(format!("
                             <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
                                 <div class=\"expandable-container\">
@@ -854,56 +797,6 @@ impl PyDataFrame {
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
     }
-
-    /// Get the current display configuration
-    #[getter]
-    fn display_config(&self) -> PyResult<Py<DisplayConfig>> {
-        Python::with_gil(|py| {
-            let config = (*self.config).clone();
-            Py::new(py, config)
-        })
-    }
-
-    /// Update display configuration
-    #[pyo3(signature = (
-        max_table_bytes=None,
-        min_table_rows=None,
-        max_cell_length=None,
-        max_table_rows_in_repr=None
-    ))]
-    fn configure_display(
-        &mut self,
-        max_table_bytes: Option<usize>,
-        min_table_rows: Option<usize>,
-        max_cell_length: Option<usize>,
-        max_table_rows_in_repr: Option<usize>,
-    ) {
-        let mut new_config = (*self.config).clone();
-
-        if let Some(bytes) = max_table_bytes {
-            new_config.max_table_bytes = bytes;
-        }
-
-        if let Some(rows) = min_table_rows {
-            new_config.min_table_rows = rows;
-        }
-
-        if let Some(length) = max_cell_length {
-            new_config.max_cell_length = length;
-        }
-
-        if let Some(rows) = max_table_rows_in_repr {
-            new_config.max_table_rows_in_repr = rows;
-        }
-
-        self.config = Arc::new(new_config);
-    }
-
-    /// Reset display configuration to default values
-    #[pyo3(text_signature = "($self)")]
-    fn reset_display_config(&mut self) {
-        self.config = Arc::new(DisplayConfig::default());
-    }
 }
 
 /// Print DataFrame
@@ -993,7 +886,6 @@ async fn collect_record_batches_to_display(
     df: DataFrame,
     min_rows: usize,
     max_rows: usize,
-    config: &DisplayConfig,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
@@ -1002,7 +894,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while (size_estimate_so_far < config.max_table_bytes && rows_so_far < max_rows)
+    while (size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY && rows_so_far < max_rows)
         || rows_so_far < min_rows
     {
         let mut rb = match stream.next().await {
@@ -1017,8 +909,8 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
-            if size_estimate_so_far > config.max_table_bytes {
-                let ratio = config.max_table_bytes as f32 / size_estimate_so_far as f32;
+            if size_estimate_so_far > MAX_TABLE_BYTES_TO_DISPLAY {
+                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
