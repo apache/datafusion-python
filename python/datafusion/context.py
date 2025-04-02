@@ -615,8 +615,8 @@ class SessionContext:
         """
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if runtime is not None else None
-
-        self.ctx = SessionContextInternal(config, runtime)
+        display_config = DataframeDisplayConfigInternal()
+        self.ctx = SessionContextInternal(config, runtime, display_config)
 
     @classmethod
     def global_ctx(cls) -> SessionContext:
