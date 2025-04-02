@@ -119,6 +119,8 @@ class DataframeDisplayConfig:
     @max_table_bytes.setter
     def max_table_bytes(self, value: int) -> None:
         """Set the maximum bytes to display for table presentation."""
+        if value <= 0:
+            raise ValueError("max_table_bytes must be greater than 0")
         self.config_internal.max_table_bytes = value
 
     @property
@@ -129,6 +131,8 @@ class DataframeDisplayConfig:
     @min_table_rows.setter
     def min_table_rows(self, value: int) -> None:
         """Set the minimum number of table rows to display."""
+        if value <= 0:
+            raise ValueError("min_table_rows must be greater than 0")
         self.config_internal.min_table_rows = value
 
     @property
@@ -139,6 +143,8 @@ class DataframeDisplayConfig:
     @max_cell_length.setter
     def max_cell_length(self, value: int) -> None:
         """Set the maximum length of a cell before it gets minimized."""
+        if value <= 0:
+            raise ValueError("max_cell_length must be greater than 0")
         self.config_internal.max_cell_length = value
 
     @property
@@ -149,6 +155,8 @@ class DataframeDisplayConfig:
     @max_table_rows_in_repr.setter
     def max_table_rows_in_repr(self, value: int) -> None:
         """Set the maximum number of rows to display in repr string output."""
+        if value <= 0:
+            raise ValueError("max_table_rows_in_repr must be greater than 0")
         self.config_internal.max_table_rows_in_repr = value
 
 
