@@ -622,6 +622,40 @@ class SessionContext:
         wrapper.ctx = internal_ctx
         return wrapper
 
+    def with_display_config(
+        self,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
+    ) -> SessionContext:
+        """Configure the display options for DataFrames.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation
+                (default: 2MB)
+            min_table_rows: Minimum number of table rows to display
+                (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized
+                (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr
+                string output (default: 10)
+
+        Returns:
+            A new :py:class:`SessionContext` object with the updated display settings.
+        """
+        display_config = DataframeDisplayConfig(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
+
+        klass = self.__class__
+        obj = klass.__new__(klass)
+        obj.ctx = self.ctx.with_display_config(display_config.config_internal)
+        return obj
+
     def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
 

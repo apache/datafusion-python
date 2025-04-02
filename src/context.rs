@@ -324,7 +324,7 @@ pub struct PySessionContext {
 
 #[pymethods]
 impl PySessionContext {
-    #[pyo3(signature = (config=None, runtime=None))]
+    #[pyo3(signature = (config=None, runtime=None, display_config=None))]
     #[new]
     pub fn new(
         config: Option<PySessionConfig>,
