@@ -43,6 +43,7 @@ use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
+use crate::context::PyDataframeDisplayConfig;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
@@ -83,12 +84,16 @@ const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
+    display_config: PyDataframeDisplayConfig,
 }
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
-    pub fn new(df: DataFrame) -> Self {
-        Self { df: Arc::new(df) }
+    pub fn new(df: DataFrame, display_config: PyDataframeDisplayConfig) -> Self {
+        Self {
+            df: Arc::new(df),
+            display_config,
+        }
     }
 }
 

@@ -457,7 +457,7 @@ impl PySessionContext {
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
         let df = wait_for_future(py, result)?;
-        Ok(PyDataFrame::new(df))
+        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
     }
 
     #[pyo3(signature = (query, options=None))]
@@ -474,7 +474,7 @@ impl PySessionContext {
         };
         let result = self.ctx.sql_with_options(query, options);
         let df = wait_for_future(py, result)?;
-        Ok(PyDataFrame::new(df))
+        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
     }
 
     #[pyo3(signature = (partitions, name=None, schema=None))]
@@ -509,13 +509,16 @@ impl PySessionContext {
 
         let table = wait_for_future(py, self._table(&table_name))?;
 
-        let df = PyDataFrame::new(table);
+        let df = PyDataFrame::new(table, self.ctx.display_config.clone());
         Ok(df)
     }
 
     /// Create a DataFrame from an existing logical plan
     pub fn create_dataframe_from_logical_plan(&mut self, plan: PyLogicalPlan) -> PyDataFrame {
-        PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
+        PyDataFrame::new(
+            DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()),
+            self.ctx.display_config.clone(),
+        )
     }
 
     /// Construct datafusion dataframe from Python list
@@ -883,7 +886,7 @@ impl PySessionContext {
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
         let x = wait_for_future(py, self.ctx.table(name))
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
-        Ok(PyDataFrame::new(x))
+        Ok(PyDataFrame::new(x, self.ctx.display_config.clone()))
     }
 
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
@@ -891,7 +894,10 @@ impl PySessionContext {
     }
 
     pub fn empty_table(&self) -> PyDataFusionResult<PyDataFrame> {
-        Ok(PyDataFrame::new(self.ctx.read_empty()?))
+        Ok(
+            PyDataFrame::new(self.ctx.read_empty()?),
+            self.ctx.display_config.clone(),
+        )
     }
 
     pub fn session_id(&self) -> String {
@@ -926,7 +932,7 @@ impl PySessionContext {
             let result = self.ctx.read_json(path, options);
             wait_for_future(py, result)?
         };
-        Ok(PyDataFrame::new(df))
+        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -971,12 +977,18 @@ impl PySessionContext {
             let paths = path.extract::<Vec<String>>()?;
             let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
             let result = self.ctx.read_csv(paths, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
+            let df = PyDataFrame::new(
+                wait_for_future(py, result)?,
+                self.ctx.display_config.clone(),
+            );
             Ok(df)
         } else {
             let path = path.extract::<String>()?;
             let result = self.ctx.read_csv(path, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
+            let df = PyDataFrame::new(
+                wait_for_future(py, result)?,
+                self.ctx.display_config.clone(),
+            );
             Ok(df)
         }
     }
@@ -1014,7 +1026,10 @@ impl PySessionContext {
             .collect();
 
         let result = self.ctx.read_parquet(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result)?);
+        let df = PyDataFrame::new(
+            wait_for_future(py, result)?,
+            self.ctx.display_config.clone(),
+        );
         Ok(df)
     }
 
@@ -1039,12 +1054,12 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future)?
         };
-        Ok(PyDataFrame::new(df))
+        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
     }
 
     pub fn read_table(&self, table: &PyTable) -> PyDataFusionResult<PyDataFrame> {
         let df = self.ctx.read_table(table.table())?;
-        Ok(PyDataFrame::new(df))
+        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
     }
 
     fn __repr__(&self) -> PyResult<String> {
