@@ -36,6 +36,7 @@ from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
 from ._internal import SQLOptions as SQLOptionsInternal
+from ._internal import DataframeDisplayConfig as DataframeDisplayConfigInternal
 
 if TYPE_CHECKING:
     import pathlib
@@ -88,6 +89,37 @@ class SessionConfig:
             config_options: Configuration options.
         """
         self.config_internal = SessionConfigInternal(config_options)
+
+    def with_dataframe_display_config(
+        self,
+        max_table_bytes: int = None,
+        min_table_rows: int = None,
+        max_cell_length: int = None,
+        max_table_rows_in_repr: int = None,
+    ) -> SessionConfig:
+        """Configure the display options for DataFrames.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation (default: 2MB)
+            min_table_rows: Minimum number of table rows to display (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr string output (default: 10)
+
+        Returns:
+            A new :py:class:`SessionConfig` object with the updated display settings.
+        """
+
+        display_config = DataframeDisplayConfigInternal(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
+
+        self.config_internal = self.config_internal.with_dataframe_display_config(
+            display_config
+        )
+        return self
 
     def with_create_default_catalog_and_schema(
         self, enabled: bool = True
@@ -806,9 +838,11 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
-            if file_sort_order is not None
-            else None,
+            (
+                [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+                if file_sort_order is not None
+                else None
+            ),
         )
 
     def register_csv(
