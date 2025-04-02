@@ -73,9 +73,6 @@ impl PyTableProvider {
         PyTable::new(table_provider)
     }
 }
-const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
-const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
-const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -84,7 +81,7 @@ const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
-    display_config: PyDataframeDisplayConfig,
+    display_config: Arc<PyDataframeDisplayConfig>,
 }
 
 impl PyDataFrame {
@@ -92,7 +89,7 @@ impl PyDataFrame {
     pub fn new(df: DataFrame, display_config: PyDataframeDisplayConfig) -> Self {
         Self {
             df: Arc::new(df),
-            display_config,
+            display_config: Arc::new(display_config),
         }
     }
 }
@@ -121,9 +118,23 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        // Get display configuration values
+        let min_rows = self.display_config.min_table_rows;
+        let max_rows = self.display_config.max_table_rows_in_repr;
+        let max_bytes = self.display_config.max_table_bytes;
+
+        // Collect record batches for display
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10),
+            collect_record_batches_to_display(
+                self.df.as_ref().clone(),
+                self.display_config.min_table_rows,
+                self.display_config.max_table_rows_in_repr,
+                self.display_config.max_table_bytes,
+            ),
+        let (batches, has_more) = wait_for_future(
+            py,
+            self.display_config.min_table_rows, self.display_config.max_table_rows_in_repr, self.display_config.max_table_bytes),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
@@ -146,8 +157,9 @@ impl PyDataFrame {
             py,
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
-                MIN_TABLE_ROWS_TO_DISPLAY,
-                usize::MAX,
+                self.display_config.min_table_rows,
+                self.display_config.max_table_rows_in_repr,
+                self.display_config.max_table_bytes,
             ),
         )?;
         if batches.is_empty() {
@@ -223,8 +235,8 @@ impl PyDataFrame {
                 for (col, formatter) in batch_formatter.iter().enumerate() {
                     let cell_data = formatter.value(batch_row).to_string();
                     // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
-                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
+                    if cell_data.len() > self.display_config.max_cell_length {
+                        let short_cell_data = &cell_data[0..self.display_config.max_cell_length];
                         cells.push(format!("
                             <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
                                 <div class=\"expandable-container\">
@@ -891,6 +903,7 @@ async fn collect_record_batches_to_display(
     df: DataFrame,
     min_rows: usize,
     max_rows: usize,
+    max_bytes: usize,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
@@ -899,7 +912,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while (size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY && rows_so_far < max_rows)
+    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows)
         || rows_so_far < min_rows
     {
         let mut rb = match stream.next().await {
@@ -914,8 +927,8 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
-            if size_estimate_so_far > MAX_TABLE_BYTES_TO_DISPLAY {
-                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / size_estimate_so_far as f32;
+            if size_estimate_so_far > max_bytes {
+                let ratio = max_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
