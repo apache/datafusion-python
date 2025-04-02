@@ -127,15 +127,11 @@ impl Default for PyDataframeDisplayConfig {
 #[derive(Clone, Default)]
 pub struct PySessionConfig {
     pub config: SessionConfig,
-    pub display_config: PyDataframeDisplayConfig,
 }
 
 impl From<SessionConfig> for PySessionConfig {
     fn from(config: SessionConfig) -> Self {
-        Self {
-            config,
-            display_config: PyDataframeDisplayConfig::default(),
-        }
+        Self { config }
     }
 }
 
@@ -151,10 +147,7 @@ impl PySessionConfig {
             }
         }
 
-        Self {
-            config,
-            display_config: PyDataframeDisplayConfig::default(),
-        }
+        Self { config }
     }
 
     fn with_create_default_catalog_and_schema(&self, enabled: bool) -> Self {
@@ -211,12 +204,6 @@ impl PySessionConfig {
 
     fn with_repartition_file_min_size(&self, size: usize) -> Self {
         Self::from(self.config.clone().with_repartition_file_min_size(size))
-    }
-
-    fn with_dataframe_display_config(&self, display_config: PyDataframeDisplayConfig) -> Self {
-        let mut config = self.clone();
-        config.display_config = display_config;
-        config
     }
 
     fn with_parquet_pruning(&self, enabled: bool) -> Self {
@@ -332,6 +319,7 @@ impl PySQLOptions {
 #[derive(Clone)]
 pub struct PySessionContext {
     pub ctx: SessionContext,
+    pub display_config: PyDataframeDisplayConfig,
 }
 
 #[pymethods]
@@ -341,6 +329,7 @@ impl PySessionContext {
     pub fn new(
         config: Option<PySessionConfig>,
         runtime: Option<PyRuntimeEnvBuilder>,
+        display_config: Option<PyDataframeDisplayConfig>,
     ) -> PyDataFusionResult<Self> {
         let config = if let Some(c) = config {
             c.config
@@ -358,15 +347,25 @@ impl PySessionContext {
             .with_runtime_env(runtime)
             .with_default_features()
             .build();
+
         Ok(PySessionContext {
             ctx: SessionContext::new_with_state(session_state),
+            display_config: display_config.unwrap_or_default(),
         })
     }
 
     pub fn enable_url_table(&self) -> PyResult<Self> {
         Ok(PySessionContext {
             ctx: self.ctx.clone().enable_url_table(),
+            display_config: self.display_config.clone(),
         })
+    }
+
+    pub fn with_display_config(&self, display_config: PyDataframeDisplayConfig) -> Self {
+        Self {
+            ctx: self.ctx.clone(),
+            display_config,
+        }
     }
 
     #[classmethod]
@@ -374,6 +373,7 @@ impl PySessionContext {
     fn global_ctx(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
         Ok(Self {
             ctx: get_global_ctx().clone(),
+            display_config: PyDataframeDisplayConfig::default(),
         })
     }
 
@@ -457,7 +457,7 @@ impl PySessionContext {
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
         let df = wait_for_future(py, result)?;
-        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(df, self.display_config.clone()))
     }
 
     #[pyo3(signature = (query, options=None))]
@@ -474,7 +474,7 @@ impl PySessionContext {
         };
         let result = self.ctx.sql_with_options(query, options);
         let df = wait_for_future(py, result)?;
-        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(df, self.display_config.clone()))
     }
 
     #[pyo3(signature = (partitions, name=None, schema=None))]
@@ -509,7 +509,7 @@ impl PySessionContext {
 
         let table = wait_for_future(py, self._table(&table_name))?;
 
-        let df = PyDataFrame::new(table, self.ctx.display_config.clone());
+        let df = PyDataFrame::new(table, self.display_config.clone());
         Ok(df)
     }
 
@@ -517,7 +517,7 @@ impl PySessionContext {
     pub fn create_dataframe_from_logical_plan(&mut self, plan: PyLogicalPlan) -> PyDataFrame {
         PyDataFrame::new(
             DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()),
-            self.ctx.display_config.clone(),
+            self.display_config.clone(),
         )
     }
 
@@ -886,7 +886,7 @@ impl PySessionContext {
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
         let x = wait_for_future(py, self.ctx.table(name))
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
-        Ok(PyDataFrame::new(x, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(x, self.display_config.clone()))
     }
 
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
@@ -894,10 +894,10 @@ impl PySessionContext {
     }
 
     pub fn empty_table(&self) -> PyDataFusionResult<PyDataFrame> {
-        Ok(
-            PyDataFrame::new(self.ctx.read_empty()?),
-            self.ctx.display_config.clone(),
-        )
+        Ok(PyDataFrame::new(
+            self.ctx.read_empty()?,
+            self.display_config.clone(),
+        ))
     }
 
     pub fn session_id(&self) -> String {
@@ -932,7 +932,7 @@ impl PySessionContext {
             let result = self.ctx.read_json(path, options);
             wait_for_future(py, result)?
         };
-        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(df, self.display_config.clone()))
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -977,18 +977,12 @@ impl PySessionContext {
             let paths = path.extract::<Vec<String>>()?;
             let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
             let result = self.ctx.read_csv(paths, options);
-            let df = PyDataFrame::new(
-                wait_for_future(py, result)?,
-                self.ctx.display_config.clone(),
-            );
+            let df = PyDataFrame::new(wait_for_future(py, result)?, self.display_config.clone());
             Ok(df)
         } else {
             let path = path.extract::<String>()?;
             let result = self.ctx.read_csv(path, options);
-            let df = PyDataFrame::new(
-                wait_for_future(py, result)?,
-                self.ctx.display_config.clone(),
-            );
+            let df = PyDataFrame::new(wait_for_future(py, result)?, self.display_config.clone());
             Ok(df)
         }
     }
@@ -1026,10 +1020,7 @@ impl PySessionContext {
             .collect();
 
         let result = self.ctx.read_parquet(path, options);
-        let df = PyDataFrame::new(
-            wait_for_future(py, result)?,
-            self.ctx.display_config.clone(),
-        );
+        let df = PyDataFrame::new(wait_for_future(py, result)?, self.display_config.clone());
         Ok(df)
     }
 
@@ -1054,12 +1045,12 @@ impl PySessionContext {
             let read_future = self.ctx.read_avro(path, options);
             wait_for_future(py, read_future)?
         };
-        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(df, self.display_config.clone()))
     }
 
     pub fn read_table(&self, table: &PyTable) -> PyDataFusionResult<PyDataFrame> {
         let df = self.ctx.read_table(table.table())?;
-        Ok(PyDataFrame::new(df, self.ctx.display_config.clone()))
+        Ok(PyDataFrame::new(df, self.display_config.clone()))
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -1175,6 +1166,9 @@ impl From<PySessionContext> for SessionContext {
 
 impl From<SessionContext> for PySessionContext {
     fn from(ctx: SessionContext) -> PySessionContext {
-        PySessionContext { ctx }
+        PySessionContext {
+            ctx,
+            display_config: PyDataframeDisplayConfig::default(),
+        }
     }
 }

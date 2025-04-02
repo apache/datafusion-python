@@ -118,11 +118,6 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get display configuration values
-        let min_rows = self.display_config.min_table_rows;
-        let max_rows = self.display_config.max_table_rows_in_repr;
-        let max_bytes = self.display_config.max_table_bytes;
-
         // Collect record batches for display
         let (batches, has_more) = wait_for_future(
             py,
@@ -605,7 +600,7 @@ impl PyDataFrame {
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn except_all(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
         let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df. self.display_config))
     }
 
     /// Write a `DataFrame` to a CSV file.
