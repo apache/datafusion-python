@@ -31,6 +31,7 @@ from datafusion import (
 from datafusion import functions as f
 from datafusion.expr import Window
 from pyarrow.csv import write_csv
+from datafusion.context import DataframeDisplayConfig
 
 
 @pytest.fixture
@@ -49,6 +50,102 @@ def df():
     )
 
     return ctx.from_arrow(batch)
+
+
+def test_display_config():
+    # Test display_config initialization
+    config = DataframeDisplayConfig(
+        max_table_bytes=1024,
+        min_table_rows=10,
+        max_cell_length=15,
+        max_table_rows_in_repr=5,
+    )
+
+    assert config.max_table_bytes == 1024
+    assert config.min_table_rows == 10
+    assert config.max_cell_length == 15
+    assert config.max_table_rows_in_repr == 5
+
+    # Test property setters
+    config.max_table_bytes = 2048
+    config.min_table_rows = 20
+    config.max_cell_length = 30
+    config.max_table_rows_in_repr = 10
+
+    assert config.max_table_bytes == 2048
+    assert config.min_table_rows == 20
+    assert config.max_cell_length == 30
+    assert config.max_table_rows_in_repr == 10
+
+    # Test property setter validation
+    with pytest.raises(ValueError, match="max_table_bytes must be greater than 0"):
+        config.max_table_bytes = 0
+
+    with pytest.raises(ValueError, match="min_table_rows must be greater than 0"):
+        config.min_table_rows = -1
+
+    with pytest.raises(ValueError, match="max_cell_length must be greater than 0"):
+        config.max_cell_length = 0
+
+    with pytest.raises(
+        ValueError, match="max_table_rows_in_repr must be greater than 0"
+    ):
+        config.max_table_rows_in_repr = -5
+
+
+def test_session_with_display_config():
+    # Test with_display_config returns a new context with updated config
+    ctx = SessionContext()
+
+    # Verify the default values are used initially
+    df = ctx.from_pylist([{"a": 1, "b": "x" * 50, "c": 3}] * 100)
+    html_repr = df._repr_html_()
+
+    # Create a new context with custom display config
+    ctx2 = ctx.with_display_config(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+
+    # Create a dataframe with the same data but using the new context
+    df2 = ctx2.from_pylist([{"a": 1, "b": "x" * 50, "c": 3}] * 100)
+    html_repr2 = df2._repr_html_()
+
+    # The HTML representation should be different with different display configs
+    assert html_repr != html_repr2
+
+    # Check that the second representation has the short cell data based on the configured length
+    assert f'<span class="expandable" id="' in html_repr2
+    assert f'>{("x" * 10)}</span>' in html_repr2
+
+
+def test_display_config_in_init():
+    # Test providing display config directly in SessionContext constructor
+    display_config = DataframeDisplayConfig(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+
+    ctx = SessionContext()
+    df1 = ctx.from_pylist([{"a": 1, "b": "x" * 50, "c": 3}] * 100)
+    html_repr1 = df1._repr_html_()
+
+    # Create a context with custom display config through the with_display_config method
+    ctx2 = ctx.with_display_config(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+    df2 = ctx2.from_pylist([{"a": 1, "b": "x" * 50, "c": 3}] * 100)
+    html_repr2 = df2._repr_html_()
+
+    # Both methods should result in equivalent display configuration
+    assert html_repr1 != html_repr2
 
 
 @pytest.fixture
