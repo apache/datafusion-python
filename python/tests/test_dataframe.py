@@ -1381,7 +1381,6 @@ def test_display_config_affects_repr():
     # +---+---------+----+
     # Data truncated.
     repr_str = repr(df)
-    print("==> repr_str", repr_str)
 
     # The representation should show truncated data (3 rows as specified)
     assert (
@@ -1449,7 +1448,6 @@ def test_display_config_rows_limit_in_html():
 
     # Only a few rows should be shown and there should be a truncation message
     row_count = html_str.count("<tr>") - 1  # Subtract 1 for header row
-    print("==> html_str", html_str)
     assert row_count <= max_table_rows
     assert "Data truncated" in html_str
 
