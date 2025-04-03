@@ -571,6 +571,7 @@ class SessionContext:
         self,
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
+        display_config: DataframeDisplayConfig | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -594,7 +595,9 @@ class SessionContext:
         """
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if runtime is not None else None
-        display_config = DataframeDisplayConfigInternal()
+        display_config = (
+            display_config.config_internal if display_config is not None else None
+        )
         self.ctx = SessionContextInternal(config, runtime, display_config)
 
     @classmethod
