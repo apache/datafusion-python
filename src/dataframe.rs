@@ -944,9 +944,6 @@ async fn collect_record_batches_to_display(
             record_batches.push(rb);
         }
     }
-    println!(
-        "==> after while, size_estimate_so_far: {size_estimate_so_far}, rows_so_far: {rows_so_far}"
-    );
 
     if record_batches.is_empty() {
         return Ok((Vec::default(), false));
