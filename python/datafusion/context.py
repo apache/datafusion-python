@@ -26,14 +26,6 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-if TYPE_CHECKING:
-    import pandas as pd
-    import pathlib
-    import polars as pl
-    import pyarrow as pa
-
-    from datafusion.plan import ExecutionPlan, LogicalPlan
-
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
@@ -42,9 +34,18 @@ from datafusion.udf import AggregateUDF, ScalarUDF, WindowUDF
 
 from ._internal import DataframeDisplayConfig as DataframeDisplayConfigInternal
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
-from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
+from ._internal import SQLOptions as SQLOptionsInternal
+
+if TYPE_CHECKING:
+    import pathlib
+
+    import pandas as pd
+    import polars as pl
+    import pyarrow as pa
+
+    from datafusion.plan import ExecutionPlan, LogicalPlan
 
 
 class ArrowStreamExportable(Protocol):

@@ -35,9 +35,9 @@ from .common import DFSchema
 from .context import (
     DataframeDisplayConfig,
     RuntimeEnvBuilder,
-    SQLOptions,
     SessionConfig,
     SessionContext,
+    SQLOptions,
 )
 from .dataframe import DataFrame
 from .expr import Expr, WindowFrame
