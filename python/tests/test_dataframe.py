@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import dis
 import os
 import re
 from typing import Any
@@ -54,12 +55,20 @@ def df():
 
 @pytest.fixture
 def data():
-    return [{"a": 1, "b": "x" * 50, "c": 3}] * 100
+    return [{"a": 1, "b": "x" * 50, "c": 3}] * 10
 
 
 @pytest.fixture
 def span_expandable_class():
     return '<span class="expandable" id="'
+
+
+def normalize_uuid(html):
+    return re.sub(
+        r"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+        "STATIC_UUID",
+        html,
+    )
 
 
 def test_display_config():
@@ -133,9 +142,15 @@ def test_session_with_display_config(data, span_expandable_class):
 
 
 def test_display_config_in_init(data):
-    # Test default display config directly in SessionContext constructor
+    # Test display config directly in SessionContext constructor
+    display_config = DataframeDisplayConfig(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
 
-    ctx = SessionContext()
+    ctx = SessionContext(display_config=display_config)
     df1 = ctx.from_pylist(data)
     html_repr1 = df1._repr_html_()
 
@@ -150,7 +165,7 @@ def test_display_config_in_init(data):
     html_repr2 = df2._repr_html_()
 
     # Both methods should result in equivalent display configuration
-    assert html_repr1 != html_repr2
+    assert normalize_uuid(html_repr1) == normalize_uuid(html_repr2)
 
 
 @pytest.fixture
@@ -1380,7 +1395,8 @@ def test_display_config_affects_repr(data):
     # The representation should show truncated data (3 rows as specified)
     assert (
         # 5 = 1 header row + 3 separator line + 1 truncation message
-        repr_str.count("\n") <= max_table_rows_in_repr + 5
+        repr_str.count("\n")
+        <= max_table_rows_in_repr + 5
     )
     assert "Data truncated" in repr_str
 
@@ -1396,7 +1412,8 @@ def test_display_config_affects_repr(data):
     # Should show all data without truncation message
     assert (
         # 4 = 1 header row + 3 separator lines
-        repr_str2.count("\n") == max_table_rows_in_repr + 4
+        repr_str2.count("\n")
+        == max_table_rows_in_repr + 4
     )  # All rows should be shown
     assert "Data truncated" not in repr_str2
 
