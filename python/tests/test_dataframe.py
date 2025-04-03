@@ -29,9 +29,9 @@ from datafusion import (
     literal,
 )
 from datafusion import functions as f
+from datafusion.context import DataframeDisplayConfig
 from datafusion.expr import Window
 from pyarrow.csv import write_csv
-from datafusion.context import DataframeDisplayConfig
 
 
 @pytest.fixture
@@ -55,6 +55,11 @@ def df():
 @pytest.fixture
 def data():
     return [{"a": 1, "b": "x" * 50, "c": 3}] * 100
+
+
+@pytest.fixture
+def span_expandable_class():
+    return '<span class="expandable" id="'
 
 
 def test_display_config():
@@ -98,7 +103,7 @@ def test_display_config():
         config.max_table_rows_in_repr = -5
 
 
-def test_session_with_display_config(data):
+def test_session_with_display_config(data, span_expandable_class):
     # Test with_display_config returns a new context with updated config
     ctx = SessionContext()
 
@@ -121,19 +126,14 @@ def test_session_with_display_config(data):
     # The HTML representation should be different with different display configs
     assert html_repr != html_repr2
 
-    # Check that the second representation has the short cell data based on the configured length
-    assert f'<span class="expandable" id="' in html_repr2
-    assert f'>{("x" * 10)}</span>' in html_repr2
+    # Check that the second representation has the short cell data based on the
+    # configured length
+    assert span_expandable_class in html_repr2
+    assert f">{('x' * 10)}</span>" in html_repr2
 
 
 def test_display_config_in_init(data):
-    # Test providing display config directly in SessionContext constructor
-    display_config = DataframeDisplayConfig(
-        max_table_bytes=1024,
-        min_table_rows=5,
-        max_cell_length=10,
-        max_table_rows_in_repr=3,
-    )
+    # Test default display config directly in SessionContext constructor
 
     ctx = SessionContext()
     df1 = ctx.from_pylist(data)
@@ -1403,7 +1403,7 @@ def test_display_config_affects_repr(data):
     assert "Data truncated" not in repr_str2
 
 
-def test_display_config_affects_html_repr(data):
+def test_display_config_affects_html_repr(data, span_expandable_class):
     # Create a context with custom display config to show only a small cell length
     ctx = SessionContext().with_display_config(max_cell_length=5)
 
@@ -1415,8 +1415,7 @@ def test_display_config_affects_html_repr(data):
 
     # The cell should be truncated to 5 characters and have expansion button
     assert ">xxxxx" in html_str  # 5 character limit
-    expandable_class = 'class="expandable-container"'
-    assert expandable_class in html_str
+    assert span_expandable_class in html_str
 
     # Create a context with larger cell length limit
     ctx2 = SessionContext().with_display_config(max_cell_length=60)
@@ -1425,7 +1424,7 @@ def test_display_config_affects_html_repr(data):
     html_str2 = df2._repr_html_()
 
     # String shouldn't be truncated (or at least not in the same way)
-    assert expandable_class not in html_str2
+    assert span_expandable_class not in html_str2
 
 
 def test_display_config_rows_limit_in_html(data):

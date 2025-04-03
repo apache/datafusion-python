@@ -26,26 +26,20 @@ try:
 except ImportError:
     import importlib_metadata
 
+# Local module imports
 from . import functions, object_store, substrait
-
-# The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 from .catalog import Catalog, Database, Table
-from .common import (
-    DFSchema,
-)
+from .common import DFSchema
 from .context import (
+    DataframeDisplayConfig,
     RuntimeEnvBuilder,
+    SQLOptions,
     SessionConfig,
     SessionContext,
-    DataframeDisplayConfig,
-    SQLOptions,
 )
 from .dataframe import DataFrame
-from .expr import (
-    Expr,
-    WindowFrame,
-)
+from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
