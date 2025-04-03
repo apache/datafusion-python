@@ -26,8 +26,9 @@ try:
 except ImportError:
     import importlib_metadata
 
-# Local module imports
-from . import functions, object_store, substrait
+from . import functions, object_store, substrait, unparser
+
+# The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 from .catalog import Catalog, Database, Table
 from .common import DFSchema
@@ -85,6 +86,7 @@ __all__ = [
     "udaf",
     "udf",
     "udwf",
+    "unparser",
 ]
 
 
