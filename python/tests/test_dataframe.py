@@ -63,6 +63,19 @@ def span_expandable_class():
 
 
 def normalize_uuid(html):
+    """
+    Normalize UUIDs in HTML content by replacing them with a static string.
+
+    This is used in testing to ensure consistent output when comparing HTML
+    representations that contain randomly generated UUIDs (like element IDs),
+    allowing for meaningful comparison of structure and content.
+
+    Args:
+        html: HTML string possibly containing UUIDs
+
+    Returns:
+        HTML string with all UUIDs replaced by "STATIC_UUID"
+    """
     return re.sub(
         r"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
         "STATIC_UUID",
