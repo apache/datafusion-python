@@ -29,6 +29,7 @@ from datafusion import (
     literal,
 )
 from datafusion import functions as f
+from datafusion.context import DataframeDisplayConfig
 from datafusion.expr import Window
 from pyarrow.csv import write_csv
 
@@ -49,6 +50,134 @@ def df():
     )
 
     return ctx.from_arrow(batch)
+
+
+@pytest.fixture
+def data():
+    return [{"a": 1, "b": "x" * 50, "c": 3}] * 100
+
+
+@pytest.fixture
+def span_expandable_class():
+    return '<span class="expandable" id="'
+
+
+def normalize_uuid(html):
+    """
+    Normalize UUIDs in HTML content by replacing them with a static string.
+
+    This is used in testing to ensure consistent output when comparing HTML
+    representations that contain randomly generated UUIDs (like element IDs),
+    allowing for meaningful comparison of structure and content.
+
+    Args:
+        html: HTML string possibly containing UUIDs
+
+    Returns:
+        HTML string with all UUIDs replaced by "STATIC_UUID"
+    """
+    return re.sub(
+        r"[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+        "STATIC_UUID",
+        html,
+    )
+
+
+def test_display_config():
+    # Test display_config initialization
+    config = DataframeDisplayConfig(
+        max_table_bytes=1024,
+        min_table_rows=10,
+        max_cell_length=15,
+        max_table_rows_in_repr=5,
+    )
+
+    assert config.max_table_bytes == 1024
+    assert config.min_table_rows == 10
+    assert config.max_cell_length == 15
+    assert config.max_table_rows_in_repr == 5
+
+    # Test property setters
+    config.max_table_bytes = 2048
+    config.min_table_rows = 20
+    config.max_cell_length = 30
+    config.max_table_rows_in_repr = 10
+
+    assert config.max_table_bytes == 2048
+    assert config.min_table_rows == 20
+    assert config.max_cell_length == 30
+    assert config.max_table_rows_in_repr == 10
+
+    # Test property setter validation
+    with pytest.raises(ValueError, match="max_table_bytes must be greater than 0"):
+        config.max_table_bytes = 0
+
+    with pytest.raises(ValueError, match="min_table_rows must be greater than 0"):
+        config.min_table_rows = -1
+
+    with pytest.raises(ValueError, match="max_cell_length must be greater than 0"):
+        config.max_cell_length = 0
+
+    with pytest.raises(
+        ValueError, match="max_table_rows_in_repr must be greater than 0"
+    ):
+        config.max_table_rows_in_repr = -5
+
+
+def test_session_with_display_config(data, span_expandable_class):
+    # Test with_display_config returns a new context with updated config
+    ctx = SessionContext()
+
+    # Verify the default values are used initially
+    df = ctx.from_pylist(data)
+    html_repr = df._repr_html_()
+
+    # Create a new context with custom display config
+    ctx2 = ctx.with_display_config(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+
+    # Create a dataframe with the same data but using the new context
+    df2 = ctx2.from_pylist(data)
+    html_repr2 = df2._repr_html_()
+
+    # The HTML representation should be different with different display configs
+    assert html_repr != html_repr2
+
+    # Check that the second representation has the short cell data based on the
+    # configured length
+    assert span_expandable_class in html_repr2
+    assert f">{('x' * 10)}</span>" in html_repr2
+
+
+def test_display_config_in_init(data):
+    # Test display config directly in SessionContext constructor
+    display_config = DataframeDisplayConfig(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+
+    ctx = SessionContext(display_config=display_config)
+    df1 = ctx.from_pylist(data)
+    html_repr1 = df1._repr_html_()
+
+    # Create a context with custom display config through the with_display_config method
+    ctx2 = ctx.with_display_config(
+        max_table_bytes=1024,
+        min_table_rows=5,
+        max_cell_length=10,
+        max_table_rows_in_repr=3,
+    )
+    df2 = ctx2.from_pylist(data)
+    html_repr2 = df2._repr_html_()
+
+    # Both methods should result in equivalent display configuration
+    assert normalize_uuid(html_repr1) == normalize_uuid(html_repr2)
 
 
 @pytest.fixture
@@ -1261,3 +1390,130 @@ def test_dataframe_repr_html(df) -> None:
     body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
     body_pattern = "(.*?)".join(body_lines)
     assert len(re.findall(body_pattern, output, re.DOTALL)) == 1
+
+
+def test_display_config_affects_repr(data):
+    max_table_rows_in_repr = 3
+    # Create a context with custom display config
+    ctx = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows_in_repr
+    )
+
+    # Create a DataFrame with more rows than the display limit
+    df = ctx.from_pylist(data)
+
+    repr_str = repr(df)
+
+    # The representation should show truncated data (3 rows as specified)
+    assert (
+        # 5 = 1 header row + 3 separator line + 1 truncation message
+        repr_str.count("\n") <= max_table_rows_in_repr + 5
+    )
+    assert "Data truncated" in repr_str
+
+    # Create a context with larger display limit
+    max_table_rows_in_repr = 100
+    ctx2 = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows_in_repr
+    )
+
+    df2 = ctx2.from_pylist(data)
+    repr_str2 = repr(df2)
+
+    # Should show all data without truncation message
+    assert (
+        # 4 = 1 header row + 3 separator lines
+        repr_str2.count("\n") == max_table_rows_in_repr + 4
+    )  # All rows should be shown
+    assert "Data truncated" not in repr_str2
+
+
+def test_display_config_affects_html_repr(data, span_expandable_class):
+    # Create a context with custom display config to show only a small cell length
+    ctx = SessionContext().with_display_config(max_cell_length=5)
+
+    # Create a DataFrame with a column containing long strings
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # The cell should be truncated to 5 characters and have expansion button
+    assert ">xxxxx" in html_str  # 5 character limit
+    assert span_expandable_class in html_str
+
+    # Create a context with larger cell length limit
+    ctx2 = SessionContext().with_display_config(max_cell_length=60)
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # String shouldn't be truncated (or at least not in the same way)
+    assert span_expandable_class not in html_str2
+
+
+def test_display_config_rows_limit_in_html(data):
+    max_table_rows = 5
+    # Create a context with custom display config to limit rows
+    ctx = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows,
+    )
+
+    # Create a DataFrame with 10 rows
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # Only a few rows should be shown and there should be a truncation message
+    row_count = html_str.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count <= max_table_rows
+    assert "Data truncated" in html_str
+
+    # Create a context with larger row limit
+    max_table_rows = 100
+    ctx2 = SessionContext().with_display_config(
+        max_table_rows_in_repr=max_table_rows
+    )  # Show more rows
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # Should show all rows
+    row_count2 = html_str2.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count2 == max_table_rows
+    assert "Data truncated" not in html_str2
+
+
+def test_display_config_max_bytes_limit(data):
+    min_table_rows = 10
+    max_table_rows = 20
+    # Create a context with custom display config with very small byte limit
+    ctx = SessionContext().with_display_config(
+        min_table_rows=min_table_rows,
+        max_table_rows_in_repr=max_table_rows,
+        max_table_bytes=100,
+    )  # Very small limit
+
+    # Create a DataFrame with large content
+    df = ctx.from_pylist(data)
+
+    # Get the HTML representation
+    html_str = df._repr_html_()
+
+    # Due to small byte limit, we should see truncation
+    row_count = html_str.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count <= min_table_rows  # Should not show all 10 rows
+    assert "Data truncated" in html_str
+
+    # With a larger byte limit
+    ctx2 = SessionContext().with_display_config(
+        max_table_bytes=10 * 1024 * 1024  # 10 MB, much more than needed
+    )
+
+    df2 = ctx2.from_pylist(data)
+    html_str2 = df2._repr_html_()
+
+    # Should show all rows
+    row_count2 = html_str2.count("<tr>") - 1  # Subtract 1 for header row
+    assert row_count2 >= min_table_rows  # Should show more than min_table_rows

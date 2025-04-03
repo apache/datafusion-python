@@ -31,20 +31,16 @@ from . import functions, object_store, substrait, unparser
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 from .catalog import Catalog, Database, Table
-from .common import (
-    DFSchema,
-)
+from .common import DFSchema
 from .context import (
+    DataframeDisplayConfig,
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
     SQLOptions,
 )
 from .dataframe import DataFrame
-from .expr import (
-    Expr,
-    WindowFrame,
-)
+from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
@@ -60,6 +56,7 @@ __all__ = [
     "DFSchema",
     "DataFrame",
     "Database",
+    "DataframeDisplayConfig",
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",

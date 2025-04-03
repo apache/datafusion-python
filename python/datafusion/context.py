@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Optional, Protocol
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -32,6 +32,7 @@ from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.udf import AggregateUDF, ScalarUDF, WindowUDF
 
+from ._internal import DataframeDisplayConfig as DataframeDisplayConfigInternal
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
@@ -76,6 +77,106 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+
+
+class DataframeDisplayConfig:
+    """Configuration for displaying DataFrame results.
+
+    This class allows you to control how DataFrames are displayed in Python.
+    """
+
+    def __init__(
+        self,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
+    ) -> None:
+        """Create a new :py:class:`DataframeDisplayConfig` instance.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation
+                (default: 2MB)
+            min_table_rows: Minimum number of table rows to display
+                (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized
+                (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr
+                string output (default: 10)
+        """
+        # Validate values if they are not None
+        if max_table_bytes is not None:
+            self._validate_positive(max_table_bytes, "max_table_bytes")
+        if min_table_rows is not None:
+            self._validate_positive(min_table_rows, "min_table_rows")
+        if max_cell_length is not None:
+            self._validate_positive(max_cell_length, "max_cell_length")
+        if max_table_rows_in_repr is not None:
+            self._validate_positive(max_table_rows_in_repr, "max_table_rows_in_repr")
+        self.config_internal = DataframeDisplayConfigInternal(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
+
+    def _validate_positive(self, value: int, name: str) -> None:
+        """Validate that the given value is positive.
+
+        Args:
+            value: The value to validate
+            name: The name of the parameter for the error message
+
+        Raises:
+            ValueError: If the value is not positive
+        """
+        if value <= 0:
+            error_message = f"{name} must be greater than 0"
+            raise ValueError(error_message)
+
+    @property
+    def max_table_bytes(self) -> int:
+        """Get the maximum bytes to display for table presentation."""
+        return self.config_internal.max_table_bytes
+
+    @max_table_bytes.setter
+    def max_table_bytes(self, value: int) -> None:
+        """Set the maximum bytes to display for table presentation."""
+        self._validate_positive(value, "max_table_bytes")
+        self.config_internal.max_table_bytes = value
+
+    @property
+    def min_table_rows(self) -> int:
+        """Get the minimum number of table rows to display."""
+        return self.config_internal.min_table_rows
+
+    @min_table_rows.setter
+    def min_table_rows(self, value: int) -> None:
+        """Set the minimum number of table rows to display."""
+        self._validate_positive(value, "min_table_rows")
+        self.config_internal.min_table_rows = value
+
+    @property
+    def max_cell_length(self) -> int:
+        """Get the maximum length of a cell before it gets minimized."""
+        return self.config_internal.max_cell_length
+
+    @max_cell_length.setter
+    def max_cell_length(self, value: int) -> None:
+        """Set the maximum length of a cell before it gets minimized."""
+        self._validate_positive(value, "max_cell_length")
+        self.config_internal.max_cell_length = value
+
+    @property
+    def max_table_rows_in_repr(self) -> int:
+        """Get the maximum number of rows to display in repr string output."""
+        return self.config_internal.max_table_rows_in_repr
+
+    @max_table_rows_in_repr.setter
+    def max_table_rows_in_repr(self, value: int) -> None:
+        """Set the maximum number of rows to display in repr string output."""
+        self._validate_positive(value, "max_table_rows_in_repr")
+        self.config_internal.max_table_rows_in_repr = value
 
 
 class SessionConfig:
@@ -470,6 +571,7 @@ class SessionContext:
         self,
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
+        display_config: DataframeDisplayConfig | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -480,7 +582,7 @@ class SessionContext:
         Args:
             config: Session configuration options.
             runtime: Runtime configuration options.
-
+            display_config: DataFrame display configuration options.
         Example usage:
 
         The following example demonstrates how to use the context to execute
@@ -493,8 +595,10 @@ class SessionContext:
         """
         config = config.config_internal if config is not None else None
         runtime = runtime.config_internal if runtime is not None else None
-
-        self.ctx = SessionContextInternal(config, runtime)
+        display_config = (
+            display_config.config_internal if display_config is not None else None
+        )
+        self.ctx = SessionContextInternal(config, runtime, display_config)
 
     @classmethod
     def global_ctx(cls) -> SessionContext:
@@ -507,6 +611,40 @@ class SessionContext:
         wrapper = cls()
         wrapper.ctx = internal_ctx
         return wrapper
+
+    def with_display_config(
+        self,
+        max_table_bytes: Optional[int] = None,
+        min_table_rows: Optional[int] = None,
+        max_cell_length: Optional[int] = None,
+        max_table_rows_in_repr: Optional[int] = None,
+    ) -> SessionContext:
+        """Configure the display options for DataFrames.
+
+        Args:
+            max_table_bytes: Maximum bytes to display for table presentation
+                (default: 2MB)
+            min_table_rows: Minimum number of table rows to display
+                (default: 20)
+            max_cell_length: Maximum length of a cell before it gets minimized
+                (default: 25)
+            max_table_rows_in_repr: Maximum number of rows to display in repr
+                string output (default: 10)
+
+        Returns:
+            A new :py:class:`SessionContext` object with the updated display settings.
+        """
+        display_config = DataframeDisplayConfig(
+            max_table_bytes=max_table_bytes,
+            min_table_rows=min_table_rows,
+            max_cell_length=max_cell_length,
+            max_table_rows_in_repr=max_table_rows_in_repr,
+        )
+
+        klass = self.__class__
+        obj = klass.__new__(klass)
+        obj.ctx = self.ctx.with_display_config(display_config.config_internal)
+        return obj
 
     def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
@@ -806,9 +944,11 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
-            if file_sort_order is not None
-            else None,
+            (
+                [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+                if file_sort_order is not None
+                else None
+            ),
         )
 
     def register_csv(

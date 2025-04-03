@@ -43,6 +43,7 @@ use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
+use crate::context::PyDataframeDisplayConfig;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
@@ -72,9 +73,6 @@ impl PyTableProvider {
         PyTable::new(table_provider)
     }
 }
-const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
-const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
-const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -83,12 +81,16 @@ const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
+    display_config: Arc<PyDataframeDisplayConfig>,
 }
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
-    pub fn new(df: DataFrame) -> Self {
-        Self { df: Arc::new(df) }
+    pub fn new(df: DataFrame, display_config: PyDataframeDisplayConfig) -> Self {
+        Self {
+            df: Arc::new(df),
+            display_config: Arc::new(display_config),
+        }
     }
 }
 
@@ -116,10 +118,17 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        // Collect record batches for display
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10),
+            collect_record_batches_to_display(
+                self.df.as_ref().clone(),
+                self.display_config.min_table_rows,
+                self.display_config.max_table_rows_in_repr,
+                self.display_config.max_table_bytes,
+            ),
         )?;
+
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -141,8 +150,9 @@ impl PyDataFrame {
             py,
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
-                MIN_TABLE_ROWS_TO_DISPLAY,
-                usize::MAX,
+                self.display_config.min_table_rows,
+                self.display_config.max_table_rows_in_repr,
+                self.display_config.max_table_bytes,
             ),
         )?;
         if batches.is_empty() {
@@ -218,8 +228,8 @@ impl PyDataFrame {
                 for (col, formatter) in batch_formatter.iter().enumerate() {
                     let cell_data = formatter.value(batch_row).to_string();
                     // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
-                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
+                    if cell_data.len() > self.display_config.max_cell_length {
+                        let short_cell_data = &cell_data[0..self.display_config.max_cell_length];
                         cells.push(format!("
                             <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
                                 <div class=\"expandable-container\">
@@ -269,7 +279,7 @@ impl PyDataFrame {
     fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone();
         let stat_df = wait_for_future(py, df.describe())?;
-        Ok(Self::new(stat_df))
+        Ok(Self::new(stat_df, self.display_config.as_ref().clone()))
     }
 
     /// Returns the schema from the logical plan
@@ -299,31 +309,31 @@ impl PyDataFrame {
     fn select_columns(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
         let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self.df.as_ref().clone().select_columns(&args)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (*args))]
     fn select(&self, args: Vec<PyExpr>) -> PyDataFusionResult<Self> {
         let expr = args.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().select(expr)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (*args))]
     fn drop(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
         let cols = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self.df.as_ref().clone().drop_columns(&cols)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn filter(&self, predicate: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().with_column(name, expr.into())?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn with_columns(&self, exprs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
@@ -333,7 +343,7 @@ impl PyDataFrame {
             let name = format!("{}", expr.schema_name());
             df = df.with_column(name.as_str(), expr)?
         }
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     /// Rename one column by applying a new projection. This is a no-op if the column to be
@@ -344,27 +354,27 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .with_column_renamed(old_name, new_name)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn aggregate(&self, group_by: Vec<PyExpr>, aggs: Vec<PyExpr>) -> PyDataFusionResult<Self> {
         let group_by = group_by.into_iter().map(|e| e.into()).collect();
         let aggs = aggs.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().aggregate(group_by, aggs)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (*exprs))]
     fn sort(&self, exprs: Vec<PySortExpr>) -> PyDataFusionResult<Self> {
         let exprs = to_sort_expressions(exprs);
         let df = self.df.as_ref().clone().sort(exprs)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (count, offset=0))]
     fn limit(&self, count: usize, offset: usize) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().limit(offset, Some(count))?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     /// Executes the plan, returning a list of `RecordBatch`es.
@@ -381,7 +391,7 @@ impl PyDataFrame {
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
@@ -406,7 +416,7 @@ impl PyDataFrame {
     /// Filter out duplicate rows
     fn distinct(&self) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().distinct()?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn join(
@@ -440,7 +450,7 @@ impl PyDataFrame {
             &right_keys,
             None,
         )?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     fn join_on(
@@ -469,7 +479,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .join_on(right.df.as_ref().clone(), join_type, exprs)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     /// Print the query plan
@@ -502,7 +512,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .repartition(Partitioning::RoundRobinBatch(num))?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
@@ -514,7 +524,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .repartition(Partitioning::Hash(expr, num))?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     /// Calculate the union of two `DataFrame`s, preserving duplicate rows.The
@@ -530,7 +540,7 @@ impl PyDataFrame {
             self.df.as_ref().clone().union(py_df.df.as_ref().clone())?
         };
 
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     /// Calculate the distinct union of two `DataFrame`s.  The
@@ -541,7 +551,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .union_distinct(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (column, preserve_nulls=true))]
@@ -554,7 +564,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .unnest_columns_with_options(&[column], unnest_options)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     #[pyo3(signature = (columns, preserve_nulls=true))]
@@ -572,7 +582,7 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .unnest_columns_with_options(&cols, unnest_options)?;
-        Ok(Self::new(df))
+        Ok(Self::new(df, self.display_config.as_ref().clone()))
     }
 
     /// Calculate the intersection of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
@@ -582,13 +592,13 @@ impl PyDataFrame {
             .as_ref()
             .clone()
             .intersect(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     /// Calculate the exception of two `DataFrame`s.  The two `DataFrame`s must have exactly the same schema
     fn except_all(&self, py_df: PyDataFrame) -> PyDataFusionResult<Self> {
         let new_df = self.df.as_ref().clone().except(py_df.df.as_ref().clone())?;
-        Ok(Self::new(new_df))
+        Ok(Self::new(new_df, self.display_config.as_ref().clone()))
     }
 
     /// Write a `DataFrame` to a CSV file.
@@ -835,7 +845,7 @@ fn record_batch_into_schema(
 ) -> Result<RecordBatch, ArrowError> {
     let schema = Arc::new(schema.clone());
     let base_schema = record_batch.schema();
-    if base_schema.fields().len() == 0 {
+    if base_schema.fields().is_empty() {
         // Nothing to project
         return Ok(RecordBatch::new_empty(schema));
     }
@@ -886,6 +896,7 @@ async fn collect_record_batches_to_display(
     df: DataFrame,
     min_rows: usize,
     max_rows: usize,
+    max_bytes: usize,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
@@ -894,9 +905,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while (size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY && rows_so_far < max_rows)
-        || rows_so_far < min_rows
-    {
+    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
                 break;
@@ -909,8 +918,8 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
-            if size_estimate_so_far > MAX_TABLE_BYTES_TO_DISPLAY {
-                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / size_estimate_so_far as f32;
+            if size_estimate_so_far > max_bytes {
+                let ratio = max_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
