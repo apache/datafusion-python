@@ -797,6 +797,25 @@ impl PyDataFrame {
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
     }
+
+    /// Fill null values with a specified value for specific columns
+    #[pyo3(signature = (value, columns=None))]
+    fn fill_null(
+        &self,
+        value: PyObject,
+        columns: Option<Vec<PyBackedStr>>,
+        py: Python,
+    ) -> PyDataFusionResult<Self> {
+        let scalar_value = python_value_to_scalar_value(&value, py)?;
+
+        let cols = match columns {
+            Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
+            None => Vec::new(), // Empty vector means fill null for all columns
+        };
+
+        let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
+        Ok(Self::new(df))
+    }
 }
 
 /// Print DataFrame
@@ -950,4 +969,48 @@ async fn collect_record_batches_to_display(
     }
 
     Ok((record_batches, has_more))
+}
+
+/// Convert a Python value to a DataFusion ScalarValue
+fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionResult<ScalarValue> {
+    if value.is_none(py) {
+        return Err(PyDataFusionError::Common(
+            "Cannot use None as fill value".to_string(),
+        ));
+    } else if let Ok(val) = value.extract::<i64>(py) {
+        return Ok(ScalarValue::Int64(Some(val)));
+    } else if let Ok(val) = value.extract::<f64>(py) {
+        return Ok(ScalarValue::Float64(Some(val)));
+    } else if let Ok(val) = value.extract::<bool>(py) {
+        return Ok(ScalarValue::Boolean(Some(val)));
+    } else if let Ok(val) = value.extract::<String>(py) {
+        return Ok(ScalarValue::Utf8(Some(val)));
+    } else if let Ok(dt) = py
+        .import("datetime")
+        .and_then(|m| m.getattr("datetime"))
+        .and_then(|dt| value.is_instance(dt))
+    {
+        if value.is_instance_of::<pyo3::types::PyDateTime>(py) {
+            let naive_dt = value.extract::<chrono::NaiveDateTime>(py)?;
+            return Ok(ScalarValue::TimestampNanosecond(
+                Some(naive_dt.timestamp_nanos()),
+                None,
+            ));
+        } else {
+            return Err(PyDataFusionError::Common(
+                "Unsupported datetime type".to_string(),
+            ));
+        }
+    }
+
+    // Try to convert to string as fallback
+    match value.str(py) {
+        Ok(py_str) => {
+            let s = py_str.to_string()?;
+            Ok(ScalarValue::Utf8(Some(s)))
+        }
+        Err(_) => Err(PyDataFusionError::Common(
+            "Unsupported Python type for fill_null".to_string(),
+        )),
+    }
 }

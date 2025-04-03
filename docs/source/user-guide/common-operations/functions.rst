@@ -129,3 +129,39 @@ The function :py:func:`~datafusion.functions.in_list` allows to check a column f
           .limit(20)
           .to_pandas()
     )
+
+
+Handling Missing Values 
+=====================
+
+DataFusion provides methods to handle missing values in DataFrames:
+
+fill_null
+---------
+
+The ``fill_null()`` method replaces NULL values in specified columns with a provided value:
+
+.. code-block:: python
+
+    # Fill all NULL values with 0 where possible
+    df = df.fill_null(0)
+
+    # Fill NULL values only in specific string columns
+    df = df.fill_null("missing", subset=["name", "category"]) 
+
+The fill value will be cast to match each column's type. If casting fails for a column, that column remains unchanged.
+
+fill_nan
+--------
+
+The ``fill_nan()`` method replaces NaN values in floating-point columns with a provided numeric value:
+
+.. code-block:: python
+
+    # Fill all NaN values with 0 in numeric columns
+    df = df.fill_nan(0)
+
+    # Fill NaN values in specific numeric columns
+    df = df.fill_nan(99.9, subset=["price", "score"])
+
+This only works on floating-point columns (float32, float64). The fill value must be numeric (int or float).
