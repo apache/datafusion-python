@@ -582,7 +582,7 @@ class SessionContext:
         Args:
             config: Session configuration options.
             runtime: Runtime configuration options.
-
+            display_config: DataFrame display configuration options.
         Example usage:
 
         The following example demonstrates how to use the context to execute
