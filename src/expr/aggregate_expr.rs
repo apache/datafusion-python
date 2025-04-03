@@ -40,7 +40,13 @@ impl From<AggregateFunction> for PyAggregateFunction {
 
 impl Display for PyAggregateFunction {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        let args: Vec<String> = self.aggr.args.iter().map(|expr| expr.to_string()).collect();
+        let args: Vec<String> = self
+            .aggr
+            .params
+            .args
+            .iter()
+            .map(|expr| expr.to_string())
+            .collect();
         write!(f, "{}({})", self.aggr.func.name(), args.join(", "))
     }
 }
@@ -54,12 +60,13 @@ impl PyAggregateFunction {
 
     /// is this a distinct aggregate such as `COUNT(DISTINCT expr)`
     fn is_distinct(&self) -> bool {
-        self.aggr.distinct
+        self.aggr.params.distinct
     }
 
     /// Get the arguments to the aggregate function
     fn args(&self) -> Vec<PyExpr> {
         self.aggr
+            .params
             .args
             .iter()
             .map(|expr| PyExpr::from(expr.clone()))

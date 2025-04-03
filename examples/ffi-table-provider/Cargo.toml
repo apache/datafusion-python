@@ -23,7 +23,7 @@ edition = "2021"
 [dependencies]
 datafusion = { version = "45.0.0" }
 datafusion-ffi = { version = "45.0.0" }
-pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py38"] }
+pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
 arrow = { version = "54" }
 arrow-array = { version = "54" }
 arrow-schema = { version = "54" }

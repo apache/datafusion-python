@@ -27,15 +27,16 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
-    List,
     Literal,
     Optional,
     Union,
     overload,
 )
 
-import pyarrow as pa
-from typing_extensions import deprecated
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion import functions as f
 from datafusion._internal import DataFrame as DataFrameInternal
@@ -49,6 +50,14 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl
+    import pyarrow as pa
+
+    from datafusion._internal import DataFrame as DataFrameInternal
+    from datafusion._internal import expr as expr_internal
+
+from enum import Enum
+
+from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
 # excerpt from deltalake
@@ -68,7 +77,7 @@ class Compression(Enum):
     LZ4_RAW = "lz4_raw"
 
     @classmethod
-    def from_str(cls, value: str) -> "Compression":
+    def from_str(cls: type[Compression], value: str) -> Compression:
         """Convert a string to a Compression enum value.
 
         Args:
@@ -82,10 +91,13 @@ class Compression(Enum):
         """
         try:
             return cls(value.lower())
-        except ValueError:
-            raise ValueError(
-                f"{value} is not a valid Compression. Valid values are: {[item.value for item in Compression]}"
-            )
+        except ValueError as err:
+            valid_values = str([item.value for item in Compression])
+            error_msg = f"""
+                {value} is not a valid Compression.
+                Valid values are: {valid_values}
+                """
+            raise ValueError(error_msg) from err
 
     def get_default_level(self) -> Optional[int]:
         """Get the default compression level for the compression type.
@@ -99,9 +111,9 @@ class Compression(Enum):
         # https://github.com/apache/datafusion-python/pull/981#discussion_r1904789223
         if self == Compression.GZIP:
             return 6
-        elif self == Compression.BROTLI:
+        if self == Compression.BROTLI:
             return 1
-        elif self == Compression.ZSTD:
+        if self == Compression.ZSTD:
             return 4
         return None
 
@@ -120,7 +132,11 @@ class DataFrame:
         """
         self.df = df
 
-    def __getitem__(self, key: str | List[str]) -> DataFrame:
+    def into_view(self) -> pa.Table:
+        """Convert DataFrame as a ViewTable which can be used in register_table."""
+        return self.df.into_view()
+
+    def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
 
         Args:
@@ -269,14 +285,13 @@ class DataFrame:
 
         def _simplify_expression(
             *exprs: Expr | Iterable[Expr], **named_exprs: Expr
-        ) -> list[Expr]:
+        ) -> list[expr_internal.Expr]:
             expr_list = []
             for expr in exprs:
                 if isinstance(expr, Expr):
                     expr_list.append(expr.expr)
                 elif isinstance(expr, Iterable):
-                    for inner_expr in expr:
-                        expr_list.append(inner_expr.expr)
+                    expr_list.extend(inner_expr.expr for inner_expr in expr)
                 else:
                     raise NotImplementedError
             if named_exprs:
@@ -501,10 +516,15 @@ class DataFrame:
         # This check is to prevent breaking API changes where users prior to
         # DF 43.0.0 would  pass the join_keys as a positional argument instead
         # of a keyword argument.
-        if isinstance(on, tuple) and len(on) == 2:
-            if isinstance(on[0], list) and isinstance(on[1], list):
-                join_keys = on  # type: ignore
-                on = None
+        if (
+            isinstance(on, tuple)
+            and len(on) == 2
+            and isinstance(on[0], list)
+            and isinstance(on[1], list)
+        ):
+            # We know this is safe because we've checked the types
+            join_keys = on  # type: ignore[assignment]
+            on = None
 
         if join_keys is not None:
             warnings.warn(
@@ -517,18 +537,17 @@ class DataFrame:
 
         if on is not None:
             if left_on is not None or right_on is not None:
-                raise ValueError(
-                    "`left_on` or `right_on` should not provided with `on`"
-                )
+                error_msg = "`left_on` or `right_on` should not provided with `on`"
+                raise ValueError(error_msg)
             left_on = on
             right_on = on
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
-                raise ValueError("`left_on` and `right_on` should both be provided.")
+                error_msg = "`left_on` and `right_on` should both be provided."
+                raise ValueError(error_msg)
         else:
-            raise ValueError(
-                "either `on` or `left_on` and `right_on` should be provided."
-            )
+            error_msg = "either `on` or `left_on` and `right_on` should be provided."
+            raise ValueError(error_msg)
         if isinstance(left_on, str):
             left_on = [left_on]
         if isinstance(right_on, str):
@@ -714,9 +733,11 @@ class DataFrame:
         if isinstance(compression, str):
             compression = Compression.from_str(compression)
 
-        if compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}:
-            if compression_level is None:
-                compression_level = compression.get_default_level()
+        if (
+            compression in {Compression.GZIP, Compression.BROTLI, Compression.ZSTD}
+            and compression_level is None
+        ):
+            compression_level = compression.get_default_level()
 
         self.df.write_parquet(str(path), compression.value, compression_level)
 
@@ -812,7 +833,7 @@ class DataFrame:
         Returns:
             A DataFrame with the columns expanded.
         """
-        columns = [c for c in columns]
+        columns = list(columns)
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
 
     def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:

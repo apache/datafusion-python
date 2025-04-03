@@ -52,6 +52,7 @@ pub mod pyarrow_util;
 mod record_batch;
 pub mod sql;
 pub mod store;
+pub mod unparser;
 
 #[cfg(feature = "substrait")]
 pub mod substrait;
@@ -102,6 +103,10 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     let expr = PyModule::new(py, "expr")?;
     expr::init_module(&expr)?;
     m.add_submodule(&expr)?;
+
+    let unparser = PyModule::new(py, "unparser")?;
+    unparser::init_module(&unparser)?;
+    m.add_submodule(&unparser)?;
 
     // Register the functions as a submodule
     let funcs = PyModule::new(py, "functions")?;

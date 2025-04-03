@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-from typing import List
+from __future__ import annotations
 
 import pyarrow as pa
 import pyarrow.compute as pc
@@ -29,7 +29,7 @@ class Summarize(Accumulator):
     def __init__(self, initial_value: float = 0.0):
         self._sum = pa.scalar(initial_value)
 
-    def state(self) -> List[pa.Scalar]:
+    def state(self) -> list[pa.Scalar]:
         return [self._sum]
 
     def update(self, values: pa.Array) -> None:
@@ -37,7 +37,7 @@ class Summarize(Accumulator):
         # This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
 
-    def merge(self, states: List[pa.Array]) -> None:
+    def merge(self, states: list[pa.Array]) -> None:
         # Not nice since pyarrow scalars can't be summed yet.
         # This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
@@ -54,7 +54,7 @@ class MissingMethods(Accumulator):
     def __init__(self):
         self._sum = pa.scalar(0)
 
-    def state(self) -> List[pa.Scalar]:
+    def state(self) -> list[pa.Scalar]:
         return [self._sum]
 
 
@@ -84,7 +84,7 @@ def test_errors(df):
         "evaluate, merge, update)"
     )
     with pytest.raises(Exception, match=msg):
-        accum = udaf(  # noqa F841
+        accum = udaf(  # noqa: F841
             MissingMethods,
             pa.int64(),
             pa.int64(),
@@ -117,6 +117,26 @@ def test_udaf_aggregate(df):
     assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
 
 
+def test_udaf_decorator_aggregate(df):
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+    def summarize():
+        return Summarize()
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([1.0 + 2.0 + 3.0])
+
+
 def test_udaf_aggregate_with_arguments(df):
     bias = 10.0
 
@@ -127,6 +147,28 @@ def test_udaf_aggregate_with_arguments(df):
         [pa.float64()],
         volatility="immutable",
     )
+
+    df1 = df.aggregate([], [summarize(column("a"))])
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+    df2 = df.aggregate([], [summarize(column("a"))])
+
+    # Run a second time to ensure the state is properly reset
+    result = df2.collect()[0]
+
+    assert result.column(0) == pa.array([bias + 1.0 + 2.0 + 3.0])
+
+
+def test_udaf_decorator_aggregate_with_arguments(df):
+    bias = 10.0
+
+    @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
+    def summarize():
+        return Summarize(bias)
 
     df1 = df.aggregate([], [summarize(column("a"))])
 

@@ -6,7 +6,7 @@
 # "License"); you may not use this file except in compliance
 # with the License.  You may obtain a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#   http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing,
 # software distributed under the License is distributed on an
@@ -15,29 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow as pa
-from datafusion import SessionContext, udf
-from datafusion import functions as f
+from datafusion.context import SessionContext
+from datafusion.unparser import Dialect, Unparser
 
 
-def is_null(array: pa.Array) -> pa.Array:
-    return array.is_null()
-
-
-is_null_arr = udf(is_null, [pa.int64()], pa.bool_(), "stable")
-
-# create a context
-ctx = SessionContext()
-
-# create a RecordBatch and a new DataFrame from it
-batch = pa.RecordBatch.from_arrays(
-    [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
-    names=["a", "b"],
-)
-df = ctx.create_dataframe([[batch]])
-
-df = df.select(is_null_arr(f.col("a")))
-
-result = df.collect()[0]
-
-assert result.column(0) == pa.array([False] * 3)
+def test_unparser():
+    ctx = SessionContext()
+    df = ctx.sql("SELECT 1")
+    for dialect in [
+        Dialect.mysql(),
+        Dialect.postgres(),
+        Dialect.sqlite(),
+        Dialect.duckdb(),
+    ]:
+        unparser = Unparser(dialect)
+        sql = unparser.plan_to_sql(df.logical_plan())
+        assert sql == "SELECT 1"

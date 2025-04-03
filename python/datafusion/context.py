@@ -21,7 +21,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from typing_extensions import deprecated
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
@@ -37,9 +40,9 @@ from ._internal import SQLOptions as SQLOptionsInternal
 if TYPE_CHECKING:
     import pathlib
 
-    import pandas
-    import polars
-    import pyarrow
+    import pandas as pd
+    import polars as pl
+    import pyarrow as pa
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
 
@@ -390,8 +393,6 @@ class RuntimeEnvBuilder:
 class RuntimeConfig(RuntimeEnvBuilder):
     """See `RuntimeEnvBuilder`."""
 
-    pass
-
 
 class SQLOptions:
     """Options to be used when performing SQL queries."""
@@ -495,7 +496,19 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
-    def enable_url_table(self) -> "SessionContext":
+    @classmethod
+    def global_ctx(cls) -> SessionContext:
+        """Retrieve the global context as a `SessionContext` wrapper.
+
+        Returns:
+            A `SessionContext` object that wraps the global `SessionContextInternal`.
+        """
+        internal_ctx = SessionContextInternal.global_ctx()
+        wrapper = cls()
+        wrapper.ctx = internal_ctx
+        return wrapper
+
+    def enable_url_table(self) -> SessionContext:
         """Control if local files can be queried as tables.
 
         Returns:
@@ -524,7 +537,7 @@ class SessionContext:
         path: str | pathlib.Path,
         table_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".parquet",
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         file_sort_order: list[list[Expr | SortExpr]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
@@ -593,14 +606,14 @@ class SessionContext:
 
     def create_dataframe(
         self,
-        partitions: list[list[pyarrow.RecordBatch]],
+        partitions: list[list[pa.RecordBatch]],
         name: str | None = None,
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
     ) -> DataFrame:
         """Create and return a dataframe using the provided partitions.
 
         Args:
-            partitions: :py:class:`pyarrow.RecordBatch` partitions to register.
+            partitions: :py:class:`pa.RecordBatch` partitions to register.
             name: Resultant dataframe name.
             schema: Schema for the partitions.
 
@@ -671,16 +684,14 @@ class SessionContext:
         return DataFrame(self.ctx.from_arrow(data, name))
 
     @deprecated("Use ``from_arrow`` instead.")
-    def from_arrow_table(
-        self, data: pyarrow.Table, name: str | None = None
-    ) -> DataFrame:
+    def from_arrow_table(self, data: pa.Table, name: str | None = None) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from an Arrow table.
 
         This is an alias for :py:func:`from_arrow`.
         """
         return self.from_arrow(data, name)
 
-    def from_pandas(self, data: pandas.DataFrame, name: str | None = None) -> DataFrame:
+    def from_pandas(self, data: pd.DataFrame, name: str | None = None) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Pandas DataFrame.
 
         Args:
@@ -692,7 +703,7 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_pandas(data, name))
 
-    def from_polars(self, data: polars.DataFrame, name: str | None = None) -> DataFrame:
+    def from_polars(self, data: pl.DataFrame, name: str | None = None) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from a Polars DataFrame.
 
         Args:
@@ -704,6 +715,18 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_polars(data, name))
 
+    # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
+    # is the discussion on how we arrived at adding register_view
+    def register_view(self, name: str, df: DataFrame) -> None:
+        """Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+
+        Args:
+            name (str): The name to register the view under.
+            df (DataFrame): The DataFrame to be converted into a view and registered.
+        """
+        view = df.into_view()
+        self.ctx.register_table(name, view)
+
     def register_table(self, name: str, table: Table) -> None:
         """Register a :py:class: `~datafusion.catalog.Table` as a table.
 
@@ -713,7 +736,7 @@ class SessionContext:
             name: Name of the resultant table.
             table: DataFusion table to add to the session context.
         """
-        self.ctx.register_table(name, table)
+        self.ctx.register_table(name, table.table)
 
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
@@ -730,7 +753,7 @@ class SessionContext:
         self.ctx.register_table_provider(name, provider)
 
     def register_record_batches(
-        self, name: str, partitions: list[list[pyarrow.RecordBatch]]
+        self, name: str, partitions: list[list[pa.RecordBatch]]
     ) -> None:
         """Register record batches as a table.
 
@@ -751,8 +774,8 @@ class SessionContext:
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
-        schema: pyarrow.Schema | None = None,
-        file_sort_order: list[list[Expr]] | None = None,
+        schema: pa.Schema | None = None,
+        file_sort_order: list[list[SortExpr]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -783,14 +806,16 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            file_sort_order,
+            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
+            if file_sort_order is not None
+            else None,
         )
 
     def register_csv(
         self,
         name: str,
         path: str | pathlib.Path | list[str | pathlib.Path],
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
@@ -816,10 +841,7 @@ class SessionContext:
                 selected for data input.
             file_compression_type: File compression type.
         """
-        if isinstance(path, list):
-            path = [str(p) for p in path]
-        else:
-            path = str(path)
+        path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
         self.ctx.register_csv(
             name,
@@ -836,7 +858,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str]] | None = None,
@@ -874,7 +896,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         file_extension: str = ".avro",
         table_partition_cols: list[tuple[str, str]] | None = None,
     ) -> None:
@@ -896,8 +918,8 @@ class SessionContext:
             name, str(path), schema, file_extension, table_partition_cols
         )
 
-    def register_dataset(self, name: str, dataset: pyarrow.dataset.Dataset) -> None:
-        """Register a :py:class:`pyarrow.dataset.Dataset` as a table.
+    def register_dataset(self, name: str, dataset: pa.dataset.Dataset) -> None:
+        """Register a :py:class:`pa.dataset.Dataset` as a table.
 
         Args:
             name: Name of the table to register.
@@ -919,7 +941,7 @@ class SessionContext:
 
     def catalog(self, name: str = "datafusion") -> Catalog:
         """Retrieve a catalog by name."""
-        return self.ctx.catalog(name)
+        return Catalog(self.ctx.catalog(name))
 
     @deprecated(
         "Use the catalog provider interface ``SessionContext.Catalog`` to "
@@ -948,7 +970,7 @@ class SessionContext:
     def read_json(
         self,
         path: str | pathlib.Path,
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str]] | None = None,
@@ -985,7 +1007,7 @@ class SessionContext:
     def read_csv(
         self,
         path: str | pathlib.Path | list[str] | list[pathlib.Path],
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         has_header: bool = True,
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
@@ -1038,8 +1060,8 @@ class SessionContext:
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
-        schema: pyarrow.Schema | None = None,
-        file_sort_order: list[list[Expr]] | None = None,
+        schema: pa.Schema | None = None,
+        file_sort_order: list[list[Expr | SortExpr]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1063,6 +1085,11 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        file_sort_order = (
+            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
+            if file_sort_order is not None
+            else None
+        )
         return DataFrame(
             self.ctx.read_parquet(
                 str(path),
@@ -1078,7 +1105,7 @@ class SessionContext:
     def read_avro(
         self,
         path: str | pathlib.Path,
-        schema: pyarrow.Schema | None = None,
+        schema: pa.Schema | None = None,
         file_partition_cols: list[tuple[str, str]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
@@ -1106,7 +1133,7 @@ class SessionContext:
         :py:class:`~datafusion.catalog.ListingTable`, create a
         :py:class:`~datafusion.dataframe.DataFrame`.
         """
-        return DataFrame(self.ctx.read_table(table))
+        return DataFrame(self.ctx.read_table(table.table))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""

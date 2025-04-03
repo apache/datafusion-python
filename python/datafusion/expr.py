@@ -22,10 +22,14 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
 import pyarrow as pa
-from typing_extensions import deprecated
+
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 from datafusion.common import DataTypeMap, NullTreatment, RexType
 
@@ -97,63 +101,63 @@ UnnestExpr = expr_internal.UnnestExpr
 WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
-    "Expr",
-    "Column",
-    "Literal",
-    "BinaryExpr",
-    "Literal",
+    "Aggregate",
     "AggregateFunction",
-    "Not",
-    "IsNotNull",
-    "IsNull",
-    "IsTrue",
-    "IsFalse",
-    "IsUnknown",
-    "IsNotTrue",
-    "IsNotFalse",
-    "IsNotUnknown",
-    "Negative",
-    "Like",
-    "ILike",
-    "SimilarTo",
-    "ScalarVariable",
     "Alias",
-    "InList",
-    "Exists",
-    "Subquery",
-    "InSubquery",
-    "ScalarSubquery",
-    "Placeholder",
-    "GroupingSet",
+    "Analyze",
+    "Between",
+    "BinaryExpr",
     "Case",
     "CaseBuilder",
     "Cast",
-    "TryCast",
-    "Between",
-    "Explain",
-    "Limit",
-    "Aggregate",
-    "Sort",
-    "SortExpr",
-    "Analyze",
-    "EmptyRelation",
-    "Join",
-    "JoinType",
-    "JoinConstraint",
-    "Union",
-    "Unnest",
-    "UnnestExpr",
-    "Extension",
-    "Filter",
-    "Projection",
-    "TableScan",
+    "Column",
     "CreateMemoryTable",
     "CreateView",
     "Distinct",
-    "SubqueryAlias",
     "DropTable",
+    "EmptyRelation",
+    "Exists",
+    "Explain",
+    "Expr",
+    "Extension",
+    "Filter",
+    "GroupingSet",
+    "ILike",
+    "InList",
+    "InSubquery",
+    "IsFalse",
+    "IsNotFalse",
+    "IsNotNull",
+    "IsNotTrue",
+    "IsNotUnknown",
+    "IsNull",
+    "IsTrue",
+    "IsUnknown",
+    "Join",
+    "JoinConstraint",
+    "JoinType",
+    "Like",
+    "Limit",
+    "Literal",
+    "Literal",
+    "Negative",
+    "Not",
     "Partitioning",
+    "Placeholder",
+    "Projection",
     "Repartition",
+    "ScalarSubquery",
+    "ScalarVariable",
+    "SimilarTo",
+    "Sort",
+    "SortExpr",
+    "Subquery",
+    "SubqueryAlias",
+    "TableScan",
+    "TryCast",
+    "Union",
+    "Unnest",
+    "UnnestExpr",
     "Window",
     "WindowExpr",
     "WindowFrame",
@@ -172,7 +176,7 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
-    return SortExpr(e.expr, True, True).raw_sort
+    return SortExpr(e, ascending=True, nulls_first=True).raw_sort
 
 
 def sort_list_to_raw_sort_list(
@@ -189,7 +193,7 @@ class Expr:
     :ref:`Expressions` in the online documentation for more information.
     """
 
-    def __init__(self, expr: expr_internal.Expr) -> None:
+    def __init__(self, expr: expr_internal.RawExpr) -> None:
         """This constructor should not be called by the end user."""
         self.expr = expr
 
@@ -227,7 +231,7 @@ class Expr:
 
     def __richcmp__(self, other: Expr, op: int) -> Expr:
         """Comparison operator."""
-        return Expr(self.expr.__richcmp__(other, op))
+        return Expr(self.expr.__richcmp__(other.expr, op))
 
     def __repr__(self) -> str:
         """Generate a string representation of this expression."""
@@ -307,7 +311,7 @@ class Expr:
             )
         return Expr(self.expr.__getitem__(key))
 
-    def __eq__(self, rhs: Any) -> Expr:
+    def __eq__(self, rhs: object) -> Expr:
         """Equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
@@ -316,7 +320,7 @@ class Expr:
             rhs = Expr.literal(rhs)
         return Expr(self.expr.__eq__(rhs.expr))
 
-    def __ne__(self, rhs: Any) -> Expr:
+    def __ne__(self, rhs: object) -> Expr:
         """Not equal to.
 
         Accepts either an expression or any valid PyArrow scalar literal value.
@@ -379,7 +383,7 @@ class Expr:
             value = pa.scalar(value, type=pa.string_view())
         if not isinstance(value, pa.Scalar):
             value = pa.scalar(value)
-        return Expr(expr_internal.Expr.literal(value))
+        return Expr(expr_internal.RawExpr.literal(value))
 
     @staticmethod
     def string_literal(value: str) -> Expr:
@@ -394,13 +398,13 @@ class Expr:
         """
         if isinstance(value, str):
             value = pa.scalar(value, type=pa.string())
-            return Expr(expr_internal.Expr.literal(value))
+            return Expr(expr_internal.RawExpr.literal(value))
         return Expr.literal(value)
 
     @staticmethod
     def column(value: str) -> Expr:
         """Creates a new expression representing a column."""
-        return Expr(expr_internal.Expr.column(value))
+        return Expr(expr_internal.RawExpr.column(value))
 
     def alias(self, name: str) -> Expr:
         """Assign a name to the expression."""
@@ -413,7 +417,7 @@ class Expr:
             ascending: If true, sort in ascending order.
             nulls_first: Return null values first.
         """
-        return SortExpr(self.expr, ascending=ascending, nulls_first=nulls_first)
+        return SortExpr(self, ascending=ascending, nulls_first=nulls_first)
 
     def is_null(self) -> Expr:
         """Returns ``True`` if this expression is null."""
@@ -435,24 +439,21 @@ class Expr:
             value = Expr.literal(value)
         return Expr(functions_internal.nvl(self.expr, value.expr))
 
-    _to_pyarrow_types = {
+    _to_pyarrow_types: ClassVar[dict[type, pa.DataType]] = {
         float: pa.float64(),
         int: pa.int64(),
         str: pa.string(),
         bool: pa.bool_(),
     }
 
-    def cast(
-        self, to: pa.DataType[Any] | Type[float] | Type[int] | Type[str] | Type[bool]
-    ) -> Expr:
+    def cast(self, to: pa.DataType[Any] | type[float | int | str | bool]) -> Expr:
         """Cast to a new data type."""
         if not isinstance(to, pa.DataType):
             try:
                 to = self._to_pyarrow_types[to]
-            except KeyError:
-                raise TypeError(
-                    "Expected instance of pyarrow.DataType or builtins.type"
-                )
+            except KeyError as err:
+                error_msg = "Expected instance of pyarrow.DataType or builtins.type"
+                raise TypeError(error_msg) from err
 
         return Expr(self.expr.cast(to))
 
@@ -561,9 +562,7 @@ class Expr:
         set parameters for either window or aggregate functions. If used on any other
         type of expression, an error will be generated when ``build()`` is called.
         """
-        return ExprFuncBuilder(
-            self.expr.partition_by(list(e.expr for e in partition_by))
-        )
+        return ExprFuncBuilder(self.expr.partition_by([e.expr for e in partition_by]))
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
         """Set the frame fora  window function.
@@ -606,7 +605,7 @@ class Expr:
 
 
 class ExprFuncBuilder:
-    def __init__(self, builder: expr_internal.ExprFuncBuilder):
+    def __init__(self, builder: expr_internal.ExprFuncBuilder) -> None:
         self.builder = builder
 
     def order_by(self, *exprs: Expr) -> ExprFuncBuilder:
@@ -634,7 +633,7 @@ class ExprFuncBuilder:
     def partition_by(self, *partition_by: Expr) -> ExprFuncBuilder:
         """Set partitioning for window functions."""
         return ExprFuncBuilder(
-            self.builder.partition_by(list(e.expr for e in partition_by))
+            self.builder.partition_by([e.expr for e in partition_by])
         )
 
     def window_frame(self, window_frame: WindowFrame) -> ExprFuncBuilder:
@@ -689,11 +688,11 @@ class WindowFrame:
         """
         if not isinstance(start_bound, pa.Scalar) and start_bound is not None:
             start_bound = pa.scalar(start_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 start_bound = start_bound.cast(pa.uint64())
         if not isinstance(end_bound, pa.Scalar) and end_bound is not None:
             end_bound = pa.scalar(end_bound)
-            if units == "rows" or units == "groups":
+            if units in ("rows", "groups"):
                 end_bound = end_bound.cast(pa.uint64())
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
@@ -705,7 +704,7 @@ class WindowFrame:
         """Returns starting bound."""
         return WindowFrameBound(self.window_frame.get_lower_bound())
 
-    def get_upper_bound(self):
+    def get_upper_bound(self) -> WindowFrameBound:
         """Returns end bound."""
         return WindowFrameBound(self.window_frame.get_upper_bound())
 
@@ -785,7 +784,7 @@ class SortExpr:
 
     def __init__(self, expr: Expr, ascending: bool, nulls_first: bool) -> None:
         """This constructor should not be called by the end user."""
-        self.raw_sort = expr_internal.SortExpr(expr, ascending, nulls_first)
+        self.raw_sort = expr_internal.SortExpr(expr.expr, ascending, nulls_first)
 
     def expr(self) -> Expr:
         """Return the raw expr backing the SortExpr."""

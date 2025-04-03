@@ -24,7 +24,7 @@ name = "datafusion"
 description = "Build and run queries against data"
 readme = "README.md"
 license = { file = "LICENSE.txt" }
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["datafusion", "dataframe", "rust", "query-engine"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -35,7 +35,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX :: Linux",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -66,7 +65,37 @@ features = ["substrait"]
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "D", "W", "I"]
+select = ["ALL" ]
+ignore = [
+    "A001",    # Allow using words like min as variable names
+    "A002",    # Allow using words like filter as variable names
+    "ANN401",  # Allow Any for wrapper classes
+    "COM812",  # Recommended to ignore these rules when using with ruff-format
+    "FIX002",  # Allow TODO lines - consider removing at some point
+    "FBT001",  # Allow boolean positional args
+    "FBT002",  # Allow boolean positional args
+    "ISC001",  # Recommended to ignore these rules when using with ruff-format
+    "SLF001",  # Allow accessing private members
+    "TD002",
+    "TD003",   # Allow TODO lines
+    "UP007",   # Disallowing Union is pedantic
+    # TODO: Enable all of the following, but this PR is getting too large already
+    "PLR0913",
+    "TRY003",
+    "PLR2004",
+    "PD901",
+    "ERA001",
+    "ANN001",
+    "ANN202",
+    "PTH",
+    "N812",
+    "INP001",
+    "DTZ007",
+    "RUF015",
+    "A005",
+    "TC001",
+    "UP035",
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -76,17 +105,32 @@ max-doc-length = 88
 
 # Disable docstring checking for these directories
 [tool.ruff.lint.per-file-ignores]
-"python/tests/*" = ["D"]
-"examples/*" = ["D", "W505"]
-"dev/*" = ["D"]
-"benchmarks/*" = ["D", "F"]
+"python/tests/*" = [
+    "ANN",
+    "ARG",
+    "BLE001",
+    "D",
+    "S101",
+    "SLF",
+    "PD",
+    "PLR2004",
+    "PT011",
+    "RUF015",
+    "S608",
+    "PLR0913",
+    "PT004",
+]
+"examples/*" = ["D", "W505", "E501", "T201", "S101"]
+"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817"]
+"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
 "docs/*" = ["D"]
 
 [dependency-groups]
 dev = [
     "maturin>=1.8.1",
-    "numpy>1.24.4 ; python_full_version >= '3.10'",
+    "numpy>1.25.0",
     "pytest>=7.4.4",
+    "pytest-asyncio>=0.23.3",
     "ruff>=0.9.1",
     "toml>=0.10.2",
     "pygithub==2.5.0",

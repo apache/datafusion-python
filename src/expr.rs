@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::logical_expr::expr::{AggregateFunctionParams, WindowFunctionParams};
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
@@ -101,7 +102,7 @@ pub mod window;
 use sort_expr::{to_sort_expressions, PySortExpr};
 
 /// A PyExpr that can be used on a DataFrame
-#[pyclass(name = "Expr", module = "datafusion.expr", subclass)]
+#[pyclass(name = "RawExpr", module = "datafusion.expr", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExpr {
     pub expr: Expr,
@@ -172,6 +173,7 @@ impl PyExpr {
             Expr::ScalarSubquery(value) => {
                 Ok(scalar_subquery::PyScalarSubquery::from(value.clone()).into_bound_py_any(py)?)
             }
+            #[allow(deprecated)]
             Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
                 "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
                 qualifier, options
@@ -332,7 +334,6 @@ impl PyExpr {
             | Expr::AggregateFunction { .. }
             | Expr::WindowFunction { .. }
             | Expr::InList { .. }
-            | Expr::Wildcard { .. }
             | Expr::Exists { .. }
             | Expr::InSubquery { .. }
             | Expr::GroupingSet(..)
@@ -346,6 +347,10 @@ impl PyExpr {
             | Expr::Unnest(_)
             | Expr::IsNotUnknown(_) => RexType::Call,
             Expr::ScalarSubquery(..) => RexType::ScalarSubquery,
+            #[allow(deprecated)]
+            Expr::Wildcard { .. } => {
+                return Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
+            }
         })
     }
 
@@ -394,11 +399,15 @@ impl PyExpr {
             | Expr::InSubquery(InSubquery { expr, .. }) => Ok(vec![PyExpr::from(*expr.clone())]),
 
             // Expr variants containing a collection of Expr(s) for operands
-            Expr::AggregateFunction(AggregateFunction { args, .. })
+            Expr::AggregateFunction(AggregateFunction {
+                params: AggregateFunctionParams { args, .. },
+                ..
+            })
             | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::WindowFunction(WindowFunction { args, .. }) => {
-                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
-            }
+            | Expr::WindowFunction(WindowFunction {
+                params: WindowFunctionParams { args, .. },
+                ..
+            }) => Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect()),
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -465,13 +474,17 @@ impl PyExpr {
             Expr::GroupingSet(..)
             | Expr::Unnest(_)
             | Expr::OuterReferenceColumn(_, _)
-            | Expr::Wildcard { .. }
             | Expr::ScalarSubquery(..)
             | Expr::Placeholder { .. }
             | Expr::Exists { .. } => Err(py_runtime_err(format!(
                 "Unimplemented Expr type: {}",
                 self.expr
             ))),
+
+            #[allow(deprecated)]
+            Expr::Wildcard { .. } => {
+                Err(py_unsupported_variant_err("Expr::Wildcard is unsupported"))
+            }
         }
     }
 
@@ -575,7 +588,7 @@ impl PyExpr {
             Expr::AggregateFunction(agg_fn) => {
                 let window_fn = Expr::WindowFunction(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
-                    agg_fn.args.clone(),
+                    agg_fn.params.args.clone(),
                 ));
 
                 add_builder_fns_to_window(
@@ -663,16 +676,8 @@ impl PyExpr {
 
     /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
     pub fn expr_to_field(expr: &Expr, input_plan: &LogicalPlan) -> PyDataFusionResult<Arc<Field>> {
-        match expr {
-            Expr::Wildcard { .. } => {
-                // Since * could be any of the valid column names just return the first one
-                Ok(Arc::new(input_plan.schema().field(0).clone()))
-            }
-            _ => {
-                let fields = exprlist_to_fields(&[expr.clone()], input_plan)?;
-                Ok(fields[0].1.clone())
-            }
-        }
+        let fields = exprlist_to_fields(&[expr.clone()], input_plan)?;
+        Ok(fields[0].1.clone())
     }
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {
         match expr {
