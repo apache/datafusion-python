@@ -54,7 +54,7 @@ def df():
 
 @pytest.fixture
 def data():
-    return [{"a": 1, "b": "x" * 50, "c": 3}] * 10
+    return [{"a": 1, "b": "x" * 50, "c": 3}] * 100
 
 
 @pytest.fixture
