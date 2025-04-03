@@ -104,6 +104,15 @@ class DataframeDisplayConfig:
             max_table_rows_in_repr: Maximum number of rows to display in repr
                 string output (default: 10)
         """
+        # Validate values if they are not None
+        if max_table_bytes is not None:
+            self._validate_positive(max_table_bytes, "max_table_bytes")
+        if min_table_rows is not None:
+            self._validate_positive(min_table_rows, "min_table_rows")
+        if max_cell_length is not None:
+            self._validate_positive(max_cell_length, "max_cell_length")
+        if max_table_rows_in_repr is not None:
+            self._validate_positive(max_table_rows_in_repr, "max_table_rows_in_repr")
         self.config_internal = DataframeDisplayConfigInternal(
             max_table_bytes=max_table_bytes,
             min_table_rows=min_table_rows,
@@ -179,46 +188,6 @@ class SessionConfig:
             config_options: Configuration options.
         """
         self.config_internal = SessionConfigInternal(config_options)
-
-    def with_dataframe_display_config(
-        self,
-        max_table_bytes: Optional[int] = None,
-        min_table_rows: Optional[int] = None,
-        max_cell_length: Optional[int] = None,
-        max_table_rows_in_repr: Optional[int] = None,
-    ) -> SessionConfig:
-        """Configure the display options for DataFrames.
-
-        Args:
-            max_table_bytes: Maximum bytes to display for table presentation
-                     (default: 2MB)
-            min_table_rows: Minimum number of table rows to display (default: 20)
-            max_cell_length: Maximum length of a cell before it gets minimized
-                     (default: 25)
-            max_table_rows_in_repr: Maximum number of rows to display in repr string
-                        output (default: 10)
-
-        Returns:
-            A new :py:class:`SessionConfig` object with the updated display settings.
-        """
-        display_config = DataframeDisplayConfigInternal(
-            max_table_bytes=max_table_bytes,
-            min_table_rows=min_table_rows,
-            max_cell_length=max_cell_length,
-            max_table_rows_in_repr=max_table_rows_in_repr,
-        )
-
-        display_config = DataframeDisplayConfigInternal(
-            max_table_bytes=max_table_bytes,
-            min_table_rows=min_table_rows,
-            max_cell_length=max_cell_length,
-            max_table_rows_in_repr=max_table_rows_in_repr,
-        )
-
-        self.config_internal = self.config_internal.with_dataframe_display_config(
-            display_config
-        )
-        return self
 
     def with_create_default_catalog_and_schema(
         self, enabled: bool = True
