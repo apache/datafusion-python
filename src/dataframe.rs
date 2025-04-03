@@ -905,7 +905,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while size_estimate_so_far < max_bytes && rows_so_far < max_rows && rows_so_far < min_rows {
+    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
                 break;
