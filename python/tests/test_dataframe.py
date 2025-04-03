@@ -1407,8 +1407,7 @@ def test_display_config_affects_repr(data):
     # The representation should show truncated data (3 rows as specified)
     assert (
         # 5 = 1 header row + 3 separator line + 1 truncation message
-        repr_str.count("\n")
-        <= max_table_rows_in_repr + 5
+        repr_str.count("\n") <= max_table_rows_in_repr + 5
     )
     assert "Data truncated" in repr_str
 
@@ -1424,8 +1423,7 @@ def test_display_config_affects_repr(data):
     # Should show all data without truncation message
     assert (
         # 4 = 1 header row + 3 separator lines
-        repr_str2.count("\n")
-        == max_table_rows_in_repr + 4
+        repr_str2.count("\n") == max_table_rows_in_repr + 4
     )  # All rows should be shown
     assert "Data truncated" not in repr_str2
 
