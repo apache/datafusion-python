@@ -49,6 +49,7 @@ from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
 from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
+from .html_formatter import configure_formatter
 
 __version__ = importlib_metadata.version(__name__)
 
@@ -90,6 +91,7 @@ __all__ = [
     "udf",
     "udwf",
     "unparser",
+    "configure_formatter",
 ]
 
 
