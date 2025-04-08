@@ -213,26 +213,32 @@ class DataFrameHtmlFormatter:
                 html.append("<tr>")
 
                 for col_idx, column in enumerate(batch.columns):
+                    # Get the raw value from the column
                     raw_value = self._get_cell_value(column, row_idx)
-                    formatted_value = self._format_cell_value(raw_value)
 
-                    if (
-                        len(str(formatted_value)) > self.max_cell_length
-                        and self.enable_cell_expansion
-                    ):
+                    # If we have a custom cell builder, use it directly with the raw value
+                    if self._custom_cell_builder:
                         html.append(
-                            self._build_expandable_cell(
-                                raw_value,
-                                formatted_value,
-                                row_count,
-                                col_idx,
-                                table_uuid,
+                            self._custom_cell_builder(
+                                raw_value, row_count, col_idx, table_uuid
                             )
                         )
                     else:
-                        html.append(
-                            self._build_regular_cell(raw_value, formatted_value)
-                        )
+                        # Format the value using type formatters
+                        formatted_value = self._format_cell_value(raw_value)
+
+                        # Build the appropriate cell based on length and settings
+                        if (
+                            len(str(raw_value)) > self.max_cell_length
+                            and self.enable_cell_expansion
+                        ):
+                            html.append(
+                                self._build_expandable_cell(
+                                    formatted_value, row_count, col_idx, table_uuid
+                                )
+                            )
+                        else:
+                            html.append(self._build_regular_cell(formatted_value))
 
                 html.append("</tr>")
 
@@ -270,22 +276,14 @@ class DataFrameHtmlFormatter:
             if isinstance(value, type_cls):
                 return formatter(value)
 
+        # If no formatter matched, return string representation
         return str(value)
 
     def _build_expandable_cell(
-        self,
-        raw_value: Any,
-        formatted_value: str,
-        row_count: int,
-        col_idx: int,
-        table_uuid: str,
+        self, formatted_value: str, row_count: int, col_idx: int, table_uuid: str
     ) -> str:
         """Build an expandable cell for long content."""
-        # If custom cell builder is provided, use it
-        if self._custom_cell_builder:
-            return self._custom_cell_builder(raw_value, row_count, col_idx, table_uuid)
-
-        short_value = formatted_value[: self.max_cell_length]
+        short_value = str(formatted_value)[: self.max_cell_length]
         return (
             f"<td style='{self.style_provider.get_cell_style()}'>"
             f"<div class='expandable-container'>"
@@ -300,13 +298,8 @@ class DataFrameHtmlFormatter:
             f"</td>"
         )
 
-    def _build_regular_cell(self, raw_value: Any, formatted_value: str) -> str:
+    def _build_regular_cell(self, formatted_value: str) -> str:
         """Build a regular table cell."""
-        # If custom cell builder is provided, use it with dummy row/col values
-        if self._custom_cell_builder:
-            # Use 0, 0, "" as dummy values since this isn't an expandable cell
-            return self._custom_cell_builder(raw_value, 0, 0, "")
-
         return (
             f"<td style='{self.style_provider.get_cell_style()}'>{formatted_value}</td>"
         )
