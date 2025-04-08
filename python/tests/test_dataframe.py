@@ -33,9 +33,11 @@ from datafusion import (
 )
 from datafusion.expr import Window
 from datafusion.html_formatter import (
+    DataFrameHtmlFormatter,
     configure_formatter,
     get_formatter,
     reset_formatter,
+    reset_styles_loaded_state,
 )
 from pyarrow.csv import write_csv
 
@@ -1514,19 +1516,15 @@ def test_dataframe_repr_html_structure(df) -> None:
     # between the <th></th> and <td></td>. We also don't want the closing > on the
     # td and th segments because that is where the formatting data is written.
 
-    # Test for headers - this part works fine
     headers = ["a", "b", "c"]
     headers = [f"<th(.*?)>{v}</th>" for v in headers]
     header_pattern = "(.*?)".join(headers)
     header_matches = re.findall(header_pattern, output, re.DOTALL)
     assert len(header_matches) == 1
 
-    # The problem is with the body pattern - values are now wrapped in spans
     # Update the pattern to handle values that may be wrapped in spans
     body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
 
-    # Create a more flexible pattern that can match both direct values and values
-    # in spans
     body_lines = [
         f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
         for inner in body_data
@@ -1570,10 +1568,6 @@ def test_dataframe_repr_html_values(df):
 
 def test_html_formatter_shared_styles(df, clean_formatter_state):
     """Test that shared styles work correctly across multiple tables."""
-    from datafusion.html_formatter import (
-        configure_formatter,
-        reset_styles_loaded_state,
-    )
 
     # First, ensure we're using shared styles
     configure_formatter(use_shared_styles=True)
@@ -1603,7 +1597,6 @@ def test_html_formatter_shared_styles(df, clean_formatter_state):
 
 def test_html_formatter_no_shared_styles(df, clean_formatter_state):
     """Test that styles are always included when shared styles are disabled."""
-    from datafusion.html_formatter import configure_formatter
 
     # Configure formatter to NOT use shared styles
     configure_formatter(use_shared_styles=False)
@@ -1621,12 +1614,6 @@ def test_html_formatter_no_shared_styles(df, clean_formatter_state):
 
 def test_html_formatter_manual_format_html(clean_formatter_state):
     """Test direct usage of format_html method with shared styles."""
-    import pyarrow as pa
-    from datafusion.html_formatter import (
-        DataFrameHtmlFormatter,
-        get_formatter,
-        reset_styles_loaded_state,
-    )
 
     # Create sample data
     batch = pa.RecordBatch.from_arrays(
