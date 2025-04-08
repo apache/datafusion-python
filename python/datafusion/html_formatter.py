@@ -415,6 +415,19 @@ def configure_formatter(**kwargs: Any) -> None:
     _refresh_formatter_reference()
 
 
+def reset_formatter() -> None:
+    """Reset the global DataFrame HTML formatter to default settings.
+
+    This function creates a new formatter with default configuration
+    and sets it as the global formatter for all DataFrames.
+    """
+    global _default_formatter
+    _default_formatter = DataFrameHtmlFormatter()
+
+    # Ensure the changes are reflected in existing DataFrames
+    _refresh_formatter_reference()
+
+
 def _refresh_formatter_reference() -> None:
     """Refresh formatter reference in any modules using it.
 

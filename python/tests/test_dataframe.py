@@ -36,6 +36,7 @@ from datafusion.html_formatter import (
     _default_formatter,
     configure_formatter,
     get_formatter,
+    reset_formatter,
 )
 from pyarrow.csv import write_csv
 
@@ -107,6 +108,12 @@ def partitioned_df():
     )
 
     return ctx.create_dataframe([[batch]])
+
+
+@pytest.fixture
+def clean_formatter_state():
+    """Reset the HTML formatter after each test."""
+    reset_formatter()
 
 
 def test_select(df):
@@ -663,20 +670,7 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
     assert df_2.sort(col_a).to_pydict() == expected
 
 
-@pytest.fixture
-def reset_formatter():
-    """Reset the HTML formatter after each test."""
-
-    original = _default_formatter
-
-    # Give the test a fresh formatter
-    configure_formatter()
-
-    yield
-    globals()["_default_formatter"] = original
-
-
-def test_html_formatter_configuration(df, reset_formatter):
+def test_html_formatter_configuration(df, clean_formatter_state):
     """Test configuring the HTML formatter with different options."""
     # Configure with custom settings
     configure_formatter(
@@ -695,7 +689,7 @@ def test_html_formatter_configuration(df, reset_formatter):
     assert "expandable-container" not in html_output
 
 
-def test_html_formatter_custom_style_provider(df, reset_formatter):
+def test_html_formatter_custom_style_provider(df, clean_formatter_state):
     """Test using custom style providers with the HTML formatter."""
 
     class CustomStyleProvider:
@@ -716,7 +710,7 @@ def test_html_formatter_custom_style_provider(df, reset_formatter):
     assert "background-color: #f5f5f5" in html_output
 
 
-def test_html_formatter_type_formatters(df, reset_formatter):
+def test_html_formatter_type_formatters(df, clean_formatter_state):
     """Test registering custom type formatters for specific data types."""
 
     # Get current formatter and register custom formatters
@@ -736,7 +730,7 @@ def test_html_formatter_type_formatters(df, reset_formatter):
     assert '<span style="color: blue">1</span>' in html_output
 
 
-def test_html_formatter_custom_cell_builder(df, reset_formatter):
+def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
     """Test using a custom cell builder function."""
 
     # Create a custom cell builder that changes background color based on value
@@ -764,7 +758,7 @@ def test_html_formatter_custom_cell_builder(df, reset_formatter):
     assert "background-color: #d3e9f0" in html_output  # For values 1,2
 
 
-def test_html_formatter_custom_header_builder(df, reset_formatter):
+def test_html_formatter_custom_header_builder(df, clean_formatter_state):
     """Test using a custom header builder function."""
 
     # Create a custom header builder with tooltips
@@ -792,7 +786,7 @@ def test_html_formatter_custom_header_builder(df, reset_formatter):
     assert "background-color: #333; color: white" in html_output
 
 
-def test_html_formatter_complex_customization(df, reset_formatter):
+def test_html_formatter_complex_customization(df, clean_formatter_state):
     """Test combining multiple customization options together."""
 
     # Create a dark mode style provider
@@ -1423,6 +1417,8 @@ def test_dataframe_transform(df):
 
 
 def test_dataframe_repr_html(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output."""
+
     output = df._repr_html_()
 
     # Since we've added a fair bit of processing to the html output, lets just verify
