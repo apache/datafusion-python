@@ -78,7 +78,7 @@ class DataFrameHtmlFormatter:
         # Add table header
         html.append("<thead>")
         html.append("<tr>")
-        for field in schema.fields:
+        for field in schema:
             html.append(
                 "<th style='border: 1px solid black; padding: 8px; "
                 "text-align: left; background-color: #f2f2f2; "
