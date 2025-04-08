@@ -656,6 +656,180 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
     assert df_2.sort(col_a).to_pydict() == expected
 
 
+@pytest.fixture
+def reset_formatter():
+    """Reset the HTML formatter after each test."""
+    from datafusion.html_formatter import configure_formatter
+
+    yield
+    configure_formatter()  # Reset to defaults after test
+
+
+def test_html_formatter_configuration(df, reset_formatter):
+    """Test configuring the HTML formatter with different options."""
+    from datafusion.html_formatter import configure_formatter
+
+    # Configure with custom settings
+    configure_formatter(
+        max_cell_length=5,
+        max_width=500,
+        max_height=200,
+        enable_cell_expansion=False,
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our configuration was applied
+    assert "max-height: 200px" in html_output
+    assert "max-width: 500px" in html_output
+    # With cell expansion disabled, we shouldn't see expandable-container elements
+    assert "expandable-container" not in html_output
+
+
+def test_html_formatter_custom_style_provider(df, reset_formatter):
+    """Test using custom style providers with the HTML formatter."""
+    from datafusion.html_formatter import configure_formatter, StyleProvider
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return "background-color: #f5f5f5; color: #333; padding: 8px; border: 1px solid #ddd;"
+
+        def get_header_style(self) -> str:
+            return "background-color: #4285f4; color: white; font-weight: bold; padding: 10px; border: 1px solid #3367d6;"
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+
+def test_html_formatter_type_formatters(df, reset_formatter):
+    """Test registering custom type formatters for specific data types."""
+    from datafusion.html_formatter import get_formatter
+
+    # Get current formatter and register custom formatters
+    formatter = get_formatter()
+
+    # Format integers with color based on value
+    formatter.register_formatter(
+        int, lambda n: f'<span style="color: {"red" if n > 2 else "blue"}">{n}</span>'
+    )
+
+    html_output = df._repr_html_()
+
+    # Our test dataframe has values 1,2,3 so we should see:
+    assert '<span style="color: blue">1</span>' in html_output
+    assert '<span style="color: blue">2</span>' in html_output
+    assert '<span style="color: red">3</span>' in html_output
+
+
+def test_html_formatter_custom_cell_builder(df, reset_formatter):
+    """Test using a custom cell builder function."""
+    from datafusion.html_formatter import get_formatter
+
+    # Create a custom cell builder that changes background color based on value
+    def custom_cell_builder(value, row, col, table_id):
+        if isinstance(value, int):
+            if value > 5:  # Values > 5 get green background
+                return f'<td style="background-color: #d9f0d3">{value}</td>'
+            elif value < 3:  # Values < 3 get light blue background
+                return f'<td style="background-color: #d3e9f0">{value}</td>'
+        # Default styling for other cells
+        return f'<td style="border: 1px solid #ddd">{value}</td>'
+
+    # Set our custom cell builder
+    formatter = get_formatter()
+    formatter.set_custom_cell_builder(custom_cell_builder)
+
+    html_output = df._repr_html_()
+
+    # Verify our custom cell styling was applied
+    assert "background-color: #d3e9f0" in html_output  # For values 1,2
+    assert "background-color: #d9f0d3" in html_output  # For values > 5 (b column has 6)
+
+
+def test_html_formatter_custom_header_builder(df, reset_formatter):
+    """Test using a custom header builder function."""
+    from datafusion.html_formatter import get_formatter
+
+    # Create a custom header builder with tooltips
+    def custom_header_builder(field):
+        tooltips = {
+            "a": "Primary key column",
+            "b": "Secondary values",
+            "c": "Additional data",
+        }
+        tooltip = tooltips.get(field.name, "")
+        return (
+            f'<th style="background-color: #333; color: white" '
+            f'title="{tooltip}">{field.name}</th>'
+        )
+
+    # Set our custom header builder
+    formatter = get_formatter()
+    formatter.set_custom_header_builder(custom_header_builder)
+
+    html_output = df._repr_html_()
+
+    # Verify our custom headers were applied
+    assert 'title="Primary key column"' in html_output
+    assert 'title="Secondary values"' in html_output
+    assert "background-color: #333; color: white" in html_output
+
+
+def test_html_formatter_complex_customization(df, reset_formatter):
+    """Test combining multiple customization options together."""
+    from datafusion.html_formatter import (
+        configure_formatter,
+        StyleProvider,
+        get_formatter,
+    )
+
+    # Create a dark mode style provider
+    class DarkModeStyleProvider:
+        def get_cell_style(self) -> str:
+            return "background-color: #222; color: #eee; padding: 8px; border: 1px solid #444;"
+
+        def get_header_style(self) -> str:
+            return "background-color: #111; color: #fff; padding: 10px; border: 1px solid #333;"
+
+    # Configure with dark mode style
+    configure_formatter(
+        max_cell_length=10,
+        style_provider=DarkModeStyleProvider(),
+        custom_css="""
+            .datafusion-table {
+                font-family: monospace;
+                border-collapse: collapse;
+            }
+            .datafusion-table tr:hover td {
+                background-color: #444 !important;
+            }
+        """,
+    )
+
+    # Add type formatters for special formatting
+    formatter = get_formatter()
+    formatter.register_formatter(
+        int,
+        lambda n: f'<span style="color: {"#5af" if n % 2 == 0 else "#f5a"}">{n}</span>',
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our customizations were applied
+    assert "background-color: #222" in html_output
+    assert "background-color: #111" in html_output
+    assert ".datafusion-table" in html_output
+    assert "color: #5af" in html_output  # Even numbers
+    assert "color: #f5a" in html_output  # Odd numbers
+
+
 def test_get_dataframe(tmp_path):
     ctx = SessionContext()
 
