@@ -23,7 +23,6 @@ use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
-use arrow::util::display::{ArrayFormatter, FormatOptions};
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -39,7 +38,7 @@ use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
-use pyo3::types::{PyCapsule, PyTuple, PyTupleMethods};
+use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
@@ -74,7 +73,6 @@ impl PyTableProvider {
 }
 const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
 const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
-const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
@@ -152,115 +150,29 @@ impl PyDataFrame {
 
         let table_uuid = uuid::Uuid::new_v4().to_string();
 
-        let mut html_str = "
-        <style>
-            .expandable-container {
-                display: inline-block;
-                max-width: 200px;
-            }
-            .expandable {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: block;
-            }
-            .full-text {
-                display: none;
-                white-space: normal;
-            }
-            .expand-btn {
-                cursor: pointer;
-                color: blue;
-                text-decoration: underline;
-                border: none;
-                background: none;
-                font-size: inherit;
-                display: block;
-                margin-top: 5px;
-            }
-        </style>
+        // Convert record batches to PyObject list
+        let py_batches = batches
+            .into_iter()
+            .map(|rb| rb.to_pyarrow(py))
+            .collect::<PyResult<Vec<PyObject>>>()?;
 
-        <div style=\"width: 100%; max-width: 1000px; max-height: 300px; overflow: auto; border: 1px solid #ccc;\">
-            <table style=\"border-collapse: collapse; min-width: 100%\">
-                <thead>\n".to_string();
+        let py_schema = self.schema().into_pyobject(py)?;
 
-        let schema = batches[0].schema();
+        // Get the Python formatter module and call format_html
+        let formatter_module = py.import("datafusion.html_formatter")?;
+        let get_formatter = formatter_module.getattr("get_formatter")?;
+        let formatter = get_formatter.call0()?;
 
-        let mut header = Vec::new();
-        for field in schema.fields() {
-            header.push(format!("<th style='border: 1px solid black; padding: 8px; text-align: left; background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; max-width: fit-content;'>{}</th>", field.name()));
-        }
-        let header_str = header.join("");
-        html_str.push_str(&format!("<tr>{}</tr></thead><tbody>\n", header_str));
+        // Call format_html method on the formatter
+        let kwargs = pyo3::types::PyDict::new(py);
+        let py_batches_list = PyList::new(py, py_batches.as_slice())?;
+        kwargs.set_item("batches", py_batches_list)?;
+        kwargs.set_item("schema", py_schema)?;
+        kwargs.set_item("has_more", has_more)?;
+        kwargs.set_item("table_uuid", table_uuid)?;
 
-        let batch_formatters = batches
-            .iter()
-            .map(|batch| {
-                batch
-                    .columns()
-                    .iter()
-                    .map(|c| ArrayFormatter::try_new(c.as_ref(), &FormatOptions::default()))
-                    .map(|c| {
-                        c.map_err(|e| PyValueError::new_err(format!("Error: {:?}", e.to_string())))
-                    })
-                    .collect::<Result<Vec<_>, _>>()
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        let rows_per_batch = batches.iter().map(|batch| batch.num_rows());
-
-        // We need to build up row by row for html
-        let mut table_row = 0;
-        for (batch_formatter, num_rows_in_batch) in batch_formatters.iter().zip(rows_per_batch) {
-            for batch_row in 0..num_rows_in_batch {
-                table_row += 1;
-                let mut cells = Vec::new();
-                for (col, formatter) in batch_formatter.iter().enumerate() {
-                    let cell_data = formatter.value(batch_row).to_string();
-                    // From testing, primitive data types do not typically get larger than 21 characters
-                    if cell_data.len() > MAX_LENGTH_CELL_WITHOUT_MINIMIZE {
-                        let short_cell_data = &cell_data[0..MAX_LENGTH_CELL_WITHOUT_MINIMIZE];
-                        cells.push(format!("
-                            <td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>
-                                <div class=\"expandable-container\">
-                                    <span class=\"expandable\" id=\"{table_uuid}-min-text-{table_row}-{col}\">{short_cell_data}</span>
-                                    <span class=\"full-text\" id=\"{table_uuid}-full-text-{table_row}-{col}\">{cell_data}</span>
-                                    <button class=\"expand-btn\" onclick=\"toggleDataFrameCellText('{table_uuid}',{table_row},{col})\">...</button>
-                                </div>
-                            </td>"));
-                    } else {
-                        cells.push(format!("<td style='border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;'>{}</td>", formatter.value(batch_row)));
-                    }
-                }
-                let row_str = cells.join("");
-                html_str.push_str(&format!("<tr>{}</tr>\n", row_str));
-            }
-        }
-        html_str.push_str("</tbody></table></div>\n");
-
-        html_str.push_str("
-            <script>
-            function toggleDataFrameCellText(table_uuid, row, col) {
-                var shortText = document.getElementById(table_uuid + \"-min-text-\" + row + \"-\" + col);
-                var fullText = document.getElementById(table_uuid + \"-full-text-\" + row + \"-\" + col);
-                var button = event.target;
-
-                if (fullText.style.display === \"none\") {
-                    shortText.style.display = \"none\";
-                    fullText.style.display = \"inline\";
-                    button.textContent = \"(less)\";
-                } else {
-                    shortText.style.display = \"inline\";
-                    fullText.style.display = \"none\";
-                    button.textContent = \"...\";
-                }
-            }
-            </script>
-        ");
-
-        if has_more {
-            html_str.push_str("Data truncated due to size.");
-        }
+        let html_result = formatter.call_method("format_html", (), Some(&kwargs))?;
+        let html_str: String = html_result.extract()?;
 
         Ok(html_str)
     }
@@ -835,7 +747,7 @@ fn record_batch_into_schema(
 ) -> Result<RecordBatch, ArrowError> {
     let schema = Arc::new(schema.clone());
     let base_schema = record_batch.schema();
-    if base_schema.fields().len() == 0 {
+    if base_schema.fields().is_empty() {
         // Nothing to project
         return Ok(RecordBatch::new_empty(schema));
     }
