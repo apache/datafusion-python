@@ -454,6 +454,11 @@ def get_formatter() -> DataFrameHtmlFormatter:
 
     Returns:
         The global HTML formatter instance
+
+    Example:
+        >>> from datafusion.html_formatter import get_formatter
+        >>> formatter = get_formatter()
+        >>> formatter.max_cell_length = 50  # Increase cell length
     """
     return _default_formatter
 
@@ -467,6 +472,15 @@ def configure_formatter(**kwargs: Any) -> None:
     Args:
         **kwargs: Formatter configuration parameters like max_cell_length,
                  max_width, max_height, enable_cell_expansion, etc.
+
+    Example:
+        >>> from datafusion.html_formatter import configure_formatter
+        >>> configure_formatter(
+        ...     max_cell_length=50,
+        ...     max_height=500,
+        ...     enable_cell_expansion=True,
+        ...     use_shared_styles=True
+        ... )
     """
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter(**kwargs)
@@ -480,6 +494,10 @@ def reset_formatter() -> None:
 
     This function creates a new formatter with default configuration
     and sets it as the global formatter for all DataFrames.
+
+    Example:
+        >>> from datafusion.html_formatter import reset_formatter
+        >>> reset_formatter()  # Reset formatter to default settings
     """
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter()
@@ -496,6 +514,10 @@ def reset_styles_loaded_state() -> None:
 
     This can be useful when switching between notebook sessions or
     when styles need to be refreshed.
+
+    Example:
+        >>> from datafusion.html_formatter import reset_styles_loaded_state
+        >>> reset_styles_loaded_state()  # Force styles to reload in next render
     """
     DataFrameHtmlFormatter._styles_loaded = False
 
