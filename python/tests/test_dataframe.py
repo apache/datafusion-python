@@ -733,82 +733,75 @@ def test_html_formatter_type_formatters(df, clean_formatter_state):
 def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
     """Test using a custom cell builder function."""
 
-    def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
-        """Test using a custom cell builder function that changes style based on value."""
+    # Create a custom cell builder with distinct styling for different value ranges
+    def custom_cell_builder(value, row, col, table_id):
+        try:
+            num_value = int(value)
+            if num_value > 5:  # Values > 5 get green background with indicator
+                return f'<td style="background-color: #d9f0d3" data-test="high">{value}-high</td>'
+            if num_value < 3:  # Values < 3 get blue background with indicator
+                return f'<td style="background-color: #d3e9f0" data-test="low">{value}-low</td>'
+        except (ValueError, TypeError):
+            pass
 
-        # Create a custom cell builder with distinct styling for different value ranges
-        def custom_cell_builder(value, row, col, table_id):
-            try:
-                num_value = int(value)
-                if num_value > 5:  # Values > 5 get green background with indicator
-                    return f'<td style="background-color: #d9f0d3" data-test="high">{value}-high</td>'
-                if num_value < 3:  # Values < 3 get blue background with indicator
-                    return f'<td style="background-color: #d3e9f0" data-test="low">{value}-low</td>'
-            except (ValueError, TypeError):
-                pass
+        # Default styling for other cells (3, 4, 5)
+        return f'<td style="border: 1px solid #ddd" data-test="mid">{value}-mid</td>'
 
-            # Default styling for other cells (3, 4, 5)
-            return (
-                f'<td style="border: 1px solid #ddd" data-test="mid">{value}-mid</td>'
-            )
+    # Set our custom cell builder
+    formatter = get_formatter()
+    formatter.set_custom_cell_builder(custom_cell_builder)
 
-        # Set our custom cell builder
-        formatter = get_formatter()
-        formatter.set_custom_cell_builder(custom_cell_builder)
+    html_output = df._repr_html_()
 
-        html_output = df._repr_html_()
+    # Extract cells with specific styling using regex
+    low_cells = re.findall(
+        r'<td style="background-color: #d3e9f0"[^>]*>(\d+)-low</td>', html_output
+    )
+    mid_cells = re.findall(
+        r'<td style="border: 1px solid #ddd"[^>]*>(\d+)-mid</td>', html_output
+    )
+    high_cells = re.findall(
+        r'<td style="background-color: #d9f0d3"[^>]*>(\d+)-high</td>', html_output
+    )
 
-        # Extract cells with specific styling using regex
-        low_cells = re.findall(
-            r'<td style="background-color: #d3e9f0"[^>]*>(\d+)-low</td>', html_output
-        )
-        mid_cells = re.findall(
-            r'<td style="border: 1px solid #ddd"[^>]*>(\d+)-mid</td>', html_output
-        )
-        high_cells = re.findall(
-            r'<td style="background-color: #d9f0d3"[^>]*>(\d+)-high</td>', html_output
-        )
+    # Sort the extracted values for consistent comparison
+    low_cells = sorted(map(int, low_cells))
+    mid_cells = sorted(map(int, mid_cells))
+    high_cells = sorted(map(int, high_cells))
 
-        # Sort the extracted values for consistent comparison
-        low_cells = sorted(map(int, low_cells))
-        mid_cells = sorted(map(int, mid_cells))
-        high_cells = sorted(map(int, high_cells))
+    # Verify specific values have the correct styling applied
+    assert low_cells == [1, 2]  # Values < 3
+    assert mid_cells == [3, 4, 5, 5]  # Values 3-5
+    assert high_cells == [6, 8, 8]  # Values > 5
 
-        # Verify specific values have the correct styling applied
-        assert low_cells == [1, 2]  # Values < 3
-        assert mid_cells == [3, 4, 5, 5]  # Values 3-5
-        assert high_cells == [6, 8, 8]  # Values > 5
+    # Verify the exact content with styling appears in the output
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">1-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">2-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">3-mid</td>' in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">4-mid</td>' in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">6-high</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">8-high</td>'
+        in html_output
+    )
 
-        # Verify the exact content with styling appears in the output
-        assert (
-            '<td style="background-color: #d3e9f0" data-test="low">1-low</td>'
-            in html_output
-        )
-        assert (
-            '<td style="background-color: #d3e9f0" data-test="low">2-low</td>'
-            in html_output
-        )
-        assert (
-            '<td style="border: 1px solid #ddd" data-test="mid">3-mid</td>'
-            in html_output
-        )
-        assert (
-            '<td style="border: 1px solid #ddd" data-test="mid">4-mid</td>'
-            in html_output
-        )
-        assert (
-            '<td style="background-color: #d9f0d3" data-test="high">6-high</td>'
-            in html_output
-        )
-        assert (
-            '<td style="background-color: #d9f0d3" data-test="high">8-high</td>'
-            in html_output
-        )
-
-        # Count occurrences to ensure all cells are properly styled
-        assert html_output.count("-low</td>") == 2  # Two low values (1, 2)
-        assert html_output.count("-mid</td>") == 4  # Four mid values (3, 4, 5, 5)
-        assert html_output.count("-high</td>") == 3  # Three high values (6, 8, 8)
+    # Count occurrences to ensure all cells are properly styled
+    assert html_output.count("-low</td>") == 2  # Two low values (1, 2)
+    assert html_output.count("-mid</td>") == 4  # Four mid values (3, 4, 5, 5)
+    assert html_output.count("-high</td>") == 3  # Three high values (6, 8, 8)
 
     # Create a custom cell builder that changes background color based on value
     def custom_cell_builder(value, row, col, table_id):
