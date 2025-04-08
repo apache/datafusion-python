@@ -126,34 +126,3 @@ def str_lit(value):
 def lit(value) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
-
-
-# Apply monkeypatch for DataFrame._repr_html_ to properly use our HTML formatter
-def _patch_dataframe_repr_html():
-    """Apply patch to DataFrame._repr_html_ to use our HTML formatter."""
-    try:
-        from datafusion.dataframe import DataFrame
-        from datafusion.html_formatter import get_formatter
-
-        # Store original method if needed
-        if not hasattr(DataFrame, "_original_repr_html_"):
-            DataFrame._original_repr_html_ = DataFrame._repr_html_
-
-        # Define patched method
-        def patched_repr_html(self):
-            """Return HTML representation using configured formatter."""
-            from datafusion.html_formatter import get_formatter
-
-            formatter = get_formatter()
-            batches = self.collect()
-            schema = self.schema()
-            return formatter.format_html(batches, schema)
-
-        # Apply the patch
-        DataFrame._repr_html_ = patched_repr_html
-    except (ImportError, AttributeError) as e:
-        print(f"Warning: Could not patch DataFrame._repr_html_: {e}")
-
-
-# Apply the patch when module is imported
-_patch_dataframe_repr_html()
