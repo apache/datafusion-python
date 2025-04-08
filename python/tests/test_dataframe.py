@@ -1495,23 +1495,49 @@ def test_dataframe_transform(df):
 
 def test_dataframe_repr_html_structure(df) -> None:
     """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
 
     output = df._repr_html_()
+
+    # Debug prints to understand the actual HTML structure
+    print("\n\n----- HTML Output Sample -----")
+    print(output[:500])  # Print first 500 chars to see the structure
 
     # Since we've added a fair bit of processing to the html output, lets just verify
     # the values we are expecting in the table exist. Use regex and ignore everything
     # between the <th></th> and <td></td>. We also don't want the closing > on the
     # td and th segments because that is where the formatting data is written.
 
+    # Test for headers - this part works fine
     headers = ["a", "b", "c"]
     headers = [f"<th(.*?)>{v}</th>" for v in headers]
     header_pattern = "(.*?)".join(headers)
-    assert len(re.findall(header_pattern, output, re.DOTALL)) == 1
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
 
+    # The problem is with the body pattern - values are now wrapped in spans
+    # Update the pattern to handle values that may be wrapped in spans
     body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
-    body_lines = [f"<td(.*?)>{v}</td>" for inner in body_data for v in inner]
+
+    # Create a more flexible pattern that can match both direct values and values in spans
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
     body_pattern = "(.*?)".join(body_lines)
-    assert len(re.findall(body_pattern, output, re.DOTALL)) == 1
+
+    # For debugging
+    print("\n----- Regex Pattern -----")
+    print(body_pattern[:100] + "...")  # Print part of the pattern
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    # Print match info for debugging
+    print(f"\n----- Match Results -----")
+    print(f"Found {len(body_matches)} matches")
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
 
 
 def test_dataframe_repr_html_values(df):
