@@ -43,6 +43,9 @@ class DataFrameHtmlFormatter:
     ) -> str:
         """Format record batches as HTML.
 
+        This method is used by DataFrame's _repr_html_ implementation and can be
+        called directly when custom HTML rendering is needed.
+
         Args:
             batches: List of Arrow RecordBatch objects
             schema: Arrow Schema object
@@ -63,6 +66,7 @@ class DataFrameHtmlFormatter:
         html.extend(self._build_html_header())
         html.extend(self._build_table_container_start())
 
+        # Add table header and body
         html.extend(self._build_table_header(schema))
         html.extend(self._build_table_body(batches, table_uuid))
 
@@ -256,15 +260,27 @@ _default_formatter = DataFrameHtmlFormatter()
 
 
 def get_formatter() -> DataFrameHtmlFormatter:
-    """Get the current global DataFrame HTML formatter."""
+    """Get the current global DataFrame HTML formatter.
+
+    This function is used by the DataFrame._repr_html_ implementation to access
+    the shared formatter instance. It can also be used directly when custom
+    HTML rendering is needed.
+
+    Returns:
+        The global HTML formatter instance
+    """
     return _default_formatter
 
 
 def configure_formatter(**kwargs: Any) -> None:
     """Configure the global DataFrame HTML formatter.
 
+    This function creates a new formatter with the provided configuration
+    and sets it as the global formatter for all DataFrames.
+
     Args:
-        **kwargs: Formatter configuration parameters
+        **kwargs: Formatter configuration parameters like max_cell_length,
+                 max_width, max_height, enable_cell_expansion, etc.
     """
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter(**kwargs)
