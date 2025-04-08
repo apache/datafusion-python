@@ -1,4 +1,85 @@
-"""HTML formatting utilities for DataFusion DataFrames."""
+"""HTML formatting utilities for DataFusion DataFrames.
+
+This module provides a customizable HTML formatter for displaying DataFrames
+in rich environments like Jupyter notebooks.
+
+Examples:
+    Basic usage with the default formatter:
+
+    >>> import datafusion as df
+    >>> # Create a DataFrame
+    >>> ctx = df.SessionContext()
+    >>> df_obj = ctx.sql("SELECT 1 as id, 'example' as name")
+    >>> # The DataFrame will use the default formatter in Jupyter
+
+    Configuring the global formatter:
+
+    >>> from datafusion.html_formatter import configure_formatter
+    >>> configure_formatter(
+    ...     max_cell_length=50,
+    ...     max_height=500,
+    ...     enable_cell_expansion=True
+    ... )
+
+    Creating a custom formatter with specialized type handling:
+
+    >>> import datetime
+    >>> from datafusion.html_formatter import (
+    ...     DataFrameHtmlFormatter,
+    ...     StyleProvider,
+    ...     get_formatter
+    ... )
+    >>>
+    >>> # Create a custom date formatter
+    >>> def format_date(date_value):
+    ...     return date_value.strftime("%Y-%m-%d")
+    >>>
+    >>> # Create a custom style provider
+    >>> class BlueHeaderStyleProvider(StyleProvider):
+    ...     def get_cell_style(self) -> str:
+    ...         return "border: 1px solid #ddd; padding: 8px; text-align: left;"
+    ...
+    ...     def get_header_style(self) -> str:
+    ...         return (
+    ...             "border: 1px solid #ddd; padding: 8px; "
+    ...             "background-color: #4285f4; color: white; "
+    ...             "text-align: left; font-weight: bold;"
+    ...         )
+    >>>
+    >>> # Use composition to create a custom formatter
+    >>> formatter = DataFrameHtmlFormatter(
+    ...     max_cell_length=100,
+    ...     style_provider=BlueHeaderStyleProvider()
+    ... )
+    >>>
+    >>> # Register formatters for specific types
+    >>> formatter.register_formatter(datetime.date, format_date)
+    >>> formatter.register_formatter(float, lambda x: f"{x:.2f}")
+    >>>
+    >>> # Make it the global formatter
+    >>> from datafusion.html_formatter import configure_formatter
+    >>> configure_formatter(
+    ...     max_cell_length=100,
+    ...     style_provider=BlueHeaderStyleProvider()
+    ... )
+    >>> # Now register the formatters with the global formatter
+    >>> current_formatter = get_formatter()
+    >>> current_formatter.register_formatter(datetime.date, format_date)
+    >>> current_formatter.register_formatter(float, lambda x: f"{x:.2f}")
+
+    Creating custom cell builders for more complex formatting:
+
+    >>> # Custom cell builder for numeric values
+    >>> def number_cell_builder(value, row, col, table_id):
+    ...     if isinstance(value, (int, float)) and value < 0:
+    ...         return f"<td style='background-color: #ffcccc'>{value}</td>"
+    ...     elif isinstance(value, (int, float)) and value > 1000:
+    ...         return f"<td style='background-color: #ccffcc; font-weight: bold'>{value}</td>"
+    ...     else:
+    ...         return f"<td>{value}</td>"
+    >>>
+    >>> formatter.set_custom_cell_builder(number_cell_builder)
+"""
 
 from typing import Dict, Optional, Any, Union, List, Callable, Type, Protocol
 
@@ -66,6 +147,46 @@ class DataFrameHtmlFormatter:
         custom_css: Additional CSS to include in the HTML output
         show_truncation_message: Whether to display a message when data is truncated
         style_provider: Custom provider for cell and header styles
+
+    Example:
+        Create a formatter that adds color-coding for numeric values and custom date formatting:
+
+        >>> # Create custom style provider
+        >>> class CustomStyleProvider:
+        ...     def get_cell_style(self) -> str:
+        ...         return "border: 1px solid #ddd; padding: 8px;"
+        ...
+        ...     def get_header_style(self) -> str:
+        ...         return (
+        ...             "border: 1px solid #ddd; padding: 8px; "
+        ...             "background-color: #333; color: white;"
+        ...         )
+        >>>
+        >>> # Create the formatter with custom styling
+        >>> formatter = DataFrameHtmlFormatter(
+        ...     max_cell_length=50,
+        ...     style_provider=CustomStyleProvider()
+        ... )
+        >>>
+        >>> # Add custom formatters for specific data types
+        >>> import datetime
+        >>> formatter.register_formatter(
+        ...     datetime.date,
+        ...     lambda d: f'<span style="color: blue">{d.strftime("%b %d, %Y")}</span>'
+        ... )
+        >>>
+        >>> # Format large numbers with commas
+        >>> formatter.register_formatter(
+        ...     int,
+        ...     lambda n: f'<span style="font-family: monospace">{n:,}</span>' if n > 1000 else str(n)
+        ... )
+        >>>
+        >>> # Replace the global formatter so all DataFrames use it
+        >>> from datafusion.html_formatter import configure_formatter
+        >>> configure_formatter(
+        ...     max_cell_length=50,
+        ...     style_provider=CustomStyleProvider()
+        ... )
     """
 
     def __init__(
@@ -381,7 +502,26 @@ def configure_formatter(**kwargs: Any) -> None:
 def set_style_provider(provider: StyleProvider) -> None:
     """Set a custom style provider for the global formatter.
 
+    This is a convenience function to replace just the style provider
+    of the global formatter instance without changing other settings.
+
     Args:
         provider: A StyleProvider implementation
+
+    Example:
+        >>> from datafusion.html_formatter import set_style_provider
+        >>>
+        >>> class DarkModeStyleProvider:
+        ...     def get_cell_style(self) -> str:
+        ...         return "border: 1px solid #555; padding: 8px; color: #eee; background-color: #222;"
+        ...
+        ...     def get_header_style(self) -> str:
+        ...         return (
+        ...             "border: 1px solid #555; padding: 8px; "
+        ...             "color: white; background-color: #111; font-weight: bold;"
+        ...         )
+        >>>
+        >>> # Apply dark mode styling to all DataFrames
+        >>> set_style_provider(DarkModeStyleProvider())
     """
     _default_formatter.style_provider = provider
