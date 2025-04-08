@@ -160,6 +160,23 @@ class DataFrameHtmlFormatter:
         """
         self._custom_header_builder = builder
 
+    @classmethod
+    def is_styles_loaded(cls) -> bool:
+        """Check if HTML styles have been loaded in the current session.
+
+        This method is primarily intended for debugging UI rendering issues
+        related to style loading.
+
+        Returns:
+            True if styles have been loaded, False otherwise
+
+        Example:
+            >>> from datafusion.html_formatter import DataFrameHtmlFormatter
+            >>> DataFrameHtmlFormatter.is_styles_loaded()
+            False
+        """
+        return cls._styles_loaded
+
     def format_html(
         self,
         batches: list,
@@ -180,9 +197,24 @@ class DataFrameHtmlFormatter:
 
         Returns:
             HTML string representation of the data
+
+        Raises:
+            TypeError: If schema is invalid and no batches are provided
         """
         if not batches:
             return "No data to display"
+
+        # Validate schema
+        if schema is None or not hasattr(schema, "__iter__"):
+            if batches:
+                import warnings
+
+                warnings.warn(
+                    "Schema not provided or invalid. Using schema from first batch."
+                )
+                schema = batches[0].schema
+            else:
+                raise TypeError("Schema must be provided when batches list is empty")
 
         # Generate a unique ID if none provided
         table_uuid = table_uuid or f"df-{id(batches)}"
