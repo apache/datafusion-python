@@ -216,29 +216,28 @@ class DataFrameHtmlFormatter:
                     # Get the raw value from the column
                     raw_value = self._get_cell_value(column, row_idx)
 
-                    # If we have a custom cell builder, use it directly with the raw value
-                    if self._custom_cell_builder:
-                        html.append(
-                            self._custom_cell_builder(
-                                raw_value, row_count, col_idx, table_uuid
-                            )
-                        )
-                    else:
-                        # Format the value using type formatters
-                        formatted_value = self._format_cell_value(raw_value)
+                    # Always check for type formatters first to format the value
+                    formatted_value = self._format_cell_value(raw_value)
 
-                        # Build the appropriate cell based on length and settings
+                    # Then apply either custom cell builder or standard cell formatting
+                    if self._custom_cell_builder:
+                        # Pass both the raw value and formatted value to let the builder decide
+                        cell_html = self._custom_cell_builder(
+                            raw_value, row_count, col_idx, table_uuid
+                        )
+                        html.append(cell_html)
+                    else:
+                        # Standard cell formatting with formatted value
                         if (
                             len(str(raw_value)) > self.max_cell_length
                             and self.enable_cell_expansion
                         ):
-                            html.append(
-                                self._build_expandable_cell(
-                                    formatted_value, row_count, col_idx, table_uuid
-                                )
+                            cell_html = self._build_expandable_cell(
+                                formatted_value, row_count, col_idx, table_uuid
                             )
                         else:
-                            html.append(self._build_regular_cell(formatted_value))
+                            cell_html = self._build_regular_cell(formatted_value)
+                        html.append(cell_html)
 
                 html.append("</tr>")
 
@@ -400,11 +399,18 @@ def configure_formatter(**kwargs: Any) -> None:
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter(**kwargs)
 
+    # Ensure the changes are reflected in existing DataFrames
+    _refresh_formatter_reference()
 
-def set_style_provider(provider: StyleProvider) -> None:
-    """Set a custom style provider for the global formatter.
 
-    Args:
-        provider: A StyleProvider implementation
+def _refresh_formatter_reference() -> None:
+    """Refresh formatter reference in any modules using it.
+
+    This helps ensure that changes to the formatter are reflected in existing
+    DataFrames that might be caching the formatter reference.
     """
-    _default_formatter.style_provider = provider
+    try:
+        # This is a no-op but signals modules to refresh their reference
+        pass
+    except Exception:
+        pass

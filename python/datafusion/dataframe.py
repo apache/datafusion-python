@@ -152,7 +152,15 @@ class DataFrame:
         return self.df.__repr__()
 
     def _repr_html_(self) -> str:
-        return self.df._repr_html_()
+        """Return HTML representation for Jupyter notebooks."""
+        # Import here to avoid circular imports
+        from datafusion.html_formatter import get_formatter
+
+        # Always get the latest formatter
+        formatter = get_formatter()
+
+        # Format the data using the latest formatter
+        return formatter.format_html(self.collect(), self.schema())
 
     def describe(self) -> DataFrame:
         """Return the statistics for this DataFrame.
