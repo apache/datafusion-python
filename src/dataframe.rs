@@ -156,7 +156,6 @@ impl PyDataFrame {
             .map(|rb| rb.to_pyarrow(py))
             .collect::<PyResult<Vec<PyObject>>>()?;
 
-        // Get Python schema
         let py_schema = self.schema().into_pyobject(py)?;
 
         // Get the Python formatter module and call format_html

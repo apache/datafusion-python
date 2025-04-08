@@ -1,6 +1,6 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
-from typing import Dict, Optional, Any, Union
+from typing import Dict, Optional, Any, Union, List
 
 
 class DataFrameHtmlFormatter:
@@ -56,26 +56,47 @@ class DataFrameHtmlFormatter:
             return "No data to display"
 
         # Generate a unique ID if none provided
-        table_uuid = table_uuid or "df-" + str(id(batches))
+        table_uuid = table_uuid or f"df-{id(batches)}"
 
-        # Start building HTML string
+        # Build HTML components
         html = []
+        html.extend(self._build_html_header())
+        html.extend(self._build_table_container_start())
 
-        # Add CSS styles
+        html.extend(self._build_table_header(schema))
+        html.extend(self._build_table_body(batches, table_uuid))
+
+        html.append("</table>")
+        html.append("</div>")
+
+        # Add footer (JavaScript and messages)
+        html.extend(self._build_html_footer(has_more))
+
+        return "\n".join(html)
+
+    def _build_html_header(self) -> List[str]:
+        """Build the HTML header with CSS styles."""
+        html = []
         html.append("<style>")
         html.append(self._get_default_css())
         if self.custom_css:
             html.append(self.custom_css)
         html.append("</style>")
+        return html
 
-        # Create table container
+    def _build_table_container_start(self) -> List[str]:
+        """Build the opening tags for the table container."""
+        html = []
         html.append(
             f'<div style="width: 100%; max-width: {self.max_width}px; '
             f'max-height: {self.max_height}px; overflow: auto; border: 1px solid #ccc;">'
         )
         html.append('<table style="border-collapse: collapse; min-width: 100%">')
+        return html
 
-        # Add table header
+    def _build_table_header(self, schema: Any) -> List[str]:
+        """Build the HTML table header with column names."""
+        html = []
         html.append("<thead>")
         html.append("<tr>")
         for field in schema:
@@ -87,11 +108,13 @@ class DataFrameHtmlFormatter:
             )
         html.append("</tr>")
         html.append("</thead>")
+        return html
 
-        # Add table body
+    def _build_table_body(self, batches: list, table_uuid: str) -> List[str]:
+        """Build the HTML table body with data rows."""
+        html = []
         html.append("<tbody>")
 
-        # Process and add rows
         row_count = 0
         for batch in batches:
             for row_idx in range(batch.num_rows):
@@ -105,34 +128,49 @@ class DataFrameHtmlFormatter:
                         len(str(cell_value)) > self.max_cell_length
                         and self.enable_cell_expansion
                     ):
-                        # Add expandable cell
-                        short_value = str(cell_value)[: self.max_cell_length]
                         html.append(
-                            f"<td style='border: 1px solid black; padding: 8px; "
-                            f"text-align: left; white-space: nowrap;'>"
-                            f"<div class='expandable-container'>"
-                            f"<span class='expandable' id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
-                            f"{short_value}</span>"
-                            f"<span class='full-text' id='{table_uuid}-full-text-{row_count}-{col_idx}'>"
-                            f"{cell_value}</span>"
-                            f"<button class='expand-btn' "
-                            f"onclick=\"toggleDataFrameCellText('{table_uuid}',{row_count},{col_idx})\">"
-                            f"...</button>"
-                            f"</div>"
-                            f"</td>"
+                            self._build_expandable_cell(
+                                cell_value, row_count, col_idx, table_uuid
+                            )
                         )
                     else:
-                        # Add regular cell
-                        html.append(
-                            f"<td style='border: 1px solid black; padding: 8px; "
-                            f"text-align: left; white-space: nowrap;'>{cell_value}</td>"
-                        )
+                        html.append(self._build_regular_cell(cell_value))
 
                 html.append("</tr>")
 
         html.append("</tbody>")
-        html.append("</table>")
-        html.append("</div>")
+        return html
+
+    def _build_expandable_cell(
+        self, cell_value: Any, row_count: int, col_idx: int, table_uuid: str
+    ) -> str:
+        """Build an expandable cell for long content."""
+        short_value = str(cell_value)[: self.max_cell_length]
+        return (
+            f"<td style='border: 1px solid black; padding: 8px; "
+            f"text-align: left; white-space: nowrap;'>"
+            f"<div class='expandable-container'>"
+            f"<span class='expandable' id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
+            f"{short_value}</span>"
+            f"<span class='full-text' id='{table_uuid}-full-text-{row_count}-{col_idx}'>"
+            f"{cell_value}</span>"
+            f"<button class='expand-btn' "
+            f"onclick=\"toggleDataFrameCellText('{table_uuid}',{row_count},{col_idx})\">"
+            f"...</button>"
+            f"</div>"
+            f"</td>"
+        )
+
+    def _build_regular_cell(self, cell_value: Any) -> str:
+        """Build a regular table cell."""
+        return (
+            f"<td style='border: 1px solid black; padding: 8px; "
+            f"text-align: left; white-space: nowrap;'>{cell_value}</td>"
+        )
+
+    def _build_html_footer(self, has_more: bool) -> List[str]:
+        """Build the HTML footer with JavaScript and messages."""
+        html = []
 
         # Add JavaScript for interactivity
         if self.enable_cell_expansion:
@@ -142,7 +180,7 @@ class DataFrameHtmlFormatter:
         if has_more and self.show_truncation_message:
             html.append("<div>Data truncated due to size.</div>")
 
-        return "\n".join(html)
+        return html
 
     def _format_cell_value(self, column: Any, row_idx: int) -> str:
         """Format a cell value for display.
