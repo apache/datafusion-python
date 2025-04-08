@@ -77,7 +77,11 @@ class DataFrameHtmlFormatter:
         custom_css: Additional CSS to include in the HTML output
         show_truncation_message: Whether to display a message when data is truncated
         style_provider: Custom provider for cell and header styles
+        use_shared_styles: Whether to load styles and scripts only once per notebook session
     """
+
+    # Class variable to track if styles have been loaded in the notebook
+    _styles_loaded = False
 
     def __init__(
         self,
@@ -88,6 +92,7 @@ class DataFrameHtmlFormatter:
         custom_css: Optional[str] = None,
         show_truncation_message: bool = True,
         style_provider: Optional[StyleProvider] = None,
+        use_shared_styles: bool = True,
     ):
         # Validate numeric parameters
         if not isinstance(max_cell_length, int) or max_cell_length <= 0:
@@ -102,6 +107,8 @@ class DataFrameHtmlFormatter:
             raise TypeError("enable_cell_expansion must be a boolean")
         if not isinstance(show_truncation_message, bool):
             raise TypeError("show_truncation_message must be a boolean")
+        if not isinstance(use_shared_styles, bool):
+            raise TypeError("use_shared_styles must be a boolean")
 
         # Validate custom_css
         if custom_css is not None and not isinstance(custom_css, str):
@@ -118,6 +125,7 @@ class DataFrameHtmlFormatter:
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
         self.style_provider = style_provider or DefaultStyleProvider()
+        self.use_shared_styles = use_shared_styles
         # Registry for custom type formatters
         self._type_formatters: Dict[Type, CellFormatter] = {}
         # Custom cell builders
@@ -181,7 +189,20 @@ class DataFrameHtmlFormatter:
 
         # Build HTML components
         html = []
-        html.extend(self._build_html_header())
+
+        # Only include styles and scripts if:
+        # 1. Not using shared styles, OR
+        # 2. Using shared styles but they haven't been loaded yet
+        include_styles = (
+            not self.use_shared_styles or not DataFrameHtmlFormatter._styles_loaded
+        )
+
+        if include_styles:
+            html.extend(self._build_html_header())
+            # If we're using shared styles, mark them as loaded
+            if self.use_shared_styles:
+                DataFrameHtmlFormatter._styles_loaded = True
+
         html.extend(self._build_table_container_start())
 
         # Add table header and body
@@ -191,8 +212,13 @@ class DataFrameHtmlFormatter:
         html.append("</table>")
         html.append("</div>")
 
-        # Add footer (JavaScript and messages)
-        html.extend(self._build_html_footer(has_more))
+        # Add footer with JavaScript only if needed
+        if include_styles and self.enable_cell_expansion:
+            html.append(self._get_javascript())
+
+        # Always add truncation message if needed (independent of styles)
+        if has_more and self.show_truncation_message:
+            html.append("<div>Data truncated due to size.</div>")
 
         return "\n".join(html)
 
@@ -353,7 +379,8 @@ class DataFrameHtmlFormatter:
         html = []
 
         # Add JavaScript for interactivity only if cell expansion is enabled
-        if self.enable_cell_expansion:
+        # and we're not using the shared styles approach
+        if self.enable_cell_expansion and not self.use_shared_styles:
             html.append(self._get_javascript())
 
         # Add truncation message if needed
@@ -457,8 +484,20 @@ def reset_formatter() -> None:
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter()
 
+    # Reset the styles_loaded flag to ensure styles will be reloaded
+    DataFrameHtmlFormatter._styles_loaded = False
+
     # Ensure the changes are reflected in existing DataFrames
     _refresh_formatter_reference()
+
+
+def reset_styles_loaded_state() -> None:
+    """Reset the styles loaded state to force reloading of styles.
+
+    This can be useful when switching between notebook sessions or
+    when styles need to be refreshed.
+    """
+    DataFrameHtmlFormatter._styles_loaded = False
 
 
 def _refresh_formatter_reference() -> None:
