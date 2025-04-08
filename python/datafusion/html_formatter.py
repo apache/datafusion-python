@@ -1,6 +1,6 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
-from typing import Dict, Optional, Any, Union, List
+from typing import Dict, Optional, Any, Union, List, Callable, Type
 
 
 class DataFrameHtmlFormatter:
@@ -8,6 +8,12 @@ class DataFrameHtmlFormatter:
 
     This class handles the HTML rendering of DataFrames for display in
     Jupyter notebooks and other rich display contexts.
+
+    This class is designed to be extended by subclassing. Key extension points:
+    - Override `get_cell_style()` and `get_header_style()` to customize styling
+    - Override `_format_cell_value()` to customize value formatting
+    - Use `register_formatter()` to add custom formatters for specific types
+    - Override any `_build_*` method to customize component generation
 
     Args:
         max_cell_length: Maximum characters to display in a cell before truncation
@@ -33,6 +39,44 @@ class DataFrameHtmlFormatter:
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
+        # Registry for custom type formatters
+        self._type_formatters: Dict[Type, Callable[[Any], str]] = {}
+
+    def register_formatter(
+        self, type_class: Type, formatter: Callable[[Any], str]
+    ) -> None:
+        """Register a custom formatter for a specific data type.
+
+        Args:
+            type_class: The type to register a formatter for
+            formatter: Function that takes a value of the given type and returns
+                a formatted string
+        """
+        self._type_formatters[type_class] = formatter
+
+    def get_cell_style(self) -> str:
+        """Get the CSS style for regular table cells.
+
+        This method can be overridden by subclasses to customize cell styling.
+
+        Returns:
+            CSS style string
+        """
+        return "border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;"
+
+    def get_header_style(self) -> str:
+        """Get the CSS style for table header cells.
+
+        This method can be overridden by subclasses to customize header styling.
+
+        Returns:
+            CSS style string
+        """
+        return (
+            "border: 1px solid black; padding: 8px; text-align: left; "
+            "background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; "
+            "max-width: fit-content;"
+        )
 
     def format_html(
         self,
@@ -104,12 +148,7 @@ class DataFrameHtmlFormatter:
         html.append("<thead>")
         html.append("<tr>")
         for field in schema:
-            html.append(
-                "<th style='border: 1px solid black; padding: 8px; "
-                "text-align: left; background-color: #f2f2f2; "
-                "white-space: nowrap; min-width: fit-content; "
-                f"max-width: fit-content;'>{field.name}</th>"
-            )
+            html.append(f"<th style='{self.get_header_style()}'>{field.name}</th>")
         html.append("</tr>")
         html.append("</thead>")
         return html
@@ -151,8 +190,7 @@ class DataFrameHtmlFormatter:
         """Build an expandable cell for long content."""
         short_value = str(cell_value)[: self.max_cell_length]
         return (
-            f"<td style='border: 1px solid black; padding: 8px; "
-            f"text-align: left; white-space: nowrap;'>"
+            f"<td style='{self.get_cell_style()}'>"
             f"<div class='expandable-container'>"
             f"<span class='expandable' id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
             f"{short_value}</span>"
@@ -167,10 +205,7 @@ class DataFrameHtmlFormatter:
 
     def _build_regular_cell(self, cell_value: Any) -> str:
         """Build a regular table cell."""
-        return (
-            f"<td style='border: 1px solid black; padding: 8px; "
-            f"text-align: left; white-space: nowrap;'>{cell_value}</td>"
-        )
+        return f"<td style='{self.get_cell_style()}'>{cell_value}</td>"
 
     def _build_html_footer(self, has_more: bool) -> List[str]:
         """Build the HTML footer with JavaScript and messages."""
@@ -189,6 +224,9 @@ class DataFrameHtmlFormatter:
     def _format_cell_value(self, column: Any, row_idx: int) -> str:
         """Format a cell value for display.
 
+        This method can be overridden by subclasses to customize cell formatting.
+        It also checks for registered type formatters before falling back to str().
+
         Args:
             column: Arrow array
             row_idx: Row index
@@ -196,10 +234,15 @@ class DataFrameHtmlFormatter:
         Returns:
             Formatted cell value as string
         """
-        # This is a simplified implementation for Python-side formatting
-        # In practice, we'd want to handle different Arrow types appropriately
         try:
-            return str(column[row_idx])
+            value = column[row_idx]
+
+            # Check for custom type formatters
+            for type_cls, formatter in self._type_formatters.items():
+                if isinstance(value, type_cls):
+                    return formatter(value)
+
+            return str(value)
         except (IndexError, TypeError):
             return ""
 
