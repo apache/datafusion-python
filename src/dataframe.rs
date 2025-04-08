@@ -73,7 +73,6 @@ impl PyTableProvider {
 }
 const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
 const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
-const MAX_LENGTH_CELL_WITHOUT_MINIMIZE: usize = 25;
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
