@@ -1329,7 +1329,7 @@ def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
     # test that the actual compression scheme is the one written
     for _root, _dirs, files in os.walk(path):
         for file in files:
-            if file endswith(".parquet"):
+            if file.endswith(".parquet"):
                 metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
                 for row_group in metadata["row_groups"]:
                     for columns in row_group["columns"]:
