@@ -1,6 +1,50 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
-from typing import Dict, Optional, Any, Union, List, Callable, Type
+from typing import Dict, Optional, Any, Union, List, Callable, Type, Protocol
+
+
+class CellFormatter(Protocol):
+    """Protocol for cell value formatters."""
+
+    def __call__(self, value: Any) -> str:
+        """Format a cell value to string representation."""
+        ...
+
+
+class StyleProvider(Protocol):
+    """Protocol for HTML style providers."""
+
+    def get_cell_style(self) -> str:
+        """Get the CSS style for table cells."""
+        ...
+
+    def get_header_style(self) -> str:
+        """Get the CSS style for header cells."""
+        ...
+
+
+class DefaultStyleProvider:
+    """Default implementation of StyleProvider."""
+
+    def get_cell_style(self) -> str:
+        """Get the CSS style for table cells.
+
+        Returns:
+            CSS style string
+        """
+        return "border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;"
+
+    def get_header_style(self) -> str:
+        """Get the CSS style for header cells.
+
+        Returns:
+            CSS style string
+        """
+        return (
+            "border: 1px solid black; padding: 8px; text-align: left; "
+            "background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; "
+            "max-width: fit-content;"
+        )
 
 
 class DataFrameHtmlFormatter:
@@ -9,11 +53,10 @@ class DataFrameHtmlFormatter:
     This class handles the HTML rendering of DataFrames for display in
     Jupyter notebooks and other rich display contexts.
 
-    This class is designed to be extended by subclassing. Key extension points:
-    - Override `get_cell_style()` and `get_header_style()` to customize styling
-    - Override `_format_cell_value()` to customize value formatting
-    - Use `register_formatter()` to add custom formatters for specific types
-    - Override any `_build_*` method to customize component generation
+    This class supports extension through composition. Key extension points:
+    - Provide a custom StyleProvider for styling cells and headers
+    - Register custom formatters for specific types
+    - Provide custom cell builders for specialized cell rendering
 
     Args:
         max_cell_length: Maximum characters to display in a cell before truncation
@@ -22,6 +65,7 @@ class DataFrameHtmlFormatter:
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell values
         custom_css: Additional CSS to include in the HTML output
         show_truncation_message: Whether to display a message when data is truncated
+        style_provider: Custom provider for cell and header styles
     """
 
     def __init__(
@@ -32,6 +76,7 @@ class DataFrameHtmlFormatter:
         enable_cell_expansion: bool = True,
         custom_css: Optional[str] = None,
         show_truncation_message: bool = True,
+        style_provider: Optional[StyleProvider] = None,
     ):
         self.max_cell_length = max_cell_length
         self.max_width = max_width
@@ -39,12 +84,14 @@ class DataFrameHtmlFormatter:
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
+        self.style_provider = style_provider or DefaultStyleProvider()
         # Registry for custom type formatters
-        self._type_formatters: Dict[Type, Callable[[Any], str]] = {}
+        self._type_formatters: Dict[Type, CellFormatter] = {}
+        # Custom cell builders
+        self._custom_cell_builder: Optional[Callable[[Any, int, int, str], str]] = None
+        self._custom_header_builder: Optional[Callable[[Any], str]] = None
 
-    def register_formatter(
-        self, type_class: Type, formatter: Callable[[Any], str]
-    ) -> None:
+    def register_formatter(self, type_class: Type, formatter: CellFormatter) -> None:
         """Register a custom formatter for a specific data type.
 
         Args:
@@ -54,29 +101,23 @@ class DataFrameHtmlFormatter:
         """
         self._type_formatters[type_class] = formatter
 
-    def get_cell_style(self) -> str:
-        """Get the CSS style for regular table cells.
+    def set_custom_cell_builder(
+        self, builder: Callable[[Any, int, int, str], str]
+    ) -> None:
+        """Set a custom cell builder function.
 
-        This method can be overridden by subclasses to customize cell styling.
-
-        Returns:
-            CSS style string
+        Args:
+            builder: Function that takes (value, row, col, table_id) and returns HTML
         """
-        return "border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;"
+        self._custom_cell_builder = builder
 
-    def get_header_style(self) -> str:
-        """Get the CSS style for table header cells.
+    def set_custom_header_builder(self, builder: Callable[[Any], str]) -> None:
+        """Set a custom header builder function.
 
-        This method can be overridden by subclasses to customize header styling.
-
-        Returns:
-            CSS style string
+        Args:
+            builder: Function that takes a field and returns HTML
         """
-        return (
-            "border: 1px solid black; padding: 8px; text-align: left; "
-            "background-color: #f2f2f2; white-space: nowrap; min-width: fit-content; "
-            "max-width: fit-content;"
-        )
+        self._custom_header_builder = builder
 
     def format_html(
         self,
@@ -148,7 +189,12 @@ class DataFrameHtmlFormatter:
         html.append("<thead>")
         html.append("<tr>")
         for field in schema:
-            html.append(f"<th style='{self.get_header_style()}'>{field.name}</th>")
+            if self._custom_header_builder:
+                html.append(self._custom_header_builder(field))
+            else:
+                html.append(
+                    f"<th style='{self.style_provider.get_header_style()}'>{field.name}</th>"
+                )
         html.append("</tr>")
         html.append("</thead>")
         return html
@@ -188,9 +234,13 @@ class DataFrameHtmlFormatter:
         self, cell_value: Any, row_count: int, col_idx: int, table_uuid: str
     ) -> str:
         """Build an expandable cell for long content."""
+        # If custom cell builder is provided, use it
+        if self._custom_cell_builder:
+            return self._custom_cell_builder(cell_value, row_count, col_idx, table_uuid)
+
         short_value = str(cell_value)[: self.max_cell_length]
         return (
-            f"<td style='{self.get_cell_style()}'>"
+            f"<td style='{self.style_provider.get_cell_style()}'>"
             f"<div class='expandable-container'>"
             f"<span class='expandable' id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
             f"{short_value}</span>"
@@ -205,7 +255,7 @@ class DataFrameHtmlFormatter:
 
     def _build_regular_cell(self, cell_value: Any) -> str:
         """Build a regular table cell."""
-        return f"<td style='{self.get_cell_style()}'>{cell_value}</td>"
+        return f"<td style='{self.style_provider.get_cell_style()}'>{cell_value}</td>"
 
     def _build_html_footer(self, has_more: bool) -> List[str]:
         """Build the HTML footer with JavaScript and messages."""
@@ -224,8 +274,7 @@ class DataFrameHtmlFormatter:
     def _format_cell_value(self, column: Any, row_idx: int) -> str:
         """Format a cell value for display.
 
-        This method can be overridden by subclasses to customize cell formatting.
-        It also checks for registered type formatters before falling back to str().
+        Uses registered type formatters if available.
 
         Args:
             column: Arrow array
@@ -327,3 +376,12 @@ def configure_formatter(**kwargs: Any) -> None:
     """
     global _default_formatter
     _default_formatter = DataFrameHtmlFormatter(**kwargs)
+
+
+def set_style_provider(provider: StyleProvider) -> None:
+    """Set a custom style provider for the global formatter.
+
+    Args:
+        provider: A StyleProvider implementation
+    """
+    _default_formatter.style_provider = provider
