@@ -141,14 +141,6 @@ class DataFrameHtmlFormatter:
         Returns:
             HTML string representation of the data
         """
-        print("DEBUG format_html: Called with batches:", len(batches) if batches else 0)
-        print(
-            f"DEBUG format_html: Type formatters registered: {len(self._type_formatters)}"
-        )
-        print(
-            f"DEBUG format_html: Has custom cell builder: {self._custom_cell_builder is not None}"
-        )
-
         if not batches:
             return "No data to display"
 
@@ -224,24 +216,15 @@ class DataFrameHtmlFormatter:
                 for col_idx, column in enumerate(batch.columns):
                     # Get the raw value from the column
                     raw_value = self._get_cell_value(column, row_idx)
-                    print(
-                        f"DEBUG row {row_count}, col {col_idx}: raw_value = {raw_value} ({type(raw_value).__name__})"
-                    )
 
                     # Always check for type formatters first to format the value
                     formatted_value = self._format_cell_value(raw_value)
-                    print(
-                        f"DEBUG row {row_count}, col {col_idx}: formatted_value = {formatted_value}"
-                    )
 
                     # Then apply either custom cell builder or standard cell formatting
                     if self._custom_cell_builder:
                         # Pass both the raw value and formatted value to let the builder decide
                         cell_html = self._custom_cell_builder(
                             raw_value, row_count, col_idx, table_uuid
-                        )
-                        print(
-                            f"DEBUG custom cell builder returned: {cell_html[:50]}..."
                         )
                         html.append(cell_html)
                     else:
@@ -302,9 +285,7 @@ class DataFrameHtmlFormatter:
         # Check for custom type formatters
         for type_cls, formatter in self._type_formatters.items():
             if isinstance(value, type_cls):
-                print(f"DEBUG formatter match for {type_cls.__name__}: {value}")
                 result = formatter(value)
-                print(f"DEBUG formatter returned: {result}")
                 return result
 
         # If no formatter matched, return string representation
@@ -415,10 +396,6 @@ def get_formatter() -> DataFrameHtmlFormatter:
     Returns:
         The global HTML formatter instance
     """
-    print(f"DEBUG get_formatter: returning instance id={id(_default_formatter)}")
-    print(
-        f"DEBUG get_formatter: type formatters: {len(_default_formatter._type_formatters)}"
-    )
     return _default_formatter
 
 
