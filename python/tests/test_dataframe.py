@@ -740,6 +740,56 @@ def test_html_formatter_type_formatters(df, reset_formatter):
     assert '<span style="color: red">3</span>' in html_output
 
 
+def test_html_formatter_type_formatters_debug(df, reset_formatter):
+    """Debugging version of test_html_formatter_type_formatters."""
+    from datafusion.html_formatter import get_formatter
+
+    print("\n\n==== STARTING test_html_formatter_type_formatters_debug ====")
+
+    # Import the debug utility
+    try:
+        from datafusion.debug_utils import check_html_formatter_integration
+
+        check_html_formatter_integration()
+    except ImportError:
+        print("Could not import debug_utils, continuing...")
+
+    # Get current formatter and register custom formatters
+    formatter = get_formatter()
+
+    # Format integers with color based on value
+    formatter.register_formatter(
+        int, lambda n: f'<span style="color: {"red" if n > 2 else "blue"}">{n}</span>'
+    )
+    print(f"Registered formatter for int: {formatter._type_formatters}")
+
+    # Let's examine the DataFrame instance
+    print(f"DataFrame type: {type(df).__name__}")
+    print(
+        f"DataFrame dir: {[m for m in dir(df) if not m.startswith('_') or m == '_repr_html_']}"
+    )
+
+    # Let's check what _repr_html_ does
+    import inspect
+
+    if hasattr(df, "_repr_html_"):
+        print(f"_repr_html_ source: {inspect.getsource(df._repr_html_)}")
+    else:
+        print("No _repr_html_ method found")
+
+    # Get the HTML output
+    html_output = df._repr_html_()
+
+    # Check for our expected string
+    expected = '<span style="color: blue">1</span>'
+    print(f"Expected string '{expected}' in output: {expected in html_output}")
+
+    # Print a small portion of the output
+    print(f"HTML snippet: {html_output[:500]}...")
+
+    print("==== END test_html_formatter_type_formatters_debug ====\n\n")
+
+
 def test_html_formatter_custom_cell_builder(df, reset_formatter):
     """Test using a custom cell builder function."""
     from datafusion.html_formatter import get_formatter
