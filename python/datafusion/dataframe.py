@@ -156,11 +156,15 @@ class DataFrame:
         # Import here to avoid circular imports
         from datafusion.html_formatter import get_formatter
 
-        # Always get the latest formatter
+        # Always get the latest formatter instance
         formatter = get_formatter()
 
-        # Format the data using the latest formatter
-        return formatter.format_html(self.collect(), self.schema())
+        # Get data and schema
+        batches = self.collect()
+        schema = self.schema()
+
+        # Format the data using our formatter
+        return formatter.format_html(batches, schema)
 
     def describe(self) -> DataFrame:
         """Return the statistics for this DataFrame.

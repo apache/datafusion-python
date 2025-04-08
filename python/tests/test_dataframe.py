@@ -661,8 +661,20 @@ def reset_formatter():
     """Reset the HTML formatter after each test."""
     from datafusion.html_formatter import configure_formatter
 
+    # Store original formatter configuration
+    from datafusion.html_formatter import _default_formatter
+
+    original = _default_formatter
+
+    # Give the test a fresh formatter
+    configure_formatter()
+
     yield
-    configure_formatter()  # Reset to defaults after test
+
+    # Completely reset to original state after test
+    from datafusion.html_formatter import _default_formatter
+
+    globals()["_default_formatter"] = original
 
 
 def test_html_formatter_configuration(df, reset_formatter):
