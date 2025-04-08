@@ -1,7 +1,6 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
-import sys
-from typing import Dict, Optional, Any, Union, List, Callable, Type, Protocol
+from typing import Any, Callable, Dict, List, Optional, Protocol, Type
 
 
 class CellFormatter(Protocol):

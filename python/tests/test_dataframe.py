@@ -28,8 +28,14 @@ from datafusion import (
     column,
     literal,
 )
-from datafusion import functions as f
+from datafusion import (
+    functions as f,
+)
 from datafusion.expr import Window
+from datafusion.html_formatter import (
+    _default_formatter,
+    configure_formatter,
+)
 from pyarrow.csv import write_csv
 
 
@@ -659,10 +665,6 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
 @pytest.fixture
 def reset_formatter():
     """Reset the HTML formatter after each test."""
-    from datafusion.html_formatter import configure_formatter
-
-    # Store original formatter configuration
-    from datafusion.html_formatter import _default_formatter
 
     original = _default_formatter
 
@@ -670,17 +672,11 @@ def reset_formatter():
     configure_formatter()
 
     yield
-
-    # Completely reset to original state after test
-    from datafusion.html_formatter import _default_formatter
-
     globals()["_default_formatter"] = original
 
 
 def test_html_formatter_configuration(df, reset_formatter):
     """Test configuring the HTML formatter with different options."""
-    from datafusion.html_formatter import configure_formatter
-
     # Configure with custom settings
     configure_formatter(
         max_cell_length=5,
@@ -700,7 +696,6 @@ def test_html_formatter_configuration(df, reset_formatter):
 
 def test_html_formatter_custom_style_provider(df, reset_formatter):
     """Test using custom style providers with the HTML formatter."""
-    from datafusion.html_formatter import configure_formatter, StyleProvider
 
     class CustomStyleProvider:
         def get_cell_style(self) -> str:
@@ -753,7 +748,7 @@ def test_html_formatter_custom_cell_builder(df, reset_formatter):
             num_value = int(value)
             if num_value > 5:  # Values > 5 get green background
                 return f'<td style="background-color: #d9f0d3">{value}</td>'
-            elif num_value < 3:  # Values < 3 get light blue background
+            if num_value < 3:  # Values < 3 get light blue background
                 return f'<td style="background-color: #d3e9f0">{value}</td>'
         except (ValueError, TypeError):
             pass
@@ -804,7 +799,6 @@ def test_html_formatter_complex_customization(df, reset_formatter):
     """Test combining multiple customization options together."""
     from datafusion.html_formatter import (
         configure_formatter,
-        StyleProvider,
         get_formatter,
     )
 
