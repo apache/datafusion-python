@@ -212,7 +212,7 @@ class DataFrameHtmlFormatter:
         html.append("</table>")
         html.append("</div>")
 
-        # Add footer with JavaScript only if needed
+        # Add footer (JavaScript and messages)
         if include_styles and self.enable_cell_expansion:
             html.append(self._get_javascript())
 
