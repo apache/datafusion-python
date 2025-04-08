@@ -33,7 +33,6 @@ from datafusion import (
 )
 from datafusion.expr import Window
 from datafusion.html_formatter import (
-    _default_formatter,
     configure_formatter,
     get_formatter,
     reset_formatter,
@@ -694,10 +693,16 @@ def test_html_formatter_custom_style_provider(df, clean_formatter_state):
 
     class CustomStyleProvider:
         def get_cell_style(self) -> str:
-            return "background-color: #f5f5f5; color: #333; padding: 8px; border: 1px solid #ddd;"
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
 
         def get_header_style(self) -> str:
-            return "background-color: #4285f4; color: white; font-weight: bold; padding: 10px; border: 1px solid #3367d6;"
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
 
     # Configure with custom style provider
     configure_formatter(style_provider=CustomStyleProvider())
@@ -738,9 +743,15 @@ def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
         try:
             num_value = int(value)
             if num_value > 5:  # Values > 5 get green background with indicator
-                return f'<td style="background-color: #d9f0d3" data-test="high">{value}-high</td>'
+                return (
+                    '<td style="background-color: #d9f0d3" '
+                    f'data-test="high">{value}-high</td>'
+                )
             if num_value < 3:  # Values < 3 get blue background with indicator
-                return f'<td style="background-color: #d3e9f0" data-test="low">{value}-low</td>'
+                return (
+                    '<td style="background-color: #d3e9f0" '
+                    f'data-test="low">{value}-low</td>'
+                )
         except (ValueError, TypeError):
             pass
 
@@ -862,10 +873,16 @@ def test_html_formatter_complex_customization(df, clean_formatter_state):
     # Create a dark mode style provider
     class DarkModeStyleProvider:
         def get_cell_style(self) -> str:
-            return "background-color: #222; color: #eee; padding: 8px; border: 1px solid #444;"
+            return (
+                "background-color: #222; color: #eee; "
+                "padding: 8px; border: 1px solid #444;"
+            )
 
         def get_header_style(self) -> str:
-            return "background-color: #111; color: #fff; padding: 10px; border: 1px solid #333;"
+            return (
+                "background-color: #111; color: #fff; padding: 10px; "
+                "border: 1px solid #333;"
+            )
 
     # Configure with dark mode style
     configure_formatter(
@@ -1492,10 +1509,6 @@ def test_dataframe_repr_html_structure(df) -> None:
 
     output = df._repr_html_()
 
-    # Debug prints to understand the actual HTML structure
-    print("\n\n----- HTML Output Sample -----")
-    print(output[:500])  # Print first 500 chars to see the structure
-
     # Since we've added a fair bit of processing to the html output, lets just verify
     # the values we are expecting in the table exist. Use regex and ignore everything
     # between the <th></th> and <td></td>. We also don't want the closing > on the
@@ -1512,7 +1525,8 @@ def test_dataframe_repr_html_structure(df) -> None:
     # Update the pattern to handle values that may be wrapped in spans
     body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
 
-    # Create a more flexible pattern that can match both direct values and values in spans
+    # Create a more flexible pattern that can match both direct values and values
+    # in spans
     body_lines = [
         f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
         for inner in body_data
@@ -1520,15 +1534,7 @@ def test_dataframe_repr_html_structure(df) -> None:
     ]
     body_pattern = "(.*?)".join(body_lines)
 
-    # For debugging
-    print("\n----- Regex Pattern -----")
-    print(body_pattern[:100] + "...")  # Print part of the pattern
-
     body_matches = re.findall(body_pattern, output, re.DOTALL)
-
-    # Print match info for debugging
-    print(f"\n----- Match Results -----")
-    print(f"Found {len(body_matches)} matches")
 
     assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
 
@@ -1539,24 +1545,25 @@ def test_dataframe_repr_html_values(df):
     assert html is not None
 
     # Create a more flexible pattern that handles values being wrapped in spans
-    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless of formatting
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
     pattern = re.compile(
         r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
-        + r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
         re.DOTALL,
     )
 
     # Print debug info if the test fails
     matches = re.findall(pattern, html)
     if not matches:
-        print(f"HTML output snippet: {html[:500]}...")
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
 
     assert len(matches) > 0, "Expected pattern of values not found in HTML output"
 
@@ -1564,14 +1571,12 @@ def test_dataframe_repr_html_values(df):
 def test_html_formatter_shared_styles(df, clean_formatter_state):
     """Test that shared styles work correctly across multiple tables."""
     from datafusion.html_formatter import (
-        get_formatter,
         configure_formatter,
         reset_styles_loaded_state,
     )
 
     # First, ensure we're using shared styles
     configure_formatter(use_shared_styles=True)
-    formatter = get_formatter()
 
     # Get HTML output for first table - should include styles
     html_first = df._repr_html_()
@@ -1616,12 +1621,12 @@ def test_html_formatter_no_shared_styles(df, clean_formatter_state):
 
 def test_html_formatter_manual_format_html(clean_formatter_state):
     """Test direct usage of format_html method with shared styles."""
+    import pyarrow as pa
     from datafusion.html_formatter import (
-        get_formatter,
         DataFrameHtmlFormatter,
+        get_formatter,
         reset_styles_loaded_state,
     )
-    import pyarrow as pa
 
     # Create sample data
     batch = pa.RecordBatch.from_arrays(

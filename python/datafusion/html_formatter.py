@@ -1,13 +1,12 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
+from __future__ import annotations
+
 from typing import (
     Any,
     Callable,
-    Dict,
-    List,
     Optional,
     Protocol,
-    Type,
     runtime_checkable,
 )
 
@@ -43,7 +42,10 @@ class DefaultStyleProvider:
         Returns:
             CSS style string
         """
-        return "border: 1px solid black; padding: 8px; text-align: left; white-space: nowrap;"
+        return (
+            "border: 1px solid black; padding: 8px; text-align: left; "
+            "white-space: nowrap;"
+        )
 
     def get_header_style(self) -> str:
         """Get the CSS style for header cells.
@@ -73,11 +75,13 @@ class DataFrameHtmlFormatter:
         max_cell_length: Maximum characters to display in a cell before truncation
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
-        enable_cell_expansion: Whether to add expand/collapse buttons for long cell values
+        enable_cell_expansion: Whether to add expand/collapse buttons for long cell
+          values
         custom_css: Additional CSS to include in the HTML output
         show_truncation_message: Whether to display a message when data is truncated
         style_provider: Custom provider for cell and header styles
-        use_shared_styles: Whether to load styles and scripts only once per notebook session
+        use_shared_styles: Whether to load styles and scripts only once per notebook
+          session
     """
 
     # Class variable to track if styles have been loaded in the notebook
@@ -93,30 +97,72 @@ class DataFrameHtmlFormatter:
         show_truncation_message: bool = True,
         style_provider: Optional[StyleProvider] = None,
         use_shared_styles: bool = True,
-    ):
+    ) -> None:
+        """Initialize the HTML formatter.
+
+        Parameters
+        ----------
+        max_cell_length : int, default 25
+            Maximum length of cell content before truncation.
+        max_width : int, default 1000
+            Maximum width of the displayed table in pixels.
+        max_height : int, default 300
+            Maximum height of the displayed table in pixels.
+        enable_cell_expansion : bool, default True
+            Whether to allow cells to expand when clicked.
+        custom_css : str, optional
+            Custom CSS to apply to the HTML table.
+        show_truncation_message : bool, default True
+            Whether to show a message indicating that content has been truncated.
+        style_provider : StyleProvider, optional
+            Provider of CSS styles for the HTML table. If None, DefaultStyleProvider
+            is used.
+        use_shared_styles : bool, default True
+            Whether to use shared styles across multiple tables.
+
+        Raises:
+        ------
+        ValueError
+            If max_cell_length, max_width, or max_height is not a positive integer.
+        TypeError
+            If enable_cell_expansion, show_truncation_message, or use_shared_styles is
+            not a boolean,
+            or if custom_css is provided but is not a string,
+            or if style_provider is provided but does not implement the StyleProvider
+            protocol.
+        """
         # Validate numeric parameters
+
         if not isinstance(max_cell_length, int) or max_cell_length <= 0:
-            raise ValueError("max_cell_length must be a positive integer")
+            msg = "max_cell_length must be a positive integer"
+            raise ValueError(msg)
         if not isinstance(max_width, int) or max_width <= 0:
-            raise ValueError("max_width must be a positive integer")
+            msg = "max_width must be a positive integer"
+            raise ValueError(msg)
         if not isinstance(max_height, int) or max_height <= 0:
-            raise ValueError("max_height must be a positive integer")
+            msg = "max_height must be a positive integer"
+            raise ValueError(msg)
 
         # Validate boolean parameters
         if not isinstance(enable_cell_expansion, bool):
-            raise TypeError("enable_cell_expansion must be a boolean")
+            msg = "enable_cell_expansion must be a boolean"
+            raise TypeError(msg)
         if not isinstance(show_truncation_message, bool):
-            raise TypeError("show_truncation_message must be a boolean")
+            msg = "show_truncation_message must be a boolean"
+            raise TypeError(msg)
         if not isinstance(use_shared_styles, bool):
-            raise TypeError("use_shared_styles must be a boolean")
+            msg = "use_shared_styles must be a boolean"
+            raise TypeError(msg)
 
         # Validate custom_css
         if custom_css is not None and not isinstance(custom_css, str):
-            raise TypeError("custom_css must be None or a string")
+            msg = "custom_css must be None or a string"
+            raise TypeError(msg)
 
         # Validate style_provider
         if style_provider is not None and not isinstance(style_provider, StyleProvider):
-            raise TypeError("style_provider must implement the StyleProvider protocol")
+            msg = "style_provider must implement the StyleProvider protocol"
+            raise TypeError(msg)
 
         self.max_cell_length = max_cell_length
         self.max_width = max_width
@@ -127,12 +173,12 @@ class DataFrameHtmlFormatter:
         self.style_provider = style_provider or DefaultStyleProvider()
         self.use_shared_styles = use_shared_styles
         # Registry for custom type formatters
-        self._type_formatters: Dict[Type, CellFormatter] = {}
+        self._type_formatters: dict[type, CellFormatter] = {}
         # Custom cell builders
         self._custom_cell_builder: Optional[Callable[[Any, int, int, str], str]] = None
         self._custom_header_builder: Optional[Callable[[Any], str]] = None
 
-    def register_formatter(self, type_class: Type, formatter: CellFormatter) -> None:
+    def register_formatter(self, type_class: type, formatter: CellFormatter) -> None:
         """Register a custom formatter for a specific data type.
 
         Args:
@@ -182,7 +228,7 @@ class DataFrameHtmlFormatter:
         batches: list,
         schema: Any,
         has_more: bool = False,
-        table_uuid: Optional[str] = None,
+        table_uuid: str | None = None,
     ) -> str:
         """Format record batches as HTML.
 
@@ -206,15 +252,8 @@ class DataFrameHtmlFormatter:
 
         # Validate schema
         if schema is None or not hasattr(schema, "__iter__"):
-            if batches:
-                import warnings
-
-                warnings.warn(
-                    "Schema not provided or invalid. Using schema from first batch."
-                )
-                schema = batches[0].schema
-            else:
-                raise TypeError("Schema must be provided when batches list is empty")
+            msg = "Schema must be provided"
+            raise TypeError(msg)
 
         # Generate a unique ID if none provided
         table_uuid = table_uuid or f"df-{id(batches)}"
@@ -254,7 +293,7 @@ class DataFrameHtmlFormatter:
 
         return "\n".join(html)
 
-    def _build_html_header(self) -> List[str]:
+    def _build_html_header(self) -> list[str]:
         """Build the HTML header with CSS styles."""
         html = []
         html.append("<style>")
@@ -266,17 +305,18 @@ class DataFrameHtmlFormatter:
         html.append("</style>")
         return html
 
-    def _build_table_container_start(self) -> List[str]:
+    def _build_table_container_start(self) -> list[str]:
         """Build the opening tags for the table container."""
         html = []
         html.append(
             f'<div style="width: 100%; max-width: {self.max_width}px; '
-            f'max-height: {self.max_height}px; overflow: auto; border: 1px solid #ccc;">'
+            f"max-height: {self.max_height}px; overflow: auto; border: "
+            '1px solid #ccc;">'
         )
         html.append('<table style="border-collapse: collapse; min-width: 100%">')
         return html
 
-    def _build_table_header(self, schema: Any) -> List[str]:
+    def _build_table_header(self, schema: Any) -> list[str]:
         """Build the HTML table header with column names."""
         html = []
         html.append("<thead>")
@@ -286,13 +326,14 @@ class DataFrameHtmlFormatter:
                 html.append(self._custom_header_builder(field))
             else:
                 html.append(
-                    f"<th style='{self.style_provider.get_header_style()}'>{field.name}</th>"
+                    f"<th style='{self.style_provider.get_header_style()}'>"
+                    f"{field.name}</th>"
                 )
         html.append("</tr>")
         html.append("</thead>")
         return html
 
-    def _build_table_body(self, batches: list, table_uuid: str) -> List[str]:
+    def _build_table_body(self, batches: list, table_uuid: str) -> list[str]:
         """Build the HTML table body with data rows."""
         html = []
         html.append("<tbody>")
@@ -312,7 +353,8 @@ class DataFrameHtmlFormatter:
 
                     # Then apply either custom cell builder or standard cell formatting
                     if self._custom_cell_builder:
-                        # Pass both the raw value and formatted value to let the builder decide
+                        # Pass both the raw value and formatted value to let the
+                        # builder decide
                         cell_html = self._custom_cell_builder(
                             raw_value, row_count, col_idx, table_uuid
                         )
@@ -346,20 +388,14 @@ class DataFrameHtmlFormatter:
             The raw cell value
         """
         try:
-            # Get the value from the column
             value = column[row_idx]
 
-            # Try to convert scalar types to Python native types
-            try:
-                # Arrow scalars typically have a .as_py() method
-                if hasattr(value, "as_py"):
-                    return value.as_py()
-            except (AttributeError, TypeError):
-                pass
-
+            if hasattr(value, "as_py"):
+                return value.as_py()
+        except (AttributeError, TypeError):
+            pass
+        else:
             return value
-        except (IndexError, TypeError):
-            return ""
 
     def _format_cell_value(self, value: Any) -> str:
         """Format a cell value for display.
@@ -375,8 +411,7 @@ class DataFrameHtmlFormatter:
         # Check for custom type formatters
         for type_cls, formatter in self._type_formatters.items():
             if isinstance(value, type_cls):
-                result = formatter(value)
-                return result
+                return formatter(value)
 
         # If no formatter matched, return string representation
         return str(value)
@@ -389,9 +424,11 @@ class DataFrameHtmlFormatter:
         return (
             f"<td style='{self.style_provider.get_cell_style()}'>"
             f"<div class='expandable-container'>"
-            f"<span class='expandable' id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
+            "<span class='expandable' "
+            f"id='{table_uuid}-min-text-{row_count}-{col_idx}'>"
             f"{short_value}</span>"
-            f"<span class='full-text' id='{table_uuid}-full-text-{row_count}-{col_idx}'>"
+            "<span class='full-text' "
+            f"id='{table_uuid}-full-text-{row_count}-{col_idx}'>"
             f"{formatted_value}</span>"
             f"<button class='expand-btn' "
             f"onclick=\"toggleDataFrameCellText('{table_uuid}',{row_count},{col_idx})\">"
@@ -406,7 +443,7 @@ class DataFrameHtmlFormatter:
             f"<td style='{self.style_provider.get_cell_style()}'>{formatted_value}</td>"
         )
 
-    def _build_html_footer(self, has_more: bool) -> List[str]:
+    def _build_html_footer(self, has_more: bool) -> list[str]:
         """Build the HTML footer with JavaScript and messages."""
         html = []
 
@@ -455,8 +492,12 @@ class DataFrameHtmlFormatter:
         return """
             <script>
             function toggleDataFrameCellText(table_uuid, row, col) {
-                var shortText = document.getElementById(table_uuid + "-min-text-" + row + "-" + col);
-                var fullText = document.getElementById(table_uuid + "-full-text-" + row + "-" + col);
+                var shortText = document.getElementById(
+                    table_uuid + "-min-text-" + row + "-" + col
+                );
+                var fullText = document.getElementById(
+                    table_uuid + "-full-text-" + row + "-" + col
+                );
                 var button = event.target;
 
                 if (fullText.style.display === "none") {
@@ -473,8 +514,29 @@ class DataFrameHtmlFormatter:
         """
 
 
-# Global formatter instance to be used by default
-_default_formatter = DataFrameHtmlFormatter()
+class FormatterManager:
+    """Manager class for the global DataFrame HTML formatter instance."""
+
+    _default_formatter: DataFrameHtmlFormatter = DataFrameHtmlFormatter()
+
+    @classmethod
+    def set_formatter(cls, formatter: DataFrameHtmlFormatter) -> None:
+        """Set the global DataFrame HTML formatter.
+
+        Args:
+            formatter: The formatter instance to use globally
+        """
+        cls._default_formatter = formatter
+        _refresh_formatter_reference()
+
+    @classmethod
+    def get_formatter(cls) -> DataFrameHtmlFormatter:
+        """Get the current global DataFrame HTML formatter.
+
+        Returns:
+            The global HTML formatter instance
+        """
+        return cls._default_formatter
 
 
 def get_formatter() -> DataFrameHtmlFormatter:
@@ -492,7 +554,21 @@ def get_formatter() -> DataFrameHtmlFormatter:
         >>> formatter = get_formatter()
         >>> formatter.max_cell_length = 50  # Increase cell length
     """
-    return _default_formatter
+    return FormatterManager.get_formatter()
+
+
+def set_formatter(formatter: DataFrameHtmlFormatter) -> None:
+    """Set the global DataFrame HTML formatter.
+
+    Args:
+        formatter: The formatter instance to use globally
+
+    Example:
+        >>> from datafusion.html_formatter import get_formatter, set_formatter
+        >>> custom_formatter = DataFrameHtmlFormatter(max_cell_length=100)
+        >>> set_formatter(custom_formatter)
+    """
+    FormatterManager.set_formatter(formatter)
 
 
 def configure_formatter(**kwargs: Any) -> None:
@@ -514,11 +590,7 @@ def configure_formatter(**kwargs: Any) -> None:
         ...     use_shared_styles=True
         ... )
     """
-    global _default_formatter
-    _default_formatter = DataFrameHtmlFormatter(**kwargs)
-
-    # Ensure the changes are reflected in existing DataFrames
-    _refresh_formatter_reference()
+    set_formatter(DataFrameHtmlFormatter(**kwargs))
 
 
 def reset_formatter() -> None:
@@ -531,14 +603,10 @@ def reset_formatter() -> None:
         >>> from datafusion.html_formatter import reset_formatter
         >>> reset_formatter()  # Reset formatter to default settings
     """
-    global _default_formatter
-    _default_formatter = DataFrameHtmlFormatter()
-
+    formatter = DataFrameHtmlFormatter()
     # Reset the styles_loaded flag to ensure styles will be reloaded
     DataFrameHtmlFormatter._styles_loaded = False
-
-    # Ensure the changes are reflected in existing DataFrames
-    _refresh_formatter_reference()
+    set_formatter(formatter)
 
 
 def reset_styles_loaded_state() -> None:
@@ -560,8 +628,4 @@ def _refresh_formatter_reference() -> None:
     This helps ensure that changes to the formatter are reflected in existing
     DataFrames that might be caching the formatter reference.
     """
-    try:
-        # This is a no-op but signals modules to refresh their reference
-        pass
-    except Exception:
-        pass
+    # This is a no-op but signals modules to refresh their reference
