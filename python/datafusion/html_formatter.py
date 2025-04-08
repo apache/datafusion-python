@@ -273,7 +273,18 @@ class DataFrameHtmlFormatter:
             The raw cell value
         """
         try:
-            return column[row_idx]
+            # Get the value from the column
+            value = column[row_idx]
+
+            # Try to convert scalar types to Python native types
+            try:
+                # Arrow scalars typically have a .as_py() method
+                if hasattr(value, "as_py"):
+                    return value.as_py()
+            except (AttributeError, TypeError):
+                pass
+
+            return value
         except (IndexError, TypeError):
             return ""
 
