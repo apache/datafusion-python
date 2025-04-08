@@ -35,6 +35,7 @@ from datafusion.expr import Window
 from datafusion.html_formatter import (
     _default_formatter,
     configure_formatter,
+    get_formatter,
 )
 from pyarrow.csv import write_csv
 
@@ -717,7 +718,6 @@ def test_html_formatter_custom_style_provider(df, reset_formatter):
 
 def test_html_formatter_type_formatters(df, reset_formatter):
     """Test registering custom type formatters for specific data types."""
-    from datafusion.html_formatter import get_formatter
 
     # Get current formatter and register custom formatters
     formatter = get_formatter()
@@ -731,7 +731,6 @@ def test_html_formatter_type_formatters(df, reset_formatter):
     formatter.register_formatter(int, format_int)
 
     html_output = df._repr_html_()
-    print(f"HTML output contains {len(html_output)} characters")
 
     # Our test dataframe has values 1,2,3 so we should see:
     assert '<span style="color: blue">1</span>' in html_output
@@ -739,7 +738,6 @@ def test_html_formatter_type_formatters(df, reset_formatter):
 
 def test_html_formatter_custom_cell_builder(df, reset_formatter):
     """Test using a custom cell builder function."""
-    from datafusion.html_formatter import get_formatter
 
     # Create a custom cell builder that changes background color based on value
     def custom_cell_builder(value, row, col, table_id):
@@ -768,7 +766,6 @@ def test_html_formatter_custom_cell_builder(df, reset_formatter):
 
 def test_html_formatter_custom_header_builder(df, reset_formatter):
     """Test using a custom header builder function."""
-    from datafusion.html_formatter import get_formatter
 
     # Create a custom header builder with tooltips
     def custom_header_builder(field):
@@ -797,10 +794,6 @@ def test_html_formatter_custom_header_builder(df, reset_formatter):
 
 def test_html_formatter_complex_customization(df, reset_formatter):
     """Test combining multiple customization options together."""
-    from datafusion.html_formatter import (
-        configure_formatter,
-        get_formatter,
-    )
 
     # Create a dark mode style provider
     class DarkModeStyleProvider:
