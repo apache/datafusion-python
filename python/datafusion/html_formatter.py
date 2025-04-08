@@ -1,8 +1,18 @@
 """HTML formatting utilities for DataFusion DataFrames."""
 
-from typing import Any, Callable, Dict, List, Optional, Protocol, Type
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Protocol,
+    Type,
+    runtime_checkable,
+)
 
 
+@runtime_checkable
 class CellFormatter(Protocol):
     """Protocol for cell value formatters."""
 
@@ -11,6 +21,7 @@ class CellFormatter(Protocol):
         ...
 
 
+@runtime_checkable
 class StyleProvider(Protocol):
     """Protocol for HTML style providers."""
 
@@ -78,6 +89,28 @@ class DataFrameHtmlFormatter:
         show_truncation_message: bool = True,
         style_provider: Optional[StyleProvider] = None,
     ):
+        # Validate numeric parameters
+        if not isinstance(max_cell_length, int) or max_cell_length <= 0:
+            raise ValueError("max_cell_length must be a positive integer")
+        if not isinstance(max_width, int) or max_width <= 0:
+            raise ValueError("max_width must be a positive integer")
+        if not isinstance(max_height, int) or max_height <= 0:
+            raise ValueError("max_height must be a positive integer")
+
+        # Validate boolean parameters
+        if not isinstance(enable_cell_expansion, bool):
+            raise TypeError("enable_cell_expansion must be a boolean")
+        if not isinstance(show_truncation_message, bool):
+            raise TypeError("show_truncation_message must be a boolean")
+
+        # Validate custom_css
+        if custom_css is not None and not isinstance(custom_css, str):
+            raise TypeError("custom_css must be None or a string")
+
+        # Validate style_provider
+        if style_provider is not None and not isinstance(style_provider, StyleProvider):
+            raise TypeError("style_provider must implement the StyleProvider protocol")
+
         self.max_cell_length = max_cell_length
         self.max_width = max_width
         self.max_height = max_height
