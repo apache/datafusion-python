@@ -714,9 +714,19 @@ impl PyExpr {
                 | Operator::BitwiseXor
                 | Operator::BitwiseAnd
                 | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
-                Operator::AtArrow | Operator::ArrowAt => {
-                    Err(py_type_err(format!("Unsupported expr: ${op}")))
-                }
+                Operator::AtArrow
+                | Operator::ArrowAt
+                | Operator::Arrow
+                | Operator::LongArrow
+                | Operator::HashArrow
+                | Operator::HashLongArrow
+                | Operator::AtAt
+                | Operator::IntegerDivide
+                | Operator::HashMinus
+                | Operator::AtQuestion
+                | Operator::Question
+                | Operator::QuestionAnd
+                | Operator::QuestionPipe => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
