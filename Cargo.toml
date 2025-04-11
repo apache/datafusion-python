@@ -38,10 +38,10 @@ tokio = { version = "1.44", features = ["macros", "rt", "rt-multi-thread", "sync
 pyo3 = { version = "0.24", features = ["extension-module", "abi3", "abi3-py39"] }
 pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"]}
 arrow = { version = "55.0.0", features = ["pyarrow"] }
-datafusion = { version = "47.0.0", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "47.0.0", optional = true }
-datafusion-proto = { version = "47.0.0" }
-datafusion-ffi = { version = "47.0.0" }
+datafusion = { git = "https://github.com/timsaucer/datafusion", rev = "e4d5846dddefed5bf6934acc63da7f4bd4644868", features = ["avro", "unicode_expressions"] }
+datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", rev = "e4d5846dddefed5bf6934acc63da7f4bd4644868", optional = true }
+datafusion-proto = { git = "https://github.com/timsaucer/datafusion", rev = "e4d5846dddefed5bf6934acc63da7f4bd4644868" }
+datafusion-ffi = { git = "https://github.com/timsaucer/datafusion", rev = "e4d5846dddefed5bf6934acc63da7f4bd4644868" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.16", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
@@ -61,9 +61,3 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
-
-[patch.crates-io]
-datafusion = { path = "../datafusion/datafusion/core" }
-datafusion-substrait = { path = "../datafusion/datafusion/substrait" }
-datafusion-proto = { path = "../datafusion/datafusion/proto" }
-datafusion-ffi = { path = "../datafusion/datafusion/ffi" }

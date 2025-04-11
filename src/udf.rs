@@ -109,9 +109,7 @@ impl PyScalarUDF {
     }
 
     #[staticmethod]
-    pub fn from_pycapsule(
-        func: Bound<'_, PyAny>,
-    ) -> PyDataFusionResult<Self> {
+    pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if func.hasattr("__datafusion_scalar_udf__")? {
             let capsule = func.getattr("__datafusion_scalar_udf__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
@@ -120,15 +118,15 @@ impl PyScalarUDF {
             let udf = unsafe { capsule.reference::<FFI_ScalarUDF>() };
             let udf: ForeignScalarUDF = udf.try_into()?;
 
-            Ok(Self { function: udf.into() })
+            Ok(Self {
+                function: udf.into(),
+            })
         } else {
             Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_scalar_udf__ does not exist on ScalarUDF object."
-                    .to_string(),
+                "__datafusion_scalar_udf__ does not exist on ScalarUDF object.".to_string(),
             ))
         }
     }
-
 
     /// creates a new PyExpr with the call of the udf
     #[pyo3(signature = (*args))]

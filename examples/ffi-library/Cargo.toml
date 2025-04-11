@@ -16,7 +16,7 @@
 # under the License.
 
 [package]
-name = "ffi-table-provider"
+name = "ffi-library"
 version = "0.1.0"
 edition = "2021"
 
