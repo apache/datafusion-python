@@ -275,7 +275,7 @@ impl DisplayAs for DatasetExec {
         Python::with_gil(|py| {
             let number_of_fragments = self.fragments.bind(py).len();
             match t {
-                DisplayFormatType::Default | DisplayFormatType::Verbose => {
+                DisplayFormatType::Default | DisplayFormatType::Verbose | DisplayFormatType::TreeRender => {
                     let projected_columns: Vec<String> = self
                         .schema
                         .fields()
