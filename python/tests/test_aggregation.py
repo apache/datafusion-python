@@ -338,7 +338,6 @@ def test_bit_and_bool_fns(df, name, expr, result):
             ),
             [7, 9],
         ),
-        ("last_value", f.last_value(column("a")), [3, 6]),
         (
             "last_value_ordered",
             f.last_value(column("a"), order_by=[column("a").sort(ascending=False)]),

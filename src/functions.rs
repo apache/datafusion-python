@@ -375,27 +375,6 @@ macro_rules! aggregate_function {
     };
 }
 
-macro_rules! aggregate_function_vec_args {
-    ($NAME: ident) => {
-        aggregate_function_vec_args!($NAME, expr);
-    };
-    ($NAME: ident, $($arg:ident)*) => {
-        #[pyfunction]
-        #[pyo3(signature = ($($arg),*, distinct=None, filter=None, order_by=None, null_treatment=None))]
-        fn $NAME(
-            $($arg: PyExpr),*,
-            distinct: Option<bool>,
-            filter: Option<PyExpr>,
-            order_by: Option<Vec<PySortExpr>>,
-            null_treatment: Option<NullTreatment>
-        ) -> PyDataFusionResult<PyExpr> {
-            let agg_fn = functions_aggregate::expr_fn::$NAME(vec![$($arg.into()),*]);
-
-            add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
-        }
-    };
-}
-
 /// Generates a [pyo3] wrapper for [datafusion::functions::expr_fn]
 ///
 /// These functions have explicit named arguments.
@@ -698,8 +677,22 @@ pub fn approx_percentile_cont_with_weight(
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
 
-aggregate_function_vec_args!(last_value);
+// We handle first_value explicitly because the signature expects an order_by
+// https://github.com/apache/datafusion/issues/12376
+#[pyfunction]
+#[pyo3(signature = (expr, distinct=None, filter=None, order_by=None, null_treatment=None))]
+pub fn last_value(
+    expr: PyExpr,
+    distinct: Option<bool>,
+    filter: Option<PyExpr>,
+    order_by: Option<Vec<PySortExpr>>,
+    null_treatment: Option<NullTreatment>,
+) -> PyDataFusionResult<PyExpr> {
+    // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
+    let agg_fn = functions_aggregate::expr_fn::last_value(expr.expr, None);
 
+    add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
+}
 // We handle first_value explicitly because the signature expects an order_by
 // https://github.com/apache/datafusion/issues/12376
 #[pyfunction]
