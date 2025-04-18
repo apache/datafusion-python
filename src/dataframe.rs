@@ -835,7 +835,7 @@ fn record_batch_into_schema(
 ) -> Result<RecordBatch, ArrowError> {
     let schema = Arc::new(schema.clone());
     let base_schema = record_batch.schema();
-    if base_schema.fields().len() == 0 {
+    if base_schema.fields().is_empty() {
         // Nothing to project
         return Ok(RecordBatch::new_empty(schema));
     }
