@@ -23,6 +23,7 @@ Submodules
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
+   /autoapi/datafusion/html_formatter/index
    /autoapi/datafusion/input/index
    /autoapi/datafusion/io/index
    /autoapi/datafusion/object_store/index
@@ -74,6 +75,7 @@ Functions
 
    datafusion.col
    datafusion.column
+   datafusion.configure_formatter
    datafusion.lit
    datafusion.literal
    datafusion.read_avro
@@ -1466,6 +1468,27 @@ Package Contents
 .. py:function:: column(value: str) -> expr.Expr
 
    Create a column expression.
+
+
+.. py:function:: configure_formatter(**kwargs: Any) -> None
+
+   Configure the global DataFrame HTML formatter.
+
+   This function creates a new formatter with the provided configuration
+   and sets it as the global formatter for all DataFrames.
+
+   :param \*\*kwargs: Formatter configuration parameters like max_cell_length,
+                      max_width, max_height, enable_cell_expansion, etc.
+
+   .. rubric:: Example
+
+   >>> from datafusion.html_formatter import configure_formatter
+   >>> configure_formatter(
+   ...     max_cell_length=50,
+   ...     max_height=500,
+   ...     enable_cell_expansion=True,
+   ...     use_shared_styles=True
+   ... )
 
 
 .. py:function:: lit(value) -> expr.Expr
