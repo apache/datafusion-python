@@ -45,6 +45,7 @@ from .expr import (
     Expr,
     WindowFrame,
 )
+from .html_formatter import configure_formatter
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
@@ -76,6 +77,7 @@ __all__ = [
     "col",
     "column",
     "common",
+    "configure_formatter",
     "expr",
     "functions",
     "lit",
