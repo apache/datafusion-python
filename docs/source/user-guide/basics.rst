@@ -72,6 +72,8 @@ DataFrames are typically created by calling a method on :py:class:`~datafusion.c
 calling the transformation methods, such as :py:func:`~datafusion.dataframe.DataFrame.filter`, :py:func:`~datafusion.dataframe.DataFrame.select`, :py:func:`~datafusion.dataframe.DataFrame.aggregate`,
 and :py:func:`~datafusion.dataframe.DataFrame.limit` to build up a query definition.
 
+For more details on working with DataFrames, including visualization options and conversion to other formats, see :doc:`dataframe`.
+
 Expressions
 -----------
 
