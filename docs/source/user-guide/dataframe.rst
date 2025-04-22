@@ -15,199 +15,165 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-DataFrame Operations
-===================
+DataFrames
+==========
 
-Working with DataFrames
-----------------------
+Overview
+--------
 
-A DataFrame in DataFusion represents a logical plan that defines a series of operations to be performed on data. 
-This logical plan is not executed until you call a terminal operation like :py:func:`~datafusion.dataframe.DataFrame.collect` 
-or :py:func:`~datafusion.dataframe.DataFrame.show`.
+DataFusion's DataFrame API provides a powerful interface for building and executing queries against data sources. 
+It offers a familiar API similar to pandas and other DataFrame libraries, but with the performance benefits of Rust 
+and Arrow.
 
-DataFrames provide a familiar API for data manipulation:
+A DataFrame represents a logical plan that can be composed through operations like filtering, projection, and aggregation.
+The actual execution happens when terminal operations like `collect()` or `show()` are called.
 
-.. ipython:: python
+Basic Usage
+----------
+
+.. code-block:: python
 
     import datafusion
-    from datafusion import col, lit, functions as f
-    
+    from datafusion import col, lit
+
+    # Create a context and register a data source
     ctx = datafusion.SessionContext()
+    ctx.register_csv("my_table", "path/to/data.csv")
     
-    # Create a DataFrame from a CSV file
-    df = ctx.read_csv("example.csv")
+    # Create and manipulate a DataFrame
+    df = ctx.sql("SELECT * FROM my_table")
     
-    # Add transformations
-    df = df.filter(col("age") > lit(30)) \
-           .select([col("name"), col("age"), (col("salary") * lit(1.1)).alias("new_salary")]) \
-           .sort("age")
+    # Or use the DataFrame API directly
+    df = (ctx.table("my_table")
+          .filter(col("age") > lit(25))
+          .select([col("name"), col("age")]))
     
-    # Execute the plan
+    # Execute and collect results
+    result = df.collect()
+    
+    # Display the first few rows
     df.show()
 
-Common DataFrame Operations
---------------------------
+HTML Rendering
+-------------
 
-DataFusion supports a wide range of operations on DataFrames:
+When working in Jupyter notebooks or other environments that support HTML rendering, DataFrames will
+automatically display as formatted HTML tables, making it easier to visualize your data.
 
-Filtering and Selection
-~~~~~~~~~~~~~~~~~~~~~~~
+The `_repr_html_` method is called automatically by Jupyter to render a DataFrame. This method 
+controls how DataFrames appear in notebook environments, providing a richer visualization than
+plain text output.
 
-.. ipython:: python
+Customizing HTML Rendering
+-------------------------
 
-    # Filter rows
-    df = df.filter(col("age") > lit(30))
-    
-    # Select columns
-    df = df.select([col("name"), col("age")])
-    
-    # Select by column name
-    df = df.select_columns(["name", "age"])
-    
-    # Select using column indexing
-    df = df["name", "age"]
+You can customize how DataFrames are rendered in HTML by configuring the formatter:
 
-Aggregation
-~~~~~~~~~~
-
-.. ipython:: python
-
-    # Group by and aggregate
-    df = df.aggregate(
-        [col("category")],  # Group by columns
-        [f.sum(col("amount")).alias("total"), 
-         f.avg(col("price")).alias("avg_price")]
-    )
-
-Joins
-~~~~~
-
-.. ipython:: python
-
-    # Join two DataFrames
-    df_joined = df1.join(
-        df2,
-        how="inner",
-        left_on=["id"], 
-        right_on=["id"]
-    )
-    
-    # Join with custom expressions
-    df_joined = df1.join_on(
-        df2,
-        [col("df1.id") == col("df2.id")],
-        how="left"
-    )
-
-DataFrame Visualization
-----------------------
-
-Jupyter Notebook Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When working in Jupyter notebooks, DataFrames automatically display as HTML tables. This is 
-handled by the :code:`_repr_html_` method, which provides a rich, formatted view of your data.
-
-.. ipython:: python
-
-    # DataFrames render as HTML tables in notebooks
-    df  # Just displaying the DataFrame renders it as HTML
-
-Customizing DataFrame Display
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can customize how DataFrames are displayed using the HTML formatter:
-
-.. ipython:: python
+.. code-block:: python
 
     from datafusion.html_formatter import configure_formatter
     
-    # Change display settings
+    # Change the default styling
     configure_formatter(
-        max_rows=100,          # Show more rows
-        truncate_width=30,     # Allow longer strings
-        theme="light",         # Use light theme
-        precision=2            # Set decimal precision
+        max_rows=50,           # Maximum number of rows to display
+        max_width=None,        # Maximum width in pixels (None for auto)
+        theme="light",         # Theme: "light" or "dark" 
+        precision=2,           # Floating point precision
+        thousands_separator=",", # Separator for thousands
+        date_format="%Y-%m-%d", # Date format
+        truncate_width=20      # Max width for string columns before truncating
     )
-    
-    # Now display uses the new format
-    df.show()
 
-Creating a Custom Style Provider
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The formatter settings affect all DataFrames displayed after configuration.
 
-For advanced styling needs:
+Custom Style Providers
+---------------------
+
+For advanced styling needs, you can create a custom style provider:
 
 .. code-block:: python
 
     from datafusion.html_formatter import StyleProvider, configure_formatter
     
-    class CustomStyleProvider(StyleProvider):
+    class MyStyleProvider(StyleProvider):
         def get_table_styles(self):
             return {
                 "table": "border-collapse: collapse; width: 100%;",
-                "th": "background-color: #4CAF50; color: white; padding: 10px;",
+                "th": "background-color: #007bff; color: white; padding: 8px; text-align: left;",
                 "td": "border: 1px solid #ddd; padding: 8px;",
-                "tr:hover": "background-color: #f5f5f5;",
+                "tr:nth-child(even)": "background-color: #f2f2f2;",
             }
             
         def get_value_styles(self, dtype, value):
+            """Return custom styles for specific values"""
             if dtype == "float" and value < 0:
-                return "color: red; font-weight: bold;"
+                return "color: red;"
             return None
     
-    # Apply custom styling
-    configure_formatter(style_provider=CustomStyleProvider())
+    # Apply the custom style provider
+    configure_formatter(style_provider=MyStyleProvider())
 
-Managing Display Settings
-~~~~~~~~~~~~~~~~~~~~~~~
+Creating a Custom Formatter
+--------------------------
 
-You can temporarily change formatting settings with context managers:
+For complete control over rendering, you can implement a custom formatter:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import Formatter, get_formatter
+    
+    class MyFormatter(Formatter):
+        def format_html(self, batches, schema, has_more=False, table_uuid=None):
+            # Create your custom HTML here
+            html = "<div class='my-custom-table'>"
+            # ... formatting logic ...
+            html += "</div>"
+            return html
+    
+    # Set as the global formatter
+    configure_formatter(formatter_class=MyFormatter)
+    
+    # Or use the formatter just for specific operations
+    formatter = get_formatter()
+    custom_html = formatter.format_html(batches, schema)
+
+Managing Formatters
+------------------
+
+Reset to default formatting:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import reset_formatter
+    
+    # Reset to default settings
+    reset_formatter()
+
+Get the current formatter settings:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import get_formatter
+    
+    formatter = get_formatter()
+    print(formatter.max_rows)
+    print(formatter.theme)
+
+Contextual Formatting
+--------------------
+
+You can also use a context manager to temporarily change formatting settings:
 
 .. code-block:: python
 
     from datafusion.html_formatter import formatting_context
     
-    # Use different formatting temporarily
-    with formatting_context(max_rows=5, theme="dark"):
-        df.show()  # Will show only 5 rows with dark theme
+    # Default formatting
+    df.show()
     
-    # Reset to default formatting
-    from datafusion.html_formatter import reset_formatter
-    reset_formatter()
-
-Converting to Other Formats
---------------------------
-
-DataFusion DataFrames can be easily converted to other popular formats:
-
-.. ipython:: python
-
-    # Convert to Arrow Table
-    arrow_table = df.to_arrow_table()
+    # Temporarily use different formatting
+    with formatting_context(max_rows=100, theme="dark"):
+        df.show()  # Will use the temporary settings
     
-    # Convert to Pandas DataFrame
-    pandas_df = df.to_pandas()
-    
-    # Convert to Polars DataFrame
-    polars_df = df.to_polars()
-    
-    # Convert to Python data structures
-    python_dict = df.to_pydict()
-    python_list = df.to_pylist()
-
-Saving DataFrames
----------------
-
-You can write DataFrames to various file formats:
-
-.. ipython:: python
-
-    # Write to CSV
-    df.write_csv("output.csv", with_header=True)
-    
-    # Write to Parquet
-    df.write_parquet("output.parquet", compression="zstd")
-    
-    # Write to JSON
-    df.write_json("output.json")
+    # Back to default formatting
+    df.show()
