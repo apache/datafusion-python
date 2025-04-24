@@ -216,7 +216,7 @@ impl PyDataFrame {
 
     #[pyo3(signature = (*args))]
     fn select(&self, args: Vec<PyExpr>) -> PyDataFusionResult<Self> {
-        let expr = args.into_iter().map(|e| e.into()).collect();
+        let expr: Vec<Expr> = args.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().select(expr)?;
         Ok(Self::new(df))
     }
