@@ -15,6 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashMap;
+
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion::functions_window::all_default_window_functions;
 use datafusion::logical_expr::expr::WindowFunctionParams;
@@ -205,10 +207,13 @@ fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> 
 
 /// Creates a new Alias Expr
 #[pyfunction]
-fn alias(expr: PyExpr, name: &str) -> PyResult<PyExpr> {
+#[pyo3(signature = (expr, name, metadata=None))]
+fn alias(expr: PyExpr, name: &str, metadata: Option<HashMap<String, String>>) -> PyResult<PyExpr> {
     let relation: Option<TableReference> = None;
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Alias(Alias::new(expr.expr, relation, name)),
+        expr: datafusion::logical_expr::Expr::Alias(
+            Alias::new(expr.expr, relation, name).with_metadata(metadata),
+        ),
     })
 }
 
