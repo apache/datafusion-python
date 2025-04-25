@@ -285,9 +285,15 @@ Module Contents
    Returns inverse hyperbolic cosine.
 
 
-.. py:function:: alias(expr: datafusion.expr.Expr, name: str) -> datafusion.expr.Expr
+.. py:function:: alias(expr: datafusion.expr.Expr, name: str, metadata: Optional[dict[str, str]] = None) -> datafusion.expr.Expr
 
-   Creates an alias expression.
+   Creates an alias expression with an optional metadata dictionary.
+
+   :param expr: The expression to alias
+   :param name: The alias name
+   :param metadata: Optional metadata to attach to the column
+
+   :returns: An expression with the given alias
 
 
 .. py:function:: approx_distinct(expression: datafusion.expr.Expr, filter: Optional[datafusion.expr.Expr] = None) -> datafusion.expr.Expr

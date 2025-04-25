@@ -468,9 +468,14 @@ Package Contents
 
 
 
-   .. py:method:: alias(name: str) -> Expr
+   .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
 
       Assign a name to the expression.
+
+      :param name: The name to assign to the expression.
+      :param metadata: Optional metadata to attach to the expression.
+
+      :returns: A new expression with the assigned name.
 
 
 
