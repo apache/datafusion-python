@@ -134,19 +134,18 @@ class ScalarUDF:
     def udf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Function (UDF).
 
-        This class can be used both as a **function** and as a **decorator**.
+        This class can be used both as either a function or a decorator.
 
         Usage:
-            - **As a function**: Call `udf(func, input_types, return_type, volatility,
-              name)`.
-            - **As a decorator**: Use `@udf(input_types, return_type, volatility,
-              name)`. In this case, do **not** pass `func` explicitly.
+            - As a function: ``udf(func, input_types, return_type, volatility, name)``.
+            - As a decorator: ``@udf(input_types, return_type, volatility, name)``.
+              When used a decorator, do **not** pass ``func`` explicitly.
 
         Args:
-            func (Callable, optional): **Only needed when calling as a function.**
-                Skip this argument when using `udf` as a decorator.
+            func (Callable, optional): Only needed when calling as a function.
+                Skip this argument when using ``udf`` as a decorator.
             input_types (list[pa.DataType]): The data types of the arguments
-                to `func`. This list must be of the same length as the number of
+                to ``func``. This list must be of the same length as the number of
                 arguments.
             return_type (_R): The data type of the return value from the function.
             volatility (Volatility | str): See `Volatility` for allowed values.
@@ -156,21 +155,18 @@ class ScalarUDF:
             A user-defined function that can be used in SQL expressions,
             data aggregation, or window function calls.
 
-        Example:
-            **Using `udf` as a function:**
-            ```
+        Example: Using ``udf`` as a function::
+
             def double_func(x):
                 return x * 2
             double_udf = udf(double_func, [pa.int32()], pa.int32(),
             "volatile", "double_it")
-            ```
 
-            **Using `udf` as a decorator:**
-            ```
+        Example: Using ``udf`` as a decorator::
+
             @udf([pa.int32()], pa.int32(), "volatile", "double_it")
             def double_udf(x):
                 return x * 2
-            ```
         """
 
         def _function(
@@ -306,24 +302,22 @@ class AggregateUDF:
     def udaf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Aggregate Function (UDAF).
 
-        This class allows you to define an **aggregate function** that can be used in
+        This class allows you to define an aggregate function that can be used in
         data aggregation or window function calls.
 
         Usage:
-            - **As a function**: Call `udaf(accum, input_types, return_type, state_type,
-                volatility, name)`.
-            - **As a decorator**: Use `@udaf(input_types, return_type, state_type,
-                volatility, name)`.
-            When using `udaf` as a decorator, **do not pass `accum` explicitly**.
+            - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
+            - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
+              When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
 
-        **Function example:**
+        Function example:
 
-            If your `:py:class:Accumulator` can be instantiated with no arguments, you
-            can simply pass it's type as `accum`. If you need to pass additional
-            arguments to it's constructor, you can define a lambda or a factory method.
-            During runtime the `:py:class:Accumulator` will be constructed for every
-            instance in which this UDAF is used. The following examples are all valid.
-            ```
+        If your :py:class:`Accumulator` can be instantiated with no arguments, you
+        can simply pass it's type as `accum`. If you need to pass additional
+        arguments to it's constructor, you can define a lambda or a factory method.
+        During runtime the :py:class:`Accumulator` will be constructed for every
+        instance in which this UDAF is used. The following examples are all valid::
+
             import pyarrow as pa
             import pyarrow.compute as pc
 
@@ -352,18 +346,16 @@ class AggregateUDF:
                 "immutable")
             udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
                 [pa.float64()], "immutable")
-            ```
 
-        **Decorator example:**
-            ```
+        Decorator example:::
+
             @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
             def udf4() -> Summarize:
                 return Summarize(10.0)
-            ```
 
         Args:
-            accum: The accumulator python function. **Only needed when calling as a
-                function. Skip this argument when using `udaf` as a decorator.**
+            accum: The accumulator python function. Only needed when calling as a
+                function. Skip this argument when using ``udaf`` as a decorator.
             input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
@@ -373,7 +365,7 @@ class AggregateUDF:
         Returns:
             A user-defined aggregate function, which can be used in either data
             aggregation or window function calls.
-        """
+        """  # noqa: E501 W505
 
         def _function(
             accum: Callable[[], Accumulator],
@@ -644,17 +636,15 @@ class WindowUDF:
     def udwf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Window Function (UDWF).
 
-        This class can be used both as a **function** and as a **decorator**.
+        This class can be used both as either a function or a decorator.
 
         Usage:
-            - **As a function**: Call `udwf(func, input_types, return_type, volatility,
-              name)`.
-            - **As a decorator**: Use `@udwf(input_types, return_type, volatility,
-              name)`. When using `udwf` as a decorator, **do not pass `func`
-              explicitly**.
+            - As a function: ``udwf(func, input_types, return_type, volatility, name)``.
+            - As a decorator: ``@udwf(input_types, return_type, volatility, name)``.
+              When using ``udwf`` as a decorator, do not pass ``func`` explicitly.
 
-        **Function example:**
-            ```
+        Function example::
+
             import pyarrow as pa
 
             class BiasedNumbers(WindowEvaluator):
@@ -672,18 +662,16 @@ class WindowUDF:
             udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
             udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
 
-            ```
 
-        **Decorator example:**
-            ```
+        Decorator example::
+
             @udwf(pa.int64(), pa.int64(), "immutable")
             def biased_numbers() -> BiasedNumbers:
                 return BiasedNumbers(10)
-            ```
 
         Args:
-            func: **Only needed when calling as a function. Skip this argument when
-                using `udwf` as a decorator.**
+            func: Only needed when calling as a function. Skip this argument when
+                using ``udwf`` as a decorator.
             input_types: The data types of the arguments.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
