@@ -247,3 +247,8 @@ def test_fill_null(df):
     assert result.column(0) == pa.array([1, 2, 100])
     assert result.column(1) == pa.array([4, 25, 6])
     assert result.column(2) == pa.array([1234, 1234, 8])
+
+
+def test_alias_with_metadata(df):
+    df = df.select(col("a").alias("b", {"key": "value"}))
+    assert df.schema().field("b").metadata == {b"key": b"value"}

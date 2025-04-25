@@ -406,9 +406,17 @@ class Expr:
         """Creates a new expression representing a column."""
         return Expr(expr_internal.RawExpr.column(value))
 
-    def alias(self, name: str) -> Expr:
-        """Assign a name to the expression."""
-        return Expr(self.expr.alias(name))
+    def alias(self, name: str, metadata: Optional[dict[str, str]] = None) -> Expr:
+        """Assign a name to the expression.
+
+        Args:
+            name: The name to assign to the expression.
+            metadata: Optional metadata to attach to the expression.
+
+        Returns:
+            A new expression with the assigned name.
+        """
+        return Expr(self.expr.alias(name, metadata))
 
     def sort(self, ascending: bool = True, nulls_first: bool = True) -> SortExpr:
         """Creates a sort :py:class:`Expr` from an existing :py:class:`Expr`.

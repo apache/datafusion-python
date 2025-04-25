@@ -22,6 +22,7 @@ use datafusion::logical_expr::{
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
+use std::collections::HashMap;
 use std::convert::{From, Into};
 use std::sync::Arc;
 use window::PyWindowFrame;
@@ -275,8 +276,9 @@ impl PyExpr {
     }
 
     /// assign a name to the PyExpr
-    pub fn alias(&self, name: &str) -> PyExpr {
-        self.expr.clone().alias(name).into()
+    #[pyo3(signature = (name, metadata=None))]
+    pub fn alias(&self, name: &str, metadata: Option<HashMap<String, String>>) -> PyExpr {
+        self.expr.clone().alias_with_metadata(name, metadata).into()
     }
 
     /// Create a sort PyExpr from an existing PyExpr.

@@ -1231,3 +1231,8 @@ def test_between_default(df):
 
     actual = df.collect()[0].to_pydict()
     assert actual == expected
+
+
+def test_alias_with_metadata(df):
+    df = df.select(f.alias(f.col("a"), "b", {"key": "value"}))
+    assert df.schema().field("b").metadata == {b"key": b"value"}
