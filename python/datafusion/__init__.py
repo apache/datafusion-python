@@ -51,7 +51,16 @@ from .html_formatter import configure_formatter
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
-from .udf import Accumulator, AggregateUDF, ScalarUDF, WindowUDF, udaf, udf, udwf
+from .udf import (
+    Accumulator,
+    AggregateUDF,
+    ScalarUDF,
+    TableFunction,
+    WindowUDF,
+    udaf,
+    udf,
+    udwf,
+)
 
 __version__ = importlib_metadata.version(__name__)
 
@@ -74,6 +83,7 @@ __all__ = [
     "SessionConfig",
     "SessionContext",
     "Table",
+    "TableFunction",
     "WindowFrame",
     "WindowUDF",
     "col",
