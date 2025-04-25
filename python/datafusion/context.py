@@ -30,7 +30,7 @@ from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.user_defined import AggregateUDF, ScalarUDF, WindowUDF
+from datafusion.user_defined import AggregateUDF, ScalarUDF, TableFunction, WindowUDF
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
@@ -751,6 +751,10 @@ class SessionContext:
         which returns a PyCapsule that exposes a ``FFI_TableProvider``.
         """
         self.ctx.register_table_provider(name, provider)
+
+    def register_udtf(self, name: str, func: TableFunction) -> None:
+        """Register a user defined table function."""
+        self.ctx.register_udtf(name, func._udtf)
 
     def register_record_batches(
         self, name: str, partitions: list[list[pa.RecordBatch]]
