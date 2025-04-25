@@ -211,7 +211,9 @@ fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> 
 fn alias(expr: PyExpr, name: &str, metadata: Option<HashMap<String, String>>) -> PyResult<PyExpr> {
     let relation: Option<TableReference> = None;
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::Alias(Alias::new(expr.expr, relation, name).with_metadata(metadata)),
+        expr: datafusion::logical_expr::Expr::Alias(
+            Alias::new(expr.expr, relation, name).with_metadata(metadata),
+        ),
     })
 }
 
