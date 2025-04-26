@@ -18,6 +18,8 @@
 use std::{ffi::CString, sync::Arc};
 
 use arrow_array::ArrayRef;
+use datafusion::catalog::{TableFunctionImpl, TableProvider};
+use datafusion::logical_expr::Expr;
 use datafusion::{
     arrow::{
         array::RecordBatch,
@@ -27,6 +29,7 @@ use datafusion::{
     error::{DataFusionError, Result},
 };
 use datafusion_ffi::table_provider::FFI_TableProvider;
+use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyCapsule};
 
 /// In order to provide a test that demonstrates different sized record batches,
@@ -108,8 +111,40 @@ impl MyTableProvider {
     }
 }
 
+#[pyclass(name = "MyTableFunction", module = "ffi_table_provider", subclass)]
+#[derive(Debug, Clone)]
+struct MyTableFunction {}
+
+#[pymethods]
+impl MyTableFunction {
+    #[new]
+    fn new() -> Self {
+        Self {}
+    }
+
+    fn __datafusion_table_function__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = cr"datafusion_table_function".into();
+
+        let func = self.clone();
+        let provider = FFI_TableFunction::new(Arc::new(func), None);
+
+        PyCapsule::new(py, provider, Some(name))
+    }
+}
+
+impl TableFunctionImpl for MyTableFunction {
+    fn call(&self, args: &[Expr]) -> Result<Arc<dyn TableProvider>> {
+        let provider = MyTableProvider::new(10, 3, 2).create_table()?;
+        Ok(Arc::new(provider))
+    }
+}
+
 #[pymodule]
 fn ffi_table_provider(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyTableProvider>()?;
+    m.add_class::<MyTableFunction>()?;
     Ok(())
 }
