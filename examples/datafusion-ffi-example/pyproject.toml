@@ -15,22 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "ffi-table-provider"
-version = "0.1.0"
-edition = "2021"
+[build-system]
+requires = ["maturin>=1.6,<2.0"]
+build-backend = "maturin"
 
-[dependencies]
-datafusion = { version = "45.0.0" }
-datafusion-ffi = { version = "45.0.0" }
-pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
-arrow = { version = "54" }
-arrow-array = { version = "54" }
-arrow-schema = { version = "54" }
+[project]
+name = "ffi_library"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
 
-[build-dependencies]
-pyo3-build-config = "0.23"
-
-[lib]
-name = "ffi_table_provider"
-crate-type = ["cdylib", "rlib"]
+[tool.maturin]
+features = ["pyo3/extension-module"]
