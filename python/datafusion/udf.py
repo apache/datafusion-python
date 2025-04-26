@@ -777,12 +777,12 @@ class TableFunction:
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.user_defined.TableFunction(name, func)
+        self._udtf = df_internal.TableFunction(name, func)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""
         args_raw = [arg.expr for arg in args]
-        return Expr(self._udtf.__call__(*args_raw))
+        return self._udtf.__call__(*args_raw)
 
     @overload
     @staticmethod
@@ -803,6 +803,8 @@ class TableFunction:
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return TableFunction._create_table_udf(*args, **kwargs)
+        if args and hasattr(args[0], "__datafusion_table_function__"):
+            return TableFunction(args[1], args[0])
         # Case 2: Used as a decorator with parameters
         return TableFunction._create_table_udf_decorator(*args, **kwargs)
 
