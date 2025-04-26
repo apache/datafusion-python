@@ -752,9 +752,9 @@ class SessionContext:
         """
         self.ctx.register_table_provider(name, provider)
 
-    def register_udtf(self, name: str, func: TableFunction) -> None:
+    def register_udtf(self, func: TableFunction) -> None:
         """Register a user defined table function."""
-        self.ctx.register_udtf(name, func._udtf)
+        self.ctx.register_udtf(func._udtf)
 
     def register_record_batches(
         self, name: str, partitions: list[list[pa.RecordBatch]]

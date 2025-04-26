@@ -747,7 +747,6 @@ class WindowUDF:
 
         return decorator
 
-
 class TableFunction:
     """Class for performing user-defined table functions (UDTF).
 
@@ -756,33 +755,33 @@ class TableFunction:
     """
 
     def __init__(
-        self,
-        name: str,
-        func: Callable[[], any],
+            self,
+            name: str,
+            func: Callable[[], any],
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
         See :py:func:`udtf` for a convenience function and argument
         descriptions.
         """
-        self._udtf = df_internal.user_defined.TableFunction(name, func)
+        self._udtf = df_internal.TableFunction(name, func)
 
     def __call__(self, *args: Expr) -> Any:
         """Execute the UDTF and return a table provider."""
         args_raw = [arg.expr for arg in args]
-        return Expr(self._udtf.__call__(*args_raw))
+        return self._udtf.__call__(*args_raw)
 
     @overload
     @staticmethod
     def udtf(
-        name: str,
+            name: str,
     ) -> Callable[..., Any]: ...
 
     @overload
     @staticmethod
     def udtf(
-        func: Callable[[], Any],
-        name: str,
+            func: Callable[[], Any],
+            name: str,
     ) -> TableFunction: ...
 
     @staticmethod
@@ -791,13 +790,15 @@ class TableFunction:
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return TableFunction._create_table_udf(*args, **kwargs)
+        if args and hasattr(args[0], "__datafusion_table_function__"):
+            return TableFunction(args[1], args[0])
         # Case 2: Used as a decorator with parameters
         return TableFunction._create_table_udf_decorator(*args, **kwargs)
 
     @staticmethod
     def _create_table_udf(
-        func: Callable[..., Any],
-        name: str,
+            func: Callable[..., Any],
+            name: str,
     ) -> TableFunction:
         """Create a TableFunction instance from function arguments."""
         if not callable(func):
@@ -809,7 +810,6 @@ class TableFunction:
     def __repr__(self) -> str:
         """User printable representation."""
         return self._udtf.__repr__()
-
 
 # Convenience exports so we can import instead of treating as
 # variables at the package root
