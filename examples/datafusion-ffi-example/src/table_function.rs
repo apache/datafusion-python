@@ -50,7 +50,7 @@ impl MyTableFunction {
 
 impl TableFunctionImpl for MyTableFunction {
     fn call(&self, _args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
-        let provider = MyTableProvider::new(10, 3, 2).create_table()?;
+        let provider = MyTableProvider::new(4, 3, 2).create_table()?;
         Ok(Arc::new(provider))
     }
 }
