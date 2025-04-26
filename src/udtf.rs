@@ -15,19 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use pyo3::prelude::*;
 use std::sync::Arc;
 
-use pyo3::prelude::*;
-
 use crate::dataframe::PyTableProvider;
-use crate::errors::py_datafusion_err;
+use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::utils::validate_pycapsule;
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
-use datafusion::common::exec_err;
+use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
-use pyo3::types::PyCapsule;
+use pyo3::exceptions::PyNotImplementedError;
+use pyo3::types::{PyCapsule, PyTuple};
 
 /// Represents a user defined table function
 #[pyclass(name = "TableFunction", module = "datafusion")]
@@ -40,7 +41,7 @@ pub struct PyTableFunction {
 // TODO: Implement pure python based user defined table functions
 #[derive(Debug, Clone)]
 pub(crate) enum PyTableFunctionInner {
-    // PythonFunction(Arc<PyObject>),
+    PythonFunction(Arc<PyObject>),
     FFIFunction(Arc<dyn TableFunctionImpl>),
 }
 
@@ -49,7 +50,7 @@ impl PyTableFunction {
     #[new]
     #[pyo3(signature=(name, func))]
     pub fn new(name: &str, func: Bound<'_, PyAny>) -> PyResult<Self> {
-        if func.hasattr("__datafusion_table_function__")? {
+        let inner = if func.hasattr("__datafusion_table_function__")? {
             let capsule = func.getattr("__datafusion_table_function__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
             validate_pycapsule(capsule, "datafusion_table_function")?;
@@ -57,14 +58,16 @@ impl PyTableFunction {
             let ffi_func = unsafe { capsule.reference::<FFI_TableFunction>() };
             let foreign_func: ForeignTableFunction = ffi_func.to_owned().into();
 
-            Ok(Self {
-                name: name.to_string(),
-                inner: PyTableFunctionInner::FFIFunction(Arc::new(foreign_func)),
-            })
+            PyTableFunctionInner::FFIFunction(Arc::new(foreign_func))
         } else {
-            exec_err!("Python based Table Functions are not yet implemented")
-                .map_err(py_datafusion_err)
-        }
+            let py_obj = Arc::new(func.unbind());
+            PyTableFunctionInner::PythonFunction(py_obj)
+        };
+
+        Ok(Self {
+            name: name.to_string(),
+            inner,
+        })
     }
 
     #[pyo3(signature = (*args))]
@@ -80,10 +83,44 @@ impl PyTableFunction {
     }
 }
 
+fn call_python_table_function(
+    func: &Arc<PyObject>,
+    args: &[Expr],
+) -> DataFusionResult<Arc<dyn TableProvider>> {
+    let args = args
+        .iter()
+        .map(|arg| PyExpr::from(arg.clone()))
+        .collect::<Vec<_>>();
+
+    // move |args: &[ArrayRef]| -> Result<ArrayRef, DataFusionError> {
+    Python::with_gil(|py| {
+        let py_args = PyTuple::new(py, args)?;
+        let provider_obj = func.call1(py, py_args)?;
+        let provider = provider_obj.bind(py);
+
+        if provider.hasattr("__datafusion_table_provider__")? {
+            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+            let provider: ForeignTableProvider = provider.into();
+
+            Ok(Arc::new(provider) as Arc<dyn TableProvider>)
+        } else {
+            Err(PyNotImplementedError::new_err(
+                "__datafusion_table_provider__ does not exist on Table Provider object.",
+            ))
+        }
+    })
+    .map_err(to_datafusion_err)
+}
+
 impl TableFunctionImpl for PyTableFunction {
-    fn call(&self, args: &[Expr]) -> datafusion::common::Result<Arc<dyn TableProvider>> {
+    fn call(&self, args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
             PyTableFunctionInner::FFIFunction(func) => func.call(args),
+            PyTableFunctionInner::PythonFunction(obj) => call_python_table_function(obj, args),
         }
     }
 }
