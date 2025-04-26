@@ -20,7 +20,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import pyarrow as pa
-from datafusion import SessionContext, udtf
+from datafusion import Expr, SessionContext, udtf
 from datafusion_ffi_example import MyTableFunction, MyTableProvider
 
 if TYPE_CHECKING:
@@ -77,11 +77,15 @@ class PythonTableFunction:
     provider, and this function takes no arguments
     """
 
-    def __init__(self) -> None:
-        self.table_provider = MyTableProvider(3, 2, 4)
-
-    def __call__(self) -> TableProviderExportable:
-        return self.table_provider
+    def __call__(
+        self, num_cols: Expr, num_rows: Expr, num_batches: Expr
+    ) -> TableProviderExportable:
+        args = [
+            num_cols.to_variant().value_i64(),
+            num_rows.to_variant().value_i64(),
+            num_batches.to_variant().value_i64(),
+        ]
+        return MyTableProvider(*args)
 
 
 def test_python_table_function():
@@ -89,7 +93,7 @@ def test_python_table_function():
     table_func = PythonTableFunction()
     table_udtf = udtf(table_func, "my_table_func")
     ctx.register_udtf(table_udtf)
-    result = ctx.sql("select * from my_table_func()").collect()
+    result = ctx.sql("select * from my_table_func(3,2,4)").collect()
 
     assert len(result) == 4
     assert result[0].num_columns == 3
