@@ -59,6 +59,7 @@ from .user_defined import (
     WindowUDF,
     udaf,
     udf,
+    udtf,
     udwf,
 )
 
@@ -102,6 +103,7 @@ __all__ = [
     "substrait",
     "udaf",
     "udf",
+    "udtf",
     "udwf",
     "unparser",
 ]
