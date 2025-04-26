@@ -15,9 +15,11 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import pyarrow as pa
 from datafusion import SessionContext
-from ffi_table_provider import MyTableProvider
+from datafusion_ffi_example import MyTableProvider
 
 
 def test_table_loading():
