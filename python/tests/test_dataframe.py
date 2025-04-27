@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 import os
+import re
 from typing import Any
 
 import pyarrow as pa
@@ -27,8 +28,17 @@ from datafusion import (
     column,
     literal,
 )
-from datafusion import functions as f
+from datafusion import (
+    functions as f,
+)
 from datafusion.expr import Window
+from datafusion.html_formatter import (
+    DataFrameHtmlFormatter,
+    configure_formatter,
+    get_formatter,
+    reset_formatter,
+    reset_styles_loaded_state,
+)
 from pyarrow.csv import write_csv
 
 
@@ -99,6 +109,12 @@ def partitioned_df():
     )
 
     return ctx.create_dataframe([[batch]])
+
+
+@pytest.fixture
+def clean_formatter_state():
+    """Reset the HTML formatter after each test."""
+    reset_formatter()
 
 
 def test_select(df):
@@ -655,6 +671,252 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
     assert df_2.sort(col_a).to_pydict() == expected
 
 
+def test_html_formatter_configuration(df, clean_formatter_state):
+    """Test configuring the HTML formatter with different options."""
+    # Configure with custom settings
+    configure_formatter(
+        max_cell_length=5,
+        max_width=500,
+        max_height=200,
+        enable_cell_expansion=False,
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our configuration was applied
+    assert "max-height: 200px" in html_output
+    assert "max-width: 500px" in html_output
+    # With cell expansion disabled, we shouldn't see expandable-container elements
+    assert "expandable-container" not in html_output
+
+
+def test_html_formatter_custom_style_provider(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+
+def test_html_formatter_type_formatters(df, clean_formatter_state):
+    """Test registering custom type formatters for specific data types."""
+
+    # Get current formatter and register custom formatters
+    formatter = get_formatter()
+
+    # Format integers with color based on value
+    # Using int as the type for the formatter will work since we convert
+    # Arrow scalar values to Python native types in _get_cell_value
+    def format_int(value):
+        return f'<span style="color: {"red" if value > 2 else "blue"}">{value}</span>'
+
+    formatter.register_formatter(int, format_int)
+
+    html_output = df._repr_html_()
+
+    # Our test dataframe has values 1,2,3 so we should see:
+    assert '<span style="color: blue">1</span>' in html_output
+
+
+def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
+    """Test using a custom cell builder function."""
+
+    # Create a custom cell builder with distinct styling for different value ranges
+    def custom_cell_builder(value, row, col, table_id):
+        try:
+            num_value = int(value)
+            if num_value > 5:  # Values > 5 get green background with indicator
+                return (
+                    '<td style="background-color: #d9f0d3" '
+                    f'data-test="high">{value}-high</td>'
+                )
+            if num_value < 3:  # Values < 3 get blue background with indicator
+                return (
+                    '<td style="background-color: #d3e9f0" '
+                    f'data-test="low">{value}-low</td>'
+                )
+        except (ValueError, TypeError):
+            pass
+
+        # Default styling for other cells (3, 4, 5)
+        return f'<td style="border: 1px solid #ddd" data-test="mid">{value}-mid</td>'
+
+    # Set our custom cell builder
+    formatter = get_formatter()
+    formatter.set_custom_cell_builder(custom_cell_builder)
+
+    html_output = df._repr_html_()
+
+    # Extract cells with specific styling using regex
+    low_cells = re.findall(
+        r'<td style="background-color: #d3e9f0"[^>]*>(\d+)-low</td>', html_output
+    )
+    mid_cells = re.findall(
+        r'<td style="border: 1px solid #ddd"[^>]*>(\d+)-mid</td>', html_output
+    )
+    high_cells = re.findall(
+        r'<td style="background-color: #d9f0d3"[^>]*>(\d+)-high</td>', html_output
+    )
+
+    # Sort the extracted values for consistent comparison
+    low_cells = sorted(map(int, low_cells))
+    mid_cells = sorted(map(int, mid_cells))
+    high_cells = sorted(map(int, high_cells))
+
+    # Verify specific values have the correct styling applied
+    assert low_cells == [1, 2]  # Values < 3
+    assert mid_cells == [3, 4, 5, 5]  # Values 3-5
+    assert high_cells == [6, 8, 8]  # Values > 5
+
+    # Verify the exact content with styling appears in the output
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">1-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">2-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">3-mid</td>' in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">4-mid</td>' in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">6-high</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">8-high</td>'
+        in html_output
+    )
+
+    # Count occurrences to ensure all cells are properly styled
+    assert html_output.count("-low</td>") == 2  # Two low values (1, 2)
+    assert html_output.count("-mid</td>") == 4  # Four mid values (3, 4, 5, 5)
+    assert html_output.count("-high</td>") == 3  # Three high values (6, 8, 8)
+
+    # Create a custom cell builder that changes background color based on value
+    def custom_cell_builder(value, row, col, table_id):
+        # Handle numeric values regardless of their exact type
+        try:
+            num_value = int(value)
+            if num_value > 5:  # Values > 5 get green background
+                return f'<td style="background-color: #d9f0d3">{value}</td>'
+            if num_value < 3:  # Values < 3 get light blue background
+                return f'<td style="background-color: #d3e9f0">{value}</td>'
+        except (ValueError, TypeError):
+            pass
+
+        # Default styling for other cells
+        return f'<td style="border: 1px solid #ddd">{value}</td>'
+
+    # Set our custom cell builder
+    formatter = get_formatter()
+    formatter.set_custom_cell_builder(custom_cell_builder)
+
+    html_output = df._repr_html_()
+
+    # Verify our custom cell styling was applied
+    assert "background-color: #d3e9f0" in html_output  # For values 1,2
+
+
+def test_html_formatter_custom_header_builder(df, clean_formatter_state):
+    """Test using a custom header builder function."""
+
+    # Create a custom header builder with tooltips
+    def custom_header_builder(field):
+        tooltips = {
+            "a": "Primary key column",
+            "b": "Secondary values",
+            "c": "Additional data",
+        }
+        tooltip = tooltips.get(field.name, "")
+        return (
+            f'<th style="background-color: #333; color: white" '
+            f'title="{tooltip}">{field.name}</th>'
+        )
+
+    # Set our custom header builder
+    formatter = get_formatter()
+    formatter.set_custom_header_builder(custom_header_builder)
+
+    html_output = df._repr_html_()
+
+    # Verify our custom headers were applied
+    assert 'title="Primary key column"' in html_output
+    assert 'title="Secondary values"' in html_output
+    assert "background-color: #333; color: white" in html_output
+
+
+def test_html_formatter_complex_customization(df, clean_formatter_state):
+    """Test combining multiple customization options together."""
+
+    # Create a dark mode style provider
+    class DarkModeStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #222; color: #eee; "
+                "padding: 8px; border: 1px solid #444;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #111; color: #fff; padding: 10px; "
+                "border: 1px solid #333;"
+            )
+
+    # Configure with dark mode style
+    configure_formatter(
+        max_cell_length=10,
+        style_provider=DarkModeStyleProvider(),
+        custom_css="""
+            .datafusion-table {
+                font-family: monospace;
+                border-collapse: collapse;
+            }
+            .datafusion-table tr:hover td {
+                background-color: #444 !important;
+            }
+        """,
+    )
+
+    # Add type formatters for special formatting - now working with native int values
+    formatter = get_formatter()
+    formatter.register_formatter(
+        int,
+        lambda n: f'<span style="color: {"#5af" if n % 2 == 0 else "#f5a"}">{n}</span>',
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our customizations were applied
+    assert "background-color: #222" in html_output
+    assert "background-color: #111" in html_output
+    assert ".datafusion-table" in html_output
+    assert "color: #5af" in html_output  # Even numbers
+
+
 def test_get_dataframe(tmp_path):
     ctx = SessionContext()
 
@@ -752,7 +1014,8 @@ def test_execution_plan(aggregate_df):
     assert "AggregateExec:" in indent
     assert "CoalesceBatchesExec:" in indent
     assert "RepartitionExec:" in indent
-    assert "CsvExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
 
     ctx = SessionContext()
     rows_returned = 0
@@ -1242,16 +1505,145 @@ def test_dataframe_transform(df):
     assert result["new_col"] == [3 for _i in range(3)]
 
 
-def test_dataframe_repr_html(df) -> None:
+def test_dataframe_repr_html_structure(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
+
     output = df._repr_html_()
 
-    ref_html = """<table border='1'>
-        <tr><th>a</td><th>b</td><th>c</td></tr>
-        <tr><td>1</td><td>4</td><td>8</td></tr>
-        <tr><td>2</td><td>5</td><td>5</td></tr>
-        <tr><td>3</td><td>6</td><td>8</td></tr>
-        </table>
-        """
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
 
-    # Ignore whitespace just to make this test look cleaner
-    assert output.replace(" ", "") == ref_html.replace(" ", "")
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
+
+    # Update the pattern to handle values that may be wrapped in spans
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
+    body_pattern = "(.*?)".join(body_lines)
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
+
+
+def test_dataframe_repr_html_values(df):
+    """Test that DataFrame._repr_html_ contains the expected data values."""
+    html = df._repr_html_()
+    assert html is not None
+
+    # Create a more flexible pattern that handles values being wrapped in spans
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
+    pattern = re.compile(
+        r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        re.DOTALL,
+    )
+
+    # Print debug info if the test fails
+    matches = re.findall(pattern, html)
+    if not matches:
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
+
+    assert len(matches) > 0, "Expected pattern of values not found in HTML output"
+
+
+def test_html_formatter_shared_styles(df, clean_formatter_state):
+    """Test that shared styles work correctly across multiple tables."""
+
+    # First, ensure we're using shared styles
+    configure_formatter(use_shared_styles=True)
+
+    # Get HTML output for first table - should include styles
+    html_first = df._repr_html_()
+
+    # Verify styles are included in first render
+    assert "<style>" in html_first
+    assert ".expandable-container" in html_first
+
+    # Get HTML output for second table - should NOT include styles
+    html_second = df._repr_html_()
+
+    # Verify styles are NOT included in second render
+    assert "<style>" not in html_second
+    assert ".expandable-container" not in html_second
+
+    # Reset the styles loaded state and verify styles are included again
+    reset_styles_loaded_state()
+    html_after_reset = df._repr_html_()
+
+    # Verify styles are included after reset
+    assert "<style>" in html_after_reset
+    assert ".expandable-container" in html_after_reset
+
+
+def test_html_formatter_no_shared_styles(df, clean_formatter_state):
+    """Test that styles are always included when shared styles are disabled."""
+
+    # Configure formatter to NOT use shared styles
+    configure_formatter(use_shared_styles=False)
+
+    # Generate HTML multiple times
+    html_first = df._repr_html_()
+    html_second = df._repr_html_()
+
+    # Verify styles are included in both renders
+    assert "<style>" in html_first
+    assert "<style>" in html_second
+    assert ".expandable-container" in html_first
+    assert ".expandable-container" in html_second
+
+
+def test_html_formatter_manual_format_html(clean_formatter_state):
+    """Test direct usage of format_html method with shared styles."""
+
+    # Create sample data
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    formatter = get_formatter()
+
+    # First call should include styles
+    html_first = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_first
+
+    # Second call should not include styles (using shared styles by default)
+    html_second = formatter.format_html([batch], batch.schema)
+    assert "<style>" not in html_second
+
+    # Reset loaded state
+    reset_styles_loaded_state()
+
+    # After reset, styles should be included again
+    html_reset = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_reset
+
+    # Create a new formatter with shared_styles=False
+    local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
+
+    # Both calls should include styles
+    local_html_1 = local_formatter.format_html([batch], batch.schema)
+    local_html_2 = local_formatter.format_html([batch], batch.schema)
+
+    assert "<style>" in local_html_1
+    assert "<style>" in local_html_2
