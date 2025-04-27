@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar, Optional
 
+import functions as F
 import pyarrow as pa
 
 try:
@@ -660,6 +661,294 @@ class Expr:
                 null_treatment=null_treatment_raw,
             )
         )
+
+    def asin(self) -> Expr:
+        """Returns the arc sine or inverse sine of a number."""
+        return F.asin(self)
+
+    def array_pop_back(self) -> Expr:
+        """Returns the array without the last element."""
+        return F.array_pop_back(self)
+
+    def reverse(self) -> Expr:
+        """Reverse the string argument."""
+        return F.reverse(self)
+
+    def bit_length(self) -> Expr:
+        """Returns the number of bits in the string argument."""
+        return F.bit_length(self)
+
+    def array_length(self) -> Expr:
+        """Returns the length of the array."""
+        return F.array_length(self)
+
+    def array_ndims(self) -> Expr:
+        """Returns the number of dimensions of the array."""
+        return F.array_ndims(self)
+
+    def to_hex(self) -> Expr:
+        """Converts an integer to a hexadecimal string."""
+        return F.to_hex(self)
+
+    def array_dims(self) -> Expr:
+        """Returns an array of the array's dimensions."""
+        return F.array_dims(self)
+
+    def from_unixtime(self) -> Expr:
+        """Converts an integer to RFC3339 timestamp format string."""
+        return F.from_unixtime(self)
+
+    def array_empty(self) -> Expr:
+        """Returns a boolean indicating whether the array is empty."""
+        return F.array_empty(self)
+
+    def sin(self) -> Expr:
+        """Returns the sine of the argument."""
+        return F.sin(self)
+
+    def log10(self) -> Expr:
+        """Base 10 logarithm of the argument."""
+        return F.log10(self)
+
+    def initcap(self) -> Expr:
+        """Set the initial letter of each word to capital.
+
+        Converts the first letter of each word in ``string`` to uppercase and the remaining
+        characters to lowercase.
+        """
+        return F.initcap(self)
+
+    def list_distinct(self) -> Expr:
+        """Returns distinct values from the array after removing duplicates.
+
+        This is an alias for :py:func:`array_distinct`.
+        """
+        return F.list_distinct(self)
+
+    def iszero(self) -> Expr:
+        """Returns true if a given number is +0.0 or -0.0 otherwise returns false."""
+        return F.iszero(self)
+
+    def array_distinct(self) -> Expr:
+        """Returns distinct values from the array after removing duplicates."""
+        return F.array_distinct(self)
+
+    def arrow_typeof(self) -> Expr:
+        """Returns the Arrow type of the expression."""
+        return F.arrow_typeof(self)
+
+    def length(self) -> Expr:
+        """The number of characters in the ``string``."""
+        return F.length(self)
+
+    def lower(self) -> Expr:
+        """Converts a string to lowercase."""
+        return F.lower(self)
+
+    def acos(self) -> Expr:
+        """Returns the arc cosine or inverse cosine of a number.
+
+        Returns:
+        --------
+        Expr
+            A new expression representing the arc cosine of the input expression.
+        """
+        return F.acos(self)
+
+    def ascii(self) -> Expr:
+        """Returns the numeric code of the first character of the argument."""
+        return F.ascii(self)
+
+    def sha384(self) -> Expr:
+        """Computes the SHA-384 hash of a binary string."""
+        return F.sha384(self)
+
+    def isnan(self) -> Expr:
+        """Returns true if a given number is +NaN or -NaN otherwise returns false."""
+        return F.isnan(self)
+
+    def degrees(self) -> Expr:
+        """Converts the argument from radians to degrees."""
+        return F.degrees(self)
+
+    def cardinality(self) -> Expr:
+        """Returns the total number of elements in the array."""
+        return F.cardinality(self)
+
+    def sha224(self) -> Expr:
+        """Computes the SHA-224 hash of a binary string."""
+        return F.sha224(self)
+
+    def asinh(self) -> Expr:
+        """Returns inverse hyperbolic sine."""
+        return F.asinh(self)
+
+    def flatten(self) -> Expr:
+        """Flattens an array of arrays into a single array."""
+        return F.flatten(self)
+
+    def exp(self) -> Expr:
+        """Returns the exponential of the argument."""
+        return F.exp(self)
+
+    def abs(self) -> Expr:
+        """Return the absolute value of a given number.
+
+        Returns:
+        --------
+        Expr
+            A new expression representing the absolute value of the input expression.
+        """
+        return F.abs(self)
+
+    def btrim(self) -> Expr:
+        """Removes all characters, spaces by default, from both sides of a string."""
+        return F.btrim(self)
+
+    def md5(self) -> Expr:
+        """Computes an MD5 128-bit checksum for a string expression."""
+        return F.md5(self)
+
+    def octet_length(self) -> Expr:
+        """Returns the number of bytes of a string."""
+        return F.octet_length(self)
+
+    def cosh(self) -> Expr:
+        """Returns the hyperbolic cosine of the argument."""
+        return F.cosh(self)
+
+    def radians(self) -> Expr:
+        """Converts the argument from degrees to radians."""
+        return F.radians(self)
+
+    def sqrt(self) -> Expr:
+        """Returns the square root of the argument."""
+        return F.sqrt(self)
+
+    def character_length(self) -> Expr:
+        """Returns the number of characters in the argument."""
+        return F.character_length(self)
+
+    def tanh(self) -> Expr:
+        """Returns the hyperbolic tangent of the argument."""
+        return F.tanh(self)
+
+    def atan(self) -> Expr:
+        """Returns inverse tangent of a number."""
+        return F.atan(self)
+
+    def rtrim(self) -> Expr:
+        """Removes all characters, spaces by default, from the end of a string."""
+        return F.rtrim(self)
+
+    def atanh(self) -> Expr:
+        """Returns inverse hyperbolic tangent."""
+        return F.atanh(self)
+
+    def list_dims(self) -> Expr:
+        """Returns an array of the array's dimensions.
+
+        This is an alias for :py:func:`array_dims`.
+        """
+        return F.list_dims(self)
+
+    def sha256(self) -> Expr:
+        """Computes the SHA-256 hash of a binary string."""
+        return F.sha256(self)
+
+    def factorial(self) -> Expr:
+        """Returns the factorial of the argument."""
+        return F.factorial(self)
+
+    def acosh(self) -> Expr:
+        """Returns inverse hyperbolic cosine."""
+        return F.acosh(self)
+
+    def floor(self) -> Expr:
+        """Returns the nearest integer less than or equal to the argument."""
+        return F.floor(self)
+
+    def ceil(self) -> Expr:
+        """Returns the nearest integer greater than or equal to argument."""
+        return F.ceil(self)
+
+    def list_length(self) -> Expr:
+        """Returns the length of the array.
+
+        This is an alias for :py:func:`array_length`.
+        """
+        return F.list_length(self)
+
+    def upper(self) -> Expr:
+        """Converts a string to uppercase."""
+        return F.upper(self)
+
+    def chr(self) -> Expr:
+        """Converts the Unicode code point to a UTF8 character."""
+        return F.chr(self)
+
+    def ln(self) -> Expr:
+        """Returns the natural logarithm (base e) of the argument."""
+        return F.ln(self)
+
+    def tan(self) -> Expr:
+        """Returns the tangent of the argument."""
+        return F.tan(self)
+
+    def array_pop_front(self) -> Expr:
+        """Returns the array without the first element."""
+        return F.array_pop_front(self)
+
+    def cbrt(self) -> Expr:
+        """Returns the cube root of a number."""
+        return F.cbrt(self)
+
+    def sha512(self) -> Expr:
+        """Computes the SHA-512 hash of a binary string."""
+        return F.sha512(self)
+
+    def char_length(self) -> Expr:
+        """The number of characters in the ``string``."""
+        return F.char_length(self)
+
+    def list_ndims(self) -> Expr:
+        """Returns the number of dimensions of the array.
+
+        This is an alias for :py:func:`array_ndims`.
+        """
+        return F.list_ndims(self)
+
+    def trim(self) -> Expr:
+        """Removes all characters, spaces by default, from both sides of a string."""
+        return F.trim(self)
+
+    def cos(self) -> Expr:
+        """Returns the cosine of the argument."""
+        return F.cos(self)
+
+    def sinh(self) -> Expr:
+        """Returns the hyperbolic sine of the argument."""
+        return F.sinh(self)
+
+    def empty(self) -> Expr:
+        """This is an alias for :py:func:`array_empty`."""
+        return F.empty(self)
+
+    def ltrim(self) -> Expr:
+        """Removes all characters, spaces by default, from the beginning of a string."""
+        return F.ltrim(self)
+
+    def signum(self) -> Expr:
+        """Returns the sign of the argument (-1, 0, +1)."""
+        return F.signum(self)
+
+    def log2(self) -> Expr:
+        """Base 2 logarithm of the argument."""
+        return F.log2(self)
+
+    def cot(self) -> Expr:
+        """Returns the cotangent of the argument."""
+        return F.cot(self)
 
 
 class ExprFuncBuilder:
