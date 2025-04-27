@@ -165,11 +165,7 @@ impl PyDataFrame {
         let config = get_formatter_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(
-                self.df.as_ref().clone(),
-                config.repr_rows,
-                config.repr_rows,
-            ),
+            collect_record_batches_to_display(self.df.as_ref().clone(), config),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
@@ -191,11 +187,7 @@ impl PyDataFrame {
         let config = get_formatter_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(
-                self.df.as_ref().clone(),
-                config.min_rows,
-                usize::MAX,
-            ),
+            collect_record_batches_to_display(self.df.as_ref().clone(), config),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
@@ -850,11 +842,11 @@ fn record_batch_into_schema(
 /// rows, set min_rows == max_rows.
 async fn collect_record_batches_to_display(
     df: DataFrame,
-    min_rows: usize,
-    max_rows: usize,
+    config: FormatterConfig,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
-    let config = FormatterConfig::default();
     let max_bytes = config.max_bytes;
+    let min_rows = config.min_rows;
+    let max_rows = config.repr_rows;
 
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
