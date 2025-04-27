@@ -117,6 +117,11 @@
    Data Sources
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="dataframe.html">
+   DataFrames
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="common-operations/index.html">
    Common Operations
@@ -424,7 +429,8 @@
   <section id="concepts">
 <span id="user-guide-concepts"></span><h1>Concepts<a class="headerlink" href="#concepts" title="Link to this heading">¶</a></h1>
 <p>In this section, we will cover a basic example to introduce a few key concepts. We will use the
-2021 Yellow Taxi Trip Records ([download](<a class="reference external" href="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet">https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet</a>)), from the [TLC Trip Record Data](<a class="reference external" href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page</a>).</p>
+2021 Yellow Taxi Trip Records (<a class="reference external" href="https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet">download</a>),
+from the <a class="reference external" href="https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page">TLC Trip Record Data</a>.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
@@ -493,6 +499,7 @@ the following functionality:</p>
 DataFrames are typically created by calling a method on <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a>, such as <code class="code docutils literal notranslate"><span class="pre">read_csv</span></code>, and can then be modified by
 calling the transformation methods, such as <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.filter" title="datafusion.dataframe.DataFrame.filter"><code class="xref py py-func docutils literal notranslate"><span class="pre">filter()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select" title="datafusion.dataframe.DataFrame.select"><code class="xref py py-func docutils literal notranslate"><span class="pre">select()</span></code></a>, <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.aggregate" title="datafusion.dataframe.DataFrame.aggregate"><code class="xref py py-func docutils literal notranslate"><span class="pre">aggregate()</span></code></a>,
 and <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.limit" title="datafusion.dataframe.DataFrame.limit"><code class="xref py py-func docutils literal notranslate"><span class="pre">limit()</span></code></a> to build up a query definition.</p>
+<p>For more details on working with DataFrames, including visualization options and conversion to other formats, see <a class="reference internal" href="dataframe.html"><span class="doc">DataFrames</span></a>.</p>
 </section>
 <section id="expressions">
 <h2>Expressions<a class="headerlink" href="#expressions" title="Link to this heading">¶</a></h2>

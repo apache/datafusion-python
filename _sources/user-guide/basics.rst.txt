@@ -21,7 +21,8 @@ Concepts
 ========
 
 In this section, we will cover a basic example to introduce a few key concepts. We will use the
-2021 Yellow Taxi Trip Records ([download](https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet)), from the [TLC Trip Record Data](https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page).
+2021 Yellow Taxi Trip Records (`download <https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet>`_),
+from the `TLC Trip Record Data <https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page>`_.
 
 .. ipython:: python
 
@@ -71,6 +72,8 @@ A DataFrame refers to a (logical) set of rows that share the same column names, 
 DataFrames are typically created by calling a method on :py:class:`~datafusion.context.SessionContext`, such as :code:`read_csv`, and can then be modified by
 calling the transformation methods, such as :py:func:`~datafusion.dataframe.DataFrame.filter`, :py:func:`~datafusion.dataframe.DataFrame.select`, :py:func:`~datafusion.dataframe.DataFrame.aggregate`,
 and :py:func:`~datafusion.dataframe.DataFrame.limit` to build up a query definition.
+
+For more details on working with DataFrames, including visualization options and conversion to other formats, see :doc:`dataframe`.
 
 Expressions
 -----------
