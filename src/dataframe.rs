@@ -93,10 +93,6 @@ impl Default for FormatterConfig {
     }
 }
 
-// Keep constants for backward compatibility
-const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
-const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
-
 fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
     let formatter_module = py.import("datafusion.html_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
@@ -166,9 +162,14 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        let config = get_formatter_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), 10, 10),
+            collect_record_batches_to_display(
+                self.df.as_ref().clone(),
+                config.repr_rows,
+                config.repr_rows,
+            ),
         )?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
@@ -187,11 +188,12 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
+        let config = get_formatter_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(
                 self.df.as_ref().clone(),
-                MIN_TABLE_ROWS_TO_DISPLAY,
+                config.min_rows,
                 usize::MAX,
             ),
         )?;
@@ -851,6 +853,9 @@ async fn collect_record_batches_to_display(
     min_rows: usize,
     max_rows: usize,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
+    let config = FormatterConfig::default();
+    let max_bytes = config.max_bytes;
+
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
     let mut size_estimate_so_far = 0;
@@ -858,9 +863,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while (size_estimate_so_far < MAX_TABLE_BYTES_TO_DISPLAY && rows_so_far < max_rows)
-        || rows_so_far < min_rows
-    {
+    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
                 break;
@@ -873,8 +876,8 @@ async fn collect_record_batches_to_display(
         if rows_in_rb > 0 {
             size_estimate_so_far += rb.get_array_memory_size();
 
-            if size_estimate_so_far > MAX_TABLE_BYTES_TO_DISPLAY {
-                let ratio = MAX_TABLE_BYTES_TO_DISPLAY as f32 / size_estimate_so_far as f32;
+            if size_estimate_so_far > max_bytes {
+                let ratio = max_bytes as f32 / size_estimate_so_far as f32;
                 let total_rows = rows_in_rb + rows_so_far;
 
                 let mut reduced_row_num = (total_rows as f32 * ratio).round() as usize;
