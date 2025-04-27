@@ -19,6 +19,7 @@ Submodules
    :maxdepth: 1
 
    /autoapi/datafusion/catalog/index
+   /autoapi/datafusion/col/index
    /autoapi/datafusion/context/index
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/expr/index
@@ -40,6 +41,8 @@ Attributes
 .. autoapisummary::
 
    datafusion.DFSchema
+   datafusion.col
+   datafusion.column
    datafusion.udaf
    datafusion.udf
    datafusion.udwf
@@ -73,8 +76,6 @@ Functions
 
 .. autoapisummary::
 
-   datafusion.col
-   datafusion.column
    datafusion.configure_formatter
    datafusion.lit
    datafusion.literal
@@ -1465,16 +1466,6 @@ Package Contents
    .. py:attribute:: _udwf
 
 
-.. py:function:: col(value: str) -> expr.Expr
-
-   Create a column expression.
-
-
-.. py:function:: column(value: str) -> expr.Expr
-
-   Create a column expression.
-
-
 .. py:function:: configure_formatter(**kwargs: Any) -> None
 
    Configure the global DataFrame HTML formatter.
@@ -1593,6 +1584,12 @@ Package Contents
 
 
 .. py:data:: DFSchema
+
+.. py:data:: col
+   :type:  Col
+
+.. py:data:: column
+   :type:  Col
 
 .. py:data:: udaf
 

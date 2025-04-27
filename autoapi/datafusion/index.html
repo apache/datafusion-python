@@ -281,6 +281,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="context/index.html">
        datafusion.context
       </a>
@@ -1825,24 +1830,6 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.col">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       col()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.column">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       column()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.configure_formatter">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1915,6 +1902,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.col">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       col
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.column">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       column
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.udaf">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1974,6 +1979,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="catalog/index.html">datafusion.catalog</a></li>
+<li class="toctree-l1"><a class="reference internal" href="col/index.html">datafusion.col</a></li>
 <li class="toctree-l1"><a class="reference internal" href="context/index.html">datafusion.context</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
@@ -1995,6 +2001,12 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.DFSchema" title="datafusion.DFSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFSchema</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.column" title="datafusion.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udaf</span></code></a></p></td>
@@ -2068,12 +2080,6 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.col" title="datafusion.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a>(→ expr.Expr)</p></td>
-<td><p>Create a column expression.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.column" title="datafusion.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a>(→ expr.Expr)</p></td>
-<td><p>Create a column expression.</p></td>
-</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.configure_formatter" title="datafusion.configure_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">configure_formatter</span></code></a>(→ None)</p></td>
 <td><p>Configure the global DataFrame HTML formatter.</p></td>
 </tr>
@@ -3582,18 +3588,6 @@ using `udwf` as a decorator.</strong></p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="datafusion.col">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">col</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.col" title="Link to this definition">¶</a></dt>
-<dd><p>Create a column expression.</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="datafusion.column">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">column</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.column" title="Link to this definition">¶</a></dt>
-<dd><p>Create a column expression.</p>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.configure_formatter">
 <span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">configure_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.configure_formatter" title="Link to this definition">¶</a></dt>
 <dd><p>Configure the global DataFrame HTML formatter.</p>
@@ -3742,6 +3736,16 @@ file.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.DFSchema">
 <span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DFSchema</span></span><a class="headerlink" href="#datafusion.DFSchema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.col">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">col</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Col</span></em><a class="headerlink" href="#datafusion.col" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.column">
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">column</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Col</span></em><a class="headerlink" href="#datafusion.column" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">

@@ -1,0 +1,29 @@
+datafusion.col
+==============
+
+.. py:module:: datafusion.col
+
+.. autoapi-nested-parse::
+
+   Col class.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   datafusion.col.col
+   datafusion.col.column
+
+
+Module Contents
+---------------
+
+.. py:data:: col
+   :type:  Col
+
+.. py:data:: column
+   :type:  Col
+

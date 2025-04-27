@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>datafusion.unparser &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>datafusion.col &#8212; Apache Arrow DataFusion  documentation</title>
     
     <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
 <link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
@@ -34,7 +34,8 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="prev" title="datafusion.udf" href="../udf/index.html" />
+    <link rel="next" title="datafusion.context" href="../context/index.html" />
+    <link rel="prev" title="datafusion.catalog" href="../catalog/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -279,8 +280,8 @@
        datafusion.catalog
       </a>
      </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../col/index.html">
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
        datafusion.col
       </a>
      </li>
@@ -361,8 +362,8 @@
        datafusion.udf
       </a>
      </li>
-     <li class="toctree-l3 current active">
-      <a class="current reference internal" href="#">
+     <li class="toctree-l3">
+      <a class="reference internal" href="../unparser/index.html">
        datafusion.unparser
       </a>
      </li>
@@ -395,8 +396,8 @@
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
  <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#classes">
-   Classes
+  <a class="reference internal nav-link" href="#attributes">
+   Attributes
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
@@ -405,107 +406,22 @@
   </a>
   <ul class="visible nav section-nav flex-column">
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.unparser.Dialect">
+    <a class="reference internal nav-link" href="#datafusion.col.col">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Dialect
+       col
       </span>
      </code>
     </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.default">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.default()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.duckdb">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.duckdb()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.mysql">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.mysql()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.postgres">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.postgres()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.sqlite">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.sqlite()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Dialect.dialect">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Dialect.dialect
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.unparser.Unparser">
+    <a class="reference internal nav-link" href="#datafusion.col.column">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Unparser
+       column
       </span>
      </code>
     </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Unparser.plan_to_sql">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Unparser.plan_to_sql()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Unparser.with_pretty">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Unparser.with_pretty()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.unparser.Unparser.unparser">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Unparser.unparser
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
    </li>
   </ul>
  </li>
@@ -530,90 +446,33 @@
               
               <div>
                 
-  <section id="module-datafusion.unparser">
-<span id="datafusion-unparser"></span><h1>datafusion.unparser<a class="headerlink" href="#module-datafusion.unparser" title="Link to this heading">¶</a></h1>
-<p>This module provides support for unparsing datafusion plans to SQL.</p>
-<p>For additional information about unparsing, see <a class="reference external" href="https://docs.rs/datafusion-sql/latest/datafusion_sql/unparser/index.html">https://docs.rs/datafusion-sql/latest/datafusion_sql/unparser/index.html</a></p>
-<section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+  <section id="module-datafusion.col">
+<span id="datafusion-col"></span><h1>datafusion.col<a class="headerlink" href="#module-datafusion.col" title="Link to this heading">¶</a></h1>
+<p>Col class.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
 <table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Dialect</span></code></a></p></td>
-<td><p>DataFusion data catalog.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.col.col" title="datafusion.col.col"><code class="xref py py-obj docutils literal notranslate"><span class="pre">col</span></code></a></p></td>
+<td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.unparser.Unparser" title="datafusion.unparser.Unparser"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Unparser</span></code></a></p></td>
-<td><p>DataFusion unparser.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.col.column" title="datafusion.col.column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">column</span></code></a></p></td>
+<td><p></p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="module-contents">
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.unparser.</span></span><span class="sig-name descname"><span class="pre">Dialect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.unparser.Dialect</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.unparser.Dialect" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion data catalog.</p>
-<p>This constructor is not typically called by the end user.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.default">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Dialect.default" title="Link to this definition">¶</a></dt>
-<dd><p>Create a new default dialect.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.duckdb">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">duckdb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Dialect.duckdb" title="Link to this definition">¶</a></dt>
-<dd><p>Create a new DuckDB dialect.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.mysql">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mysql</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Dialect.mysql" title="Link to this definition">¶</a></dt>
-<dd><p>Create a new MySQL dialect.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.postgres">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">postgres</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Dialect.postgres" title="Link to this definition">¶</a></dt>
-<dd><p>Create a new PostgreSQL dialect.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.sqlite">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sqlite</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Dialect.sqlite" title="Link to this definition">¶</a></dt>
-<dd><p>Create a new SQLite dialect.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.unparser.Dialect.dialect">
-<span class="sig-name descname"><span class="pre">dialect</span></span><a class="headerlink" href="#datafusion.unparser.Dialect.dialect" title="Link to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.col.col">
+<span class="sig-prename descclassname"><span class="pre">datafusion.col.</span></span><span class="sig-name descname"><span class="pre">col</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Col</span></em><a class="headerlink" href="#datafusion.col.col" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="datafusion.unparser.Unparser">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.unparser.</span></span><span class="sig-name descname"><span class="pre">Unparser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dialect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.unparser.Dialect" title="datafusion.unparser.Dialect"><span class="pre">Dialect</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.unparser.Unparser" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion unparser.</p>
-<p>This constructor is not typically called by the end user.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Unparser.plan_to_sql">
-<span class="sig-name descname"><span class="pre">plan_to_sql</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.unparser.Unparser.plan_to_sql" title="Link to this definition">¶</a></dt>
-<dd><p>Convert a logical plan to a SQL string.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.unparser.Unparser.with_pretty">
-<span class="sig-name descname"><span class="pre">with_pretty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretty</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.unparser.Unparser" title="datafusion.unparser.Unparser"><span class="pre">Unparser</span></a></span></span><a class="headerlink" href="#datafusion.unparser.Unparser.with_pretty" title="Link to this definition">¶</a></dt>
-<dd><p>Set the pretty flag.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.unparser.Unparser.unparser">
-<span class="sig-name descname"><span class="pre">unparser</span></span><a class="headerlink" href="#datafusion.unparser.Unparser.unparser" title="Link to this definition">¶</a></dt>
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.col.column">
+<span class="sig-prename descclassname"><span class="pre">datafusion.col.</span></span><span class="sig-name descname"><span class="pre">column</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Col</span></em><a class="headerlink" href="#datafusion.col.column" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
-
-</dd></dl>
 
 </section>
 </section>
@@ -624,12 +483,19 @@
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../udf/index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../catalog/index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.udf</p>
+            <p class="prev-next-title">datafusion.catalog</p>
         </div>
+    </a>
+    <a class='right-next' id="next-link" href="../context/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">datafusion.context</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
     </a>
 </div>
               
