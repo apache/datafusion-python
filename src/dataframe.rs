@@ -102,23 +102,22 @@ fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
     let get_formatter = formatter_module.getattr("get_formatter")?;
     let formatter = get_formatter.call0()?;
 
-    // Get max_memory_bytes (or fallback to default)
-    let max_bytes = formatter
-        .getattr("max_memory_bytes")
-        .and_then(|v| v.extract::<usize>())
-        .unwrap_or(FormatterConfig::default().max_bytes);
+    // Helper function to extract attributes with fallback to default
+    fn get_attr<'a>(
+        formatter: &'a Bound<'a, PyAny>,
+        attr_name: &str,
+        default_value: usize,
+    ) -> usize {
+        formatter
+            .getattr(attr_name)
+            .and_then(|v| v.extract::<usize>())
+            .unwrap_or(default_value)
+    }
 
-    // Get min_rows_display (or fallback to default)
-    let min_rows = formatter
-        .getattr("min_rows_display")
-        .and_then(|v| v.extract::<usize>())
-        .unwrap_or(FormatterConfig::default().min_rows);
-
-    // Get repr_rows (or fallback to default)
-    let repr_rows = formatter
-        .getattr("repr_rows")
-        .and_then(|v| v.extract::<usize>())
-        .unwrap_or(FormatterConfig::default().repr_rows);
+    let default_config = FormatterConfig::default();
+    let max_bytes = get_attr(&formatter, "max_memory_bytes", default_config.max_bytes);
+    let min_rows = get_attr(&formatter, "min_rows_display", default_config.min_rows);
+    let repr_rows = get_attr(&formatter, "repr_rows", default_config.repr_rows);
 
     Ok(FormatterConfig {
         max_bytes,
