@@ -26,10 +26,10 @@ It offers a familiar API similar to pandas and other DataFrame libraries, but wi
 and Arrow.
 
 A DataFrame represents a logical plan that can be composed through operations like filtering, projection, and aggregation.
-The actual execution happens when terminal operations like `collect()` or `show()` are called.
+The actual execution happens when terminal operations like ``collect()`` or ``show()`` are called.
 
 Basic Usage
-----------
+-----------
 
 .. code-block:: python
 
@@ -55,17 +55,17 @@ Basic Usage
     df.show()
 
 HTML Rendering
--------------
+--------------
 
 When working in Jupyter notebooks or other environments that support HTML rendering, DataFrames will
 automatically display as formatted HTML tables, making it easier to visualize your data.
 
-The `_repr_html_` method is called automatically by Jupyter to render a DataFrame. This method 
+The ``_repr_html_`` method is called automatically by Jupyter to render a DataFrame. This method 
 controls how DataFrames appear in notebook environments, providing a richer visualization than
 plain text output.
 
 Customizing HTML Rendering
--------------------------
+--------------------------
 
 You can customize how DataFrames are rendered in HTML by configuring the formatter:
 
@@ -87,7 +87,7 @@ You can customize how DataFrames are rendered in HTML by configuring the formatt
 The formatter settings affect all DataFrames displayed after configuration.
 
 Custom Style Providers
----------------------
+----------------------
 
 For advanced styling needs, you can create a custom style provider:
 
@@ -114,7 +114,7 @@ For advanced styling needs, you can create a custom style provider:
     configure_formatter(style_provider=MyStyleProvider())
 
 Creating a Custom Formatter
---------------------------
+---------------------------
 
 For complete control over rendering, you can implement a custom formatter:
 
@@ -138,7 +138,7 @@ For complete control over rendering, you can implement a custom formatter:
     custom_html = formatter.format_html(batches, schema)
 
 Managing Formatters
-------------------
+-------------------
 
 Reset to default formatting:
 
@@ -160,7 +160,7 @@ Get the current formatter settings:
     print(formatter.theme)
 
 Contextual Formatting
---------------------
+---------------------
 
 You can also use a context manager to temporarily change formatting settings:
 
