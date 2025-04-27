@@ -98,8 +98,6 @@ class DataFrameHtmlFormatter:
         style_provider: Custom provider for cell and header styles
         use_shared_styles: Whether to load styles and scripts only once per notebook
           session
-        max_table_bytes: Maximum bytes to display for table presentation (default: 2MB) 
-        min_table_rows: Minimum number of table rows to display (default: 20)
     """
 
     # Class variable to track if styles have been loaded in the notebook
@@ -115,8 +113,6 @@ class DataFrameHtmlFormatter:
         show_truncation_message: bool = True,
         style_provider: Optional[StyleProvider] = None,
         use_shared_styles: bool = True,
-        max_table_bytes: int = 2 * 1024 * 1024,  # 2 MB
-        min_table_rows: int = 20,
     ) -> None:
         """Initialize the HTML formatter.
 
@@ -139,16 +135,11 @@ class DataFrameHtmlFormatter:
             is used.
         use_shared_styles : bool, default True
             Whether to use shared styles across multiple tables.
-        max_table_bytes : int, default 2MB (2 * 1024 * 1024)
-            Maximum bytes to display for table presentation.
-        min_table_rows : int, default 20
-            Minimum number of table rows to display.
 
         Raises:
         ------
         ValueError
-            If max_cell_length, max_width, max_height, max_table_bytes, or min_table_rows 
-            is not a positive integer.
+            If max_cell_length, max_width, or max_height is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
             not a boolean,
@@ -166,12 +157,6 @@ class DataFrameHtmlFormatter:
             raise ValueError(msg)
         if not isinstance(max_height, int) or max_height <= 0:
             msg = "max_height must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_table_bytes, int) or max_table_bytes <= 0:
-            msg = "max_table_bytes must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(min_table_rows, int) or min_table_rows <= 0:
-            msg = "min_table_rows must be a positive integer"
             raise ValueError(msg)
 
         # Validate boolean parameters
@@ -203,8 +188,6 @@ class DataFrameHtmlFormatter:
         self.show_truncation_message = show_truncation_message
         self.style_provider = style_provider or DefaultStyleProvider()
         self.use_shared_styles = use_shared_styles
-        self.max_table_bytes = max_table_bytes
-        self.min_table_rows = min_table_rows
         # Registry for custom type formatters
         self._type_formatters: dict[type, CellFormatter] = {}
         # Custom cell builders
