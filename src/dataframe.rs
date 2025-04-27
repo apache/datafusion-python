@@ -71,8 +71,61 @@ impl PyTableProvider {
         PyTable::new(table_provider)
     }
 }
+
+/// Configuration for DataFrame display formatting
+#[derive(Debug, Clone)]
+pub struct FormatterConfig {
+    /// Maximum memory in bytes to use for display (default: 2MB)
+    pub max_bytes: usize,
+    /// Minimum number of rows to display (default: 20)
+    pub min_rows: usize,
+    /// Number of rows to include in __repr__ output (default: 10)
+    pub repr_rows: usize,
+}
+
+impl Default for FormatterConfig {
+    fn default() -> Self {
+        Self {
+            max_bytes: 2 * 1024 * 1024, // 2MB
+            min_rows: 20,
+            repr_rows: 10,
+        }
+    }
+}
+
+// Keep constants for backward compatibility
 const MAX_TABLE_BYTES_TO_DISPLAY: usize = 2 * 1024 * 1024; // 2 MB
 const MIN_TABLE_ROWS_TO_DISPLAY: usize = 20;
+
+fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
+    let formatter_module = py.import("datafusion.html_formatter")?;
+    let get_formatter = formatter_module.getattr("get_formatter")?;
+    let formatter = get_formatter.call0()?;
+
+    // Get max_memory_bytes (or fallback to default)
+    let max_bytes = formatter
+        .getattr("max_memory_bytes")
+        .and_then(|v| v.extract::<usize>())
+        .unwrap_or(FormatterConfig::default().max_bytes);
+
+    // Get min_rows_display (or fallback to default)
+    let min_rows = formatter
+        .getattr("min_rows_display")
+        .and_then(|v| v.extract::<usize>())
+        .unwrap_or(FormatterConfig::default().min_rows);
+
+    // Get repr_rows (or fallback to default)
+    let repr_rows = formatter
+        .getattr("repr_rows")
+        .and_then(|v| v.extract::<usize>())
+        .unwrap_or(FormatterConfig::default().repr_rows);
+
+    Ok(FormatterConfig {
+        max_bytes,
+        min_rows,
+        repr_rows,
+    })
+}
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
