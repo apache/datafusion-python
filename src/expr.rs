@@ -22,6 +22,7 @@ use datafusion::logical_expr::{
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
+use std::collections::HashMap;
 use std::convert::{From, Into};
 use std::sync::Arc;
 use window::PyWindowFrame;
@@ -289,8 +290,9 @@ impl PyExpr {
     }
 
     /// assign a name to the PyExpr
-    pub fn alias(&self, name: &str) -> PyExpr {
-        self.expr.clone().alias(name).into()
+    #[pyo3(signature = (name, metadata=None))]
+    pub fn alias(&self, name: &str, metadata: Option<HashMap<String, String>>) -> PyExpr {
+        self.expr.clone().alias_with_metadata(name, metadata).into()
     }
 
     /// Create a sort PyExpr from an existing PyExpr.
@@ -728,9 +730,19 @@ impl PyExpr {
                 | Operator::BitwiseXor
                 | Operator::BitwiseAnd
                 | Operator::BitwiseOr => DataTypeMap::map_from_arrow_type(&DataType::Binary),
-                Operator::AtArrow | Operator::ArrowAt => {
-                    Err(py_type_err(format!("Unsupported expr: ${op}")))
-                }
+                Operator::AtArrow
+                | Operator::ArrowAt
+                | Operator::Arrow
+                | Operator::LongArrow
+                | Operator::HashArrow
+                | Operator::HashLongArrow
+                | Operator::AtAt
+                | Operator::IntegerDivide
+                | Operator::HashMinus
+                | Operator::AtQuestion
+                | Operator::Question
+                | Operator::QuestionAnd
+                | Operator::QuestionPipe => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),

@@ -372,9 +372,18 @@ def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> So
     return SortExpr(expr, ascending=ascending, nulls_first=nulls_first)
 
 
-def alias(expr: Expr, name: str) -> Expr:
-    """Creates an alias expression."""
-    return Expr(f.alias(expr.expr, name))
+def alias(expr: Expr, name: str, metadata: Optional[dict[str, str]] = None) -> Expr:
+    """Creates an alias expression with an optional metadata dictionary.
+
+    Args:
+        expr: The expression to alias
+        name: The alias name
+        metadata: Optional metadata to attach to the column
+
+    Returns:
+        An expression with the given alias
+    """
+    return Expr(f.alias(expr.expr, name, metadata))
 
 
 def col(name: str) -> Expr:
