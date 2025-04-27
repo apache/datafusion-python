@@ -93,10 +93,15 @@ impl Default for FormatterConfig {
     }
 }
 
-fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
+/// Get the Python formatter from the datafusion.html_formatter module
+fn get_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
     let formatter_module = py.import("datafusion.html_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
-    let formatter = get_formatter.call0()?;
+    get_formatter.call0()
+}
+
+fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
+    let formatter = get_python_formatter(py)?;
 
     // Helper function to extract attributes with fallback to default
     fn get_attr<'a>(
@@ -205,9 +210,7 @@ impl PyDataFrame {
         let py_schema = self.schema().into_pyobject(py)?;
 
         // Get the Python formatter module and call format_html
-        let formatter_module = py.import("datafusion.html_formatter")?;
-        let get_formatter = formatter_module.getattr("get_formatter")?;
-        let formatter = get_formatter.call0()?;
+        let formatter = get_python_formatter(py)?;
 
         // Call format_html method on the formatter
         let kwargs = pyo3::types::PyDict::new(py);
