@@ -91,6 +91,9 @@ class DataFrameHtmlFormatter:
         max_cell_length: Maximum characters to display in a cell before truncation
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
+        max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
+        min_rows_display: Minimum number of rows to display
+        repr_rows: Default number of rows to display in repr output
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
           values
         custom_css: Additional CSS to include in the HTML output
@@ -108,6 +111,9 @@ class DataFrameHtmlFormatter:
         max_cell_length: int = 25,
         max_width: int = 1000,
         max_height: int = 300,
+        max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
+        min_rows_display: int = 20,
+        repr_rows: int = 10,
         enable_cell_expansion: bool = True,
         custom_css: Optional[str] = None,
         show_truncation_message: bool = True,
@@ -124,6 +130,12 @@ class DataFrameHtmlFormatter:
             Maximum width of the displayed table in pixels.
         max_height : int, default 300
             Maximum height of the displayed table in pixels.
+        max_memory_bytes : int, default 2097152 (2MB)
+            Maximum memory in bytes for rendered data.
+        min_rows_display : int, default 20
+            Minimum number of rows to display.
+        repr_rows : int, default 10
+            Default number of rows to display in repr output.
         enable_cell_expansion : bool, default True
             Whether to allow cells to expand when clicked.
         custom_css : str, optional
@@ -139,7 +151,8 @@ class DataFrameHtmlFormatter:
         Raises:
         ------
         ValueError
-            If max_cell_length, max_width, or max_height is not a positive integer.
+            If max_cell_length, max_width, max_height, max_memory_bytes, 
+            min_rows_display, or repr_rows is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
             not a boolean,
@@ -157,6 +170,15 @@ class DataFrameHtmlFormatter:
             raise ValueError(msg)
         if not isinstance(max_height, int) or max_height <= 0:
             msg = "max_height must be a positive integer"
+            raise ValueError(msg)
+        if not isinstance(max_memory_bytes, int) or max_memory_bytes <= 0:
+            msg = "max_memory_bytes must be a positive integer"
+            raise ValueError(msg)
+        if not isinstance(min_rows_display, int) or min_rows_display <= 0:
+            msg = "min_rows_display must be a positive integer"
+            raise ValueError(msg)
+        if not isinstance(repr_rows, int) or repr_rows <= 0:
+            msg = "repr_rows must be a positive integer"
             raise ValueError(msg)
 
         # Validate boolean parameters
@@ -183,6 +205,9 @@ class DataFrameHtmlFormatter:
         self.max_cell_length = max_cell_length
         self.max_width = max_width
         self.max_height = max_height
+        self.max_memory_bytes = max_memory_bytes
+        self.min_rows_display = min_rows_display
+        self.repr_rows = repr_rows
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
