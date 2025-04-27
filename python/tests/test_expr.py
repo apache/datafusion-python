@@ -334,6 +334,7 @@ def test_transaction_end():
     plan = plan.to_variant()
     assert isinstance(plan, TransactionEnd)
 
+
 def test_alias_with_metadata(df):
     df = df.select(col("a").alias("b", {"key": "value"}))
     assert df.schema().field("b").metadata == {b"key": b"value"}
