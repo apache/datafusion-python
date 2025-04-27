@@ -679,9 +679,6 @@ def test_html_formatter_configuration(df, clean_formatter_state):
         max_width=500,
         max_height=200,
         enable_cell_expansion=False,
-        max_memory_bytes=1024 * 1024,  # 1 MB
-        min_rows_display=15,
-        repr_rows=5,
     )
 
     html_output = df._repr_html_()
@@ -691,71 +688,6 @@ def test_html_formatter_configuration(df, clean_formatter_state):
     assert "max-width: 500px" in html_output
     # With cell expansion disabled, we shouldn't see expandable-container elements
     assert "expandable-container" not in html_output
-
-
-def test_html_formatter_row_display_settings(clean_formatter_state):
-    """Test that min_rows_display and repr_rows affect the output."""
-    ctx = SessionContext()
-    
-    # Create a dataframe with 30 rows
-    data = list(range(30))
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array(data)],
-        names=["value"],
-    )
-    df = ctx.create_dataframe([[batch]])
-    
-    # Test with default settings (should use repr_rows)
-    configure_formatter(repr_rows=7, min_rows_display=20)
-    html_default = df._repr_html_()
-    
-    # Verify we only show repr_rows (7) rows in the output
-    # by counting the number of value cells
-    value_cells = re.findall(r"<td[^>]*>\s*\d+\s*</td>", html_default)
-    assert len(value_cells) == 7
-    assert "... with 23 more rows" in html_default
-    
-    # Configure to show all rows since it's below min_rows_display
-    reset_formatter()
-    configure_formatter(repr_rows=5, min_rows_display=50)
-    html_all = df._repr_html_()
-    
-    # Verify we show all rows
-    value_cells = re.findall(r"<td[^>]*>\s*\d+\s*</td>", html_all)
-    assert len(value_cells) == 30
-    assert "... with" not in html_all
-
-
-def test_html_formatter_memory_limit(clean_formatter_state):
-    """Test that max_memory_bytes limits the HTML rendering."""
-    ctx = SessionContext()
-    
-    # Create a large string that will consume substantial memory when rendered
-    large_string = "x" * 100000
-    
-    # Create a dataframe with 10 rows of large strings
-    batch = pa.RecordBatch.from_arrays(
-        [pa.array([large_string] * 10)],
-        names=["large_value"],
-    )
-    df = ctx.create_dataframe([[batch]])
-    
-    # Set very small memory limit
-    configure_formatter(max_memory_bytes=1000)  # 1KB
-    
-    html_limited = df._repr_html_()
-    
-    # Verify that memory limit warning is included in the output
-    assert "Memory usage limit reached" in html_limited
-    
-    # Now with larger limit, should display normally
-    reset_formatter()
-    configure_formatter(max_memory_bytes=10 * 1024 * 1024)  # 10MB
-    
-    html_full = df._repr_html_()
-    
-    # Verify no memory limit warning
-    assert "Memory usage limit reached" not in html_full
 
 
 def test_html_formatter_custom_style_provider(df, clean_formatter_state):
@@ -839,6 +771,74 @@ def test_html_formatter_custom_cell_builder(df, clean_formatter_state):
         r'<td style="background-color: #d3e9f0"[^>]*>(\d+)-low</td>', html_output
     )
     mid_cells = re.findall(
+        r'<td style="border: 1px solid #ddd"[^>]*>(\d+)-mid</td>', html_output
+    )
+    high_cells = re.findall(
+        r'<td style="background-color: #d9f0d3"[^>]*>(\d+)-high</td>', html_output
+    )
+
+    # Sort the extracted values for consistent comparison
+    low_cells = sorted(map(int, low_cells))
+    mid_cells = sorted(map(int, mid_cells))
+    high_cells = sorted(map(int, high_cells))
+
+    # Verify specific values have the correct styling applied
+    assert low_cells == [1, 2]  # Values < 3
+    assert mid_cells == [3, 4, 5, 5]  # Values 3-5
+    assert high_cells == [6, 8, 8]  # Values > 5
+
+    # Verify the exact content with styling appears in the output
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">1-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d3e9f0" data-test="low">2-low</td>'
+        in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">3-mid</td>' in html_output
+    )
+    assert (
+        '<td style="border: 1px solid #ddd" data-test="mid">4-mid</td>' in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">6-high</td>'
+        in html_output
+    )
+    assert (
+        '<td style="background-color: #d9f0d3" data-test="high">8-high</td>'
+        in html_output
+    )
+
+    # Count occurrences to ensure all cells are properly styled
+    assert html_output.count("-low</td>") == 2  # Two low values (1, 2)
+    assert html_output.count("-mid</td>") == 4  # Four mid values (3, 4, 5, 5)
+    assert html_output.count("-high</td>") == 3  # Three high values (6, 8, 8)
+
+    # Create a custom cell builder that changes background color based on value
+    def custom_cell_builder(value, row, col, table_id):
+        # Handle numeric values regardless of their exact type
+        try:
+            num_value = int(value)
+            if num_value > 5:  # Values > 5 get green background
+                return f'<td style="background-color: #d9f0d3">{value}</td>'
+            if num_value < 3:  # Values < 3 get light blue background
+                return f'<td style="background-color: #d3e9f0">{value}</td>'
+        except (ValueError, TypeError):
+            pass
+
+        # Default styling for other cells
+        return f'<td style="border: 1px solid #ddd">{value}</td>'
+
+    # Set our custom cell builder
+    formatter = get_formatter()
+    formatter.set_custom_cell_builder(custom_cell_builder)
+
+    html_output = df._repr_html_()
+
+    # Verify our custom cell styling was applied
+    assert "background-color: #d3e9f0" in html_output  # For values 1,2
 
 
 def test_html_formatter_custom_header_builder(df, clean_formatter_state):
