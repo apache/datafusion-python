@@ -93,6 +93,21 @@ impl Default for FormatterConfig {
     }
 }
 
+/// Holds the Python formatter and its configuration
+struct PythonFormatter<'py> {
+    /// The Python formatter object
+    formatter: Bound<'py, PyAny>,
+    /// The formatter configuration
+    config: FormatterConfig,
+}
+
+/// Get the Python formatter and its configuration
+fn get_python_formatter_with_config<'py>(py: Python<'py>) -> PyResult<PythonFormatter<'py>> {
+    let formatter = import_python_formatter(py)?;
+    let config = build_formatter_config_from_python(&formatter);
+    Ok(PythonFormatter { formatter, config })
+}
+
 /// Get the Python formatter from the datafusion.html_formatter module
 fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
     let formatter_module = py.import("datafusion.html_formatter")?;
@@ -161,9 +176,11 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter module and call format_html
-        let formatter = import_python_formatter(py)?;
-        let config = build_formatter_config_from_python(&formatter);
+        // Get the Python formatter and config
+        let PythonFormatter {
+            formatter: _,
+            config,
+        } = get_python_formatter_with_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
@@ -185,10 +202,8 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter module and call format_html
-        let formatter = import_python_formatter(py)?;
-        let config = build_formatter_config_from_python(&formatter);
-
+        // Get the Python formatter and config
+        let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
@@ -216,6 +231,7 @@ impl PyDataFrame {
         kwargs.set_item("has_more", has_more)?;
         kwargs.set_item("table_uuid", table_uuid)?;
 
+        // Use the formatter from the struct
         let html_result = formatter.call_method("format_html", (), Some(&kwargs))?;
         let html_str: String = html_result.extract()?;
 
