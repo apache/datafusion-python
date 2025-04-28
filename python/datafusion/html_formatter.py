@@ -181,7 +181,7 @@ class DataFrameHtmlFormatter:
         Raises:
         ------
         ValueError
-            If max_cell_length, max_width, max_height, max_memory_bytes, 
+            If max_cell_length, max_width, max_height, max_memory_bytes,
             min_rows_display, or repr_rows is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is

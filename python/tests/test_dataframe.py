@@ -919,13 +919,13 @@ def test_html_formatter_complex_customization(df, clean_formatter_state):
 
 def test_html_formatter_memory_and_rows():
     """Test the memory and row control parameters in DataFrameHtmlFormatter."""
-    
+
     # Test default values
     formatter = DataFrameHtmlFormatter()
     assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
     assert formatter.min_rows_display == 20
     assert formatter.repr_rows == 10
-    
+
     # Test custom values
     formatter = DataFrameHtmlFormatter(
         max_memory_bytes=1024 * 1024,  # 1 MB
@@ -935,7 +935,7 @@ def test_html_formatter_memory_and_rows():
     assert formatter.max_memory_bytes == 1024 * 1024
     assert formatter.min_rows_display == 10
     assert formatter.repr_rows == 5
-    
+
     # Test extremely large values and tiny values (edge cases)
     # These should not raise exceptions
     extreme_formatter = DataFrameHtmlFormatter(
@@ -946,29 +946,30 @@ def test_html_formatter_memory_and_rows():
     assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
     assert extreme_formatter.min_rows_display == 1
     assert extreme_formatter.repr_rows == 1
-    
+
     # Test validation for invalid parameters
     with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
         DataFrameHtmlFormatter(max_memory_bytes=0)
-    
+
     with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
         DataFrameHtmlFormatter(max_memory_bytes=-100)
-    
+
     with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
         DataFrameHtmlFormatter(min_rows_display=0)
-    
+
     with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
         DataFrameHtmlFormatter(min_rows_display=-5)
-    
+
     with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
         DataFrameHtmlFormatter(repr_rows=0)
-    
+
     with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
         DataFrameHtmlFormatter(repr_rows=-10)
 
 
-def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
-    """Test using custom style providers with the HTML formatter and configured parameters."""
+def test_custom_style_provider_html_formatter(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured
+    parameters."""
 
     class CustomStyleProvider:
         def get_cell_style(self) -> str:
@@ -995,7 +996,7 @@ def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatte
 
     # Reset for the next part of the test
     reset_formatter()
-    
+
     # Configure with custom style provider and additional parameters
     configure_formatter(
         style_provider=CustomStyleProvider(),
