@@ -176,7 +176,7 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter and config
+        // Get the Python formatter config
         let PythonFormatter {
             formatter: _,
             config,
@@ -223,7 +223,6 @@ impl PyDataFrame {
 
         let py_schema = self.schema().into_pyobject(py)?;
 
-        // Call format_html method on the formatter
         let kwargs = pyo3::types::PyDict::new(py);
         let py_batches_list = PyList::new(py, py_batches.as_slice())?;
         kwargs.set_item("batches", py_batches_list)?;
@@ -231,7 +230,6 @@ impl PyDataFrame {
         kwargs.set_item("has_more", has_more)?;
         kwargs.set_item("table_uuid", table_uuid)?;
 
-        // Use the formatter from the struct
         let html_result = formatter.call_method("format_html", (), Some(&kwargs))?;
         let html_str: String = html_result.extract()?;
 
@@ -859,9 +857,11 @@ async fn collect_record_batches_to_display(
     df: DataFrame,
     config: FormatterConfig,
 ) -> Result<(Vec<RecordBatch>, bool), DataFusionError> {
-    let max_bytes = config.max_bytes;
-    let min_rows = config.min_rows;
-    let max_rows = config.repr_rows;
+    let FormatterConfig {
+        max_bytes,
+        min_rows,
+        repr_rows,
+    } = config;
 
     let partitioned_stream = df.execute_stream_partitioned().await?;
     let mut stream = futures::stream::iter(partitioned_stream).flatten();
@@ -870,7 +870,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
-    while (size_estimate_so_far < max_bytes && rows_so_far < max_rows) || rows_so_far < min_rows {
+    while (size_estimate_so_far < max_bytes && rows_so_far < repr_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
                 break;
@@ -900,8 +900,8 @@ async fn collect_record_batches_to_display(
                 }
             }
 
-            if rows_in_rb + rows_so_far > max_rows {
-                rb = rb.slice(0, max_rows - rows_so_far);
+            if rows_in_rb + rows_so_far > repr_rows {
+                rb = rb.slice(0, repr_rows - rows_so_far);
                 has_more = true;
             }
 
