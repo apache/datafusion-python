@@ -24,8 +24,6 @@ from typing import (
     Optional,
     Protocol,
     runtime_checkable,
-    TypeVar,
-    Union,
 )
 
 
