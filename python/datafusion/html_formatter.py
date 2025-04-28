@@ -24,7 +24,39 @@ from typing import (
     Optional,
     Protocol,
     runtime_checkable,
+    TypeVar,
+    Union,
 )
+
+
+def _validate_positive_int(value: Any, param_name: str) -> None:
+    """Validate that a parameter is a positive integer.
+
+    Args:
+        value: The value to validate
+        param_name: Name of the parameter (used in error message)
+
+    Raises:
+        ValueError: If the value is not a positive integer
+    """
+    if not isinstance(value, int) or value <= 0:
+        msg = f"{param_name} must be a positive integer"
+        raise ValueError(msg)
+
+
+def _validate_bool(value: Any, param_name: str) -> None:
+    """Validate that a parameter is a boolean.
+
+    Args:
+        value: The value to validate
+        param_name: Name of the parameter (used in error message)
+
+    Raises:
+        TypeError: If the value is not a boolean
+    """
+    if not isinstance(value, bool):
+        msg = f"{param_name} must be a boolean"
+        raise TypeError(msg)
 
 
 @runtime_checkable
@@ -161,36 +193,17 @@ class DataFrameHtmlFormatter:
             protocol.
         """
         # Validate numeric parameters
-
-        if not isinstance(max_cell_length, int) or max_cell_length <= 0:
-            msg = "max_cell_length must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_width, int) or max_width <= 0:
-            msg = "max_width must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_height, int) or max_height <= 0:
-            msg = "max_height must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_memory_bytes, int) or max_memory_bytes <= 0:
-            msg = "max_memory_bytes must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(min_rows_display, int) or min_rows_display <= 0:
-            msg = "min_rows_display must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(repr_rows, int) or repr_rows <= 0:
-            msg = "repr_rows must be a positive integer"
-            raise ValueError(msg)
+        _validate_positive_int(max_cell_length, "max_cell_length")
+        _validate_positive_int(max_width, "max_width")
+        _validate_positive_int(max_height, "max_height")
+        _validate_positive_int(max_memory_bytes, "max_memory_bytes")
+        _validate_positive_int(min_rows_display, "min_rows_display")
+        _validate_positive_int(repr_rows, "repr_rows")
 
         # Validate boolean parameters
-        if not isinstance(enable_cell_expansion, bool):
-            msg = "enable_cell_expansion must be a boolean"
-            raise TypeError(msg)
-        if not isinstance(show_truncation_message, bool):
-            msg = "show_truncation_message must be a boolean"
-            raise TypeError(msg)
-        if not isinstance(use_shared_styles, bool):
-            msg = "use_shared_styles must be a boolean"
-            raise TypeError(msg)
+        _validate_bool(enable_cell_expansion, "enable_cell_expansion")
+        _validate_bool(show_truncation_message, "show_truncation_message")
+        _validate_bool(use_shared_styles, "use_shared_styles")
 
         # Validate custom_css
         if custom_css is not None and not isinstance(custom_css, str):
