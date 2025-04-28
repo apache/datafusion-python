@@ -75,13 +75,17 @@ You can customize how DataFrames are rendered in HTML by configuring the formatt
     
     # Change the default styling
     configure_formatter(
-        max_rows=50,           # Maximum number of rows to display
-        max_width=None,        # Maximum width in pixels (None for auto)
-        theme="light",         # Theme: "light" or "dark" 
-        precision=2,           # Floating point precision
-        thousands_separator=",", # Separator for thousands
-        date_format="%Y-%m-%d", # Date format
-        truncate_width=20      # Max width for string columns before truncating
+        max_cell_length=25,        # Maximum characters in a cell before truncation
+        max_width=1000,            # Maximum width in pixels
+        max_height=300,            # Maximum height in pixels
+        max_memory_bytes=2097152,  # Maximum memory for rendering (2MB)
+        min_rows_display=20,       # Minimum number of rows to display
+        repr_rows=10,              # Number of rows to display in __repr__
+        enable_cell_expansion=True,# Allow expanding truncated cells
+        custom_css=None,           # Additional custom CSS
+        show_truncation_message=True, # Show message when data is truncated
+        style_provider=None,       # Custom styling provider
+        use_shared_styles=True     # Share styles across tables
     )
 
 The formatter settings affect all DataFrames displayed after configuration.
