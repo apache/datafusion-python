@@ -917,6 +917,107 @@ def test_html_formatter_complex_customization(df, clean_formatter_state):
     assert "color: #5af" in html_output  # Even numbers
 
 
+def test_html_formatter_memory_and_rows():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
+    
+    # Test validation for invalid parameters
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Reset for the next part of the test
+    reset_formatter()
+    
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters were properly set
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
+
+
 def test_get_dataframe(tmp_path):
     ctx = SessionContext()
 
@@ -1667,6 +1768,3349 @@ def test_html_formatter_memory_and_rows():
     assert formatter.max_memory_bytes == 1024 * 1024
     assert formatter.min_rows_display == 10
     assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
+    
+    # Test validation for invalid parameters
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Reset for the next part of the test
+    reset_formatter()
+    
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters were properly set
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
+
+
+def test_get_dataframe(tmp_path):
+    ctx = SessionContext()
+
+    path = tmp_path / "test.csv"
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4],
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table, path)
+
+    ctx.register_csv("csv", path)
+
+    df = ctx.table("csv")
+    assert isinstance(df, DataFrame)
+
+
+def test_struct_select(struct_df):
+    df = struct_df.select(
+        column("a")["c"] + column("b"),
+        column("a")["c"] - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+
+def test_explain(df):
+    df = df.select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+    df.explain()
+
+
+def test_logical_plan(aggregate_df):
+    plan = aggregate_df.logical_plan()
+
+    expected = "Projection: test.c1, sum(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, sum(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "    TableScan: test"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_optimized_logical_plan(aggregate_df):
+    plan = aggregate_df.optimized_logical_plan()
+
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "  TableScan: test projection=[c1, c2]"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_execution_plan(aggregate_df):
+    plan = aggregate_df.execution_plan()
+
+    expected = (
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
+    )
+
+    assert expected == plan.display()
+
+    # Check the number of partitions is as expected.
+    assert isinstance(plan.partition_count, int)
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    indent = plan.display_indent()
+
+    # indent plan will be different for everyone due to absolute path
+    # to filename, so we just check for some expected content
+    assert "AggregateExec:" in indent
+    assert "CoalesceBatchesExec:" in indent
+    assert "RepartitionExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
+
+    ctx = SessionContext()
+    rows_returned = 0
+    for idx in range(plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
+
+
+@pytest.mark.asyncio
+async def test_async_iteration_of_df(aggregate_df):
+    rows_returned = 0
+    async for batch in aggregate_df.execute_stream():
+        assert batch is not None
+        rows_returned += len(batch.to_pyarrow()[0])
+
+    assert rows_returned == 5
+
+
+def test_repartition(df):
+    df.repartition(2)
+
+
+def test_repartition_by_hash(df):
+    df.repartition_by_hash(column("a"), num=2)
+
+
+def test_intersect():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3]), pa.array([6])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_i_b.collect()
+
+
+def test_except_all():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_e_b.collect()
+
+
+def test_collect_partitioned():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
+
+
+def test_union(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_union_distinct(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b, distinct=True).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_cache(df):
+    assert df.cache().collect() == df.collect()
+
+
+def test_count(df):
+    # Get number of rows
+    assert df.count() == 3
+
+
+def test_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert datafusion dataframe to pandas dataframe
+    pandas_df = df.to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (3, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert empty datafusion dataframe to pandas dataframe
+    pandas_df = df.limit(0).to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (0, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert datafusion dataframe to polars dataframe
+    polars_df = df.to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (3, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert empty datafusion dataframe to polars dataframe
+    polars_df = df.limit(0).to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (0, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_to_arrow_table(df):
+    # Convert datafusion dataframe to pyarrow Table
+    pyarrow_table = df.to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream(df):
+    stream = df.execute_stream()
+    assert all(batch is not None for batch in stream)
+    assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_async(df):
+    stream = df.execute_stream()
+    batches = [batch async for batch in stream]
+
+    assert all(batch is not None for batch in batches)
+
+    # After consuming all batches, the stream should be exhausted
+    remaining_batches = [batch async for batch in stream]
+    assert not remaining_batches
+
+
+@pytest.mark.parametrize("schema", [True, False])
+def test_execute_stream_to_arrow_table(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            (batch.to_pyarrow() for batch in stream), schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema", [True, False])
+async def test_execute_stream_to_arrow_table_async(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream], schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream]
+        )
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream_partitioned(df):
+    streams = df.execute_stream_partitioned()
+    assert all(batch is not None for stream in streams for batch in stream)
+    assert all(
+        not list(stream) for stream in streams
+    )  # after one iteration all generators must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_partitioned_async(df):
+    streams = df.execute_stream_partitioned()
+
+    for stream in streams:
+        batches = [batch async for batch in stream]
+        assert all(batch is not None for batch in batches)
+
+        # Ensure the stream is exhausted after iteration
+        remaining_batches = [batch async for batch in stream]
+        assert not remaining_batches
+
+
+def test_empty_to_arrow_table(df):
+    # Convert empty datafusion dataframe to pyarrow Table
+    pyarrow_table = df.limit(0).to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (0, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_to_pylist(df):
+    # Convert datafusion dataframe to Python list
+    pylist = df.to_pylist()
+    assert isinstance(pylist, list)
+    assert pylist == [
+        {"a": 1, "b": 4, "c": 8},
+        {"a": 2, "b": 5, "c": 5},
+        {"a": 3, "b": 6, "c": 8},
+    ]
+
+
+def test_to_pydict(df):
+    # Convert datafusion dataframe to Python dictionary
+    pydict = df.to_pydict()
+    assert isinstance(pydict, dict)
+    assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 0.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 0.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 0.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_parquet(df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for _root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["wrong"])
+def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)
+
+
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
+@pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
+def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
+    path = tmp_path
+
+    df.write_parquet(str(path), compression=compression)
+
+
+def test_dataframe_export(df) -> None:
+    # Guarantees that we have the canonical implementation
+    # reading our dataframe export
+    table = pa.table(df)
+    assert table.num_columns == 3
+    assert table.num_rows == 3
+
+    desired_schema = pa.schema([("a", pa.int64())])
+
+    # Verify we can request a schema
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+
+    # Expect a table of nulls if the schema don't overlap
+    desired_schema = pa.schema([("g", pa.string())])
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+    for i in range(3):
+        assert table[0][i].as_py() is None
+
+    # Expect an error when we cannot convert schema
+    desired_schema = pa.schema([("a", pa.float32())])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+    # Expect an error when we have a not set non-nullable
+    desired_schema = pa.schema([("g", pa.string(), False)])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+
+def test_dataframe_transform(df):
+    def add_string_col(df_internal) -> DataFrame:
+        return df_internal.with_column("string_col", literal("string data"))
+
+    def add_with_parameter(df_internal, value: Any) -> DataFrame:
+        return df_internal.with_column("new_col", literal(value))
+
+    df = df.transform(add_string_col).transform(add_with_parameter, 3)
+
+    result = df.to_pydict()
+
+    assert result["a"] == [1, 2, 3]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
+
+
+def test_dataframe_repr_html_structure(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
+
+    output = df._repr_html_()
+
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
+
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
+
+    # Update the pattern to handle values that may be wrapped in spans
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
+    body_pattern = "(.*?)".join(body_lines)
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
+
+
+def test_dataframe_repr_html_values(df):
+    """Test that DataFrame._repr_html_ contains the expected data values."""
+    html = df._repr_html_()
+    assert html is not None
+
+    # Create a more flexible pattern that handles values being wrapped in spans
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
+    pattern = re.compile(
+        r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        re.DOTALL,
+    )
+
+    # Print debug info if the test fails
+    matches = re.findall(pattern, html)
+    if not matches:
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
+
+    assert len(matches) > 0, "Expected pattern of values not found in HTML output"
+
+
+def test_html_formatter_shared_styles(df, clean_formatter_state):
+    """Test that shared styles work correctly across multiple tables."""
+
+    # First, ensure we're using shared styles
+    configure_formatter(use_shared_styles=True)
+
+    # Get HTML output for first table - should include styles
+    html_first = df._repr_html_()
+
+    # Verify styles are included in first render
+    assert "<style>" in html_first
+    assert ".expandable-container" in html_first
+
+    # Get HTML output for second table - should NOT include styles
+    html_second = df._repr_html_()
+
+    # Verify styles are NOT included in second render
+    assert "<style>" not in html_second
+    assert ".expandable-container" not in html_second
+
+    # Reset the styles loaded state and verify styles are included again
+    reset_styles_loaded_state()
+    html_after_reset = df._repr_html_()
+
+    # Verify styles are included after reset
+    assert "<style>" in html_after_reset
+    assert ".expandable-container" in html_after_reset
+
+
+def test_html_formatter_no_shared_styles(df, clean_formatter_state):
+    """Test that styles are always included when shared styles are disabled."""
+
+    # Configure formatter to NOT use shared styles
+    configure_formatter(use_shared_styles=False)
+
+    # Generate HTML multiple times
+    html_first = df._repr_html_()
+    html_second = df._repr_html_()
+
+    # Verify styles are included in both renders
+    assert "<style>" in html_first
+    assert "<style>" in html_second
+    assert ".expandable-container" in html_first
+    assert ".expandable-container" in html_second
+
+
+def test_html_formatter_manual_format_html(clean_formatter_state):
+    """Test direct usage of format_html method with shared styles."""
+
+    # Create sample data
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    formatter = get_formatter()
+
+    # First call should include styles
+    html_first = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_first
+
+    # Second call should not include styles (using shared styles by default)
+    html_second = formatter.format_html([batch], batch.schema)
+    assert "<style>" not in html_second
+
+    # Reset loaded state
+    reset_styles_loaded_state()
+
+    # After reset, styles should be included again
+    html_reset = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_reset
+
+    # Create a new formatter with shared_styles=False
+    local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
+
+    # Both calls should include styles
+    local_html_1 = local_formatter.format_html([batch], batch.schema)
+    local_html_2 = local_formatter.format_html([batch], batch.schema)
+
+    assert "<style>" in local_html_1
+    assert "<style>" in local_html_2
+
+
+def test_html_formatter_memory_and_rows():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
+    
+    # Test validation for invalid parameters
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Reset for the next part of the test
+    reset_formatter()
+    
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters were properly set
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
+
+
+def test_get_dataframe(tmp_path):
+    ctx = SessionContext()
+
+    path = tmp_path / "test.csv"
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4],
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table, path)
+
+    ctx.register_csv("csv", path)
+
+    df = ctx.table("csv")
+    assert isinstance(df, DataFrame)
+
+
+def test_struct_select(struct_df):
+    df = struct_df.select(
+        column("a")["c"] + column("b"),
+        column("a")["c"] - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+
+def test_explain(df):
+    df = df.select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+    df.explain()
+
+
+def test_logical_plan(aggregate_df):
+    plan = aggregate_df.logical_plan()
+
+    expected = "Projection: test.c1, sum(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, sum(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "    TableScan: test"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_optimized_logical_plan(aggregate_df):
+    plan = aggregate_df.optimized_logical_plan()
+
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "  TableScan: test projection=[c1, c2]"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_execution_plan(aggregate_df):
+    plan = aggregate_df.execution_plan()
+
+    expected = (
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
+    )
+
+    assert expected == plan.display()
+
+    # Check the number of partitions is as expected.
+    assert isinstance(plan.partition_count, int)
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    indent = plan.display_indent()
+
+    # indent plan will be different for everyone due to absolute path
+    # to filename, so we just check for some expected content
+    assert "AggregateExec:" in indent
+    assert "CoalesceBatchesExec:" in indent
+    assert "RepartitionExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
+
+    ctx = SessionContext()
+    rows_returned = 0
+    for idx in range(plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
+
+
+@pytest.mark.asyncio
+async def test_async_iteration_of_df(aggregate_df):
+    rows_returned = 0
+    async for batch in aggregate_df.execute_stream():
+        assert batch is not None
+        rows_returned += len(batch.to_pyarrow()[0])
+
+    assert rows_returned == 5
+
+
+def test_repartition(df):
+    df.repartition(2)
+
+
+def test_repartition_by_hash(df):
+    df.repartition_by_hash(column("a"), num=2)
+
+
+def test_intersect():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3]), pa.array([6])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_i_b.collect()
+
+
+def test_except_all():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_e_b.collect()
+
+
+def test_collect_partitioned():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
+
+
+def test_union(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_union_distinct(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b, distinct=True).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_cache(df):
+    assert df.cache().collect() == df.collect()
+
+
+def test_count(df):
+    # Get number of rows
+    assert df.count() == 3
+
+
+def test_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert datafusion dataframe to pandas dataframe
+    pandas_df = df.to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (3, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert empty datafusion dataframe to pandas dataframe
+    pandas_df = df.limit(0).to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (0, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert datafusion dataframe to polars dataframe
+    polars_df = df.to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (3, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert empty datafusion dataframe to polars dataframe
+    polars_df = df.limit(0).to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (0, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_to_arrow_table(df):
+    # Convert datafusion dataframe to pyarrow Table
+    pyarrow_table = df.to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream(df):
+    stream = df.execute_stream()
+    assert all(batch is not None for batch in stream)
+    assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_async(df):
+    stream = df.execute_stream()
+    batches = [batch async for batch in stream]
+
+    assert all(batch is not None for batch in batches)
+
+    # After consuming all batches, the stream should be exhausted
+    remaining_batches = [batch async for batch in stream]
+    assert not remaining_batches
+
+
+@pytest.mark.parametrize("schema", [True, False])
+def test_execute_stream_to_arrow_table(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            (batch.to_pyarrow() for batch in stream), schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema", [True, False])
+async def test_execute_stream_to_arrow_table_async(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream], schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream]
+        )
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream_partitioned(df):
+    streams = df.execute_stream_partitioned()
+    assert all(batch is not None for stream in streams for batch in stream)
+    assert all(
+        not list(stream) for stream in streams
+    )  # after one iteration all generators must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_partitioned_async(df):
+    streams = df.execute_stream_partitioned()
+
+    for stream in streams:
+        batches = [batch async for batch in stream]
+        assert all(batch is not None for batch in batches)
+
+        # Ensure the stream is exhausted after iteration
+        remaining_batches = [batch async for batch in stream]
+        assert not remaining_batches
+
+
+def test_empty_to_arrow_table(df):
+    # Convert empty datafusion dataframe to pyarrow Table
+    pyarrow_table = df.limit(0).to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (0, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_to_pylist(df):
+    # Convert datafusion dataframe to Python list
+    pylist = df.to_pylist()
+    assert isinstance(pylist, list)
+    assert pylist == [
+        {"a": 1, "b": 4, "c": 8},
+        {"a": 2, "b": 5, "c": 5},
+        {"a": 3, "b": 6, "c": 8},
+    ]
+
+
+def test_to_pydict(df):
+    # Convert datafusion dataframe to Python dictionary
+    pydict = df.to_pydict()
+    assert isinstance(pydict, dict)
+    assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 0.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 0.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 0.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_parquet(df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for _root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["wrong"])
+def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)
+
+
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
+@pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
+def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
+    path = tmp_path
+
+    df.write_parquet(str(path), compression=compression)
+
+
+def test_dataframe_export(df) -> None:
+    # Guarantees that we have the canonical implementation
+    # reading our dataframe export
+    table = pa.table(df)
+    assert table.num_columns == 3
+    assert table.num_rows == 3
+
+    desired_schema = pa.schema([("a", pa.int64())])
+
+    # Verify we can request a schema
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+
+    # Expect a table of nulls if the schema don't overlap
+    desired_schema = pa.schema([("g", pa.string())])
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+    for i in range(3):
+        assert table[0][i].as_py() is None
+
+    # Expect an error when we cannot convert schema
+    desired_schema = pa.schema([("a", pa.float32())])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+    # Expect an error when we have a not set non-nullable
+    desired_schema = pa.schema([("g", pa.string(), False)])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+
+def test_dataframe_transform(df):
+    def add_string_col(df_internal) -> DataFrame:
+        return df_internal.with_column("string_col", literal("string data"))
+
+    def add_with_parameter(df_internal, value: Any) -> DataFrame:
+        return df_internal.with_column("new_col", literal(value))
+
+    df = df.transform(add_string_col).transform(add_with_parameter, 3)
+
+    result = df.to_pydict()
+
+    assert result["a"] == [1, 2, 3]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
+
+
+def test_dataframe_repr_html_structure(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
+
+    output = df._repr_html_()
+
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
+
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
+
+    # Update the pattern to handle values that may be wrapped in spans
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
+    body_pattern = "(.*?)".join(body_lines)
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
+
+
+def test_dataframe_repr_html_values(df):
+    """Test that DataFrame._repr_html_ contains the expected data values."""
+    html = df._repr_html_()
+    assert html is not None
+
+    # Create a more flexible pattern that handles values being wrapped in spans
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
+    pattern = re.compile(
+        r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        re.DOTALL,
+    )
+
+    # Print debug info if the test fails
+    matches = re.findall(pattern, html)
+    if not matches:
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
+
+    assert len(matches) > 0, "Expected pattern of values not found in HTML output"
+
+
+def test_html_formatter_shared_styles(df, clean_formatter_state):
+    """Test that shared styles work correctly across multiple tables."""
+
+    # First, ensure we're using shared styles
+    configure_formatter(use_shared_styles=True)
+
+    # Get HTML output for first table - should include styles
+    html_first = df._repr_html_()
+
+    # Verify styles are included in first render
+    assert "<style>" in html_first
+    assert ".expandable-container" in html_first
+
+    # Get HTML output for second table - should NOT include styles
+    html_second = df._repr_html_()
+
+    # Verify styles are NOT included in second render
+    assert "<style>" not in html_second
+    assert ".expandable-container" not in html_second
+
+    # Reset the styles loaded state and verify styles are included again
+    reset_styles_loaded_state()
+    html_after_reset = df._repr_html_()
+
+    # Verify styles are included after reset
+    assert "<style>" in html_after_reset
+    assert ".expandable-container" in html_after_reset
+
+
+def test_html_formatter_no_shared_styles(df, clean_formatter_state):
+    """Test that styles are always included when shared styles are disabled."""
+
+    # Configure formatter to NOT use shared styles
+    configure_formatter(use_shared_styles=False)
+
+    # Generate HTML multiple times
+    html_first = df._repr_html_()
+    html_second = df._repr_html_()
+
+    # Verify styles are included in both renders
+    assert "<style>" in html_first
+    assert "<style>" in html_second
+    assert ".expandable-container" in html_first
+    assert ".expandable-container" in html_second
+
+
+def test_html_formatter_manual_format_html(clean_formatter_state):
+    """Test direct usage of format_html method with shared styles."""
+
+    # Create sample data
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    formatter = get_formatter()
+
+    # First call should include styles
+    html_first = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_first
+
+    # Second call should not include styles (using shared styles by default)
+    html_second = formatter.format_html([batch], batch.schema)
+    assert "<style>" not in html_second
+
+    # Reset loaded state
+    reset_styles_loaded_state()
+
+    # After reset, styles should be included again
+    html_reset = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_reset
+
+    # Create a new formatter with shared_styles=False
+    local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
+
+    # Both calls should include styles
+    local_html_1 = local_formatter.format_html([batch], batch.schema)
+    local_html_2 = local_formatter.format_html([batch], batch.schema)
+
+    assert "<style>" in local_html_1
+    assert "<style>" in local_html_2
+
+
+def test_html_formatter_memory_and_rows():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
+    
+    # Test validation for invalid parameters
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Reset for the next part of the test
+    reset_formatter()
+    
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters were properly set
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
+
+
+def test_get_dataframe(tmp_path):
+    ctx = SessionContext()
+
+    path = tmp_path / "test.csv"
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4],
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table, path)
+
+    ctx.register_csv("csv", path)
+
+    df = ctx.table("csv")
+    assert isinstance(df, DataFrame)
+
+
+def test_struct_select(struct_df):
+    df = struct_df.select(
+        column("a")["c"] + column("b"),
+        column("a")["c"] - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+
+def test_explain(df):
+    df = df.select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+    df.explain()
+
+
+def test_logical_plan(aggregate_df):
+    plan = aggregate_df.logical_plan()
+
+    expected = "Projection: test.c1, sum(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, sum(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "    TableScan: test"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_optimized_logical_plan(aggregate_df):
+    plan = aggregate_df.optimized_logical_plan()
+
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "  TableScan: test projection=[c1, c2]"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_execution_plan(aggregate_df):
+    plan = aggregate_df.execution_plan()
+
+    expected = (
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
+    )
+
+    assert expected == plan.display()
+
+    # Check the number of partitions is as expected.
+    assert isinstance(plan.partition_count, int)
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    indent = plan.display_indent()
+
+    # indent plan will be different for everyone due to absolute path
+    # to filename, so we just check for some expected content
+    assert "AggregateExec:" in indent
+    assert "CoalesceBatchesExec:" in indent
+    assert "RepartitionExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
+
+    ctx = SessionContext()
+    rows_returned = 0
+    for idx in range(plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
+
+
+@pytest.mark.asyncio
+async def test_async_iteration_of_df(aggregate_df):
+    rows_returned = 0
+    async for batch in aggregate_df.execute_stream():
+        assert batch is not None
+        rows_returned += len(batch.to_pyarrow()[0])
+
+    assert rows_returned == 5
+
+
+def test_repartition(df):
+    df.repartition(2)
+
+
+def test_repartition_by_hash(df):
+    df.repartition_by_hash(column("a"), num=2)
+
+
+def test_intersect():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3]), pa.array([6])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_i_b.collect()
+
+
+def test_except_all():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_e_b.collect()
+
+
+def test_collect_partitioned():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
+
+
+def test_union(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_union_distinct(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b, distinct=True).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_cache(df):
+    assert df.cache().collect() == df.collect()
+
+
+def test_count(df):
+    # Get number of rows
+    assert df.count() == 3
+
+
+def test_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert datafusion dataframe to pandas dataframe
+    pandas_df = df.to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (3, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert empty datafusion dataframe to pandas dataframe
+    pandas_df = df.limit(0).to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (0, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert datafusion dataframe to polars dataframe
+    polars_df = df.to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (3, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert empty datafusion dataframe to polars dataframe
+    polars_df = df.limit(0).to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (0, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_to_arrow_table(df):
+    # Convert datafusion dataframe to pyarrow Table
+    pyarrow_table = df.to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream(df):
+    stream = df.execute_stream()
+    assert all(batch is not None for batch in stream)
+    assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_async(df):
+    stream = df.execute_stream()
+    batches = [batch async for batch in stream]
+
+    assert all(batch is not None for batch in batches)
+
+    # After consuming all batches, the stream should be exhausted
+    remaining_batches = [batch async for batch in stream]
+    assert not remaining_batches
+
+
+@pytest.mark.parametrize("schema", [True, False])
+def test_execute_stream_to_arrow_table(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            (batch.to_pyarrow() for batch in stream), schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema", [True, False])
+async def test_execute_stream_to_arrow_table_async(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream], schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream]
+        )
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream_partitioned(df):
+    streams = df.execute_stream_partitioned()
+    assert all(batch is not None for stream in streams for batch in stream)
+    assert all(
+        not list(stream) for stream in streams
+    )  # after one iteration all generators must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_partitioned_async(df):
+    streams = df.execute_stream_partitioned()
+
+    for stream in streams:
+        batches = [batch async for batch in stream]
+        assert all(batch is not None for batch in batches)
+
+        # Ensure the stream is exhausted after iteration
+        remaining_batches = [batch async for batch in stream]
+        assert not remaining_batches
+
+
+def test_empty_to_arrow_table(df):
+    # Convert empty datafusion dataframe to pyarrow Table
+    pyarrow_table = df.limit(0).to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (0, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_to_pylist(df):
+    # Convert datafusion dataframe to Python list
+    pylist = df.to_pylist()
+    assert isinstance(pylist, list)
+    assert pylist == [
+        {"a": 1, "b": 4, "c": 8},
+        {"a": 2, "b": 5, "c": 5},
+        {"a": 3, "b": 6, "c": 8},
+    ]
+
+
+def test_to_pydict(df):
+    # Convert datafusion dataframe to Python dictionary
+    pydict = df.to_pydict()
+    assert isinstance(pydict, dict)
+    assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 0.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 0.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 0.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_parquet(df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for _root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["wrong"])
+def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)
+
+
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
+@pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
+def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
+    path = tmp_path
+
+    df.write_parquet(str(path), compression=compression)
+
+
+def test_dataframe_export(df) -> None:
+    # Guarantees that we have the canonical implementation
+    # reading our dataframe export
+    table = pa.table(df)
+    assert table.num_columns == 3
+    assert table.num_rows == 3
+
+    desired_schema = pa.schema([("a", pa.int64())])
+
+    # Verify we can request a schema
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+
+    # Expect a table of nulls if the schema don't overlap
+    desired_schema = pa.schema([("g", pa.string())])
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+    for i in range(3):
+        assert table[0][i].as_py() is None
+
+    # Expect an error when we cannot convert schema
+    desired_schema = pa.schema([("a", pa.float32())])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+    # Expect an error when we have a not set non-nullable
+    desired_schema = pa.schema([("g", pa.string(), False)])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+
+def test_dataframe_transform(df):
+    def add_string_col(df_internal) -> DataFrame:
+        return df_internal.with_column("string_col", literal("string data"))
+
+    def add_with_parameter(df_internal, value: Any) -> DataFrame:
+        return df_internal.with_column("new_col", literal(value))
+
+    df = df.transform(add_string_col).transform(add_with_parameter, 3)
+
+    result = df.to_pydict()
+
+    assert result["a"] == [1, 2, 3]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
+
+
+def test_dataframe_repr_html_structure(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
+
+    output = df._repr_html_()
+
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
+
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
+
+    # Update the pattern to handle values that may be wrapped in spans
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
+    body_pattern = "(.*?)".join(body_lines)
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
+
+
+def test_dataframe_repr_html_values(df):
+    """Test that DataFrame._repr_html_ contains the expected data values."""
+    html = df._repr_html_()
+    assert html is not None
+
+    # Create a more flexible pattern that handles values being wrapped in spans
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
+    pattern = re.compile(
+        r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        re.DOTALL,
+    )
+
+    # Print debug info if the test fails
+    matches = re.findall(pattern, html)
+    if not matches:
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
+
+    assert len(matches) > 0, "Expected pattern of values not found in HTML output"
+
+
+def test_html_formatter_shared_styles(df, clean_formatter_state):
+    """Test that shared styles work correctly across multiple tables."""
+
+    # First, ensure we're using shared styles
+    configure_formatter(use_shared_styles=True)
+
+    # Get HTML output for first table - should include styles
+    html_first = df._repr_html_()
+
+    # Verify styles are included in first render
+    assert "<style>" in html_first
+    assert ".expandable-container" in html_first
+
+    # Get HTML output for second table - should NOT include styles
+    html_second = df._repr_html_()
+
+    # Verify styles are NOT included in second render
+    assert "<style>" not in html_second
+    assert ".expandable-container" not in html_second
+
+    # Reset the styles loaded state and verify styles are included again
+    reset_styles_loaded_state()
+    html_after_reset = df._repr_html_()
+
+    # Verify styles are included after reset
+    assert "<style>" in html_after_reset
+    assert ".expandable-container" in html_after_reset
+
+
+def test_html_formatter_no_shared_styles(df, clean_formatter_state):
+    """Test that styles are always included when shared styles are disabled."""
+
+    # Configure formatter to NOT use shared styles
+    configure_formatter(use_shared_styles=False)
+
+    # Generate HTML multiple times
+    html_first = df._repr_html_()
+    html_second = df._repr_html_()
+
+    # Verify styles are included in both renders
+    assert "<style>" in html_first
+    assert "<style>" in html_second
+    assert ".expandable-container" in html_first
+    assert ".expandable-container" in html_second
+
+
+def test_html_formatter_manual_format_html(clean_formatter_state):
+    """Test direct usage of format_html method with shared styles."""
+
+    # Create sample data
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    formatter = get_formatter()
+
+    # First call should include styles
+    html_first = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_first
+
+    # Second call should not include styles (using shared styles by default)
+    html_second = formatter.format_html([batch], batch.schema)
+    assert "<style>" not in html_second
+
+    # Reset loaded state
+    reset_styles_loaded_state()
+
+    # After reset, styles should be included again
+    html_reset = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_reset
+
+    # Create a new formatter with shared_styles=False
+    local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
+
+    # Both calls should include styles
+    local_html_1 = local_formatter.format_html([batch], batch.schema)
+    local_html_2 = local_formatter.format_html([batch], batch.schema)
+
+    assert "<style>" in local_html_1
+    assert "<style>" in local_html_2
+
+
+def test_html_formatter_memory_and_rows():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
+    
+    # Test validation for invalid parameters
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider
+    configure_formatter(style_provider=CustomStyleProvider())
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Reset for the next part of the test
+    reset_formatter()
+    
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters were properly set
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
+
+
+def test_get_dataframe(tmp_path):
+    ctx = SessionContext()
+
+    path = tmp_path / "test.csv"
+    table = pa.Table.from_arrays(
+        [
+            [1, 2, 3, 4],
+            ["a", "b", "c", "d"],
+            [1.1, 2.2, 3.3, 4.4],
+        ],
+        names=["int", "str", "float"],
+    )
+    write_csv(table, path)
+
+    ctx.register_csv("csv", path)
+
+    df = ctx.table("csv")
+    assert isinstance(df, DataFrame)
+
+
+def test_struct_select(struct_df):
+    df = struct_df.select(
+        column("a")["c"] + column("b"),
+        column("a")["c"] - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+
+def test_explain(df):
+    df = df.select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+    df.explain()
+
+
+def test_logical_plan(aggregate_df):
+    plan = aggregate_df.logical_plan()
+
+    expected = "Projection: test.c1, sum(test.c2)"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Projection: test.c1, sum(test.c2)\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "    TableScan: test"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_optimized_logical_plan(aggregate_df):
+    plan = aggregate_df.optimized_logical_plan()
+
+    expected = "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]"
+
+    assert expected == plan.display()
+
+    expected = (
+        "Aggregate: groupBy=[[test.c1]], aggr=[[sum(test.c2)]]\n"
+        "  TableScan: test projection=[c1, c2]"
+    )
+
+    assert expected == plan.display_indent()
+
+
+def test_execution_plan(aggregate_df):
+    plan = aggregate_df.execution_plan()
+
+    expected = (
+        "AggregateExec: mode=FinalPartitioned, gby=[c1@0 as c1], aggr=[sum(test.c2)]\n"
+    )
+
+    assert expected == plan.display()
+
+    # Check the number of partitions is as expected.
+    assert isinstance(plan.partition_count, int)
+
+    expected = (
+        "ProjectionExec: expr=[c1@0 as c1, SUM(test.c2)@1 as SUM(test.c2)]\n"
+        "  Aggregate: groupBy=[[test.c1]], aggr=[[SUM(test.c2)]]\n"
+        "    TableScan: test projection=[c1, c2]"
+    )
+
+    indent = plan.display_indent()
+
+    # indent plan will be different for everyone due to absolute path
+    # to filename, so we just check for some expected content
+    assert "AggregateExec:" in indent
+    assert "CoalesceBatchesExec:" in indent
+    assert "RepartitionExec:" in indent
+    assert "DataSourceExec:" in indent
+    assert "file_type=csv" in indent
+
+    ctx = SessionContext()
+    rows_returned = 0
+    for idx in range(plan.partition_count):
+        stream = ctx.execute(plan, idx)
+        try:
+            batch = stream.next()
+            assert batch is not None
+            rows_returned += len(batch.to_pyarrow()[0])
+        except StopIteration:
+            # This is one of the partitions with no values
+            pass
+        with pytest.raises(StopIteration):
+            stream.next()
+
+    assert rows_returned == 5
+
+
+@pytest.mark.asyncio
+async def test_async_iteration_of_df(aggregate_df):
+    rows_returned = 0
+    async for batch in aggregate_df.execute_stream():
+        assert batch is not None
+        rows_returned += len(batch.to_pyarrow()[0])
+
+    assert rows_returned == 5
+
+
+def test_repartition(df):
+    df.repartition(2)
+
+
+def test_repartition_by_hash(df):
+    df.repartition_by_hash(column("a"), num=2)
+
+
+def test_intersect():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3]), pa.array([6])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_i_b = df_a.intersect(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_i_b.collect()
+
+
+def test_except_all():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_e_b = df_a.except_all(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_e_b.collect()
+
+
+def test_collect_partitioned():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
+
+
+def test_union(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 3, 4, 5]), pa.array([4, 5, 6, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_union_distinct(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    df_a = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([3, 4, 5]), pa.array([6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_b = ctx.create_dataframe([[batch]])
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4, 5]), pa.array([4, 5, 6, 7, 8])],
+        names=["a", "b"],
+    )
+    df_c = ctx.create_dataframe([[batch]]).sort(column("a"))
+
+    df_a_u_b = df_a.union(df_b, distinct=True).sort(column("a"))
+
+    assert df_c.collect() == df_a_u_b.collect()
+    assert df_c.collect() == df_a_u_b.collect()
+
+
+def test_cache(df):
+    assert df.cache().collect() == df.collect()
+
+
+def test_count(df):
+    # Get number of rows
+    assert df.count() == 3
+
+
+def test_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert datafusion dataframe to pandas dataframe
+    pandas_df = df.to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (3, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_pandas(df):
+    # Skip test if pandas is not installed
+    pd = pytest.importorskip("pandas")
+
+    # Convert empty datafusion dataframe to pandas dataframe
+    pandas_df = df.limit(0).to_pandas()
+    assert isinstance(pandas_df, pd.DataFrame)
+    assert pandas_df.shape == (0, 3)
+    assert set(pandas_df.columns) == {"a", "b", "c"}
+
+
+def test_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert datafusion dataframe to polars dataframe
+    polars_df = df.to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (3, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_empty_to_polars(df):
+    # Skip test if polars is not installed
+    pl = pytest.importorskip("polars")
+
+    # Convert empty datafusion dataframe to polars dataframe
+    polars_df = df.limit(0).to_polars()
+    assert isinstance(polars_df, pl.DataFrame)
+    assert polars_df.shape == (0, 3)
+    assert set(polars_df.columns) == {"a", "b", "c"}
+
+
+def test_to_arrow_table(df):
+    # Convert datafusion dataframe to pyarrow Table
+    pyarrow_table = df.to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream(df):
+    stream = df.execute_stream()
+    assert all(batch is not None for batch in stream)
+    assert not list(stream)  # after one iteration the generator must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_async(df):
+    stream = df.execute_stream()
+    batches = [batch async for batch in stream]
+
+    assert all(batch is not None for batch in batches)
+
+    # After consuming all batches, the stream should be exhausted
+    remaining_batches = [batch async for batch in stream]
+    assert not remaining_batches
+
+
+@pytest.mark.parametrize("schema", [True, False])
+def test_execute_stream_to_arrow_table(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            (batch.to_pyarrow() for batch in stream), schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(batch.to_pyarrow() for batch in stream)
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("schema", [True, False])
+async def test_execute_stream_to_arrow_table_async(df, schema):
+    stream = df.execute_stream()
+
+    if schema:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream], schema=df.schema()
+        )
+    else:
+        pyarrow_table = pa.Table.from_batches(
+            [batch.to_pyarrow() async for batch in stream]
+        )
+
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (3, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_execute_stream_partitioned(df):
+    streams = df.execute_stream_partitioned()
+    assert all(batch is not None for stream in streams for batch in stream)
+    assert all(
+        not list(stream) for stream in streams
+    )  # after one iteration all generators must be exhausted
+
+
+@pytest.mark.asyncio
+async def test_execute_stream_partitioned_async(df):
+    streams = df.execute_stream_partitioned()
+
+    for stream in streams:
+        batches = [batch async for batch in stream]
+        assert all(batch is not None for batch in batches)
+
+        # Ensure the stream is exhausted after iteration
+        remaining_batches = [batch async for batch in stream]
+        assert not remaining_batches
+
+
+def test_empty_to_arrow_table(df):
+    # Convert empty datafusion dataframe to pyarrow Table
+    pyarrow_table = df.limit(0).to_arrow_table()
+    assert isinstance(pyarrow_table, pa.Table)
+    assert pyarrow_table.shape == (0, 3)
+    assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_to_pylist(df):
+    # Convert datafusion dataframe to Python list
+    pylist = df.to_pylist()
+    assert isinstance(pylist, list)
+    assert pylist == [
+        {"a": 1, "b": 4, "c": 8},
+        {"a": 2, "b": 5, "c": 5},
+        {"a": 3, "b": 6, "c": 8},
+    ]
+
+
+def test_to_pydict(df):
+    # Convert datafusion dataframe to Python dictionary
+    pydict = df.to_pydict()
+    assert isinstance(pydict, dict)
+    assert pydict == {"a": [1, 2, 3], "b": [4, 5, 6], "c": [8, 5, 8]}
+
+
+def test_describe(df):
+    # Calculate statistics
+    df = df.describe()
+
+    # Collect the result
+    result = df.to_pydict()
+
+    assert result == {
+        "describe": [
+            "count",
+            "null_count",
+            "mean",
+            "std",
+            "min",
+            "max",
+            "median",
+        ],
+        "a": [3.0, 0.0, 2.0, 1.0, 1.0, 3.0, 2.0],
+        "b": [3.0, 0.0, 5.0, 1.0, 4.0, 6.0, 5.0],
+        "c": [3.0, 0.0, 7.0, 1.7320508075688772, 5.0, 8.0, 8.0],
+    }
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_csv(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_csv(path, with_header=True)
+
+    ctx.register_csv("csv", path)
+    result = ctx.table("csv").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_json(ctx, df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_json(path)
+
+    ctx.register_json("json", path)
+    result = ctx.table("json").to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize("path_to_str", [True, False])
+def test_write_parquet(df, tmp_path, path_to_str):
+    path = str(tmp_path) if path_to_str else tmp_path
+
+    df.write_parquet(str(path))
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 6), ("brotli", 7), ("zstd", 15)],
+)
+def test_write_compressed_parquet(df, tmp_path, compression, compression_level):
+    path = tmp_path
+
+    df.write_parquet(
+        str(path), compression=compression, compression_level=compression_level
+    )
+
+    # test that the actual compression scheme is the one written
+    for _root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for columns in row_group["columns"]:
+                        assert columns["compression"].lower() == compression
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("compression", "compression_level"),
+    [("gzip", 12), ("brotli", 15), ("zstd", 23), ("wrong", 12)],
+)
+def test_write_compressed_parquet_wrong_compression_level(
+    df, tmp_path, compression, compression_level
+):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(
+            str(path),
+            compression=compression,
+            compression_level=compression_level,
+        )
+
+
+@pytest.mark.parametrize("compression", ["wrong"])
+def test_write_compressed_parquet_invalid_compression(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(ValueError):
+        df.write_parquet(str(path), compression=compression)
+
+
+# not testing lzo because it it not implemented yet
+# https://github.com/apache/arrow-rs/issues/6970
+@pytest.mark.parametrize("compression", ["zstd", "brotli", "gzip"])
+def test_write_compressed_parquet_default_compression_level(df, tmp_path, compression):
+    # Test write_parquet with zstd, brotli, gzip default compression level,
+    # ie don't specify compression level
+    # should complete without error
+    path = tmp_path
+
+    df.write_parquet(str(path), compression=compression)
+
+
+def test_dataframe_export(df) -> None:
+    # Guarantees that we have the canonical implementation
+    # reading our dataframe export
+    table = pa.table(df)
+    assert table.num_columns == 3
+    assert table.num_rows == 3
+
+    desired_schema = pa.schema([("a", pa.int64())])
+
+    # Verify we can request a schema
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+
+    # Expect a table of nulls if the schema don't overlap
+    desired_schema = pa.schema([("g", pa.string())])
+    table = pa.table(df, schema=desired_schema)
+    assert table.num_columns == 1
+    assert table.num_rows == 3
+    for i in range(3):
+        assert table[0][i].as_py() is None
+
+    # Expect an error when we cannot convert schema
+    desired_schema = pa.schema([("a", pa.float32())])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+    # Expect an error when we have a not set non-nullable
+    desired_schema = pa.schema([("g", pa.string(), False)])
+    failed_convert = False
+    try:
+        table = pa.table(df, schema=desired_schema)
+    except Exception:
+        failed_convert = True
+    assert failed_convert
+
+
+def test_dataframe_transform(df):
+    def add_string_col(df_internal) -> DataFrame:
+        return df_internal.with_column("string_col", literal("string data"))
+
+    def add_with_parameter(df_internal, value: Any) -> DataFrame:
+        return df_internal.with_column("new_col", literal(value))
+
+    df = df.transform(add_string_col).transform(add_with_parameter, 3)
+
+    result = df.to_pydict()
+
+    assert result["a"] == [1, 2, 3]
+    assert result["string_col"] == ["string data" for _i in range(3)]
+    assert result["new_col"] == [3 for _i in range(3)]
+
+
+def test_dataframe_repr_html_structure(df) -> None:
+    """Test that DataFrame._repr_html_ produces expected HTML output structure."""
+    import re
+
+    output = df._repr_html_()
+
+    # Since we've added a fair bit of processing to the html output, lets just verify
+    # the values we are expecting in the table exist. Use regex and ignore everything
+    # between the <th></th> and <td></td>. We also don't want the closing > on the
+    # td and th segments because that is where the formatting data is written.
+
+    headers = ["a", "b", "c"]
+    headers = [f"<th(.*?)>{v}</th>" for v in headers]
+    header_pattern = "(.*?)".join(headers)
+    header_matches = re.findall(header_pattern, output, re.DOTALL)
+    assert len(header_matches) == 1
+
+    # Update the pattern to handle values that may be wrapped in spans
+    body_data = [[1, 4, 8], [2, 5, 5], [3, 6, 8]]
+
+    body_lines = [
+        f"<td(.*?)>(?:<span[^>]*?>)?{v}(?:</span>)?</td>"
+        for inner in body_data
+        for v in inner
+    ]
+    body_pattern = "(.*?)".join(body_lines)
+
+    body_matches = re.findall(body_pattern, output, re.DOTALL)
+
+    assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
+
+
+def test_dataframe_repr_html_values(df):
+    """Test that DataFrame._repr_html_ contains the expected data values."""
+    html = df._repr_html_()
+    assert html is not None
+
+    # Create a more flexible pattern that handles values being wrapped in spans
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
+    # of formatting
+    pattern = re.compile(
+        r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?4(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?2(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?5(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?3(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?6(?:</span>)?</td>.*?"
+        r"<td[^>]*?>(?:<span[^>]*?>)?8(?:</span>)?</td>",
+        re.DOTALL,
+    )
+
+    # Print debug info if the test fails
+    matches = re.findall(pattern, html)
+    if not matches:
+        print(f"HTML output snippet: {html[:500]}...")  # noqa: T201
+
+    assert len(matches) > 0, "Expected pattern of values not found in HTML output"
+
+
+def test_html_formatter_shared_styles(df, clean_formatter_state):
+    """Test that shared styles work correctly across multiple tables."""
+
+    # First, ensure we're using shared styles
+    configure_formatter(use_shared_styles=True)
+
+    # Get HTML output for first table - should include styles
+    html_first = df._repr_html_()
+
+    # Verify styles are included in first render
+    assert "<style>" in html_first
+    assert ".expandable-container" in html_first
+
+    # Get HTML output for second table - should NOT include styles
+    html_second = df._repr_html_()
+
+    # Verify styles are NOT included in second render
+    assert "<style>" not in html_second
+    assert ".expandable-container" not in html_second
+
+    # Reset the styles loaded state and verify styles are included again
+    reset_styles_loaded_state()
+    html_after_reset = df._repr_html_()
+
+    # Verify styles are included after reset
+    assert "<style>" in html_after_reset
+    assert ".expandable-container" in html_after_reset
+
+
+def test_html_formatter_no_shared_styles(df, clean_formatter_state):
+    """Test that styles are always included when shared styles are disabled."""
+
+    # Configure formatter to NOT use shared styles
+    configure_formatter(use_shared_styles=False)
+
+    # Generate HTML multiple times
+    html_first = df._repr_html_()
+    html_second = df._repr_html_()
+
+    # Verify styles are included in both renders
+    assert "<style>" in html_first
+    assert "<style>" in html_second
+    assert ".expandable-container" in html_first
+    assert ".expandable-container" in html_second
+
+
+def test_html_formatter_manual_format_html(clean_formatter_state):
+    """Test direct usage of format_html method with shared styles."""
+
+    # Create sample data
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+
+    formatter = get_formatter()
+
+    # First call should include styles
+    html_first = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_first
+
+    # Second call should not include styles (using shared styles by default)
+    html_second = formatter.format_html([batch], batch.schema)
+    assert "<style>" not in html_second
+
+    # Reset loaded state
+    reset_styles_loaded_state()
+
+    # After reset, styles should be included again
+    html_reset = formatter.format_html([batch], batch.schema)
+    assert "<style>" in html_reset
+
+    # Create a new formatter with shared_styles=False
+    local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
+
+    # Both calls should include styles
+    local_html_1 = local_formatter.format_html([batch], batch.schema)
+    local_html_2 = local_formatter.format_html([batch], batch.schema)
+
+    assert "<style>" in local_html_1
+    assert "<style>" in local_html_2
+
+
+def test_html_formatter_memory_and_rows():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+    
+    # Test extremely large values and tiny values (edge cases)
+    # These should not raise exceptions
+    extreme_formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=10 * 1024 * 1024 * 1024,  # 10 GB
+        min_rows_display=1,
+        repr_rows=1
+    )
+    assert extreme_formatter.max_memory_bytes == 10 * 1024 * 1024 * 1024
+    assert extreme_formatter.min_rows_display == 1
+    assert extreme_formatter.repr_rows == 1
     
     # Test validation for invalid parameters
     with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
