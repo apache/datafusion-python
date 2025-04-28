@@ -1684,7 +1684,7 @@ def test_dataframe_repr_html_values(df, clean_formatter_state):
     assert html is not None
 
     # Create a more flexible pattern that handles values being wrapped in spans
-    # This pattern will match the sequence of values 1,4,8,2,5,5 regardless
+    # This pattern will match the sequence of values 1,4,8,2,5,5,3,6,8 regardless
     # of formatting
     pattern = re.compile(
         r"<td[^>]*?>(?:<span[^>]*?>)?1(?:</span>)?</td>.*?"
