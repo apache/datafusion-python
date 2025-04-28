@@ -26,6 +26,8 @@ try:
 except ImportError:
     import importlib_metadata
 
+from datafusion.col import col, column
+
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
@@ -93,16 +95,6 @@ __all__ = [
     "udwf",
     "unparser",
 ]
-
-
-def column(value: str) -> Expr:
-    """Create a column expression."""
-    return Expr.column(value)
-
-
-def col(value: str) -> Expr:
-    """Create a column expression."""
-    return Expr.column(value)
 
 
 def literal(value) -> Expr:
