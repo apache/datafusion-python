@@ -93,6 +93,29 @@ impl Default for FormatterConfig {
     }
 }
 
+impl FormatterConfig {
+    /// Validates that all configuration values are positive integers.
+    ///
+    /// # Returns
+    ///
+    /// `Ok(())` if all values are valid, or an `Err` with a descriptive error message.
+    pub fn validate(&self) -> Result<(), String> {
+        if self.max_bytes == 0 {
+            return Err("max_bytes must be a positive integer".to_string());
+        }
+
+        if self.min_rows == 0 {
+            return Err("min_rows must be a positive integer".to_string());
+        }
+
+        if self.repr_rows == 0 {
+            return Err("repr_rows must be a positive integer".to_string());
+        }
+
+        Ok(())
+    }
+}
+
 /// Holds the Python formatter and its configuration
 struct PythonFormatter<'py> {
     /// The Python formatter object
@@ -129,11 +152,20 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> Formatter
     let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
     let repr_rows = get_attr(formatter, "repr_rows", default_config.repr_rows);
 
-    FormatterConfig {
+    let config = FormatterConfig {
         max_bytes,
         min_rows,
         repr_rows,
+    };
+
+    // Validate the configuration
+    if let Err(err) = config.validate() {
+        // Log the error but use default values instead of failing
+        eprintln!("Invalid formatter configuration: {}", err);
+        return default_config;
     }
+
+    config
 }
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
