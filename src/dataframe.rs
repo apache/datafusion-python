@@ -127,7 +127,7 @@ struct PythonFormatter<'py> {
 /// Get the Python formatter and its configuration
 fn get_python_formatter_with_config<'py>(py: Python<'py>) -> PyResult<PythonFormatter<'py>> {
     let formatter = import_python_formatter(py)?;
-    let config = build_formatter_config_from_python(&formatter);
+    let config = build_formatter_config_from_python(&formatter)?;
     Ok(PythonFormatter { formatter, config })
 }
 
@@ -137,6 +137,7 @@ fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
     let get_formatter = formatter_module.getattr("get_formatter")?;
     get_formatter.call0()
 }
+
 // Helper function to extract attributes with fallback to default
 fn get_attr<'a, T>(py_object: &'a Bound<'a, PyAny>, attr_name: &str, default_value: T) -> T
 where
@@ -149,7 +150,7 @@ where
 }
 
 /// Helper function to create a FormatterConfig from a Python formatter object
-fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> FormatterConfig {
+fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<FormatterConfig> {
     let default_config = FormatterConfig::default();
     let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
     let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
@@ -161,14 +162,11 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> Formatter
         repr_rows,
     };
 
-    // Validate the configuration
-    if let Err(err) = config.validate() {
-        // Log the error but use default values instead of failing
-        eprintln!("Invalid formatter configuration: {}", err);
-        return default_config;
-    }
-
+    // Return the validated config, converting String error to PyErr
     config
+        .validate()
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e))?;
+    Ok(config)
 }
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
