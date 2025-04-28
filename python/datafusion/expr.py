@@ -686,8 +686,8 @@ class Expr:
     def initcap(self) -> Expr:
         """Set the initial letter of each word to capital.
 
-        Converts the first letter of each word in ``string`` to uppercase and the remaining
-        characters to lowercase.
+        Converts the first letter of each word in ``string``
+        to uppercase and the remaining characters to lowercase.
         """
         from . import functions as F
 
