@@ -902,6 +902,7 @@ async fn collect_record_batches_to_display(
     let mut record_batches = Vec::default();
     let mut has_more = false;
 
+    // ensure minimum rows even if memory/row limits are hit
     while (size_estimate_so_far < max_bytes && rows_so_far < repr_rows) || rows_so_far < min_rows {
         let mut rb = match stream.next().await {
             None => {
