@@ -138,11 +138,14 @@ fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
     get_formatter.call0()
 }
 // Helper function to extract attributes with fallback to default
-fn get_attr<'a>(py_object: &'a Bound<'a, PyAny>, attr_name: &str, default_value: usize) -> usize {
+fn get_attr<'a, T>(py_object: &'a Bound<'a, PyAny>, attr_name: &str, default_value: T) -> T
+where
+    T: for<'py> pyo3::FromPyObject<'py> + Clone,
+{
     py_object
         .getattr(attr_name)
-        .and_then(|v| v.extract::<usize>())
-        .unwrap_or(default_value)
+        .and_then(|v| v.extract::<T>())
+        .unwrap_or_else(|_| default_value.clone())
 }
 
 /// Helper function to create a FormatterConfig from a Python formatter object
