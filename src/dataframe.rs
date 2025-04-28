@@ -94,37 +94,31 @@ impl Default for FormatterConfig {
 }
 
 /// Get the Python formatter from the datafusion.html_formatter module
-fn get_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
+fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
     let formatter_module = py.import("datafusion.html_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
     get_formatter.call0()
 }
+// Helper function to extract attributes with fallback to default
+fn get_attr<'a>(py_object: &'a Bound<'a, PyAny>, attr_name: &str, default_value: usize) -> usize {
+    py_object
+        .getattr(attr_name)
+        .and_then(|v| v.extract::<usize>())
+        .unwrap_or(default_value)
+}
 
-fn get_formatter_config(py: Python) -> PyResult<FormatterConfig> {
-    let formatter = get_python_formatter(py)?;
-
-    // Helper function to extract attributes with fallback to default
-    fn get_attr<'a>(
-        formatter: &'a Bound<'a, PyAny>,
-        attr_name: &str,
-        default_value: usize,
-    ) -> usize {
-        formatter
-            .getattr(attr_name)
-            .and_then(|v| v.extract::<usize>())
-            .unwrap_or(default_value)
-    }
-
+/// Helper function to create a FormatterConfig from a Python formatter object
+fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> FormatterConfig {
     let default_config = FormatterConfig::default();
-    let max_bytes = get_attr(&formatter, "max_memory_bytes", default_config.max_bytes);
-    let min_rows = get_attr(&formatter, "min_rows_display", default_config.min_rows);
-    let repr_rows = get_attr(&formatter, "repr_rows", default_config.repr_rows);
+    let max_bytes = get_attr(formatter, "max_memory_bytes", default_config.max_bytes);
+    let min_rows = get_attr(formatter, "min_rows_display", default_config.min_rows);
+    let repr_rows = get_attr(formatter, "repr_rows", default_config.repr_rows);
 
-    Ok(FormatterConfig {
+    FormatterConfig {
         max_bytes,
         min_rows,
         repr_rows,
-    })
+    }
 }
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
@@ -167,7 +161,9 @@ impl PyDataFrame {
     }
 
     fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        let config = get_formatter_config(py)?;
+        // Get the Python formatter module and call format_html
+        let formatter = import_python_formatter(py)?;
+        let config = build_formatter_config_from_python(&formatter);
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
@@ -189,7 +185,10 @@ impl PyDataFrame {
     }
 
     fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        let config = get_formatter_config(py)?;
+        // Get the Python formatter module and call format_html
+        let formatter = import_python_formatter(py)?;
+        let config = build_formatter_config_from_python(&formatter);
+
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
@@ -208,9 +207,6 @@ impl PyDataFrame {
             .collect::<PyResult<Vec<PyObject>>>()?;
 
         let py_schema = self.schema().into_pyobject(py)?;
-
-        // Get the Python formatter module and call format_html
-        let formatter = get_python_formatter(py)?;
 
         // Call format_html method on the formatter
         let kwargs = pyo3::types::PyDict::new(py);
