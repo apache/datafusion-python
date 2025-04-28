@@ -996,7 +996,6 @@ def test_custom_style_provider_html_formatter(df, clean_formatter_state):
 
     # Reset for the next part of the test
     reset_formatter()
-
     # Configure with custom style provider and additional parameters
     configure_formatter(
         style_provider=CustomStyleProvider(),
@@ -1749,3 +1748,4 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
     assert "<style>" in local_html_1
     assert "<style>" in local_html_2
+    
