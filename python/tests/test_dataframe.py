@@ -1647,3 +1647,86 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
     assert "<style>" in local_html_1
     assert "<style>" in local_html_2
+
+
+def test_html_formatter_memory_and_row_parameters():
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test default values
+    formatter = DataFrameHtmlFormatter()
+    assert formatter.max_memory_bytes == 2 * 1024 * 1024  # 2 MB
+    assert formatter.min_rows_display == 20
+    assert formatter.repr_rows == 10
+    
+    # Test custom values
+    formatter = DataFrameHtmlFormatter(
+        max_memory_bytes=1024 * 1024,  # 1 MB
+        min_rows_display=10,
+        repr_rows=5
+    )
+    assert formatter.max_memory_bytes == 1024 * 1024
+    assert formatter.min_rows_display == 10
+    assert formatter.repr_rows == 5
+
+
+def test_html_formatter_memory_and_row_validation():
+    """Test validation for the memory and row control parameters in DataFrameHtmlFormatter."""
+    
+    # Test invalid max_memory_bytes
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+    
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+    
+    # Test invalid min_rows_display
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+    
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+    
+    # Test invalid repr_rows
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+    
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_html_formatter_custom_style_provider_with_parameters(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured parameters."""
+
+    class CustomStyleProvider:
+        def get_cell_style(self) -> str:
+            return (
+                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+                "1px solid #ddd;"
+            )
+
+        def get_header_style(self) -> str:
+            return (
+                "background-color: #4285f4; color: white; font-weight: bold; "
+                "padding: 10px; border: 1px solid #3367d6;"
+            )
+
+    # Configure with custom style provider and memory/row parameters
+    configure_formatter(
+        style_provider=CustomStyleProvider(),
+        max_memory_bytes=3 * 1024 * 1024,  # 3 MB
+        min_rows_display=15,
+        repr_rows=7
+    )
+
+    html_output = df._repr_html_()
+
+    # Verify our custom styles were applied
+    assert "background-color: #4285f4" in html_output
+    assert "color: white" in html_output
+    assert "background-color: #f5f5f5" in html_output
+
+    # Test memory and row parameters
+    formatter = get_formatter()
+    assert formatter.max_memory_bytes == 3 * 1024 * 1024  # 3 MB
+    assert formatter.min_rows_display == 15
+    assert formatter.repr_rows == 7
