@@ -270,6 +270,34 @@ Module Contents
 
 
 
+   .. py:method:: abs() -> Expr
+
+      Return the absolute value of a given number.
+
+      Returns:
+      --------
+      Expr
+          A new expression representing the absolute value of the input expression.
+
+
+
+   .. py:method:: acos() -> Expr
+
+      Returns the arc cosine or inverse cosine of a number.
+
+      Returns:
+      --------
+      Expr
+          A new expression representing the arc cosine of the input expression.
+
+
+
+   .. py:method:: acosh() -> Expr
+
+      Returns inverse hyperbolic cosine.
+
+
+
    .. py:method:: alias(name: str, metadata: Optional[dict[str, str]] = None) -> Expr
 
       Assign a name to the expression.
@@ -278,6 +306,84 @@ Module Contents
       :param metadata: Optional metadata to attach to the expression.
 
       :returns: A new expression with the assigned name.
+
+
+
+   .. py:method:: array_dims() -> Expr
+
+      Returns an array of the array's dimensions.
+
+
+
+   .. py:method:: array_distinct() -> Expr
+
+      Returns distinct values from the array after removing duplicates.
+
+
+
+   .. py:method:: array_empty() -> Expr
+
+      Returns a boolean indicating whether the array is empty.
+
+
+
+   .. py:method:: array_length() -> Expr
+
+      Returns the length of the array.
+
+
+
+   .. py:method:: array_ndims() -> Expr
+
+      Returns the number of dimensions of the array.
+
+
+
+   .. py:method:: array_pop_back() -> Expr
+
+      Returns the array without the last element.
+
+
+
+   .. py:method:: array_pop_front() -> Expr
+
+      Returns the array without the first element.
+
+
+
+   .. py:method:: arrow_typeof() -> Expr
+
+      Returns the Arrow type of the expression.
+
+
+
+   .. py:method:: ascii() -> Expr
+
+      Returns the numeric code of the first character of the argument.
+
+
+
+   .. py:method:: asin() -> Expr
+
+      Returns the arc sine or inverse sine of a number.
+
+
+
+   .. py:method:: asinh() -> Expr
+
+      Returns inverse hyperbolic sine.
+
+
+
+   .. py:method:: atan() -> Expr
+
+      Returns inverse tangent of a number.
+
+
+
+   .. py:method:: atanh() -> Expr
+
+      Returns inverse hyperbolic tangent.
 
 
 
@@ -291,15 +397,63 @@ Module Contents
 
 
 
+   .. py:method:: bit_length() -> Expr
+
+      Returns the number of bits in the string argument.
+
+
+
+   .. py:method:: btrim() -> Expr
+
+      Removes all characters, spaces by default, from both sides of a string.
+
+
+
    .. py:method:: canonical_name() -> str
 
       Returns a complete string representation of this expression.
 
 
 
+   .. py:method:: cardinality() -> Expr
+
+      Returns the total number of elements in the array.
+
+
+
    .. py:method:: cast(to: pyarrow.DataType[Any] | type[float | int | str | bool]) -> Expr
 
       Cast to a new data type.
+
+
+
+   .. py:method:: cbrt() -> Expr
+
+      Returns the cube root of a number.
+
+
+
+   .. py:method:: ceil() -> Expr
+
+      Returns the nearest integer greater than or equal to argument.
+
+
+
+   .. py:method:: char_length() -> Expr
+
+      The number of characters in the ``string``.
+
+
+
+   .. py:method:: character_length() -> Expr
+
+      Returns the number of characters in the argument.
+
+
+
+   .. py:method:: chr() -> Expr
+
+      Converts the Unicode code point to a UTF8 character.
 
 
 
@@ -314,6 +468,30 @@ Module Contents
    .. py:method:: column_name(plan: datafusion.plan.LogicalPlan) -> str
 
       Compute the output column name based on the provided logical plan.
+
+
+
+   .. py:method:: cos() -> Expr
+
+      Returns the cosine of the argument.
+
+
+
+   .. py:method:: cosh() -> Expr
+
+      Returns the hyperbolic cosine of the argument.
+
+
+
+   .. py:method:: cot() -> Expr
+
+      Returns the cotangent of the argument.
+
+
+
+   .. py:method:: degrees() -> Expr
+
+      Converts the argument from radians to degrees.
 
 
 
@@ -332,6 +510,24 @@ Module Contents
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
       set parameters for either window or aggregate functions. If used on any other
       type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: empty() -> Expr
+
+      This is an alias for :py:func:`array_empty`.
+
+
+
+   .. py:method:: exp() -> Expr
+
+      Returns the exponential of the argument.
+
+
+
+   .. py:method:: factorial() -> Expr
+
+      Returns the factorial of the argument.
 
 
 
@@ -357,6 +553,33 @@ Module Contents
 
 
 
+   .. py:method:: flatten() -> Expr
+
+      Flattens an array of arrays into a single array.
+
+
+
+   .. py:method:: floor() -> Expr
+
+      Returns the nearest integer less than or equal to the argument.
+
+
+
+   .. py:method:: from_unixtime() -> Expr
+
+      Converts an integer to RFC3339 timestamp format string.
+
+
+
+   .. py:method:: initcap() -> Expr
+
+      Set the initial letter of each word to capital.
+
+      Converts the first letter of each word in ``string``
+      to uppercase and the remaining characters to lowercase.
+
+
+
    .. py:method:: is_not_null() -> Expr
 
       Returns ``True`` if this expression is not null.
@@ -366,6 +589,56 @@ Module Contents
    .. py:method:: is_null() -> Expr
 
       Returns ``True`` if this expression is null.
+
+
+
+   .. py:method:: isnan() -> Expr
+
+      Returns true if a given number is +NaN or -NaN otherwise returns false.
+
+
+
+   .. py:method:: iszero() -> Expr
+
+      Returns true if a given number is +0.0 or -0.0 otherwise returns false.
+
+
+
+   .. py:method:: length() -> Expr
+
+      The number of characters in the ``string``.
+
+
+
+   .. py:method:: list_dims() -> Expr
+
+      Returns an array of the array's dimensions.
+
+      This is an alias for :py:func:`array_dims`.
+
+
+
+   .. py:method:: list_distinct() -> Expr
+
+      Returns distinct values from the array after removing duplicates.
+
+      This is an alias for :py:func:`array_distinct`.
+
+
+
+   .. py:method:: list_length() -> Expr
+
+      Returns the length of the array.
+
+      This is an alias for :py:func:`array_length`.
+
+
+
+   .. py:method:: list_ndims() -> Expr
+
+      Returns the number of dimensions of the array.
+
+      This is an alias for :py:func:`array_ndims`.
 
 
 
@@ -379,6 +652,42 @@ Module Contents
 
 
 
+   .. py:method:: ln() -> Expr
+
+      Returns the natural logarithm (base e) of the argument.
+
+
+
+   .. py:method:: log10() -> Expr
+
+      Base 10 logarithm of the argument.
+
+
+
+   .. py:method:: log2() -> Expr
+
+      Base 2 logarithm of the argument.
+
+
+
+   .. py:method:: lower() -> Expr
+
+      Converts a string to lowercase.
+
+
+
+   .. py:method:: ltrim() -> Expr
+
+      Removes all characters, spaces by default, from the beginning of a string.
+
+
+
+   .. py:method:: md5() -> Expr
+
+      Computes an MD5 128-bit checksum for a string expression.
+
+
+
    .. py:method:: null_treatment(null_treatment: datafusion.common.NullTreatment) -> ExprFuncBuilder
 
       Set the treatment for ``null`` values for a window or aggregate function.
@@ -386,6 +695,12 @@ Module Contents
       This function will create an :py:class:`ExprFuncBuilder` that can be used to
       set parameters for either window or aggregate functions. If used on any other
       type of expression, an error will be generated when ``build()`` is called.
+
+
+
+   .. py:method:: octet_length() -> Expr
+
+      Returns the number of bytes of a string.
 
 
 
@@ -431,6 +746,18 @@ Module Contents
 
 
 
+   .. py:method:: radians() -> Expr
+
+      Converts the argument from degrees to radians.
+
+
+
+   .. py:method:: reverse() -> Expr
+
+      Reverse the string argument.
+
+
+
    .. py:method:: rex_call_operands() -> list[Expr]
 
       Return the operands of the expression based on it's variant type.
@@ -458,11 +785,59 @@ Module Contents
 
 
 
+   .. py:method:: rtrim() -> Expr
+
+      Removes all characters, spaces by default, from the end of a string.
+
+
+
    .. py:method:: schema_name() -> str
 
       Returns the name of this expression as it should appear in a schema.
 
       This name will not include any CAST expressions.
+
+
+
+   .. py:method:: sha224() -> Expr
+
+      Computes the SHA-224 hash of a binary string.
+
+
+
+   .. py:method:: sha256() -> Expr
+
+      Computes the SHA-256 hash of a binary string.
+
+
+
+   .. py:method:: sha384() -> Expr
+
+      Computes the SHA-384 hash of a binary string.
+
+
+
+   .. py:method:: sha512() -> Expr
+
+      Computes the SHA-512 hash of a binary string.
+
+
+
+   .. py:method:: signum() -> Expr
+
+      Returns the sign of the argument (-1, 0, +1).
+
+
+
+   .. py:method:: sin() -> Expr
+
+      Returns the sine of the argument.
+
+
+
+   .. py:method:: sinh() -> Expr
+
+      Returns the hyperbolic sine of the argument.
 
 
 
@@ -472,6 +847,12 @@ Module Contents
 
       :param ascending: If true, sort in ascending order.
       :param nulls_first: Return null values first.
+
+
+
+   .. py:method:: sqrt() -> Expr
+
+      Returns the square root of the argument.
 
 
 
@@ -490,9 +871,33 @@ Module Contents
 
 
 
+   .. py:method:: tan() -> Expr
+
+      Returns the tangent of the argument.
+
+
+
+   .. py:method:: tanh() -> Expr
+
+      Returns the hyperbolic tangent of the argument.
+
+
+
+   .. py:method:: to_hex() -> Expr
+
+      Converts an integer to a hexadecimal string.
+
+
+
    .. py:method:: to_variant() -> Any
 
       Convert this expression into a python object if possible.
+
+
+
+   .. py:method:: trim() -> Expr
+
+      Removes all characters, spaces by default, from both sides of a string.
 
 
 
@@ -502,6 +907,12 @@ Module Contents
 
       :returns: DataTypeMap which represents the PythonType, Arrow DataType, and
                 SqlType Enum which this expression represents.
+
+
+
+   .. py:method:: upper() -> Expr
+
+      Converts a string to uppercase.
 
 
 
