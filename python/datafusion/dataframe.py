@@ -22,7 +22,6 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
-from enum import Enum
 from typing import (
     TYPE_CHECKING,
     Any,
