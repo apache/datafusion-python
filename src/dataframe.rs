@@ -125,7 +125,7 @@ struct PythonFormatter<'py> {
 }
 
 /// Get the Python formatter and its configuration
-fn get_python_formatter_with_config<'py>(py: Python<'py>) -> PyResult<PythonFormatter<'py>> {
+fn get_python_formatter_with_config(py: Python) -> PyResult<PythonFormatter> {
     let formatter = import_python_formatter(py)?;
     let config = build_formatter_config_from_python(&formatter)?;
     Ok(PythonFormatter { formatter, config })
