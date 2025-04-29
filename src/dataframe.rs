@@ -934,26 +934,45 @@ fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionRes
 
     if let Ok(datetime_cls) = datetime_result {
         if let Ok(true) = value.is_instance(datetime_cls) {
-            if value.is_instance_of::<pyo3::types::PyDateTime>(py) {
-                if let Ok(naive_dt) = value.extract::<chrono::NaiveDateTime>(py) {
-                    return Ok(ScalarValue::TimestampNanosecond(
-                        Some(naive_dt.timestamp_nanos()),
-                        None,
-                    ));
+            if let Ok(dt) = value.cast_as::<pyo3::types::PyDateTime>(py) {
+                // Convert Python datetime to timestamp in nanoseconds
+                let year = dt.get_year() as i32;
+                let month = dt.get_month() as u8;
+                let day = dt.get_day() as u8;
+                let hour = dt.get_hour() as u8;
+                let minute = dt.get_minute() as u8;
+                let second = dt.get_second() as u8;
+                let micro = dt.get_microsecond() as u32;
+
+                // Use DataFusion's timestamp conversion logic
+                if let Ok(ts) =
+                    date_to_timestamp(year, month, day, hour, minute, second, micro * 1000)
+                {
+                    return Ok(ScalarValue::TimestampNanosecond(Some(ts), None));
                 }
             }
-            // Check for date (not datetime)
-            let date_result = py.import("datetime").and_then(|m| m.getattr("date"));
-            if let Ok(date_cls) = date_result {
-                if let Ok(true) = value.is_instance(date_cls) {
-                    if let Ok(naive_date) = value.extract::<chrono::NaiveDate>(py) {
-                        return Ok(ScalarValue::Date32(Some(
-                            naive_date.num_days_from_ce() - 719163, // Convert from CE to Unix epoch
-                        )));
-                    }
+
+            let msg = "Failed to convert Python datetime";
+            return Err(PyDataFusionError::Common(msg.to_string()));
+        }
+    }
+
+    // Check for date (not datetime)
+    let date_result = py.import("datetime").and_then(|m| m.getattr("date"));
+    if let Ok(date_cls) = date_result {
+        if let Ok(true) = value.is_instance(date_cls) {
+            if let Ok(date) = value.cast_as::<pyo3::types::PyDate>(py) {
+                let year = date.get_year() as i32;
+                let month = date.get_month() as u8;
+                let day = date.get_day() as u8;
+
+                // Calculate days since Unix epoch (1970-01-01)
+                if let Ok(days) = date_to_days_since_epoch(year, month, day) {
+                    return Ok(ScalarValue::Date32(Some(days)));
                 }
             }
-            let msg = "Unsupported datetime type format";
+
+            let msg = "Failed to convert Python date";
             return Err(PyDataFusionError::Common(msg.to_string()));
         }
     }
@@ -972,4 +991,91 @@ fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionRes
             Err(PyDataFusionError::Common(msg.to_string()))
         }
     }
+}
+
+/// Helper function to convert date components to timestamp in nanoseconds
+fn date_to_timestamp(
+    year: i32,
+    month: u8,
+    day: u8,
+    hour: u8,
+    minute: u8,
+    second: u8,
+    nano: u32,
+) -> Result<i64, String> {
+    // This is a simplified implementation
+    // For production code, consider using a more complete date/time library
+
+    // Number of days in each month (non-leap year)
+    const DAYS_IN_MONTH: [u8; 12] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    // Validate inputs
+    if month < 1 || month > 12 {
+        return Err("Invalid month".to_string());
+    }
+
+    let max_days = if month == 2 && is_leap_year(year) {
+        29
+    } else {
+        DAYS_IN_MONTH[(month - 1) as usize]
+    };
+
+    if day < 1 || day > max_days {
+        return Err("Invalid day".to_string());
+    }
+
+    if hour > 23 || minute > 59 || second > 59 {
+        return Err("Invalid time".to_string());
+    }
+
+    // Calculate days since epoch
+    let days = date_to_days_since_epoch(year, month, day)?;
+
+    // Convert to seconds and add time components
+    let seconds =
+        days as i64 * 86400 + (hour as i64) * 3600 + (minute as i64) * 60 + (second as i64);
+
+    // Convert to nanoseconds
+    Ok(seconds * 1_000_000_000 + nano as i64)
+}
+
+/// Helper function to check if a year is a leap year
+fn is_leap_year(year: i32) -> bool {
+    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
+}
+
+/// Helper function to convert date to days since Unix epoch (1970-01-01)
+fn date_to_days_since_epoch(year: i32, month: u8, day: u8) -> Result<i32, String> {
+    // This is a simplified implementation to calculate days since epoch
+    if year < 1970 {
+        return Err("Dates before 1970 not supported in this implementation".to_string());
+    }
+
+    let mut days = 0;
+
+    // Add days for each year since 1970
+    for y in 1970..year {
+        days += if is_leap_year(y) { 366 } else { 365 };
+    }
+
+    // Add days for each month in the current year
+    for m in 1..month {
+        days += match m {
+            1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+            4 | 6 | 9 | 11 => 30,
+            2 => {
+                if is_leap_year(year) {
+                    29
+                } else {
+                    28
+                }
+            }
+            _ => return Err("Invalid month".to_string()),
+        };
+    }
+
+    // Add days in current month
+    days += day as i32 - 1; // Subtract 1 because we're counting from the start of the month
+
+    Ok(days)
 }
