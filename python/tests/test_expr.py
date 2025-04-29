@@ -683,7 +683,7 @@ def test_alias_with_metadata(df):
         pytest.param(
             col("f").flatten(),
             pa.array(
-                [[-1, 1, 0, 4, 4], [5, 10, 15, 20, 3], [], None],
+                [[-1, 1, 0, 4, 4], [5, 10, 15, 20, 3], [], []],
                 type=pa.list_(pa.int64()),
             ),
             id="flatten",
