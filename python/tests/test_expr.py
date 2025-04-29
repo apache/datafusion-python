@@ -728,7 +728,7 @@ def test_expr_functions(ctx, function, expected_result):
             ),
             pa.array([-0.75, float("nan"), 0.0, None], type=pa.float64()),
             pa.array(
-                [[[-1, 1, 0], [4, 4]], [[5, 10, 15, 20], [3]], [[]], None],
+                [[[-1, 1, 0], [4, 4]], [[5, 10, 15, 20], [3]], [[]], [None]],
                 type=pa.list_(pa.list_(pa.int64())),
             ),
         ],
