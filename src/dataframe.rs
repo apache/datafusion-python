@@ -890,94 +890,114 @@ fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionRes
         return Err(PyDataFusionError::Common(msg.to_string()));
     }
 
-    // Integer types - try different sizes
-    if let Ok(val) = value.extract::<i64>(py) {
-        return Ok(ScalarValue::Int64(Some(val)));
-    } else if let Ok(val) = value.extract::<i32>(py) {
-        return Ok(ScalarValue::Int32(Some(val)));
-    } else if let Ok(val) = value.extract::<i16>(py) {
-        return Ok(ScalarValue::Int16(Some(val)));
-    } else if let Ok(val) = value.extract::<i8>(py) {
-        return Ok(ScalarValue::Int8(Some(val)));
+    // Try extracting different types in sequence
+    if let Some(scalar) = try_extract_numeric(value, py) {
+        return Ok(scalar);
     }
 
-    // Unsigned integer types
-    if let Ok(val) = value.extract::<u64>(py) {
-        return Ok(ScalarValue::UInt64(Some(val)));
-    } else if let Ok(val) = value.extract::<u32>(py) {
-        return Ok(ScalarValue::UInt32(Some(val)));
-    } else if let Ok(val) = value.extract::<u16>(py) {
-        return Ok(ScalarValue::UInt16(Some(val)));
-    } else if let Ok(val) = value.extract::<u8>(py) {
-        return Ok(ScalarValue::UInt8(Some(val)));
-    }
-
-    // Float types
-    if let Ok(val) = value.extract::<f64>(py) {
-        return Ok(ScalarValue::Float64(Some(val)));
-    } else if let Ok(val) = value.extract::<f32>(py) {
-        return Ok(ScalarValue::Float32(Some(val)));
-    }
-
-    // Boolean
     if let Ok(val) = value.extract::<bool>(py) {
         return Ok(ScalarValue::Boolean(Some(val)));
     }
 
-    // String types
     if let Ok(val) = value.extract::<String>(py) {
         return Ok(ScalarValue::Utf8(Some(val)));
     }
 
-    // Handle datetime types
-    let datetime_result = py.import("datetime").and_then(|m| m.getattr("datetime"));
-
-    if let Ok(datetime_cls) = datetime_result {
-        if let Ok(true) = value.is_instance(datetime_cls) {
-            if let Ok(dt) = value.cast_as::<pyo3::types::PyDateTime>(py) {
-                // Convert Python datetime to timestamp in nanoseconds
-                let year = dt.get_year() as i32;
-                let month = dt.get_month() as u8;
-                let day = dt.get_day() as u8;
-                let hour = dt.get_hour() as u8;
-                let minute = dt.get_minute() as u8;
-                let second = dt.get_second() as u8;
-                let micro = dt.get_microsecond() as u32;
-
-                // Use DataFusion's timestamp conversion logic
-                if let Ok(ts) =
-                    date_to_timestamp(year, month, day, hour, minute, second, micro * 1000)
-                {
-                    return Ok(ScalarValue::TimestampNanosecond(Some(ts), None));
-                }
-            }
-
-            let msg = "Failed to convert Python datetime";
-            return Err(PyDataFusionError::Common(msg.to_string()));
-        }
+    if let Some(scalar) = try_extract_datetime(value, py) {
+        return Ok(scalar);
     }
 
-    // Check for date (not datetime)
-    let date_result = py.import("datetime").and_then(|m| m.getattr("date"));
-    if let Ok(date_cls) = date_result {
-        if let Ok(true) = value.is_instance(date_cls) {
-            if let Ok(date) = value.cast_as::<pyo3::types::PyDate>(py) {
-                let year = date.get_year() as i32;
-                let month = date.get_month() as u8;
-                let day = date.get_day() as u8;
-
-                // Calculate days since Unix epoch (1970-01-01)
-                if let Ok(days) = date_to_days_since_epoch(year, month, day) {
-                    return Ok(ScalarValue::Date32(Some(days)));
-                }
-            }
-
-            let msg = "Failed to convert Python date";
-            return Err(PyDataFusionError::Common(msg.to_string()));
-        }
+    if let Some(scalar) = try_extract_date(value, py) {
+        return Ok(scalar);
     }
 
-    // Try to convert to string as fallback
+    // Fallback to string representation
+    try_convert_to_string(value, py)
+}
+
+/// Try to extract numeric types from a Python object
+fn try_extract_numeric(value: &PyObject, py: Python) -> Option<ScalarValue> {
+    // Integer types
+    if let Ok(val) = value.extract::<i64>(py) {
+        return Some(ScalarValue::Int64(Some(val)));
+    } else if let Ok(val) = value.extract::<i32>(py) {
+        return Some(ScalarValue::Int32(Some(val)));
+    } else if let Ok(val) = value.extract::<i16>(py) {
+        return Some(ScalarValue::Int16(Some(val)));
+    } else if let Ok(val) = value.extract::<i8>(py) {
+        return Some(ScalarValue::Int8(Some(val)));
+    }
+
+    // Unsigned integer types
+    if let Ok(val) = value.extract::<u64>(py) {
+        return Some(ScalarValue::UInt64(Some(val)));
+    } else if let Ok(val) = value.extract::<u32>(py) {
+        return Some(ScalarValue::UInt32(Some(val)));
+    } else if let Ok(val) = value.extract::<u16>(py) {
+        return Some(ScalarValue::UInt16(Some(val)));
+    } else if let Ok(val) = value.extract::<u8>(py) {
+        return Some(ScalarValue::UInt8(Some(val)));
+    }
+
+    // Float types
+    if let Ok(val) = value.extract::<f64>(py) {
+        return Some(ScalarValue::Float64(Some(val)));
+    } else if let Ok(val) = value.extract::<f32>(py) {
+        return Some(ScalarValue::Float32(Some(val)));
+    }
+
+    None
+}
+
+/// Try to extract datetime from a Python object
+fn try_extract_datetime(value: &PyObject, py: Python) -> Option<ScalarValue> {
+    let datetime_result = py
+        .import("datetime")
+        .and_then(|m| m.getattr("datetime"))
+        .ok()?;
+
+    if value.is_instance(datetime_result).ok()? {
+        let dt = value.cast_as::<pyo3::types::PyDateTime>(py).ok()?;
+
+        // Extract datetime components
+        let year = dt.get_year() as i32;
+        let month = dt.get_month() as u8;
+        let day = dt.get_day() as u8;
+        let hour = dt.get_hour() as u8;
+        let minute = dt.get_minute() as u8;
+        let second = dt.get_second() as u8;
+        let micro = dt.get_microsecond() as u32;
+
+        // Convert to timestamp
+        let ts = date_to_timestamp(year, month, day, hour, minute, second, micro * 1000).ok()?;
+        return Some(ScalarValue::TimestampNanosecond(Some(ts), None));
+    }
+
+    None
+}
+
+/// Try to extract date from a Python object
+fn try_extract_date(value: &PyObject, py: Python) -> Option<ScalarValue> {
+    let date_result = py.import("datetime").and_then(|m| m.getattr("date")).ok()?;
+
+    if value.is_instance(date_result).ok()? {
+        let date = value.cast_as::<pyo3::types::PyDate>(py).ok()?;
+
+        // Extract date components
+        let year = date.get_year() as i32;
+        let month = date.get_month() as u8;
+        let day = date.get_day() as u8;
+
+        // Convert to days since epoch
+        let days = date_to_days_since_epoch(year, month, day).ok()?;
+        return Some(ScalarValue::Date32(Some(days)));
+    }
+
+    None
+}
+
+/// Try to convert a Python object to string
+fn try_convert_to_string(value: &PyObject, py: Python) -> PyDataFusionResult<ScalarValue> {
     match value.str(py) {
         Ok(py_str) => match py_str.to_string() {
             Ok(s) => Ok(ScalarValue::Utf8(Some(s))),
