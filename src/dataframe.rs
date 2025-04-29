@@ -92,7 +92,7 @@ impl PyDataFrame {
 
 #[pymethods]
 impl PyDataFrame {
-    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
+    /// Enable selection for `df[col]`, `df[col1, col2, col2]`, and `df[[col1, col2, col3]]`
     fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
@@ -998,16 +998,12 @@ fn try_extract_date(value: &PyObject, py: Python) -> Option<ScalarValue> {
 
 /// Try to convert a Python object to string
 fn try_convert_to_string(value: &PyObject, py: Python) -> PyDataFusionResult<ScalarValue> {
-    match value.str(py) {
-        Ok(py_str) => match py_str.to_string() {
-            Ok(s) => Ok(ScalarValue::Utf8(Some(s))),
-            Err(_) => {
-                let msg = "Failed to convert Python object to string";
-                Err(PyDataFusionError::Common(msg.to_string()))
-            }
-        },
+    // Try to convert arbitrary Python object to string by using str()
+    let str_result = value.call_method0(py, "str")?.extract::<String>(py);
+    match str_result {
+        Ok(string_value) => Ok(ScalarValue::Utf8(Some(string_value))),
         Err(_) => {
-            let msg = "Unsupported Python type for fill_null";
+            let msg = "Could not convert Python object to string";
             Err(PyDataFusionError::Common(msg.to_string()))
         }
     }
