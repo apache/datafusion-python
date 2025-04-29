@@ -1055,11 +1055,11 @@ def test_configure_formatter_invalid_params(clean_formatter_state):
     """Test that configure_formatter rejects invalid parameters."""
     with pytest.raises(ValueError, match="Invalid formatter parameters"):
         configure_formatter(invalid_param=123)
-        
+
     # Test with multiple parameters, one valid and one invalid
     with pytest.raises(ValueError, match="Invalid formatter parameters"):
         configure_formatter(max_width=500, not_a_real_param="test")
-        
+
     # Test with multiple invalid parameters
     with pytest.raises(ValueError, match="Invalid formatter parameters"):
         configure_formatter(fake_param1="test", fake_param2=456)
@@ -1794,4 +1794,3 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
     assert "<style>" in local_html_1
     assert "<style>" in local_html_2
-

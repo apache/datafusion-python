@@ -647,18 +647,28 @@ def configure_formatter(**kwargs: Any) -> None:
     """
     # Valid parameters accepted by DataFrameHtmlFormatter
     valid_params = {
-        "max_cell_length", "max_width", "max_height", "max_memory_bytes",
-        "min_rows_display", "repr_rows", "enable_cell_expansion", "custom_css",
-        "show_truncation_message", "style_provider", "use_shared_styles"
+        "max_cell_length",
+        "max_width",
+        "max_height",
+        "max_memory_bytes",
+        "min_rows_display",
+        "repr_rows",
+        "enable_cell_expansion",
+        "custom_css",
+        "show_truncation_message",
+        "style_provider",
+        "use_shared_styles",
     }
-    
+
     # Check for invalid parameters
     invalid_params = set(kwargs) - valid_params
     if invalid_params:
-        msg = f"Invalid formatter parameters: {', '.join(invalid_params)}. " \
-              f"Valid parameters are: {', '.join(valid_params)}"
+        msg = (
+            f"Invalid formatter parameters: {', '.join(invalid_params)}. "
+            f"Valid parameters are: {', '.join(valid_params)}"
+        )
         raise ValueError(msg)
-    
+
     # Create and set formatter with validated parameters
     set_formatter(DataFrameHtmlFormatter(**kwargs))
 
