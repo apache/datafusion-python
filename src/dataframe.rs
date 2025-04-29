@@ -886,43 +886,90 @@ async fn collect_record_batches_to_display(
 /// Convert a Python value to a DataFusion ScalarValue
 fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionResult<ScalarValue> {
     if value.is_none(py) {
-        return Err(PyDataFusionError::Common(
-            "Cannot use None as fill value".to_string(),
-        ));
-    } else if let Ok(val) = value.extract::<i64>(py) {
+        let msg = "Cannot use None as fill value";
+        return Err(PyDataFusionError::Common(msg.to_string()));
+    }
+
+    // Integer types - try different sizes
+    if let Ok(val) = value.extract::<i64>(py) {
         return Ok(ScalarValue::Int64(Some(val)));
-    } else if let Ok(val) = value.extract::<f64>(py) {
+    } else if let Ok(val) = value.extract::<i32>(py) {
+        return Ok(ScalarValue::Int32(Some(val)));
+    } else if let Ok(val) = value.extract::<i16>(py) {
+        return Ok(ScalarValue::Int16(Some(val)));
+    } else if let Ok(val) = value.extract::<i8>(py) {
+        return Ok(ScalarValue::Int8(Some(val)));
+    }
+
+    // Unsigned integer types
+    if let Ok(val) = value.extract::<u64>(py) {
+        return Ok(ScalarValue::UInt64(Some(val)));
+    } else if let Ok(val) = value.extract::<u32>(py) {
+        return Ok(ScalarValue::UInt32(Some(val)));
+    } else if let Ok(val) = value.extract::<u16>(py) {
+        return Ok(ScalarValue::UInt16(Some(val)));
+    } else if let Ok(val) = value.extract::<u8>(py) {
+        return Ok(ScalarValue::UInt8(Some(val)));
+    }
+
+    // Float types
+    if let Ok(val) = value.extract::<f64>(py) {
         return Ok(ScalarValue::Float64(Some(val)));
-    } else if let Ok(val) = value.extract::<bool>(py) {
+    } else if let Ok(val) = value.extract::<f32>(py) {
+        return Ok(ScalarValue::Float32(Some(val)));
+    }
+
+    // Boolean
+    if let Ok(val) = value.extract::<bool>(py) {
         return Ok(ScalarValue::Boolean(Some(val)));
-    } else if let Ok(val) = value.extract::<String>(py) {
+    }
+
+    // String types
+    if let Ok(val) = value.extract::<String>(py) {
         return Ok(ScalarValue::Utf8(Some(val)));
-    } else if let Ok(dt) = py
-        .import("datetime")
-        .and_then(|m| m.getattr("datetime"))
-        .and_then(|dt| value.is_instance(dt))
-    {
-        if value.is_instance_of::<pyo3::types::PyDateTime>(py) {
-            let naive_dt = value.extract::<chrono::NaiveDateTime>(py)?;
-            return Ok(ScalarValue::TimestampNanosecond(
-                Some(naive_dt.timestamp_nanos()),
-                None,
-            ));
-        } else {
-            return Err(PyDataFusionError::Common(
-                "Unsupported datetime type".to_string(),
-            ));
+    }
+
+    // Handle datetime types
+    let datetime_result = py.import("datetime").and_then(|m| m.getattr("datetime"));
+
+    if let Ok(datetime_cls) = datetime_result {
+        if let Ok(true) = value.is_instance(datetime_cls) {
+            if value.is_instance_of::<pyo3::types::PyDateTime>(py) {
+                if let Ok(naive_dt) = value.extract::<chrono::NaiveDateTime>(py) {
+                    return Ok(ScalarValue::TimestampNanosecond(
+                        Some(naive_dt.timestamp_nanos()),
+                        None,
+                    ));
+                }
+            }
+            // Check for date (not datetime)
+            let date_result = py.import("datetime").and_then(|m| m.getattr("date"));
+            if let Ok(date_cls) = date_result {
+                if let Ok(true) = value.is_instance(date_cls) {
+                    if let Ok(naive_date) = value.extract::<chrono::NaiveDate>(py) {
+                        return Ok(ScalarValue::Date32(Some(
+                            naive_date.num_days_from_ce() - 719163, // Convert from CE to Unix epoch
+                        )));
+                    }
+                }
+            }
+            let msg = "Unsupported datetime type format";
+            return Err(PyDataFusionError::Common(msg.to_string()));
         }
     }
 
     // Try to convert to string as fallback
     match value.str(py) {
-        Ok(py_str) => {
-            let s = py_str.to_string()?;
-            Ok(ScalarValue::Utf8(Some(s)))
+        Ok(py_str) => match py_str.to_string() {
+            Ok(s) => Ok(ScalarValue::Utf8(Some(s))),
+            Err(_) => {
+                let msg = "Failed to convert Python object to string";
+                Err(PyDataFusionError::Common(msg.to_string()))
+            }
+        },
+        Err(_) => {
+            let msg = "Unsupported Python type for fill_null";
+            Err(PyDataFusionError::Common(msg.to_string()))
         }
-        Err(_) => Err(PyDataFusionError::Common(
-            "Unsupported Python type for fill_null".to_string(),
-        )),
     }
 }
