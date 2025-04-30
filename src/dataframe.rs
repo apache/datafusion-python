@@ -47,7 +47,9 @@ use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{
+    get_tokio_runtime, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+};
 use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
@@ -714,11 +716,11 @@ impl PyDataFrame {
     #[pyo3(signature = (value, columns=None))]
     fn fill_null(
         &self,
-        value: PyAny,
+        value: PyObject,
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {
-        let scalar_value = python_value_to_scalar_value(&value, py)?;
+        let scalar_value = py_obj_to_scalar_value(py, value);
 
         let cols = match columns {
             Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
