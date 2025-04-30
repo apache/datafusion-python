@@ -1247,7 +1247,7 @@ def test_coalesce(df):
             pa.array([4, None, 6]),  # integer column with null
             pa.array(["hello ", None, " !"]),  # string column with null
             pa.array(
-                [datetime(2022, 12, 31), None, datetime(2020, 7, 2)]
+                [datetime(2022, 12, 31, tzinfo=DEFAULT_TZ), None, datetime(2020, 7, 2, tzinfo=DEFAULT_TZ)]
             ),  # datetime with null
             pa.array([False, None, True]),  # boolean column with null
         ],
@@ -1260,7 +1260,7 @@ def test_coalesce(df):
         f.coalesce(column("a"), literal("default")).alias("a_coalesced"),
         f.coalesce(column("b"), literal(0)).alias("b_coalesced"),
         f.coalesce(column("c"), literal("default")).alias("c_coalesced"),
-        f.coalesce(column("d"), literal(datetime(2000, 1, 1))).alias("d_coalesced"),
+        f.coalesce(column("d"), literal(datetime(2000, 1, 1, tzinfo=DEFAULT_TZ))).alias("d_coalesced"),
         f.coalesce(column("e"), literal(False)).alias("e_coalesced"),
     )
 
@@ -1274,10 +1274,10 @@ def test_coalesce(df):
     assert result.column(2) == pa.array(
         ["hello ", "default", " !"], type=pa.string_view()
     )
-    assert result.column(3) == pa.array(
-        [datetime(2022, 12, 31), datetime(2000, 1, 1), datetime(2020, 7, 2)],
-        type=pa.timestamp("us"),
-    )
+    assert result.column(3).to_pylist() == [
+        datetime(2022, 12, 31, tzinfo=DEFAULT_TZ), 
+        datetime(2000, 1, 1, tzinfo=DEFAULT_TZ), 
+        datetime(2020, 7, 2, tzinfo=DEFAULT_TZ)]
     assert result.column(4) == pa.array([False, False, True], type=pa.bool_())
 
     # Test multiple arguments
