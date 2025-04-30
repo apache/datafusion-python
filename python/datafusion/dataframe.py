@@ -37,7 +37,6 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-from datafusion import functions as f
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
@@ -55,8 +54,6 @@ if TYPE_CHECKING:
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
-
-from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
 # excerpt from deltalake
@@ -873,7 +870,7 @@ class DataFrame:
         """
         return func(self, *args)
 
-    def fill_null(self, value: Any, subset: list[str] | None = None) -> "DataFrame":
+    def fill_null(self, value: Any, subset: list[str] | None = None) -> DataFrame:
         """Fill null values in specified columns with a value.
 
         Args:
@@ -893,5 +890,4 @@ class DataFrame:
             - For columns where casting fails, the original column is kept unchanged
             - For columns not in subset, the original column is kept unchanged
         """
-
         return DataFrame(self.df.fill_null(value, subset))
