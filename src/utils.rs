@@ -89,7 +89,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
 
     Ok(())
 }
-/// Convert a Python object to ScalarValue using PyArrow
+/// Convert a Python object to ScalarValue
 ///
 /// Args:
 ///     py: Python interpreter
@@ -97,23 +97,9 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
 ///
 /// Returns:
 ///     Result containing ScalarValue representation of the Python object
-///
-/// This function handles basic Python types directly and uses PyArrow
-/// for complex types like datetime.
 pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
-    if let Ok(value) = obj.extract::<bool>(py) {
-        return Ok(ScalarValue::Boolean(Some(value)));
-    } else if let Ok(value) = obj.extract::<i64>(py) {
-        return Ok(ScalarValue::Int64(Some(value)));
-    } else if let Ok(value) = obj.extract::<u64>(py) {
-        return Ok(ScalarValue::UInt64(Some(value)));
-    } else if let Ok(value) = obj.extract::<f64>(py) {
-        return Ok(ScalarValue::Float64(Some(value)));
-    } else if let Ok(value) = obj.extract::<String>(py) {
-        return Ok(ScalarValue::Utf8(Some(value)));
-    }
+    // convert Python object to PyScalarValue to ScalarValue
 
-    // For datetime and other complex types, convert via PyArrow
     let pa = py.import("pyarrow")?;
 
     // Convert Python object to PyArrow scalar
