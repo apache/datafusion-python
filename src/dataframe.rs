@@ -720,7 +720,7 @@ impl PyDataFrame {
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {
-        let scalar_value = py_obj_to_scalar_value(py, value);
+        let scalar_value = py_obj_to_scalar_value(py, value)?;
 
         let cols = match columns {
             Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),

@@ -22,8 +22,8 @@ use datafusion::common::ScalarValue;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
-use pyo3::{prelude::*, BoundObject};
 use std::future::Future;
 use std::sync::OnceLock;
 use tokio::runtime::Runtime;
@@ -123,7 +123,7 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<Scal
     let scalar = pa.call_method1("scalar", (obj,))?;
 
     // Convert PyArrow scalar to PyScalarValue
-    let py_scalar = PyScalarValue::extract(scalar.as_ref())?;
+    let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())?;
 
     // Convert PyScalarValue to ScalarValue
     Ok(py_scalar.into())
