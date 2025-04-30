@@ -89,14 +89,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
 
     Ok(())
 }
-/// Convert a Python object to ScalarValue
-///
-/// Args:
-///     py: Python interpreter
-///     obj: Python object to convert
-///
-/// Returns:
-///     Result containing ScalarValue representation of the Python object
+
 pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
     // convert Python object to PyScalarValue to ScalarValue
 
