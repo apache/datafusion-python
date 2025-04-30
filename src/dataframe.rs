@@ -94,7 +94,7 @@ impl PyDataFrame {
 
 #[pymethods]
 impl PyDataFrame {
-    /// Enable selection for `df[col]`, `df[col1, col2, col2]`, and `df[[col1, col2, col3]]`
+    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
     fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if let Ok(key) = key.extract::<PyBackedStr>() {
             // df[col]
