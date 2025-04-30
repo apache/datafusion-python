@@ -117,6 +117,22 @@ def clean_formatter_state():
     reset_formatter()
 
 
+@pytest.fixture
+def null_df():
+    """Create a DataFrame with null values of different types."""
+    ctx = SessionContext()
+    
+    # Create a RecordBatch with nulls across different types
+    batch = pa.RecordBatch.from_arrays([
+        pa.array([1, None, 3, None], type=pa.int64()),
+        pa.array([4.5, 6.7, None, None], type=pa.float64()),
+        pa.array(["a", None, "c", None], type=pa.string()),
+        pa.array([True, None, False, None], type=pa.bool_()),
+    ], names=["int_col", "float_col", "str_col", "bool_col"])
+    
+    return ctx.create_dataframe([[batch]])
+
+
 def test_select(df):
     df_1 = df.select(
         column("a") + column("b"),
@@ -1642,8 +1658,112 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
     local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
 
     # Both calls should include styles
+    
     local_html_1 = local_formatter.format_html([batch], batch.schema)
     local_html_2 = local_formatter.format_html([batch], batch.schema)
 
     assert "<style>" in local_html_1
     assert "<style>" in local_html_2
+
+
+def test_fill_null_basic(null_df):
+    """Test basic fill_null functionality with a single value."""
+    # Fill all nulls with 0
+    filled_df = null_df.fill_null(0)
+    
+    result = filled_df.collect()[0]
+    
+    # Check that nulls were filled with 0 (or equivalent)
+    assert result.column(0).to_pylist() == [1, 0, 3, 0]
+    assert result.column(1).to_pylist() == [4.5, 6.7, 0.0, 0.0]
+    # String column should be filled with "0"
+    assert result.column(2).to_pylist() == ["a", "0", "c", "0"]
+    # Boolean column should be filled with False (0 converted to bool)
+    assert result.column(3).to_pylist() == [True, False, False, False]
+
+
+def test_fill_null_subset(null_df):
+    """Test filling nulls only in a subset of columns."""
+    # Fill nulls only in numeric columns
+    filled_df = null_df.fill_null(0, subset=["int_col", "float_col"])
+    
+    result = filled_df.collect()[0]
+    
+    # Check that nulls were filled only in specified columns
+    assert result.column(0).to_pylist() == [1, 0, 3, 0]
+    assert result.column(1).to_pylist() == [4.5, 6.7, 0.0, 0.0]
+    # These should still have nulls
+    assert None in result.column(2).to_pylist()
+    assert None in result.column(3).to_pylist()
+
+
+def test_fill_null_specific_types(null_df):
+    """Test filling nulls with type-appropriate values."""
+    # Fill with type-specific values
+    filled_df = null_df.fill_null("missing")
+    
+    result = filled_df.collect()[0]
+    
+    # Check that nulls were filled appropriately by type
+    assert result.column(0).to_pylist() == [1, 0, 3, 0]  # Int gets 0 from "missing" conversion
+    assert result.column(1).to_pylist() == [4.5, 6.7, 0.0, 0.0]  # Float gets 0.0
+    assert result.column(2).to_pylist() == ["a", "missing", "c", "missing"]  # String gets "missing"
+    assert result.column(3).to_pylist() == [True, False, False, False]  # Bool gets False
+
+
+def test_fill_null_immutability(null_df):
+    """Test that original DataFrame is unchanged after fill_null."""
+    # Get original values with nulls
+    original = null_df.collect()[0]
+    original_int_nulls = original.column(0).to_pylist().count(None)
+    
+    # Apply fill_null
+    filled_df = null_df.fill_null(0)
+    
+    # Check that original is unchanged
+    new_original = null_df.collect()[0]
+    new_original_int_nulls = new_original.column(0).to_pylist().count(None)
+    
+    assert original_int_nulls == new_original_int_nulls
+    assert original_int_nulls > 0  # Ensure we actually had nulls in the first place
+
+
+def test_fill_null_empty_df(ctx):
+    """Test fill_null on empty DataFrame."""
+    # Create an empty DataFrame with schema
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([], type=pa.int64()), pa.array([], type=pa.string())],
+        names=["a", "b"]
+    )
+    empty_df = ctx.create_dataframe([[batch]])
+    
+    # Fill nulls (should work without errors)
+    filled_df = empty_df.fill_null(0)
+    
+    # Should still be empty but with same schema
+    result = filled_df.collect()[0]
+    assert len(result.column(0)) == 0
+    assert len(result.column(1)) == 0
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+
+
+def test_fill_null_all_null_column(ctx):
+    """Test fill_null on a column with all nulls."""
+    # Create DataFrame with a column of all nulls
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([None, None, None], type=pa.string())],
+        names=["a", "b"]
+    )
+    all_null_df = ctx.create_dataframe([[batch]])
+    
+    # Fill nulls with a value
+    filled_df = all_null_df.fill_null("filled")
+    
+    # Check that all nulls were filled
+    result = filled_df.collect()[0]
+    assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
+    
+    # Original should be unchanged
+    original = all_null_df.collect()[0]
+    assert original.column(1).null_count == 3
