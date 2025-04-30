@@ -18,7 +18,6 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use datafusion::common::ScalarValue;
 use datafusion::config::ConfigOptions;
 
 use crate::errors::PyDataFusionResult;
