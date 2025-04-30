@@ -89,7 +89,6 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
 
     Ok(())
 }
-
 /// Convert a Python object to ScalarValue using PyArrow
 ///
 /// Args:
@@ -97,34 +96,33 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
 ///     obj: Python object to convert
 ///
 /// Returns:
-///     ScalarValue representation of the Python object
+///     Result containing ScalarValue representation of the Python object
 ///
 /// This function handles basic Python types directly and uses PyArrow
 /// for complex types like datetime.
-pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> ScalarValue {
+pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
     if let Ok(value) = obj.extract::<bool>(py) {
-        ScalarValue::Boolean(Some(value))
+        return Ok(ScalarValue::Boolean(Some(value)));
     } else if let Ok(value) = obj.extract::<i64>(py) {
-        ScalarValue::Int64(Some(value))
+        return Ok(ScalarValue::Int64(Some(value)));
     } else if let Ok(value) = obj.extract::<u64>(py) {
-        ScalarValue::UInt64(Some(value))
+        return Ok(ScalarValue::UInt64(Some(value)));
     } else if let Ok(value) = obj.extract::<f64>(py) {
-        ScalarValue::Float64(Some(value))
+        return Ok(ScalarValue::Float64(Some(value)));
     } else if let Ok(value) = obj.extract::<String>(py) {
-        ScalarValue::Utf8(Some(value))
-    } else {
-        // For datetime and other complex types, convert via PyArrow
-        let pa = py.import("pyarrow");
-        let pa = pa.expect("Failed to import PyArrow");
-        // Convert Python object to PyArrow scalar
-        // This handles datetime objects by converting to PyArrow timestamp type
-        let scalar = pa.call_method1("scalar", (obj,));
-        let scalar = scalar.expect("Failed to convert Python object to PyArrow scalar");
-        // Convert PyArrow scalar to PyScalarValue
-        let py_scalar = PyScalarValue::extract_bound(scalar.as_ref());
-        // Unwrap the result - this will panic if extraction failed
-        let py_scalar = py_scalar.expect("Failed to extract PyScalarValue from PyArrow scalar");
-        // Convert PyScalarValue to ScalarValue
-        py_scalar.into()
+        return Ok(ScalarValue::Utf8(Some(value)));
     }
+
+    // For datetime and other complex types, convert via PyArrow
+    let pa = py.import("pyarrow")?;
+
+    // Convert Python object to PyArrow scalar
+    let scalar = pa.call_method1("scalar", (obj,))?;
+
+    // Convert PyArrow scalar to PyScalarValue
+    let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
+        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {}", e)))?;
+
+    // Convert PyScalarValue to ScalarValue
+    Ok(py_scalar.into())
 }

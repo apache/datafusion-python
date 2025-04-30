@@ -59,7 +59,7 @@ impl PyConfig {
 
     /// Set a configuration option
     pub fn set(&mut self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
-        let scalar_value = py_obj_to_scalar_value(py, value);
+        let scalar_value = py_obj_to_scalar_value(py, value)?;
         self.config.set(key, scalar_value.to_string().as_str())?;
         Ok(())
     }
