@@ -124,17 +124,27 @@ def null_df():
     ctx = SessionContext()
 
     # Create a RecordBatch with nulls across different types
-    batch = pa.RecordBatch.from_arrays([
-        pa.array([1, None, 3, None], type=pa.int64()),
-        pa.array([4.5, 6.7, None, None], type=pa.float64()),
-        pa.array(["a", None, "c", None], type=pa.string()),
-        pa.array([True, None, False, None], type=pa.bool_()),
-        pa.array([10957, None, 18993, None],
-            type=pa.date32()),  # 2000-01-01, null, 2022-01-01, null
-        pa.array([946684800000, None, 1640995200000, None],
-            type=pa.date64()),  # 2000-01-01, null, 2022-01-01, null
-    ], names=["int_col", "float_col", "str_col", "bool_col", "date32_col",
-              "date64_col"]
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, None, 3, None], type=pa.int64()),
+            pa.array([4.5, 6.7, None, None], type=pa.float64()),
+            pa.array(["a", None, "c", None], type=pa.string()),
+            pa.array([True, None, False, None], type=pa.bool_()),
+            pa.array(
+                [10957, None, 18993, None], type=pa.date32()
+            ),  # 2000-01-01, null, 2022-01-01, null
+            pa.array(
+                [946684800000, None, 1640995200000, None], type=pa.date64()
+            ),  # 2000-01-01, null, 2022-01-01, null
+        ],
+        names=[
+            "int_col",
+            "float_col",
+            "str_col",
+            "bool_col",
+            "date32_col",
+            "date64_col",
+        ],
     )
 
     return ctx.create_dataframe([[batch]])
@@ -1671,6 +1681,7 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
     assert "<style>" in local_html_1
     assert "<style>" in local_html_2
 
+
 def test_fill_null_basic(null_df):
     """Test basic fill_null functionality with a single value."""
     # Fill all nulls with 0
@@ -1700,6 +1711,7 @@ def test_fill_null_subset(null_df):
     # These should still have nulls
     assert None in result.column(2).to_pylist()
     assert None in result.column(3).to_pylist()
+
 
 def test_fill_null_str_column(null_df):
     """Test filling nulls in string columns with different values."""
@@ -1753,9 +1765,9 @@ def test_fill_null_date32_column(null_df):
     # Check that date32 nulls were filled with epoch date
     dates = result.column(4).to_pylist()
     assert dates[0] == datetime.date(2000, 1, 1)  # Original value
-    assert dates[1] == epoch_date                 # Filled value
+    assert dates[1] == epoch_date  # Filled value
     assert dates[2] == datetime.date(2022, 1, 1)  # Original value
-    assert dates[3] == epoch_date                 # Filled value
+    assert dates[3] == epoch_date  # Filled value
 
     # Other date column should be unchanged
     assert None in result.column(5).to_pylist()
@@ -1773,9 +1785,9 @@ def test_fill_null_date64_column(null_df):
     # Check that date64 nulls were filled with epoch date
     dates = result.column(5).to_pylist()
     assert dates[0] == datetime.date(2000, 1, 1)  # Original value
-    assert dates[1] == epoch_date                 # Filled value
+    assert dates[1] == epoch_date  # Filled value
     assert dates[2] == datetime.date(2022, 1, 1)  # Original value
-    assert dates[3] == epoch_date                 # Filled value
+    assert dates[3] == epoch_date  # Filled value
 
     # Other date column should be unchanged
     assert None in result.column(4).to_pylist()
@@ -1835,10 +1847,18 @@ def test_fill_null_specific_types(null_df):
     assert result.column(1).to_pylist() == [4.5, 6.7, None, None]
     assert result.column(2).to_pylist() == ["a", "missing", "c", "missing"]
     assert result.column(3).to_pylist() == [True, None, False, None]  # Bool gets False
-    assert result.column(4).to_pylist() == [datetime.date(2000, 1, 1),
-        None, datetime.date(2022, 1, 1), None]
-    assert result.column(5).to_pylist() == [datetime.date(2000, 1, 1),
-        None, datetime.date(2022, 1, 1), None]
+    assert result.column(4).to_pylist() == [
+        datetime.date(2000, 1, 1),
+        None,
+        datetime.date(2022, 1, 1),
+        None,
+    ]
+    assert result.column(5).to_pylist() == [
+        datetime.date(2000, 1, 1),
+        None,
+        datetime.date(2022, 1, 1),
+        None,
+    ]
 
 
 def test_fill_null_immutability(null_df):
@@ -1863,7 +1883,7 @@ def test_fill_null_empty_df(ctx):
     # Create an empty DataFrame with schema
     batch = pa.RecordBatch.from_arrays(
         [pa.array([], type=pa.int64()), pa.array([], type=pa.string())],
-        names=["a", "b"]
+        names=["a", "b"],
     )
     empty_df = ctx.create_dataframe([[batch]])
 
@@ -1883,7 +1903,7 @@ def test_fill_null_all_null_column(ctx):
     # Create DataFrame with a column of all nulls
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([None, None, None], type=pa.string())],
-        names=["a", "b"]
+        names=["a", "b"],
     )
     all_null_df = ctx.create_dataframe([[batch]])
 
