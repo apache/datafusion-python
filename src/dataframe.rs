@@ -26,7 +26,7 @@ use arrow::ffi_stream::FFI_ArrowArrayStream;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
-use datafusion::common::UnnestOptions;
+use datafusion::common::{ScalarValue, UnnestOptions};
 use datafusion::config::{CsvOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::TableProvider;
@@ -714,7 +714,7 @@ impl PyDataFrame {
     #[pyo3(signature = (value, columns=None))]
     fn fill_null(
         &self,
-        value: PyObject,
+        value: PyAny,
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {
@@ -890,6 +890,9 @@ fn python_value_to_scalar_value(value: &PyObject, py: Python) -> PyDataFusionRes
         return Err(PyDataFusionError::Common(msg.to_string()));
     }
 
+    // Convert PyObject to PyAny for easier extraction
+    let py_any: &PyAny = value.as_ref(py);
+
     // Try extracting different types in sequence
     if let Some(scalar) = try_extract_numeric(value, py) {
         return Ok(scalar);
@@ -951,13 +954,15 @@ fn try_extract_numeric(value: &PyObject, py: Python) -> Option<ScalarValue> {
 
 /// Try to extract datetime from a Python object
 fn try_extract_datetime(value: &PyObject, py: Python) -> Option<ScalarValue> {
-    let datetime_result = py
+    let datetime_cls = py
         .import("datetime")
         .and_then(|m| m.getattr("datetime"))
         .ok()?;
 
-    if value.is_instance(datetime_result).ok()? {
-        let dt = value.cast_as::<pyo3::types::PyDateTime>(py).ok()?;
+    let any: PyAny = value.extract(py).ok()?;
+
+    if any.is_instance(datetime_cls).ok()? {
+        let dt = any.cast_as::<pyo3::types::PyDateTime>(py).ok()?;
 
         // Extract datetime components
         let year = dt.get_year() as i32;
@@ -978,17 +983,30 @@ fn try_extract_datetime(value: &PyObject, py: Python) -> Option<ScalarValue> {
 
 /// Try to extract date from a Python object
 fn try_extract_date(value: &PyObject, py: Python) -> Option<ScalarValue> {
-    let date_result = py.import("datetime").and_then(|m| m.getattr("date")).ok()?;
+    // Import datetime module once
+    let datetime_mod = py.import("datetime").ok()?;
+    let date_cls = datetime_mod.getattr("date").ok()?;
+    let datetime_cls = datetime_mod.getattr("datetime").ok()?;
 
-    if value.is_instance(date_result).ok()? {
-        let date = value.cast_as::<pyo3::types::PyDate>(py).ok()?;
+    // convert your PyObject into a &PyAny
+    let any: PyAny = value.extract(py).ok()?;
 
-        // Extract date components
-        let year = date.get_year() as i32;
-        let month = date.get_month() as u8;
-        let day = date.get_day() as u8;
+    // Is it a date?
+    if any.is_instance(date_cls).ok()? {
+        // But not a datetime (we assume you handled datetimes elsewhere)
+        if any.is_instance(datetime_cls).ok()? {
+            return None;
+        }
 
-        // Convert to days since epoch
+        // Downcast into the PyDate type
+        let dt: &PyDate = any.downcast().ok()?;
+
+        // Pull out year/month/day
+        let year = dt.get_year() as i32;
+        let month = dt.get_month() as u8;
+        let day = dt.get_day() as u8;
+
+        // Convert to your internal Date32
         let days = date_to_days_since_epoch(year, month, day).ok()?;
         return Some(ScalarValue::Date32(Some(days)));
     }
