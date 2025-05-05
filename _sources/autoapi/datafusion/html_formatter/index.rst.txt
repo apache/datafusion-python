@@ -27,6 +27,8 @@ Functions
 .. autoapisummary::
 
    datafusion.html_formatter._refresh_formatter_reference
+   datafusion.html_formatter._validate_bool
+   datafusion.html_formatter._validate_positive_int
    datafusion.html_formatter.configure_formatter
    datafusion.html_formatter.get_formatter
    datafusion.html_formatter.reset_formatter
@@ -51,7 +53,7 @@ Module Contents
 
 
 
-.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, enable_cell_expansion: bool = True, custom_css: Optional[str] = None, show_truncation_message: bool = True, style_provider: Optional[StyleProvider] = None, use_shared_styles: bool = True)
+.. py:class:: DataFrameHtmlFormatter(max_cell_length: int = 25, max_width: int = 1000, max_height: int = 300, max_memory_bytes: int = 2 * 1024 * 1024, min_rows_display: int = 20, repr_rows: int = 10, enable_cell_expansion: bool = True, custom_css: Optional[str] = None, show_truncation_message: bool = True, style_provider: Optional[StyleProvider] = None, use_shared_styles: bool = True)
 
    Configurable HTML formatter for DataFusion DataFrames.
 
@@ -66,6 +68,9 @@ Module Contents
    :param max_cell_length: Maximum characters to display in a cell before truncation
    :param max_width: Maximum width of the HTML table in pixels
    :param max_height: Maximum height of the HTML table in pixels
+   :param max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
+   :param min_rows_display: Minimum number of rows to display
+   :param repr_rows: Default number of rows to display in repr output
    :param enable_cell_expansion: Whether to add expand/collapse buttons for long cell
                                  values
    :param custom_css: Additional CSS to include in the HTML output
@@ -82,6 +87,12 @@ Module Contents
    :type max_width: int, default 1000
    :param max_height: Maximum height of the displayed table in pixels.
    :type max_height: int, default 300
+   :param max_memory_bytes: Maximum memory in bytes for rendered data.
+   :type max_memory_bytes: int, default 2097152 (2MB)
+   :param min_rows_display: Minimum number of rows to display.
+   :type min_rows_display: int, default 20
+   :param repr_rows: Default number of rows to display in repr output.
+   :type repr_rows: int, default 10
    :param enable_cell_expansion: Whether to allow cells to expand when clicked.
    :type enable_cell_expansion: bool, default True
    :param custom_css: Custom CSS to apply to the HTML table.
@@ -95,7 +106,8 @@ Module Contents
    :type use_shared_styles: bool, default True
    :param Raises:
    :param ------:
-   :param ValueError: If max_cell_length, max_width, or max_height is not a positive integer.
+   :param ValueError: If max_cell_length, max_width, max_height, max_memory_bytes,
+                      min_rows_display, or repr_rows is not a positive integer.
    :param TypeError: If enable_cell_expansion, show_truncation_message, or use_shared_styles is
                      not a boolean,
                      or if custom_css is provided but is not a string,
@@ -284,8 +296,23 @@ Module Contents
 
 
 
+   .. py:attribute:: max_memory_bytes
+      :value: 2097152
+
+
+
    .. py:attribute:: max_width
       :value: 1000
+
+
+
+   .. py:attribute:: min_rows_display
+      :value: 20
+
+
+
+   .. py:attribute:: repr_rows
+      :value: 10
 
 
 
@@ -380,6 +407,26 @@ Module Contents
    DataFrames that might be caching the formatter reference.
 
 
+.. py:function:: _validate_bool(value: Any, param_name: str) -> None
+
+   Validate that a parameter is a boolean.
+
+   :param value: The value to validate
+   :param param_name: Name of the parameter (used in error message)
+
+   :raises TypeError: If the value is not a boolean
+
+
+.. py:function:: _validate_positive_int(value: Any, param_name: str) -> None
+
+   Validate that a parameter is a positive integer.
+
+   :param value: The value to validate
+   :param param_name: Name of the parameter (used in error message)
+
+   :raises ValueError: If the value is not a positive integer
+
+
 .. py:function:: configure_formatter(**kwargs: Any) -> None
 
    Configure the global DataFrame HTML formatter.
@@ -389,6 +436,8 @@ Module Contents
 
    :param \*\*kwargs: Formatter configuration parameters like max_cell_length,
                       max_width, max_height, enable_cell_expansion, etc.
+
+   :raises ValueError: If any invalid parameters are provided
 
    .. rubric:: Example
 

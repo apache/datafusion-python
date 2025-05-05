@@ -656,10 +656,37 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.html_formatter.DataFrameHtmlFormatter.max_memory_bytes">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameHtmlFormatter.max_memory_bytes
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.html_formatter.DataFrameHtmlFormatter.max_width">
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrameHtmlFormatter.max_width
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.html_formatter.DataFrameHtmlFormatter.min_rows_display">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameHtmlFormatter.min_rows_display
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.html_formatter.DataFrameHtmlFormatter.repr_rows">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameHtmlFormatter.repr_rows
         </span>
        </code>
       </a>
@@ -799,6 +826,24 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.html_formatter._validate_bool">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       _validate_bool()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.html_formatter._validate_positive_int">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       _validate_positive_int()
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.html_formatter.configure_formatter">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -898,6 +943,12 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.html_formatter._refresh_formatter_reference" title="datafusion.html_formatter._refresh_formatter_reference"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_refresh_formatter_reference</span></code></a>(→ None)</p></td>
 <td><p>Refresh formatter reference in any modules using it.</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.html_formatter._validate_bool" title="datafusion.html_formatter._validate_bool"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_bool</span></code></a>(→ None)</p></td>
+<td><p>Validate that a parameter is a boolean.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.html_formatter._validate_positive_int" title="datafusion.html_formatter._validate_positive_int"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_validate_positive_int</span></code></a>(→ None)</p></td>
+<td><p>Validate that a parameter is a positive integer.</p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.html_formatter.configure_formatter" title="datafusion.html_formatter.configure_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">configure_formatter</span></code></a>(→ None)</p></td>
 <td><p>Configure the global DataFrame HTML formatter.</p></td>
 </tr>
@@ -933,7 +984,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.html_formatter.DataFrameHtmlFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.html_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.html_formatter.StyleProvider" title="datafusion.html_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.html_formatter.</span></span><span class="sig-name descname"><span class="pre">DataFrameHtmlFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cell_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_memory_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_rows_display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repr_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_cell_expansion</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_css</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_truncation_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style_provider</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.html_formatter.StyleProvider" title="datafusion.html_formatter.StyleProvider"><span class="pre">StyleProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_shared_styles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter" title="Link to this definition">¶</a></dt>
 <dd><p>Configurable HTML formatter for DataFusion DataFrames.</p>
 <p>This class handles the HTML rendering of DataFrames for display in
 Jupyter notebooks and other rich display contexts.</p>
@@ -947,6 +998,9 @@ Jupyter notebooks and other rich display contexts.</p>
 <li><p><strong>max_cell_length</strong> – Maximum characters to display in a cell before truncation</p></li>
 <li><p><strong>max_width</strong> – Maximum width of the HTML table in pixels</p></li>
 <li><p><strong>max_height</strong> – Maximum height of the HTML table in pixels</p></li>
+<li><p><strong>max_memory_bytes</strong> – Maximum memory in bytes for rendered data (default: 2MB)</p></li>
+<li><p><strong>min_rows_display</strong> – Minimum number of rows to display</p></li>
+<li><p><strong>repr_rows</strong> – Default number of rows to display in repr output</p></li>
 <li><p><strong>enable_cell_expansion</strong> – Whether to add expand/collapse buttons for long cell
 values</p></li>
 <li><p><strong>custom_css</strong> – Additional CSS to include in the HTML output</p></li>
@@ -964,6 +1018,9 @@ session</p></li>
 <li><p><strong>max_cell_length</strong> (<em>int</em><em>, </em><em>default 25</em>) – Maximum length of cell content before truncation.</p></li>
 <li><p><strong>max_width</strong> (<em>int</em><em>, </em><em>default 1000</em>) – Maximum width of the displayed table in pixels.</p></li>
 <li><p><strong>max_height</strong> (<em>int</em><em>, </em><em>default 300</em>) – Maximum height of the displayed table in pixels.</p></li>
+<li><p><strong>max_memory_bytes</strong> (<em>int</em><em>, </em><em>default 2097152</em><em> (</em><em>2MB</em><em>)</em>) – Maximum memory in bytes for rendered data.</p></li>
+<li><p><strong>min_rows_display</strong> (<em>int</em><em>, </em><em>default 20</em>) – Minimum number of rows to display.</p></li>
+<li><p><strong>repr_rows</strong> (<em>int</em><em>, </em><em>default 10</em>) – Default number of rows to display in repr output.</p></li>
 <li><p><strong>enable_cell_expansion</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to allow cells to expand when clicked.</p></li>
 <li><p><strong>custom_css</strong> (<em>str</em><em>, </em><em>optional</em>) – Custom CSS to apply to the HTML table.</p></li>
 <li><p><strong>show_truncation_message</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to show a message indicating that content has been truncated.</p></li>
@@ -972,7 +1029,8 @@ is used.</p></li>
 <li><p><strong>use_shared_styles</strong> (<em>bool</em><em>, </em><em>default True</em>) – Whether to use shared styles across multiple tables.</p></li>
 <li><p><strong>Raises</strong></p></li>
 <li><p><strong>------</strong></p></li>
-<li><p><strong>ValueError</strong> – If max_cell_length, max_width, or max_height is not a positive integer.</p></li>
+<li><p><strong>ValueError</strong> – If max_cell_length, max_width, max_height, max_memory_bytes,
+min_rows_display, or repr_rows is not a positive integer.</p></li>
 <li><p><strong>TypeError</strong> – If enable_cell_expansion, show_truncation_message, or use_shared_styles is
 not a boolean,
 or if custom_css is provided but is not a string,
@@ -1188,8 +1246,23 @@ a formatted string</p></li>
 <dd></dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.html_formatter.DataFrameHtmlFormatter.max_memory_bytes">
+<span class="sig-name descname"><span class="pre">max_memory_bytes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2097152</span></em><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter.max_memory_bytes" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.html_formatter.DataFrameHtmlFormatter.max_width">
 <span class="sig-name descname"><span class="pre">max_width</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1000</span></em><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter.max_width" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.html_formatter.DataFrameHtmlFormatter.min_rows_display">
+<span class="sig-name descname"><span class="pre">min_rows_display</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20</span></em><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter.min_rows_display" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.html_formatter.DataFrameHtmlFormatter.repr_rows">
+<span class="sig-name descname"><span class="pre">repr_rows</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10</span></em><a class="headerlink" href="#datafusion.html_formatter.DataFrameHtmlFormatter.repr_rows" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1298,6 +1371,40 @@ DataFrames that might be caching the formatter reference.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="datafusion.html_formatter._validate_bool">
+<span class="sig-prename descclassname"><span class="pre">datafusion.html_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_bool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.html_formatter._validate_bool" title="Link to this definition">¶</a></dt>
+<dd><p>Validate that a parameter is a boolean.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – The value to validate</p></li>
+<li><p><strong>param_name</strong> – Name of the parameter (used in error message)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TypeError</strong> – If the value is not a boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datafusion.html_formatter._validate_positive_int">
+<span class="sig-prename descclassname"><span class="pre">datafusion.html_formatter.</span></span><span class="sig-name descname"><span class="pre">_validate_positive_int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.html_formatter._validate_positive_int" title="Link to this definition">¶</a></dt>
+<dd><p>Validate that a parameter is a positive integer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – The value to validate</p></li>
+<li><p><strong>param_name</strong> – Name of the parameter (used in error message)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the value is not a positive integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="datafusion.html_formatter.configure_formatter">
 <span class="sig-prename descclassname"><span class="pre">datafusion.html_formatter.</span></span><span class="sig-name descname"><span class="pre">configure_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.html_formatter.configure_formatter" title="Link to this definition">¶</a></dt>
 <dd><p>Configure the global DataFrame HTML formatter.</p>
@@ -1307,6 +1414,9 @@ and sets it as the global formatter for all DataFrames.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>**kwargs</strong> – Formatter configuration parameters like max_cell_length,
 max_width, max_height, enable_cell_expansion, etc.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If any invalid parameters are provided</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>

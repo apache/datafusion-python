@@ -1887,6 +1887,8 @@ Package Contents
    :param \*\*kwargs: Formatter configuration parameters like max_cell_length,
                       max_width, max_height, enable_cell_expansion, etc.
 
+   :raises ValueError: If any invalid parameters are provided
+
    .. rubric:: Example
 
    >>> from datafusion.html_formatter import configure_formatter

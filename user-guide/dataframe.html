@@ -421,6 +421,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#performance-optimization-with-shared-styles">
+   Performance Optimization with Shared Styles
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#creating-a-custom-formatter">
    Creating a Custom Formatter
   </a>
@@ -433,6 +438,11 @@
  <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#contextual-formatting">
    Contextual Formatting
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#memory-and-display-controls">
+   Memory and Display Controls
   </a>
  </li>
 </ul>
@@ -506,13 +516,17 @@ plain text output.</p>
 
 <span class="c1"># Change the default styling</span>
 <span class="n">configure_formatter</span><span class="p">(</span>
-    <span class="n">max_rows</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>           <span class="c1"># Maximum number of rows to display</span>
-    <span class="n">max_width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>        <span class="c1"># Maximum width in pixels (None for auto)</span>
-    <span class="n">theme</span><span class="o">=</span><span class="s2">&quot;light&quot;</span><span class="p">,</span>         <span class="c1"># Theme: &quot;light&quot; or &quot;dark&quot;</span>
-    <span class="n">precision</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>           <span class="c1"># Floating point precision</span>
-    <span class="n">thousands_separator</span><span class="o">=</span><span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="c1"># Separator for thousands</span>
-    <span class="n">date_format</span><span class="o">=</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">,</span> <span class="c1"># Date format</span>
-    <span class="n">truncate_width</span><span class="o">=</span><span class="mi">20</span>      <span class="c1"># Max width for string columns before truncating</span>
+    <span class="n">max_cell_length</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>        <span class="c1"># Maximum characters in a cell before truncation</span>
+    <span class="n">max_width</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>            <span class="c1"># Maximum width in pixels</span>
+    <span class="n">max_height</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>            <span class="c1"># Maximum height in pixels</span>
+    <span class="n">max_memory_bytes</span><span class="o">=</span><span class="mi">2097152</span><span class="p">,</span>  <span class="c1"># Maximum memory for rendering (2MB)</span>
+    <span class="n">min_rows_display</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>       <span class="c1"># Minimum number of rows to display</span>
+    <span class="n">repr_rows</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>              <span class="c1"># Number of rows to display in __repr__</span>
+    <span class="n">enable_cell_expansion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="c1"># Allow expanding truncated cells</span>
+    <span class="n">custom_css</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>           <span class="c1"># Additional custom CSS</span>
+    <span class="n">show_truncation_message</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="c1"># Show message when data is truncated</span>
+    <span class="n">style_provider</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>       <span class="c1"># Custom styling provider</span>
+    <span class="n">use_shared_styles</span><span class="o">=</span><span class="kc">True</span>     <span class="c1"># Share styles across tables</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -542,6 +556,18 @@ plain text output.</p>
 <span class="n">configure_formatter</span><span class="p">(</span><span class="n">style_provider</span><span class="o">=</span><span class="n">MyStyleProvider</span><span class="p">())</span>
 </pre></div>
 </div>
+</section>
+<section id="performance-optimization-with-shared-styles">
+<h2>Performance Optimization with Shared Styles<a class="headerlink" href="#performance-optimization-with-shared-styles" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">use_shared_styles</span></code> parameter (enabled by default) optimizes performance when displaying
+multiple DataFrames in notebook environments:</p>
+<blockquote>
+<div></div></blockquote>
+<p>When <code class="docutils literal notranslate"><span class="pre">use_shared_styles=True</span></code>:
+- CSS styles and JavaScript are included only once per notebook session
+- This reduces HTML output size and prevents style duplication
+- Improves rendering performance with many DataFrames
+- Applies consistent styling across all DataFrames</p>
 </section>
 <section id="creating-a-custom-formatter">
 <h2>Creating a Custom Formatter<a class="headerlink" href="#creating-a-custom-formatter" title="Link to this heading">¶</a></h2>
@@ -599,6 +625,20 @@ plain text output.</p>
 <span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
+</section>
+<section id="memory-and-display-controls">
+<h2>Memory and Display Controls<a class="headerlink" href="#memory-and-display-controls" title="Link to this heading">¶</a></h2>
+<p>You can control how much data is displayed and how much memory is used for rendering:</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">configure_formatter</span><span class="p">(</span>
+    <span class="n">max_memory_bytes</span><span class="o">=</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span>  <span class="c1"># 4MB maximum memory for display</span>
+    <span class="n">min_rows_display</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>               <span class="c1"># Always show at least 50 rows</span>
+    <span class="n">repr_rows</span><span class="o">=</span><span class="mi">20</span>                       <span class="c1"># Show 20 rows in __repr__ output</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>These parameters help balance comprehensive data display against performance considerations.</p>
 </section>
 </section>
 
