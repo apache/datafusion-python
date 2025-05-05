@@ -31,7 +31,7 @@ from datafusion.col import col, column
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
+from ._internal import Config, ParquetWriterOptions
 from .catalog import Catalog, Database, Table
 from .common import (
     DFSchema,
@@ -42,7 +42,7 @@ from .context import (
     SessionContext,
     SQLOptions,
 )
-from .dataframe import DataFrame
+from .dataframe import DataFrame, ParquetColumnOptions
 from .expr import (
     Expr,
     WindowFrame,
@@ -66,6 +66,8 @@ __all__ = [
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",
+    "ParquetColumnOptions",
+    "ParquetWriterOptions",
     "RecordBatch",
     "RecordBatchStream",
     "RuntimeEnvBuilder",
