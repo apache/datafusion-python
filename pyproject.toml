@@ -63,6 +63,10 @@ exclude = [".github/**", "ci/**", ".asf.yaml"]
 locked = true
 features = ["substrait"]
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
 select = ["ALL" ]
