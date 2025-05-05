@@ -242,3 +242,35 @@ determine which evaluate functions are called.
     })
 
     df.select("a", exp_smooth(col("a")).alias("smooth_a")).show()
+
+Table Functions
+---------------
+
+User Defined Table Functions are slightly different than the other functions
+described here. These functions take any number of `Expr` arguments, but only
+literal expressions are supported. Table functions must return a Table
+Provider as described in the ref:`_io_custom_table_provider` page.
+
+Once you have a table function, you can register it with the session context
+by using :py:func:`datafusion.context.SessionContext.register_udtf`.
+
+There are examples of both rust backed and python based table functions in the
+examples folder of the repository. If you have a rust backed table function
+that you wish to expose via PyO3, you need to expose it as a ``PyCapsule``.
+
+.. code-block:: rust
+
+    #[pymethods]
+    impl MyTableFunction {
+        fn __datafusion_table_function__<'py>(
+            &self,
+            py: Python<'py>,
+        ) -> PyResult<Bound<'py, PyCapsule>> {
+            let name = cr"datafusion_table_function".into();
+
+            let func = self.clone();
+            let provider = FFI_TableFunction::new(Arc::new(func), None);
+
+            PyCapsule::new(py, provider, Some(name))
+        }
+    }

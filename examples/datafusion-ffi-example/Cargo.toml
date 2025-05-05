@@ -21,16 +21,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-datafusion = { version = "45.0.0" }
-datafusion-ffi = { version = "45.0.0" }
+datafusion = { version = "47.0.0" }
+datafusion-ffi = { version = "47.0.0" }
 pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
-arrow = { version = "54" }
-arrow-array = { version = "54" }
-arrow-schema = { version = "54" }
+arrow = { version = "55" }
+arrow-array = { version = "55" }
+arrow-schema = { version = "55" }
 
 [build-dependencies]
 pyo3-build-config = "0.23"
 
 [lib]
-name = "ffi_table_provider"
+name = "datafusion_ffi_example"
 crate-type = ["cdylib", "rlib"]
