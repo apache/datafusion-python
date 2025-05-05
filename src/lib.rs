@@ -85,6 +85,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<context::PySessionContext>()?;
     m.add_class::<context::PySQLOptions>()?;
     m.add_class::<dataframe::PyDataFrame>()?;
+    m.add_class::<dataframe::PyParquetColumnOptions>()?;
+    m.add_class::<dataframe::PyParquetWriterOptions>()?;
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<udwf::PyWindowUDF>()?;

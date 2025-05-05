@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::Arc;
 
@@ -27,12 +28,11 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
-use datafusion::config::{CsvOptions, TableParquetOptions};
+use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
-use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
@@ -165,8 +165,103 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     // Return the validated config, converting String error to PyErr
     config
         .validate()
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e))?;
+        .map_err(pyo3::exceptions::PyValueError::new_err)?;
     Ok(config)
+}
+
+/// Python mapping of `ParquetOptions` (includes just the writer-related options).
+#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetWriterOptions {
+    options: ParquetOptions,
+}
+
+#[pymethods]
+impl PyParquetWriterOptions {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        data_pagesize_limit: usize,
+        write_batch_size: usize,
+        writer_version: String,
+        skip_arrow_metadata: bool,
+        compression: Option<String>,
+        dictionary_enabled: Option<bool>,
+        dictionary_page_size_limit: usize,
+        statistics_enabled: Option<String>,
+        max_row_group_size: usize,
+        created_by: String,
+        column_index_truncate_length: Option<usize>,
+        statistics_truncate_length: Option<usize>,
+        data_page_row_count_limit: usize,
+        encoding: Option<String>,
+        bloom_filter_on_write: bool,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+        allow_single_file_parallelism: bool,
+        maximum_parallel_row_group_writers: usize,
+        maximum_buffered_record_batches_per_stream: usize,
+    ) -> Self {
+        Self {
+            options: ParquetOptions {
+                data_pagesize_limit,
+                write_batch_size,
+                writer_version,
+                skip_arrow_metadata,
+                compression,
+                dictionary_enabled,
+                dictionary_page_size_limit,
+                statistics_enabled,
+                max_row_group_size,
+                created_by,
+                column_index_truncate_length,
+                statistics_truncate_length,
+                data_page_row_count_limit,
+                encoding,
+                bloom_filter_on_write,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                allow_single_file_parallelism,
+                maximum_parallel_row_group_writers,
+                maximum_buffered_record_batches_per_stream,
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Python mapping of `ParquetColumnOptions`.
+#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetColumnOptions {
+    options: ParquetColumnOptions,
+}
+
+#[pymethods]
+impl PyParquetColumnOptions {
+    #[new]
+    pub fn new(
+        bloom_filter_enabled: Option<bool>,
+        encoding: Option<String>,
+        dictionary_enabled: Option<bool>,
+        compression: Option<String>,
+        statistics_enabled: Option<String>,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+    ) -> Self {
+        Self {
+            options: ParquetColumnOptions {
+                bloom_filter_enabled,
+                encoding,
+                dictionary_enabled,
+                compression,
+                statistics_enabled,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                ..Default::default()
+            },
+        }
+    }
 }
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
@@ -613,61 +708,28 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a Parquet file.
-    #[pyo3(signature = (
-        path,
-        compression="zstd",
-        compression_level=None
-        ))]
     fn write_parquet(
         &self,
         path: &str,
-        compression: &str,
-        compression_level: Option<u32>,
+        options: PyParquetWriterOptions,
+        column_specific_options: HashMap<String, PyParquetColumnOptions>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        fn verify_compression_level(cl: Option<u32>) -> Result<u32, PyErr> {
-            cl.ok_or(PyValueError::new_err("compression_level is not defined"))
-        }
-
-        let _validated = match compression.to_lowercase().as_str() {
-            "snappy" => Compression::SNAPPY,
-            "gzip" => Compression::GZIP(
-                GzipLevel::try_new(compression_level.unwrap_or(6))
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
-            ),
-            "brotli" => Compression::BROTLI(
-                BrotliLevel::try_new(verify_compression_level(compression_level)?)
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
-            ),
-            "zstd" => Compression::ZSTD(
-                ZstdLevel::try_new(verify_compression_level(compression_level)? as i32)
-                    .map_err(|e| PyValueError::new_err(format!("{e}")))?,
-            ),
-            "lzo" => Compression::LZO,
-            "lz4" => Compression::LZ4,
-            "lz4_raw" => Compression::LZ4_RAW,
-            "uncompressed" => Compression::UNCOMPRESSED,
-            _ => {
-                return Err(PyDataFusionError::Common(format!(
-                    "Unrecognized compression type {compression}"
-                )));
-            }
+        let table_options = TableParquetOptions {
+            global: options.options,
+            column_specific_options: column_specific_options
+                .into_iter()
+                .map(|(k, v)| (k, v.options))
+                .collect(),
+            ..Default::default()
         };
-
-        let mut compression_string = compression.to_string();
-        if let Some(level) = compression_level {
-            compression_string.push_str(&format!("({level})"));
-        }
-
-        let mut options = TableParquetOptions::default();
-        options.global.compression = Some(compression_string);
 
         wait_for_future(
             py,
             self.df.as_ref().clone().write_parquet(
                 path,
                 DataFrameWriteOptions::new(),
-                Option::from(options),
+                Option::from(table_options),
             ),
         )?;
         Ok(())
