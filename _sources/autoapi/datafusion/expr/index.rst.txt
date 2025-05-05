@@ -25,14 +25,29 @@ Attributes
    datafusion.expr.Case
    datafusion.expr.Cast
    datafusion.expr.Column
+   datafusion.expr.CopyTo
+   datafusion.expr.CreateCatalog
+   datafusion.expr.CreateCatalogSchema
+   datafusion.expr.CreateExternalTable
+   datafusion.expr.CreateFunction
+   datafusion.expr.CreateFunctionBody
+   datafusion.expr.CreateIndex
    datafusion.expr.CreateMemoryTable
    datafusion.expr.CreateView
+   datafusion.expr.Deallocate
+   datafusion.expr.DescribeTable
    datafusion.expr.Distinct
+   datafusion.expr.DmlStatement
+   datafusion.expr.DropCatalogSchema
+   datafusion.expr.DropFunction
    datafusion.expr.DropTable
+   datafusion.expr.DropView
    datafusion.expr.EmptyRelation
+   datafusion.expr.Execute
    datafusion.expr.Exists
    datafusion.expr.Explain
    datafusion.expr.Extension
+   datafusion.expr.FileType
    datafusion.expr.Filter
    datafusion.expr.GroupingSet
    datafusion.expr.ILike
@@ -54,21 +69,31 @@ Attributes
    datafusion.expr.Literal
    datafusion.expr.Negative
    datafusion.expr.Not
+   datafusion.expr.OperateFunctionArg
    datafusion.expr.Partitioning
    datafusion.expr.Placeholder
+   datafusion.expr.Prepare
    datafusion.expr.Projection
+   datafusion.expr.RecursiveQuery
    datafusion.expr.Repartition
    datafusion.expr.ScalarSubquery
    datafusion.expr.ScalarVariable
+   datafusion.expr.SetVariable
    datafusion.expr.SimilarTo
    datafusion.expr.Sort
    datafusion.expr.Subquery
    datafusion.expr.SubqueryAlias
    datafusion.expr.TableScan
+   datafusion.expr.TransactionAccessMode
+   datafusion.expr.TransactionConclusion
+   datafusion.expr.TransactionEnd
+   datafusion.expr.TransactionIsolationLevel
+   datafusion.expr.TransactionStart
    datafusion.expr.TryCast
    datafusion.expr.Union
    datafusion.expr.Unnest
    datafusion.expr.UnnestExpr
+   datafusion.expr.Values
    datafusion.expr.WindowExpr
 
 
@@ -575,8 +600,8 @@ Module Contents
 
       Set the initial letter of each word to capital.
 
-      Converts the first letter of each word in ``string``
-      to uppercase and the remaining characters to lowercase.
+      Converts the first letter of each word in ``string`` to uppercase and the
+      remaining characters to lowercase.
 
 
 
@@ -1124,21 +1149,51 @@ Module Contents
 
 .. py:data:: Column
 
+.. py:data:: CopyTo
+
+.. py:data:: CreateCatalog
+
+.. py:data:: CreateCatalogSchema
+
+.. py:data:: CreateExternalTable
+
+.. py:data:: CreateFunction
+
+.. py:data:: CreateFunctionBody
+
+.. py:data:: CreateIndex
+
 .. py:data:: CreateMemoryTable
 
 .. py:data:: CreateView
 
+.. py:data:: Deallocate
+
+.. py:data:: DescribeTable
+
 .. py:data:: Distinct
+
+.. py:data:: DmlStatement
+
+.. py:data:: DropCatalogSchema
+
+.. py:data:: DropFunction
 
 .. py:data:: DropTable
 
+.. py:data:: DropView
+
 .. py:data:: EmptyRelation
+
+.. py:data:: Execute
 
 .. py:data:: Exists
 
 .. py:data:: Explain
 
 .. py:data:: Extension
+
+.. py:data:: FileType
 
 .. py:data:: Filter
 
@@ -1182,17 +1237,25 @@ Module Contents
 
 .. py:data:: Not
 
+.. py:data:: OperateFunctionArg
+
 .. py:data:: Partitioning
 
 .. py:data:: Placeholder
 
+.. py:data:: Prepare
+
 .. py:data:: Projection
+
+.. py:data:: RecursiveQuery
 
 .. py:data:: Repartition
 
 .. py:data:: ScalarSubquery
 
 .. py:data:: ScalarVariable
+
+.. py:data:: SetVariable
 
 .. py:data:: SimilarTo
 
@@ -1204,6 +1267,16 @@ Module Contents
 
 .. py:data:: TableScan
 
+.. py:data:: TransactionAccessMode
+
+.. py:data:: TransactionConclusion
+
+.. py:data:: TransactionEnd
+
+.. py:data:: TransactionIsolationLevel
+
+.. py:data:: TransactionStart
+
 .. py:data:: TryCast
 
 .. py:data:: Union
@@ -1211,6 +1284,8 @@ Module Contents
 .. py:data:: Unnest
 
 .. py:data:: UnnestExpr
+
+.. py:data:: Values
 
 .. py:data:: WindowExpr
 
