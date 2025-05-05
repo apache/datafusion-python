@@ -36,5 +36,8 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<schema::SqlView>()?;
     m.add_class::<schema::SqlStatistics>()?;
     m.add_class::<function::SqlFunction>()?;
+    m.add_class::<schema::PyTableType>()?;
+    m.add_class::<schema::PyTableSource>()?;
+    m.add_class::<schema::PyConstraints>()?;
     Ok(())
 }

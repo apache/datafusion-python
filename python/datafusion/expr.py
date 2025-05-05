@@ -54,14 +54,29 @@ BinaryExpr = expr_internal.BinaryExpr
 Case = expr_internal.Case
 Cast = expr_internal.Cast
 Column = expr_internal.Column
+CopyTo = expr_internal.CopyTo
+CreateCatalog = expr_internal.CreateCatalog
+CreateCatalogSchema = expr_internal.CreateCatalogSchema
+CreateExternalTable = expr_internal.CreateExternalTable
+CreateFunction = expr_internal.CreateFunction
+CreateFunctionBody = expr_internal.CreateFunctionBody
+CreateIndex = expr_internal.CreateIndex
 CreateMemoryTable = expr_internal.CreateMemoryTable
 CreateView = expr_internal.CreateView
+Deallocate = expr_internal.Deallocate
+DescribeTable = expr_internal.DescribeTable
 Distinct = expr_internal.Distinct
+DmlStatement = expr_internal.DmlStatement
+DropCatalogSchema = expr_internal.DropCatalogSchema
+DropFunction = expr_internal.DropFunction
 DropTable = expr_internal.DropTable
+DropView = expr_internal.DropView
 EmptyRelation = expr_internal.EmptyRelation
+Execute = expr_internal.Execute
 Exists = expr_internal.Exists
 Explain = expr_internal.Explain
 Extension = expr_internal.Extension
+FileType = expr_internal.FileType
 Filter = expr_internal.Filter
 GroupingSet = expr_internal.GroupingSet
 Join = expr_internal.Join
@@ -83,21 +98,31 @@ Limit = expr_internal.Limit
 Literal = expr_internal.Literal
 Negative = expr_internal.Negative
 Not = expr_internal.Not
+OperateFunctionArg = expr_internal.OperateFunctionArg
 Partitioning = expr_internal.Partitioning
 Placeholder = expr_internal.Placeholder
+Prepare = expr_internal.Prepare
 Projection = expr_internal.Projection
+RecursiveQuery = expr_internal.RecursiveQuery
 Repartition = expr_internal.Repartition
 ScalarSubquery = expr_internal.ScalarSubquery
 ScalarVariable = expr_internal.ScalarVariable
+SetVariable = expr_internal.SetVariable
 SimilarTo = expr_internal.SimilarTo
 Sort = expr_internal.Sort
 Subquery = expr_internal.Subquery
 SubqueryAlias = expr_internal.SubqueryAlias
 TableScan = expr_internal.TableScan
+TransactionAccessMode = expr_internal.TransactionAccessMode
+TransactionConclusion = expr_internal.TransactionConclusion
+TransactionEnd = expr_internal.TransactionEnd
+TransactionIsolationLevel = expr_internal.TransactionIsolationLevel
+TransactionStart = expr_internal.TransactionStart
 TryCast = expr_internal.TryCast
 Union = expr_internal.Union
 Unnest = expr_internal.Unnest
 UnnestExpr = expr_internal.UnnestExpr
+Values = expr_internal.Values
 WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
@@ -111,15 +136,30 @@ __all__ = [
     "CaseBuilder",
     "Cast",
     "Column",
+    "CopyTo",
+    "CreateCatalog",
+    "CreateCatalogSchema",
+    "CreateExternalTable",
+    "CreateFunction",
+    "CreateFunctionBody",
+    "CreateIndex",
     "CreateMemoryTable",
     "CreateView",
+    "Deallocate",
+    "DescribeTable",
     "Distinct",
+    "DmlStatement",
+    "DropCatalogSchema",
+    "DropFunction",
     "DropTable",
+    "DropView",
     "EmptyRelation",
+    "Execute",
     "Exists",
     "Explain",
     "Expr",
     "Extension",
+    "FileType",
     "Filter",
     "GroupingSet",
     "ILike",
@@ -142,22 +182,32 @@ __all__ = [
     "Literal",
     "Negative",
     "Not",
+    "OperateFunctionArg",
     "Partitioning",
     "Placeholder",
+    "Prepare",
     "Projection",
+    "RecursiveQuery",
     "Repartition",
     "ScalarSubquery",
     "ScalarVariable",
+    "SetVariable",
     "SimilarTo",
     "Sort",
     "SortExpr",
     "Subquery",
     "SubqueryAlias",
     "TableScan",
+    "TransactionAccessMode",
+    "TransactionConclusion",
+    "TransactionEnd",
+    "TransactionIsolationLevel",
+    "TransactionStart",
     "TryCast",
     "Union",
     "Unnest",
     "UnnestExpr",
+    "Values",
     "Window",
     "WindowExpr",
     "WindowFrame",
@@ -686,8 +736,8 @@ class Expr:
     def initcap(self) -> Expr:
         """Set the initial letter of each word to capital.
 
-        Converts the first letter of each word in ``string``
-        to uppercase and the remaining characters to lowercase.
+        Converts the first letter of each word in ``string`` to uppercase and the
+        remaining characters to lowercase.
         """
         from . import functions as F
 

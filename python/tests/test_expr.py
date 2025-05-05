@@ -23,12 +23,21 @@ from datafusion.expr import (
     AggregateFunction,
     BinaryExpr,
     Column,
+    CopyTo,
+    CreateIndex,
+    DescribeTable,
+    DmlStatement,
+    DropCatalogSchema,
     Filter,
     Limit,
     Literal,
     Projection,
+    RecursiveQuery,
     Sort,
     TableScan,
+    TransactionEnd,
+    TransactionStart,
+    Values,
 )
 
 
@@ -247,6 +256,83 @@ def test_fill_null(df):
     assert result.column(0) == pa.array([1, 2, 100])
     assert result.column(1) == pa.array([4, 25, 6])
     assert result.column(2) == pa.array([1234, 1234, 8])
+
+
+def test_copy_to():
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE foo (a int, b int)").collect()
+    df = ctx.sql("COPY foo TO bar STORED AS CSV")
+    plan = df.logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, CopyTo)
+
+
+def test_create_index():
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE foo (a int, b int)").collect()
+    plan = ctx.sql("create index idx on foo (a)").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, CreateIndex)
+
+
+def test_describe_table():
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE foo (a int, b int)").collect()
+    plan = ctx.sql("describe foo").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, DescribeTable)
+
+
+def test_dml_statement():
+    ctx = SessionContext()
+    ctx.sql("CREATE TABLE foo (a int, b int)").collect()
+    plan = ctx.sql("insert into foo values (1, 2)").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, DmlStatement)
+
+
+def drop_catalog_schema():
+    ctx = SessionContext()
+    plan = ctx.sql("drop schema cat").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, DropCatalogSchema)
+
+
+def test_recursive_query():
+    ctx = SessionContext()
+    plan = ctx.sql(
+        """
+        WITH RECURSIVE cte AS (
+        SELECT 1 as n
+        UNION ALL
+        SELECT n + 1 FROM cte WHERE n < 5
+        )
+        SELECT * FROM cte;
+        """
+    ).logical_plan()
+    plan = plan.inputs()[0].inputs()[0].to_variant()
+    assert isinstance(plan, RecursiveQuery)
+
+
+def test_values():
+    ctx = SessionContext()
+    plan = ctx.sql("values (1, 'foo'), (2, 'bar')").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, Values)
+
+
+def test_transaction_start():
+    ctx = SessionContext()
+    plan = ctx.sql("START TRANSACTION").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, TransactionStart)
+
+
+def test_transaction_end():
+    ctx = SessionContext()
+    plan = ctx.sql("COMMIT").logical_plan()
+    plan = plan.to_variant()
+    assert isinstance(plan, TransactionEnd)
 
 
 def test_col_getattr():
