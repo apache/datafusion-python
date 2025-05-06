@@ -15,8 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::common::data_type::PyScalarValue;
 use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::TokioRuntime;
+use datafusion::common::ScalarValue;
 use datafusion::execution::context::SessionContext;
 use datafusion::logical_expr::Volatility;
 use pyo3::exceptions::PyValueError;
@@ -86,4 +88,20 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     }
 
     Ok(())
+}
+
+pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
+    // convert Python object to PyScalarValue to ScalarValue
+
+    let pa = py.import("pyarrow")?;
+
+    // Convert Python object to PyArrow scalar
+    let scalar = pa.call_method1("scalar", (obj,))?;
+
+    // Convert PyArrow scalar to PyScalarValue
+    let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
+        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {}", e)))?;
+
+    // Convert PyScalarValue to ScalarValue
+    Ok(py_scalar.into())
 }

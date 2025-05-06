@@ -18,10 +18,10 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use datafusion::common::ScalarValue;
 use datafusion::config::ConfigOptions;
 
 use crate::errors::PyDataFusionResult;
+use crate::utils::py_obj_to_scalar_value;
 
 #[pyclass(name = "Config", module = "datafusion", subclass)]
 #[derive(Clone)]
@@ -59,7 +59,7 @@ impl PyConfig {
 
     /// Set a configuration option
     pub fn set(&mut self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
-        let scalar_value = py_obj_to_scalar_value(py, value);
+        let scalar_value = py_obj_to_scalar_value(py, value)?;
         self.config.set(key, scalar_value.to_string().as_str())?;
         Ok(())
     }
@@ -80,22 +80,5 @@ impl PyConfig {
             Ok(result) => Ok(format!("Config({result})")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }
-    }
-}
-
-/// Convert a python object to a ScalarValue
-fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> ScalarValue {
-    if let Ok(value) = obj.extract::<bool>(py) {
-        ScalarValue::Boolean(Some(value))
-    } else if let Ok(value) = obj.extract::<i64>(py) {
-        ScalarValue::Int64(Some(value))
-    } else if let Ok(value) = obj.extract::<u64>(py) {
-        ScalarValue::UInt64(Some(value))
-    } else if let Ok(value) = obj.extract::<f64>(py) {
-        ScalarValue::Float64(Some(value))
-    } else if let Ok(value) = obj.extract::<String>(py) {
-        ScalarValue::Utf8(Some(value))
-    } else {
-        panic!("Unsupported value type")
     }
 }

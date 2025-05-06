@@ -1236,3 +1236,64 @@ def test_between_default(df):
 def test_alias_with_metadata(df):
     df = df.select(f.alias(f.col("a"), "b", {"key": "value"}))
     assert df.schema().field("b").metadata == {b"key": b"value"}
+
+
+def test_coalesce(df):
+    # Create a DataFrame with null values
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(["Hello", None, "!"]),  # string column with null
+            pa.array([4, None, 6]),  # integer column with null
+            pa.array(["hello ", None, " !"]),  # string column with null
+            pa.array(
+                [
+                    datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+                    None,
+                    datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
+                ]
+            ),  # datetime with null
+            pa.array([False, None, True]),  # boolean column with null
+        ],
+        names=["a", "b", "c", "d", "e"],
+    )
+    df_with_nulls = ctx.create_dataframe([[batch]])
+
+    # Test coalesce with different data types
+    result_df = df_with_nulls.select(
+        f.coalesce(column("a"), literal("default")).alias("a_coalesced"),
+        f.coalesce(column("b"), literal(0)).alias("b_coalesced"),
+        f.coalesce(column("c"), literal("default")).alias("c_coalesced"),
+        f.coalesce(column("d"), literal(datetime(2000, 1, 1, tzinfo=DEFAULT_TZ))).alias(
+            "d_coalesced"
+        ),
+        f.coalesce(column("e"), literal(value=False)).alias("e_coalesced"),
+    )
+
+    result = result_df.collect()[0]
+
+    # Verify results
+    assert result.column(0) == pa.array(
+        ["Hello", "default", "!"], type=pa.string_view()
+    )
+    assert result.column(1) == pa.array([4, 0, 6], type=pa.int64())
+    assert result.column(2) == pa.array(
+        ["hello ", "default", " !"], type=pa.string_view()
+    )
+    assert result.column(3).to_pylist() == [
+        datetime(2022, 12, 31, tzinfo=DEFAULT_TZ),
+        datetime(2000, 1, 1, tzinfo=DEFAULT_TZ),
+        datetime(2020, 7, 2, tzinfo=DEFAULT_TZ),
+    ]
+    assert result.column(4) == pa.array([False, False, True], type=pa.bool_())
+
+    # Test multiple arguments
+    result_df = df_with_nulls.select(
+        f.coalesce(column("a"), literal(None), literal("fallback")).alias(
+            "multi_coalesce"
+        )
+    )
+    result = result_df.collect()[0]
+    assert result.column(0) == pa.array(
+        ["Hello", "fallback", "!"], type=pa.string_view()
+    )
