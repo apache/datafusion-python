@@ -27,6 +27,36 @@ from typing import (
 )
 
 
+def _validate_positive_int(value: Any, param_name: str) -> None:
+    """Validate that a parameter is a positive integer.
+
+    Args:
+        value: The value to validate
+        param_name: Name of the parameter (used in error message)
+
+    Raises:
+        ValueError: If the value is not a positive integer
+    """
+    if not isinstance(value, int) or value <= 0:
+        msg = f"{param_name} must be a positive integer"
+        raise ValueError(msg)
+
+
+def _validate_bool(value: Any, param_name: str) -> None:
+    """Validate that a parameter is a boolean.
+
+    Args:
+        value: The value to validate
+        param_name: Name of the parameter (used in error message)
+
+    Raises:
+        TypeError: If the value is not a boolean
+    """
+    if not isinstance(value, bool):
+        msg = f"{param_name} must be a boolean"
+        raise TypeError(msg)
+
+
 @runtime_checkable
 class CellFormatter(Protocol):
     """Protocol for cell value formatters."""
@@ -91,6 +121,9 @@ class DataFrameHtmlFormatter:
         max_cell_length: Maximum characters to display in a cell before truncation
         max_width: Maximum width of the HTML table in pixels
         max_height: Maximum height of the HTML table in pixels
+        max_memory_bytes: Maximum memory in bytes for rendered data (default: 2MB)
+        min_rows_display: Minimum number of rows to display
+        repr_rows: Default number of rows to display in repr output
         enable_cell_expansion: Whether to add expand/collapse buttons for long cell
           values
         custom_css: Additional CSS to include in the HTML output
@@ -108,6 +141,9 @@ class DataFrameHtmlFormatter:
         max_cell_length: int = 25,
         max_width: int = 1000,
         max_height: int = 300,
+        max_memory_bytes: int = 2 * 1024 * 1024,  # 2 MB
+        min_rows_display: int = 20,
+        repr_rows: int = 10,
         enable_cell_expansion: bool = True,
         custom_css: Optional[str] = None,
         show_truncation_message: bool = True,
@@ -124,6 +160,12 @@ class DataFrameHtmlFormatter:
             Maximum width of the displayed table in pixels.
         max_height : int, default 300
             Maximum height of the displayed table in pixels.
+        max_memory_bytes : int, default 2097152 (2MB)
+            Maximum memory in bytes for rendered data.
+        min_rows_display : int, default 20
+            Minimum number of rows to display.
+        repr_rows : int, default 10
+            Default number of rows to display in repr output.
         enable_cell_expansion : bool, default True
             Whether to allow cells to expand when clicked.
         custom_css : str, optional
@@ -139,7 +181,8 @@ class DataFrameHtmlFormatter:
         Raises:
         ------
         ValueError
-            If max_cell_length, max_width, or max_height is not a positive integer.
+            If max_cell_length, max_width, max_height, max_memory_bytes,
+            min_rows_display, or repr_rows is not a positive integer.
         TypeError
             If enable_cell_expansion, show_truncation_message, or use_shared_styles is
             not a boolean,
@@ -148,27 +191,17 @@ class DataFrameHtmlFormatter:
             protocol.
         """
         # Validate numeric parameters
-
-        if not isinstance(max_cell_length, int) or max_cell_length <= 0:
-            msg = "max_cell_length must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_width, int) or max_width <= 0:
-            msg = "max_width must be a positive integer"
-            raise ValueError(msg)
-        if not isinstance(max_height, int) or max_height <= 0:
-            msg = "max_height must be a positive integer"
-            raise ValueError(msg)
+        _validate_positive_int(max_cell_length, "max_cell_length")
+        _validate_positive_int(max_width, "max_width")
+        _validate_positive_int(max_height, "max_height")
+        _validate_positive_int(max_memory_bytes, "max_memory_bytes")
+        _validate_positive_int(min_rows_display, "min_rows_display")
+        _validate_positive_int(repr_rows, "repr_rows")
 
         # Validate boolean parameters
-        if not isinstance(enable_cell_expansion, bool):
-            msg = "enable_cell_expansion must be a boolean"
-            raise TypeError(msg)
-        if not isinstance(show_truncation_message, bool):
-            msg = "show_truncation_message must be a boolean"
-            raise TypeError(msg)
-        if not isinstance(use_shared_styles, bool):
-            msg = "use_shared_styles must be a boolean"
-            raise TypeError(msg)
+        _validate_bool(enable_cell_expansion, "enable_cell_expansion")
+        _validate_bool(show_truncation_message, "show_truncation_message")
+        _validate_bool(use_shared_styles, "use_shared_styles")
 
         # Validate custom_css
         if custom_css is not None and not isinstance(custom_css, str):
@@ -183,6 +216,9 @@ class DataFrameHtmlFormatter:
         self.max_cell_length = max_cell_length
         self.max_width = max_width
         self.max_height = max_height
+        self.max_memory_bytes = max_memory_bytes
+        self.min_rows_display = min_rows_display
+        self.repr_rows = repr_rows
         self.enable_cell_expansion = enable_cell_expansion
         self.custom_css = custom_css
         self.show_truncation_message = show_truncation_message
@@ -597,6 +633,9 @@ def configure_formatter(**kwargs: Any) -> None:
         **kwargs: Formatter configuration parameters like max_cell_length,
                  max_width, max_height, enable_cell_expansion, etc.
 
+    Raises:
+        ValueError: If any invalid parameters are provided
+
     Example:
         >>> from datafusion.html_formatter import configure_formatter
         >>> configure_formatter(
@@ -606,6 +645,31 @@ def configure_formatter(**kwargs: Any) -> None:
         ...     use_shared_styles=True
         ... )
     """
+    # Valid parameters accepted by DataFrameHtmlFormatter
+    valid_params = {
+        "max_cell_length",
+        "max_width",
+        "max_height",
+        "max_memory_bytes",
+        "min_rows_display",
+        "repr_rows",
+        "enable_cell_expansion",
+        "custom_css",
+        "show_truncation_message",
+        "style_provider",
+        "use_shared_styles",
+    }
+
+    # Check for invalid parameters
+    invalid_params = set(kwargs) - valid_params
+    if invalid_params:
+        msg = (
+            f"Invalid formatter parameters: {', '.join(invalid_params)}. "
+            f"Valid parameters are: {', '.join(valid_params)}"
+        )
+        raise ValueError(msg)
+
+    # Create and set formatter with validated parameters
     set_formatter(DataFrameHtmlFormatter(**kwargs))
 
 

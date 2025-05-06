@@ -42,6 +42,8 @@ from datafusion.html_formatter import (
 )
 from pyarrow.csv import write_csv
 
+MB = 1024 * 1024
+
 
 @pytest.fixture
 def ctx():
@@ -148,6 +150,31 @@ def null_df():
     )
 
     return ctx.create_dataframe([[batch]])
+
+
+# custom style for testing with html formatter
+class CustomStyleProvider:
+    def get_cell_style(self) -> str:
+        return (
+            "background-color: #f5f5f5; color: #333; padding: 8px; border: "
+            "1px solid #ddd;"
+        )
+
+    def get_header_style(self) -> str:
+        return (
+            "background-color: #4285f4; color: white; font-weight: bold; "
+            "padding: 10px; border: 1px solid #3367d6;"
+        )
+
+
+def count_table_rows(html_content: str) -> int:
+    """Count the number of table rows in HTML content.
+    Args:
+        html_content: HTML string to analyze
+    Returns:
+        Number of table rows found (number of <tr> tags)
+    """
+    return len(re.findall(r"<tr", html_content))
 
 
 def test_select(df):
@@ -704,11 +731,10 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
     assert df_2.sort(col_a).to_pydict() == expected
 
 
-def test_html_formatter_configuration(df, clean_formatter_state):
+def test_html_formatter_cell_dimension(df, clean_formatter_state):
     """Test configuring the HTML formatter with different options."""
     # Configure with custom settings
     configure_formatter(
-        max_cell_length=5,
         max_width=500,
         max_height=200,
         enable_cell_expansion=False,
@@ -725,19 +751,6 @@ def test_html_formatter_configuration(df, clean_formatter_state):
 
 def test_html_formatter_custom_style_provider(df, clean_formatter_state):
     """Test using custom style providers with the HTML formatter."""
-
-    class CustomStyleProvider:
-        def get_cell_style(self) -> str:
-            return (
-                "background-color: #f5f5f5; color: #333; padding: 8px; border: "
-                "1px solid #ddd;"
-            )
-
-        def get_header_style(self) -> str:
-            return (
-                "background-color: #4285f4; color: white; font-weight: bold; "
-                "padding: 10px; border: 1px solid #3367d6;"
-            )
 
     # Configure with custom style provider
     configure_formatter(style_provider=CustomStyleProvider())
@@ -948,6 +961,141 @@ def test_html_formatter_complex_customization(df, clean_formatter_state):
     assert "background-color: #111" in html_output
     assert ".datafusion-table" in html_output
     assert "color: #5af" in html_output  # Even numbers
+
+
+def test_html_formatter_memory(df, clean_formatter_state):
+    """Test the memory and row control parameters in DataFrameHtmlFormatter."""
+    configure_formatter(max_memory_bytes=10, min_rows_display=1)
+    html_output = df._repr_html_()
+
+    # Count the number of table rows in the output
+    tr_count = count_table_rows(html_output)
+    # With a tiny memory limit of 10 bytes, the formatter should display
+    # the minimum number of rows (1) plus a message about truncation
+    assert tr_count == 2  # 1 for header row, 1 for data row
+    assert "data truncated" in html_output.lower()
+
+    configure_formatter(max_memory_bytes=10 * MB, min_rows_display=1)
+    html_output = df._repr_html_()
+    # With larger memory limit and min_rows=2, should display all rows
+    tr_count = count_table_rows(html_output)
+    # Table should have header row (1) + 3 data rows = 4 rows
+    assert tr_count == 4
+    # No truncation message should appear
+    assert "data truncated" not in html_output.lower()
+
+
+def test_html_formatter_repr_rows(df, clean_formatter_state):
+    configure_formatter(min_rows_display=2, repr_rows=2)
+    html_output = df._repr_html_()
+
+    tr_count = count_table_rows(html_output)
+    # Tabe should have header row (1) + 2 data rows = 3 rows
+    assert tr_count == 3
+
+    configure_formatter(min_rows_display=2, repr_rows=3)
+    html_output = df._repr_html_()
+
+    tr_count = count_table_rows(html_output)
+    # Tabe should have header row (1) + 3 data rows = 4 rows
+    assert tr_count == 4
+
+
+def test_html_formatter_validation():
+    # Test validation for invalid parameters
+
+    with pytest.raises(ValueError, match="max_cell_length must be a positive integer"):
+        DataFrameHtmlFormatter(max_cell_length=0)
+
+    with pytest.raises(ValueError, match="max_width must be a positive integer"):
+        DataFrameHtmlFormatter(max_width=0)
+
+    with pytest.raises(ValueError, match="max_height must be a positive integer"):
+        DataFrameHtmlFormatter(max_height=0)
+
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=0)
+
+    with pytest.raises(ValueError, match="max_memory_bytes must be a positive integer"):
+        DataFrameHtmlFormatter(max_memory_bytes=-100)
+
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=0)
+
+    with pytest.raises(ValueError, match="min_rows_display must be a positive integer"):
+        DataFrameHtmlFormatter(min_rows_display=-5)
+
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=0)
+
+    with pytest.raises(ValueError, match="repr_rows must be a positive integer"):
+        DataFrameHtmlFormatter(repr_rows=-10)
+
+
+def test_configure_formatter(df, clean_formatter_state):
+    """Test using custom style providers with the HTML formatter and configured
+    parameters."""
+
+    # these are non-default values
+    max_cell_length = 10
+    max_width = 500
+    max_height = 30
+    max_memory_bytes = 3 * MB
+    min_rows_display = 2
+    repr_rows = 2
+    enable_cell_expansion = False
+    show_truncation_message = False
+    use_shared_styles = False
+
+    reset_formatter()
+    formatter_default = get_formatter()
+
+    assert formatter_default.max_cell_length != max_cell_length
+    assert formatter_default.max_width != max_width
+    assert formatter_default.max_height != max_height
+    assert formatter_default.max_memory_bytes != max_memory_bytes
+    assert formatter_default.min_rows_display != min_rows_display
+    assert formatter_default.repr_rows != repr_rows
+    assert formatter_default.enable_cell_expansion != enable_cell_expansion
+    assert formatter_default.show_truncation_message != show_truncation_message
+    assert formatter_default.use_shared_styles != use_shared_styles
+
+    # Configure with custom style provider and additional parameters
+    configure_formatter(
+        max_cell_length=max_cell_length,
+        max_width=max_width,
+        max_height=max_height,
+        max_memory_bytes=max_memory_bytes,
+        min_rows_display=min_rows_display,
+        repr_rows=repr_rows,
+        enable_cell_expansion=enable_cell_expansion,
+        show_truncation_message=show_truncation_message,
+        use_shared_styles=use_shared_styles,
+    )
+    formatter_custom = get_formatter()
+    assert formatter_custom.max_cell_length == max_cell_length
+    assert formatter_custom.max_width == max_width
+    assert formatter_custom.max_height == max_height
+    assert formatter_custom.max_memory_bytes == max_memory_bytes
+    assert formatter_custom.min_rows_display == min_rows_display
+    assert formatter_custom.repr_rows == repr_rows
+    assert formatter_custom.enable_cell_expansion == enable_cell_expansion
+    assert formatter_custom.show_truncation_message == show_truncation_message
+    assert formatter_custom.use_shared_styles == use_shared_styles
+
+
+def test_configure_formatter_invalid_params(clean_formatter_state):
+    """Test that configure_formatter rejects invalid parameters."""
+    with pytest.raises(ValueError, match="Invalid formatter parameters"):
+        configure_formatter(invalid_param=123)
+
+    # Test with multiple parameters, one valid and one invalid
+    with pytest.raises(ValueError, match="Invalid formatter parameters"):
+        configure_formatter(max_width=500, not_a_real_param="test")
+
+    # Test with multiple invalid parameters
+    with pytest.raises(ValueError, match="Invalid formatter parameters"):
+        configure_formatter(fake_param1="test", fake_param2=456)
 
 
 def test_get_dataframe(tmp_path):
@@ -1538,9 +1686,8 @@ def test_dataframe_transform(df):
     assert result["new_col"] == [3 for _i in range(3)]
 
 
-def test_dataframe_repr_html_structure(df) -> None:
+def test_dataframe_repr_html_structure(df, clean_formatter_state) -> None:
     """Test that DataFrame._repr_html_ produces expected HTML output structure."""
-    import re
 
     output = df._repr_html_()
 
@@ -1570,7 +1717,7 @@ def test_dataframe_repr_html_structure(df) -> None:
     assert len(body_matches) == 1, "Expected pattern of values not found in HTML output"
 
 
-def test_dataframe_repr_html_values(df):
+def test_dataframe_repr_html_values(df, clean_formatter_state):
     """Test that DataFrame._repr_html_ contains the expected data values."""
     html = df._repr_html_()
     assert html is not None
