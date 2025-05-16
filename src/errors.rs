@@ -28,7 +28,7 @@ pub type PyDataFusionResult<T> = std::result::Result<T, PyDataFusionError>;
 
 #[derive(Debug)]
 pub enum PyDataFusionError {
-    ExecutionError(InnerDataFusionError),
+    ExecutionError(Box<InnerDataFusionError>),
     ArrowError(ArrowError),
     Common(String),
     PythonError(PyErr),
@@ -55,7 +55,7 @@ impl From<ArrowError> for PyDataFusionError {
 
 impl From<InnerDataFusionError> for PyDataFusionError {
     fn from(err: InnerDataFusionError) -> PyDataFusionError {
-        PyDataFusionError::ExecutionError(err)
+        PyDataFusionError::ExecutionError(Box::new(err))
     }
 }
 

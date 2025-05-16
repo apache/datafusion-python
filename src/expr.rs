@@ -37,9 +37,7 @@ use datafusion::logical_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
-use crate::errors::{
-    py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError, PyDataFusionResult,
-};
+use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionResult};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -622,11 +620,11 @@ impl PyExpr {
                 order_by,
                 null_treatment,
             ),
-            _ => Err(
-                PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
-                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
-                ))
-            ),
+            _ => Err(datafusion::error::DataFusionError::Plan(format!(
+                "Using {} with `over` is not allowed. Must use an aggregate or window function.",
+                self.expr.variant_name()
+            ))
+            .into()),
         }
     }
 }
