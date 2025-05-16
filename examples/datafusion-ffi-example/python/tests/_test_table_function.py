@@ -88,12 +88,8 @@ class PythonTableFunction:
         return MyTableProvider(*args)
 
 
-def test_python_table_function():
-    ctx = SessionContext()
-    table_func = PythonTableFunction()
-    table_udtf = udtf(table_func, "my_table_func")
-    ctx.register_udtf(table_udtf)
-    result = ctx.sql("select * from my_table_func(3,2,4)").collect()
+def common_table_function_test(test_ctx: SessionContext) -> None:
+    result = test_ctx.sql("select * from my_table_func(3,2,4)").collect()
 
     assert len(result) == 4
     assert result[0].num_columns == 3
@@ -108,3 +104,31 @@ def test_python_table_function():
     ]
 
     assert result == expected
+
+
+def test_python_table_function():
+    ctx = SessionContext()
+    table_func = PythonTableFunction()
+    table_udtf = udtf(table_func, "my_table_func")
+    ctx.register_udtf(table_udtf)
+
+    common_table_function_test(ctx)
+
+
+def test_python_table_function_decorator():
+    ctx = SessionContext()
+
+    @udtf("my_table_func")
+    def my_udtf(
+        num_cols: Expr, num_rows: Expr, num_batches: Expr
+    ) -> TableProviderExportable:
+        args = [
+            num_cols.to_variant().value_i64(),
+            num_rows.to_variant().value_i64(),
+            num_batches.to_variant().value_i64(),
+        ]
+        return MyTableProvider(*args)
+
+    ctx.register_udtf(my_udtf)
+
+    common_table_function_test(ctx)

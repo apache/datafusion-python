@@ -791,8 +791,9 @@ class TableFunction:
             # Case 1: Used as a function, require the first parameter to be callable
             return TableFunction._create_table_udf(*args, **kwargs)
         if args and hasattr(args[0], "__datafusion_table_function__"):
+            # Case 2: We have a datafusion FFI provided function
             return TableFunction(args[1], args[0])
-        # Case 2: Used as a decorator with parameters
+        # Case 3: Used as a decorator with parameters
         return TableFunction._create_table_udf_decorator(*args, **kwargs)
 
     @staticmethod
@@ -807,9 +808,21 @@ class TableFunction:
 
         return TableFunction(name, func)
 
+    @staticmethod
+    def _create_table_udf_decorator(
+            name: Optional[str] = None,
+    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
+        """Create a decorator for a WindowUDF."""
+
+        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
+            return TableFunction._create_table_udf(func, name)
+
+        return decorator
+
     def __repr__(self) -> str:
         """User printable representation."""
         return self._udtf.__repr__()
+
 
 # Convenience exports so we can import instead of treating as
 # variables at the package root
