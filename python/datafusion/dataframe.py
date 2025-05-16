@@ -37,6 +37,8 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
+from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
 
@@ -52,8 +54,6 @@ if TYPE_CHECKING:
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
-
-from datafusion.expr import Expr, SortExpr, sort_or_default
 
 
 # excerpt from deltalake
@@ -869,3 +869,25 @@ class DataFrame:
             DataFrame: After applying func to the original dataframe.
         """
         return func(self, *args)
+
+    def fill_null(self, value: Any, subset: list[str] | None = None) -> DataFrame:
+        """Fill null values in specified columns with a value.
+
+        Args:
+            value: Value to replace nulls with. Will be cast to match column type.
+            subset: Optional list of column names to fill. If None, fills all columns.
+
+        Returns:
+            DataFrame with null values replaced where type casting is possible
+
+        Examples:
+            >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
+            >>> # Fill nulls in specific string columns
+            >>> df = df.fill_null("missing", subset=["name", "category"])
+
+        Notes:
+            - Only fills nulls in columns where the value can be cast to the column type
+            - For columns where casting fails, the original column is kept unchanged
+            - For columns not in subset, the original column is kept unchanged
+        """
+        return DataFrame(self.df.fill_null(value, subset))

@@ -47,7 +47,9 @@ use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{
+    get_tokio_runtime, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+};
 use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
@@ -800,6 +802,25 @@ impl PyDataFrame {
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
         Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+    }
+
+    /// Fill null values with a specified value for specific columns
+    #[pyo3(signature = (value, columns=None))]
+    fn fill_null(
+        &self,
+        value: PyObject,
+        columns: Option<Vec<PyBackedStr>>,
+        py: Python,
+    ) -> PyDataFusionResult<Self> {
+        let scalar_value = py_obj_to_scalar_value(py, value)?;
+
+        let cols = match columns {
+            Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
+            None => Vec::new(), // Empty vector means fill null for all columns
+        };
+
+        let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
+        Ok(Self::new(df))
     }
 }
 
