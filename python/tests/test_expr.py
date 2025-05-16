@@ -376,7 +376,7 @@ def test_alias_with_metadata(df):
         ),
         pytest.param(
             # Valid values of acosh must be >= 1.0
-            functions.round((col("a").abs() + lit(1.0)).abs().acosh(), lit(4)),
+            functions.round((col("a").abs() + lit(1.0)).acosh(), lit(4)),
             pa.array([1.1588, 0.9624, 0.0, None], type=pa.float64()),
             id="acosh",
         ),
@@ -717,7 +717,6 @@ def test_alias_with_metadata(df):
     ],
 )
 def test_expr_functions(ctx, function, expected_result):
-    ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
         [
             pa.array([-0.75, 0.5, 0.0, None], type=pa.float64()),
@@ -738,4 +737,4 @@ def test_expr_functions(ctx, function, expected_result):
     result = df.collect()
 
     assert len(result) == 1
-    assert result[0].column(0) == expected_result
+    assert result[0].column(0).equals(expected_result)
