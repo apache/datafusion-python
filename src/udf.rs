@@ -17,6 +17,8 @@
 
 use std::sync::Arc;
 
+use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
+use pyo3::types::PyCapsule;
 use pyo3::{prelude::*, types::PyTuple};
 
 use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
@@ -29,8 +31,9 @@ use datafusion::logical_expr::ScalarUDF;
 use datafusion::logical_expr::{create_udf, ColumnarValue};
 
 use crate::errors::to_datafusion_err;
+use crate::errors::{py_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
-use crate::utils::parse_volatility;
+use crate::utils::{parse_volatility, validate_pycapsule};
 
 /// Create a Rust callable function from a python function that expects pyarrow arrays
 fn pyarrow_function_to_rust(
@@ -103,6 +106,26 @@ impl PyScalarUDF {
             to_scalar_function_impl(func),
         );
         Ok(Self { function })
+    }
+
+    #[staticmethod]
+    pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if func.hasattr("__datafusion_scalar_udf__")? {
+            let capsule = func.getattr("__datafusion_scalar_udf__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_scalar_udf")?;
+
+            let udf = unsafe { capsule.reference::<FFI_ScalarUDF>() };
+            let udf: ForeignScalarUDF = udf.try_into()?;
+
+            Ok(Self {
+                function: udf.into(),
+            })
+        } else {
+            Err(crate::errors::PyDataFusionError::Common(
+                "__datafusion_scalar_udf__ does not exist on ScalarUDF object.".to_string(),
+            ))
+        }
     }
 
     /// creates a new PyExpr with the call of the udf

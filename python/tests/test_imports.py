@@ -107,7 +107,7 @@ def test_class_module_is_datafusion():
         AggregateUDF,
         ScalarUDF,
     ]:
-        assert klass.__module__ == "datafusion.udf"
+        assert klass.__module__ == "datafusion.user_defined"
 
     # expressions
     for klass in [Expr, Column, Literal, BinaryExpr, AggregateFunction]:

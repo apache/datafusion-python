@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol, TypeVar, overload
 
 import pyarrow as pa
 
@@ -77,6 +77,15 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+class ScalarUDFExportable(Protocol):
+    """Type hint for object that has __datafusion_table_provider__ PyCapsule.
+
+    https://datafusion.apache.org/python/user-guide/io/table_provider.html
+    """
+
+    def __datafusion_scalar_udf__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -96,6 +105,9 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
+        if hasattr(func, "__datafusion_scalar_udf__"):
+            self._udf = df_internal.ScalarUDF.from_pycapsule(func)
+            return
         if isinstance(input_types, pa.DataType):
             input_types = [input_types]
         self._udf = df_internal.ScalarUDF(
@@ -130,6 +142,10 @@ class ScalarUDF:
         name: Optional[str] = None,
     ) -> ScalarUDF: ...
 
+    @overload
+    @staticmethod
+    def udf(func: ScalarUDFExportable) -> ScalarUDF: ...
+
     @staticmethod
     def udf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Function (UDF).
@@ -137,14 +153,16 @@ class ScalarUDF:
         This class can be used both as a **function** and as a **decorator**.
 
         Usage:
-            - **As a function**: Call `udf(func, input_types, return_type, volatility,
-              name)`.
-            - **As a decorator**: Use `@udf(input_types, return_type, volatility,
-              name)`. In this case, do **not** pass `func` explicitly.
+            - **As a function**: Call :py:func:`udf(func, input_types, return_type, volatility, name)`.
+            - **As a decorator**: Use :py:func:`@udf(input_types, return_type, volatility, name)`.
+              In this case, do **not** pass `func` explicitly.
 
         Args:
             func (Callable, optional): **Only needed when calling as a function.**
-                Skip this argument when using `udf` as a decorator.
+                Skip this argument when using `udf` as a decorator. If you have a Rust
+                backed ScalarUDF within a PyCapsule, you can pass this parameter
+                and ignore the rest. They will be determined directly from the
+                underlying function. See the online documentation for more information.
             input_types (list[pa.DataType]): The data types of the arguments
                 to `func`. This list must be of the same length as the number of
                 arguments.
@@ -156,9 +174,8 @@ class ScalarUDF:
             A user-defined function that can be used in SQL expressions,
             data aggregation, or window function calls.
 
-        Example:
-            **Using `udf` as a function:**
-            ```
+        Example: **Using `udf` as a function**::
+
             def double_func(x):
                 return x * 2
             double_udf = udf(double_func, [pa.int32()], pa.int32(),
@@ -170,8 +187,7 @@ class ScalarUDF:
             @udf([pa.int32()], pa.int32(), "volatile", "double_it")
             def double_udf(x):
                 return x * 2
-            ```
-        """
+        """  # noqa: E501 W505
 
         def _function(
             func: Callable[..., _R],
@@ -215,11 +231,30 @@ class ScalarUDF:
 
             return decorator
 
+        if hasattr(args[0], "__datafusion_scalar_udf__"):
+            return ScalarUDF.from_pycapsule(args[0])
+
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return _function(*args, **kwargs)
         # Case 2: Used as a decorator with parameters
         return _decorator(*args, **kwargs)
+
+    @staticmethod
+    def from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF:
+        """Create a Scalar UDF from ScalarUDF PyCapsule object.
+
+        This function will instantiate a Scalar UDF that uses a DataFusion
+        ScalarUDF that is exported via the FFI bindings.
+        """
+        name = str(udf.__class__)
+        return ScalarUDF(
+            name=name,
+            func=func,
+            input_types=None,
+            return_type=None,
+            volatility=None,
+        )
 
 
 class Accumulator(metaclass=ABCMeta):
@@ -310,20 +345,18 @@ class AggregateUDF:
         data aggregation or window function calls.
 
         Usage:
-            - **As a function**: Call `udaf(accum, input_types, return_type, state_type,
-                volatility, name)`.
-            - **As a decorator**: Use `@udaf(input_types, return_type, state_type,
-                volatility, name)`.
-            When using `udaf` as a decorator, **do not pass `accum` explicitly**.
+            - **As a function**: Call :py:func:`udaf(accum, input_types, return_type, state_type, volatility, name)`.
+            - **As a decorator**: Use :py:func:`@udaf(input_types, return_type, state_type, volatility, name)`.
+              When using `udaf` as a decorator, **do not pass `accum` explicitly**.
 
         **Function example:**
 
-            If your `:py:class:Accumulator` can be instantiated with no arguments, you
-            can simply pass it's type as `accum`. If you need to pass additional
-            arguments to it's constructor, you can define a lambda or a factory method.
-            During runtime the `:py:class:Accumulator` will be constructed for every
-            instance in which this UDAF is used. The following examples are all valid.
-            ```
+        If your :py:class:`Accumulator` can be instantiated with no arguments, you
+        can simply pass it's type as `accum`. If you need to pass additional
+        arguments to it's constructor, you can define a lambda or a factory method.
+        During runtime the :py:class:`Accumulator` will be constructed for every
+        instance in which this UDAF is used. The following examples are all valid::
+
             import pyarrow as pa
             import pyarrow.compute as pc
 
@@ -352,14 +385,12 @@ class AggregateUDF:
                 "immutable")
             udaf3 = udaf(lambda: Summarize(20.0), pa.float64(), pa.float64(),
                 [pa.float64()], "immutable")
-            ```
 
-        **Decorator example:**
-            ```
+        **Decorator example:**::
+
             @udaf(pa.float64(), pa.float64(), [pa.float64()], "immutable")
             def udf4() -> Summarize:
                 return Summarize(10.0)
-            ```
 
         Args:
             accum: The accumulator python function. **Only needed when calling as a
@@ -373,7 +404,7 @@ class AggregateUDF:
         Returns:
             A user-defined aggregate function, which can be used in either data
             aggregation or window function calls.
-        """
+        """  # noqa: E501 W505
 
         def _function(
             accum: Callable[[], Accumulator],
@@ -653,8 +684,8 @@ class WindowUDF:
               name)`. When using `udwf` as a decorator, **do not pass `func`
               explicitly**.
 
-        **Function example:**
-            ```
+        **Function example:**::
+
             import pyarrow as pa
 
             class BiasedNumbers(WindowEvaluator):
@@ -672,14 +703,11 @@ class WindowUDF:
             udwf2 = udwf(bias_10, pa.int64(), pa.int64(), "immutable")
             udwf3 = udwf(lambda: BiasedNumbers(20), pa.int64(), pa.int64(), "immutable")
 
-            ```
+        **Decorator example:**::
 
-        **Decorator example:**
-            ```
             @udwf(pa.int64(), pa.int64(), "immutable")
             def biased_numbers() -> BiasedNumbers:
                 return BiasedNumbers(10)
-            ```
 
         Args:
             func: **Only needed when calling as a function. Skip this argument when
