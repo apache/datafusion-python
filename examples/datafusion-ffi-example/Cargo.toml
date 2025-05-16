@@ -24,9 +24,9 @@ edition = "2021"
 datafusion = { version = "47.0.0" }
 datafusion-ffi = { version = "47.0.0" }
 pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
-arrow = { version = "55" }
-arrow-array = { version = "55" }
-arrow-schema = { version = "55" }
+arrow = { version = "55.0.0" }
+arrow-array = { version = "55.0.0" }
+arrow-schema = { version = "55.0.0" }
 
 [build-dependencies]
 pyo3-build-config = "0.23"
