@@ -282,6 +282,29 @@ Module Contents
 
 
 
+   .. py:method:: fill_null(value: Any, subset: list[str] | None = None) -> DataFrame
+
+      Fill null values in specified columns with a value.
+
+      :param value: Value to replace nulls with. Will be cast to match column type.
+      :param subset: Optional list of column names to fill. If None, fills all columns.
+
+      :returns: DataFrame with null values replaced where type casting is possible
+
+      .. rubric:: Examples
+
+      >>> df = df.fill_null(0)  # Fill all nulls with 0 where possible
+      >>> # Fill nulls in specific string columns
+      >>> df = df.fill_null("missing", subset=["name", "category"])
+
+      .. rubric:: Notes
+
+      - Only fills nulls in columns where the value can be cast to the column type
+      - For columns where casting fails, the original column is kept unchanged
+      - For columns not in subset, the original column is kept unchanged
+
+
+
    .. py:method:: filter(*predicates: datafusion.expr.Expr) -> DataFrame
 
       Return a DataFrame for which ``predicate`` evaluates to ``True``.
