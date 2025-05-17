@@ -15,22 +15,28 @@
 # specific language governing permissions and limitations
 # under the License.
 
-[package]
-name = "ffi-table-provider"
-version = "0.1.0"
-edition = "2021"
+from __future__ import annotations
 
-[dependencies]
-datafusion = { version = "45.0.0" }
-datafusion-ffi = { version = "45.0.0" }
-pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] }
-arrow = { version = "54" }
-arrow-array = { version = "54" }
-arrow-schema = { version = "54" }
+import pyarrow as pa
+from datafusion import SessionContext
+from datafusion_ffi_example import MyTableProvider
 
-[build-dependencies]
-pyo3-build-config = "0.23"
 
-[lib]
-name = "ffi_table_provider"
-crate-type = ["cdylib", "rlib"]
+def test_table_loading():
+    ctx = SessionContext()
+    table = MyTableProvider(3, 2, 4)
+    ctx.register_table_provider("t", table)
+    result = ctx.table("t").collect()
+
+    assert len(result) == 4
+    assert result[0].num_columns == 3
+
+    result = [r.column(0) for r in result]
+    expected = [
+        pa.array([0, 1], type=pa.int32()),
+        pa.array([2, 3, 4], type=pa.int32()),
+        pa.array([4, 5, 6, 7], type=pa.int32()),
+        pa.array([6, 7, 8, 9, 10], type=pa.int32()),
+    ]
+
+    assert result == expected
