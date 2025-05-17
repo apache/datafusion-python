@@ -22,7 +22,7 @@ import pyarrow as pa
 from datafusion import col, lit, udwf
 from datafusion import functions as f
 from datafusion.expr import WindowFrame
-from datafusion.udf import WindowEvaluator
+from datafusion.user_defined import WindowEvaluator
 
 # This example creates five different examples of user defined window functions in order
 # to demonstrate the variety of ways a user may need to implement.
