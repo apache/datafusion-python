@@ -55,9 +55,11 @@ from .user_defined import (
     Accumulator,
     AggregateUDF,
     ScalarUDF,
+    TableFunction,
     WindowUDF,
     udaf,
     udf,
+    udtf,
     udwf,
 )
 
@@ -82,6 +84,7 @@ __all__ = [
     "SessionConfig",
     "SessionContext",
     "Table",
+    "TableFunction",
     "WindowFrame",
     "WindowUDF",
     "col",
@@ -100,6 +103,7 @@ __all__ = [
     "substrait",
     "udaf",
     "udf",
+    "udtf",
     "udwf",
     "unparser",
 ]

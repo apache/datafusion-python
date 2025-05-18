@@ -34,6 +34,7 @@ use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
+use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -60,7 +61,7 @@ use crate::{
 // this is an interim implementation
 #[pyclass(name = "TableProvider", module = "datafusion")]
 pub struct PyTableProvider {
-    provider: Arc<dyn TableProvider>,
+    provider: Arc<dyn TableProvider + Send>,
 }
 
 impl PyTableProvider {
@@ -71,6 +72,21 @@ impl PyTableProvider {
     pub fn as_table(&self) -> PyTable {
         let table_provider: Arc<dyn TableProvider> = self.provider.clone();
         PyTable::new(table_provider)
+    }
+}
+
+#[pymethods]
+impl PyTableProvider {
+    fn __datafusion_table_provider__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = CString::new("datafusion_table_provider").unwrap();
+
+        let runtime = get_tokio_runtime().0.handle().clone();
+        let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
+
+        PyCapsule::new(py, provider, Some(name.clone()))
     }
 }
 

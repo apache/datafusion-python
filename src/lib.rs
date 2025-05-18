@@ -60,6 +60,7 @@ pub mod substrait;
 mod udaf;
 #[allow(clippy::borrow_deref_ref)]
 mod udf;
+pub mod udtf;
 mod udwf;
 pub mod utils;
 
@@ -88,6 +89,7 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<udf::PyScalarUDF>()?;
     m.add_class::<udaf::PyAggregateUDF>()?;
     m.add_class::<udwf::PyWindowUDF>()?;
+    m.add_class::<udtf::PyTableFunction>()?;
     m.add_class::<config::PyConfig>()?;
     m.add_class::<sql::logical::PyLogicalPlan>()?;
     m.add_class::<physical_plan::PyExecutionPlan>()?;

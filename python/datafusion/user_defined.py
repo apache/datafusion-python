@@ -748,8 +748,86 @@ class WindowUDF:
         return decorator
 
 
+class TableFunction:
+    """Class for performing user-defined table functions (UDTF).
+
+    Table functions generate new table providers based on the
+    input expressions.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        func: Callable[[], any],
+    ) -> None:
+        """Instantiate a user-defined table function (UDTF).
+
+        See :py:func:`udtf` for a convenience function and argument
+        descriptions.
+        """
+        self._udtf = df_internal.TableFunction(name, func)
+
+    def __call__(self, *args: Expr) -> Any:
+        """Execute the UDTF and return a table provider."""
+        args_raw = [arg.expr for arg in args]
+        return self._udtf.__call__(*args_raw)
+
+    @overload
+    @staticmethod
+    def udtf(
+        name: str,
+    ) -> Callable[..., Any]: ...
+
+    @overload
+    @staticmethod
+    def udtf(
+        func: Callable[[], Any],
+        name: str,
+    ) -> TableFunction: ...
+
+    @staticmethod
+    def udtf(*args: Any, **kwargs: Any):
+        """Create a new User-Defined Table Function (UDTF)."""
+        if args and callable(args[0]):
+            # Case 1: Used as a function, require the first parameter to be callable
+            return TableFunction._create_table_udf(*args, **kwargs)
+        if args and hasattr(args[0], "__datafusion_table_function__"):
+            # Case 2: We have a datafusion FFI provided function
+            return TableFunction(args[1], args[0])
+        # Case 3: Used as a decorator with parameters
+        return TableFunction._create_table_udf_decorator(*args, **kwargs)
+
+    @staticmethod
+    def _create_table_udf(
+        func: Callable[..., Any],
+        name: str,
+    ) -> TableFunction:
+        """Create a TableFunction instance from function arguments."""
+        if not callable(func):
+            msg = "`func` must be callable."
+            raise TypeError(msg)
+
+        return TableFunction(name, func)
+
+    @staticmethod
+    def _create_table_udf_decorator(
+        name: Optional[str] = None,
+    ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
+        """Create a decorator for a WindowUDF."""
+
+        def decorator(func: Callable[[], WindowEvaluator]) -> Callable[..., Expr]:
+            return TableFunction._create_table_udf(func, name)
+
+        return decorator
+
+    def __repr__(self) -> str:
+        """User printable representation."""
+        return self._udtf.__repr__()
+
+
 # Convenience exports so we can import instead of treating as
 # variables at the package root
 udf = ScalarUDF.udf
 udaf = AggregateUDF.udaf
 udwf = WindowUDF.udwf
+udtf = TableFunction.udtf

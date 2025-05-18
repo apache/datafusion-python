@@ -91,9 +91,9 @@ jobs:
 
       - name: FFI unit tests
         run: |
-          cd examples/ffi-table-provider
+          cd examples/datafusion-ffi-example
           uv run --no-project maturin develop --uv
-          uv run --no-project pytest python/tests/_test_table_provider.py
+          uv run --no-project pytest python/tests/_test*.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset

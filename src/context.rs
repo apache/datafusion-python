@@ -43,6 +43,7 @@ use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
+use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
@@ -388,6 +389,12 @@ impl PySessionContext {
             },
         )?;
         Ok(())
+    }
+
+    pub fn register_udtf(&mut self, func: PyTableFunction) {
+        let name = func.name.clone();
+        let func = Arc::new(func);
+        self.ctx.register_udtf(&name, func);
     }
 
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
