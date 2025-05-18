@@ -83,6 +83,7 @@ impl PyTableFunction {
     }
 }
 
+#[allow(clippy::result_large_err)]
 fn call_python_table_function(
     func: &Arc<PyObject>,
     args: &[Expr],
