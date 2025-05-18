@@ -786,6 +786,12 @@ Module Contents
 
 
 
+   .. py:method:: register_udtf(func: datafusion.user_defined.TableFunction) -> None
+
+      Register a user defined table function.
+
+
+
    .. py:method:: register_udwf(udwf: datafusion.user_defined.WindowUDF) -> None
 
       Register a user-defined window function (UDWF) with the context.

@@ -471,9 +471,13 @@
 </li>
         <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.__call__">(datafusion.ScalarUDF method)</a>
 </li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.__call__">(datafusion.TableFunction method)</a>
+</li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.__call__">(datafusion.user_defined.AggregateUDF method)</a>
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.__call__">(datafusion.user_defined.ScalarUDF method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction.__call__">(datafusion.user_defined.TableFunction method)</a>
 </li>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.__call__">(datafusion.user_defined.WindowUDF method)</a>
 </li>
@@ -591,6 +595,10 @@
 </li>
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.__repr__">(datafusion.plan.LogicalPlan method)</a>
 </li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.__repr__">(datafusion.TableFunction method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction.__repr__">(datafusion.user_defined.TableFunction method)</a>
+</li>
       </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__richcmp__">__richcmp__() (datafusion.Expr method)</a>
 
@@ -598,14 +606,14 @@
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__richcmp__">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rmod__">__rmod__ (datafusion.Expr attribute)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.__rmod__">(datafusion.expr.Expr attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__rmul__">__rmul__ (datafusion.Expr attribute)</a>
 
       <ul>
@@ -658,6 +666,18 @@
 </li>
       <li><a href="autoapi/datafusion/html_formatter/index.html#datafusion.html_formatter.DataFrameHtmlFormatter._build_table_header">_build_table_header() (datafusion.html_formatter.DataFrameHtmlFormatter method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._create_table_udf">_create_table_udf() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf">(datafusion.user_defined.TableFunction static method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._create_table_udf_decorator">_create_table_udf_decorator() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._create_table_udf_decorator">(datafusion.user_defined.TableFunction static method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._create_window_udf">_create_window_udf() (datafusion.user_defined.WindowUDF static method)</a>
 
       <ul>
@@ -738,6 +758,12 @@
 
       <ul>
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF._udf">(datafusion.user_defined.ScalarUDF attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction._udtf">_udtf (datafusion.TableFunction attribute)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction._udtf">(datafusion.user_defined.TableFunction attribute)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF._udwf">_udwf (datafusion.user_defined.WindowUDF attribute)</a>
@@ -2520,6 +2546,8 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udf">register_udf() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udtf">register_udtf() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udwf">register_udwf() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_view">register_view() (datafusion.context.SessionContext method)</a>
@@ -2852,6 +2880,12 @@
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_exist">table_exist() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction">TableFunction (class in datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction">(class in datafusion.user_defined)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable">TableProviderExportable (class in datafusion.context)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.TableScan">TableScan (in module datafusion.expr)</a>
@@ -2898,14 +2932,14 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.to_proto">(datafusion.plan.LogicalPlan method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/record_batch/index.html#datafusion.record_batch.RecordBatch.to_pyarrow">to_pyarrow() (datafusion.record_batch.RecordBatch method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.RecordBatch.to_pyarrow">(datafusion.RecordBatch method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pydict">to_pydict() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.to_pylist">to_pylist() (datafusion.dataframe.DataFrame method)</a>
@@ -2996,6 +3030,18 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.udf">(datafusion.user_defined.ScalarUDF static method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.udtf">udtf (in module datafusion)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.udtf">(in module datafusion.user_defined)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction.udtf">udtf() (datafusion.TableFunction static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.TableFunction.udtf">(datafusion.user_defined.TableFunction static method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.udwf">udwf (in module datafusion)</a>
 
       <ul>
@@ -3008,12 +3054,12 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.udwf">(datafusion.WindowUDF static method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.Compression.UNCOMPRESSED">UNCOMPRESSED (datafusion.dataframe.Compression attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Union">Union (in module datafusion.expr)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union">union() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.union_distinct">union_distinct() (datafusion.dataframe.DataFrame method)</a>

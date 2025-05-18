@@ -422,6 +422,11 @@
    </li>
   </ul>
  </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#table-functions">
+   Table Functions
+  </a>
+ </li>
 </ul>
 
 </nav>
@@ -686,6 +691,34 @@ information.</p></li>
 </pre></div>
 </div>
 </section>
+</section>
+<section id="table-functions">
+<h2>Table Functions<a class="headerlink" href="#table-functions" title="Link to this heading">¶</a></h2>
+<p>User Defined Table Functions are slightly different than the other functions
+described here. These functions take any number of <cite>Expr</cite> arguments, but only
+literal expressions are supported. Table functions must return a Table
+Provider as described in the ref:<cite>_io_custom_table_provider</cite> page.</p>
+<p>Once you have a table function, you can register it with the session context
+by using <a class="reference internal" href="../../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udtf" title="datafusion.context.SessionContext.register_udtf"><code class="xref py py-func docutils literal notranslate"><span class="pre">datafusion.context.SessionContext.register_udtf()</span></code></a>.</p>
+<p>There are examples of both rust backed and python based table functions in the
+examples folder of the repository. If you have a rust backed table function
+that you wish to expose via PyO3, you need to expose it as a <code class="docutils literal notranslate"><span class="pre">PyCapsule</span></code>.</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="cp">#[pymethods]</span>
+<span class="k">impl</span><span class="w"> </span><span class="n">MyTableFunction</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">fn</span><span class="w"> </span><span class="nf">__datafusion_table_function__</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span>
+<span class="w">        </span><span class="n">py</span><span class="p">:</span><span class="w"> </span><span class="nc">Python</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">    </span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">PyResult</span><span class="o">&lt;</span><span class="n">Bound</span><span class="o">&lt;&#39;</span><span class="na">py</span><span class="p">,</span><span class="w"> </span><span class="n">PyCapsule</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cr</span><span class="s">&quot;datafusion_table_function&quot;</span><span class="p">.</span><span class="n">into</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">func</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">clone</span><span class="p">();</span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">provider</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">FFI_TableFunction</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Arc</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">func</span><span class="p">),</span><span class="w"> </span><span class="nb">None</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">PyCapsule</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">py</span><span class="p">,</span><span class="w"> </span><span class="n">provider</span><span class="p">,</span><span class="w"> </span><span class="nb">Some</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
 </section>
 

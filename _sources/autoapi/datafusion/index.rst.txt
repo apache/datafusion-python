@@ -46,6 +46,7 @@ Attributes
    datafusion.column
    datafusion.udaf
    datafusion.udf
+   datafusion.udtf
    datafusion.udwf
 
 
@@ -68,6 +69,7 @@ Classes
    datafusion.ScalarUDF
    datafusion.SessionConfig
    datafusion.Table
+   datafusion.TableFunction
    datafusion.WindowFrame
    datafusion.WindowUDF
 
@@ -1721,6 +1723,59 @@ Package Contents
    .. py:attribute:: table
 
 
+.. py:class:: TableFunction(name: str, func: Callable[[], any])
+
+   Class for performing user-defined table functions (UDTF).
+
+   Table functions generate new table providers based on the
+   input expressions.
+
+   Instantiate a user-defined table function (UDTF).
+
+   See :py:func:`udtf` for a convenience function and argument
+   descriptions.
+
+
+   .. py:method:: __call__(*args: datafusion.expr.Expr) -> Any
+
+      Execute the UDTF and return a table provider.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      User printable representation.
+
+
+
+   .. py:method:: _create_table_udf(func: Callable[Ellipsis, Any], name: str) -> TableFunction
+      :staticmethod:
+
+
+      Create a TableFunction instance from function arguments.
+
+
+
+   .. py:method:: _create_table_udf_decorator(name: Optional[str] = None) -> Callable[[Callable[[], WindowEvaluator]], Callable[Ellipsis, datafusion.expr.Expr]]
+      :staticmethod:
+
+
+      Create a decorator for a WindowUDF.
+
+
+
+   .. py:method:: udtf(name: str) -> Callable[Ellipsis, Any]
+                  udtf(func: Callable[[], Any], name: str) -> TableFunction
+      :staticmethod:
+
+
+      Create a new User-Defined Table Function (UDTF).
+
+
+
+   .. py:attribute:: _udtf
+
+
 .. py:class:: WindowFrame(units: str, start_bound: Optional[Any], end_bound: Optional[Any])
 
    Defines a window frame for performing window operations.
@@ -1995,6 +2050,8 @@ Package Contents
 .. py:data:: udaf
 
 .. py:data:: udf
+
+.. py:data:: udtf
 
 .. py:data:: udwf
 

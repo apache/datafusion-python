@@ -1015,6 +1015,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udtf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.register_udtf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udwf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2114,6 +2123,12 @@ which returns a PyCapsule that exposes a <code class="docutils literal notransla
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udf">
 <span class="sig-name descname"><span class="pre">register_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">datafusion.user_defined.ScalarUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined function (UDF) with the context.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udtf">
+<span class="sig-name descname"><span class="pre">register_udtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.TableFunction" title="datafusion.user_defined.TableFunction"><span class="pre">datafusion.user_defined.TableFunction</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udtf" title="Link to this definition">¶</a></dt>
+<dd><p>Register a user defined table function.</p>
 </dd></dl>
 
 <dl class="py method">
