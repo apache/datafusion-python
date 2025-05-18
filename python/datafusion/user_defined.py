@@ -747,6 +747,7 @@ class WindowUDF:
 
         return decorator
 
+
 class TableFunction:
     """Class for performing user-defined table functions (UDTF).
 
@@ -755,9 +756,9 @@ class TableFunction:
     """
 
     def __init__(
-            self,
-            name: str,
-            func: Callable[[], any],
+        self,
+        name: str,
+        func: Callable[[], any],
     ) -> None:
         """Instantiate a user-defined table function (UDTF).
 
@@ -774,14 +775,14 @@ class TableFunction:
     @overload
     @staticmethod
     def udtf(
-            name: str,
+        name: str,
     ) -> Callable[..., Any]: ...
 
     @overload
     @staticmethod
     def udtf(
-            func: Callable[[], Any],
-            name: str,
+        func: Callable[[], Any],
+        name: str,
     ) -> TableFunction: ...
 
     @staticmethod
@@ -798,8 +799,8 @@ class TableFunction:
 
     @staticmethod
     def _create_table_udf(
-            func: Callable[..., Any],
-            name: str,
+        func: Callable[..., Any],
+        name: str,
     ) -> TableFunction:
         """Create a TableFunction instance from function arguments."""
         if not callable(func):
@@ -810,7 +811,7 @@ class TableFunction:
 
     @staticmethod
     def _create_table_udf_decorator(
-            name: Optional[str] = None,
+        name: Optional[str] = None,
     ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
         """Create a decorator for a WindowUDF."""
 
