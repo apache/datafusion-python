@@ -181,9 +181,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     };
 
     // Return the validated config, converting String error to PyErr
-    config
-        .validate()
-        .map_err(|e| pyo3::exceptions::PyValueError::new_err(e))?;
+    config.validate().map_err(PyValueError::new_err)?;
     Ok(config)
 }
 
