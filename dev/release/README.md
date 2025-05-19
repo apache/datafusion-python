@@ -56,6 +56,8 @@ Before creating a new release:
 - a PR should be created and merged to update the major version number of the project
 - A new release branch should be created, such as `branch-0.8`
 
+## Preparing a Release Candidate
+
 ### Change Log
 
 We maintain a `CHANGELOG.md` so our users know what has been changed between releases.
@@ -76,21 +78,17 @@ Categorizing pull requests
 Generating changelog content
 ```
 
-This process is not fully automated, so there are some additional manual steps:
+### Update the version number
 
-- Add the ASF header to the generated file
-- Add a link to this changelog from the top-level `/datafusion/CHANGELOG.md`
-- Add the following content (copy from the previous version's changelog and update as appropriate:
-
-```
-## [24.0.0](https://github.com/apache/datafusion-python/tree/24.0.0) (2023-05-06)
-
-[Full Changelog](https://github.com/apache/datafusion-python/compare/23.0.0...24.0.0)
-```
-
-### Preparing a Release Candidate
+The only place you should need to update the version is in the root `Cargo.toml`.
 
 ### Tag the Repository
+
+Commit the changes to the changelog and version.
+
+Assuming you have set up a remote to the `apache` repository rather than your personal fork,
+you need to push a tag to start the CI process for release candidates. The following assumes
+the upstream repository is called `apache`.
 
 ```bash
 git tag 0.8.0-rc1
