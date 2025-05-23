@@ -93,3 +93,5 @@ Example
    :hidden:
    :maxdepth: 1
    :caption: API
+   
+   api/index
