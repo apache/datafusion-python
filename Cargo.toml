@@ -52,7 +52,7 @@ url = "2"
 
 [build-dependencies]
 prost-types = "0.13.1" # keep in line with `datafusion-substrait`
-pyo3-build-config = "0.24"
+pyo3-build-config = "0.25"
 
 [lib]
 name = "datafusion_python"
