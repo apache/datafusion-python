@@ -34,7 +34,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.input" href="../input/index.html" />
+    <link rel="next" title="datafusion.html_formatter" href="../html_formatter/index.html" />
     <link rel="prev" title="datafusion.expr" href="../expr/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -115,6 +115,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../../user-guide/data-sources.html">
    Data Sources
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/dataframe.html">
+   DataFrames
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -276,6 +281,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../context/index.html">
        datafusion.context
       </a>
@@ -293,6 +303,11 @@
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
        datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../html_formatter/index.html">
+       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -345,6 +360,16 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../udf/index.html">
        datafusion.udf
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../user_defined/index.html">
+       datafusion.user_defined
       </a>
      </li>
     </ul>
@@ -2594,7 +2619,7 @@
 <td><p>Returns inverse hyperbolic cosine.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.functions.alias" title="datafusion.functions.alias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alias</span></code></a>(→ datafusion.expr.Expr)</p></td>
-<td><p>Creates an alias expression.</p></td>
+<td><p>Creates an alias expression with an optional metadata dictionary.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.functions.approx_distinct" title="datafusion.functions.approx_distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">approx_distinct</span></code></a>(→ datafusion.expr.Expr)</p></td>
 <td><p>Returns the approximate number of distinct values.</p></td>
@@ -3346,8 +3371,20 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.functions.alias">
-<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.alias" title="Link to this definition">¶</a></dt>
-<dd><p>Creates an alias expression.</p>
+<span class="sig-prename descclassname"><span class="pre">datafusion.functions.</span></span><span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.functions.alias" title="Link to this definition">¶</a></dt>
+<dd><p>Creates an alias expression with an optional metadata dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expr</strong> – The expression to alias</p></li>
+<li><p><strong>name</strong> – The alias name</p></li>
+<li><p><strong>metadata</strong> – Optional metadata to attach to the column</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An expression with the given alias</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
@@ -5555,10 +5592,10 @@ lag use:</p>
             <p class="prev-next-title">datafusion.expr</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../input/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../html_formatter/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.input</p>
+        <p class="prev-next-title">datafusion.html_formatter</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

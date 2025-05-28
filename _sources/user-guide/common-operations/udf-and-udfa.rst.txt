@@ -26,7 +26,7 @@ Scalar Functions
 
 When writing a user-defined function that can operate on a row by row basis, these are called Scalar
 Functions. You can define your own scalar function by calling
-:py:func:`~datafusion.udf.ScalarUDF.udf` .
+:py:func:`~datafusion.user_defined.ScalarUDF.udf` .
 
 The basic definition of a scalar UDF is a python function that takes one or more
 `pyarrow <https://arrow.apache.org/docs/python/index.html>`_ arrays and returns a single array as
@@ -93,9 +93,9 @@ converting to Python objects to do the evaluation.
 Aggregate Functions
 -------------------
 
-The :py:func:`~datafusion.udf.AggregateUDF.udaf` function allows you to define User-Defined
+The :py:func:`~datafusion.user_defined.AggregateUDF.udaf` function allows you to define User-Defined
 Aggregate Functions (UDAFs). To use this you must implement an
-:py:class:`~datafusion.udf.Accumulator` that determines how the aggregation is performed.
+:py:class:`~datafusion.user_defined.Accumulator` that determines how the aggregation is performed.
 
 When defining a UDAF there are four methods you need to implement. The ``update`` function takes the
 array(s) of input and updates the internal state of the accumulator. You should define this function
@@ -153,8 +153,8 @@ Window Functions
 ----------------
 
 To implement a User-Defined Window Function (UDWF) you must call the
-:py:func:`~datafusion.udf.WindowUDF.udwf` function using a class that implements the abstract
-class :py:class:`~datafusion.udf.WindowEvaluator`.
+:py:func:`~datafusion.user_defined.WindowUDF.udwf` function using a class that implements the abstract
+class :py:class:`~datafusion.user_defined.WindowEvaluator`.
 
 There are three methods of evaluation of UDWFs.
 
@@ -207,7 +207,7 @@ determine which evaluate functions are called.
 
     import pyarrow as pa
     from datafusion import udwf, col, SessionContext
-    from datafusion.udf import WindowEvaluator
+    from datafusion.user_defined import WindowEvaluator
 
     class ExponentialSmooth(WindowEvaluator):
         def __init__(self, alpha: float) -> None:
@@ -242,3 +242,35 @@ determine which evaluate functions are called.
     })
 
     df.select("a", exp_smooth(col("a")).alias("smooth_a")).show()
+
+Table Functions
+---------------
+
+User Defined Table Functions are slightly different than the other functions
+described here. These functions take any number of `Expr` arguments, but only
+literal expressions are supported. Table functions must return a Table
+Provider as described in the ref:`_io_custom_table_provider` page.
+
+Once you have a table function, you can register it with the session context
+by using :py:func:`datafusion.context.SessionContext.register_udtf`.
+
+There are examples of both rust backed and python based table functions in the
+examples folder of the repository. If you have a rust backed table function
+that you wish to expose via PyO3, you need to expose it as a ``PyCapsule``.
+
+.. code-block:: rust
+
+    #[pymethods]
+    impl MyTableFunction {
+        fn __datafusion_table_function__<'py>(
+            &self,
+            py: Python<'py>,
+        ) -> PyResult<Bound<'py, PyCapsule>> {
+            let name = cr"datafusion_table_function".into();
+
+            let func = self.clone();
+            let provider = FFI_TableFunction::new(Arc::new(func), None);
+
+            PyCapsule::new(py, provider, Some(name))
+        }
+    }

@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>datafusion.user_defined &#8212; Apache Arrow DataFusion  documentation</title>
+    
+    <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
+    
+    <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script src="../../../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="datafusion.unparser" href="../unparser/index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../../../index.html">
+  <img src="../../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/data-sources.html">
+   Data Sources
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/dataframe.html">
+   DataFrames
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/views.html">
+     Registering Views
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/expressions.html">
+     Expressions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">
+     User-Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+     Arrow
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/configuration.html">
+   Configuration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../contributor-guide/ffi.html">
+   Python Extensions
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="../../index.html">
+   API Reference
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active has-children">
+    <a class="reference internal" href="../index.html">
+     datafusion
+    </a>
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+    <label for="toctree-checkbox-4">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul class="current">
+     <li class="toctree-l3">
+      <a class="reference internal" href="../catalog/index.html">
+       datafusion.catalog
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../context/index.html">
+       datafusion.context
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../html_formatter/index.html">
+       datafusion.html_formatter
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+      <label for="toctree-checkbox-5">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../io/index.html">
+       datafusion.io
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../udf/index.html">
+       datafusion.udf
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3 current active">
+      <a class="current reference internal" href="#">
+       datafusion.user_defined
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#attributes">
+   Attributes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#classes">
+   Classes
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#module-contents">
+   Module Contents
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Accumulator
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.evaluate">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.evaluate()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.merge">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.merge()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.state">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.state()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Accumulator.update">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Accumulator.update()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       AggregateUDF
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF.udaf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.udaf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.AggregateUDF._udaf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF._udaf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ScalarUDF
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF.udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.ScalarUDF._udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF._udf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TableFunction
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._create_table_udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction._create_table_udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._create_table_udf_decorator">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction._create_table_udf_decorator()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction.udtf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction.udtf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.TableFunction._udtf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         TableFunction._udtf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.Volatility">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Volatility
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.__str__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Volatility.__str__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Immutable">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Volatility.Immutable
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Stable">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Volatility.Stable
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.Volatility.Volatile">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Volatility.Volatile
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WindowEvaluator
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.evaluate()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate_all">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.evaluate_all()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.evaluate_all_with_rank">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.evaluate_all_with_rank()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.get_range">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.get_range()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.include_rank">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.include_rank()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.is_causal">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.is_causal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.memoize">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.memoize()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.supports_bounded_execution">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.supports_bounded_execution()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowEvaluator.uses_window_frame">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowEvaluator.uses_window_frame()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       WindowUDF
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.__call__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.__call__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._create_window_udf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._create_window_udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._create_window_udf_decorator">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._create_window_udf_decorator()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._get_default_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._get_default_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._normalize_input_types">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._normalize_input_types()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF.udwf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.udwf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.user_defined.WindowUDF._udwf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF._udwf
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined._R">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       _R
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.udaf">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       udaf
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.udf">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       udf
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.udtf">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       udtf
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.user_defined.udwf">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       udwf
+      </span>
+     </code>
+    </a>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="module-datafusion.user_defined">
+<span id="datafusion-user-defined"></span><h1>datafusion.user_defined<a class="headerlink" href="#module-datafusion.user_defined" title="Link to this heading">¶</a></h1>
+<p>Provides the user-defined functions for evaluation of dataframes.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined._R" title="datafusion.user_defined._R"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_R</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.udaf" title="datafusion.user_defined.udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udaf</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.udf" title="datafusion.user_defined.udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udf</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.udtf" title="datafusion.user_defined.udtf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udtf</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.udwf" title="datafusion.user_defined.udwf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udwf</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Accumulator</span></code></a></p></td>
+<td><p>Defines how an <a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> accumulates values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a></p></td>
+<td><p>Class for performing scalar user-defined functions (UDF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a></p></td>
+<td><p>Class for performing scalar user-defined functions (UDF).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.TableFunction" title="datafusion.user_defined.TableFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableFunction</span></code></a></p></td>
+<td><p>Class for performing user-defined table functions (UDTF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Volatility</span></code></a></p></td>
+<td><p>Defines how stable or volatile a function is.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowEvaluator</span></code></a></p></td>
+<td><p>Evaluator class for user-defined window functions (UDWF).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowUDF</span></code></a></p></td>
+<td><p>Class for performing window user-defined functions (UDF).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.Accumulator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">Accumulator</span></span><a class="headerlink" href="#datafusion.user_defined.Accumulator" title="Link to this definition">¶</a></dt>
+<dd><p>Defines how an <a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> accumulates values.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.Accumulator.evaluate">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Scalar</span></span></span><a class="headerlink" href="#datafusion.user_defined.Accumulator.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Return the resultant value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.Accumulator.merge">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Array</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.user_defined.Accumulator.merge" title="Link to this definition">¶</a></dt>
+<dd><p>Merge a set of states.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.Accumulator.state">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Scalar</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.Accumulator.state" title="Link to this definition">¶</a></dt>
+<dd><p>Return the current state.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.Accumulator.update">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Array</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.user_defined.Accumulator.update" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate an array of values and update state.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">AggregateUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accumulator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><span class="pre">Accumulator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing scalar user-defined functions (UDF).</p>
+<p>Aggregate UDFs operate on a group of rows and return a single value. See
+also <a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a> for operating on a row by row basis.</p>
+<p>Instantiate a user-defined aggregate function (UDAF).</p>
+<p>See <a class="reference internal" href="#datafusion.user_defined.udaf" title="datafusion.user_defined.udaf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udaf()</span></code></a> for a convenience function and argument
+descriptions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDAF.</p>
+<p>This function is not typically called by an end user. These calls will
+occur during the evaluation of the dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF.udaf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><span class="pre">AggregateUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF.udaf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">accum</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><span class="pre">Accumulator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><span class="pre">AggregateUDF</span></a></span></span></dt>
+<dd><p>Create a new User-Defined Aggregate Function (UDAF).</p>
+<p>This class allows you to define an aggregate function that can be used in
+data aggregation or window function calls.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>As a function: <code class="docutils literal notranslate"><span class="pre">udaf(accum,</span> <span class="pre">input_types,</span> <span class="pre">return_type,</span> <span class="pre">state_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.</p></li>
+<li><p>As a decorator: <code class="docutils literal notranslate"><span class="pre">&#64;udaf(input_types,</span> <span class="pre">return_type,</span> <span class="pre">state_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.
+When using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator, do not pass <code class="docutils literal notranslate"><span class="pre">accum</span></code> explicitly.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Function example:</p>
+<p>If your <a class="reference internal" href="#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> can be instantiated with no arguments, you
+can simply pass it’s type as <cite>accum</cite>. If you need to pass additional
+arguments to it’s constructor, you can define a lambda or a factory method.
+During runtime the <a class="reference internal" href="#datafusion.user_defined.Accumulator" title="datafusion.user_defined.Accumulator"><code class="xref py py-class docutils literal notranslate"><span class="pre">Accumulator</span></code></a> will be constructed for every
+instance in which this UDAF is used. The following examples are all valid:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.compute</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pc</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Summarize</span><span class="p">(</span><span class="n">Accumulator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">state</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">merge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sum</span><span class="o">.</span><span class="n">as_py</span><span class="p">()</span> <span class="o">+</span> <span class="n">pc</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">as_py</span><span class="p">())</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Scalar</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sum</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Summarize</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Summarize</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+
+<span class="n">udaf1</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">Summarize</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span>
+    <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="n">udaf2</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="n">sum_bias_10</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span>
+    <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="n">udaf3</span> <span class="o">=</span> <span class="n">udaf</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Summarize</span><span class="p">(</span><span class="mf">20.0</span><span class="p">),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span>
+    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Decorator example::</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@udaf</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">(),</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">float64</span><span class="p">()],</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">udf4</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Summarize</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">Summarize</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accum</strong> – The accumulator python function. Only needed when calling as a
+function. Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator.</p></li>
+<li><p><strong>input_types</strong> – The data types of the arguments to <code class="docutils literal notranslate"><span class="pre">accum</span></code>.</p></li>
+<li><p><strong>return_type</strong> – The data type of the return value.</p></li>
+<li><p><strong>state_type</strong> – The data types of the intermediate accumulation.</p></li>
+<li><p><strong>volatility</strong> – See <a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volatility</span></code></a> for allowed values.</p></li>
+<li><p><strong>name</strong> – A descriptive name for the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A user-defined aggregate function, which can be used in either data
+aggregation or window function calls.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.AggregateUDF._udaf">
+<span class="sig-name descname"><span class="pre">_udaf</span></span><a class="headerlink" href="#datafusion.user_defined.AggregateUDF._udaf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">ScalarUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing scalar user-defined functions (UDF).</p>
+<p>Scalar UDFs operate on a row by row basis. See also <a class="reference internal" href="#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> for
+operating on a group of rows.</p>
+<p>Instantiate a scalar user-defined function (UDF).</p>
+<p>See helper method <a class="reference internal" href="#datafusion.user_defined.udf" title="datafusion.user_defined.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDF.</p>
+<p>This function is not typically called by an end user. These calls will
+occur during the evaluation of the dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF.udf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">ScalarUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF.udf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span></dt>
+<dd><p>Create a new User-Defined Function (UDF).</p>
+<p>This class can be used both as either a function or a decorator.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>As a function: <code class="docutils literal notranslate"><span class="pre">udf(func,</span> <span class="pre">input_types,</span> <span class="pre">return_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.</p></li>
+<li><p>As a decorator: <code class="docutils literal notranslate"><span class="pre">&#64;udf(input_types,</span> <span class="pre">return_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.
+When used a decorator, do <strong>not</strong> pass <code class="docutils literal notranslate"><span class="pre">func</span></code> explicitly.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Only needed when calling as a function.
+Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udf</span></code> as a decorator.</p></li>
+<li><p><strong>input_types</strong> (<em>list</em><em>[</em><em>pa.DataType</em><em>]</em>) – The data types of the arguments
+to <code class="docutils literal notranslate"><span class="pre">func</span></code>. This list must be of the same length as the number of
+arguments.</p></li>
+<li><p><strong>return_type</strong> (<em>_R</em>) – The data type of the return value from the function.</p></li>
+<li><p><strong>volatility</strong> (<a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><em>Volatility</em></a><em> | </em><em>str</em>) – See <cite>Volatility</cite> for allowed values.</p></li>
+<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – A descriptive name for the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A user-defined function that can be used in SQL expressions,
+data aggregation, or window function calls.</p>
+</dd>
+</dl>
+<p>Example: Using <code class="docutils literal notranslate"><span class="pre">udf</span></code> as a function:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">double_func</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+<span class="n">double_udf</span> <span class="o">=</span> <span class="n">udf</span><span class="p">(</span><span class="n">double_func</span><span class="p">,</span> <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">int32</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int32</span><span class="p">(),</span>
+<span class="s2">&quot;volatile&quot;</span><span class="p">,</span> <span class="s2">&quot;double_it&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Example: Using <code class="docutils literal notranslate"><span class="pre">udf</span></code> as a decorator:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@udf</span><span class="p">([</span><span class="n">pa</span><span class="o">.</span><span class="n">int32</span><span class="p">()],</span> <span class="n">pa</span><span class="o">.</span><span class="n">int32</span><span class="p">(),</span> <span class="s2">&quot;volatile&quot;</span><span class="p">,</span> <span class="s2">&quot;double_it&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">double_udf</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.ScalarUDF._udf">
+<span class="sig-name descname"><span class="pre">_udf</span></span><a class="headerlink" href="#datafusion.user_defined.ScalarUDF._udf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">TableFunction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.TableFunction" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing user-defined table functions (UDTF).</p>
+<p>Table functions generate new table providers based on the
+input expressions.</p>
+<p>Instantiate a user-defined table function (UDTF).</p>
+<p>See <a class="reference internal" href="#datafusion.user_defined.udtf" title="datafusion.user_defined.udtf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udtf()</span></code></a> for a convenience function and argument
+descriptions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDTF and return a table provider.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>User printable representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction._create_table_udf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_table_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.TableFunction" title="datafusion.user_defined.TableFunction"><span class="pre">TableFunction</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction._create_table_udf" title="Link to this definition">¶</a></dt>
+<dd><p>Create a TableFunction instance from function arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction._create_table_udf_decorator">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_table_udf_decorator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction._create_table_udf_decorator" title="Link to this definition">¶</a></dt>
+<dd><p>Create a decorator for a WindowUDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction.udtf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction.udtf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.TableFunction" title="datafusion.user_defined.TableFunction"><span class="pre">TableFunction</span></a></span></span></dt>
+<dd><p>Create a new User-Defined Table Function (UDTF).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.TableFunction._udtf">
+<span class="sig-name descname"><span class="pre">_udtf</span></span><a class="headerlink" href="#datafusion.user_defined.TableFunction._udtf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.Volatility">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">Volatility</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.Volatility" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Defines how stable or volatile a function is.</p>
+<p>When setting the volatility of a function, you can either pass this
+enumeration or a <code class="docutils literal notranslate"><span class="pre">str</span></code>. The <code class="docutils literal notranslate"><span class="pre">str</span></code> equivalent is the lower case value of the
+name (<cite>“immutable”</cite>, <cite>“stable”</cite>, or <cite>“volatile”</cite>).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.Volatility.__str__">
+<span class="sig-name descname"><span class="pre">__str__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.user_defined.Volatility.__str__" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the string equivalent.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.Volatility.Immutable">
+<span class="sig-name descname"><span class="pre">Immutable</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#datafusion.user_defined.Volatility.Immutable" title="Link to this definition">¶</a></dt>
+<dd><p>An immutable function will always return the same output when given the
+same input.</p>
+<p>DataFusion will attempt to inline immutable functions during planning.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.Volatility.Stable">
+<span class="sig-name descname"><span class="pre">Stable</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#datafusion.user_defined.Volatility.Stable" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the same value for a given input within a single queries.</p>
+<p>A stable function may return different values given the same input across
+different queries but must return the same value for a given input within a
+query. An example of this is the <code class="docutils literal notranslate"><span class="pre">Now</span></code> function. DataFusion will attempt to
+inline <code class="docutils literal notranslate"><span class="pre">Stable</span></code> functions during planning, when possible. For query
+<code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">col1,</span> <span class="pre">now()</span> <span class="pre">from</span> <span class="pre">t1</span></code>, it might take a while to execute but <code class="docutils literal notranslate"><span class="pre">now()</span></code>
+column will be the same for each output row, which is evaluated during
+planning.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.Volatility.Volatile">
+<span class="sig-name descname"><span class="pre">Volatile</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#datafusion.user_defined.Volatility.Volatile" title="Link to this definition">¶</a></dt>
+<dd><p>A volatile function may change the return value from evaluation to
+evaluation.</p>
+<p>Multiple invocations of a volatile function may return different results
+when used in the same query. An example of this is the random() function.
+DataFusion can not evaluate such functions during planning. In the query
+<code class="docutils literal notranslate"><span class="pre">select</span> <span class="pre">col1,</span> <span class="pre">random()</span> <span class="pre">from</span> <span class="pre">t1</span></code>, <code class="docutils literal notranslate"><span class="pre">random()</span></code> function will be evaluated
+for each output row, resulting in a unique random value for each row.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">WindowEvaluator</span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluator class for user-defined window functions (UDWF).</p>
+<p>It is up to the user to decide which evaluate function is appropriate.</p>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">uses_window_frame</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">supports_bounded_execution</span></code></p></th>
+<th class="head"><p><code class="docutils literal notranslate"><span class="pre">include_rank</span></code></p></th>
+<th class="head"><p>function_to_implement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>False (default)</p></td>
+<td><p>False (default)</p></td>
+<td><p>False (default)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evaluate_all</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>False</p></td>
+<td><p>True</p></td>
+<td><p>False</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evaluate</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>False</p></td>
+<td><p>True/False</p></td>
+<td><p>True</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evaluate_all_with_rank</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>True</p></td>
+<td><p>True/False</p></td>
+<td><p>True/False</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">evaluate</span></code></p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Array</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_range</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Scalar</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.evaluate" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate window function on a range of rows in an input partition.</p>
+<p>This is the simplest and most general function to implement
+but also the least performant as it creates output one row at
+a time. It is typically much faster to implement stateful
+evaluation using one of the other specialized methods on this
+trait.</p>
+<p>Returns a [<cite>ScalarValue</cite>] that is the value of the window
+function within <cite>range</cite> for the entire partition. Argument
+<cite>values</cite> contains the evaluation result of function arguments
+and evaluation results of ORDER BY expressions. If function has a
+single argument, <cite>values[1..]</cite> will contain ORDER BY expression results.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.evaluate_all">
+<span class="sig-name descname"><span class="pre">evaluate_all</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.Array</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Array</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.evaluate_all" title="Link to this definition">¶</a></dt>
+<dd><p>Evaluate a window function on an entire input partition.</p>
+<p>This function is called once per input <em>partition</em> for window functions that
+<em>do not use</em> values from the window frame, such as
+<a class="reference internal" href="../functions/index.html#datafusion.functions.row_number" title="datafusion.functions.row_number"><code class="xref py py-func docutils literal notranslate"><span class="pre">row_number()</span></code></a>,
+<a class="reference internal" href="../functions/index.html#datafusion.functions.rank" title="datafusion.functions.rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">rank()</span></code></a>,
+<a class="reference internal" href="../functions/index.html#datafusion.functions.dense_rank" title="datafusion.functions.dense_rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">dense_rank()</span></code></a>,
+<a class="reference internal" href="../functions/index.html#datafusion.functions.percent_rank" title="datafusion.functions.percent_rank"><code class="xref py py-func docutils literal notranslate"><span class="pre">percent_rank()</span></code></a>,
+<a class="reference internal" href="../functions/index.html#datafusion.functions.cume_dist" title="datafusion.functions.cume_dist"><code class="xref py py-func docutils literal notranslate"><span class="pre">cume_dist()</span></code></a>,
+<a class="reference internal" href="../functions/index.html#datafusion.functions.lead" title="datafusion.functions.lead"><code class="xref py py-func docutils literal notranslate"><span class="pre">lead()</span></code></a>,
+and <a class="reference internal" href="../functions/index.html#datafusion.functions.lag" title="datafusion.functions.lag"><code class="xref py py-func docutils literal notranslate"><span class="pre">lag()</span></code></a>.</p>
+<p>It produces the result of all rows in a single pass. It
+expects to receive the entire partition as the <code class="docutils literal notranslate"><span class="pre">value</span></code> and
+must produce an output column with one output row for every
+input row.</p>
+<p><code class="docutils literal notranslate"><span class="pre">num_rows</span></code> is required to correctly compute the output in case
+<code class="docutils literal notranslate"><span class="pre">len(values)</span> <span class="pre">==</span> <span class="pre">0</span></code></p>
+<p>Implementing this function is an optimization. Certain window
+functions are not affected by the window frame definition or
+the query doesn’t have a frame, and <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> skips the
+(costly) window frame boundary calculation and the overhead of
+calling <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> for each output row.</p>
+<p>For example, the <cite>LAG</cite> built in window function does not use
+the values of its window frame (it can be computed in one shot
+on the entire partition with <code class="docutils literal notranslate"><span class="pre">Self::evaluate_all</span></code> regardless of the
+window defined in the <code class="docutils literal notranslate"><span class="pre">OVER</span></code> clause)</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>lag(x, 1) OVER (ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
+</pre></div>
+</div>
+<p>However, <code class="docutils literal notranslate"><span class="pre">avg()</span></code> computes the average in the window and thus
+does use its window frame.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>avg(x) OVER (PARTITION BY y ORDER BY z ROWS BETWEEN 2 PRECEDING AND 3 FOLLOWING)
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.evaluate_all_with_rank">
+<span class="sig-name descname"><span class="pre">evaluate_all_with_rank</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranks_in_partition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Array</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.evaluate_all_with_rank" title="Link to this definition">¶</a></dt>
+<dd><p>Called for window functions that only need the rank of a row.</p>
+<p>Evaluate the partition evaluator against the partition using
+the row ranks. For example, <code class="docutils literal notranslate"><span class="pre">rank(col(&quot;a&quot;))</span></code> produces</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>a | rank
+- + ----
+A | 1
+A | 1
+C | 3
+D | 4
+D | 4
+</pre></div>
+</div>
+<p>For this case, <cite>num_rows</cite> would be <cite>5</cite> and the
+<cite>ranks_in_partition</cite> would be called with</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>[
+    (0,1),
+    (2,2),
+    (3,4),
+]
+</pre></div>
+</div>
+<p>The user must implement this method if <code class="docutils literal notranslate"><span class="pre">include_rank</span></code> returns True.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.get_range">
+<span class="sig-name descname"><span class="pre">get_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">idx</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.get_range" title="Link to this definition">¶</a></dt>
+<dd><p>Return the range for the window fuction.</p>
+<p>If <cite>uses_window_frame</cite> flag is <cite>false</cite>. This method is used to
+calculate required range for the window function during
+stateful execution.</p>
+<p>Generally there is no required range, hence by default this
+returns smallest range(current row). e.g seeing current row is
+enough to calculate window result (such as row_number, rank,
+etc)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>idx:</strong> – Current index:</p></li>
+<li><p><strong>num_rows</strong> – Number of rows.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.include_rank">
+<span class="sig-name descname"><span class="pre">include_rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.include_rank" title="Link to this definition">¶</a></dt>
+<dd><p>Can this function be evaluated with (only) rank?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.is_causal">
+<span class="sig-name descname"><span class="pre">is_causal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.is_causal" title="Link to this definition">¶</a></dt>
+<dd><p>Get whether evaluator needs future data for its result.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.memoize">
+<span class="sig-name descname"><span class="pre">memoize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.memoize" title="Link to this definition">¶</a></dt>
+<dd><p>Perform a memoize operation to improve performance.</p>
+<p>When the window frame has a fixed beginning (e.g UNBOUNDED
+PRECEDING), some functions such as FIRST_VALUE and
+NTH_VALUE do not need the (unbounded) input once they have
+seen a certain amount of input.</p>
+<p><cite>memoize</cite> is called after each input batch is processed, and
+such functions can save whatever they need</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.supports_bounded_execution">
+<span class="sig-name descname"><span class="pre">supports_bounded_execution</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.supports_bounded_execution" title="Link to this definition">¶</a></dt>
+<dd><p>Can the window function be incrementally computed using bounded memory?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowEvaluator.uses_window_frame">
+<span class="sig-name descname"><span class="pre">uses_window_frame</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowEvaluator.uses_window_frame" title="Link to this definition">¶</a></dt>
+<dd><p>Does the window function use the values from the window frame?</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">WindowUDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.user_defined.WindowUDF" title="Link to this definition">¶</a></dt>
+<dd><p>Class for performing window user-defined functions (UDF).</p>
+<p>Window UDFs operate on a partition of rows. See
+also <a class="reference internal" href="#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarUDF</span></code></a> for operating on a row by row basis.</p>
+<p>Instantiate a user-defined window function (UDWF).</p>
+<p>See <a class="reference internal" href="#datafusion.user_defined.udwf" title="datafusion.user_defined.udwf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udwf()</span></code></a> for a convenience function and argument
+descriptions.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF.__call__">
+<span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF.__call__" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the UDWF.</p>
+<p>This function is not typically called by an end user. These calls will
+occur during the evaluation of the dataframe.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._create_window_udf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_window_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._create_window_udf" title="Link to this definition">¶</a></dt>
+<dd><p>Create a WindowUDF instance from function arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._create_window_udf_decorator">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_window_udf_decorator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._create_window_udf_decorator" title="Link to this definition">¶</a></dt>
+<dd><p>Create a decorator for a WindowUDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._get_default_name">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_default_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._get_default_name" title="Link to this definition">¶</a></dt>
+<dd><p>Get the default name for a function based on its attributes.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._normalize_input_types">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_normalize_input_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._normalize_input_types" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a single DataType to a list if needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF.udwf">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">WindowUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF.udwf" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">WindowUDF</span></a></span></span></dt>
+<dd><p>Create a new User-Defined Window Function (UDWF).</p>
+<p>This class can be used both as either a function or a decorator.</p>
+<dl class="simple">
+<dt>Usage:</dt><dd><ul class="simple">
+<li><p>As a function: <code class="docutils literal notranslate"><span class="pre">udwf(func,</span> <span class="pre">input_types,</span> <span class="pre">return_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.</p></li>
+<li><p>As a decorator: <code class="docutils literal notranslate"><span class="pre">&#64;udwf(input_types,</span> <span class="pre">return_type,</span> <span class="pre">volatility,</span> <span class="pre">name)</span></code>.
+When using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator, do not pass <code class="docutils literal notranslate"><span class="pre">func</span></code> explicitly.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Function example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">BiasedNumbers</span><span class="p">(</span><span class="n">WindowEvaluator</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="n">start</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">],</span>
+        <span class="n">num_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pa</span><span class="o">.</span><span class="n">Array</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">start</span> <span class="o">+</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_rows</span><span class="p">)])</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">bias_10</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BiasedNumbers</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">BiasedNumbers</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">udwf1</span> <span class="o">=</span> <span class="n">udwf</span><span class="p">(</span><span class="n">BiasedNumbers</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="n">udwf2</span> <span class="o">=</span> <span class="n">udwf</span><span class="p">(</span><span class="n">bias_10</span><span class="p">,</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="n">udwf3</span> <span class="o">=</span> <span class="n">udwf</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">BiasedNumbers</span><span class="p">(</span><span class="mi">20</span><span class="p">),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Decorator example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@udwf</span><span class="p">(</span><span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="n">pa</span><span class="o">.</span><span class="n">int64</span><span class="p">(),</span> <span class="s2">&quot;immutable&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">biased_numbers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BiasedNumbers</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">BiasedNumbers</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> – Only needed when calling as a function. Skip this argument when
+using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator.</p></li>
+<li><p><strong>input_types</strong> – The data types of the arguments.</p></li>
+<li><p><strong>return_type</strong> – The data type of the return value.</p></li>
+<li><p><strong>volatility</strong> – See <a class="reference internal" href="#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><code class="xref py py-class docutils literal notranslate"><span class="pre">Volatility</span></code></a> for allowed values.</p></li>
+<li><p><strong>name</strong> – A descriptive name for the function.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A user-defined window function that can be used in window function calls.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.user_defined.WindowUDF._udwf">
+<span class="sig-name descname"><span class="pre">_udwf</span></span><a class="headerlink" href="#datafusion.user_defined.WindowUDF._udwf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.user_defined._R">
+<span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">_R</span></span><a class="headerlink" href="#datafusion.user_defined._R" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.user_defined.udaf">
+<span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">udaf</span></span><a class="headerlink" href="#datafusion.user_defined.udaf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.user_defined.udf">
+<span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">udf</span></span><a class="headerlink" href="#datafusion.user_defined.udf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.user_defined.udtf">
+<span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">udtf</span></span><a class="headerlink" href="#datafusion.user_defined.udtf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.user_defined.udwf">
+<span class="sig-prename descclassname"><span class="pre">datafusion.user_defined.</span></span><span class="sig-name descname"><span class="pre">udwf</span></span><a class="headerlink" href="#datafusion.user_defined.udwf" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="../unparser/index.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">datafusion.unparser</p>
+        </div>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>

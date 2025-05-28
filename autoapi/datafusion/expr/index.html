@@ -117,6 +117,11 @@
    Data Sources
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/dataframe.html">
+   DataFrames
+  </a>
+ </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../user-guide/common-operations/index.html">
    Common Operations
@@ -276,6 +281,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../context/index.html">
        datafusion.context
       </a>
@@ -293,6 +303,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../functions/index.html">
        datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../html_formatter/index.html">
+       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -345,6 +360,16 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../udf/index.html">
        datafusion.udf
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../user_defined/index.html">
+       datafusion.user_defined
       </a>
      </li>
     </ul>
@@ -600,10 +625,154 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.abs">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.abs()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.acos">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.acos()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.acosh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.acosh()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.alias">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.alias()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_dims">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_dims()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_distinct">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_distinct()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_empty">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_empty()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_ndims">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_ndims()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_pop_back">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_pop_back()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.array_pop_front">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.array_pop_front()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.arrow_typeof">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.arrow_typeof()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.ascii">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.ascii()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.asin">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.asin()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.asinh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.asinh()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.atan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.atan()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.atanh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.atanh()
         </span>
        </code>
       </a>
@@ -618,6 +787,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.bit_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.bit_length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.btrim">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.btrim()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.canonical_name">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -627,10 +814,64 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.cardinality">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cardinality()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.cast">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.cast()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.cbrt">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cbrt()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.ceil">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.ceil()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.char_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.char_length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.character_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.character_length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.chr">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.chr()
         </span>
        </code>
       </a>
@@ -654,6 +895,42 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.cos">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cos()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.cosh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cosh()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.cot">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.cot()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.degrees">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.degrees()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.display_name">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -667,6 +944,33 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.distinct()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.empty">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.empty()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.exp">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.exp()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.factorial">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.factorial()
         </span>
        </code>
       </a>
@@ -699,6 +1003,42 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.flatten">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.flatten()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.floor">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.floor()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.from_unixtime">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.from_unixtime()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.initcap">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.initcap()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.is_not_null">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -717,6 +1057,69 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.isnan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.isnan()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.iszero">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.iszero()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.list_dims">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.list_dims()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.list_distinct">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.list_distinct()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.list_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.list_length()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.list_ndims">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.list_ndims()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.literal">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -726,10 +1129,73 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.ln">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.ln()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.log10">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.log10()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.log2">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.log2()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.lower">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.lower()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.ltrim">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.ltrim()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.md5">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.md5()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.null_treatment">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.null_treatment()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.octet_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.octet_length()
         </span>
        </code>
       </a>
@@ -771,6 +1237,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.radians">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.radians()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.reverse">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.reverse()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.rex_call_operands">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -798,10 +1282,82 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.rtrim">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.rtrim()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.schema_name">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.schema_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sha224">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sha224()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sha256">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sha256()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sha384">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sha384()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sha512">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sha512()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.signum">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.signum()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sin">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sin()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sinh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sinh()
         </span>
        </code>
       </a>
@@ -816,10 +1372,46 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.sqrt">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.sqrt()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.string_literal">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.string_literal()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.tan">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.tan()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.tanh">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.tanh()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.to_hex">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.to_hex()
         </span>
        </code>
       </a>
@@ -834,10 +1426,28 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.trim">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.trim()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.types">
        <code class="docutils literal notranslate">
         <span class="pre">
          Expr.types()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.upper">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.upper()
         </span>
        </code>
       </a>
@@ -1240,6 +1850,69 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CopyTo">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CopyTo
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateCatalog">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateCatalog
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateCatalogSchema">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateCatalogSchema
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateExternalTable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateExternalTable
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateFunction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateFunction
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateFunctionBody">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateFunctionBody
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.CreateIndex">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       CreateIndex
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.CreateMemoryTable">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1258,10 +1931,55 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.Deallocate">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Deallocate
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.DescribeTable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DescribeTable
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.Distinct">
      <code class="docutils literal notranslate">
       <span class="pre">
        Distinct
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.DmlStatement">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DmlStatement
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.DropCatalogSchema">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DropCatalogSchema
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.DropFunction">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DropFunction
       </span>
      </code>
     </a>
@@ -1276,10 +1994,28 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.DropView">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DropView
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.EmptyRelation">
      <code class="docutils literal notranslate">
       <span class="pre">
        EmptyRelation
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.Execute">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Execute
       </span>
      </code>
     </a>
@@ -1307,6 +2043,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        Extension
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.FileType">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       FileType
       </span>
      </code>
     </a>
@@ -1501,6 +2246,15 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.OperateFunctionArg">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       OperateFunctionArg
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.Partitioning">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1519,10 +2273,28 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.Prepare">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Prepare
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.Projection">
      <code class="docutils literal notranslate">
       <span class="pre">
        Projection
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.RecursiveQuery">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       RecursiveQuery
       </span>
      </code>
     </a>
@@ -1550,6 +2322,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        ScalarVariable
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.SetVariable">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SetVariable
       </span>
      </code>
     </a>
@@ -1600,6 +2381,51 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.TransactionAccessMode">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TransactionAccessMode
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.TransactionConclusion">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TransactionConclusion
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.TransactionEnd">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TransactionEnd
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.TransactionIsolationLevel">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TransactionIsolationLevel
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.TransactionStart">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       TransactionStart
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.expr.TryCast">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1631,6 +2457,15 @@
      <code class="docutils literal notranslate">
       <span class="pre">
        UnnestExpr
+      </span>
+     </code>
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.expr.Values">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Values
       </span>
      </code>
     </a>
@@ -1702,19 +2537,61 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Column" title="datafusion.expr.Column"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Column</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CreateMemoryTable" title="datafusion.expr.CreateMemoryTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateMemoryTable</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CopyTo" title="datafusion.expr.CopyTo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CopyTo</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.CreateView" title="datafusion.expr.CreateView"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateView</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.CreateCatalog" title="datafusion.expr.CreateCatalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateCatalog</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Distinct" title="datafusion.expr.Distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Distinct</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CreateCatalogSchema" title="datafusion.expr.CreateCatalogSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateCatalogSchema</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.CreateExternalTable" title="datafusion.expr.CreateExternalTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateExternalTable</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CreateFunction" title="datafusion.expr.CreateFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateFunction</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.CreateFunctionBody" title="datafusion.expr.CreateFunctionBody"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateFunctionBody</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CreateIndex" title="datafusion.expr.CreateIndex"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateIndex</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.CreateMemoryTable" title="datafusion.expr.CreateMemoryTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateMemoryTable</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.CreateView" title="datafusion.expr.CreateView"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CreateView</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Deallocate" title="datafusion.expr.Deallocate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Deallocate</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.DescribeTable" title="datafusion.expr.DescribeTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DescribeTable</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Distinct" title="datafusion.expr.Distinct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Distinct</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.DmlStatement" title="datafusion.expr.DmlStatement"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DmlStatement</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.DropCatalogSchema" title="datafusion.expr.DropCatalogSchema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DropCatalogSchema</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.DropFunction" title="datafusion.expr.DropFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DropFunction</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.DropTable" title="datafusion.expr.DropTable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DropTable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.EmptyRelation" title="datafusion.expr.EmptyRelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmptyRelation</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.DropView" title="datafusion.expr.DropView"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DropView</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.EmptyRelation" title="datafusion.expr.EmptyRelation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EmptyRelation</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Execute" title="datafusion.expr.Execute"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Execute</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Exists" title="datafusion.expr.Exists"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Exists</span></code></a></p></td>
@@ -1726,67 +2603,73 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Extension" title="datafusion.expr.Extension"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Extension</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Filter" title="datafusion.expr.Filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.FileType" title="datafusion.expr.FileType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FileType</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupingSet</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Filter" title="datafusion.expr.Filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Filter</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ILike" title="datafusion.expr.ILike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILike</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.GroupingSet" title="datafusion.expr.GroupingSet"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GroupingSet</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.InList" title="datafusion.expr.InList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InList</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.ILike" title="datafusion.expr.ILike"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ILike</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.InSubquery" title="datafusion.expr.InSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InSubquery</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.InList" title="datafusion.expr.InList"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InList</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsFalse" title="datafusion.expr.IsFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsFalse</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.InSubquery" title="datafusion.expr.InSubquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InSubquery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotFalse" title="datafusion.expr.IsNotFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotFalse</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsFalse" title="datafusion.expr.IsFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsFalse</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotNull" title="datafusion.expr.IsNotNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotNull</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotFalse" title="datafusion.expr.IsNotFalse"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotFalse</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotTrue" title="datafusion.expr.IsNotTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotTrue</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotNull" title="datafusion.expr.IsNotNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotNull</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotUnknown" title="datafusion.expr.IsNotUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotUnknown</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNotTrue" title="datafusion.expr.IsNotTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotTrue</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNull" title="datafusion.expr.IsNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNull</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsNotUnknown" title="datafusion.expr.IsNotUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNotUnknown</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsTrue" title="datafusion.expr.IsTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsTrue</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsNull" title="datafusion.expr.IsNull"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsNull</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsUnknown" title="datafusion.expr.IsUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsUnknown</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.IsTrue" title="datafusion.expr.IsTrue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsTrue</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Join" title="datafusion.expr.Join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Join</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.IsUnknown" title="datafusion.expr.IsUnknown"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IsUnknown</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.JoinConstraint" title="datafusion.expr.JoinConstraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinConstraint</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Join" title="datafusion.expr.Join"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Join</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.JoinType" title="datafusion.expr.JoinType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinType</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.JoinConstraint" title="datafusion.expr.JoinConstraint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinConstraint</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Like" title="datafusion.expr.Like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Like</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.JoinType" title="datafusion.expr.JoinType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JoinType</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Limit" title="datafusion.expr.Limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Limit</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Like" title="datafusion.expr.Like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Like</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Literal" title="datafusion.expr.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Limit" title="datafusion.expr.Limit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Limit</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Negative" title="datafusion.expr.Negative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Negative</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Literal" title="datafusion.expr.Literal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Not" title="datafusion.expr.Not"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Not</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Negative" title="datafusion.expr.Negative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Negative</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Not" title="datafusion.expr.Not"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Not</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.OperateFunctionArg" title="datafusion.expr.OperateFunctionArg"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OperateFunctionArg</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Partitioning" title="datafusion.expr.Partitioning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Partitioning</span></code></a></p></td>
@@ -1795,7 +2678,13 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Placeholder" title="datafusion.expr.Placeholder"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Placeholder</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Projection" title="datafusion.expr.Projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Projection</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Prepare" title="datafusion.expr.Prepare"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Prepare</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Projection" title="datafusion.expr.Projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Projection</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.RecursiveQuery" title="datafusion.expr.RecursiveQuery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecursiveQuery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Repartition" title="datafusion.expr.Repartition"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Repartition</span></code></a></p></td>
@@ -1807,19 +2696,37 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.ScalarVariable" title="datafusion.expr.ScalarVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarVariable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SimilarTo" title="datafusion.expr.SimilarTo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimilarTo</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SetVariable" title="datafusion.expr.SetVariable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SetVariable</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Sort" title="datafusion.expr.Sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sort</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.SimilarTo" title="datafusion.expr.SimilarTo"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SimilarTo</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Subquery" title="datafusion.expr.Subquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Subquery</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.Sort" title="datafusion.expr.Sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Sort</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.SubqueryAlias" title="datafusion.expr.SubqueryAlias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubqueryAlias</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Subquery" title="datafusion.expr.Subquery"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Subquery</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.TableScan" title="datafusion.expr.TableScan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableScan</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.SubqueryAlias" title="datafusion.expr.SubqueryAlias"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SubqueryAlias</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.TableScan" title="datafusion.expr.TableScan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableScan</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.TransactionAccessMode" title="datafusion.expr.TransactionAccessMode"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionAccessMode</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.TransactionConclusion" title="datafusion.expr.TransactionConclusion"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionConclusion</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.TransactionEnd" title="datafusion.expr.TransactionEnd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionEnd</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.TransactionIsolationLevel" title="datafusion.expr.TransactionIsolationLevel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionIsolationLevel</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.TransactionStart" title="datafusion.expr.TransactionStart"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransactionStart</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.TryCast" title="datafusion.expr.TryCast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TryCast</span></code></a></p></td>
@@ -1834,7 +2741,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.UnnestExpr" title="datafusion.expr.UnnestExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">UnnestExpr</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.WindowExpr" title="datafusion.expr.WindowExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowExpr</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.expr.Values" title="datafusion.expr.Values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Values</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.expr.WindowExpr" title="datafusion.expr.WindowExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WindowExpr</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -2035,9 +2945,130 @@ element index begins at <code class="docutils literal notranslate"><span class="
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.abs">
+<span class="sig-name descname"><span class="pre">abs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.abs" title="Link to this definition">¶</a></dt>
+<dd><p>Return the absolute value of a given number.</p>
+<section id="returns">
+<h3>Returns:<a class="headerlink" href="#returns" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>Expr</dt><dd><p>A new expression representing the absolute value of the input expression.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.acos">
+<span class="sig-name descname"><span class="pre">acos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.acos" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the arc cosine or inverse cosine of a number.</p>
+<section id="id1">
+<h3>Returns:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<dl class="simple">
+<dt>Expr</dt><dd><p>A new expression representing the arc cosine of the input expression.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.acosh">
+<span class="sig-name descname"><span class="pre">acosh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.acosh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns inverse hyperbolic cosine.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.alias">
-<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.alias" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">alias</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.alias" title="Link to this definition">¶</a></dt>
 <dd><p>Assign a name to the expression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name to assign to the expression.</p></li>
+<li><p><strong>metadata</strong> – Optional metadata to attach to the expression.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new expression with the assigned name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_dims">
+<span class="sig-name descname"><span class="pre">array_dims</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_dims" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an array of the array’s dimensions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_distinct">
+<span class="sig-name descname"><span class="pre">array_distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_distinct" title="Link to this definition">¶</a></dt>
+<dd><p>Returns distinct values from the array after removing duplicates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_empty">
+<span class="sig-name descname"><span class="pre">array_empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_empty" title="Link to this definition">¶</a></dt>
+<dd><p>Returns a boolean indicating whether the array is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_length">
+<span class="sig-name descname"><span class="pre">array_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_length" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the length of the array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_ndims">
+<span class="sig-name descname"><span class="pre">array_ndims</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_ndims" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of dimensions of the array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_pop_back">
+<span class="sig-name descname"><span class="pre">array_pop_back</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_pop_back" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the array without the last element.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.array_pop_front">
+<span class="sig-name descname"><span class="pre">array_pop_front</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.array_pop_front" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the array without the first element.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.arrow_typeof">
+<span class="sig-name descname"><span class="pre">arrow_typeof</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.arrow_typeof" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the Arrow type of the expression.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.ascii">
+<span class="sig-name descname"><span class="pre">ascii</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.ascii" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the numeric code of the first character of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.asin">
+<span class="sig-name descname"><span class="pre">asin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.asin" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the arc sine or inverse sine of a number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.asinh">
+<span class="sig-name descname"><span class="pre">asinh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.asinh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns inverse hyperbolic sine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.atan">
+<span class="sig-name descname"><span class="pre">atan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.atan" title="Link to this definition">¶</a></dt>
+<dd><p>Returns inverse tangent of a number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.atanh">
+<span class="sig-name descname"><span class="pre">atanh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.atanh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns inverse hyperbolic tangent.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2056,15 +3087,63 @@ element index begins at <code class="docutils literal notranslate"><span class="
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.bit_length">
+<span class="sig-name descname"><span class="pre">bit_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.bit_length" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of bits in the string argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.btrim">
+<span class="sig-name descname"><span class="pre">btrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.btrim" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all characters, spaces by default, from both sides of a string.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.canonical_name">
 <span class="sig-name descname"><span class="pre">canonical_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.canonical_name" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a complete string representation of this expression.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.cardinality">
+<span class="sig-name descname"><span class="pre">cardinality</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cardinality" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the total number of elements in the array.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.cast">
 <span class="sig-name descname"><span class="pre">cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">type</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cast" title="Link to this definition">¶</a></dt>
 <dd><p>Cast to a new data type.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.cbrt">
+<span class="sig-name descname"><span class="pre">cbrt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cbrt" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the cube root of a number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.ceil">
+<span class="sig-name descname"><span class="pre">ceil</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.ceil" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the nearest integer greater than or equal to argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.char_length">
+<span class="sig-name descname"><span class="pre">char_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.char_length" title="Link to this definition">¶</a></dt>
+<dd><p>The number of characters in the <code class="docutils literal notranslate"><span class="pre">string</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.character_length">
+<span class="sig-name descname"><span class="pre">character_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.character_length" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of characters in the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.chr">
+<span class="sig-name descname"><span class="pre">chr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.chr" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the Unicode code point to a UTF8 character.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2077,6 +3156,30 @@ element index begins at <code class="docutils literal notranslate"><span class="
 <dt class="sig sig-object py" id="datafusion.expr.Expr.column_name">
 <span class="sig-name descname"><span class="pre">column_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../plan/index.html#datafusion.plan.LogicalPlan" title="datafusion.plan.LogicalPlan"><span class="pre">datafusion.plan.LogicalPlan</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.column_name" title="Link to this definition">¶</a></dt>
 <dd><p>Compute the output column name based on the provided logical plan.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.cos">
+<span class="sig-name descname"><span class="pre">cos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cos" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the cosine of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.cosh">
+<span class="sig-name descname"><span class="pre">cosh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cosh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the hyperbolic cosine of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.cot">
+<span class="sig-name descname"><span class="pre">cot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.cot" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the cotangent of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.degrees">
+<span class="sig-name descname"><span class="pre">degrees</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.degrees" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the argument from radians to degrees.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2093,6 +3196,24 @@ element index begins at <code class="docutils literal notranslate"><span class="
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
 set parameters for either window or aggregate functions. If used on any other
 type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.empty">
+<span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.empty" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <a class="reference internal" href="#datafusion.expr.Expr.array_empty" title="datafusion.expr.Expr.array_empty"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_empty()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.exp">
+<span class="sig-name descname"><span class="pre">exp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.exp" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the exponential of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.factorial">
+<span class="sig-name descname"><span class="pre">factorial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.factorial" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the factorial of the argument.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2117,6 +3238,32 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.flatten">
+<span class="sig-name descname"><span class="pre">flatten</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.flatten" title="Link to this definition">¶</a></dt>
+<dd><p>Flattens an array of arrays into a single array.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.floor">
+<span class="sig-name descname"><span class="pre">floor</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.floor" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the nearest integer less than or equal to the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.from_unixtime">
+<span class="sig-name descname"><span class="pre">from_unixtime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.from_unixtime" title="Link to this definition">¶</a></dt>
+<dd><p>Converts an integer to RFC3339 timestamp format string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.initcap">
+<span class="sig-name descname"><span class="pre">initcap</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.initcap" title="Link to this definition">¶</a></dt>
+<dd><p>Set the initial letter of each word to capital.</p>
+<p>Converts the first letter of each word in <code class="docutils literal notranslate"><span class="pre">string</span></code> to uppercase and the
+remaining characters to lowercase.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.is_not_null">
 <span class="sig-name descname"><span class="pre">is_not_null</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.is_not_null" title="Link to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if this expression is not null.</p>
@@ -2129,10 +3276,92 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.isnan">
+<span class="sig-name descname"><span class="pre">isnan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.isnan" title="Link to this definition">¶</a></dt>
+<dd><p>Returns true if a given number is +NaN or -NaN otherwise returns false.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.iszero">
+<span class="sig-name descname"><span class="pre">iszero</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.iszero" title="Link to this definition">¶</a></dt>
+<dd><p>Returns true if a given number is +0.0 or -0.0 otherwise returns false.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.length">
+<span class="sig-name descname"><span class="pre">length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.length" title="Link to this definition">¶</a></dt>
+<dd><p>The number of characters in the <code class="docutils literal notranslate"><span class="pre">string</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.list_dims">
+<span class="sig-name descname"><span class="pre">list_dims</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.list_dims" title="Link to this definition">¶</a></dt>
+<dd><p>Returns an array of the array’s dimensions.</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.expr.Expr.array_dims" title="datafusion.expr.Expr.array_dims"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_dims()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.list_distinct">
+<span class="sig-name descname"><span class="pre">list_distinct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.list_distinct" title="Link to this definition">¶</a></dt>
+<dd><p>Returns distinct values from the array after removing duplicates.</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.expr.Expr.array_distinct" title="datafusion.expr.Expr.array_distinct"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_distinct()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.list_length">
+<span class="sig-name descname"><span class="pre">list_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.list_length" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the length of the array.</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.expr.Expr.array_length" title="datafusion.expr.Expr.array_length"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_length()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.list_ndims">
+<span class="sig-name descname"><span class="pre">list_ndims</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.list_ndims" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of dimensions of the array.</p>
+<p>This is an alias for <a class="reference internal" href="#datafusion.expr.Expr.array_ndims" title="datafusion.expr.Expr.array_ndims"><code class="xref py py-func docutils literal notranslate"><span class="pre">array_ndims()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.literal">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.literal" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a new expression representing a scalar value.</p>
 <p><code class="docutils literal notranslate"><span class="pre">value</span></code> must be a valid PyArrow scalar value or easily castable to one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.ln">
+<span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.ln" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the natural logarithm (base e) of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.log10">
+<span class="sig-name descname"><span class="pre">log10</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.log10" title="Link to this definition">¶</a></dt>
+<dd><p>Base 10 logarithm of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.log2">
+<span class="sig-name descname"><span class="pre">log2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.log2" title="Link to this definition">¶</a></dt>
+<dd><p>Base 2 logarithm of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.lower">
+<span class="sig-name descname"><span class="pre">lower</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.lower" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a string to lowercase.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.ltrim">
+<span class="sig-name descname"><span class="pre">ltrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.ltrim" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all characters, spaces by default, from the beginning of a string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.md5">
+<span class="sig-name descname"><span class="pre">md5</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.md5" title="Link to this definition">¶</a></dt>
+<dd><p>Computes an MD5 128-bit checksum for a string expression.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2142,6 +3371,12 @@ type of expression, an error will be generated when <code class="docutils litera
 <p>This function will create an <code class="xref py py-class docutils literal notranslate"><span class="pre">ExprFuncBuilder</span></code> that can be used to
 set parameters for either window or aggregate functions. If used on any other
 type of expression, an error will be generated when <code class="docutils literal notranslate"><span class="pre">build()</span></code> is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.octet_length">
+<span class="sig-name descname"><span class="pre">octet_length</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.octet_length" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the number of bytes of a string.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2189,6 +3424,18 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.radians">
+<span class="sig-name descname"><span class="pre">radians</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.radians" title="Link to this definition">¶</a></dt>
+<dd><p>Converts the argument from degrees to radians.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.reverse">
+<span class="sig-name descname"><span class="pre">reverse</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.reverse" title="Link to this definition">¶</a></dt>
+<dd><p>Reverse the string argument.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.rex_call_operands">
 <span class="sig-name descname"><span class="pre">rex_call_operands</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.expr.Expr.rex_call_operands" title="Link to this definition">¶</a></dt>
 <dd><p>Return the operands of the expression based on it’s variant type.</p>
@@ -2214,10 +3461,58 @@ row as one of the possible valid <code class="docutils literal notranslate"><spa
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.rtrim">
+<span class="sig-name descname"><span class="pre">rtrim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.rtrim" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all characters, spaces by default, from the end of a string.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.schema_name">
 <span class="sig-name descname"><span class="pre">schema_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.schema_name" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the name of this expression as it should appear in a schema.</p>
 <p>This name will not include any CAST expressions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sha224">
+<span class="sig-name descname"><span class="pre">sha224</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sha224" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the SHA-224 hash of a binary string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sha256">
+<span class="sig-name descname"><span class="pre">sha256</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sha256" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the SHA-256 hash of a binary string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sha384">
+<span class="sig-name descname"><span class="pre">sha384</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sha384" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the SHA-384 hash of a binary string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sha512">
+<span class="sig-name descname"><span class="pre">sha512</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sha512" title="Link to this definition">¶</a></dt>
+<dd><p>Computes the SHA-512 hash of a binary string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.signum">
+<span class="sig-name descname"><span class="pre">signum</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.signum" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the sign of the argument (-1, 0, +1).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sin">
+<span class="sig-name descname"><span class="pre">sin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sin" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the sine of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sinh">
+<span class="sig-name descname"><span class="pre">sinh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sinh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the hyperbolic sine of the argument.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2235,6 +3530,12 @@ row as one of the possible valid <code class="docutils literal notranslate"><spa
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.sqrt">
+<span class="sig-name descname"><span class="pre">sqrt</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.sqrt" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the square root of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.string_literal">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">string_literal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.string_literal" title="Link to this definition">¶</a></dt>
 <dd><p>Creates a new expression representing a UTF8 literal value.</p>
@@ -2246,9 +3547,33 @@ UTF8View literal, like in:
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.tan">
+<span class="sig-name descname"><span class="pre">tan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.tan" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the tangent of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.tanh">
+<span class="sig-name descname"><span class="pre">tanh</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.tanh" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the hyperbolic tangent of the argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.to_hex">
+<span class="sig-name descname"><span class="pre">to_hex</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.to_hex" title="Link to this definition">¶</a></dt>
+<dd><p>Converts an integer to a hexadecimal string.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.to_variant">
 <span class="sig-name descname"><span class="pre">to_variant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#datafusion.expr.Expr.to_variant" title="Link to this definition">¶</a></dt>
 <dd><p>Convert this expression into a python object if possible.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.trim">
+<span class="sig-name descname"><span class="pre">trim</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.trim" title="Link to this definition">¶</a></dt>
+<dd><p>Removes all characters, spaces by default, from both sides of a string.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2261,6 +3586,12 @@ UTF8View literal, like in:
 SqlType Enum which this expression represents.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.upper">
+<span class="sig-name descname"><span class="pre">upper</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.upper" title="Link to this definition">¶</a></dt>
+<dd><p>Converts a string to uppercase.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -2531,6 +3862,41 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CopyTo">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CopyTo</span></span><a class="headerlink" href="#datafusion.expr.CopyTo" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateCatalog">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateCatalog</span></span><a class="headerlink" href="#datafusion.expr.CreateCatalog" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateCatalogSchema">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateCatalogSchema</span></span><a class="headerlink" href="#datafusion.expr.CreateCatalogSchema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateExternalTable">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateExternalTable</span></span><a class="headerlink" href="#datafusion.expr.CreateExternalTable" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateFunction">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateFunction</span></span><a class="headerlink" href="#datafusion.expr.CreateFunction" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateFunctionBody">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateFunctionBody</span></span><a class="headerlink" href="#datafusion.expr.CreateFunctionBody" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.CreateIndex">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateIndex</span></span><a class="headerlink" href="#datafusion.expr.CreateIndex" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.CreateMemoryTable">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">CreateMemoryTable</span></span><a class="headerlink" href="#datafusion.expr.CreateMemoryTable" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2541,8 +3907,33 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.Deallocate">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Deallocate</span></span><a class="headerlink" href="#datafusion.expr.Deallocate" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.DescribeTable">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DescribeTable</span></span><a class="headerlink" href="#datafusion.expr.DescribeTable" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.Distinct">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Distinct</span></span><a class="headerlink" href="#datafusion.expr.Distinct" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.DmlStatement">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DmlStatement</span></span><a class="headerlink" href="#datafusion.expr.DmlStatement" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.DropCatalogSchema">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DropCatalogSchema</span></span><a class="headerlink" href="#datafusion.expr.DropCatalogSchema" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.DropFunction">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DropFunction</span></span><a class="headerlink" href="#datafusion.expr.DropFunction" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -2551,8 +3942,18 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.DropView">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">DropView</span></span><a class="headerlink" href="#datafusion.expr.DropView" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.EmptyRelation">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">EmptyRelation</span></span><a class="headerlink" href="#datafusion.expr.EmptyRelation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.Execute">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Execute</span></span><a class="headerlink" href="#datafusion.expr.Execute" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -2568,6 +3969,11 @@ parameter must be set.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.Extension">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Extension</span></span><a class="headerlink" href="#datafusion.expr.Extension" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.FileType">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">FileType</span></span><a class="headerlink" href="#datafusion.expr.FileType" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -2676,6 +4082,11 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.OperateFunctionArg">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">OperateFunctionArg</span></span><a class="headerlink" href="#datafusion.expr.OperateFunctionArg" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.Partitioning">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Partitioning</span></span><a class="headerlink" href="#datafusion.expr.Partitioning" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2686,8 +4097,18 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.Prepare">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Prepare</span></span><a class="headerlink" href="#datafusion.expr.Prepare" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.Projection">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Projection</span></span><a class="headerlink" href="#datafusion.expr.Projection" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.RecursiveQuery">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">RecursiveQuery</span></span><a class="headerlink" href="#datafusion.expr.RecursiveQuery" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -2703,6 +4124,11 @@ parameter must be set.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.ScalarVariable">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">ScalarVariable</span></span><a class="headerlink" href="#datafusion.expr.ScalarVariable" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.SetVariable">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">SetVariable</span></span><a class="headerlink" href="#datafusion.expr.SetVariable" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -2731,6 +4157,31 @@ parameter must be set.</p></li>
 <dd></dd></dl>
 
 <dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.TransactionAccessMode">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TransactionAccessMode</span></span><a class="headerlink" href="#datafusion.expr.TransactionAccessMode" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.TransactionConclusion">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TransactionConclusion</span></span><a class="headerlink" href="#datafusion.expr.TransactionConclusion" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.TransactionEnd">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TransactionEnd</span></span><a class="headerlink" href="#datafusion.expr.TransactionEnd" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.TransactionIsolationLevel">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TransactionIsolationLevel</span></span><a class="headerlink" href="#datafusion.expr.TransactionIsolationLevel" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.TransactionStart">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TransactionStart</span></span><a class="headerlink" href="#datafusion.expr.TransactionStart" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.TryCast">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">TryCast</span></span><a class="headerlink" href="#datafusion.expr.TryCast" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -2748,6 +4199,11 @@ parameter must be set.</p></li>
 <dl class="py data">
 <dt class="sig sig-object py" id="datafusion.expr.UnnestExpr">
 <span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">UnnestExpr</span></span><a class="headerlink" href="#datafusion.expr.UnnestExpr" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="datafusion.expr.Values">
+<span class="sig-prename descclassname"><span class="pre">datafusion.expr.</span></span><span class="sig-name descname"><span class="pre">Values</span></span><a class="headerlink" href="#datafusion.expr.Values" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py data">

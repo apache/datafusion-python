@@ -117,6 +117,11 @@
    Data Sources
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../dataframe.html">
+   DataFrames
+  </a>
+ </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="index.html">
    Common Operations
@@ -276,6 +281,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/context/index.html">
        datafusion.context
       </a>
@@ -293,6 +303,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
        datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/html_formatter/index.html">
+       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -345,6 +360,16 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/udf/index.html">
        datafusion.udf
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html">
+       datafusion.user_defined
       </a>
      </li>
     </ul>
@@ -579,15 +604,15 @@ Pokemon set. Since there will be many entries of <code class="docutils literal n
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                      <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[,</span> <span class="n">Grass</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                        <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[,</span> <span class="n">Steel</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Steel</span><span class="p">,</span> <span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span> <span class="p">[]</span>                                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
+<span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">,</span> <span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">,</span> <span class="p">]</span>                                         <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Ice</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[,</span> <span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">+----------+--------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
 </pre></div>
@@ -602,15 +627,15 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Grass</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                        <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Grass</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Steel</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Fairy</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Ice</span><span class="p">]</span> <span class="o">|</span>
-<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Dark</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Ice</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Rock</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Water</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                        <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ghost</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Poison</span><span class="p">]</span>                                       <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
@@ -621,15 +646,15 @@ entries entirely removed. The second is we can use the <code class="docutils lit
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="o">|</span> <span class="n">Type</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">Type</span> <span class="mi">2</span> <span class="n">List</span>                                    <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
-<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Grass</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                        <span class="o">|</span>
-<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Ground</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Bug</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Grass</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                        <span class="o">|</span>
+<span class="o">|</span> <span class="n">Poison</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Ground</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
 <span class="o">|</span> <span class="n">Electric</span> <span class="o">|</span> <span class="p">[</span><span class="n">Steel</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Fairy</span>    <span class="o">|</span>                                                <span class="o">|</span>
 <span class="o">|</span> <span class="n">Normal</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Fairy</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                                <span class="o">|</span>
-<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span>                              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Ice</span>      <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                              <span class="o">|</span>
 <span class="o">|</span> <span class="n">Grass</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Psychic</span><span class="p">,</span> <span class="n">Poison</span><span class="p">]</span>                              <span class="o">|</span>
-<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Flying</span><span class="p">,</span> <span class="n">Dragon</span><span class="p">]</span>                               <span class="o">|</span>
-<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Ice</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">]</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fire</span>     <span class="o">|</span> <span class="p">[</span><span class="n">Dragon</span><span class="p">,</span> <span class="n">Flying</span><span class="p">]</span>                               <span class="o">|</span>
+<span class="o">|</span> <span class="n">Water</span>    <span class="o">|</span> <span class="p">[</span><span class="n">Ice</span><span class="p">,</span> <span class="n">Flying</span><span class="p">,</span> <span class="n">Poison</span><span class="p">,</span> <span class="n">Dark</span><span class="p">,</span> <span class="n">Psychic</span><span class="p">,</span> <span class="n">Fighting</span><span class="p">]</span> <span class="o">|</span>
 <span class="o">|</span> <span class="n">Ground</span>   <span class="o">|</span> <span class="p">[</span><span class="n">Rock</span><span class="p">]</span>                                         <span class="o">|</span>
 <span class="o">+----------+------------------------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>

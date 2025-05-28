@@ -117,6 +117,11 @@
    Data Sources
   </a>
  </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../dataframe.html">
+   DataFrames
+  </a>
+ </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="index.html">
    Common Operations
@@ -276,6 +281,11 @@
       </a>
      </li>
      <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/col/index.html">
+       datafusion.col
+      </a>
+     </li>
+     <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/context/index.html">
        datafusion.context
       </a>
@@ -293,6 +303,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../../autoapi/datafusion/functions/index.html">
        datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/html_formatter/index.html">
+       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -347,6 +362,16 @@
        datafusion.udf
       </a>
      </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../../autoapi/datafusion/user_defined/index.html">
+       datafusion.user_defined
+      </a>
+     </li>
     </ul>
    </li>
   </ul>
@@ -375,35 +400,54 @@
 
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#mathematical">
-   Mathematical
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Functions
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#mathematical">
+     Mathematical
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#conditional">
+     Conditional
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#temporal">
+     Temporal
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#string">
+     String
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#casting">
+     Casting
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#other">
+     Other
+    </a>
+   </li>
+  </ul>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#conditional">
-   Conditional
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#handling-missing-values">
+   Handling Missing Values
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#temporal">
-   Temporal
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#string">
-   String
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#casting">
-   Casting
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#other">
-   Other
-  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#fill-null">
+     fill_null
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -505,16 +549,16 @@ In here we will cover some of the more popular use cases. If you want to view al
 <span class="o">+--------------------------------+</span>
 <span class="o">|</span> <span class="n">now</span><span class="p">()</span>                          <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">30</span><span class="n">T17</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span><span class="mf">00.536576280</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2025</span><span class="o">-</span><span class="mi">05</span><span class="o">-</span><span class="mi">28</span><span class="n">T18</span><span class="p">:</span><span class="mi">37</span><span class="p">:</span><span class="mf">38.343210340</span><span class="n">Z</span> <span class="o">|</span>
 <span class="o">+--------------------------------+</span>
 <span class="n">Data</span> <span class="n">truncated</span><span class="o">.</span>
 </pre></div>
@@ -684,6 +728,22 @@ DataFusion offers a range of helpful options.</p>
 <span class="mi">19</span>        <span class="kc">False</span>
 </pre></div>
 </div>
+</section>
+</section>
+<section id="handling-missing-values">
+<h1>Handling Missing Values<a class="headerlink" href="#handling-missing-values" title="Link to this heading">¶</a></h1>
+<p>DataFusion provides methods to handle missing values in DataFrames:</p>
+<section id="fill-null">
+<h2>fill_null<a class="headerlink" href="#fill-null" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">fill_null()</span></code> method replaces NULL values in specified columns with a provided value:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Fill all NULL values with 0 where possible</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Fill NULL values only in specific string columns</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">fill_null</span><span class="p">(</span><span class="s2">&quot;missing&quot;</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The fill value will be cast to match each column’s type. If casting fails for a column, that column remains unchanged.</p>
 </section>
 </section>
 

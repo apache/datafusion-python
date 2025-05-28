@@ -35,7 +35,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="datafusion.dataframe" href="../dataframe/index.html" />
-    <link rel="prev" title="datafusion.catalog" href="../catalog/index.html" />
+    <link rel="prev" title="datafusion.col" href="../col/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -115,6 +115,11 @@
  <li class="toctree-l1">
   <a class="reference internal" href="../../../user-guide/data-sources.html">
    Data Sources
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../../../user-guide/dataframe.html">
+   DataFrames
   </a>
  </li>
  <li class="toctree-l1 has-children">
@@ -275,6 +280,11 @@
        datafusion.catalog
       </a>
      </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../col/index.html">
+       datafusion.col
+      </a>
+     </li>
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
        datafusion.context
@@ -293,6 +303,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../functions/index.html">
        datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../html_formatter/index.html">
+       datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
@@ -345,6 +360,16 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../udf/index.html">
        datafusion.udf
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../user_defined/index.html">
+       datafusion.user_defined
       </a>
      </li>
     </ul>
@@ -985,6 +1010,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          SessionContext.register_udf()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.register_udtf">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.register_udtf()
         </span>
        </code>
       </a>
@@ -2081,19 +2115,25 @@ which returns a PyCapsule that exposes a <code class="docutils literal notransla
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udaf">
-<span class="sig-name descname"><span class="pre">register_udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udaf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.AggregateUDF" title="datafusion.udf.AggregateUDF"><span class="pre">datafusion.udf.AggregateUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udaf" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udaf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.AggregateUDF" title="datafusion.user_defined.AggregateUDF"><span class="pre">datafusion.user_defined.AggregateUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udaf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined aggregation function (UDAF) with the context.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udf">
-<span class="sig-name descname"><span class="pre">register_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.ScalarUDF" title="datafusion.udf.ScalarUDF"><span class="pre">datafusion.udf.ScalarUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udf" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.ScalarUDF" title="datafusion.user_defined.ScalarUDF"><span class="pre">datafusion.user_defined.ScalarUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined function (UDF) with the context.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udtf">
+<span class="sig-name descname"><span class="pre">register_udtf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.TableFunction" title="datafusion.user_defined.TableFunction"><span class="pre">datafusion.user_defined.TableFunction</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udtf" title="Link to this definition">¶</a></dt>
+<dd><p>Register a user defined table function.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.register_udwf">
-<span class="sig-name descname"><span class="pre">register_udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udwf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../udf/index.html#datafusion.udf.WindowUDF" title="datafusion.udf.WindowUDF"><span class="pre">datafusion.udf.WindowUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udwf" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">udwf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../user_defined/index.html#datafusion.user_defined.WindowUDF" title="datafusion.user_defined.WindowUDF"><span class="pre">datafusion.user_defined.WindowUDF</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.register_udwf" title="Link to this definition">¶</a></dt>
 <dd><p>Register a user-defined window function (UDWF) with the context.</p>
 </dd></dl>
 
@@ -2198,11 +2238,11 @@ provided options.</p>
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../catalog/index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../col/index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.catalog</p>
+            <p class="prev-next-title">datafusion.col</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="../dataframe/index.html" title="next page">
