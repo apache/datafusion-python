@@ -85,7 +85,8 @@ class CatalogProviderExportable(Protocol):
 
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
-    def __datafusion_catalog_provider__(self) -> object: ...
+
+    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
 
 
 class SessionConfig:
@@ -758,7 +759,7 @@ class SessionContext:
         self.ctx.deregister_table(name)
 
     def register_catalog_provider(
-            self, name: str, provider: CatalogProviderExportable
+        self, name: str, provider: CatalogProviderExportable
     ) -> None:
         """Register a catalog provider."""
         self.ctx.register_catalog_provider(name, provider)
