@@ -78,6 +78,15 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
 
 
+class CatalogProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
+    """
+
+    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+
+
 class SessionConfig:
     """Session configuration options."""
 
@@ -745,6 +754,12 @@ class SessionContext:
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
+
+    def register_catalog_provider(
+        self, name: str, provider: CatalogProviderExportable
+    ) -> None:
+        """Register a catalog provider."""
+        self.ctx.register_catalog_provider(name, provider)
 
     def register_table_provider(
         self, name: str, provider: TableProviderExportable
