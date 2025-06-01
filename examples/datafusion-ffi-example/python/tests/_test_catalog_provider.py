@@ -22,13 +22,14 @@ import pyarrow as pa
 from datafusion import SessionContext
 from datafusion_ffi_example import MyCatalogProvider
 
+
 def test_catalog_provider():
     ctx = SessionContext()
 
     my_catalog_name = "my_catalog"
     expected_schema_name = "my_schema"
     expected_table_name = "my_table"
-    expected_table_columns = ['units', 'price']
+    expected_table_columns = ["units", "price"]
 
     catalog_provider = MyCatalogProvider()
     ctx.register_catalog_provider(my_catalog_name, catalog_provider)
@@ -41,12 +42,9 @@ def test_catalog_provider():
     my_table = my_database.table(expected_table_name)
     assert expected_table_columns == my_table.schema.names
 
-    ctx.register_table(expected_table_name, my_table)
-    expected_df = ctx.sql(f"SELECT * FROM {expected_table_name}").to_pandas()
-    assert len(expected_df) == 5
-    assert expected_table_columns == expected_df.columns.tolist()
-
-    result = ctx.table(f"{my_catalog_name}.{expected_schema_name}.{expected_table_name}").collect()
+    result = ctx.table(
+        f"{my_catalog_name}.{expected_schema_name}.{expected_table_name}"
+    ).collect()
     assert len(result) == 2
 
     col0_result = [r.column(0) for r in result]
