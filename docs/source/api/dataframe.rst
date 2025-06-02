@@ -30,7 +30,7 @@ A DataFrame represents a logical plan that is lazily evaluated. The actual execu
 terminal operations like ``collect()``, ``show()``, or ``to_pandas()`` are called.
 
 Creating DataFrames
-------------------
+-------------------
 
 DataFrames can be created in several ways:
 
@@ -76,7 +76,7 @@ DataFrames can be created in several ways:
       df = ctx.from_arrow(batch)
 
 Common DataFrame Operations
---------------------------
+---------------------------
 
 DataFusion's DataFrame API offers a wide range of operations:
 
@@ -122,7 +122,7 @@ DataFusion's DataFrame API offers a wide range of operations:
     df = df.drop("temporary_column")
 
 Terminal Operations
-------------------
+-------------------
 
 To materialize the results of your DataFrame operations:
 
@@ -145,14 +145,14 @@ To materialize the results of your DataFrame operations:
     count = df.count()
 
 HTML Rendering in Jupyter
-------------------------
+-------------------------
 
 When working in Jupyter notebooks or other environments that support rich HTML display, 
 DataFusion DataFrames automatically render as nicely formatted HTML tables. This functionality
 is provided by the ``_repr_html_`` method, which is automatically called by Jupyter.
 
 Basic HTML Rendering
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 In a Jupyter environment, simply displaying a DataFrame object will trigger HTML rendering:
 
@@ -165,13 +165,13 @@ In a Jupyter environment, simply displaying a DataFrame object will trigger HTML
     display(df)
 
 HTML Rendering Customization
----------------------------
+----------------------------
 
 DataFusion provides extensive customization options for HTML table rendering through the
 ``datafusion.html_formatter`` module.
 
 Configuring the HTML Formatter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can customize how DataFrames are rendered by configuring the formatter:
 
@@ -194,7 +194,7 @@ You can customize how DataFrames are rendered by configuring the formatter:
     )
 
 Custom Style Providers
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 For advanced styling needs, you can create a custom style provider class:
 
@@ -213,7 +213,7 @@ For advanced styling needs, you can create a custom style provider class:
     configure_formatter(style_provider=CustomStyleProvider())
 
 Custom Type Formatters
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 You can register custom formatters for specific data types:
 
@@ -236,7 +236,7 @@ You can register custom formatters for specific data types:
     formatter.register_formatter(datetime.date, format_date)
 
 Custom Cell Builders
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 
 For complete control over cell rendering:
 
@@ -260,7 +260,7 @@ For complete control over cell rendering:
     formatter.set_custom_cell_builder(custom_cell_builder)
 
 Custom Header Builders
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 Similarly, you can customize the rendering of table headers:
 
@@ -273,7 +273,7 @@ Similarly, you can customize the rendering of table headers:
     formatter.set_custom_header_builder(custom_header_builder)
 
 Managing Formatter State
------------------------
+-----------------------~
 
 The HTML formatter maintains global state that can be managed:
 
@@ -291,7 +291,7 @@ The HTML formatter maintains global state that can be managed:
     formatter = get_formatter()
 
 Advanced Example: Dashboard-Style Formatting
-------------------------------------------
+------------------------------------------~~
 
 This example shows how to create a dashboard-like styling for your DataFrames:
 
@@ -355,7 +355,7 @@ This example shows how to create a dashboard-like styling for your DataFrames:
     formatter.register_formatter(float, format_number)
 
 Best Practices
--------------
+--------------
 
 1. **Memory Management**: For large datasets, use ``max_memory_bytes`` to limit memory usage.
 
@@ -368,7 +368,7 @@ Best Practices
 5. **Cell Expansion**: Use ``enable_cell_expansion=True`` when cells might contain longer content that users may want to see in full.
 
 Additional Resources
--------------------
+--------------------
 
 * `DataFusion User Guide <../user-guide/dataframe.html>`_ - Complete guide to using DataFrames
 * `API Reference <https://arrow.apache.org/datafusion-python/api/index.html>`_ - Full API reference
