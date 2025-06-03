@@ -733,12 +733,12 @@ impl PyDataFrame {
 
             schema = project_schema(schema, desired_schema)?;
 
-            batches = batches
+            batches = Ok(batches
                 .into_iter()
                 .flatten()
                 .map(|record_batch| record_batch_into_schema(record_batch, &schema))
                 .collect::<Result<Vec<RecordBatch>, ArrowError>>()
-                .map_err(PyDataFusionError::from)?;
+                .map_err(PyDataFusionError::from)?)
         }
 
         let batches_wrapped = batches.into_iter().map(Ok);
