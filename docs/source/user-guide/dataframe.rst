@@ -122,7 +122,8 @@ Performance Optimization with Shared Styles
 The ``use_shared_styles`` parameter (enabled by default) optimizes performance when displaying 
 multiple DataFrames in notebook environments:
 
- .. code-block:: python
+.. code-block:: python
+
     from datafusion.html_formatter import StyleProvider, configure_formatter
     # Default: Use shared styles (recommended for notebooks)
     configure_formatter(use_shared_styles=True)
