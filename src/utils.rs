@@ -42,11 +42,35 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
     RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
 }
 
+/// Utility to get a Tokio Runtime with time explicitly enabled
+#[inline]
+pub(crate) fn get_tokio_runtime_with_time() -> &'static TokioRuntime {
+    static RUNTIME_WITH_TIME: OnceLock<TokioRuntime> = OnceLock::new();
+    RUNTIME_WITH_TIME.get_or_init(|| {
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .enable_time()
+            .build()
+            .unwrap();
+
+        TokioRuntime(runtime)
+    })
+}
+
 /// Utility to get the Global Datafussion CTX
 #[inline]
 pub(crate) fn get_global_ctx() -> &'static SessionContext {
     static CTX: OnceLock<SessionContext> = OnceLock::new();
     CTX.get_or_init(SessionContext::new)
+}
+
+/// Gets the Tokio runtime with time enabled and enters it, returning both the runtime and enter guard
+/// This helps ensure that we don't forget to call enter() after getting the runtime
+#[inline]
+pub(crate) fn get_and_enter_tokio_runtime(
+) -> (&'static Runtime, tokio::runtime::EnterGuard<'static>) {
+    let runtime = &get_tokio_runtime_with_time().0;
+    let enter_guard = runtime.enter();
+    (runtime, enter_guard)
 }
 
 /// Utility to collect rust futures with GIL released and interrupt support
@@ -55,7 +79,7 @@ where
     F: Future + Send + 'static,
     F::Output: Send + 'static,
 {
-    let runtime: &Runtime = &get_tokio_runtime().0;
+    let (runtime, _enter_guard) = get_and_enter_tokio_runtime();
 
     // Spawn the task so we can poll it with timeouts
     let mut handle = runtime.spawn(f);
@@ -65,21 +89,21 @@ where
         loop {
             // Poll the future with a timeout to allow periodic signal checking
             match runtime.block_on(timeout(Duration::from_millis(100), &mut handle)) {
-                Ok(result) => {
-                    return result.map_err(|e| {
+                Ok(join_result) => {
+                    // The inner task has completed before timeout
+                    return join_result.map_err(|e| {
                         PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
                             "Task failed: {}",
                             e
                         ))
                     });
                 }
-                Err(_) => {
-                    // Timeout occurred, check for Python signals
-                    // We need to re-acquire the GIL temporarily to check signals
-                    if let Err(e) = Python::with_gil(|py| py.check_signals()) {
-                        return Err(e);
+                Err(_elapsed) => {
+                    // 100 ms elapsed without task completion → check Python signals
+                    if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
+                        return Err(py_exc);
                     }
-                    // Continue polling if no signal was received
+                    // Loop again, reintroducing another 100 ms timeout slice
                 }
             }
         }
