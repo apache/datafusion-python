@@ -359,6 +359,37 @@ impl PySessionContext {
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyDataFusionResult<()> {
+        let table_path = ListingTableUrl::parse(path)?;
+        let resolved_schema: SchemaRef = match schema {
+            Some(s) => Arc::new(s.0),
+            None => {
+                // Create options within this scope
+                let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
+                    .with_file_extension(file_extension)
+                    .with_table_partition_cols(convert_table_partition_cols(
+                        table_partition_cols.clone(),
+                    )?)
+                    .with_file_sort_order(
+                        file_sort_order
+                            .clone()
+                            .unwrap_or_default()
+                            .into_iter()
+                            .map(|e| e.into_iter().map(|f| f.into()).collect())
+                            .collect(),
+                    );
+
+                // Clone the state and table path to move into the future
+                let state = self.ctx.state();
+                let table_path_clone = table_path.clone();
+
+                // Use an async block to move all needed values into the future
+                let schema_future =
+                    async move { options.infer_schema(&state, &table_path_clone).await };
+                wait_for_future(py, schema_future)?.map_err(PyDataFusionError::from)?
+            }
+        };
+
+        // Recreate options outside the match block for the table configuration
         let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
             .with_file_extension(file_extension)
             .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
@@ -369,15 +400,6 @@ impl PySessionContext {
                     .map(|e| e.into_iter().map(|f| f.into()).collect())
                     .collect(),
             );
-        let table_path = ListingTableUrl::parse(path)?;
-        let resolved_schema: SchemaRef = match schema {
-            Some(s) => Arc::new(s.0),
-            None => {
-                let state = self.ctx.state();
-                let schema = options.infer_schema(&state, &table_path);
-                wait_for_future(py, schema)?.map_err(PyDataFusionError::from)?
-            }
-        };
         let config = ListingTableConfig::new(table_path)
             .with_listing_options(options)
             .with_schema(resolved_schema);
@@ -399,8 +421,14 @@ impl PySessionContext {
 
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
-        let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+        // Clone the context and query to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let query_owned = query.to_string();
+
+        // Create a future that moves owned values
+        let result_future = async move { ctx.sql(&query_owned).await };
+
+        let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -411,13 +439,21 @@ impl PySessionContext {
         options: Option<PySQLOptions>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let options = if let Some(options) = options {
+        // Extract SQL options
+        let sql_options = if let Some(options) = options {
             options.options
         } else {
             SQLOptions::new()
         };
-        let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+
+        // Clone the context and query to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let query_owned = query.to_string();
+
+        // Create a future that moves owned values
+        let result_future = async move { ctx.sql_with_options(&query_owned, sql_options).await };
+
+        let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -451,8 +487,14 @@ impl PySessionContext {
 
         self.ctx.register_table(&*table_name, Arc::new(table))?;
 
-        let table =
-            wait_for_future(py, self._table(&table_name))?.map_err(PyDataFusionError::from)?;
+        // Clone the context and table name to avoid borrowing in the future
+        let self_clone = self.clone(); // Assuming self implements Clone
+        let table_name_clone = table_name.clone();
+
+        // Create a future that moves owned values
+        let table_future = async move { self_clone._table(&table_name_clone).await };
+
+        let table = wait_for_future(py, table_future)?.map_err(PyDataFusionError::from)?;
 
         let df = PyDataFrame::new(table);
         Ok(df)
@@ -638,20 +680,45 @@ impl PySessionContext {
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .parquet_pruning(parquet_pruning)
-            .skip_metadata(skip_metadata);
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
-        options.file_sort_order = file_sort_order
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let name_owned = name.to_string();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
+
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        // Convert the file_sort_order to what we need before the async block
+        let file_sort_order_converted = file_sort_order
             .unwrap_or_default()
             .into_iter()
             .map(|e| e.into_iter().map(|f| f.into()).collect())
             .collect();
 
-        let result = self.ctx.register_parquet(name, path, options);
-        wait_for_future(py, result)?;
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Create a future that moves owned values
+        let result_future = async move {
+            // Create options inside the async block with owned values
+            let mut options = ParquetReadOptions::default()
+                .table_partition_cols(table_partition_cols)
+                .parquet_pruning(parquet_pruning)
+                .skip_metadata(skip_metadata);
+            options.file_extension = &file_extension_owned;
+
+            // Use the owned schema if provided
+            if let Some(s) = &schema_owned {
+                options.schema = Some(s);
+            }
+
+            options.file_sort_order = file_sort_order_converted;
+
+            ctx.register_parquet(&name_owned, &path_owned, options)
+                .await
+        };
+        let _ = wait_for_future(py, result_future)?;
         Ok(())
     }
 
@@ -676,30 +743,75 @@ impl PySessionContext {
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
+        // Check if delimiter is a single byte
+        let delimiter_bytes = delimiter.as_bytes();
+        if delimiter_bytes.len() != 1 {
             return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
                 "Delimiter must be a single character",
             )));
         }
+        // Extract the single byte to use in the future
+        let delimiter_byte = delimiter_bytes[0];
 
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        // Clone all string references to create owned values
+        let file_extension_owned = file_extension.to_string();
+        let name_owned = name.to_string();
 
-        if path.is_instance_of::<PyList>() {
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        let _ = if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
-            let result = self.register_csv_from_multiple_paths(name, paths, options);
-            wait_for_future(py, result)?;
+            // Clone self to avoid borrowing
+            let self_clone = self.clone();
+
+            // Create options with owned values inside the async block
+            let result_future = async move {
+                let mut options = CsvReadOptions::new()
+                    .has_header(has_header)
+                    .delimiter(delimiter_byte)
+                    .schema_infer_max_records(schema_infer_max_records)
+                    .file_extension(&file_extension_owned)
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type.clone())
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                self_clone
+                    .register_csv_from_multiple_paths(&name_owned, paths, options)
+                    .await
+            };
+            wait_for_future(py, result_future)?
         } else {
             let path = path.extract::<String>()?;
-            let result = self.ctx.register_csv(name, &path, options);
-            wait_for_future(py, result)?;
-        }
+            let ctx = self.ctx.clone();
+
+            // Create a future that moves owned values
+            let result_future = async move {
+                let mut options = CsvReadOptions::new()
+                    .has_header(has_header)
+                    .delimiter(delimiter_byte)
+                    .schema_infer_max_records(schema_infer_max_records)
+                    .file_extension(&file_extension_owned)
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type.clone())
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                ctx.register_csv(&name_owned, &path, options).await
+            };
+            wait_for_future(py, result_future)?
+        };
 
         Ok(())
     }
@@ -727,15 +839,38 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = NdJsonReadOptions::default()
-            .file_compression_type(parse_file_compression_type(file_compression_type)?)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        options.schema_infer_max_records = schema_infer_max_records;
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let name_owned = name.to_string();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
+        let file_compression_type_owned = file_compression_type.clone();
 
-        let result = self.ctx.register_json(name, path, options);
-        wait_for_future(py, result)?;
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Create a future that moves owned values
+        let result_future = async move {
+            let mut options = NdJsonReadOptions::default()
+                .file_compression_type(
+                    parse_file_compression_type(file_compression_type_owned)
+                        .map_err(py_err_to_datafusion_err)?,
+                )
+                .table_partition_cols(table_partition_cols.clone());
+            options.schema_infer_max_records = schema_infer_max_records;
+            options.file_extension = &file_extension_owned;
+
+            // Use owned schema if provided
+            if let Some(s) = &schema_owned {
+                options.schema = Some(s);
+            }
+
+            ctx.register_json(&name_owned, &path_owned, options).await
+        };
+        let _ = wait_for_future(py, result_future)?;
 
         Ok(())
     }
@@ -759,13 +894,32 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let name_owned = name.to_string();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
 
-        let result = self.ctx.register_avro(name, path, options);
-        wait_for_future(py, result)?;
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Create a future that moves owned values
+        let result_future = async move {
+            let mut options =
+                AvroReadOptions::default().table_partition_cols(table_partition_cols.clone());
+            options.file_extension = &file_extension_owned;
+
+            // Use owned schema if provided
+            if let Some(s) = &schema_owned {
+                options.schema = Some(s);
+            }
+
+            ctx.register_avro(&name_owned, &path_owned, options).await
+        };
+        let _ = wait_for_future(py, result_future)?;
 
         Ok(())
     }
@@ -826,7 +980,14 @@ impl PySessionContext {
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
-        let x = wait_for_future(py, self.ctx.table(name))
+        // Clone the context and name to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let name_owned = name.to_string();
+
+        // Create a future that moves owned values
+        let table_future = async move { ctx.table(&name_owned).await };
+
+        let x = wait_for_future(py, table_future)
             .map_err(|e| PyKeyError::new_err(e.to_string()))?
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
         Ok(PyDataFrame::new(x))
@@ -852,6 +1013,7 @@ impl PySessionContext {
     }
 
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
+        // table_exist is synchronous, so we don't need to handle futures here
         Ok(self.ctx.table_exist(name)?)
     }
 
@@ -878,18 +1040,53 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
-        let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema_infer_max_records = schema_infer_max_records;
-        options.file_extension = file_extension;
-        let df = if let Some(schema) = schema {
-            options.schema = Some(&schema.0);
-            let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?.map_err(PyDataFusionError::from)?
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
+        let file_compression_type_owned = file_compression_type.clone();
+
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        let df = if schema_owned.is_some() {
+            // Create a future that moves owned values
+            let result_future = async move {
+                let mut options = NdJsonReadOptions::default()
+                    .table_partition_cols(table_partition_cols.clone())
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type_owned)
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+                options.schema_infer_max_records = schema_infer_max_records;
+                options.file_extension = &file_extension_owned;
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                ctx.read_json(&path_owned, options).await
+            };
+            wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?
         } else {
-            let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?.map_err(PyDataFusionError::from)?
+            // Create a future that moves owned values
+            let result_future = async move {
+                let mut options = NdJsonReadOptions::default()
+                    .table_partition_cols(table_partition_cols.clone())
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type_owned)
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+                options.schema_infer_max_records = schema_infer_max_records;
+                options.file_extension = &file_extension_owned;
+
+                ctx.read_json(&path_owned, options).await
+            };
+            wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
     }
@@ -916,32 +1113,85 @@ impl PySessionContext {
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let delimiter = delimiter.as_bytes();
-        if delimiter.len() != 1 {
+        // Check if delimiter is a single byte
+        let delimiter_bytes = delimiter.as_bytes();
+        if delimiter_bytes.len() != 1 {
             return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
                 "Delimiter must be a single character",
             )));
         };
+        // Store just the delimiter byte to use in the future
+        let delimiter_byte = delimiter_bytes[0];
 
-        let mut options = CsvReadOptions::new()
-            .has_header(has_header)
-            .delimiter(delimiter[0])
-            .schema_infer_max_records(schema_infer_max_records)
-            .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .file_compression_type(parse_file_compression_type(file_compression_type)?);
-        options.schema = schema.as_ref().map(|x| &x.0);
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let file_extension_owned = file_extension.to_string();
+        let delimiter_owned = delimiter_byte; // Store just the delimiter byte
+        let file_compression_type_owned = file_compression_type.clone();
+
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
 
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
-            let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
-            let result = self.ctx.read_csv(paths, options);
-            let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+
+            // Create a future that moves owned values
+            let paths_owned = paths.clone();
+
+            let result_future = async move {
+                // Create options inside the future with owned values
+                let mut options = CsvReadOptions::new()
+                    .has_header(has_header)
+                    .delimiter(delimiter_owned)
+                    .schema_infer_max_records(schema_infer_max_records)
+                    .file_extension(&file_extension_owned)
+                    .table_partition_cols(table_partition_cols.clone())
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type_owned)
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                ctx.read_csv(paths_owned, options).await
+            };
+
+            let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
             Ok(PyDataFrame::new(df))
         } else {
             let path = path.extract::<String>()?;
-            let result = self.ctx.read_csv(path, options);
-            let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+
+            // Create a future that moves owned values
+            let path_owned = path.clone();
+
+            let result_future = async move {
+                // Create options inside the future with owned values
+                let mut options = CsvReadOptions::new()
+                    .has_header(has_header)
+                    .delimiter(delimiter_owned)
+                    .schema_infer_max_records(schema_infer_max_records)
+                    .file_extension(&file_extension_owned)
+                    .table_partition_cols(table_partition_cols.clone())
+                    .file_compression_type(
+                        parse_file_compression_type(file_compression_type_owned)
+                            .map_err(py_err_to_datafusion_err)?,
+                    );
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                ctx.read_csv(path_owned, options).await
+            };
+
+            let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
             Ok(PyDataFrame::new(df))
         }
     }
@@ -966,20 +1216,44 @@ impl PySessionContext {
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .parquet_pruning(parquet_pruning)
-            .skip_metadata(skip_metadata);
-        options.file_extension = file_extension;
-        options.schema = schema.as_ref().map(|x| &x.0);
-        options.file_sort_order = file_sort_order
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
+
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        // Convert the file_sort_order to what we need before the async block
+        let file_sort_order_converted = file_sort_order
             .unwrap_or_default()
             .into_iter()
             .map(|e| e.into_iter().map(|f| f.into()).collect())
             .collect();
 
-        let result = self.ctx.read_parquet(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result)?.map_err(PyDataFusionError::from)?);
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Create a future that moves owned values
+        let result_future = async move {
+            let mut options = ParquetReadOptions::default()
+                .table_partition_cols(table_partition_cols)
+                .parquet_pruning(parquet_pruning)
+                .skip_metadata(skip_metadata);
+            options.file_extension = &file_extension_owned;
+
+            // Use owned schema if provided
+            if let Some(s) = &schema_owned {
+                options.schema = Some(s);
+            }
+
+            options.file_sort_order = file_sort_order_converted;
+
+            ctx.read_parquet(&path_owned, options).await
+        };
+
+        let df =
+            PyDataFrame::new(wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?);
         Ok(df)
     }
 
@@ -993,15 +1267,41 @@ impl PySessionContext {
         file_extension: &str,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
-        options.file_extension = file_extension;
-        let df = if let Some(schema) = schema {
-            options.schema = Some(&schema.0);
-            let read_future = self.ctx.read_avro(path, options);
+        // Clone required values to avoid borrowing in the future
+        let ctx = self.ctx.clone();
+        let path_owned = path.to_string();
+        let file_extension_owned = file_extension.to_string();
+
+        // Convert table partition columns
+        let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
+
+        // Extract schema data if available to avoid borrowing
+        let schema_owned = schema.map(|s| s.0.clone());
+
+        let df = if schema_owned.is_some() {
+            // Create a future that moves owned values
+            let read_future = async move {
+                let mut options =
+                    AvroReadOptions::default().table_partition_cols(table_partition_cols.clone());
+                options.file_extension = &file_extension_owned;
+
+                // Use owned schema if provided
+                if let Some(s) = &schema_owned {
+                    options.schema = Some(s);
+                }
+
+                ctx.read_avro(&path_owned, options).await
+            };
             wait_for_future(py, read_future)?.map_err(PyDataFusionError::from)?
         } else {
-            let read_future = self.ctx.read_avro(path, options);
+            // Create a future that moves owned values
+            let read_future = async move {
+                let mut options =
+                    AvroReadOptions::default().table_partition_cols(table_partition_cols.clone());
+                options.file_extension = &file_extension_owned;
+
+                ctx.read_avro(&path_owned, options).await
+            };
             wait_for_future(py, read_future)?.map_err(PyDataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
@@ -1032,7 +1332,12 @@ impl PySessionContext {
 
 impl PySessionContext {
     async fn _table(&self, name: &str) -> datafusion::common::Result<DataFrame> {
-        self.ctx.table(name).await
+        // Clone the context to avoid borrowing self in the future
+        let ctx = self.ctx.clone();
+        let name_owned = name.to_string();
+
+        // Use the owned values
+        ctx.table(&name_owned).await
     }
 
     async fn register_csv_from_multiple_paths(
@@ -1098,6 +1403,11 @@ pub fn parse_file_compression_type(
         .map_err(|_| {
             PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
         })
+}
+
+/// Convert a PyErr to a DataFusionError
+pub fn py_err_to_datafusion_err(err: PyErr) -> datafusion::error::DataFusionError {
+    datafusion::error::DataFusionError::Execution(format!("Python error: {}", err))
 }
 
 impl From<PySessionContext> for SessionContext {

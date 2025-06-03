@@ -97,7 +97,12 @@ impl PyDatabase {
     }
 
     fn table(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
-        let table_option = wait_for_future(py, self.database.table(name))
+        // Clone the database to avoid borrowing self in the future
+        let database = self.database.clone();
+        // Clone the name to avoid borrowing it in the future
+        let name_owned = name.to_string();
+
+        let table_option = wait_for_future(py, async move { database.table(&name_owned).await })
             .map_err(py_datafusion_err)?
             .map_err(PyDataFusionError::from)?;
         if let Some(table) = table_option {
