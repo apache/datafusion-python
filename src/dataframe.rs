@@ -403,7 +403,7 @@ impl PyDataFrame {
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
-        Ok(Self::new(df))
+        Ok(Self::new(df?))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
@@ -514,7 +514,7 @@ impl PyDataFrame {
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
         let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
-        Ok(PyExecutionPlan::new(plan))
+        Ok(PyExecutionPlan::new(plan?))
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
