@@ -756,7 +756,9 @@ impl PyDataFrame {
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        Ok(PyRecordBatchStream::new(
+            stream.map_err(PyDataFusionError::from)?,
+        ))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -817,7 +819,7 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count())??)
     }
 
     /// Fill null values with a specified value for specific columns
@@ -844,11 +846,8 @@ impl PyDataFrame {
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
     let batches = wait_for_future(py, df.collect())?;
-    let batches_as_string = pretty::pretty_format_batches(&batches);
-    let result = match batches_as_string {
-        Ok(batch) => format!("DataFrame()\n{batch}"),
-        Err(err) => format!("Error: {:?}", err.to_string()),
-    };
+    let batches_as_string = pretty::pretty_format_batches(&batches)?;
+    let result = format!("DataFrame()\n{batch}", batch = batches_as_string);
 
     // Import the Python 'builtins' module to access the print function
     // Note that println! does not print to the Python debug console and is not visible in notebooks for instance

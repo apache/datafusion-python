@@ -846,8 +846,9 @@ impl PySessionContext {
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
         let join_result = wait_for_future(py, fut)
             .map_err(|e| PyDataFusionError::Common(format!("Task failed: {}", e)))?;
-        let stream = join_result.map_err(PyDataFusionError::from)?;
-        Ok(PyRecordBatchStream::new(stream))
+        let stream = join_result
+            .map_err(|e| PyDataFusionError::Common(format!("Execution error: {}", e)))?;
+        Ok(PyRecordBatchStream::new(stream?))
     }
 
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
