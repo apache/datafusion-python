@@ -397,7 +397,8 @@ impl PyDataFrame {
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
-        batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
+        let result = batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect();
+        result
     }
 
     /// Cache DataFrame.
