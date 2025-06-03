@@ -81,7 +81,8 @@ where
     F::Output: Send + 'static,
 {
     let (runtime, _enter_guard) = get_and_enter_tokio_runtime();
-
+    // Define the interval for checking Python signals
+    const SIGNAL_CHECK_INTERVAL_MS: u64 = 1000;
     // Spawn the task so we can poll it with timeouts
     let mut handle = runtime.spawn(f);
 
@@ -89,7 +90,10 @@ where
     py.allow_threads(|| {
         loop {
             // Poll the future with a timeout to allow periodic signal checking
-            match runtime.block_on(timeout(Duration::from_millis(100), &mut handle)) {
+            match runtime.block_on(timeout(
+                Duration::from_millis(SIGNAL_CHECK_INTERVAL_MS),
+                &mut handle,
+            )) {
                 Ok(join_result) => {
                     // The inner task has completed before timeout
                     return join_result.map_err(|e| {
@@ -100,7 +104,7 @@ where
                     });
                 }
                 Err(_elapsed) => {
-                    // 100 ms elapsed without task completion → check Python signals
+                    // SIGNAL_CHECK_INTERVAL_MS elapsed without task completion → check Python signals
                     if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
                         return Err(py_exc);
                     }
