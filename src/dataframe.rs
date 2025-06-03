@@ -741,7 +741,8 @@ impl PyDataFrame {
                 .map_err(PyDataFusionError::from)?)
         }
 
-        let batches_wrapped = batches.into_iter().map(Ok);
+        // We need to flatten the nested structure to get Iterator<Item = Result<RecordBatch, ArrowError>>
+        let batches_wrapped = batches.into_iter().flatten().map(Ok);
 
         let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
