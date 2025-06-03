@@ -34,7 +34,7 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionResult};
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -375,7 +375,7 @@ impl PySessionContext {
             None => {
                 let state = self.ctx.state();
                 let schema = options.infer_schema(&state, &table_path);
-                wait_for_future(py, schema)?
+                wait_for_future(py, schema)?.map_err(PyDataFusionError::from)?
             }
         };
         let config = ListingTableConfig::new(table_path)
@@ -400,7 +400,7 @@ impl PySessionContext {
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)?;
+        let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -417,7 +417,7 @@ impl PySessionContext {
             SQLOptions::new()
         };
         let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)?;
+        let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -451,7 +451,8 @@ impl PySessionContext {
 
         self.ctx.register_table(&*table_name, Arc::new(table))?;
 
-        let table = wait_for_future(py, self._table(&table_name))?;
+        let table =
+            wait_for_future(py, self._table(&table_name))?.map_err(PyDataFusionError::from)?;
 
         let df = PyDataFrame::new(table);
         Ok(df)
@@ -826,6 +827,7 @@ impl PySessionContext {
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
         let x = wait_for_future(py, self.ctx.table(name))
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
         Ok(PyDataFrame::new(x))
     }
@@ -865,10 +867,10 @@ impl PySessionContext {
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
             let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?
+            wait_for_future(py, result)?.map_err(PyDataFusionError::from)?
         } else {
             let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?
+            wait_for_future(py, result)?.map_err(PyDataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
     }
@@ -915,13 +917,13 @@ impl PySessionContext {
             let paths = path.extract::<Vec<String>>()?;
             let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
             let result = self.ctx.read_csv(paths, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
-            Ok(df)
+            let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+            Ok(PyDataFrame::new(df))
         } else {
             let path = path.extract::<String>()?;
             let result = self.ctx.read_csv(path, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
-            Ok(df)
+            let df = wait_for_future(py, result)?.map_err(PyDataFusionError::from)?;
+            Ok(PyDataFrame::new(df))
         }
     }
 
@@ -958,7 +960,7 @@ impl PySessionContext {
             .collect();
 
         let result = self.ctx.read_parquet(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result)?);
+        let df = PyDataFrame::new(wait_for_future(py, result)?.map_err(PyDataFusionError::from)?);
         Ok(df)
     }
 
@@ -978,10 +980,10 @@ impl PySessionContext {
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
             let read_future = self.ctx.read_avro(path, options);
-            wait_for_future(py, read_future)?
+            wait_for_future(py, read_future)?.map_err(PyDataFusionError::from)?
         } else {
             let read_future = self.ctx.read_avro(path, options);
-            wait_for_future(py, read_future)?
+            wait_for_future(py, read_future)?.map_err(PyDataFusionError::from)?
         };
         Ok(PyDataFrame::new(df))
     }
@@ -1021,8 +1023,10 @@ impl PySessionContext {
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        let stream = wait_for_future(py, fut)
+            .map_err(py_datafusion_err)?
+            .map_err(PyDataFusionError::from)?;
+        Ok(PyRecordBatchStream::new(stream))
     }
 }
 

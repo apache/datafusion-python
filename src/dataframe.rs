@@ -233,7 +233,8 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
+        )?
+        .map_err(PyDataFusionError::from)?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -256,7 +257,8 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
+        )?
+        .map_err(PyDataFusionError::from)?;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -288,7 +290,7 @@ impl PyDataFrame {
     /// Calculate summary statistics for a DataFrame
     fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?;
+        let stat_df = wait_for_future(py, df.describe())?.map_err(PyDataFusionError::from)?;
         Ok(Self::new(stat_df))
     }
 

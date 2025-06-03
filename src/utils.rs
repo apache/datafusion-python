@@ -26,7 +26,9 @@ use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 use std::future::Future;
 use std::sync::OnceLock;
+use std::time::Duration;
 use tokio::runtime::Runtime;
+use tokio::time::timeout;
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
@@ -47,14 +49,41 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
     CTX.get_or_init(SessionContext::new)
 }
 
-/// Utility to collect rust futures with GIL released
-pub fn wait_for_future<F>(py: Python, f: F) -> F::Output
+/// Utility to collect rust futures with GIL released and interrupt support
+pub fn wait_for_future<F>(py: Python, f: F) -> PyResult<F::Output>
 where
     F: Future + Send,
     F::Output: Send,
 {
     let runtime: &Runtime = &get_tokio_runtime().0;
-    py.allow_threads(|| runtime.block_on(f))
+
+    // Spawn the task so we can poll it with timeouts
+    let mut handle = runtime.spawn(f);
+
+    // Release the GIL and poll the future with periodic signal checks
+    py.allow_threads(|| {
+        loop {
+            // Poll the future with a timeout to allow periodic signal checking
+            match runtime.block_on(timeout(Duration::from_millis(100), &mut handle)) {
+                Ok(result) => {
+                    return result.map_err(|e| {
+                        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
+                            "Task failed: {}",
+                            e
+                        ))
+                    });
+                }
+                Err(_) => {
+                    // Timeout occurred, check for Python signals
+                    // We need to re-acquire the GIL temporarily to check signals
+                    if let Err(e) = Python::with_gil(|py| py.check_signals()) {
+                        return Err(e);
+                    }
+                    // Continue polling if no signal was received
+                }
+            }
+        }
+    })
 }
 
 pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
