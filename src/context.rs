@@ -832,6 +832,24 @@ impl PySessionContext {
         Ok(PyDataFrame::new(x))
     }
 
+    pub fn execute(
+        &self,
+        plan: PyExecutionPlan,
+        part: usize,
+        py: Python,
+    ) -> PyDataFusionResult<PyRecordBatchStream> {
+        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
+        // create a Tokio runtime to run the async code
+        let rt = &get_tokio_runtime().0;
+        let plan = plan.plan.clone();
+        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
+            rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
+        let join_result = wait_for_future(py, fut)
+            .map_err(|e| PyDataFusionError::Common(format!("Task failed: {}", e)))?;
+        let stream = join_result.map_err(PyDataFusionError::from)?;
+        Ok(PyRecordBatchStream::new(stream))
+    }
+
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
         Ok(self.ctx.table_exist(name)?)
     }
@@ -1008,25 +1026,6 @@ impl PySessionContext {
             self.session_id(),
             config_entries.join("\n\t")
         ))
-    }
-
-    /// Execute a partition of an execution plan and return a stream of record batches
-    pub fn execute(
-        &self,
-        plan: PyExecutionPlan,
-        part: usize,
-        py: Python,
-    ) -> PyDataFusionResult<PyRecordBatchStream> {
-        let ctx: TaskContext = TaskContext::from(&self.ctx.state());
-        // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime().0;
-        let plan = plan.plan.clone();
-        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
-        let stream = wait_for_future(py, fut)
-            .map_err(py_datafusion_err)?
-            .map_err(PyDataFusionError::from)?;
-        Ok(PyRecordBatchStream::new(stream))
     }
 }
 
