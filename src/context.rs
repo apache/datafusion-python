@@ -870,7 +870,7 @@ impl PySessionContext {
 
             ctx.register_json(&name_owned, &path_owned, options).await
         };
-        let rresult = wait_for_future(py, result_future)?;
+        wait_for_future(py, result_future)??;
 
         Ok(())
     }
