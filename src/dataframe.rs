@@ -393,12 +393,12 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
+
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
-        let result = batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect();
-        result
+        batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
     }
 
     /// Cache DataFrame.
