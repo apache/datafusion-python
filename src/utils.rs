@@ -52,8 +52,8 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
 /// Utility to collect rust futures with GIL released and interrupt support
 pub fn wait_for_future<F>(py: Python, f: F) -> PyResult<F::Output>
 where
-    F: Future + Send,
-    F::Output: Send,
+    F: Future + Send + 'static,
+    F::Output: Send + 'static,
 {
     let runtime: &Runtime = &get_tokio_runtime().0;
 
