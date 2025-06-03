@@ -53,14 +53,17 @@ DataFrames can be created in several ways:
 
   .. code-block:: python
 
-      # From CSV files
+      # From CSV files (see :ref:`io_csv` for detailed options)
       df = ctx.read_csv("path/to/data.csv")
       
-      # From Parquet files
+      # From Parquet files (see :ref:`io_parquet` for detailed options)
       df = ctx.read_parquet("path/to/data.parquet")
       
-      # From JSON files
+      # From JSON files (see :ref:`io_json` for detailed options)
       df = ctx.read_json("path/to/data.json")
+      
+      # From Avro files (see :ref:`io_avro` for detailed options)
+      df = ctx.read_avro("path/to/data.avro")
       
       # From Pandas DataFrame
       import pandas as pd
@@ -74,6 +77,9 @@ DataFrames can be created in several ways:
           names=["a", "b"]
       )
       df = ctx.from_arrow(batch)
+
+  For detailed information about reading from different data sources, see the :doc:`I/O Guide <../user-guide/io/index>`.
+  For custom data sources, see :ref:`io_custom_table_provider`.
 
 Common DataFrame Operations
 ---------------------------
@@ -370,5 +376,12 @@ Best Practices
 Additional Resources
 --------------------
 
-* `DataFusion User Guide <../user-guide/dataframe.html>`_ - Complete guide to using DataFrames
+* :doc:`../user-guide/dataframe` - Complete guide to using DataFrames
+* :doc:`../user-guide/io/index` - I/O Guide for reading data from various sources
+* :doc:`../user-guide/data-sources` - Comprehensive data sources guide
+* :ref:`io_csv` - CSV file reading
+* :ref:`io_parquet` - Parquet file reading  
+* :ref:`io_json` - JSON file reading
+* :ref:`io_avro` - Avro file reading
+* :ref:`io_custom_table_provider` - Custom table providers
 * `API Reference <https://arrow.apache.org/datafusion-python/api/index.html>`_ - Full API reference
