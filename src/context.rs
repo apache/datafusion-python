@@ -359,16 +359,6 @@ impl PySessionContext {
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
-            .with_file_extension(file_extension)
-            .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
-            .with_file_sort_order(
-                file_sort_order
-                    .unwrap_or_default()
-                    .into_iter()
-                    .map(|e| e.into_iter().map(|f| f.into()).collect())
-                    .collect(),
-            );
         let table_path = ListingTableUrl::parse(path)?;
         let resolved_schema: SchemaRef = match schema {
             Some(s) => Arc::new(s.0),
@@ -399,6 +389,17 @@ impl PySessionContext {
             }
         };
 
+        // Recreate options outside the match block for the table configuration
+        let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
+            .with_file_extension(file_extension)
+            .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .with_file_sort_order(
+                file_sort_order
+                    .unwrap_or_default()
+                    .into_iter()
+                    .map(|e| e.into_iter().map(|f| f.into()).collect())
+                    .collect(),
+            );
         let config = ListingTableConfig::new(table_path)
             .with_listing_options(options)
             .with_schema(resolved_schema);
