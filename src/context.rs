@@ -753,6 +753,14 @@ impl PySessionContext {
         // Extract the single byte to use in the future
         let delimiter_byte = delimiter_bytes[0];
 
+        // Validate file_compression_type synchronously before async call
+        if let Some(compression_type) = &file_compression_type {
+            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
+            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
+                return Err(PyDataFusionError::PythonError(err));
+            }
+        }
+
         // Clone all string references to create owned values
         let file_extension_owned = file_extension.to_string();
         let name_owned = name.to_string();
@@ -838,6 +846,14 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        // Validate file_compression_type synchronously before async call
+        if let Some(compression_type) = &file_compression_type {
+            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
+            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
+                return Err(PyDataFusionError::PythonError(err));
+            }
+        }
 
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
@@ -1040,6 +1056,15 @@ impl PySessionContext {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
+
+        // Validate file_compression_type synchronously before async call
+        if let Some(compression_type) = &file_compression_type {
+            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
+            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
+                return Err(PyDataFusionError::PythonError(err));
+            }
+        }
+
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
         let path_owned = path.to_string();
@@ -1122,6 +1147,14 @@ impl PySessionContext {
         };
         // Store just the delimiter byte to use in the future
         let delimiter_byte = delimiter_bytes[0];
+
+        // Validate file_compression_type synchronously before async call
+        if let Some(compression_type) = &file_compression_type {
+            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
+            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
+                return Err(PyDataFusionError::PythonError(err));
+            }
+        }
 
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
