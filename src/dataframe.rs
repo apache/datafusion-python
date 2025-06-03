@@ -514,7 +514,7 @@ impl PyDataFrame {
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
         let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
-        Ok(plan.into())
+        Ok(PyExecutionPlan::new(plan))
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
@@ -736,7 +736,8 @@ impl PyDataFrame {
             batches = batches
                 .into_iter()
                 .map(|record_batch| record_batch_into_schema(record_batch, &schema))
-                .collect::<Result<Vec<RecordBatch>, ArrowError>>()?;
+                .collect::<Result<Vec<RecordBatch>, ArrowError>>()
+                .map_err(PyDataFusionError::from)?;
         }
 
         let batches_wrapped = batches.into_iter().map(Ok);
@@ -756,9 +757,7 @@ impl PyDataFrame {
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
         let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(
-            stream.map_err(PyDataFusionError::from)?,
-        ))
+        Ok(PyRecordBatchStream::new(stream?))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -771,9 +770,9 @@ impl PyDataFrame {
 
         match stream {
             Ok(batches) => Ok(batches.into_iter().map(PyRecordBatchStream::new).collect()),
-            _ => Err(PyValueError::new_err(
-                "Unable to execute stream partitioned",
-            )),
+            Err(e) => Err(PyValueError::new_err(format!(
+                "Unable to execute stream partitioned: {e}"
+            ))),
         }
     }
 
@@ -846,7 +845,8 @@ impl PyDataFrame {
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
     let batches = wait_for_future(py, df.collect())?;
-    let batches_as_string = pretty::pretty_format_batches(&batches)?;
+    let batches_as_string =
+        pretty::pretty_format_batches(&batches).map_err(PyDataFusionError::from)?;
     let result = format!("DataFrame()\n{batch}", batch = batches_as_string);
 
     // Import the Python 'builtins' module to access the print function
