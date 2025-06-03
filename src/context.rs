@@ -786,7 +786,7 @@ impl PySessionContext {
                     .register_csv_from_multiple_paths(&name_owned, paths, options)
                     .await
             };
-            wait_for_future(py, result_future)?
+            wait_for_future(py, result_future)??
         } else {
             let path = path.extract::<String>()?;
             let ctx = self.ctx.clone();
@@ -810,7 +810,7 @@ impl PySessionContext {
 
                 ctx.register_csv(&name_owned, &path, options).await
             };
-            wait_for_future(py, result_future)?
+            wait_for_future(py, result_future)??
         };
 
         Ok(())
@@ -870,7 +870,7 @@ impl PySessionContext {
 
             ctx.register_json(&name_owned, &path_owned, options).await
         };
-        let _ = wait_for_future(py, result_future)?;
+        let rresult = wait_for_future(py, result_future)?;
 
         Ok(())
     }
