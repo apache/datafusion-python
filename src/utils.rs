@@ -49,6 +49,7 @@ pub(crate) fn get_tokio_runtime_with_time() -> &'static TokioRuntime {
     RUNTIME_WITH_TIME.get_or_init(|| {
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .enable_time()
+            .enable_io()
             .build()
             .unwrap();
 
