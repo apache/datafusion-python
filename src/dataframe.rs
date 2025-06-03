@@ -410,7 +410,7 @@ impl PyDataFrame {
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
             .map_err(PyDataFusionError::from)?;
 
         batches
