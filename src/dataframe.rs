@@ -864,7 +864,7 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())??)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count()).map_err(py_datafusion_err)??)
     }
 
     /// Fill null values with a specified value for specific columns
