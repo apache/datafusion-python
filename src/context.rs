@@ -34,9 +34,7 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{
-    py_datafusion_err, py_err_to_datafusion_err, PyDataFusionError, PyDataFusionResult,
-};
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -756,10 +754,11 @@ impl PySessionContext {
         let delimiter_byte = delimiter_bytes[0];
 
         // Validate file_compression_type synchronously before async call
-        let fct = match parse_file_compression_type(file_compression_type.clone()) {
-            Ok(compression) => compression,
-            Err(err) => return Err(PyDataFusionError::PythonError(err)),
-        };
+        let parsed_file_compression_type =
+            match parse_file_compression_type(file_compression_type.clone()) {
+                Ok(compression) => compression,
+                Err(err) => return Err(PyDataFusionError::PythonError(err)),
+            };
 
         // Clone all string references to create owned values
         let file_extension_owned = file_extension.to_string();
@@ -773,19 +772,18 @@ impl PySessionContext {
             // Clone self to avoid borrowing
             let self_clone = self.clone();
 
-            // Create options with owned values inside the async block
+            // Create a future that uses our helper function
             let result_future = async move {
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_byte)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .file_compression_type(compression);
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let schema_ref = schema_owned.as_ref();
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_byte,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    schema_ref,
+                    None, // No table partition columns here
+                );
 
                 self_clone
                     .register_csv_from_multiple_paths(&name_owned, paths, options)
@@ -798,17 +796,16 @@ impl PySessionContext {
 
             // Create a future that moves owned values
             let result_future = async move {
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_byte)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .file_compression_type(compression);
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let schema_ref = schema_owned.as_ref();
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_byte,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    schema_ref,
+                    None, // No table partition columns here
+                );
 
                 ctx.register_csv(&name_owned, &path, options).await
             };
@@ -841,20 +838,17 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        // Validate file_compression_type synchronously before async call
-        if let Some(compression_type) = &file_compression_type {
-            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
-            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
-                return Err(PyDataFusionError::PythonError(err));
-            }
-        }
+        let parsed_file_compression_type =
+            match parse_file_compression_type(file_compression_type.clone()) {
+                Ok(compression) => compression,
+                Err(err) => return Err(PyDataFusionError::PythonError(err)),
+            };
 
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
         let name_owned = name.to_string();
         let path_owned = path.to_string();
         let file_extension_owned = file_extension.to_string();
-        let file_compression_type_owned = file_compression_type.clone();
 
         // Extract schema data if available to avoid borrowing
         let schema_owned = schema.map(|s| s.0.clone());
@@ -865,10 +859,7 @@ impl PySessionContext {
         // Create a future that moves owned values
         let result_future = async move {
             let mut options = NdJsonReadOptions::default()
-                .file_compression_type(
-                    parse_file_compression_type(file_compression_type_owned)
-                        .map_err(py_err_to_datafusion_err)?,
-                )
+                .file_compression_type(parsed_file_compression_type)
                 .table_partition_cols(table_partition_cols.clone());
             options.schema_infer_max_records = schema_infer_max_records;
             options.file_extension = &file_extension_owned;
@@ -1052,18 +1043,16 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
         // Validate file_compression_type synchronously before async call
-        if let Some(compression_type) = &file_compression_type {
-            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
-            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
-                return Err(PyDataFusionError::PythonError(err));
-            }
-        }
+        let parsed_file_compression_type =
+            match parse_file_compression_type(file_compression_type.clone()) {
+                Ok(compression) => compression,
+                Err(err) => return Err(PyDataFusionError::PythonError(err)),
+            };
 
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
         let path_owned = path.to_string();
         let file_extension_owned = file_extension.to_string();
-        let file_compression_type_owned = file_compression_type.clone();
 
         // Convert table partition columns
         let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
@@ -1076,10 +1065,7 @@ impl PySessionContext {
             let result_future = async move {
                 let mut options = NdJsonReadOptions::default()
                     .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type_owned)
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
+                    .file_compression_type(parsed_file_compression_type);
                 options.schema_infer_max_records = schema_infer_max_records;
                 options.file_extension = &file_extension_owned;
 
@@ -1096,10 +1082,7 @@ impl PySessionContext {
             let result_future = async move {
                 let mut options = NdJsonReadOptions::default()
                     .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type_owned)
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
+                    .file_compression_type(parsed_file_compression_type);
                 options.schema_infer_max_records = schema_infer_max_records;
                 options.file_extension = &file_extension_owned;
 
@@ -1142,19 +1125,16 @@ impl PySessionContext {
         // Store just the delimiter byte to use in the future
         let delimiter_byte = delimiter_bytes[0];
 
-        // Validate file_compression_type synchronously before async call
-        if let Some(compression_type) = &file_compression_type {
-            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
-            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
-                return Err(PyDataFusionError::PythonError(err));
-            }
-        }
+        let parsed_file_compression_type =
+            match parse_file_compression_type(file_compression_type.clone()) {
+                Ok(compression) => compression,
+                Err(err) => return Err(PyDataFusionError::PythonError(err)),
+            };
 
         // Clone required values to avoid borrowing in the future
         let ctx = self.ctx.clone();
         let file_extension_owned = file_extension.to_string();
         let delimiter_owned = delimiter_byte; // Store just the delimiter byte
-        let file_compression_type_owned = file_compression_type.clone();
 
         // Extract schema data if available to avoid borrowing
         let schema_owned = schema.map(|s| s.0.clone());
@@ -1169,22 +1149,17 @@ impl PySessionContext {
             let paths_owned = paths.clone();
 
             let result_future = async move {
-                // Create options inside the future with owned values
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_owned)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type_owned)
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                // Create options using our helper function
+                let schema_ref = schema_owned.as_ref();
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_owned,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    schema_ref,
+                    Some(table_partition_cols.clone()),
+                );
 
                 ctx.read_csv(paths_owned, options).await
             };
@@ -1199,21 +1174,16 @@ impl PySessionContext {
 
             let result_future = async move {
                 // Create options inside the future with owned values
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_owned)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type_owned)
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let schema_ref = schema_owned.as_ref();
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_owned,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    schema_ref,
+                    Some(table_partition_cols.clone()),
+                );
 
                 ctx.read_csv(path_owned, options).await
             };
@@ -1421,6 +1391,37 @@ pub fn convert_table_partition_cols(
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+/// Create CsvReadOptions with the provided parameters
+fn create_csv_read_options<'a>(
+    has_header: bool,
+    delimiter_byte: u8,
+    schema_infer_max_records: usize,
+    file_extension: &'a str,
+    file_compression_type: FileCompressionType,
+    schema: Option<&'a Schema>,
+    table_partition_cols: Option<Vec<(String, DataType)>>,
+) -> CsvReadOptions<'a> {
+    let mut options = CsvReadOptions::new()
+        .has_header(has_header)
+        .delimiter(delimiter_byte)
+        .schema_infer_max_records(schema_infer_max_records)
+        .file_extension(file_extension);
+
+    // Set compression type
+    options = options.file_compression_type(file_compression_type);
+
+    // Set table partition columns if provided
+    if let Some(cols) = table_partition_cols {
+        options = options.table_partition_cols(cols);
+    }
+
+    // Set schema if provided
+    if let Some(s) = schema {
+        options.schema = Some(s);
+    }
+    options
 }
 
 pub fn parse_file_compression_type(
