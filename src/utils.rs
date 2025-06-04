@@ -93,7 +93,7 @@ where
                     if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
                         return Err(py_exc);
                     }
-                    // Loop again, reintroducing another 100 ms timeout slice
+                    // Loop again, reintroducing another timeout slice
                 }
             }
         }
