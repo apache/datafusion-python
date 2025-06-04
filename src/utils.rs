@@ -69,7 +69,7 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
 #[inline]
 pub(crate) fn get_and_enter_tokio_runtime(
 ) -> (&'static Runtime, tokio::runtime::EnterGuard<'static>) {
-    let runtime = &get_tokio_runtime_with_time().0;
+    let runtime = &get_tokio_runtime().0;
     let enter_guard = runtime.enter();
     (runtime, enter_guard)
 }
