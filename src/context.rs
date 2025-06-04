@@ -45,10 +45,7 @@ use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{
-    call_async, call_datafusion_async, call_datafusion_async_double_question, get_global_ctx,
-    get_tokio_runtime, validate_pycapsule, wait_for_future,
-};
+use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -428,8 +425,10 @@ impl PySessionContext {
         let ctx = self.ctx.clone();
         let query_owned = query.to_string();
 
-        // Use the helper function to handle async execution
-        let df = call_datafusion_async(py, async move { ctx.sql(&query_owned).await })?;
+        // Create a future that moves owned values
+        let result_future = async move { ctx.sql(&query_owned).await };
+
+        let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -451,11 +450,10 @@ impl PySessionContext {
         let ctx = self.ctx.clone();
         let query_owned = query.to_string();
 
-        // Use the helper function to handle async execution
-        let df = call_datafusion_async(py, async move {
-            ctx.sql_with_options(&query_owned, sql_options).await
-        })?;
+        // Create a future that moves owned values
+        let result_future = async move { ctx.sql_with_options(&query_owned, sql_options).await };
 
+        let df = wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?;
         Ok(PyDataFrame::new(df))
     }
 
@@ -720,7 +718,7 @@ impl PySessionContext {
             ctx.register_parquet(&name_owned, &path_owned, options)
                 .await
         };
-        let _ = wait_for_future(py, result_future)??;
+        let _ = wait_for_future(py, result_future)?;
         Ok(())
     }
 
@@ -1002,13 +1000,13 @@ impl PySessionContext {
         let ctx = self.ctx.clone();
         let name_owned = name.to_string();
 
-        // Use call_async since we need custom error mapping
-        let df = call_async(py, async move { ctx.table(&name_owned).await }, |e| {
-            PyKeyError::new_err(e.to_string()).into()
-        })?
-        .map_err(|e| PyKeyError::new_err(e.to_string()))?;
+        // Create a future that moves owned values
+        let table_future = async move { ctx.table(&name_owned).await };
 
-        Ok(PyDataFrame::new(df))
+        let x = wait_for_future(py, table_future)
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?
+            .map_err(|e| PyKeyError::new_err(e.to_string()))?;
+        Ok(PyDataFrame::new(x))
     }
 
     pub fn execute(
@@ -1269,8 +1267,8 @@ impl PySessionContext {
         // Convert table partition columns
         let table_partition_cols = convert_table_partition_cols(table_partition_cols)?;
 
-        // Use the helper function to handle async execution
-        let df = call_datafusion_async(py, async move {
+        // Create a future that moves owned values
+        let result_future = async move {
             let mut options = ParquetReadOptions::default()
                 .table_partition_cols(table_partition_cols)
                 .parquet_pruning(parquet_pruning)
@@ -1285,9 +1283,11 @@ impl PySessionContext {
             options.file_sort_order = file_sort_order_converted;
 
             ctx.read_parquet(&path_owned, options).await
-        })?;
+        };
 
-        Ok(PyDataFrame::new(df))
+        let df =
+            PyDataFrame::new(wait_for_future(py, result_future)?.map_err(PyDataFusionError::from)?);
+        Ok(df)
     }
 
     #[allow(clippy::too_many_arguments)]
