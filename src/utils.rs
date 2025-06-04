@@ -28,7 +28,6 @@ use std::future::Future;
 use std::sync::OnceLock;
 use std::time::Duration;
 use tokio::runtime::Runtime;
-use tokio::time::timeout;
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
@@ -68,35 +67,32 @@ where
     let (runtime, _enter_guard) = get_and_enter_tokio_runtime();
     // Define the interval for checking Python signals
     const SIGNAL_CHECK_INTERVAL_MS: u64 = 1000;
-    // Spawn the task so we can poll it with timeouts
-    let mut handle = runtime.spawn(f);
 
-    // Release the GIL and poll the future with periodic signal checks
+    // Release the GIL and directly block on the future with periodic signal checks
     py.allow_threads(|| {
-        loop {
-            // Poll the future with a timeout to allow periodic signal checking
-            match runtime.block_on(timeout(
-                Duration::from_millis(SIGNAL_CHECK_INTERVAL_MS),
-                &mut handle,
-            )) {
-                Ok(join_result) => {
-                    // The inner task has completed before timeout
-                    return join_result.map_err(|e| {
-                        PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(format!(
-                            "Task failed: {}",
-                            e
-                        ))
-                    });
-                }
-                Err(_elapsed) => {
-                    // SIGNAL_CHECK_INTERVAL_MS elapsed without task completion → check Python signals
-                    if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
-                        return Err(py_exc);
+        runtime.block_on(async {
+            let mut interval =
+                tokio::time::interval(Duration::from_millis(SIGNAL_CHECK_INTERVAL_MS));
+
+            // Pin the future to the stack
+            tokio::pin!(f);
+
+            loop {
+                tokio::select! {
+                    result = &mut f => {
+                        // Future completed
+                        return Ok(result);
                     }
-                    // Loop again, reintroducing another timeout slice
+                    _ = interval.tick() => {
+                        // Time to check Python signals
+                        if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
+                            return Err(py_exc);
+                        }
+                        // Continue waiting for the future
+                    }
                 }
             }
-        }
+        })
     })
 }
 
