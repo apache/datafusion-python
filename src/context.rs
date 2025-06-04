@@ -34,7 +34,9 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{
+    py_datafusion_err, py_err_to_datafusion_err, PyDataFusionError, PyDataFusionResult,
+};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -1436,11 +1438,6 @@ pub fn parse_file_compression_type(
         .map_err(|_| {
             PyValueError::new_err("file_compression_type must one of: gzip, bz2, xz, zstd")
         })
-}
-
-/// Convert a PyErr to a DataFusionError
-pub fn py_err_to_datafusion_err(err: PyErr) -> datafusion::error::DataFusionError {
-    datafusion::error::DataFusionError::Execution(format!("Python error: {}", err))
 }
 
 impl From<PySessionContext> for SessionContext {
