@@ -2124,24 +2124,11 @@ def test_collect_interrupted():
     interrupt_error = None
     main_thread = threading.main_thread()
     
-    # Flag to indicate when query execution has started
-    query_started = False
-    
     # This function will be run in a separate thread and will raise 
     # KeyboardInterrupt in the main thread
     def trigger_interrupt():
-        """Poll until query starts, then raise KeyboardInterrupt in the main thread"""
-        # Poll until the query has started or timeout reached
-        timeout = 5  # Maximum wait time in seconds
-        start_time = time.time()
-        
-        while not query_started:
-            time.sleep(0.1)  # Short sleep between checks
-            if time.time() - start_time > timeout:
-                msg = "Timeout waiting for query to start"
-                raise RuntimeError(msg)
-        
-        # At this point, query has started, so we can interrupt it
+        """Wait a moment then raise KeyboardInterrupt in the main thread"""
+        time.sleep(0.5)  # Give the query time to start
         
         # Check if thread ID is available
         thread_id = main_thread.ident
@@ -2155,32 +2142,20 @@ def test_collect_interrupted():
             ctypes.c_long(thread_id), exception)
         if res != 1:
             # If res is 0, the thread ID was invalid
-            raise RuntimeError("Invalid thread ID") > 1, we modified multiple threads
-        elif res > 1:PyThreadState_SetAsyncExc(
-            # If res > 1, there was an error raising the exceptionong(thread_id), ctypes.py_object(0))
-            raise RuntimeError("Failed to raise exception in the main thread")to raise KeyboardInterrupt in main thread"
-ror(msg)
+            # If res > 1, we modified multiple threads
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(thread_id), ctypes.py_object(0))
+            msg = "Failed to raise KeyboardInterrupt in main thread"
+            raise RuntimeError(msg)
+    
     # Start a thread to trigger the interrupt
     interrupt_thread = threading.Thread(target=trigger_interrupt)
     interrupt_thread.daemon = True
     interrupt_thread.start()
-    interrupt_thread.start()
+    
     # Execute the query and expect it to be interrupted
-    try:to be interrupted
-        # Signal that the query is about to start    try:
-
-
-
-
-
-
-
-
-
-
-
-    assert interrupt_error is None, f"Unexpected error occurred: {interrupt_error}"    assert interrupted, "Query was not interrupted by KeyboardInterrupt"    # Assert that the query was interrupted properly            interrupt_error = e    except Exception as e:        interrupted = True    except KeyboardInterrupt:        df.collect()        query_started = True        df.collect()
-        query_started = True  # Mark query as started
+    try:
+        df.collect()
     except KeyboardInterrupt:
         interrupted = True
     except Exception as e:
