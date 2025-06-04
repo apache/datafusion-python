@@ -1414,7 +1414,7 @@ fn create_csv_read_options<'a>(
     file_extension: &'a str,
     file_compression_type: Option<String>,
     schema: Option<&'a Schema>,
-) -> PyResult<CsvReadOptions<'a>> {
+) -> PyDataFusionResult<CsvReadOptions<'a>> {
     let mut options = CsvReadOptions::new()
         .has_header(has_header)
         .delimiter(delimiter_byte)
