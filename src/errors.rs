@@ -95,8 +95,3 @@ pub fn py_unsupported_variant_err(e: impl Debug) -> PyErr {
 pub fn to_datafusion_err(e: impl Debug) -> InnerDataFusionError {
     InnerDataFusionError::Execution(format!("{e:?}"))
 }
-
-/// Convert a PyErr to a DataFusionError
-pub fn py_err_to_datafusion_err(err: PyErr) -> InnerDataFusionError {
-    InnerDataFusionError::Execution(format!("Python error: {}", err))
-}
