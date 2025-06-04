@@ -14,12 +14,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import ctypes
 import datetime
 import os
 import re
 import threading
 import time
-import ctypes
 from typing import Any
 
 import pyarrow as pa
@@ -1299,7 +1299,6 @@ def test_collect_partitioned():
     assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
 
 
-
 def test_union(ctx):
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
@@ -1917,7 +1916,7 @@ def test_fill_null_date32_column(null_df):
     dates = result.column(4).to_pylist()
     assert dates[0] == datetime.date(2000, 1, 1)  # Original value
     assert dates[1] == epoch_date  # Filled value
-    assert dates[2] == datetime.date(2022, 1, 1)     # Original value
+    assert dates[2] == datetime.date(2022, 1, 1)  # Original value
     assert dates[3] == epoch_date  # Filled value
 
     # Other date column should be unchanged
@@ -2068,13 +2067,13 @@ def test_fill_null_all_null_column(ctx):
 
 def test_collect_interrupted():
     """Test that a long-running query can be interrupted with Ctrl-C.
-    
+
     This test simulates a Ctrl-C keyboard interrupt by raising a KeyboardInterrupt
     exception in the main thread during a long-running query execution.
     """
     # Create a context and a DataFrame with a query that will run for a while
     ctx = SessionContext()
-    
+
     # Create a recursive computation that will run for some time
     batches = []
     for i in range(10):
@@ -2086,24 +2085,24 @@ def test_collect_interrupted():
             names=["a", "b"],
         )
         batches.append(batch)
-    
+
     # Register tables
     ctx.register_record_batches("t1", [batches])
     ctx.register_record_batches("t2", [batches])
-    
+
     # Create a large join operation that will take time to process
     df = ctx.sql("""
         WITH t1_expanded AS (
-            SELECT 
-                a, 
-                b, 
+            SELECT
+                a,
+                b,
                 CAST(a AS DOUBLE) / 1.5 AS c,
                 CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS d
             FROM t1
             CROSS JOIN (SELECT 1 AS dummy FROM t1 LIMIT 5)
         ),
         t2_expanded AS (
-            SELECT 
+            SELECT
                 a,
                 b,
                 CAST(a AS DOUBLE) * 2.5 AS e,
@@ -2111,24 +2110,24 @@ def test_collect_interrupted():
             FROM t2
             CROSS JOIN (SELECT 1 AS dummy FROM t2 LIMIT 5)
         )
-        SELECT 
-            t1.a, t1.b, t1.c, t1.d, 
+        SELECT
+            t1.a, t1.b, t1.c, t1.d,
             t2.a AS a2, t2.b AS b2, t2.e, t2.f
         FROM t1_expanded t1
         JOIN t2_expanded t2 ON t1.a % 100 = t2.a % 100
         WHERE t1.a > 100 AND t2.a > 100
     """)
-    
+
     # Flag to track if the query was interrupted
     interrupted = False
     interrupt_error = None
     main_thread = threading.main_thread()
-    
+
     # Shared flag to indicate query execution has started
     query_started = threading.Event()
     max_wait_time = 5.0  # Maximum wait time in seconds
-    
-    # This function will be run in a separate thread and will raise 
+
+    # This function will be run in a separate thread and will raise
     # KeyboardInterrupt in the main thread
     def trigger_interrupt():
         """Poll for query start, then raise KeyboardInterrupt in the main thread"""
@@ -2139,31 +2138,33 @@ def test_collect_interrupted():
             if time.time() - start_time > max_wait_time:
                 msg = f"Query did not start within {max_wait_time} seconds"
                 raise RuntimeError(msg)
-        
+
         # Check if thread ID is available
         thread_id = main_thread.ident
         if thread_id is None:
             msg = "Cannot get main thread ID"
             raise RuntimeError(msg)
-            
+
         # Use ctypes to raise exception in main thread
         exception = ctypes.py_object(KeyboardInterrupt)
         res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
-            ctypes.c_long(thread_id), exception)
+            ctypes.c_long(thread_id), exception
+        )
         if res != 1:
             # If res is 0, the thread ID was invalid
             # If res > 1, we modified multiple threads
             ctypes.pythonapi.PyThreadState_SetAsyncExc(
-                ctypes.c_long(thread_id), ctypes.py_object(0))
+                ctypes.c_long(thread_id), ctypes.py_object(0)
+            )
             msg = "Failed to raise KeyboardInterrupt in main thread"
             raise RuntimeError(msg)
-    
+
     # Start a thread to trigger the interrupt
     interrupt_thread = threading.Thread(target=trigger_interrupt)
-    # we mark as daemon so the test process can exit even if this thread doesn’t finish
+    # we mark as daemon so the test process can exit even if this thread doesn't finish
     interrupt_thread.daemon = True
     interrupt_thread.start()
-    
+
     # Execute the query and expect it to be interrupted
     try:
         # Signal that we're about to start the query
@@ -2173,10 +2174,10 @@ def test_collect_interrupted():
         interrupted = True
     except Exception as e:
         interrupt_error = e
-    
+
     # Assert that the query was interrupted properly
     if not interrupted:
         pytest.fail(f"Query was not interrupted; got error: {interrupt_error}")
-    
+
     # Make sure the interrupt thread has finished
     interrupt_thread.join(timeout=1.0)
