@@ -775,22 +775,17 @@ impl PySessionContext {
             // Clone self to avoid borrowing
             let self_clone = self.clone();
 
-            // Create options with owned values inside the async block
+            // Create a future that uses our helper function
             let result_future = async move {
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_byte)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type.clone())
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let schema_ref = schema_owned.as_ref().map(|s| s.as_ref());
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_byte,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    file_compression_type.clone(),
+                    schema_ref,
+                )?;
 
                 self_clone
                     .register_csv_from_multiple_paths(&name_owned, paths, options)
@@ -803,20 +798,15 @@ impl PySessionContext {
 
             // Create a future that moves owned values
             let result_future = async move {
-                let mut options = CsvReadOptions::new()
-                    .has_header(has_header)
-                    .delimiter(delimiter_byte)
-                    .schema_infer_max_records(schema_infer_max_records)
-                    .file_extension(&file_extension_owned)
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type.clone())
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let schema_ref = schema_owned.as_ref().map(|s| s.as_ref());
+                let options = create_csv_read_options(
+                    has_header,
+                    delimiter_byte,
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    file_compression_type.clone(),
+                    schema_ref,
+                )?;
 
                 ctx.register_csv(&name_owned, &path, options).await
             };
@@ -1414,6 +1404,32 @@ impl PySessionContext {
             .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
         Ok(())
     }
+}
+
+/// Create CsvReadOptions with the provided parameters
+fn create_csv_read_options(
+    has_header: bool,
+    delimiter_byte: u8,
+    schema_infer_max_records: usize,
+    file_extension: &str,
+    file_compression_type: Option<String>,
+    schema: Option<&Schema>,
+) -> PyResult<CsvReadOptions> {
+    let mut options = CsvReadOptions::new()
+        .has_header(has_header)
+        .delimiter(delimiter_byte)
+        .schema_infer_max_records(schema_infer_max_records)
+        .file_extension(file_extension)
+        .file_compression_type(
+            parse_file_compression_type(file_compression_type).map_err(py_err_to_datafusion_err)?,
+        );
+
+    // Use schema if provided
+    if let Some(s) = schema {
+        options.schema = Some(s);
+    }
+
+    Ok(options)
 }
 
 pub fn convert_table_partition_cols(
