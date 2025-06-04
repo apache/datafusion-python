@@ -102,10 +102,15 @@ impl PyDatabase {
         // Clone the name to avoid borrowing it in the future
         let name_owned = name.to_string();
 
-        let table_option = wait_for_future(py, async move { database.table(&name_owned).await })
-            .map_err(py_datafusion_err)?
-            .map_err(PyDataFusionError::from)?;
-        if let Some(table) = table_option {
+        // First, handle Python GIL-related errors from wait_for_future
+        let py_wait_result = wait_for_future(py, async move { database.table(&name_owned).await })
+            .map_err(py_datafusion_err)?;
+
+        // Then, handle DataFusion errors from the table lookup
+        let df_result = py_wait_result.map_err(PyDataFusionError::from)?;
+
+        // Finally, handle the case where the table exists or not
+        if let Some(table) = df_result {
             Ok(PyTable::new(table))
         } else {
             Err(PyDataFusionError::Common(format!(
