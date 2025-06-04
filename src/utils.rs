@@ -27,7 +27,6 @@ use pyo3::types::PyCapsule;
 use std::future::Future;
 use std::sync::OnceLock;
 use std::time::Duration;
-use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
@@ -48,23 +47,13 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
     CTX.get_or_init(SessionContext::new)
 }
 
-/// Gets the Tokio runtime with time enabled and enters it, returning both the runtime and enter guard
-/// This helps ensure that we don't forget to call enter() after getting the runtime
-#[inline]
-pub(crate) fn get_and_enter_tokio_runtime(
-) -> (&'static Runtime, tokio::runtime::EnterGuard<'static>) {
-    let runtime = &get_tokio_runtime().0;
-    let enter_guard = runtime.enter();
-    (runtime, enter_guard)
-}
-
 /// Utility to collect rust futures with GIL released and interrupt support
 pub fn wait_for_future<F>(py: Python, f: F) -> PyResult<F::Output>
 where
     F: Future + Send + 'static,
     F::Output: Send + 'static,
 {
-    let (runtime, _enter_guard) = get_and_enter_tokio_runtime();
+    let runtime = &get_tokio_runtime().0;
     // Define the milisecond interval for checking Python signals
     const SIGNAL_CHECK_INTERVAL: Duration = Duration::from_millis(1_000);
 
