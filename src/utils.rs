@@ -74,7 +74,8 @@ where
             let mut interval =
                 tokio::time::interval(Duration::from_millis(SIGNAL_CHECK_INTERVAL_MS));
 
-            // Pin the future to the stack
+            // tokio::pin!(f) ensures we can select! between the future
+            // and interval.tick() without moving f.
             tokio::pin!(f);
 
             loop {
