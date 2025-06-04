@@ -777,7 +777,7 @@ impl PySessionContext {
 
             // Create a future that uses our helper function
             let result_future = async move {
-                let schema_ref = schema_owned.as_ref().map(|s| s.as_ref());
+                let schema_ref = schema_owned.as_ref();
                 let options = create_csv_read_options(
                     has_header,
                     delimiter_byte,
@@ -798,7 +798,7 @@ impl PySessionContext {
 
             // Create a future that moves owned values
             let result_future = async move {
-                let schema_ref = schema_owned.as_ref().map(|s| s.as_ref());
+                let schema_ref = schema_owned.as_ref();
                 let options = create_csv_read_options(
                     has_header,
                     delimiter_byte,
@@ -1407,14 +1407,14 @@ impl PySessionContext {
 }
 
 /// Create CsvReadOptions with the provided parameters
-fn create_csv_read_options(
+fn create_csv_read_options<'a>(
     has_header: bool,
     delimiter_byte: u8,
     schema_infer_max_records: usize,
-    file_extension: &str,
+    file_extension: &'a str,
     file_compression_type: Option<String>,
-    schema: Option<&Schema>,
-) -> PyResult<CsvReadOptions> {
+    schema: Option<&'a Schema>,
+) -> PyResult<CsvReadOptions<'a>> {
     let mut options = CsvReadOptions::new()
         .has_header(has_header)
         .delimiter(delimiter_byte)
