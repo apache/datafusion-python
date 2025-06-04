@@ -116,7 +116,7 @@ impl PySubstraitSerializer {
         // Create a future that moves owned values
         let future = async move { serializer::serialize_bytes(&sql_owned, &ctx_owned).await };
 
-        let proto_bytes: Vec<u8> = wait_for_future(py, future)??.into();
+        let proto_bytes: Vec<u8> = wait_for_future(py, future)??;
         Ok(PyBytes::new(py, &proto_bytes).into())
     }
 

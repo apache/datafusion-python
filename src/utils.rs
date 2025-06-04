@@ -85,6 +85,7 @@ where
                     }
                     _ = interval.tick() => {
                         // Time to check Python signals
+                        #[allow(clippy::question_mark)]
                         if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
                             return Err(py_exc);
                         }

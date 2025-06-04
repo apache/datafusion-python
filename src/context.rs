@@ -767,7 +767,7 @@ impl PySessionContext {
         // Extract schema data if available to avoid borrowing
         let schema_owned = schema.map(|s| s.0.clone());
 
-        let _ = if path.is_instance_of::<PyList>() {
+        if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
             // Clone self to avoid borrowing
             let self_clone = self.clone();
