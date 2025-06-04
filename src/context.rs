@@ -858,16 +858,13 @@ impl PySessionContext {
 
         // Create a future that moves owned values
         let result_future = async move {
-            let mut options = NdJsonReadOptions::default()
-                .file_compression_type(parsed_file_compression_type)
-                .table_partition_cols(table_partition_cols.clone());
-            options.schema_infer_max_records = schema_infer_max_records;
-            options.file_extension = &file_extension_owned;
-
-            // Use owned schema if provided
-            if let Some(s) = &schema_owned {
-                options.schema = Some(s);
-            }
+            let options = create_ndjson_read_options(
+                schema_infer_max_records,
+                &file_extension_owned,
+                parsed_file_compression_type,
+                table_partition_cols.clone(),
+                schema_owned.as_ref(),
+            );
 
             ctx.register_json(&name_owned, &path_owned, options).await
         };
@@ -1063,16 +1060,13 @@ impl PySessionContext {
         let df = if schema_owned.is_some() {
             // Create a future that moves owned values
             let result_future = async move {
-                let mut options = NdJsonReadOptions::default()
-                    .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(parsed_file_compression_type);
-                options.schema_infer_max_records = schema_infer_max_records;
-                options.file_extension = &file_extension_owned;
-
-                // Use owned schema if provided
-                if let Some(s) = &schema_owned {
-                    options.schema = Some(s);
-                }
+                let options = create_ndjson_read_options(
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    table_partition_cols.clone(),
+                    schema_owned.as_ref(),
+                );
 
                 ctx.read_json(&path_owned, options).await
             };
@@ -1080,11 +1074,13 @@ impl PySessionContext {
         } else {
             // Create a future that moves owned values
             let result_future = async move {
-                let mut options = NdJsonReadOptions::default()
-                    .table_partition_cols(table_partition_cols.clone())
-                    .file_compression_type(parsed_file_compression_type);
-                options.schema_infer_max_records = schema_infer_max_records;
-                options.file_extension = &file_extension_owned;
+                let options = create_ndjson_read_options(
+                    schema_infer_max_records,
+                    &file_extension_owned,
+                    parsed_file_compression_type,
+                    table_partition_cols.clone(),
+                    None,
+                );
 
                 ctx.read_json(&path_owned, options).await
             };
@@ -1391,6 +1387,28 @@ pub fn convert_table_partition_cols(
             ))),
         })
         .collect::<Result<Vec<_>, _>>()
+}
+
+/// Create NdJsonReadOptions with the provided parameters
+fn create_ndjson_read_options<'a>(
+    schema_infer_max_records: usize,
+    file_extension: &'a str,
+    file_compression_type: FileCompressionType,
+    table_partition_cols: Vec<(String, DataType)>,
+    schema: Option<&'a Schema>,
+) -> NdJsonReadOptions<'a> {
+    let mut options = NdJsonReadOptions::default()
+        .table_partition_cols(table_partition_cols)
+        .file_compression_type(file_compression_type);
+    options.schema_infer_max_records = schema_infer_max_records;
+    options.file_extension = file_extension;
+
+    // Set schema if provided
+    if let Some(s) = schema {
+        options.schema = Some(s);
+    }
+
+    options
 }
 
 /// Create CsvReadOptions with the provided parameters
