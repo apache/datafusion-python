@@ -756,12 +756,10 @@ impl PySessionContext {
         let delimiter_byte = delimiter_bytes[0];
 
         // Validate file_compression_type synchronously before async call
-        if let Some(compression_type) = &file_compression_type {
-            // Return Python error directly instead of wrapping it in PyDataFusionError to match test expectations
-            if let Err(err) = parse_file_compression_type(Some(compression_type.clone())) {
-                return Err(PyDataFusionError::PythonError(err));
-            }
-        }
+        let fct = match parse_file_compression_type(file_compression_type.clone()) {
+            Ok(compression) => compression,
+            Err(err) => return Err(PyDataFusionError::PythonError(err)),
+        };
 
         // Clone all string references to create owned values
         let file_extension_owned = file_extension.to_string();
@@ -782,10 +780,7 @@ impl PySessionContext {
                     .delimiter(delimiter_byte)
                     .schema_infer_max_records(schema_infer_max_records)
                     .file_extension(&file_extension_owned)
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type.clone())
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
+                    .file_compression_type(compression);
 
                 // Use owned schema if provided
                 if let Some(s) = &schema_owned {
@@ -808,10 +803,7 @@ impl PySessionContext {
                     .delimiter(delimiter_byte)
                     .schema_infer_max_records(schema_infer_max_records)
                     .file_extension(&file_extension_owned)
-                    .file_compression_type(
-                        parse_file_compression_type(file_compression_type.clone())
-                            .map_err(py_err_to_datafusion_err)?,
-                    );
+                    .file_compression_type(compression);
 
                 // Use owned schema if provided
                 if let Some(s) = &schema_owned {
