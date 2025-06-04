@@ -42,21 +42,6 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
     RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
 }
 
-/// Utility to get a Tokio Runtime with time explicitly enabled
-#[inline]
-pub(crate) fn get_tokio_runtime_with_time() -> &'static TokioRuntime {
-    static RUNTIME_WITH_TIME: OnceLock<TokioRuntime> = OnceLock::new();
-    RUNTIME_WITH_TIME.get_or_init(|| {
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_time()
-            .enable_io()
-            .build()
-            .unwrap();
-
-        TokioRuntime(runtime)
-    })
-}
-
 /// Utility to get the Global Datafussion CTX
 #[inline]
 pub(crate) fn get_global_ctx() -> &'static SessionContext {
@@ -69,7 +54,7 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
 #[inline]
 pub(crate) fn get_and_enter_tokio_runtime(
 ) -> (&'static Runtime, tokio::runtime::EnterGuard<'static>) {
-    let runtime = &get_tokio_runtime_with_time().0;
+    let runtime = &get_tokio_runtime().0;
     let enter_guard = runtime.enter();
     (runtime, enter_guard)
 }
