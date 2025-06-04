@@ -2124,11 +2124,21 @@ def test_collect_interrupted():
     interrupt_error = None
     main_thread = threading.main_thread()
     
+    # Shared flag to indicate query execution has started
+    query_started = threading.Event()
+    max_wait_time = 5.0  # Maximum wait time in seconds
+    
     # This function will be run in a separate thread and will raise 
     # KeyboardInterrupt in the main thread
     def trigger_interrupt():
-        """Wait a moment then raise KeyboardInterrupt in the main thread"""
-        time.sleep(0.5)  # Give the query time to start
+        """Poll for query start, then raise KeyboardInterrupt in the main thread"""
+        # Poll for query to start with small sleep intervals
+        start_time = time.time()
+        while not query_started.is_set():
+            time.sleep(0.1)  # Small sleep between checks
+            if time.time() - start_time > max_wait_time:
+                msg = f"Query did not start within {max_wait_time} seconds"
+                raise RuntimeError(msg)
         
         # Check if thread ID is available
         thread_id = main_thread.ident
@@ -2155,6 +2165,8 @@ def test_collect_interrupted():
     
     # Execute the query and expect it to be interrupted
     try:
+        # Signal that we're about to start the query
+        query_started.set()
         df.collect()
     except KeyboardInterrupt:
         interrupted = True
