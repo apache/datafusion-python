@@ -83,7 +83,8 @@ impl PySubstraitSerializer {
 
         // Suppress the specific warning while maintaining the behavior that works with Tokio
         #[allow(unused_must_use)]
-        wait_for_future(py, future)?;
+        wait_for_future(py, future)?.map_err(PyDataFusionError::from)?;
+
         Ok(())
     }
 
