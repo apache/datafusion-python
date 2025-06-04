@@ -65,14 +65,13 @@ where
     F::Output: Send + 'static,
 {
     let (runtime, _enter_guard) = get_and_enter_tokio_runtime();
-    // Define the interval for checking Python signals
-    const SIGNAL_CHECK_INTERVAL_MS: u64 = 1000;
+    // Define the milisecond interval for checking Python signals
+    const SIGNAL_CHECK_INTERVAL: Duration = Duration::from_millis(1_000);
 
     // Release the GIL and directly block on the future with periodic signal checks
     py.allow_threads(|| {
         runtime.block_on(async {
-            let mut interval =
-                tokio::time::interval(Duration::from_millis(SIGNAL_CHECK_INTERVAL_MS));
+            let mut interval = tokio::time::interval(SIGNAL_CHECK_INTERVAL);
 
             // tokio::pin!(f) ensures we can select! between the future
             // and interval.tick() without moving f.
