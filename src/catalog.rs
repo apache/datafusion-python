@@ -21,7 +21,7 @@ use std::sync::Arc;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::utils::wait_for_future;
 use datafusion::{
     arrow::pyarrow::ToPyArrow,
@@ -97,20 +97,7 @@ impl PyDatabase {
     }
 
     fn table(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
-        // Clone the database to avoid borrowing self in the future
-        let database = self.database.clone();
-        // Clone the name to avoid borrowing it in the future
-        let name_owned = name.to_string();
-
-        // First, handle Python GIL-related errors from wait_for_future
-        let py_wait_result = wait_for_future(py, async move { database.table(&name_owned).await })
-            .map_err(py_datafusion_err)?;
-
-        // Then, handle DataFusion errors from the table lookup
-        let df_result = py_wait_result.map_err(PyDataFusionError::from)?;
-
-        // Finally, handle the case where the table exists or not
-        if let Some(table) = df_result {
+        if let Some(table) = wait_for_future(py, self.database.table(name))?? {
             Ok(PyTable::new(table))
         } else {
             Err(PyDataFusionError::Common(format!(

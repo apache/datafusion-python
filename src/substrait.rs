@@ -72,19 +72,7 @@ impl PySubstraitSerializer {
         path: &str,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        // Clone the string values to create owned values that can be moved into the future
-        let sql_owned = sql.to_string();
-        let path_owned = path.to_string();
-        let ctx_owned = ctx.ctx.clone();
-
-        // Create a future that moves owned values
-        let future =
-            async move { serializer::serialize(&sql_owned, &ctx_owned, &path_owned).await };
-
-        // Suppress the specific warning while maintaining the behavior that works with Tokio
-        #[allow(unused_must_use)]
-        wait_for_future(py, future)?.map_err(PyDataFusionError::from)?;
-
+        wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))??;
         Ok(())
     }
 
@@ -94,10 +82,7 @@ impl PySubstraitSerializer {
         ctx: PySessionContext,
         py: Python,
     ) -> PyDataFusionResult<PyPlan> {
-        // Clone sql string to own it
-        let sql_owned = sql.to_string();
-
-        PySubstraitSerializer::serialize_bytes(&sql_owned, ctx, py).and_then(|proto_bytes| {
+        PySubstraitSerializer::serialize_bytes(sql, ctx, py).and_then(|proto_bytes| {
             let proto_bytes = proto_bytes.bind(py).downcast::<PyBytes>().unwrap();
             PySubstraitSerializer::deserialize_bytes(proto_bytes.as_bytes().to_vec(), py)
         })
@@ -109,26 +94,14 @@ impl PySubstraitSerializer {
         ctx: PySessionContext,
         py: Python,
     ) -> PyDataFusionResult<PyObject> {
-        // Clone the string value to create an owned value that can be moved into the future
-        let sql_owned = sql.to_string();
-        let ctx_owned = ctx.ctx.clone();
-
-        // Create a future that moves owned values
-        let future = async move { serializer::serialize_bytes(&sql_owned, &ctx_owned).await };
-
-        let proto_bytes: Vec<u8> = wait_for_future(py, future)??;
+        let proto_bytes: Vec<u8> =
+            wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))??;
         Ok(PyBytes::new(py, &proto_bytes).into())
     }
 
     #[staticmethod]
     pub fn deserialize(path: &str, py: Python) -> PyDataFusionResult<PyPlan> {
-        // Clone the path to own it
-        let path_owned = path.to_string();
-
-        // Create a future that moves owned values
-        let future = async move { serializer::deserialize(&path_owned).await };
-
-        let plan = wait_for_future(py, future)??;
+        let plan = wait_for_future(py, serializer::deserialize(path))??;
         Ok(PyPlan { plan: *plan })
     }
 
@@ -148,11 +121,8 @@ impl PySubstraitProducer {
     /// Convert DataFusion LogicalPlan to Substrait Plan
     #[staticmethod]
     pub fn to_substrait_plan(plan: PyLogicalPlan, ctx: &PySessionContext) -> PyResult<PyPlan> {
-        // Clone the state to ensure it lives long enough
-        let session_state = ctx.ctx.state().clone();
-        let plan_ref = plan.plan.clone();
-
-        match producer::to_substrait_plan(&plan_ref, &session_state) {
+        let session_state = ctx.ctx.state();
+        match producer::to_substrait_plan(&plan.plan, &session_state) {
             Ok(plan) => Ok(PyPlan { plan: *plan }),
             Err(e) => Err(py_datafusion_err(e)),
         }
@@ -172,24 +142,10 @@ impl PySubstraitConsumer {
         plan: PyPlan,
         py: Python,
     ) -> PyDataFusionResult<PyLogicalPlan> {
-        // Clone the state to ensure it lives long enough
-        let session_state = ctx.ctx.state().clone();
-        let plan_clone = plan.plan.clone();
-
-        // Create a future that takes ownership of the variables
-        let future = async move {
-            // The .await is needed here to actually execute the future
-            consumer::from_substrait_plan(&session_state, &plan_clone).await
-        };
-
-        // Wait for the future and handle the result, using only a single ?
-        let logical_plan = wait_for_future(py, future)?;
-
-        // Handle the Result returned by the future
-        match logical_plan {
-            Ok(plan) => Ok(PyLogicalPlan::new(plan)),
-            Err(e) => Err(PyDataFusionError::from(e)),
-        }
+        let session_state = ctx.ctx.state();
+        let result = consumer::from_substrait_plan(&session_state, &plan.plan);
+        let logical_plan = wait_for_future(py, result)??;
+        Ok(PyLogicalPlan::new(logical_plan))
     }
 }
 

@@ -63,13 +63,9 @@ impl PyRecordBatchStream {
 impl PyRecordBatchStream {
     fn next(&mut self, py: Python) -> PyResult<PyRecordBatch> {
         let stream = self.stream.clone();
-        // Two-step error handling process:
-        // 1. First ? handles errors from the async runtime/future execution
-        let item = wait_for_future(py, next_stream(stream, true))?;
-        // 2. Second ? converts and propagates any DataFusion errors to Python errors
-        let batch = item.map_err(PyDataFusionError::from)?;
-        Ok(batch)
+        wait_for_future(py, next_stream(stream, true))?
     }
+
     fn __next__(&mut self, py: Python) -> PyResult<PyRecordBatch> {
         self.next(py)
     }

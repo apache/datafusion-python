@@ -233,8 +233,7 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?
-        .map_err(PyDataFusionError::from)?;
+        )??;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -257,8 +256,7 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?
-        .map_err(PyDataFusionError::from)?;
+        )??;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -290,7 +288,7 @@ impl PyDataFrame {
     /// Calculate summary statistics for a DataFrame
     fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?.map_err(PyDataFusionError::from)?;
+        let stat_df = wait_for_future(py, df.describe())??;
         Ok(Self::new(stat_df))
     }
 
@@ -395,7 +393,6 @@ impl PyDataFrame {
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
         let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
-
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
         batches.into_iter().map(|rb| rb.to_pyarrow(py)).collect()
@@ -403,8 +400,8 @@ impl PyDataFrame {
 
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
-        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
-        Ok(Self::new(df?))
+        let df = wait_for_future(py, self.df.as_ref().clone().cache())??;
+        Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
@@ -514,8 +511,8 @@ impl PyDataFrame {
 
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
-        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
-        Ok(PyExecutionPlan::new(plan?))
+        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())??;
+        Ok(plan.into())
     }
 
     /// Repartition a `DataFrame` based on a logical partitioning scheme.
@@ -620,18 +617,14 @@ impl PyDataFrame {
             has_header: Some(with_header),
             ..Default::default()
         };
-
-        // Clone path to create an owned string
-        let path_owned = path.to_string();
-        let df_clone = self.df.as_ref().clone();
-
-        let write_future = async move {
-            df_clone
-                .write_csv(&path_owned, DataFrameWriteOptions::new(), Some(csv_options))
-                .await
-        };
-
-        let _ = wait_for_future(py, write_future)?;
+        wait_for_future(
+            py,
+            self.df.as_ref().clone().write_csv(
+                path,
+                DataFrameWriteOptions::new(),
+                Some(csv_options),
+            ),
+        )??;
         Ok(())
     }
 
@@ -685,37 +678,26 @@ impl PyDataFrame {
         let mut options = TableParquetOptions::default();
         options.global.compression = Some(compression_string);
 
-        // Clone path to create an owned string
-        let path_owned = path.to_string();
-        let df_clone = self.df.as_ref().clone();
-
-        let write_future = async move {
-            df_clone
-                .write_parquet(
-                    &path_owned,
-                    DataFrameWriteOptions::new(),
-                    Option::from(options),
-                )
-                .await
-        };
-
-        let _ = wait_for_future(py, write_future)?;
+        wait_for_future(
+            py,
+            self.df.as_ref().clone().write_parquet(
+                path,
+                DataFrameWriteOptions::new(),
+                Option::from(options),
+            ),
+        )??;
         Ok(())
     }
 
     /// Executes a query and writes the results to a partitioned JSON file.
     fn write_json(&self, path: &str, py: Python) -> PyDataFusionResult<()> {
-        // Clone path to create an owned string
-        let path_owned = path.to_string();
-        let df_clone = self.df.as_ref().clone();
-
-        let write_future = async move {
-            df_clone
-                .write_json(&path_owned, DataFrameWriteOptions::new(), None)
-                .await
-        };
-
-        let _ = wait_for_future(py, write_future)?;
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_json(path, DataFrameWriteOptions::new(), None),
+        )??;
         Ok(())
     }
 
@@ -738,7 +720,7 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())??;
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
@@ -749,16 +731,13 @@ impl PyDataFrame {
 
             schema = project_schema(schema, desired_schema)?;
 
-            batches = Ok(batches
+            batches = batches
                 .into_iter()
-                .flatten()
                 .map(|record_batch| record_batch_into_schema(record_batch, &schema))
-                .collect::<Result<Vec<RecordBatch>, ArrowError>>()
-                .map_err(PyDataFusionError::from)?)
+                .collect::<Result<Vec<RecordBatch>, ArrowError>>()?;
         }
 
-        // We need to flatten the nested structure to get Iterator<Item = Result<RecordBatch, ArrowError>>
-        let batches_wrapped = batches.into_iter().flatten().map(Ok);
+        let batches_wrapped = batches.into_iter().map(Ok);
 
         let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
@@ -774,21 +753,8 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
-        let join_result = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-
-        // First handle the JoinError result, then we need to handle the DataFusion result
-        // by using ? to propagate any error
-        match join_result {
-            Ok(result_stream) => {
-                // Use ? to extract the stream from the result
-                let stream = result_stream?;
-                Ok(PyRecordBatchStream::new(stream))
-            }
-            Err(e) => {
-                // Convert JoinError to a PyDataFusionError::Common which accepts a string
-                Err(PyDataFusionError::Common(format!("Task failed: {}", e)))
-            }
-        }
+        let stream = wait_for_future(py, async { fut.await.expect("Tokio task panicked") })??;
+        Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -797,29 +763,10 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
-        let join_result = wait_for_future(py, fut).map_err(py_datafusion_err)?;
+        let stream = wait_for_future(py, async { fut.await.expect("Tokio task panicked") })?
+            .map_err(py_datafusion_err)?;
 
-        match join_result {
-            Ok(result_streams) => {
-                // Convert each stream to a PyRecordBatchStream
-                match result_streams {
-                    Ok(streams) => {
-                        // Need to convert each individual SendableRecordBatchStream to PyRecordBatchStream
-                        let result_streams: Vec<PyRecordBatchStream> =
-                            streams.into_iter().map(PyRecordBatchStream::new).collect();
-                        Ok(result_streams)
-                    }
-                    Err(e) => Err(PyValueError::new_err(format!(
-                        "Error in execute_stream_partitioned: {}",
-                        e
-                    ))),
-                }
-            }
-            Err(e) => Err(PyValueError::new_err(format!(
-                "Unable to execute stream partitioned: {}",
-                e
-            ))),
-        }
+        Ok(stream.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
     /// Convert to pandas dataframe with pyarrow
@@ -864,7 +811,7 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count()).map_err(py_datafusion_err)??)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count())??)
     }
 
     /// Fill null values with a specified value for specific columns
@@ -890,12 +837,12 @@ impl PyDataFrame {
 /// Print DataFrame
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
-    let batches = wait_for_future(py, df.collect())?;
-    // Unwrap the Result to get Vec<RecordBatch> before passing to pretty_format_batches
-    let batches = batches?;
-    let batches_as_string =
-        pretty::pretty_format_batches(&batches).map_err(PyDataFusionError::from)?;
-    let result = format!("DataFrame()\n{batch}", batch = batches_as_string);
+    let batches = wait_for_future(py, df.collect())??;
+    let batches_as_string = pretty::pretty_format_batches(&batches);
+    let result = match batches_as_string {
+        Ok(batch) => format!("DataFrame()\n{batch}"),
+        Err(err) => format!("Error: {:?}", err.to_string()),
+    };
 
     // Import the Python 'builtins' module to access the print function
     // Note that println! does not print to the Python debug console and is not visible in notebooks for instance

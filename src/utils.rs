@@ -26,7 +26,7 @@ use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 use std::future::Future;
 use std::sync::OnceLock;
-use std::time::Duration;
+use tokio::runtime::Runtime;
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]
@@ -47,38 +47,29 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
     CTX.get_or_init(SessionContext::new)
 }
 
-/// Utility to collect rust futures with GIL released and interrupt support
-pub fn wait_for_future<F>(py: Python, f: F) -> PyResult<F::Output>
+/// Utility to collect rust futures with GIL released and respond to
+/// Python interrupts such as ``KeyboardInterrupt``. If a signal is
+/// received while the future is running, the future is aborted and the
+/// corresponding Python exception is raised.
+pub fn wait_for_future<F>(py: Python, fut: F) -> PyResult<F::Output>
 where
-    F: Future + Send + 'static,
-    F::Output: Send + 'static,
+    F: Future + Send,
+    F::Output: Send,
 {
-    let runtime = &get_tokio_runtime().0;
-    // Define the milisecond interval for checking Python signals
-    const SIGNAL_CHECK_INTERVAL: Duration = Duration::from_millis(1_000);
+    use std::time::Duration;
+    use tokio::time::sleep;
 
-    // Release the GIL and directly block on the future with periodic signal checks
+    let runtime: &Runtime = &get_tokio_runtime().0;
+    const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
+
     py.allow_threads(|| {
         runtime.block_on(async {
-            let mut interval = tokio::time::interval(SIGNAL_CHECK_INTERVAL);
-
-            // tokio::pin!(f) ensures we can select! between the future
-            // and interval.tick() without moving f.
-            tokio::pin!(f);
-
+            tokio::pin!(fut);
             loop {
                 tokio::select! {
-                    result = &mut f => {
-                        // Future completed
-                        return Ok(result);
-                    }
-                    _ = interval.tick() => {
-                        // Time to check Python signals
-                        #[allow(clippy::question_mark)]
-                        if let Err(py_exc) = Python::with_gil(|py| py.check_signals()) {
-                            return Err(py_exc);
-                        }
-                        // Continue waiting for the future
+                    res = &mut fut => break Ok(res),
+                    _ = sleep(INTERVAL_CHECK_SIGNALS) => {
+                        Python::with_gil(|py| py.check_signals())?;
                     }
                 }
             }
