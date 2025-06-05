@@ -15,19 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::common::data_type::PyScalarValue;
-use crate::errors::{PyDataFusionError, PyDataFusionResult};
-use crate::TokioRuntime;
-use datafusion::common::ScalarValue;
-use datafusion::execution::context::SessionContext;
-use datafusion::logical_expr::Volatility;
-use pyo3::exceptions::PyValueError;
+use crate::{
+    common::data_type::PyScalarValue,
+    errors::{PyDataFusionError, PyDataFusionResult},
+    TokioRuntime,
+};
+use datafusion::{
+    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
+};
 use pyo3::prelude::*;
-use pyo3::types::PyCapsule;
-use std::future::Future;
-use std::sync::OnceLock;
-use tokio::runtime::Runtime;
-
+use pyo3::{exceptions::PyValueError, types::PyCapsule};
+use std::{future::Future, sync::OnceLock, time::Duration};
+use tokio::{runtime::Runtime, time::sleep};
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -56,9 +55,6 @@ where
     F: Future + Send,
     F::Output: Send,
 {
-    use std::time::Duration;
-    use tokio::time::sleep;
-
     let runtime: &Runtime = &get_tokio_runtime().0;
     const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
 
