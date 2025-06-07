@@ -103,7 +103,7 @@ def test_limit(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    assert "Skip: Some(Literal(Int64(5)))" in str(plan)
+    assert "Skip: Some(Literal(Int64(5), None))" in str(plan)
 
 
 def test_aggregate_query(test_ctx):
