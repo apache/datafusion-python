@@ -18,8 +18,7 @@
 use crate::errors::PyDataFusionError;
 use datafusion::common::ScalarValue;
 use pyo3::{prelude::*, IntoPyObjectExt};
-use std::collections::{BTreeMap, HashMap};
-use std::sync::Arc;
+use std::collections::BTreeMap;
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

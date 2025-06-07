@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::{AggregateFunctionParams, WindowFunctionParams};
+use datafusion::logical_expr::expr::AggregateFunctionParams;
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
@@ -24,7 +24,6 @@ use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
 use std::collections::HashMap;
 use std::convert::{From, Into};
-use std::env::args;
 use std::sync::Arc;
 use window::PyWindowFrame;
 

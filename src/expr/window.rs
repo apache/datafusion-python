@@ -16,7 +16,6 @@
 // under the License.
 
 use datafusion::common::{DataFusionError, ScalarValue};
-use datafusion::logical_expr::expr::{WindowFunction, WindowFunctionParams};
 use datafusion::logical_expr::{Expr, Window, WindowFrame, WindowFrameBound, WindowFrameUnits};
 use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
