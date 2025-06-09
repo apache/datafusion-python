@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::scalar_udf::IsNullUDF;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
 use pyo3::prelude::*;
 
+mod scalar_udf;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
 
@@ -26,5 +28,6 @@ pub(crate) mod table_provider;
 fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyTableProvider>()?;
     m.add_class::<MyTableFunction>()?;
+    m.add_class::<IsNullUDF>()?;
     Ok(())
 }
