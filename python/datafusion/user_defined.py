@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol, TypeVar, overload
 
 import pyarrow as pa
 
@@ -77,6 +77,12 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+class ScalarUDFExportable(Protocol):
+    """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
+
+    def __datafusion_scalar_udf__(self) -> object: ...  # noqa: D105
+
+
 class ScalarUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -96,6 +102,9 @@ class ScalarUDF:
 
         See helper method :py:func:`udf` for argument details.
         """
+        if hasattr(func, "__datafusion_scalar_udf__"):
+            self._udf = df_internal.ScalarUDF.from_pycapsule(func)
+            return
         if isinstance(input_types, pa.DataType):
             input_types = [input_types]
         self._udf = df_internal.ScalarUDF(
@@ -134,6 +143,10 @@ class ScalarUDF:
         name: Optional[str] = None,
     ) -> ScalarUDF: ...
 
+    @overload
+    @staticmethod
+    def udf(func: ScalarUDFExportable) -> ScalarUDF: ...
+
     @staticmethod
     def udf(*args: Any, **kwargs: Any):  # noqa: D417
         """Create a new User-Defined Function (UDF).
@@ -147,7 +160,10 @@ class ScalarUDF:
 
         Args:
             func (Callable, optional): Only needed when calling as a function.
-                Skip this argument when using ``udf`` as a decorator.
+                Skip this argument when using `udf` as a decorator. If you have a Rust
+                backed ScalarUDF within a PyCapsule, you can pass this parameter
+                and ignore the rest. They will be determined directly from the
+                underlying function. See the online documentation for more information.
             input_types (list[pa.DataType]): The data types of the arguments
                 to ``func``. This list must be of the same length as the number of
                 arguments.
@@ -215,11 +231,30 @@ class ScalarUDF:
 
             return decorator
 
+        if hasattr(args[0], "__datafusion_scalar_udf__"):
+            return ScalarUDF.from_pycapsule(args[0])
+
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return _function(*args, **kwargs)
         # Case 2: Used as a decorator with parameters
         return _decorator(*args, **kwargs)
+
+    @staticmethod
+    def from_pycapsule(func: ScalarUDFExportable) -> ScalarUDF:
+        """Create a Scalar UDF from ScalarUDF PyCapsule object.
+
+        This function will instantiate a Scalar UDF that uses a DataFusion
+        ScalarUDF that is exported via the FFI bindings.
+        """
+        name = str(udf.__class__)
+        return ScalarUDF(
+            name=name,
+            func=func,
+            input_types=None,
+            return_type=None,
+            volatility=None,
+        )
 
 
 class Accumulator(metaclass=ABCMeta):
