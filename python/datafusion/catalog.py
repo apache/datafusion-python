@@ -34,6 +34,10 @@ class Catalog:
         """This constructor is not typically called by the end user."""
         self.catalog = catalog
 
+    def __repr__(self) -> str:
+        """Print a string representation of the catalog."""
+        self.catalog.__repr__()
+
     def names(self) -> list[str]:
         """Returns the list of databases in this catalog."""
         return self.catalog.names()
@@ -50,6 +54,10 @@ class Database:
         """This constructor is not typically called by the end user."""
         self.db = db
 
+    def __repr__(self) -> str:
+        """Print a string representation of the database."""
+        self.db.__repr__()
+
     def names(self) -> set[str]:
         """Returns the list of all tables in this database."""
         return self.db.names()
@@ -65,6 +73,10 @@ class Table:
     def __init__(self, table: df_internal.Table) -> None:
         """This constructor is not typically called by the end user."""
         self.table = table
+
+    def __repr__(self) -> str:
+        """Print a string representation of the table."""
+        self.table.__repr__()
 
     @property
     def schema(self) -> pa.Schema:

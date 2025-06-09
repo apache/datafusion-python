@@ -102,6 +102,10 @@ class ScalarUDF:
             name, func, input_types, return_type, str(volatility)
         )
 
+    def __repr__(self) -> str:
+        """Print a string representation of the Scalar UDF."""
+        self._udf.__repr__()
+
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDF.
 
@@ -267,6 +271,10 @@ class AggregateUDF:
             state_type,
             str(volatility),
         )
+
+    def __repr__(self) -> str:
+        """Print a string representation of the Aggregate UDF."""
+        self._udaf.__repr__()
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDAF.
@@ -603,6 +611,10 @@ class WindowUDF:
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
+
+    def __repr__(self) -> str:
+        """Print a string representation of the Window UDF."""
+        self._udwf.__repr__()
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDWF.

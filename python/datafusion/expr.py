@@ -1172,6 +1172,10 @@ class WindowFrame:
                 end_bound = end_bound.cast(pa.uint64())
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
 
+    def __repr__(self) -> str:
+        """Print a string representation of the window frame."""
+        self.window_frame.__repr__()
+
     def get_frame_units(self) -> str:
         """Returns the window frame units for the bounds."""
         return self.window_frame.get_frame_units()
