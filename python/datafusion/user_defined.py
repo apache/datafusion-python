@@ -277,6 +277,12 @@ class Accumulator(metaclass=ABCMeta):
         """Return the resultant value."""
 
 
+class AggregateUDFExportable(Protocol):
+    """Type hint for object that has __datafusion_aggregate_udf__ PyCapsule."""
+
+    def __datafusion_aggregate_udf__(self) -> object: ...  # noqa: D105
+
+
 class AggregateUDF:
     """Class for performing scalar user-defined functions (UDF).
 
@@ -298,6 +304,9 @@ class AggregateUDF:
         See :py:func:`udaf` for a convenience function and argument
         descriptions.
         """
+        if hasattr(accumulator, "__datafusion_aggregate_udf__"):
+            self._udaf = df_internal.AggregateUDF.from_pycapsule(accumulator)
+            return
         self._udaf = df_internal.AggregateUDF(
             name,
             accumulator,
@@ -342,7 +351,7 @@ class AggregateUDF:
     ) -> AggregateUDF: ...
 
     @staticmethod
-    def udaf(*args: Any, **kwargs: Any):  # noqa: D417
+    def udaf(*args: Any, **kwargs: Any):  # noqa: D417, C901
         """Create a new User-Defined Aggregate Function (UDAF).
 
         This class allows you to define an aggregate function that can be used in
@@ -399,6 +408,10 @@ class AggregateUDF:
         Args:
             accum: The accumulator python function. Only needed when calling as a
                 function. Skip this argument when using ``udaf`` as a decorator.
+                If you have a Rust backed AggregateUDF within a PyCapsule, you can
+                pass this parameter and ignore the rest. They will be determined directly
+                from the underlying function. See the online documentation for more
+                information.
             input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
@@ -457,11 +470,31 @@ class AggregateUDF:
 
             return decorator
 
+        if hasattr(args[0], "__datafusion_aggregate_udf__"):
+            return AggregateUDF.from_pycapsule(args[0])
+
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return _function(*args, **kwargs)
         # Case 2: Used as a decorator with parameters
         return _decorator(*args, **kwargs)
+
+    @staticmethod
+    def from_pycapsule(func: AggregateUDFExportable) -> AggregateUDF:
+        """Create an Aggregate UDF from AggregateUDF PyCapsule object.
+
+        This function will instantiate a Aggregate UDF that uses a DataFusion
+        AggregateUDF that is exported via the FFI bindings.
+        """
+        name = str(udf.__class__)
+        return AggregateUDF(
+            name=name,
+            accumulator=func,
+            input_types=None,
+            return_type=None,
+            state_type=None,
+            volatility=None,
+        )
 
 
 class WindowEvaluator:
