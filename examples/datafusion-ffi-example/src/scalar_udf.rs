@@ -16,7 +16,7 @@
 // under the License.
 
 use arrow_array::{Array, BooleanArray};
-use arrow_schema::{DataType, FieldRef};
+use arrow_schema::DataType;
 use datafusion::common::ScalarValue;
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::{

@@ -247,7 +247,7 @@ class ScalarUDF:
         This function will instantiate a Scalar UDF that uses a DataFusion
         ScalarUDF that is exported via the FFI bindings.
         """
-        name = str(udf.__class__)
+        name = str(func.__class__)
         return ScalarUDF(
             name=name,
             func=func,
@@ -409,9 +409,9 @@ class AggregateUDF:
             accum: The accumulator python function. Only needed when calling as a
                 function. Skip this argument when using ``udaf`` as a decorator.
                 If you have a Rust backed AggregateUDF within a PyCapsule, you can
-                pass this parameter and ignore the rest. They will be determined directly
-                from the underlying function. See the online documentation for more
-                information.
+                pass this parameter and ignore the rest. They will be determined
+                directly from the underlying function. See the online documentation
+                for more information.
             input_types: The data types of the arguments to ``accum``.
             return_type: The data type of the return value.
             state_type: The data types of the intermediate accumulation.
@@ -486,7 +486,7 @@ class AggregateUDF:
         This function will instantiate a Aggregate UDF that uses a DataFusion
         AggregateUDF that is exported via the FFI bindings.
         """
-        name = str(udf.__class__)
+        name = str(func.__class__)
         return AggregateUDF(
             name=name,
             accumulator=func,
@@ -656,6 +656,12 @@ class WindowEvaluator:
         return False
 
 
+class WindowUDFExportable(Protocol):
+    """Type hint for object that has __datafusion_window_udf__ PyCapsule."""
+
+    def __datafusion_window_udf__(self) -> object: ...  # noqa: D105
+
+
 class WindowUDF:
     """Class for performing window user-defined functions (UDF).
 
@@ -676,6 +682,9 @@ class WindowUDF:
         See :py:func:`udwf` for a convenience function and argument
         descriptions.
         """
+        if hasattr(func, "__datafusion_window_udf__"):
+            self._udwf = df_internal.WindowUDF.from_pycapsule(func)
+            return
         self._udwf = df_internal.WindowUDF(
             name, func, input_types, return_type, str(volatility)
         )
@@ -751,7 +760,10 @@ class WindowUDF:
 
         Args:
             func: Only needed when calling as a function. Skip this argument when
-                using ``udwf`` as a decorator.
+                using ``udwf`` as a decorator. If you have a Rust backed WindowUDF
+                within a PyCapsule, you can pass this parameter and ignore the rest.
+                They will be determined directly from the underlying function. See
+                the online documentation for more information.
             input_types: The data types of the arguments.
             return_type: The data type of the return value.
             volatility: See :py:class:`Volatility` for allowed values.
@@ -760,6 +772,9 @@ class WindowUDF:
         Returns:
             A user-defined window function that can be used in window function calls.
         """
+        if hasattr(args[0], "__datafusion_window_udf__"):
+            return WindowUDF.from_pycapsule(args[0])
+
         if args and callable(args[0]):
             # Case 1: Used as a function, require the first parameter to be callable
             return WindowUDF._create_window_udf(*args, **kwargs)
@@ -826,6 +841,22 @@ class WindowUDF:
             return wrapper
 
         return decorator
+
+    @staticmethod
+    def from_pycapsule(func: WindowUDFExportable) -> WindowUDF:
+        """Create a Window UDF from WindowUDF PyCapsule object.
+
+        This function will instantiate a Window UDF that uses a DataFusion
+        WindowUDF that is exported via the FFI bindings.
+        """
+        name = str(func.__class__)
+        return WindowUDF(
+            name=name,
+            func=func,
+            input_types=None,
+            return_type=None,
+            volatility=None,
+        )
 
 
 class TableFunction:

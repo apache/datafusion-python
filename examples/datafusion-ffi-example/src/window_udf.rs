@@ -15,64 +15,64 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use arrow_schema::DataType;
+use arrow_schema::{DataType, FieldRef};
 use datafusion::error::Result as DataFusionResult;
-use datafusion::functions_aggregate::sum::Sum;
-use datafusion::logical_expr::function::AccumulatorArgs;
-use datafusion::logical_expr::{Accumulator, AggregateUDF, AggregateUDFImpl, Signature};
-use datafusion_ffi::udaf::FFI_AggregateUDF;
+use datafusion::functions_window::rank::rank_udwf;
+use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
+use datafusion::logical_expr::{PartitionEvaluator, Signature, WindowUDF, WindowUDFImpl};
+use datafusion_ffi::udwf::FFI_WindowUDF;
 use pyo3::types::PyCapsule;
 use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::any::Any;
 use std::sync::Arc;
 
-#[pyclass(name = "MySumUDF", module = "datafusion_ffi_example", subclass)]
+#[pyclass(name = "MyRankUDF", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone)]
-pub(crate) struct MySumUDF {
-    inner: Arc<Sum>,
+pub(crate) struct MyRankUDF {
+    inner: Arc<WindowUDF>,
 }
 
 #[pymethods]
-impl MySumUDF {
+impl MyRankUDF {
     #[new]
     fn new() -> Self {
-        Self {
-            inner: Arc::new(Sum::new()),
-        }
+        Self { inner: rank_udwf() }
     }
 
-    fn __datafusion_aggregate_udf__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = cr"datafusion_aggregate_udf".into();
+    fn __datafusion_window_udf__<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = cr"datafusion_window_udf".into();
 
-        let func = Arc::new(AggregateUDF::from(self.clone()));
-        let provider = FFI_AggregateUDF::from(func);
+        let func = Arc::new(WindowUDF::from(self.clone()));
+        let provider = FFI_WindowUDF::from(func);
 
         PyCapsule::new(py, provider, Some(name))
     }
 }
 
-impl AggregateUDFImpl for MySumUDF {
+impl WindowUDFImpl for MyRankUDF {
     fn as_any(&self) -> &dyn Any {
         self
     }
 
     fn name(&self) -> &str {
-        "my_custom_sum"
+        "my_custom_rank"
     }
 
     fn signature(&self) -> &Signature {
         self.inner.signature()
     }
 
-    fn return_type(&self, arg_types: &[DataType]) -> DataFusionResult<DataType> {
-        self.inner.return_type(arg_types)
+    fn partition_evaluator(
+        &self,
+        partition_evaluator_args: PartitionEvaluatorArgs,
+    ) -> DataFusionResult<Box<dyn PartitionEvaluator>> {
+        self.inner
+            .inner()
+            .partition_evaluator(partition_evaluator_args)
     }
 
-    fn accumulator(&self, acc_args: AccumulatorArgs) -> DataFusionResult<Box<dyn Accumulator>> {
-        self.inner.accumulator(acc_args)
+    fn field(&self, field_args: WindowUDFFieldArgs) -> DataFusionResult<FieldRef> {
+        self.inner.inner().field(field_args)
     }
 
     fn coerce_types(&self, arg_types: &[DataType]) -> DataFusionResult<Vec<DataType>> {
