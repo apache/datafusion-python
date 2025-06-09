@@ -36,7 +36,7 @@ class Catalog:
 
     def __repr__(self) -> str:
         """Print a string representation of the catalog."""
-        self.catalog.__repr__()
+        return self.catalog.__repr__()
 
     def names(self) -> list[str]:
         """Returns the list of databases in this catalog."""
@@ -56,7 +56,7 @@ class Database:
 
     def __repr__(self) -> str:
         """Print a string representation of the database."""
-        self.db.__repr__()
+        return self.db.__repr__()
 
     def names(self) -> set[str]:
         """Returns the list of all tables in this database."""
@@ -76,7 +76,7 @@ class Table:
 
     def __repr__(self) -> str:
         """Print a string representation of the table."""
-        self.table.__repr__()
+        return self.table.__repr__()
 
     @property
     def schema(self) -> pa.Schema:

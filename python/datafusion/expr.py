@@ -1174,7 +1174,7 @@ class WindowFrame:
 
     def __repr__(self) -> str:
         """Print a string representation of the window frame."""
-        self.window_frame.__repr__()
+        return self.window_frame.__repr__()
 
     def get_frame_units(self) -> str:
         """Returns the window frame units for the bounds."""

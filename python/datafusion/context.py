@@ -498,7 +498,7 @@ class SessionContext:
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
-        self.ctx.__repr__()
+        return self.ctx.__repr__()
 
     @classmethod
     def global_ctx(cls) -> SessionContext:

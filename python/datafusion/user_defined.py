@@ -104,7 +104,7 @@ class ScalarUDF:
 
     def __repr__(self) -> str:
         """Print a string representation of the Scalar UDF."""
-        self._udf.__repr__()
+        return self._udf.__repr__()
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDF.
@@ -274,7 +274,7 @@ class AggregateUDF:
 
     def __repr__(self) -> str:
         """Print a string representation of the Aggregate UDF."""
-        self._udaf.__repr__()
+        return self._udaf.__repr__()
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDAF.
@@ -614,7 +614,7 @@ class WindowUDF:
 
     def __repr__(self) -> str:
         """Print a string representation of the Window UDF."""
-        self._udwf.__repr__()
+        return self._udwf.__repr__()
 
     def __call__(self, *args: Expr) -> Expr:
         """Execute the UDWF.
