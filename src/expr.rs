@@ -18,7 +18,7 @@
 use datafusion::logical_expr::expr::AggregateFunctionParams;
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
-    ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
+    lit_with_metadata, ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
@@ -280,6 +280,14 @@ impl PyExpr {
     #[staticmethod]
     pub fn literal(value: PyScalarValue) -> PyExpr {
         lit(value.0).into()
+    }
+
+    #[staticmethod]
+    pub fn literal_with_metadata(
+        value: PyScalarValue,
+        metadata: HashMap<String, String>,
+    ) -> PyExpr {
+        lit_with_metadata(value.0, metadata).into()
     }
 
     #[staticmethod]
