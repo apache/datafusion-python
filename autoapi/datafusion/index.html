@@ -255,12 +255,29 @@
  </span>
 </p>
 <ul class="current nav bd-sidenav">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../api/index.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../api/dataframe.html">
+     DataFrame API
+    </a>
+   </li>
+  </ul>
+ </li>
  <li class="toctree-l1 current active has-children">
   <a class="reference internal" href="../index.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -269,8 +286,8 @@
     <a class="current reference internal" href="#">
      datafusion
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -278,11 +295,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="catalog/index.html">
        datafusion.catalog
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="col/index.html">
-       datafusion.col
       </a>
      </li>
      <li class="toctree-l3">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -355,11 +367,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="substrait/index.html">
        datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="udf/index.html">
-       datafusion.udf
       </a>
      </li>
      <li class="toctree-l3">
@@ -2643,7 +2650,6 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="catalog/index.html">datafusion.catalog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="col/index.html">datafusion.col</a></li>
 <li class="toctree-l1"><a class="reference internal" href="context/index.html">datafusion.context</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
 <li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
@@ -2655,7 +2661,6 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <li class="toctree-l1"><a class="reference internal" href="plan/index.html">datafusion.plan</a></li>
 <li class="toctree-l1"><a class="reference internal" href="record_batch/index.html">datafusion.record_batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="substrait/index.html">datafusion.substrait</a></li>
-<li class="toctree-l1"><a class="reference internal" href="udf/index.html">datafusion.udf</a></li>
 <li class="toctree-l1"><a class="reference internal" href="unparser/index.html">datafusion.unparser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_defined/index.html">datafusion.user_defined</a></li>
 </ul>
@@ -2677,7 +2682,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udaf</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="udf/index.html#module-datafusion.udf" title="datafusion.udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udf</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.udf" title="datafusion.udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udf</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.udtf" title="datafusion.udtf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udtf</span></code></a></p></td>
@@ -4203,7 +4208,7 @@ multiple spillable operators that all will spill.</p>
 <p>Scalar UDFs operate on a row by row basis. See also <a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> for
 operating on a group of rows.</p>
 <p>Instantiate a scalar user-defined function (UDF).</p>
-<p>See helper method <a class="reference internal" href="udf/index.html#module-datafusion.udf" title="datafusion.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
+<p>See helper method <a class="reference internal" href="#datafusion.udf" title="datafusion.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ScalarUDF.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.__call__" title="Link to this definition">¶</a></dt>

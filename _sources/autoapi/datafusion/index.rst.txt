@@ -19,7 +19,6 @@ Submodules
    :maxdepth: 1
 
    /autoapi/datafusion/catalog/index
-   /autoapi/datafusion/col/index
    /autoapi/datafusion/context/index
    /autoapi/datafusion/dataframe/index
    /autoapi/datafusion/expr/index
@@ -31,7 +30,6 @@ Submodules
    /autoapi/datafusion/plan/index
    /autoapi/datafusion/record_batch/index
    /autoapi/datafusion/substrait/index
-   /autoapi/datafusion/udf/index
    /autoapi/datafusion/unparser/index
    /autoapi/datafusion/user_defined/index
 

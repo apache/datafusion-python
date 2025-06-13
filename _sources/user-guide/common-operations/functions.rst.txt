@@ -132,7 +132,7 @@ The function :py:func:`~datafusion.functions.in_list` allows to check a column f
 
 
 Handling Missing Values 
-=====================
+=======================
 
 DataFusion provides methods to handle missing values in DataFrames:
 

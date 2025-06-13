@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 
-<html lang="en" data-content_root="../../../">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>datafusion.udf &#8212; Apache Arrow DataFusion  documentation</title>
+    <title>API Reference &#8212; Apache Arrow DataFusion  documentation</title>
     
-    <link href="../../../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+    <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
   
     
     <link rel="stylesheet"
-      href="../../../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+      href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
     <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
     <link rel="preload" as="font" type="font/woff2" crossorigin
-      href="../../../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
   
     
       
   
     
-    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/theme_overrides.css?v=dca7052a" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
     
-    <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+    <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
   
-    <script src="../../../_static/documentation_options.js?v=8a448e45"></script>
-    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
-    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <link rel="index" title="Index" href="../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.unparser" href="../unparser/index.html" />
-    <link rel="prev" title="datafusion.substrait" href="../substrait/index.html" />
+    <script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="DataFrame API" href="dataframe.html" />
+    <link rel="prev" title="Python Extensions" href="../contributor-guide/ffi.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -57,11 +57,11 @@
             <!-- Only show if we have sidebars configured, else just a small margin  -->
             <div class="col-12 col-md-3 bd-sidebar">
               <div class="sidebar-start-items">
-<a class="navbar-brand" href="../../../index.html">
-  <img src="../../../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
 </a>
 
-<form class="bd-search d-flex align-items-center" action="../../../search.html" method="get">
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
   <i class="icon fas fa-search"></i>
   <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
 </form>
@@ -103,27 +103,27 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/introduction.html">
+  <a class="reference internal" href="../user-guide/introduction.html">
    Introduction
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/basics.html">
+  <a class="reference internal" href="../user-guide/basics.html">
    Concepts
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/data-sources.html">
+  <a class="reference internal" href="../user-guide/data-sources.html">
    Data Sources
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/dataframe.html">
+  <a class="reference internal" href="../user-guide/dataframe.html">
    DataFrames
   </a>
  </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../user-guide/common-operations/index.html">
+  <a class="reference internal" href="../user-guide/common-operations/index.html">
    Common Operations
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
@@ -133,54 +133,54 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/views.html">
+    <a class="reference internal" href="../user-guide/common-operations/views.html">
      Registering Views
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/basic-info.html">
+    <a class="reference internal" href="../user-guide/common-operations/basic-info.html">
      Basic Operations
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/select-and-filter.html">
+    <a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">
      Column Selections
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/expressions.html">
+    <a class="reference internal" href="../user-guide/common-operations/expressions.html">
      Expressions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/joins.html">
+    <a class="reference internal" href="../user-guide/common-operations/joins.html">
      Joins
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/functions.html">
+    <a class="reference internal" href="../user-guide/common-operations/functions.html">
      Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/aggregations.html">
+    <a class="reference internal" href="../user-guide/common-operations/aggregations.html">
      Aggregation
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/windows.html">
+    <a class="reference internal" href="../user-guide/common-operations/windows.html">
      Window Functions
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/common-operations/udf-and-udfa.html">
+    <a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">
      User-Defined Functions
     </a>
    </li>
   </ul>
  </li>
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../../../user-guide/io/index.html">
+  <a class="reference internal" href="../user-guide/io/index.html">
    IO
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
@@ -190,44 +190,44 @@
   </label>
   <ul>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/arrow.html">
+    <a class="reference internal" href="../user-guide/io/arrow.html">
      Arrow
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/avro.html">
+    <a class="reference internal" href="../user-guide/io/avro.html">
      Avro
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/csv.html">
+    <a class="reference internal" href="../user-guide/io/csv.html">
      CSV
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/json.html">
+    <a class="reference internal" href="../user-guide/io/json.html">
      JSON
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/parquet.html">
+    <a class="reference internal" href="../user-guide/io/parquet.html">
      Parquet
     </a>
    </li>
    <li class="toctree-l2">
-    <a class="reference internal" href="../../../user-guide/io/table_provider.html">
+    <a class="reference internal" href="../user-guide/io/table_provider.html">
      Custom Table Provider
     </a>
    </li>
   </ul>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/configuration.html">
+  <a class="reference internal" href="../user-guide/configuration.html">
    Configuration
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/sql.html">
+  <a class="reference internal" href="../user-guide/sql.html">
    SQL
   </a>
  </li>
@@ -239,12 +239,12 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../contributor-guide/introduction.html">
+  <a class="reference internal" href="../contributor-guide/introduction.html">
    Introduction
   </a>
  </li>
  <li class="toctree-l1">
-  <a class="reference internal" href="../../../contributor-guide/ffi.html">
+  <a class="reference internal" href="../contributor-guide/ffi.html">
    Python Extensions
   </a>
  </li>
@@ -256,7 +256,7 @@
 </p>
 <ul class="current nav bd-sidenav">
  <li class="toctree-l1 current active has-children">
-  <a class="reference internal" href="../../index.html">
+  <a class="current reference internal" href="#">
    API Reference
   </a>
   <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -264,111 +264,118 @@
    <i class="fas fa-chevron-down">
    </i>
   </label>
-  <ul class="current">
-   <li class="toctree-l2 current active has-children">
-    <a class="reference internal" href="../index.html">
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="dataframe.html">
+     DataFrame API
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../autoapi/index.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../autoapi/datafusion/index.html">
      datafusion
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
-    <ul class="current">
+    <ul>
      <li class="toctree-l3">
-      <a class="reference internal" href="../catalog/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
        datafusion.catalog
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../col/index.html">
-       datafusion.col
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../context/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/context/index.html">
        datafusion.context
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../dataframe/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
        datafusion.dataframe
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../expr/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/expr/index.html">
        datafusion.expr
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../functions/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
        datafusion.functions
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../html_formatter/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/html_formatter/index.html">
        datafusion.html_formatter
       </a>
      </li>
      <li class="toctree-l3 has-children">
-      <a class="reference internal" href="../input/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
       <ul>
        <li class="toctree-l4">
-        <a class="reference internal" href="../input/base/index.html">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
          datafusion.input.base
         </a>
        </li>
        <li class="toctree-l4">
-        <a class="reference internal" href="../input/location/index.html">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
          datafusion.input.location
         </a>
        </li>
       </ul>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../io/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/io/index.html">
        datafusion.io
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../object_store/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
        datafusion.object_store
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../plan/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/plan/index.html">
        datafusion.plan
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../record_batch/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">
        datafusion.record_batch
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../substrait/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
        datafusion.substrait
       </a>
      </li>
-     <li class="toctree-l3 current active">
-      <a class="current reference internal" href="#">
-       datafusion.udf
-      </a>
-     </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../unparser/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/unparser/index.html">
        datafusion.unparser
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../user_defined/index.html">
+      <a class="reference internal" href="../autoapi/datafusion/user_defined/index.html">
        datafusion.user_defined
       </a>
      </li>
@@ -416,9 +423,24 @@
               
               <div>
                 
-  <section id="module-datafusion.udf">
-<span id="datafusion-udf"></span><h1>datafusion.udf<a class="headerlink" href="#module-datafusion.udf" title="Link to this heading">¶</a></h1>
-<p>Deprecated module for user defined functions.</p>
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">¶</a></h1>
+<p>This section provides detailed API documentation for the DataFusion Python library.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dataframe.html">DataFrame API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#creating-dataframes">Creating DataFrames</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#common-dataframe-operations">Common DataFrame Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#terminal-operations">Terminal Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#html-rendering-in-jupyter">HTML Rendering in Jupyter</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#html-rendering-customization">HTML Rendering Customization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#best-practices">Best Practices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dataframe.html#additional-resources">Additional Resources</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </section>
 
 
@@ -427,17 +449,17 @@
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../substrait/index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../contributor-guide/ffi.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.substrait</p>
+            <p class="prev-next-title">Python Extensions</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../unparser/index.html" title="next page">
+    <a class='right-next' id="next-link" href="dataframe.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.unparser</p>
+        <p class="prev-next-title">DataFrame API</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
@@ -449,7 +471,7 @@
       </div>
     </div>
   
-    <script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+    <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
   
 <!-- Based on pydata_sphinx_theme/footer.html -->
 <footer class="footer mt-5 mt-md-0">

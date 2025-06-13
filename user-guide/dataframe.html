@@ -256,7 +256,7 @@
 </p>
 <ul class="nav bd-sidenav">
  <li class="toctree-l1 has-children">
-  <a class="reference internal" href="../autoapi/index.html">
+  <a class="reference internal" href="../api/index.html">
    API Reference
   </a>
   <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
@@ -265,12 +265,29 @@
    </i>
   </label>
   <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../api/dataframe.html">
+     DataFrame API
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../autoapi/index.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
    <li class="toctree-l2 has-children">
     <a class="reference internal" href="../autoapi/datafusion/index.html">
      datafusion
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -278,11 +295,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
        datafusion.catalog
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../autoapi/datafusion/col/index.html">
-       datafusion.col
       </a>
      </li>
      <li class="toctree-l3">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="../autoapi/datafusion/input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -355,11 +367,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
        datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../autoapi/datafusion/udf/index.html">
-       datafusion.udf
       </a>
      </li>
      <li class="toctree-l3">
@@ -566,8 +573,14 @@ plain text output.</p>
 <h2>Performance Optimization with Shared Styles<a class="headerlink" href="#performance-optimization-with-shared-styles" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">use_shared_styles</span></code> parameter (enabled by default) optimizes performance when displaying
 multiple DataFrames in notebook environments:</p>
-<blockquote>
-<div></div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">StyleProvider</span><span class="p">,</span> <span class="n">configure_formatter</span>
+<span class="c1"># Default: Use shared styles (recommended for notebooks)</span>
+<span class="n">configure_formatter</span><span class="p">(</span><span class="n">use_shared_styles</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Disable shared styles (each DataFrame includes its own styles)</span>
+<span class="n">configure_formatter</span><span class="p">(</span><span class="n">use_shared_styles</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>When <code class="docutils literal notranslate"><span class="pre">use_shared_styles=True</span></code>:
 - CSS styles and JavaScript are included only once per notebook session
 - This reduces HTML output size and prevents style duplication

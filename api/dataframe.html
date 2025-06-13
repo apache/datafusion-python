@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>DataFrame API &#8212; Apache Arrow DataFusion  documentation</title>
+    
+    <link href="../_static/styles/theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=1999514e3f237ded88cf" rel="stylesheet">
+  
+    
+    <link rel="stylesheet"
+      href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+    <link rel="preload" as="font" type="font/woff2" crossorigin
+      href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+  
+    
+      
+  
+    
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/pydata-sphinx-theme.css?v=1140d252" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../_static/theme_overrides.css?v=dca7052a" />
+    
+    <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf">
+  
+    <script src="../_static/documentation_options.js?v=8a448e45"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="API Reference" href="../autoapi/index.html" />
+    <link rel="prev" title="API Reference" href="index.html" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en">
+    
+
+    <!-- Google Analytics -->
+    
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+    <div class="container-fluid" id="banner"></div>
+
+    
+
+
+    <div class="container-xl">
+      <div class="row">
+          
+            
+            <!-- Only show if we have sidebars configured, else just a small margin  -->
+            <div class="col-12 col-md-3 bd-sidebar">
+              <div class="sidebar-start-items">
+<a class="navbar-brand" href="../index.html">
+  <img src="../_static/images/2x_bgwhite_original.png" class="logo" alt="logo">
+</a>
+
+<form class="bd-search d-flex align-items-center" action="../search.html" method="get">
+  <i class="icon fas fa-search"></i>
+  <input type="search" class="form-control" name="q" id="search-input" placeholder="Search the docs ..." aria-label="Search the docs ..." autocomplete="off" >
+</form>
+
+<nav class="bd-links" id="bd-docs-nav" aria-label="Main navigation">
+  <div class="bd-toc-item active">
+    
+    <p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  LINKS
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python">
+   Github and Issue Tracker
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/">
+   Rust's API Docs
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion/blob/main/CODE_OF_CONDUCT.md">
+   Code of conduct
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples">
+   Examples
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  USER GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/basics.html">
+   Concepts
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/data-sources.html">
+   Data Sources
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/dataframe.html">
+   DataFrames
+  </a>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/common-operations/index.html">
+   Common Operations
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/views.html">
+     Registering Views
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/basic-info.html">
+     Basic Operations
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/select-and-filter.html">
+     Column Selections
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/expressions.html">
+     Expressions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/joins.html">
+     Joins
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/functions.html">
+     Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/aggregations.html">
+     Aggregation
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/windows.html">
+     Window Functions
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/common-operations/udf-and-udfa.html">
+     User-Defined Functions
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../user-guide/io/index.html">
+   IO
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/arrow.html">
+     Arrow
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/avro.html">
+     Avro
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/csv.html">
+     CSV
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/json.html">
+     JSON
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/parquet.html">
+     Parquet
+    </a>
+   </li>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../user-guide/io/table_provider.html">
+     Custom Table Provider
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/configuration.html">
+   Configuration
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../user-guide/sql.html">
+   SQL
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  CONTRIBUTOR GUIDE
+ </span>
+</p>
+<ul class="nav bd-sidenav">
+ <li class="toctree-l1">
+  <a class="reference internal" href="../contributor-guide/introduction.html">
+   Introduction
+  </a>
+ </li>
+ <li class="toctree-l1">
+  <a class="reference internal" href="../contributor-guide/ffi.html">
+   Python Extensions
+  </a>
+ </li>
+</ul>
+<p aria-level="2" class="caption" role="heading">
+ <span class="caption-text">
+  API
+ </span>
+</p>
+<ul class="current nav bd-sidenav">
+ <li class="toctree-l1 current active has-children">
+  <a class="reference internal" href="index.html">
+   API Reference
+  </a>
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul class="current">
+   <li class="toctree-l2 current active">
+    <a class="current reference internal" href="#">
+     DataFrame API
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../autoapi/index.html">
+   API Reference
+  </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2 has-children">
+    <a class="reference internal" href="../autoapi/datafusion/index.html">
+     datafusion
+    </a>
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
+     <i class="fas fa-chevron-down">
+     </i>
+    </label>
+    <ul>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/catalog/index.html">
+       datafusion.catalog
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/context/index.html">
+       datafusion.context
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
+       datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/expr/index.html">
+       datafusion.expr
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/functions/index.html">
+       datafusion.functions
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/html_formatter/index.html">
+       datafusion.html_formatter
+      </a>
+     </li>
+     <li class="toctree-l3 has-children">
+      <a class="reference internal" href="../autoapi/datafusion/input/index.html">
+       datafusion.input
+      </a>
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
+       <i class="fas fa-chevron-down">
+       </i>
+      </label>
+      <ul>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/base/index.html">
+         datafusion.input.base
+        </a>
+       </li>
+       <li class="toctree-l4">
+        <a class="reference internal" href="../autoapi/datafusion/input/location/index.html">
+         datafusion.input.location
+        </a>
+       </li>
+      </ul>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/io/index.html">
+       datafusion.io
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/object_store/index.html">
+       datafusion.object_store
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/plan/index.html">
+       datafusion.plan
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/record_batch/index.html">
+       datafusion.record_batch
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/substrait/index.html">
+       datafusion.substrait
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/unparser/index.html">
+       datafusion.unparser
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/user_defined/index.html">
+       datafusion.user_defined
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
+    
+  </div>
+</nav>
+              </div>
+              <div class="sidebar-end-items">
+              </div>
+            </div>
+            
+          
+
+          
+          <div class="d-none d-xl-block col-xl-2 bd-toc">
+            
+              
+              <div class="toc-item">
+                
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
+
+<nav id="bd-toc-nav">
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#overview">
+   Overview
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#creating-dataframes">
+   Creating DataFrames
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#common-dataframe-operations">
+   Common DataFrame Operations
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#terminal-operations">
+   Terminal Operations
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#html-rendering-in-jupyter">
+   HTML Rendering in Jupyter
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#basic-html-rendering">
+     Basic HTML Rendering
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#html-rendering-customization">
+   HTML Rendering Customization
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#configuring-the-html-formatter">
+     Configuring the HTML Formatter
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-style-providers">
+     Custom Style Providers
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-type-formatters">
+     Custom Type Formatters
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-cell-builders">
+     Custom Cell Builders
+    </a>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-header-builders">
+     Custom Header Builders
+    </a>
+   </li>
+  </ul>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#best-practices">
+   Best Practices
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#additional-resources">
+   Additional Resources
+  </a>
+ </li>
+</ul>
+
+</nav>
+              </div>
+              
+              <div class="toc-item">
+                
+              </div>
+              
+            
+          </div>
+          
+
+          
+          
+            
+          
+          <main class="col-12 col-md-9 col-xl-7 py-md-5 pl-md-5 pr-md-4 bd-content" role="main">
+              
+              <div>
+                
+  <section id="dataframe-api">
+<h1>DataFrame API<a class="headerlink" href="#dataframe-api" title="Link to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> class is the core abstraction in DataFusion that represents tabular data and operations
+on that data. DataFrames provide a flexible API for transforming data through various operations such as
+filtering, projection, aggregation, joining, and more.</p>
+<p>A DataFrame represents a logical plan that is lazily evaluated. The actual execution occurs only when
+terminal operations like <code class="docutils literal notranslate"><span class="pre">collect()</span></code>, <code class="docutils literal notranslate"><span class="pre">show()</span></code>, or <code class="docutils literal notranslate"><span class="pre">to_pandas()</span></code> are called.</p>
+</section>
+<section id="creating-dataframes">
+<h2>Creating DataFrames<a class="headerlink" href="#creating-dataframes" title="Link to this heading">¶</a></h2>
+<p>DataFrames can be created in several ways:</p>
+<ul>
+<li><p>From SQL queries via a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT * FROM your_table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>From registered tables:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="s2">&quot;your_table&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p>From various data sources:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># From CSV files (see :ref:`io_csv` for detailed options)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;path/to/data.csv&quot;</span><span class="p">)</span>
+
+<span class="c1"># From Parquet files (see :ref:`io_parquet` for detailed options)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;path/to/data.parquet&quot;</span><span class="p">)</span>
+
+<span class="c1"># From JSON files (see :ref:`io_json` for detailed options)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_json</span><span class="p">(</span><span class="s2">&quot;path/to/data.json&quot;</span><span class="p">)</span>
+
+<span class="c1"># From Avro files (see :ref:`io_avro` for detailed options)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_avro</span><span class="p">(</span><span class="s2">&quot;path/to/data.avro&quot;</span><span class="p">)</span>
+
+<span class="c1"># From Pandas DataFrame</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">pandas_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]})</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">pandas_df</span><span class="p">)</span>
+
+<span class="c1"># From Arrow data</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pa</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="n">pa</span><span class="o">.</span><span class="n">RecordBatch</span><span class="o">.</span><span class="n">from_arrays</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">pa</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])],</span>
+    <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">from_arrow</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For detailed information about reading from different data sources, see the <a class="reference internal" href="../user-guide/io/index.html"><span class="doc">I/O Guide</span></a>.
+For custom data sources, see <a class="reference internal" href="../user-guide/io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a>.</p>
+</li>
+</ul>
+</section>
+<section id="common-dataframe-operations">
+<h2>Common DataFrame Operations<a class="headerlink" href="#common-dataframe-operations" title="Link to this heading">¶</a></h2>
+<p>DataFusion’s DataFrame API offers a wide range of operations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">column</span><span class="p">,</span> <span class="n">literal</span>
+
+<span class="c1"># Select specific columns</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;col1&quot;</span><span class="p">,</span> <span class="s2">&quot;col2&quot;</span><span class="p">)</span>
+
+<span class="c1"># Select with expressions</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">),</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">-</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span>
+
+<span class="c1"># Filter rows</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">literal</span><span class="p">(</span><span class="mi">25</span><span class="p">))</span>
+
+<span class="c1"># Add computed columns</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">with_column</span><span class="p">(</span><span class="s2">&quot;full_name&quot;</span><span class="p">,</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;first_name&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">literal</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;last_name&quot;</span><span class="p">))</span>
+
+<span class="c1"># Multiple column additions</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">with_columns</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;sum&quot;</span><span class="p">),</span>
+    <span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="n">column</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;product&quot;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Sort data</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+
+<span class="c1"># Join DataFrames</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;user_id&quot;</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s2">&quot;inner&quot;</span><span class="p">)</span>
+
+<span class="c1"># Aggregate data</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span>
+    <span class="p">[],</span>  <span class="c1"># Group by columns (empty for global aggregation)</span>
+    <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s2">&quot;amount&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;total_amount&quot;</span><span class="p">)]</span>
+<span class="p">)</span>
+
+<span class="c1"># Limit rows</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Drop columns</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;temporary_column&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="terminal-operations">
+<h2>Terminal Operations<a class="headerlink" href="#terminal-operations" title="Link to this heading">¶</a></h2>
+<p>To materialize the results of your DataFrame operations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Collect all data as PyArrow RecordBatches</span>
+<span class="n">result_batches</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># Convert to various formats</span>
+<span class="n">pandas_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>        <span class="c1"># Pandas DataFrame</span>
+<span class="n">polars_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_polars</span><span class="p">()</span>        <span class="c1"># Polars DataFrame</span>
+<span class="n">arrow_table</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_arrow_table</span><span class="p">()</span> <span class="c1"># PyArrow Table</span>
+<span class="n">py_dict</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_pydict</span><span class="p">()</span>          <span class="c1"># Python dictionary</span>
+<span class="n">py_list</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">to_pylist</span><span class="p">()</span>          <span class="c1"># Python list of dictionaries</span>
+
+<span class="c1"># Display results</span>
+<span class="n">df</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>                         <span class="c1"># Print tabular format to console</span>
+
+<span class="c1"># Count rows</span>
+<span class="n">count</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="html-rendering-in-jupyter">
+<h2>HTML Rendering in Jupyter<a class="headerlink" href="#html-rendering-in-jupyter" title="Link to this heading">¶</a></h2>
+<p>When working in Jupyter notebooks or other environments that support rich HTML display,
+DataFusion DataFrames automatically render as nicely formatted HTML tables. This functionality
+is provided by the <code class="docutils literal notranslate"><span class="pre">_repr_html_</span></code> method, which is automatically called by Jupyter.</p>
+<section id="basic-html-rendering">
+<h3>Basic HTML Rendering<a class="headerlink" href="#basic-html-rendering" title="Link to this heading">¶</a></h3>
+<p>In a Jupyter environment, simply displaying a DataFrame object will trigger HTML rendering:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Will display as HTML table in Jupyter</span>
+<span class="n">df</span>
+
+<span class="c1"># Explicit display also uses HTML rendering</span>
+<span class="n">display</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="html-rendering-customization">
+<h2>HTML Rendering Customization<a class="headerlink" href="#html-rendering-customization" title="Link to this heading">¶</a></h2>
+<p>DataFusion provides extensive customization options for HTML table rendering through the
+<code class="docutils literal notranslate"><span class="pre">datafusion.html_formatter</span></code> module.</p>
+<section id="configuring-the-html-formatter">
+<h3>Configuring the HTML Formatter<a class="headerlink" href="#configuring-the-html-formatter" title="Link to this heading">¶</a></h3>
+<p>You can customize how DataFrames are rendered by configuring the formatter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_formatter</span>
+
+<span class="n">configure_formatter</span><span class="p">(</span>
+    <span class="n">max_cell_length</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>              <span class="c1"># Maximum length of cell content before truncation</span>
+    <span class="n">max_width</span><span class="o">=</span><span class="mi">800</span><span class="p">,</span>                   <span class="c1"># Maximum width of table in pixels</span>
+    <span class="n">max_height</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span>                  <span class="c1"># Maximum height of table in pixels</span>
+    <span class="n">max_memory_bytes</span><span class="o">=</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span><span class="p">,</span><span class="c1"># Maximum memory used for rendering (2MB)</span>
+    <span class="n">min_rows_display</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>             <span class="c1"># Minimum rows to display</span>
+    <span class="n">repr_rows</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>                    <span class="c1"># Number of rows to display in representation</span>
+    <span class="n">enable_cell_expansion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># Allow cells to be expandable on click</span>
+    <span class="n">custom_css</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                 <span class="c1"># Custom CSS to apply</span>
+    <span class="n">show_truncation_message</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>    <span class="c1"># Show message when data is truncated</span>
+    <span class="n">style_provider</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>             <span class="c1"># Custom style provider class</span>
+    <span class="n">use_shared_styles</span><span class="o">=</span><span class="kc">True</span>           <span class="c1"># Share styles across tables to reduce duplication</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-style-providers">
+<h3>Custom Style Providers<a class="headerlink" href="#custom-style-providers" title="Link to this heading">¶</a></h3>
+<p>For advanced styling needs, you can create a custom style provider class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_formatter</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomStyleProvider</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cell_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;background-color: #f5f5f5; color: #333; padding: 8px; border: 1px solid #ddd;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_header_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;background-color: #4285f4; color: white; font-weight: bold; padding: 10px;&quot;</span>
+
+<span class="c1"># Apply custom styling</span>
+<span class="n">configure_formatter</span><span class="p">(</span><span class="n">style_provider</span><span class="o">=</span><span class="n">CustomStyleProvider</span><span class="p">())</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-type-formatters">
+<h3>Custom Type Formatters<a class="headerlink" href="#custom-type-formatters" title="Link to this heading">¶</a></h3>
+<p>You can register custom formatters for specific data types:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_formatter</span>
+
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">get_formatter</span><span class="p">()</span>
+
+<span class="c1"># Format integers with color based on value</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_int</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;span style=&quot;color: </span><span class="si">{</span><span class="s2">&quot;red&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s2">&quot;blue&quot;</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span>
+
+<span class="n">formatter</span><span class="o">.</span><span class="n">register_formatter</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">format_int</span><span class="p">)</span>
+
+<span class="c1"># Format date values</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">format_date</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;span class=&quot;date-value&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span>
+
+<span class="n">formatter</span><span class="o">.</span><span class="n">register_formatter</span><span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">date</span><span class="p">,</span> <span class="n">format_date</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-cell-builders">
+<h3>Custom Cell Builders<a class="headerlink" href="#custom-cell-builders" title="Link to this heading">¶</a></h3>
+<p>For complete control over cell rendering:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">formatter</span> <span class="o">=</span> <span class="n">get_formatter</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">custom_cell_builder</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">,</span> <span class="n">table_id</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">num_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">num_value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Positive values get green</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;td style=&quot;background-color: #d9f0d3&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/td&gt;&#39;</span>
+        <span class="k">if</span> <span class="n">num_value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># Negative values get red</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;td style=&quot;background-color: #f0d3d3&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/td&gt;&#39;</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="c1"># Default styling for non-numeric or zero values</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;td style=&quot;border: 1px solid #ddd&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s1">&lt;/td&gt;&#39;</span>
+
+<span class="n">formatter</span><span class="o">.</span><span class="n">set_custom_cell_builder</span><span class="p">(</span><span class="n">custom_cell_builder</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="custom-header-builders">
+<h3>Custom Header Builders<a class="headerlink" href="#custom-header-builders" title="Link to this heading">¶</a></h3>
+<p>Similarly, you can customize the rendering of table headers:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">custom_header_builder</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+    <span class="n">tooltip</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Type: </span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;th style=&quot;background-color: #333; color: white&quot; title=&quot;</span><span class="si">{</span><span class="n">tooltip</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&lt;/th&gt;&#39;</span>
+
+<span class="n">formatter</span><span class="o">.</span><span class="n">set_custom_header_builder</span><span class="p">(</span><span class="n">custom_header_builder</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Managing Formatter State
+———————–~</p>
+<p>The HTML formatter maintains global state that can be managed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">reset_formatter</span><span class="p">,</span> <span class="n">reset_styles_loaded_state</span><span class="p">,</span> <span class="n">get_formatter</span>
+
+<span class="c1"># Reset the formatter to default settings</span>
+<span class="n">reset_formatter</span><span class="p">()</span>
+
+<span class="c1"># Reset only the styles loaded state (useful when styles were loaded but need reloading)</span>
+<span class="n">reset_styles_loaded_state</span><span class="p">()</span>
+
+<span class="c1"># Get the current formatter instance to make changes</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">get_formatter</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Advanced Example: Dashboard-Style Formatting
+——————————————~~</p>
+<p>This example shows how to create a dashboard-like styling for your DataFrames:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">configure_formatter</span><span class="p">,</span> <span class="n">get_formatter</span>
+
+<span class="c1"># Define custom CSS</span>
+<span class="n">custom_css</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">.datafusion-table {</span>
+<span class="s2">    font-family: &#39;Segoe UI&#39;, Tahoma, Geneva, Verdana, sans-serif;</span>
+<span class="s2">    border-collapse: collapse;</span>
+<span class="s2">    width: 100%;</span>
+<span class="s2">    box-shadow: 0 2px 3px rgba(0,0,0,0.1);</span>
+<span class="s2">}</span>
+<span class="s2">.datafusion-table th {</span>
+<span class="s2">    position: sticky;</span>
+<span class="s2">    top: 0;</span>
+<span class="s2">    z-index: 10;</span>
+<span class="s2">}</span>
+<span class="s2">.datafusion-table tr:hover td {</span>
+<span class="s2">    background-color: #f1f7fa !important;</span>
+<span class="s2">}</span>
+<span class="s2">.datafusion-table .numeric-positive {</span>
+<span class="s2">    color: #0a7c00;</span>
+<span class="s2">}</span>
+<span class="s2">.datafusion-table .numeric-negative {</span>
+<span class="s2">    color: #d13438;</span>
+<span class="s2">}</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">DashboardStyleProvider</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cell_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;padding: 8px 12px; border-bottom: 1px solid #e0e0e0;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_header_style</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;background-color: #0078d4; color: white; font-weight: 600; &quot;</span>
+                <span class="s2">&quot;padding: 12px; text-align: left; border-bottom: 2px solid #005a9e;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Apply configuration</span>
+<span class="n">configure_formatter</span><span class="p">(</span>
+    <span class="n">max_height</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">enable_cell_expansion</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">custom_css</span><span class="o">=</span><span class="n">custom_css</span><span class="p">,</span>
+    <span class="n">style_provider</span><span class="o">=</span><span class="n">DashboardStyleProvider</span><span class="p">(),</span>
+    <span class="n">max_cell_length</span><span class="o">=</span><span class="mi">50</span>
+<span class="p">)</span>
+
+<span class="c1"># Add custom formatters for numbers</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">get_formatter</span><span class="p">()</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">format_number</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="s2">&quot;numeric-positive&quot;</span> <span class="k">if</span> <span class="n">num</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;numeric-negative&quot;</span> <span class="k">if</span> <span class="n">num</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&lt;span class=&quot;</span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1">&quot;&gt;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1">&lt;/span&gt;&#39;</span> <span class="k">if</span> <span class="bp">cls</span> <span class="k">else</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s1">,</span><span class="si">}</span><span class="s1">&#39;</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+<span class="n">formatter</span><span class="o">.</span><span class="n">register_formatter</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">format_number</span><span class="p">)</span>
+<span class="n">formatter</span><span class="o">.</span><span class="n">register_formatter</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">format_number</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Link to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Memory Management</strong>: For large datasets, use <code class="docutils literal notranslate"><span class="pre">max_memory_bytes</span></code> to limit memory usage.</p></li>
+<li><p><strong>Responsive Design</strong>: Set reasonable <code class="docutils literal notranslate"><span class="pre">max_width</span></code> and <code class="docutils literal notranslate"><span class="pre">max_height</span></code> values to ensure tables display well on different screens.</p></li>
+<li><p><strong>Style Optimization</strong>: Use <code class="docutils literal notranslate"><span class="pre">use_shared_styles=True</span></code> to avoid duplicate style definitions when displaying multiple tables.</p></li>
+<li><p><strong>Reset When Needed</strong>: Call <code class="docutils literal notranslate"><span class="pre">reset_formatter()</span></code> when you want to start fresh with default settings.</p></li>
+<li><p><strong>Cell Expansion</strong>: Use <code class="docutils literal notranslate"><span class="pre">enable_cell_expansion=True</span></code> when cells might contain longer content that users may want to see in full.</p></li>
+</ol>
+</section>
+<section id="additional-resources">
+<h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../user-guide/dataframe.html"><span class="doc">DataFrames</span></a> - Complete guide to using DataFrames</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/index.html"><span class="doc">IO</span></a> - I/O Guide for reading data from various sources</p></li>
+<li><p><a class="reference internal" href="../user-guide/data-sources.html"><span class="doc">Data Sources</span></a> - Comprehensive data sources guide</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/csv.html#io-csv"><span class="std std-ref">CSV</span></a> - CSV file reading</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a> - Parquet file reading</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/json.html#io-json"><span class="std std-ref">JSON</span></a> - JSON file reading</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/avro.html#io-avro"><span class="std std-ref">Avro</span></a> - Avro file reading</p></li>
+<li><p><a class="reference internal" href="../user-guide/io/table_provider.html#io-custom-table-provider"><span class="std std-ref">Custom Table Provider</span></a> - Custom table providers</p></li>
+<li><p><a class="reference external" href="https://arrow.apache.org/datafusion-python/api/index.html">API Reference</a> - Full API reference</p></li>
+</ul>
+</section>
+</section>
+
+
+              </div>
+              
+              
+              <!-- Previous / next buttons -->
+<div class='prev-next-area'>
+    <a class='left-prev' id="prev-link" href="index.html" title="previous page">
+        <i class="fas fa-angle-left"></i>
+        <div class="prev-next-info">
+            <p class="prev-next-subtitle">previous</p>
+            <p class="prev-next-title">API Reference</p>
+        </div>
+    </a>
+    <a class='right-next' id="next-link" href="../autoapi/index.html" title="next page">
+    <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+    </div>
+    <i class="fas fa-angle-right"></i>
+    </a>
+</div>
+              
+          </main>
+          
+
+      </div>
+    </div>
+  
+    <script src="../_static/scripts/pydata-sphinx-theme.js?digest=1999514e3f237ded88cf"></script>
+  
+<!-- Based on pydata_sphinx_theme/footer.html -->
+<footer class="footer mt-5 mt-md-0">
+  <div class="container">
+    
+    <div class="footer-item">
+      <p class="copyright">
+    &copy; Copyright 2019-2024, Apache Software Foundation.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p class="sphinx-version">
+Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.1.3.<br>
+</p>
+    </div>
+    
+    <div class="footer-item">
+      <p>Apache Arrow DataFusion, Arrow DataFusion, Apache, the Apache feather logo, and the Apache Arrow DataFusion project logo</p>
+      <p>are either registered trademarks or trademarks of The Apache Software Foundation in the United States and other countries.</p>
+    </div>
+  </div>
+</footer>
+
+
+  </body>
+</html>
