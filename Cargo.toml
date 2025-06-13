@@ -61,10 +61,3 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
-
-# TODO remove before merging to main
-[patch.crates-io]
-datafusion = { git = "https://github.com/apache/datafusion", rev = "33a32d4382bee7e3c705d0f55d05c24a115a2f98" }
-datafusion-substrait = { git = "https://github.com/apache/datafusion", rev = "33a32d4382bee7e3c705d0f55d05c24a115a2f98" }
-datafusion-proto = { git = "https://github.com/apache/datafusion", rev = "33a32d4382bee7e3c705d0f55d05c24a115a2f98" }
-datafusion-ffi = { git = "https://github.com/apache/datafusion", rev = "33a32d4382bee7e3c705d0f55d05c24a115a2f98" }
