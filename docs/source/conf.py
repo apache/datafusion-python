@@ -80,6 +80,9 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
         ("module", "datafusion.common"),
+        # Duplicate modules (skip module-level docs to avoid duplication)
+        ("module", "datafusion.col"),
+        ("module", "datafusion.udf"),
         # Deprecated
         ("class", "datafusion.substrait.serde"),
         ("class", "datafusion.substrait.plan"),
