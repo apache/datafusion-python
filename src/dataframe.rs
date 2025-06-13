@@ -43,7 +43,7 @@ use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -753,7 +753,7 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
-        let stream = wait_for_future(py, async { fut.await.expect("Tokio task panicked") })??;
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })??;
         Ok(PyRecordBatchStream::new(stream))
     }
 
@@ -763,7 +763,7 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
-        let stream = wait_for_future(py, async { fut.await.expect("Tokio task panicked") })?
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })?
             .map_err(py_datafusion_err)?;
 
         Ok(stream.into_iter().map(PyRecordBatchStream::new).collect())
