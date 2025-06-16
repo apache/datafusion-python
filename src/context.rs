@@ -70,8 +70,8 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use tokio::task::JoinHandle;
 
@@ -622,17 +622,24 @@ impl PySessionContext {
         provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
         if provider.hasattr("__datafusion_catalog_provider__")? {
-            let capsule = provider.getattr("__datafusion_catalog_provider__")?.call0()?;
+            let capsule = provider
+                .getattr("__datafusion_catalog_provider__")?
+                .call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
             validate_pycapsule(capsule, "datafusion_catalog_provider")?;
 
             let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
             let provider: ForeignCatalogProvider = provider.into();
 
-            let option: Option<Arc<dyn CatalogProvider>> = self.ctx.register_catalog(name, Arc::new(provider));
+            let option: Option<Arc<dyn CatalogProvider>> =
+                self.ctx.register_catalog(name, Arc::new(provider));
             match option {
                 Some(existing) => {
-                    println!("Catalog '{}' already existed, schema names: {:?}", name, existing.schema_names());
+                    println!(
+                        "Catalog '{}' already existed, schema names: {:?}",
+                        name,
+                        existing.schema_names()
+                    );
                 }
                 None => {
                     println!("Catalog '{}' registered successfully", name);
