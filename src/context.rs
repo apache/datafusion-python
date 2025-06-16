@@ -353,7 +353,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         schema: Option<PyArrowType<Schema>>,
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
@@ -361,7 +361,12 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
             .with_file_extension(file_extension)
-            .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .with_table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            )
             .with_file_sort_order(
                 file_sort_order
                     .unwrap_or_default()
@@ -629,7 +634,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
@@ -638,7 +643,12 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<()> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
@@ -718,7 +728,7 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<()> {
@@ -728,7 +738,12 @@ impl PySessionContext {
 
         let mut options = NdJsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            );
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
@@ -751,7 +766,7 @@ impl PySessionContext {
         path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let path = path
@@ -759,7 +774,12 @@ impl PySessionContext {
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
         let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            );
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 
@@ -850,7 +870,7 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
@@ -858,7 +878,12 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
@@ -891,7 +916,7 @@ impl PySessionContext {
         delimiter: &str,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
@@ -907,7 +932,12 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
 
@@ -937,7 +967,7 @@ impl PySessionContext {
     pub fn read_parquet(
         &self,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
@@ -946,7 +976,12 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
@@ -968,12 +1003,17 @@ impl PySessionContext {
         &self,
         path: &str,
         schema: Option<PyArrowType<Schema>>,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>()
+            );
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
@@ -1070,21 +1110,6 @@ impl PySessionContext {
             .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
         Ok(())
     }
-}
-
-pub fn convert_table_partition_cols(
-    table_partition_cols: Vec<(String, String)>,
-) -> PyDataFusionResult<Vec<(String, DataType)>> {
-    table_partition_cols
-        .into_iter()
-        .map(|(name, ty)| match ty.as_str() {
-            "string" => Ok((name, DataType::Utf8)),
-            "int" => Ok((name, DataType::Int32)),
-            _ => Err(crate::errors::PyDataFusionError::Common(format!(
-                "Unsupported data type '{ty}' for partition column. Supported types are 'string' and 'int'"
-            ))),
-        })
-        .collect::<Result<Vec<_>, _>>()
 }
 
 pub fn parse_file_compression_type(

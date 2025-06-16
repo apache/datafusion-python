@@ -535,7 +535,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         file_extension: str = ".parquet",
         schema: pa.Schema | None = None,
         file_sort_order: list[list[Expr | SortExpr]] | None = None,
@@ -774,7 +774,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
@@ -865,7 +865,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> None:
         """Register a JSON file as a table.
@@ -902,7 +902,7 @@ class SessionContext:
         path: str | pathlib.Path,
         schema: pa.Schema | None = None,
         file_extension: str = ".avro",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
     ) -> None:
         """Register an Avro file as a table.
 
@@ -977,7 +977,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Read a line-delimited JSON data source.
@@ -1016,7 +1016,7 @@ class SessionContext:
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
         file_extension: str = ".csv",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
@@ -1060,7 +1060,7 @@ class SessionContext:
     def read_parquet(
         self,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, pa.DataType]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
