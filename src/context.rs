@@ -61,7 +61,7 @@ use datafusion::datasource::TableProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
-use datafusion::execution::disk_manager::DiskManagerConfig;
+use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
@@ -183,22 +183,49 @@ impl PyRuntimeEnvBuilder {
     }
 
     fn with_disk_manager_disabled(&self) -> Self {
-        let mut builder = self.builder.clone();
-        builder = builder.with_disk_manager(DiskManagerConfig::Disabled);
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::Disabled);
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_disk_manager_os(&self) -> Self {
-        let builder = self.builder.clone();
-        let builder = builder.with_disk_manager(DiskManagerConfig::NewOs);
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::OsTmpDirectory);
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_disk_manager_specified(&self, paths: Vec<String>) -> Self {
-        let builder = self.builder.clone();
         let paths = paths.iter().map(|s| s.into()).collect();
-        let builder = builder.with_disk_manager(DiskManagerConfig::NewSpecified(paths));
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::Directories(paths));
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_unbounded_memory_pool(&self) -> Self {

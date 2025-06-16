@@ -300,13 +300,9 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
         &self.signature
     }
 
-    fn field(&self, field_args: WindowUDFFieldArgs) -> Result<arrow::datatypes::Field> {
+    fn field(&self, field_args: WindowUDFFieldArgs) -> Result<arrow::datatypes::FieldRef> {
         // TODO: Should nullable always be `true`?
-        Ok(arrow::datatypes::Field::new(
-            field_args.name(),
-            self.return_type.clone(),
-            true,
-        ))
+        Ok(arrow::datatypes::Field::new(field_args.name(), self.return_type.clone(), true).into())
     }
 
     // TODO: Enable passing partition_evaluator_args to python?

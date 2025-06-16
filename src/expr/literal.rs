@@ -18,11 +18,22 @@
 use crate::errors::PyDataFusionError;
 use datafusion::common::ScalarValue;
 use pyo3::{prelude::*, IntoPyObjectExt};
+use std::collections::BTreeMap;
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyLiteral {
     pub value: ScalarValue,
+    pub metadata: Option<BTreeMap<String, String>>,
+}
+
+impl PyLiteral {
+    pub fn new_with_metadata(
+        value: ScalarValue,
+        metadata: Option<BTreeMap<String, String>>,
+    ) -> PyLiteral {
+        Self { value, metadata }
+    }
 }
 
 impl From<PyLiteral> for ScalarValue {
@@ -33,7 +44,10 @@ impl From<PyLiteral> for ScalarValue {
 
 impl From<ScalarValue> for PyLiteral {
     fn from(value: ScalarValue) -> PyLiteral {
-        PyLiteral { value }
+        PyLiteral {
+            value,
+            metadata: None,
+        }
     }
 }
 

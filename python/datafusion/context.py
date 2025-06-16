@@ -496,6 +496,10 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
+    def __repr__(self) -> str:
+        """Print a string representation of the Session Context."""
+        return self.ctx.__repr__()
+
     @classmethod
     def global_ctx(cls) -> SessionContext:
         """Retrieve the global context as a `SessionContext` wrapper.
