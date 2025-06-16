@@ -51,7 +51,7 @@ object_store = { version = "0.12.1", features = ["aws", "gcp", "azure", "http"] 
 url = "2"
 
 [build-dependencies]
-prost-types = "0.13.1" # keep in line with `datafusion-substrait`
+prost-types = "0.14.0" # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.24"
 
 [lib]
