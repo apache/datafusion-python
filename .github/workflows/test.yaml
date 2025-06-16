@@ -80,6 +80,13 @@ jobs:
         with:
             enable-cache: true
 
+      - name: Check documentation
+        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
+        run: |
+          uv sync --dev --group docs --no-install-package datafusion
+          uv run --no-project maturin develop --uv
+          uv run --no-project docs/build.sh
+
       - name: Run tests
         env:
           RUST_BACKTRACE: 1
