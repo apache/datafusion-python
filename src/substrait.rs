@@ -72,7 +72,7 @@ impl PySubstraitSerializer {
         path: &str,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))?;
+        wait_for_future(py, serializer::serialize(sql, &ctx.ctx, path))??;
         Ok(())
     }
 
@@ -94,19 +94,20 @@ impl PySubstraitSerializer {
         ctx: PySessionContext,
         py: Python,
     ) -> PyDataFusionResult<PyObject> {
-        let proto_bytes: Vec<u8> = wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))?;
+        let proto_bytes: Vec<u8> =
+            wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))??;
         Ok(PyBytes::new(py, &proto_bytes).into())
     }
 
     #[staticmethod]
     pub fn deserialize(path: &str, py: Python) -> PyDataFusionResult<PyPlan> {
-        let plan = wait_for_future(py, serializer::deserialize(path))?;
+        let plan = wait_for_future(py, serializer::deserialize(path))??;
         Ok(PyPlan { plan: *plan })
     }
 
     #[staticmethod]
     pub fn deserialize_bytes(proto_bytes: Vec<u8>, py: Python) -> PyDataFusionResult<PyPlan> {
-        let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))?;
+        let plan = wait_for_future(py, serializer::deserialize_bytes(proto_bytes))??;
         Ok(PyPlan { plan: *plan })
     }
 }
@@ -143,7 +144,7 @@ impl PySubstraitConsumer {
     ) -> PyDataFusionResult<PyLogicalPlan> {
         let session_state = ctx.ctx.state();
         let result = consumer::from_substrait_plan(&session_state, &plan.plan);
-        let logical_plan = wait_for_future(py, result)?;
+        let logical_plan = wait_for_future(py, result)??;
         Ok(PyLogicalPlan::new(logical_plan))
     }
 }
