@@ -29,6 +29,12 @@ Module Contents
    This constructor is not typically called by the end user.
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the catalog.
+
+
+
    .. py:method:: database(name: str = 'public') -> Database
 
       Returns the database with the given ``name`` from this catalog.
@@ -51,6 +57,12 @@ Module Contents
    This constructor is not typically called by the end user.
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the database.
+
+
+
    .. py:method:: names() -> set[str]
 
       Returns the list of all tables in this database.
@@ -71,6 +83,12 @@ Module Contents
    DataFusion table.
 
    This constructor is not typically called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the table.
+
 
 
    .. py:property:: kind

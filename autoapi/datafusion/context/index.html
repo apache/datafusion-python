@@ -743,6 +743,15 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.context.SessionContext.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SessionContext.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.context.SessionContext.catalog">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1656,6 +1665,12 @@ a query against a CSV data source using the <code class="xref py py-class docuti
 <span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.context.SessionContext.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.context.SessionContext.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the Session Context.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.context.SessionContext.catalog">
 <span class="sig-name descname"><span class="pre">catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'datafusion'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../catalog/index.html#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">datafusion.catalog.Catalog</span></a></span></span><a class="headerlink" href="#datafusion.context.SessionContext.catalog" title="Link to this definition">¶</a></dt>

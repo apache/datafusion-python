@@ -148,6 +148,12 @@ Package Contents
 
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Aggregate UDF.
+
+
+
    .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
                   udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
       :staticmethod:
@@ -229,6 +235,12 @@ Package Contents
    This constructor is not typically called by the end user.
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the catalog.
+
+
+
    .. py:method:: database(name: str = 'public') -> Database
 
       Returns the database with the given ``name`` from this catalog.
@@ -249,6 +261,12 @@ Package Contents
    DataFusion Database.
 
    This constructor is not typically called by the end user.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the database.
+
 
 
    .. py:method:: names() -> set[str]
@@ -845,6 +863,17 @@ Package Contents
       Creates a new expression representing a scalar value.
 
       ``value`` must be a valid PyArrow scalar value or easily castable to one.
+
+
+
+   .. py:method:: literal_with_metadata(value: Any, metadata: dict[str, str]) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a scalar value with metadata.
+
+      :param value: A valid PyArrow scalar value or easily castable to one.
+      :param metadata: Metadata to attach to the expression.
 
 
 
@@ -1492,6 +1521,12 @@ Package Contents
 
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Scalar UDF.
+
+
+
    .. py:method:: udf(input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, ScalarUDF]
                   udf(func: Callable[Ellipsis, _R], input_types: list[pyarrow.DataType], return_type: _R, volatility: Volatility | str, name: Optional[str] = None) -> ScalarUDF
       :staticmethod:
@@ -1704,6 +1739,12 @@ Package Contents
    This constructor is not typically called by the end user.
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the table.
+
+
+
    .. py:property:: kind
       :type: str
 
@@ -1789,6 +1830,12 @@ Package Contents
                      parameter must be set.
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the window frame.
+
+
+
    .. py:method:: get_frame_units() -> str
 
       Returns the window frame units for the bounds.
@@ -1829,6 +1876,12 @@ Package Contents
 
       This function is not typically called by an end user. These calls will
       occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Window UDF.
 
 
 

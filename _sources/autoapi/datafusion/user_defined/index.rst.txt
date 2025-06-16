@@ -97,6 +97,12 @@ Module Contents
 
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Aggregate UDF.
+
+
+
    .. py:method:: udaf(input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> Callable[Ellipsis, AggregateUDF]
                   udaf(accum: Callable[[], Accumulator], input_types: pyarrow.DataType | list[pyarrow.DataType], return_type: pyarrow.DataType, state_type: list[pyarrow.DataType], volatility: Volatility | str, name: Optional[str] = None) -> AggregateUDF
       :staticmethod:
@@ -189,6 +195,12 @@ Module Contents
 
       This function is not typically called by an end user. These calls will
       occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Scalar UDF.
 
 
 
@@ -541,6 +553,12 @@ Module Contents
 
       This function is not typically called by an end user. These calls will
       occur during the evaluation of the dataframe.
+
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Window UDF.
 
 
 

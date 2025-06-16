@@ -411,6 +411,12 @@ Module Contents
        df = ctx.read_csv("data.csv")
 
 
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the Session Context.
+
+
+
    .. py:method:: catalog(name: str = 'datafusion') -> datafusion.catalog.Catalog
 
       Retrieve a catalog by name.
