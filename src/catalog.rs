@@ -15,19 +15,23 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::collections::HashSet;
-use std::sync::Arc;
-
-use pyo3::exceptions::PyKeyError;
-use pyo3::prelude::*;
-
-use crate::errors::{PyDataFusionError, PyDataFusionResult};
-use crate::utils::wait_for_future;
+use crate::dataset::Dataset;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::utils::{validate_pycapsule, wait_for_future};
+use async_trait::async_trait;
+use datafusion::common::DataFusionError;
 use datafusion::{
     arrow::pyarrow::ToPyArrow,
     catalog::{CatalogProvider, SchemaProvider},
     datasource::{TableProvider, TableType},
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use pyo3::exceptions::PyKeyError;
+use pyo3::prelude::*;
+use pyo3::types::PyCapsule;
+use std::any::Any;
+use std::collections::HashSet;
+use std::sync::Arc;
 
 #[pyclass(name = "Catalog", module = "datafusion", subclass)]
 pub struct PyCatalog {
@@ -50,8 +54,8 @@ impl PyCatalog {
     }
 }
 
-impl PyDatabase {
-    pub fn new(database: Arc<dyn SchemaProvider>) -> Self {
+impl From<Arc<dyn SchemaProvider>> for PyDatabase {
+    fn from(database: Arc<dyn SchemaProvider>) -> Self {
         Self { database }
     }
 }
@@ -75,7 +79,7 @@ impl PyCatalog {
     #[pyo3(signature = (name="public"))]
     fn database(&self, name: &str) -> PyResult<PyDatabase> {
         match self.catalog.schema(name) {
-            Some(database) => Ok(PyDatabase::new(database)),
+            Some(database) => Ok(database.into()),
             None => Err(PyKeyError::new_err(format!(
                 "Database with name {name} doesn't exist."
             ))),
@@ -92,6 +96,13 @@ impl PyCatalog {
 
 #[pymethods]
 impl PyDatabase {
+    #[new]
+    fn new(schema_provider: PyObject) -> Self {
+        let schema_provider =
+            Arc::new(RustWrappedPySchemaProvider::new(schema_provider)) as Arc<dyn SchemaProvider>;
+        schema_provider.into()
+    }
+
     fn names(&self) -> HashSet<String> {
         self.database.table_names().into_iter().collect()
     }
@@ -144,4 +155,134 @@ impl PyTable {
     // fn statistics
     // fn has_exact_statistics
     // fn supports_filter_pushdown
+}
+
+#[derive(Debug)]
+struct RustWrappedPySchemaProvider {
+    schema_provider: PyObject,
+    owner_name: Option<String>,
+}
+
+impl RustWrappedPySchemaProvider {
+    fn new(schema_provider: PyObject) -> Self {
+        let owner_name = Python::with_gil(|py| {
+            schema_provider
+                .bind(py)
+                .getattr("owner_name")
+                .ok()
+                .map(|name| name.to_string())
+        });
+
+        Self {
+            schema_provider,
+            owner_name,
+        }
+    }
+
+    fn table_inner(&self, name: &str) -> PyResult<Option<Arc<dyn TableProvider>>> {
+        Python::with_gil(|py| {
+            let provider = self.schema_provider.bind(py);
+            let py_table_method = provider.getattr("table")?;
+
+            let py_table = py_table_method.call((name,), None)?;
+            if py_table.is_none() {
+                return Ok(None);
+            }
+
+            if py_table.hasattr("__datafusion_table_provider__")? {
+                let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+                let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+                validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+                let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+                let provider: ForeignTableProvider = provider.into();
+
+                Ok(Some(Arc::new(provider) as Arc<dyn TableProvider>))
+            } else {
+                let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
+
+                Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
+            }
+        })
+    }
+}
+
+#[async_trait]
+impl SchemaProvider for RustWrappedPySchemaProvider {
+    fn owner_name(&self) -> Option<&str> {
+        self.owner_name.as_deref()
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn table_names(&self) -> Vec<String> {
+        Python::with_gil(|py| {
+            let provider = self.schema_provider.bind(py);
+            provider
+                .getattr("table_names")
+                .and_then(|names| names.extract::<Vec<String>>())
+                .unwrap_or_default()
+        })
+    }
+
+    async fn table(
+        &self,
+        name: &str,
+    ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
+        self.table_inner(name).map_err(to_datafusion_err)
+    }
+
+    fn register_table(
+        &self,
+        name: String,
+        table: Arc<dyn TableProvider>,
+    ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
+        let py_table = PyTable::new(table);
+        Python::with_gil(|py| {
+            let provider = self.schema_provider.bind(py);
+            let _ = provider
+                .call_method1("register_table", (name, py_table))
+                .map_err(to_datafusion_err)?;
+            // Since the definition of `register_table` says that an error
+            // will be returned if the table already exists, there is no
+            // case where we want to return a table provider as output.
+            Ok(None)
+        })
+    }
+
+    fn deregister_table(
+        &self,
+        name: &str,
+    ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
+        Python::with_gil(|py| {
+            let provider = self.schema_provider.bind(py);
+            let table = provider
+                .call_method1("deregister_table", (name,))
+                .map_err(to_datafusion_err)?;
+            if table.is_none() {
+                return Ok(None);
+            }
+
+            // If we can turn this table provider into a `Dataset`, return it.
+            // Otherwise, return None.
+            let dataset = match Dataset::new(&table, py) {
+                Ok(dataset) => Some(Arc::new(dataset) as Arc<dyn TableProvider>),
+                Err(_) => None,
+            };
+
+            Ok(dataset)
+        })
+    }
+
+    fn table_exist(&self, name: &str) -> bool {
+        Python::with_gil(|py| {
+            let provider = self.schema_provider.bind(py);
+            provider
+                .call_method1("table_exist", (name,))
+                .and_then(|pyobj| pyobj.extract())
+                .unwrap_or(false)
+        })
+    }
 }
