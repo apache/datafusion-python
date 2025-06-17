@@ -77,6 +77,9 @@ pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
 /// datafusion directory.
 #[pymodule]
 fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
+    // Initialize logging
+    pyo3_log::init();
+
     // Register the python classes
     m.add_class::<catalog::PyCatalog>()?;
     m.add_class::<catalog::PyDatabase>()?;

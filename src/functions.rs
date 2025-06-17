@@ -937,7 +937,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
     m.add_wrapped(wrap_pyfunction!(ln))?;
-    m.add_wrapped(wrap_pyfunction!(log))?;
+    m.add_wrapped(wrap_pyfunction!(self::log))?;
     m.add_wrapped(wrap_pyfunction!(log10))?;
     m.add_wrapped(wrap_pyfunction!(log2))?;
     m.add_wrapped(wrap_pyfunction!(lower))?;
