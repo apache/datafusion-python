@@ -365,7 +365,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             )
             .with_file_sort_order(
                 file_sort_order
@@ -647,7 +647,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
@@ -742,7 +742,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             );
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
@@ -773,13 +773,12 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(
-                table_partition_cols
-                    .into_iter()
-                    .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
-            );
+        let mut options = AvroReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 
@@ -882,7 +881,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema_infer_max_records = schema_infer_max_records;
@@ -936,7 +935,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
@@ -980,7 +979,7 @@ impl PySessionContext {
                 table_partition_cols
                     .into_iter()
                     .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
+                    .collect::<Vec<(String, DataType)>>(),
             )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
@@ -1007,13 +1006,12 @@ impl PySessionContext {
         file_extension: &str,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(
-                table_partition_cols
-                    .into_iter()
-                    .map(|(name, ty)| (name, ty.0))
-                    .collect::<Vec<(String, DataType)>>()
-            );
+        let mut options = AvroReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
