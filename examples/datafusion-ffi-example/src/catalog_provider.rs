@@ -15,15 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{any::Any, fmt::Debug, sync::Arc};
 use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
+use std::{any::Any, fmt::Debug, sync::Arc};
 
 use arrow::datatypes::Schema;
 use async_trait::async_trait;
 use datafusion::{
     catalog::{
-        CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider,
-        TableProvider,
+        CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider, TableProvider,
     },
     common::exec_err,
     datasource::MemTable,
@@ -46,12 +45,12 @@ pub fn my_table() -> Arc<dyn TableProvider + 'static> {
             ("units", Int32, vec![10, 20, 30]),
             ("price", Float64, vec![1.0, 2.0, 5.0])
         )
-            .unwrap(),
+        .unwrap(),
         record_batch!(
             ("units", Int32, vec![5, 7]),
             ("price", Float64, vec![1.5, 2.5])
         )
-            .unwrap(),
+        .unwrap(),
     ];
 
     Arc::new(MemTable::try_new(schema, vec![partitions]).unwrap())
@@ -68,9 +67,7 @@ impl Default for FixedSchemaProvider {
 
         let table = my_table();
 
-        let _ = inner
-            .register_table("my_table".to_string(), table)
-            .unwrap();
+        let _ = inner.register_table("my_table".to_string(), table).unwrap();
 
         Self { inner }
     }
@@ -86,10 +83,7 @@ impl SchemaProvider for FixedSchemaProvider {
         self.inner.table_names()
     }
 
-    async fn table(
-        &self,
-        name: &str,
-    ) -> Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
+    async fn table(&self, name: &str) -> Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
         self.inner.table(name).await
     }
 
@@ -110,10 +104,13 @@ impl SchemaProvider for FixedSchemaProvider {
     }
 }
 
-
 /// This catalog provider is intended only for unit tests. It prepopulates with one
 /// schema and only allows for schemas named after four types of fruit.
-#[pyclass(name = "MyCatalogProvider", module = "datafusion_ffi_example", subclass)]
+#[pyclass(
+    name = "MyCatalogProvider",
+    module = "datafusion_ffi_example",
+    subclass
+)]
 #[derive(Debug)]
 pub(crate) struct MyCatalogProvider {
     inner: MemoryCatalogProvider,
@@ -174,7 +171,8 @@ impl MyCatalogProvider {
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_catalog_provider".into();
-        let catalog_provider = FFI_CatalogProvider::new(Arc::new(MyCatalogProvider::default()), None);
+        let catalog_provider =
+            FFI_CatalogProvider::new(Arc::new(MyCatalogProvider::default()), None);
 
         PyCapsule::new(py, catalog_provider, Some(name))
     }

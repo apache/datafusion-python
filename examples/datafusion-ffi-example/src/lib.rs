@@ -15,14 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::catalog_provider::MyCatalogProvider;
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
-use crate::catalog_provider::MyCatalogProvider;
 use pyo3::prelude::*;
 
+pub(crate) mod catalog_provider;
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
-pub(crate) mod catalog_provider;
 
 #[pymodule]
 fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
