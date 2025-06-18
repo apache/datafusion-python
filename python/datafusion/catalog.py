@@ -50,26 +50,6 @@ class Catalog:
         """Print a string representation of the catalog."""
         return self.catalog.__repr__()
 
-    def names(self) -> list[str]:
-        """Returns the list of databases in this catalog."""
-        return self.catalog.names()
-
-    def database(self, name: str = "public") -> Database:
-        """Returns the database with the given ``name`` from this catalog."""
-        return Database(self.catalog.database(name))
-
-
-class Database:
-    """DataFusion Database."""
-
-    def __init__(self, db: df_internal.Database) -> None:
-        """This constructor is not typically called by the end user."""
-        self.db = db
-
-    def __repr__(self) -> str:
-        """Print a string representation of the database."""
-        return self.db.__repr__()
-
     def names(self) -> set[str]:
         """This is an alias for `schema_names`."""
         return self.schema_names()
@@ -108,6 +88,10 @@ class Schema:
     def __init__(self, schema: df_internal.catalog.RawSchema) -> None:
         """This constructor is not typically called by the end user."""
         self._raw_schema = schema
+
+    def __repr__(self) -> str:
+        """Print a string representation of the schema."""
+        return self._raw_schema.__repr__()
 
     def names(self) -> set[str]:
         """This is an alias for `table_names`."""
