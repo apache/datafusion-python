@@ -1120,7 +1120,7 @@ class SessionContext:
         self,
         path: str | pathlib.Path,
         schema: pa.Schema | None = None,
-        file_partition_cols: list[tuple[str, str]] | None = None,
+        file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading Avro data source.
@@ -1136,6 +1136,7 @@ class SessionContext:
         """
         if file_partition_cols is None:
             file_partition_cols = []
+        file_partition_cols = self._convert_table_partition_cols(file_partition_cols)
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
