@@ -73,6 +73,11 @@ class Catalog:
         """Returns the database with the given ``name`` from this catalog."""
         return self.schema(name)
 
+    def new_in_memory_schema(self, name: str) -> Schema:
+        """Create a new schema in this catalog using an in-memory provider."""
+        self.catalog.new_in_memory_schema(name)
+        return self.schema(name)
+
     def register_schema(self, name, schema) -> Schema | None:
         """Register a schema with this catalog."""
         return self.catalog.register_schema(name, schema)
