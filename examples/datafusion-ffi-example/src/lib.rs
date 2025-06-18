@@ -17,14 +17,17 @@
 
 use crate::table_function::MyTableFunction;
 use crate::table_provider::MyTableProvider;
+use crate::catalog_provider::MyCatalogProvider;
 use pyo3::prelude::*;
 
 pub(crate) mod table_function;
 pub(crate) mod table_provider;
+pub(crate) mod catalog_provider;
 
 #[pymodule]
 fn datafusion_ffi_example(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<MyTableProvider>()?;
     m.add_class::<MyTableFunction>()?;
+    m.add_class::<MyCatalogProvider>()?;
     Ok(())
 }
