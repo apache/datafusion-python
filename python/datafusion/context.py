@@ -758,6 +758,15 @@ class SessionContext:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
 
+    def catalog_names(self) -> set[str]:
+        """Returns the list of catalogs in this context."""
+        return self.ctx.catalog_names()
+
+    def new_in_memory_catalog(self, name: str) -> Catalog:
+        """Create a new catalog in this context using an in-memory provider."""
+        self.ctx.new_in_memory_catalog(name)
+        return self.catalog(name)
+
     def register_catalog_provider(
         self, name: str, provider: CatalogProviderExportable
     ) -> None:

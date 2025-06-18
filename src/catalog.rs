@@ -19,6 +19,7 @@ use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::utils::{validate_pycapsule, wait_for_future};
 use async_trait::async_trait;
+use datafusion::catalog::MemorySchemaProvider;
 use datafusion::common::DataFusionError;
 use datafusion::{
     arrow::pyarrow::ToPyArrow,
@@ -103,6 +104,16 @@ impl PyCatalog {
                 None => PySchema::from(schema).into_py_any(py),
             }
         })
+    }
+
+    fn new_in_memory_schema(&mut self, name: &str) -> PyResult<()> {
+        let schema = Arc::new(MemorySchemaProvider::new()) as Arc<dyn SchemaProvider>;
+        let _ = self
+            .catalog
+            .register_schema(name, schema)
+            .map_err(py_datafusion_err)?;
+
+        Ok(())
     }
 
     fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {

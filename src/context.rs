@@ -49,7 +49,7 @@ use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_f
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::CatalogProvider;
+use datafusion::catalog::{CatalogProvider, MemoryCatalogProvider};
 use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -617,6 +617,13 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn new_in_memory_catalog(&mut self, name: &str) -> PyResult<()> {
+        let catalog = Arc::new(MemoryCatalogProvider::new()) as Arc<dyn CatalogProvider>;
+        let _ = self.ctx.register_catalog(name, catalog);
+
+        Ok(())
+    }
+
     pub fn register_catalog_provider(
         &mut self,
         name: &str,
@@ -887,6 +894,10 @@ impl PySessionContext {
                 None => PyCatalog::from(catalog).into_py_any(py),
             }
         })
+    }
+
+    pub fn catalog_names(&self) -> HashSet<String> {
+        self.ctx.catalog_names().into_iter().collect()
     }
 
     pub fn tables(&self) -> HashSet<String> {
