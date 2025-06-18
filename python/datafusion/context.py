@@ -45,7 +45,6 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl
-    import pyarrow as pa
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
 
@@ -1169,17 +1168,23 @@ class SessionContext:
                 elif data_type == "int":
                     converted_data_type = pa.int32()
                 else:
-                    raise ValueError(
-                        f"Unsupported literal data type '{data_type}' for partition column. Supported types are 'string' and 'int'"
+                    message = (
+                        f"Unsupported literal data type '{data_type}' for partition "
+                        "column. Supported types are 'string' and 'int'"
                     )
+                    raise ValueError(message)
             else:
                 converted_data_type = data_type
 
             converted_table_partition_cols.append((col, converted_data_type))
 
         if warn:
+            message = (
+                "using literals for table_partition_cols data types is deprecated,"
+                "use pyarrow types instead"
+            )
             warnings.warn(
-                "using literals for table_partition_cols data types is deprecated, use pyarrow types instead",
+                message,
                 category=DeprecationWarning,
                 stacklevel=2,
             )

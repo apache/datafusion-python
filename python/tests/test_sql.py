@@ -157,7 +157,9 @@ def test_register_parquet(ctx, tmp_path):
     assert result.to_pydict() == {"cnt": [100]}
 
 
-@pytest.mark.parametrize("path_to_str,legacy_data_type", [(True, False), (False, False), (False, True)] )
+@pytest.mark.parametrize(
+    ("path_to_str", "legacy_data_type"), [(True, False), (False, False), (False, True)]
+)
 def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_type):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
@@ -177,7 +179,7 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_ty
 
     dir_root = str(dir_root) if path_to_str else dir_root
 
-    partition_data_type = 'string' if legacy_data_type else pa.string()
+    partition_data_type = "string" if legacy_data_type else pa.string()
 
     ctx.register_parquet(
         "datapp",
