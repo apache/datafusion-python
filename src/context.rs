@@ -31,7 +31,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable};
+use crate::catalog::{PyCatalog, PyTable, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -73,6 +73,7 @@ use datafusion::prelude::{
 use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
+use pyo3::IntoPyObjectExt;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -621,7 +622,7 @@ impl PySessionContext {
         name: &str,
         provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        if provider.hasattr("__datafusion_catalog_provider__")? {
+        let provider = if provider.hasattr("__datafusion_catalog_provider__")? {
             let capsule = provider
                 .getattr("__datafusion_catalog_provider__")?
                 .call0()?;
@@ -630,29 +631,15 @@ impl PySessionContext {
 
             let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
             let provider: ForeignCatalogProvider = provider.into();
-
-            let option: Option<Arc<dyn CatalogProvider>> =
-                self.ctx.register_catalog(name, Arc::new(provider));
-            match option {
-                Some(existing) => {
-                    println!(
-                        "Catalog '{}' already existed, schema names: {:?}",
-                        name,
-                        existing.schema_names()
-                    );
-                }
-                None => {
-                    println!("Catalog '{}' registered successfully", name);
-                }
-            }
-
-            Ok(())
+            Arc::new(provider) as Arc<dyn CatalogProvider>
         } else {
-            Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_catalog_provider__ does not exist on Catalog Provider object."
-                    .to_string(),
-            ))
-        }
+            let provider = RustWrappedPyCatalogProvider::new(provider.into());
+            Arc::new(provider) as Arc<dyn CatalogProvider>
+        };
+
+        let _ = self.ctx.register_catalog(name, provider);
+
+        Ok(())
     }
 
     /// Construct datafusion dataframe from Arrow Table
@@ -886,14 +873,20 @@ impl PySessionContext {
     }
 
     #[pyo3(signature = (name="datafusion"))]
-    pub fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
-        match self.ctx.catalog(name) {
-            Some(catalog) => Ok(PyCatalog::from(catalog)),
-            None => Err(PyKeyError::new_err(format!(
-                "Catalog with name {} doesn't exist.",
-                &name,
-            ))),
-        }
+    pub fn catalog(&self, name: &str) -> PyResult<PyObject> {
+        let catalog = self.ctx.catalog(name).ok_or(PyKeyError::new_err(format!(
+            "Catalog with name {name} doesn't exist."
+        )))?;
+
+        Python::with_gil(|py| {
+            match catalog
+                .as_any()
+                .downcast_ref::<RustWrappedPyCatalogProvider>()
+            {
+                Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
+                None => PyCatalog::from(catalog).into_py_any(py),
+            }
+        })
     }
 
     pub fn tables(&self) -> HashSet<String> {
