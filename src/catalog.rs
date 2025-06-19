@@ -207,9 +207,14 @@ impl PySchema {
             let provider: ForeignTableProvider = provider.into();
             Arc::new(provider) as Arc<dyn TableProvider>
         } else {
-            let py = table_provider.py();
-            let provider = Dataset::new(&table_provider, py)?;
-            Arc::new(provider) as Arc<dyn TableProvider>
+            match table_provider.extract::<PyTable>() {
+                Ok(py_table) => py_table.table,
+                Err(_) => {
+                    let py = table_provider.py();
+                    let provider = Dataset::new(&table_provider, py)?;
+                    Arc::new(provider) as Arc<dyn TableProvider>
+                }
+            }
         };
 
         let _ = self
@@ -236,6 +241,14 @@ impl PyTable {
     #[getter]
     fn schema(&self, py: Python) -> PyResult<PyObject> {
         self.table.schema().to_pyarrow(py)
+    }
+
+    #[staticmethod]
+    fn from_dataset(py: Python<'_>, dataset: &Bound<'_, PyAny>) -> PyResult<Self> {
+        let ds = Arc::new(Dataset::new(dataset, py).map_err(py_datafusion_err)?)
+            as Arc<dyn TableProvider>;
+
+        Ok(Self::new(ds))
     }
 
     /// Get the type of this table for metadata/catalog purposes.

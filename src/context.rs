@@ -633,17 +633,10 @@ impl PySessionContext {
             let provider: ForeignCatalogProvider = provider.into();
             Arc::new(provider) as Arc<dyn CatalogProvider>
         } else {
-            println!("Provider has type {}", provider.get_type());
             match provider.extract::<PyCatalog>() {
-                Ok(py_catalog) => {
-                    println!("registering an existing PyCatalog");
-                    py_catalog.catalog
-                }
-                Err(_) => {
-                    println!("registering a rust wrapped catalog provider");
-                    Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
-                        as Arc<dyn CatalogProvider>
-                }
+                Ok(py_catalog) => py_catalog.catalog,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
+                    as Arc<dyn CatalogProvider>,
             }
         };
 

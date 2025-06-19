@@ -14,6 +14,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+from __future__ import annotations
 
 import datafusion as dfn
 import pyarrow as pa
@@ -46,20 +47,16 @@ def test_basic(ctx, database):
     )
 
 
-class CustomTableProvider:
-    def __init__(self):
-        pass
-
-
-def create_dataset() -> pa.dataset.Dataset:
+def create_dataset() -> Table:
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
         names=["a", "b"],
     )
-    return ds.dataset([batch])
+    dataset = ds.dataset([batch])
+    return Table.from_dataset(dataset)
 
 
-class CustomSchemaProvider:
+class CustomSchemaProvider(dfn.catalog.SchemaProvider):
     def __init__(self):
         self.tables = {"table1": create_dataset()}
 
@@ -72,8 +69,14 @@ class CustomSchemaProvider:
     def deregister_table(self, name, cascade: bool = True):
         del self.tables[name]
 
+    def table(self, name: str) -> Table | None:
+        return self.tables[name]
 
-class CustomCatalogProvider:
+    def table_exist(self, name: str) -> bool:
+        return name in self.tables
+
+
+class CustomCatalogProvider(dfn.catalog.CatalogProvider):
     def __init__(self):
         self.schemas = {"my_schema": CustomSchemaProvider()}
 
