@@ -49,7 +49,7 @@ use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_f
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::{CatalogProvider, MemoryCatalogProvider};
+use datafusion::catalog::CatalogProvider;
 use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -617,13 +617,6 @@ impl PySessionContext {
         Ok(())
     }
 
-    pub fn new_in_memory_catalog(&mut self, name: &str) -> PyResult<()> {
-        let catalog = Arc::new(MemoryCatalogProvider::new()) as Arc<dyn CatalogProvider>;
-        let _ = self.ctx.register_catalog(name, catalog);
-
-        Ok(())
-    }
-
     pub fn register_catalog_provider(
         &mut self,
         name: &str,
@@ -640,8 +633,18 @@ impl PySessionContext {
             let provider: ForeignCatalogProvider = provider.into();
             Arc::new(provider) as Arc<dyn CatalogProvider>
         } else {
-            let provider = RustWrappedPyCatalogProvider::new(provider.into());
-            Arc::new(provider) as Arc<dyn CatalogProvider>
+            println!("Provider has type {}", provider.get_type());
+            match provider.extract::<PyCatalog>() {
+                Ok(py_catalog) => {
+                    println!("registering an existing PyCatalog");
+                    py_catalog.catalog
+                }
+                Err(_) => {
+                    println!("registering a rust wrapped catalog provider");
+                    Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
+                        as Arc<dyn CatalogProvider>
+                }
+            }
         };
 
         let _ = self.ctx.register_catalog(name, provider);

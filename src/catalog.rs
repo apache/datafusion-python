@@ -19,7 +19,7 @@ use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::utils::{validate_pycapsule, wait_for_future};
 use async_trait::async_trait;
-use datafusion::catalog::MemorySchemaProvider;
+use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
 use datafusion::common::DataFusionError;
 use datafusion::{
     arrow::pyarrow::ToPyArrow,
@@ -37,16 +37,19 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 #[pyclass(name = "RawCatalog", module = "datafusion.catalog", subclass)]
+#[derive(Clone)]
 pub struct PyCatalog {
     pub catalog: Arc<dyn CatalogProvider>,
 }
 
 #[pyclass(name = "RawSchema", module = "datafusion.catalog", subclass)]
+#[derive(Clone)]
 pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
 }
 
 #[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
+#[derive(Clone)]
 pub struct PyTable {
     pub table: Arc<dyn TableProvider>,
 }
@@ -82,6 +85,13 @@ impl PyCatalog {
         catalog_provider.into()
     }
 
+    #[staticmethod]
+    fn memory_catalog() -> Self {
+        let catalog_provider =
+            Arc::new(MemoryCatalogProvider::default()) as Arc<dyn CatalogProvider>;
+        catalog_provider.into()
+    }
+
     fn schema_names(&self) -> HashSet<String> {
         self.catalog.schema_names().into_iter().collect()
     }
@@ -106,16 +116,6 @@ impl PyCatalog {
         })
     }
 
-    fn new_in_memory_schema(&mut self, name: &str) -> PyResult<()> {
-        let schema = Arc::new(MemorySchemaProvider::new()) as Arc<dyn SchemaProvider>;
-        let _ = self
-            .catalog
-            .register_schema(name, schema)
-            .map_err(py_datafusion_err)?;
-
-        Ok(())
-    }
-
     fn register_schema(&self, name: &str, schema_provider: Bound<'_, PyAny>) -> PyResult<()> {
         let provider = if schema_provider.hasattr("__datafusion_schema_provider__")? {
             let capsule = schema_provider
@@ -128,8 +128,11 @@ impl PyCatalog {
             let provider: ForeignSchemaProvider = provider.into();
             Arc::new(provider) as Arc<dyn SchemaProvider>
         } else {
-            let provider = RustWrappedPySchemaProvider::new(schema_provider.into());
-            Arc::new(provider) as Arc<dyn SchemaProvider>
+            match schema_provider.extract::<PySchema>() {
+                Ok(py_schema) => py_schema.schema,
+                Err(_) => Arc::new(RustWrappedPySchemaProvider::new(schema_provider.into()))
+                    as Arc<dyn SchemaProvider>,
+            }
         };
 
         let _ = self
@@ -162,6 +165,12 @@ impl PySchema {
     fn new(schema_provider: PyObject) -> Self {
         let schema_provider =
             Arc::new(RustWrappedPySchemaProvider::new(schema_provider)) as Arc<dyn SchemaProvider>;
+        schema_provider.into()
+    }
+
+    #[staticmethod]
+    fn memory_schema() -> Self {
+        let schema_provider = Arc::new(MemorySchemaProvider::default()) as Arc<dyn SchemaProvider>;
         schema_provider.into()
     }
 

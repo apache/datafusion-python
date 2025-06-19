@@ -762,16 +762,14 @@ class SessionContext:
         """Returns the list of catalogs in this context."""
         return self.ctx.catalog_names()
 
-    def new_in_memory_catalog(self, name: str) -> Catalog:
-        """Create a new catalog in this context using an in-memory provider."""
-        self.ctx.new_in_memory_catalog(name)
-        return self.catalog(name)
-
     def register_catalog_provider(
-        self, name: str, provider: CatalogProviderExportable
+        self, name: str, provider: CatalogProviderExportable | Catalog
     ) -> None:
         """Register a catalog provider."""
-        self.ctx.register_catalog_provider(name, provider)
+        if isinstance(provider, Catalog):
+            self.ctx.register_catalog_provider(name, provider.catalog)
+        else:
+            self.ctx.register_catalog_provider(name, provider)
 
     def register_table_provider(
         self, name: str, provider: TableProviderExportable

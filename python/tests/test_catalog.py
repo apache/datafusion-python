@@ -106,6 +106,24 @@ def test_python_catalog_provider(ctx: SessionContext):
     assert my_catalog.schema_names() == {"second_schema"}
 
 
+def test_in_memory_providers(ctx: SessionContext):
+    catalog = dfn.catalog.Catalog.memory_catalog()
+    ctx.register_catalog_provider("in_mem_catalog", catalog)
+
+    assert ctx.catalog_names() == {"datafusion", "in_mem_catalog"}
+
+    schema = dfn.catalog.Schema.memory_schema()
+    catalog.register_schema("in_mem_schema", schema)
+
+    schema.register_table("my_table", create_dataset())
+
+    batches = ctx.sql("select * from in_mem_catalog.in_mem_schema.my_table").collect()
+
+    assert len(batches) == 1
+    assert batches[0].column(0) == pa.array([1, 2, 3])
+    assert batches[0].column(1) == pa.array([4, 5, 6])
+
+
 def test_python_schema_provider(ctx: SessionContext):
     catalog = ctx.catalog()
 

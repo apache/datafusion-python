@@ -58,6 +58,12 @@ class Catalog:
         """Returns the list of schemas in this catalog."""
         return self.catalog.schema_names()
 
+    @staticmethod
+    def memory_catalog() -> Catalog:
+        """Create an in-memory catalog provider."""
+        catalog = df_internal.catalog.RawCatalog.memory_catalog()
+        return Catalog(catalog)
+
     def schema(self, name: str = "public") -> Schema:
         """Returns the database with the given ``name`` from this catalog."""
         schema = self.catalog.schema(name)
@@ -73,13 +79,10 @@ class Catalog:
         """Returns the database with the given ``name`` from this catalog."""
         return self.schema(name)
 
-    def new_in_memory_schema(self, name: str) -> Schema:
-        """Create a new schema in this catalog using an in-memory provider."""
-        self.catalog.new_in_memory_schema(name)
-        return self.schema(name)
-
     def register_schema(self, name, schema) -> Schema | None:
         """Register a schema with this catalog."""
+        if isinstance(schema, Schema):
+            return self.catalog.register_schema(name, schema._raw_schema)
         return self.catalog.register_schema(name, schema)
 
     def deregister_schema(self, name: str, cascade: bool = True) -> Schema | None:
@@ -97,6 +100,12 @@ class Schema:
     def __repr__(self) -> str:
         """Print a string representation of the schema."""
         return self._raw_schema.__repr__()
+
+    @staticmethod
+    def memory_schema() -> Schema:
+        """Create an in-memory schema provider."""
+        schema = df_internal.catalog.RawSchema.memory_schema()
+        return Schema(schema)
 
     def names(self) -> set[str]:
         """This is an alias for `table_names`."""
