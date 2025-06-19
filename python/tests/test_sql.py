@@ -451,18 +451,10 @@ _null_mask = np.array([False, True, False])
             id="datetime_ns",
         ),
         # Not writtable to parquet
-        pytest.param(
-            helpers.data_timedelta("s"), id="timedelta_s", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("ms"), id="timedelta_ms", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("us"), id="timedelta_us", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("ns"), id="timedelta_ns", marks=pytest.mark.xfail
-        ),
+        pytest.param(helpers.data_timedelta("s"), id="timedelta_s"),
+        pytest.param(helpers.data_timedelta("ms"), id="timedelta_ms"),
+        pytest.param(helpers.data_timedelta("us"), id="timedelta_us"),
+        pytest.param(helpers.data_timedelta("ns"), id="timedelta_ns"),
     ],
 )
 def test_simple_select(ctx, tmp_path, arr):
