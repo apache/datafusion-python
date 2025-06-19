@@ -2004,7 +2004,7 @@ Package Contents
    Create a literal expression.
 
 
-.. py:function:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
+.. py:function:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
    Create a :py:class:`DataFrame` for reading Avro data source.
 
@@ -2020,7 +2020,7 @@ Package Contents
    :returns: DataFrame representation of the read Avro file
 
 
-.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
    Read a CSV data source.
 
@@ -2045,7 +2045,7 @@ Package Contents
    :returns: DataFrame representation of the read CSV files
 
 
-.. py:function:: read_json(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_json(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
    Read a line-delimited JSON data source.
 
@@ -2065,7 +2065,7 @@ Package Contents
    :returns: DataFrame representation of the read JSON files.
 
 
-.. py:function:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> datafusion.dataframe.DataFrame
+.. py:function:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr]] | None = None) -> datafusion.dataframe.DataFrame
 
    Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 

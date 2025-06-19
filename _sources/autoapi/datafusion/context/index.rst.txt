@@ -417,6 +417,11 @@ Module Contents
 
 
 
+   .. py:method:: _convert_table_partition_cols(table_partition_cols: list[tuple[str, str | pyarrow.DataType]]) -> list[tuple[str, pyarrow.DataType]]
+      :staticmethod:
+
+
+
    .. py:method:: catalog(name: str = 'datafusion') -> datafusion.catalog.Catalog
 
       Retrieve a catalog by name.
@@ -550,7 +555,7 @@ Module Contents
 
 
 
-   .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
+   .. py:method:: read_avro(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.avro') -> datafusion.dataframe.DataFrame
 
       Create a :py:class:`DataFrame` for reading Avro data source.
 
@@ -563,7 +568,7 @@ Module Contents
 
 
 
-   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_csv(path: str | pathlib.Path | list[str] | list[pathlib.Path], schema: pyarrow.Schema | None = None, has_header: bool = True, delimiter: str = ',', schema_infer_max_records: int = 1000, file_extension: str = '.csv', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
       Read a CSV data source.
 
@@ -585,7 +590,7 @@ Module Contents
 
 
 
-   .. py:method:: read_json(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_json(path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> datafusion.dataframe.DataFrame
 
       Read a line-delimited JSON data source.
 
@@ -602,7 +607,7 @@ Module Contents
 
 
 
-   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
 
       Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -634,7 +639,7 @@ Module Contents
 
 
 
-   .. py:method:: register_avro(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.avro', table_partition_cols: list[tuple[str, str]] | None = None) -> None
+   .. py:method:: register_avro(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, file_extension: str = '.avro', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None) -> None
 
       Register an Avro file as a table.
 
@@ -680,7 +685,7 @@ Module Contents
 
 
 
-   .. py:method:: register_json(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str]] | None = None, file_compression_type: str | None = None) -> None
+   .. py:method:: register_json(name: str, path: str | pathlib.Path, schema: pyarrow.Schema | None = None, schema_infer_max_records: int = 1000, file_extension: str = '.json', table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_compression_type: str | None = None) -> None
 
       Register a JSON file as a table.
 
@@ -699,7 +704,7 @@ Module Contents
 
 
 
-   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> None
 
       Register multiple files as a single table.
 
@@ -726,7 +731,7 @@ Module Contents
 
 
 
-   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
 
       Register a Parquet file as a table.
 
