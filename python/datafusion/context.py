@@ -29,7 +29,7 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-from datafusion.catalog import Catalog, Table
+from datafusion.catalog import Catalog, CatalogProvider, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
@@ -763,7 +763,7 @@ class SessionContext:
         return self.ctx.catalog_names()
 
     def register_catalog_provider(
-        self, name: str, provider: CatalogProviderExportable | Catalog
+        self, name: str, provider: CatalogProviderExportable | CatalogProvider | Catalog
     ) -> None:
         """Register a catalog provider."""
         if isinstance(provider, Catalog):

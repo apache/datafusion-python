@@ -314,9 +314,19 @@ impl RustWrappedPySchemaProvider {
 
                 Ok(Some(Arc::new(provider) as Arc<dyn TableProvider>))
             } else {
-                let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
+                if let Ok(inner_table) = py_table.getattr("table") {
+                    if let Ok(inner_table) = inner_table.extract::<PyTable>() {
+                        return Ok(Some(inner_table.table));
+                    }
+                }
 
-                Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
+                match py_table.extract::<PyTable>() {
+                    Ok(py_table) => Ok(Some(py_table.table)),
+                    Err(_) => {
+                        let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
+                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
+                    }
+                }
             }
         })
     }
