@@ -19,6 +19,10 @@ use std::sync::Arc;
 
 use pyo3::{prelude::*, types::PyTuple};
 
+use crate::common::data_type::PyScalarValue;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::expr::PyExpr;
+use crate::utils::{parse_volatility, validate_pycapsule};
 use datafusion::arrow::array::{Array, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
@@ -27,11 +31,8 @@ use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::{
     create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF,
 };
-
-use crate::common::data_type::PyScalarValue;
-use crate::errors::to_datafusion_err;
-use crate::expr::PyExpr;
-use crate::utils::parse_volatility;
+use datafusion_ffi::udaf::{FFI_AggregateUDF, ForeignAggregateUDF};
+use pyo3::types::PyCapsule;
 
 #[derive(Debug)]
 struct RustAccumulator {
@@ -181,6 +182,26 @@ impl PyAggregateUDF {
             Arc::new(state_type.0),
         );
         Ok(Self { function })
+    }
+
+    #[staticmethod]
+    pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if func.hasattr("__datafusion_aggregate_udf__")? {
+            let capsule = func.getattr("__datafusion_aggregate_udf__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
+
+            let udaf = unsafe { capsule.reference::<FFI_AggregateUDF>() };
+            let udaf: ForeignAggregateUDF = udaf.try_into()?;
+
+            Ok(Self {
+                function: udaf.into(),
+            })
+        } else {
+            Err(crate::errors::PyDataFusionError::Common(
+                "__datafusion_aggregate_udf__ does not exist on AggregateUDF object.".to_string(),
+            ))
+        }
     }
 
     /// creates a new PyExpr with the call of the udf
