@@ -447,9 +447,19 @@ impl RustWrappedPyCatalogProvider {
 
                 Ok(Some(Arc::new(provider) as Arc<dyn SchemaProvider>))
             } else {
-                let py_schema = RustWrappedPySchemaProvider::new(py_schema.into());
+                if let Ok(inner_schema) = py_schema.getattr("schema") {
+                    if let Ok(inner_schema) = inner_schema.extract::<PySchema>() {
+                        return Ok(Some(inner_schema.schema));
+                    }
+                }
+                match py_schema.extract::<PySchema>() {
+                    Ok(inner_schema) => Ok(Some(inner_schema.schema)),
+                    Err(_) => {
+                        let py_schema = RustWrappedPySchemaProvider::new(py_schema.into());
 
-                Ok(Some(Arc::new(py_schema) as Arc<dyn SchemaProvider>))
+                        Ok(Some(Arc::new(py_schema) as Arc<dyn SchemaProvider>))
+                    }
+                }
             }
         })
     }
