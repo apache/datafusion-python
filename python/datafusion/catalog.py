@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 import datafusion._internal as df_internal
@@ -121,6 +122,8 @@ class Schema:
 
     def register_table(self, name, table) -> None:
         """Register a table provider in this schema."""
+        if isinstance(table, Table):
+            return self._raw_schema.register_table(name, table.table)
         return self._raw_schema.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
@@ -144,6 +147,11 @@ class Table:
         """Print a string representation of the table."""
         return self.table.__repr__()
 
+    @staticmethod
+    def from_dataset(dataset: pa.dataset.Dataset) -> Table:
+        """Turn a pyarrow Dataset into a Table."""
+        return Table(df_internal.catalog.RawTable.from_dataset(dataset))
+
     @property
     def schema(self) -> pa.Schema:
         """Returns the schema associated with this table."""
@@ -153,3 +161,71 @@ class Table:
     def kind(self) -> str:
         """Returns the kind of table."""
         return self.table.kind
+
+
+class CatalogProvider(ABC):
+    @abstractmethod
+    def schema_names(self) -> set[str]:
+        """Set of the names of all schemas in this catalog."""
+        ...
+
+    @abstractmethod
+    def schema(self, name: str) -> Schema | None:
+        """Retrieve a specific schema from this catalog."""
+        ...
+
+    def register_schema(self, name: str, schema: Schema) -> None:  # noqa: B027
+        """Add a schema to this catalog.
+
+        This method is optional. If your catalog provides a fixed list of schemas, you
+        do not need to implement this method.
+        """
+
+    def deregister_schema(self, name: str, cascade: bool) -> None:  # noqa: B027
+        """Remove a schema from this catalog.
+
+        This method is optional. If your catalog provides a fixed list of schemas, you
+        do not need to implement this method.
+
+        Args:
+            name: The name of the schema to remove.
+            cascade: If true, deregister the tables within the schema.
+        """
+
+
+class SchemaProvider(ABC):
+    def owner_name(self) -> str | None:
+        """Returns the owner of the schema.
+
+        This is an optional method. The default return is None.
+        """
+        return None
+
+    @abstractmethod
+    def table_names(self) -> set[str]:
+        """Set of the names of all tables in this schema."""
+        ...
+
+    @abstractmethod
+    def table(self, name: str) -> Table | None:
+        """Retrieve a specific table from this schema."""
+        ...
+
+    def register_table(self, name: str, table: Table) -> None:  # noqa: B027
+        """Add a table from this schema.
+
+        This method is optional. If your schema provides a fixed list of tables, you do
+        not need to implement this method.
+        """
+
+    def deregister_table(self, name, cascade: bool) -> None:  # noqa: B027
+        """Remove a table from this schema.
+
+        This method is optional. If your schema provides a fixed list of tables, you do
+        not need to implement this method.
+        """
+
+    @abstractmethod
+    def table_exist(self, name: str) -> bool:
+        """Returns true if the table exists in this schema."""
+        ...
