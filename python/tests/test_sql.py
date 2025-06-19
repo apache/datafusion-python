@@ -75,7 +75,7 @@ def test_register_csv(ctx, tmp_path):
     )
     ctx.register_csv("csv3", path, schema=alternative_schema)
 
-    assert ctx.catalog().database().names() == {
+    assert ctx.catalog().schema().names() == {
         "csv",
         "csv1",
         "csv2",
@@ -150,7 +150,7 @@ def test_register_parquet(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
     ctx.register_parquet("t1", str(path))
-    assert ctx.catalog().database().names() == {"t", "t1"}
+    assert ctx.catalog().schema().names() == {"t", "t1"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
@@ -188,7 +188,7 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_ty
         parquet_pruning=True,
         file_extension=".parquet",
     )
-    assert ctx.catalog().database().names() == {"datapp"}
+    assert ctx.catalog().schema().names() == {"datapp"}
 
     result = ctx.sql("SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp").collect()
     result = pa.Table.from_batches(result)
@@ -204,7 +204,7 @@ def test_register_dataset(ctx, tmp_path, path_to_str):
     dataset = ds.dataset(path, format="parquet")
 
     ctx.register_dataset("t", dataset)
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
@@ -251,7 +251,7 @@ def test_register_json(ctx, tmp_path):
     )
     ctx.register_json("json3", path, schema=alternative_schema)
 
-    assert ctx.catalog().database().names() == {
+    assert ctx.catalog().schema().names() == {
         "json",
         "json1",
         "json2",
@@ -308,7 +308,7 @@ def test_execute(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", pa.array(data))
     ctx.register_parquet("t", path)
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     # count
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
@@ -524,7 +524,7 @@ def test_register_listing_table(
         schema=table.schema if pass_schema else None,
         file_sort_order=file_sort_order,
     )
-    assert ctx.catalog().database().names() == {"my_table"}
+    assert ctx.catalog().schema().names() == {"my_table"}
 
     result = ctx.sql(
         "SELECT grp, COUNT(*) AS count FROM my_table GROUP BY grp"

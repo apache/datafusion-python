@@ -34,7 +34,7 @@ def test_substrait_serialization(ctx):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     # For now just make sure the method calls blow up
     substrait_plan = ss.Serde.serialize_to_plan("SELECT * FROM t", ctx)
@@ -59,7 +59,7 @@ def test_substrait_file_serialization(ctx, tmp_path, path_to_str):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     path = tmp_path / "substrait_plan"
     path = str(path) if path_to_str else path
