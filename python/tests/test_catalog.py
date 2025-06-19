@@ -162,3 +162,51 @@ def test_python_table_provider(ctx: SessionContext):
     schema.deregister_table("table3")
     schema.register_table("table4", create_dataset())
     assert schema.table_names() == {"table4"}
+
+
+def test_in_end_to_end_python_providers(ctx: SessionContext):
+    """Test registering all python providers and running a query against them."""
+
+    all_catalog_names = [
+        "datafusion",
+        "custom_catalog",
+        "in_mem_catalog",
+    ]
+
+    all_schema_names = [
+        "custom_schema",
+        "in_mem_schema",
+    ]
+
+    ctx.register_catalog_provider(all_catalog_names[1], CustomCatalogProvider())
+    ctx.register_catalog_provider(
+        all_catalog_names[2], dfn.catalog.Catalog.memory_catalog()
+    )
+
+    for catalog_name in all_catalog_names:
+        catalog = ctx.catalog(catalog_name)
+
+        # Clean out previous schemas if they exist so we can start clean
+        for schema_name in catalog.schema_names():
+            catalog.deregister_schema(schema_name, cascade=False)
+
+        catalog.register_schema(all_schema_names[0], CustomSchemaProvider())
+        catalog.register_schema(all_schema_names[1], dfn.catalog.Schema.memory_schema())
+
+        for schema_name in all_schema_names:
+            schema = catalog.schema(schema_name)
+
+            for table_name in schema.table_names():
+                schema.deregister_table(table_name)
+
+            schema.register_table("test_table", create_dataset())
+
+    for catalog_name in all_catalog_names:
+        for schema_name in all_schema_names:
+            table_full_name = f"{catalog_name}.{schema_name}.test_table"
+
+            batches = ctx.sql(f"select * from {table_full_name}").collect()
+
+            assert len(batches) == 1
+            assert batches[0].column(0) == pa.array([1, 2, 3])
+            assert batches[0].column(1) == pa.array([4, 5, 6])

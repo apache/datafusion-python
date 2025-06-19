@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 import datafusion._internal as df_internal
 
@@ -174,7 +174,9 @@ class CatalogProvider(ABC):
         """Retrieve a specific schema from this catalog."""
         ...
 
-    def register_schema(self, name: str, schema: Schema) -> None:  # noqa: B027
+    def register_schema(  # noqa: B027
+        self, name: str, schema: SchemaProviderExportable | SchemaProvider | Schema
+    ) -> None:
         """Add a schema to this catalog.
 
         This method is optional. If your catalog provides a fixed list of schemas, you
@@ -229,3 +231,12 @@ class SchemaProvider(ABC):
     def table_exist(self, name: str) -> bool:
         """Returns true if the table exists in this schema."""
         ...
+
+
+class SchemaProviderExportable(Protocol):
+    """Type hint for object that has __datafusion_schema_provider__ PyCapsule.
+
+    https://docs.rs/datafusion/latest/datafusion/catalog/trait.SchemaProvider.html
+    """
+
+    def __datafusion_schema_provider__(self) -> object: ...
