@@ -164,6 +164,8 @@ class Table:
 
 
 class CatalogProvider(ABC):
+    """Abstract class for defining a Python based Catalog Provider."""
+
     @abstractmethod
     def schema_names(self) -> set[str]:
         """Set of the names of all schemas in this catalog."""
@@ -196,6 +198,8 @@ class CatalogProvider(ABC):
 
 
 class SchemaProvider(ABC):
+    """Abstract class for defining a Python based Schema Provider."""
+
     def owner_name(self) -> str | None:
         """Returns the owner of the schema.
 
