@@ -35,7 +35,9 @@ except ImportError:
 
 __all__ = [
     "Catalog",
+    "CatalogProvider",
     "Schema",
+    "SchemaProvider",
     "Table",
 ]
 
