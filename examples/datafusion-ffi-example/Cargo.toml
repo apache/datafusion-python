@@ -27,6 +27,7 @@ pyo3 = { version = "0.23", features = ["extension-module", "abi3", "abi3-py39"] 
 arrow = { version = "55.0.0" }
 arrow-array = { version = "55.0.0" }
 arrow-schema = { version = "55.0.0" }
+async-trait = "0.1.88"
 
 [build-dependencies]
 pyo3-build-config = "0.23"
