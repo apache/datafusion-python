@@ -32,7 +32,7 @@ def test_basic(ctx, database):
     default = ctx.catalog()
     assert default.names() == {"public"}
 
-    for db in [default.database("public"), default.database()]:
+    for db in [default.schema("public"), default.schema()]:
         assert db.names() == {"csv1", "csv", "csv2"}
 
     table = db.table("csv")
