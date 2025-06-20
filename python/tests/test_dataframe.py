@@ -27,8 +27,8 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
-    ParquetWriterOptions,
     ParquetColumnOptions,
+    ParquetWriterOptions,
     SessionContext,
     WindowFrame,
     column,
@@ -1668,7 +1668,9 @@ def test_write_parquet_with_options_compression(df, tmp_path, compression):
     import re
 
     path = tmp_path
-    df.write_parquet_with_options(str(path), ParquetWriterOptions(compression=compression))
+    df.write_parquet_with_options(
+        str(path), ParquetWriterOptions(compression=compression)
+    )
 
     # test that the actual compression scheme is the one written
     for _root, _dirs, files in os.walk(path):
@@ -1695,7 +1697,9 @@ def test_write_parquet_with_options_wrong_compression_level(df, tmp_path, compre
     path = tmp_path
 
     with pytest.raises(Exception, match=r"valid compression range .*? exceeded."):
-        df.write_parquet_with_options(str(path), ParquetWriterOptions(compression=compression))
+        df.write_parquet_with_options(
+            str(path), ParquetWriterOptions(compression=compression)
+        )
 
 
 @pytest.mark.parametrize("compression", ["wrong", "wrong(12)"])
@@ -1703,20 +1707,26 @@ def test_write_parquet_with_options_invalid_compression(df, tmp_path, compressio
     path = tmp_path
 
     with pytest.raises(Exception, match="Unknown or unsupported parquet compression"):
-        df.write_parquet_with_options(str(path), ParquetWriterOptions(compression=compression))
+        df.write_parquet_with_options(
+            str(path), ParquetWriterOptions(compression=compression)
+        )
 
 
 @pytest.mark.parametrize(
     ("writer_version", "format_version"),
     [("1.0", "1.0"), ("2.0", "2.6"), (None, "1.0")],
 )
-def test_write_parquet_with_options_writer_version(df, tmp_path, writer_version, format_version):
+def test_write_parquet_with_options_writer_version(
+    df, tmp_path, writer_version, format_version
+):
     """Test the Parquet writer version. Note that writer_version=2.0 results in
     format_version=2.6"""
     if writer_version is None:
         df.write_parquet_with_options(tmp_path, ParquetWriterOptions())
     else:
-        df.write_parquet_with_options(tmp_path, ParquetWriterOptions(writer_version=writer_version))
+        df.write_parquet_with_options(
+            tmp_path, ParquetWriterOptions(writer_version=writer_version)
+        )
 
     for file in tmp_path.rglob("*.parquet"):
         parquet = pq.ParquetFile(file)
@@ -1730,13 +1740,19 @@ def test_write_parquet_with_options_wrong_writer_version(df, tmp_path, writer_ve
     with pytest.raises(
         Exception, match="Unknown or unsupported parquet writer version"
     ):
-        df.write_parquet_with_options(tmp_path, ParquetWriterOptions(writer_version=writer_version))
+        df.write_parquet_with_options(
+            tmp_path, ParquetWriterOptions(writer_version=writer_version)
+        )
 
 
 @pytest.mark.parametrize("dictionary_enabled", [True, False, None])
-def test_write_parquet_with_options_dictionary_enabled(df, tmp_path, dictionary_enabled):
+def test_write_parquet_with_options_dictionary_enabled(
+    df, tmp_path, dictionary_enabled
+):
     """Test enabling/disabling the dictionaries in Parquet."""
-    df.write_parquet_with_options(tmp_path, ParquetWriterOptions(dictionary_enabled=dictionary_enabled))
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(dictionary_enabled=dictionary_enabled)
+    )
     # by default, the dictionary is enabled, so None results in True
     result = dictionary_enabled if dictionary_enabled is not None else True
 
@@ -1758,7 +1774,9 @@ def test_write_parquet_with_options_statistics_enabled(
 ):
     """Test configuring the statistics in Parquet. In pyarrow we can only check for
     column-level statistics, so "page" and "chunk" are tested in the same way."""
-    df.write_parquet_with_options(tmp_path, ParquetWriterOptions(statistics_enabled=statistics_enabled))
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(statistics_enabled=statistics_enabled)
+    )
 
     for file in tmp_path.rglob("*.parquet"):
         parquet = pq.ParquetFile(file)
@@ -1773,11 +1791,15 @@ def test_write_parquet_with_options_statistics_enabled(
 
 
 @pytest.mark.parametrize("max_row_group_size", [1000, 5000, 10000, 100000])
-def test_write_parquet_with_options_max_row_group_size(large_df, tmp_path, max_row_group_size):
+def test_write_parquet_with_options_max_row_group_size(
+    large_df, tmp_path, max_row_group_size
+):
     """Test configuring the max number of rows per group in Parquet. These test cases
     guarantee that the number of rows for each row group is max_row_group_size, given
     the total number of rows is a multiple of max_row_group_size."""
-    large_df.write_parquet_with_options(tmp_path, ParquetWriterOptions(max_row_group_size=max_row_group_size))
+    large_df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
+    )
 
     for file in tmp_path.rglob("*.parquet"):
         parquet = pq.ParquetFile(file)
@@ -1812,7 +1834,10 @@ def test_write_parquet_with_options_statistics_truncate_length(
         "b": ["a_smaller", "m_smaller", "z_smaller"],
     }
     df = ctx.from_arrow(pa.record_batch(data))
-    df.write_parquet_with_options(tmp_path, ParquetWriterOptions(statistics_truncate_length=statistics_truncate_length))
+    df.write_parquet_with_options(
+        tmp_path,
+        ParquetWriterOptions(statistics_truncate_length=statistics_truncate_length),
+    )
 
     for file in tmp_path.rglob("*.parquet"):
         parquet = pq.ParquetFile(file)
@@ -1870,11 +1895,13 @@ def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, res
             data["float"] = [1.01, 2.02, 3.03]
         elif data_type == "str":
             data["str"] = ["a", "b", "c"]
-        elif  data_type == "bool":
+        elif data_type == "bool":
             data["bool"] = [True, False, True]
 
     df = ctx.from_arrow(pa.record_batch(data))
-    df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding, dictionary_enabled=False))
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(encoding=encoding, dictionary_enabled=False)
+    )
 
     for file in tmp_path.rglob("*.parquet"):
         parquet = pq.ParquetFile(file)
@@ -1901,7 +1928,9 @@ def test_write_parquet_with_options_invalid_encoding(df, tmp_path, encoding):
 
 
 @pytest.mark.parametrize("encoding", ["plain_dictionary", "rle_dictionary"])
-def test_write_parquet_with_options_dictionary_encoding_fallback(df, tmp_path, encoding):
+def test_write_parquet_with_options_dictionary_encoding_fallback(
+    df, tmp_path, encoding
+):
     """Test that the dictionary encoding cannot be used as fallback in Parquet."""
     # BaseException is used since this throws a Rust panic: https://github.com/PyO3/pyo3/issues/3519
     with pytest.raises(
@@ -1918,7 +1947,9 @@ def test_write_parquet_with_options_bloom_filter(df, tmp_path):
     path_bloom_filter = tmp_path / "2"
 
     df.write_parquet_with_options(path_no_bloom_filter, ParquetWriterOptions())
-    df.write_parquet_with_options(path_bloom_filter, ParquetWriterOptions(bloom_filter_on_write=True))
+    df.write_parquet_with_options(
+        path_bloom_filter, ParquetWriterOptions(bloom_filter_on_write=True)
+    )
 
     size_no_bloom_filter = 0
     for file in path_no_bloom_filter.rglob("*.parquet"):
@@ -1989,8 +2020,9 @@ def test_write_parquet_with_options_column_options(df, tmp_path):
     df = ctx.from_arrow(pa.record_batch(data))
     df.write_parquet_with_options(
         tmp_path,
-        ParquetWriterOptions(compression="brotli(8)",
-        column_specific_options=column_specific_options),
+        ParquetWriterOptions(
+            compression="brotli(8)", column_specific_options=column_specific_options
+        ),
     )
 
     for file in tmp_path.rglob("*.parquet"):
