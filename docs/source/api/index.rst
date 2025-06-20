@@ -23,3 +23,5 @@ This section provides detailed API documentation for the DataFusion Python libra
 
 .. toctree::
    :maxdepth: 2
+
+   dataframe
