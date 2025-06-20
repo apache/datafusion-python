@@ -216,3 +216,8 @@ You can control how much data is displayed and how much memory is used for rende
     )
 
 These parameters help balance comprehensive data display against performance considerations.
+
+.. toctree::
+   :maxdepth: 1
+
+   rendering
