@@ -224,9 +224,9 @@ Best Practices
 Additional Resources
 --------------------
 
-* :doc:`../user-guide/dataframe` - Complete guide to using DataFrames
-* :doc:`../user-guide/io/index` - I/O Guide for reading data from various sources
-* :doc:`../user-guide/data-sources` - Comprehensive data sources guide
+* :doc:`../dataframe/index` - Complete guide to using DataFrames
+* :doc:`../io/index` - I/O Guide for reading data from various sources
+* :doc:`../data-sources` - Comprehensive data sources guide
 * :ref:`io_csv` - CSV file reading
 * :ref:`io_parquet` - Parquet file reading  
 * :ref:`io_json` - JSON file reading
