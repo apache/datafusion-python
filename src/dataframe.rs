@@ -35,6 +35,7 @@ use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
+use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -43,12 +44,14 @@ use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{
+    get_tokio_runtime, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+};
 use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
@@ -59,7 +62,7 @@ use crate::{
 // this is an interim implementation
 #[pyclass(name = "TableProvider", module = "datafusion")]
 pub struct PyTableProvider {
-    provider: Arc<dyn TableProvider>,
+    provider: Arc<dyn TableProvider + Send>,
 }
 
 impl PyTableProvider {
@@ -70,6 +73,21 @@ impl PyTableProvider {
     pub fn as_table(&self) -> PyTable {
         let table_provider: Arc<dyn TableProvider> = self.provider.clone();
         PyTable::new(table_provider)
+    }
+}
+
+#[pymethods]
+impl PyTableProvider {
+    fn __datafusion_table_provider__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = CString::new("datafusion_table_provider").unwrap();
+
+        let runtime = get_tokio_runtime().0.handle().clone();
+        let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
+
+        PyCapsule::new(py, provider, Some(name.clone()))
     }
 }
 
@@ -164,9 +182,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     };
 
     // Return the validated config, converting String error to PyErr
-    config
-        .validate()
-        .map_err(pyo3::exceptions::PyValueError::new_err)?;
+    config.validate().map_err(PyValueError::new_err)?;
     Ok(config)
 }
 
@@ -313,7 +329,7 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
+        )??;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -336,7 +352,7 @@ impl PyDataFrame {
         let (batches, has_more) = wait_for_future(
             py,
             collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
+        )??;
         if batches.is_empty() {
             // This should not be reached, but do it for safety since we index into the vector below
             return Ok("No data to display".to_string());
@@ -368,7 +384,7 @@ impl PyDataFrame {
     /// Calculate summary statistics for a DataFrame
     fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?;
+        let stat_df = wait_for_future(py, df.describe())??;
         Ok(Self::new(stat_df))
     }
 
@@ -471,7 +487,7 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
@@ -480,14 +496,14 @@ impl PyDataFrame {
 
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
-        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
+        let df = wait_for_future(py, self.df.as_ref().clone().cache())??;
         Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
             .map_err(PyDataFusionError::from)?;
 
         batches
@@ -591,7 +607,7 @@ impl PyDataFrame {
 
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
-        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
+        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())??;
         Ok(plan.into())
     }
 
@@ -704,7 +720,7 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Some(csv_options),
             ),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -765,7 +781,7 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Option::from(options),
             ),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -793,7 +809,7 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Option::from(table_options),
             ),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -805,7 +821,7 @@ impl PyDataFrame {
                 .as_ref()
                 .clone()
                 .write_json(path, DataFrameWriteOptions::new(), None),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -828,7 +844,7 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())??;
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
@@ -861,8 +877,8 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })???;
+        Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -871,14 +887,11 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })?
+            .map_err(py_datafusion_err)?
+            .map_err(py_datafusion_err)?;
 
-        match stream {
-            Ok(batches) => Ok(batches.into_iter().map(PyRecordBatchStream::new).collect()),
-            _ => Err(PyValueError::new_err(
-                "Unable to execute stream partitioned",
-            )),
-        }
+        Ok(stream.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
     /// Convert to pandas dataframe with pyarrow
@@ -923,14 +936,33 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count())??)
+    }
+
+    /// Fill null values with a specified value for specific columns
+    #[pyo3(signature = (value, columns=None))]
+    fn fill_null(
+        &self,
+        value: PyObject,
+        columns: Option<Vec<PyBackedStr>>,
+        py: Python,
+    ) -> PyDataFusionResult<Self> {
+        let scalar_value = py_obj_to_scalar_value(py, value)?;
+
+        let cols = match columns {
+            Some(col_names) => col_names.iter().map(|c| c.to_string()).collect(),
+            None => Vec::new(), // Empty vector means fill null for all columns
+        };
+
+        let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
+        Ok(Self::new(df))
     }
 }
 
 /// Print DataFrame
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
-    let batches = wait_for_future(py, df.collect())?;
+    let batches = wait_for_future(py, df.collect())??;
     let batches_as_string = pretty::pretty_format_batches(&batches);
     let result = match batches_as_string {
         Ok(batch) => format!("DataFrame()\n{batch}"),

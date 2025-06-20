@@ -19,7 +19,10 @@
 
 from __future__ import annotations
 
+import warnings
 from typing import TYPE_CHECKING, Any, Protocol
+
+import pyarrow as pa
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -30,7 +33,7 @@ from datafusion.catalog import Catalog, Table
 from datafusion.dataframe import DataFrame
 from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.udf import AggregateUDF, ScalarUDF, WindowUDF
+from datafusion.user_defined import AggregateUDF, ScalarUDF, TableFunction, WindowUDF
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
@@ -42,7 +45,6 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl
-    import pyarrow as pa
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
 
@@ -496,6 +498,10 @@ class SessionContext:
 
         self.ctx = SessionContextInternal(config, runtime)
 
+    def __repr__(self) -> str:
+        """Print a string representation of the Session Context."""
+        return self.ctx.__repr__()
+
     @classmethod
     def global_ctx(cls) -> SessionContext:
         """Retrieve the global context as a `SessionContext` wrapper.
@@ -535,7 +541,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".parquet",
         schema: pa.Schema | None = None,
         file_sort_order: list[list[Expr | SortExpr]] | None = None,
@@ -556,6 +562,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         file_sort_order_raw = (
             [sort_list_to_raw_sort_list(f) for f in file_sort_order]
             if file_sort_order is not None
@@ -752,6 +759,10 @@ class SessionContext:
         """
         self.ctx.register_table_provider(name, provider)
 
+    def register_udtf(self, func: TableFunction) -> None:
+        """Register a user defined table function."""
+        self.ctx.register_udtf(func._udtf)
+
     def register_record_batches(
         self, name: str, partitions: list[list[pa.RecordBatch]]
     ) -> None:
@@ -770,7 +781,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
@@ -798,6 +809,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         self.ctx.register_parquet(
             name,
             str(path),
@@ -861,7 +873,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> None:
         """Register a JSON file as a table.
@@ -882,6 +894,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         self.ctx.register_json(
             name,
             str(path),
@@ -898,7 +911,7 @@ class SessionContext:
         path: str | pathlib.Path,
         schema: pa.Schema | None = None,
         file_extension: str = ".avro",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     ) -> None:
         """Register an Avro file as a table.
 
@@ -914,6 +927,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         self.ctx.register_avro(
             name, str(path), schema, file_extension, table_partition_cols
         )
@@ -973,7 +987,7 @@ class SessionContext:
         schema: pa.Schema | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Read a line-delimited JSON data source.
@@ -993,6 +1007,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         return DataFrame(
             self.ctx.read_json(
                 str(path),
@@ -1012,7 +1027,7 @@ class SessionContext:
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
         file_extension: str = ".csv",
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_compression_type: str | None = None,
     ) -> DataFrame:
         """Read a CSV data source.
@@ -1037,6 +1052,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
 
         path = [str(p) for p in path] if isinstance(path, list) else str(path)
 
@@ -1056,7 +1072,7 @@ class SessionContext:
     def read_parquet(
         self,
         path: str | pathlib.Path,
-        table_partition_cols: list[tuple[str, str]] | None = None,
+        table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
@@ -1085,6 +1101,7 @@ class SessionContext:
         """
         if table_partition_cols is None:
             table_partition_cols = []
+        table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
         file_sort_order = (
             [sort_list_to_raw_sort_list(f) for f in file_sort_order]
             if file_sort_order is not None
@@ -1106,7 +1123,7 @@ class SessionContext:
         self,
         path: str | pathlib.Path,
         schema: pa.Schema | None = None,
-        file_partition_cols: list[tuple[str, str]] | None = None,
+        file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
         """Create a :py:class:`DataFrame` for reading Avro data source.
@@ -1122,6 +1139,7 @@ class SessionContext:
         """
         if file_partition_cols is None:
             file_partition_cols = []
+        file_partition_cols = self._convert_table_partition_cols(file_partition_cols)
         return DataFrame(
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
@@ -1138,3 +1156,41 @@ class SessionContext:
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""
         return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+
+    @staticmethod
+    def _convert_table_partition_cols(
+        table_partition_cols: list[tuple[str, str | pa.DataType]],
+    ) -> list[tuple[str, pa.DataType]]:
+        warn = False
+        converted_table_partition_cols = []
+
+        for col, data_type in table_partition_cols:
+            if isinstance(data_type, str):
+                warn = True
+                if data_type == "string":
+                    converted_data_type = pa.string()
+                elif data_type == "int":
+                    converted_data_type = pa.int32()
+                else:
+                    message = (
+                        f"Unsupported literal data type '{data_type}' for partition "
+                        "column. Supported types are 'string' and 'int'"
+                    )
+                    raise ValueError(message)
+            else:
+                converted_data_type = data_type
+
+            converted_table_partition_cols.append((col, converted_data_type))
+
+        if warn:
+            message = (
+                "using literals for table_partition_cols data types is deprecated,"
+                "use pyarrow types instead"
+            )
+            warnings.warn(
+                message,
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+
+        return converted_table_partition_cols

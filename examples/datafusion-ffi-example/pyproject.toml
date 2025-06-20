@@ -15,26 +15,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import pyarrow as pa
-from datafusion import SessionContext
-from ffi_table_provider import MyTableProvider
+[build-system]
+requires = ["maturin>=1.6,<2.0"]
+build-backend = "maturin"
 
+[project]
+name = "datafusion_ffi_example"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
 
-def test_table_loading():
-    ctx = SessionContext()
-    table = MyTableProvider(3, 2, 4)
-    ctx.register_table_provider("t", table)
-    result = ctx.table("t").collect()
-
-    assert len(result) == 4
-    assert result[0].num_columns == 3
-
-    result = [r.column(0) for r in result]
-    expected = [
-        pa.array([0, 1], type=pa.int32()),
-        pa.array([2, 3, 4], type=pa.int32()),
-        pa.array([4, 5, 6, 7], type=pa.int32()),
-        pa.array([6, 7, 8, 9, 10], type=pa.int32()),
-    ]
-
-    assert result == expected
+[tool.maturin]
+features = ["pyo3/extension-module"]

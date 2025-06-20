@@ -15,10 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::{AggregateFunctionParams, WindowFunctionParams};
+use datafusion::logical_expr::expr::AggregateFunctionParams;
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
-    ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
+    lit_with_metadata, ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
@@ -37,9 +37,7 @@ use datafusion::logical_expr::{
 };
 
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
-use crate::errors::{
-    py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionError, PyDataFusionResult,
-};
+use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionResult};
 use crate::expr::aggregate_expr::PyAggregateFunction;
 use crate::expr::binary_expr::PyBinaryExpr;
 use crate::expr::column::PyColumn;
@@ -152,7 +150,7 @@ impl PyExpr {
                 Ok(PyScalarVariable::new(data_type, variables).into_bound_py_any(py)?)
             }
             Expr::Like(value) => Ok(PyLike::from(value.clone()).into_bound_py_any(py)?),
-            Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Literal(value, metadata) => Ok(PyLiteral::new_with_metadata(value.clone(), metadata.clone()).into_bound_py_any(py)?),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_bound_py_any(py)?),
             Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_bound_py_any(py)?),
@@ -285,6 +283,14 @@ impl PyExpr {
     }
 
     #[staticmethod]
+    pub fn literal_with_metadata(
+        value: PyScalarValue,
+        metadata: HashMap<String, String>,
+    ) -> PyExpr {
+        lit_with_metadata(value.0, metadata).into()
+    }
+
+    #[staticmethod]
     pub fn column(value: &str) -> PyExpr {
         col(value).into()
     }
@@ -379,7 +385,7 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => scalar_to_pyarrow(scalar_value, py),
+            Expr::Literal(scalar_value, _) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr
@@ -419,11 +425,13 @@ impl PyExpr {
                 params: AggregateFunctionParams { args, .. },
                 ..
             })
-            | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::WindowFunction(WindowFunction {
-                params: WindowFunctionParams { args, .. },
-                ..
-            }) => Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect()),
+            | Expr::ScalarFunction(ScalarFunction { args, .. }) => {
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
+            Expr::WindowFunction(boxed_window_fn) => {
+                let args = &boxed_window_fn.params.args;
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -602,10 +610,10 @@ impl PyExpr {
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
-                let window_fn = Expr::WindowFunction(WindowFunction::new(
+                let window_fn = Expr::WindowFunction(Box::new(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
                     agg_fn.params.args.clone(),
-                ));
+                )));
 
                 add_builder_fns_to_window(
                     window_fn,
@@ -622,11 +630,11 @@ impl PyExpr {
                 order_by,
                 null_treatment,
             ),
-            _ => Err(
-                PyDataFusionError::ExecutionError(datafusion::error::DataFusionError::Plan(
-                    format!("Using {} with `over` is not allowed. Must use an aggregate or window function.", self.expr.variant_name()),
-                ))
-            ),
+            _ => Err(datafusion::error::DataFusionError::Plan(format!(
+                "Using {} with `over` is not allowed. Must use an aggregate or window function.",
+                self.expr.variant_name()
+            ))
+            .into()),
         }
     }
 }
@@ -745,7 +753,7 @@ impl PyExpr {
                 | Operator::QuestionPipe => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
-            Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
+            Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 expr

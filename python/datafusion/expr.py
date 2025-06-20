@@ -436,6 +436,20 @@ class Expr:
         return Expr(expr_internal.RawExpr.literal(value))
 
     @staticmethod
+    def literal_with_metadata(value: Any, metadata: dict[str, str]) -> Expr:
+        """Creates a new expression representing a scalar value with metadata.
+
+        Args:
+            value: A valid PyArrow scalar value or easily castable to one.
+            metadata: Metadata to attach to the expression.
+        """
+        if isinstance(value, str):
+            value = pa.scalar(value, type=pa.string_view())
+        value = value if isinstance(value, pa.Scalar) else pa.scalar(value)
+
+        return Expr(expr_internal.RawExpr.literal_with_metadata(value, metadata))
+
+    @staticmethod
     def string_literal(value: str) -> Expr:
         """Creates a new expression representing a UTF8 literal value.
 
@@ -1171,6 +1185,10 @@ class WindowFrame:
             if units in ("rows", "groups"):
                 end_bound = end_bound.cast(pa.uint64())
         self.window_frame = expr_internal.WindowFrame(units, start_bound, end_bound)
+
+    def __repr__(self) -> str:
+        """Print a string representation of the window frame."""
+        return self.window_frame.__repr__()
 
     def get_frame_units(self) -> str:
         """Returns the window frame units for the bounds."""

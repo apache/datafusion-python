@@ -76,9 +76,16 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
 
       - name: Install dependencies and build
-        uses: astral-sh/setup-uv@v5
+        uses: astral-sh/setup-uv@v6
         with:
             enable-cache: true
+
+      - name: Check documentation
+        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
+        run: |
+          uv sync --dev --group docs --no-install-package datafusion
+          uv run --no-project maturin develop --uv
+          uv run --no-project docs/build.sh
 
       - name: Run tests
         env:
@@ -91,9 +98,9 @@ jobs:
 
       - name: FFI unit tests
         run: |
-          cd examples/ffi-table-provider
+          cd examples/datafusion-ffi-example
           uv run --no-project maturin develop --uv
-          uv run --no-project pytest python/tests/_test_table_provider.py
+          uv run --no-project pytest python/tests/_test*.py
 
       - name: Cache the generated dataset
         id: cache-tpch-dataset

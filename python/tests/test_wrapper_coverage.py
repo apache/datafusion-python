@@ -28,14 +28,14 @@ except ImportError:
     from enum import EnumMeta as EnumType
 
 
-def missing_exports(internal_obj, wrapped_obj) -> None:
+def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
     """
     Identify if any of the rust exposted structs or functions do not have wrappers.
 
     Special handling for:
     - Raw* classes: Internal implementation details that shouldn't be exposed
     - _global_ctx: Internal implementation detail
-    - __self__, __class__: Python special attributes
+    - __self__, __class__, __repr__: Python special attributes
     """
     # Special case enums - EnumType overrides a some of the internal functions,
     # so check all of the values exist and move on
@@ -44,6 +44,9 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
         for value in expected_values:
             assert value in dir(wrapped_obj)
         return
+
+    if "__repr__" in internal_obj.__dict__ and "__repr__" not in wrapped_obj.__dict__:
+        pytest.fail(f"Missing __repr__: {internal_obj.__name__}")
 
     for internal_attr_name in dir(internal_obj):
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")

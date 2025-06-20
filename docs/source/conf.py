@@ -71,6 +71,7 @@ autoapi_ignore = ["*tests*"]
 autoapi_member_order = "groupwise"
 suppress_warnings = ["autoapi.python_import_resolution"]
 autoapi_python_class_content = "both"
+autoapi_keep_files = False  # set to True for debugging generated files
 
 
 def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa: ARG001
@@ -79,6 +80,9 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         ("class", "datafusion.DataFrame"),
         ("class", "datafusion.SessionContext"),
         ("module", "datafusion.common"),
+        # Duplicate modules (skip module-level docs to avoid duplication)
+        ("module", "datafusion.col"),
+        ("module", "datafusion.udf"),
         # Deprecated
         ("class", "datafusion.substrait.serde"),
         ("class", "datafusion.substrait.plan"),

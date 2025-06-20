@@ -97,7 +97,7 @@ impl PyDatabase {
     }
 
     fn table(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
-        if let Some(table) = wait_for_future(py, self.database.table(name))? {
+        if let Some(table) = wait_for_future(py, self.database.table(name))?? {
             Ok(PyTable::new(table))
         } else {
             Err(PyDataFusionError::Common(format!(

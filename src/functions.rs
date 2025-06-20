@@ -103,7 +103,7 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
-    let index = Expr::Literal(index);
+    let index = Expr::Literal(index, None);
     datafusion::functions_nested::expr_fn::array_position(array.into(), element.into(), index)
         .into()
 }
@@ -334,7 +334,7 @@ fn window(
         .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
 
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
+        expr: datafusion::logical_expr::Expr::WindowFunction(Box::new(WindowFunction {
             fun,
             params: WindowFunctionParams {
                 args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
@@ -351,7 +351,7 @@ fn window(
                 window_frame,
                 null_treatment: None,
             },
-        }),
+        })),
     })
 }
 
