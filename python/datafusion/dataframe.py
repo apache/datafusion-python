@@ -906,7 +906,7 @@ class DataFrame:
 
         self.df.write_parquet(str(path), compression.value, compression_level)
 
-    def write_parquet_options(
+    def write_parquet_with_options(
         self, path: str | pathlib.Path, options: ParquetWriterOptions
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
@@ -952,7 +952,7 @@ class DataFrame:
                 bloom_filter_ndv=opts.bloom_filter_ndv,
             )
 
-        self.df.write_parquet_options(
+        self.df.write_parquet_with_options(
             str(path),
             options_internal,
             column_specific_options_internal,

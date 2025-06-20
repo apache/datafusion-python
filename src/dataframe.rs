@@ -770,7 +770,7 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a Parquet file, using advanced options.
-    fn write_parquet_options(
+    fn write_parquet_with_options(
         &self,
         path: &str,
         options: PyParquetWriterOptions,
