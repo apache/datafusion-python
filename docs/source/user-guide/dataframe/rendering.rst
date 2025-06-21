@@ -16,14 +16,15 @@
 .. under the License.
 
 HTML Rendering in Jupyter
--------------------------
+=========================
 
 When working in Jupyter notebooks or other environments that support rich HTML display, 
 DataFusion DataFrames automatically render as nicely formatted HTML tables. This functionality
-is provided by the ``_repr_html_`` method, which is automatically called by Jupyter.
+is provided by the ``_repr_html_`` method, which is automatically called by Jupyter to provide
+a richer visualization than plain text output.
 
 Basic HTML Rendering
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 In a Jupyter environment, simply displaying a DataFrame object will trigger HTML rendering:
 
@@ -35,14 +36,14 @@ In a Jupyter environment, simply displaying a DataFrame object will trigger HTML
     # Explicit display also uses HTML rendering
     display(df)
 
-HTML Rendering Customization
-----------------------------
+Customizing HTML Rendering
+---------------------------
 
 DataFusion provides extensive customization options for HTML table rendering through the
 ``datafusion.html_formatter`` module.
 
 Configuring the HTML Formatter
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You can customize how DataFrames are rendered by configuring the formatter:
 
@@ -50,189 +51,159 @@ You can customize how DataFrames are rendered by configuring the formatter:
 
     from datafusion.html_formatter import configure_formatter
     
+    # Change the default styling
     configure_formatter(
-        max_cell_length=30,              # Maximum length of cell content before truncation
-        max_width=800,                   # Maximum width of table in pixels
-        max_height=400,                  # Maximum height of table in pixels
-        max_memory_bytes=2 * 1024 * 1024,# Maximum memory used for rendering (2MB)
-        min_rows_display=10,             # Minimum rows to display
-        repr_rows=20,                    # Number of rows to display in representation
-        enable_cell_expansion=True,      # Allow cells to be expandable on click
-        custom_css=None,                 # Custom CSS to apply
-        show_truncation_message=True,    # Show message when data is truncated
-        style_provider=None,             # Custom style provider class
-        use_shared_styles=True           # Share styles across tables to reduce duplication
+        max_cell_length=25,        # Maximum characters in a cell before truncation
+        max_width=1000,            # Maximum width in pixels
+        max_height=300,            # Maximum height in pixels
+        max_memory_bytes=2097152,  # Maximum memory for rendering (2MB)
+        min_rows_display=20,       # Minimum number of rows to display
+        repr_rows=10,              # Number of rows to display in __repr__
+        enable_cell_expansion=True,# Allow expanding truncated cells
+        custom_css=None,           # Additional custom CSS
+        show_truncation_message=True, # Show message when data is truncated
+        style_provider=None,       # Custom styling provider
+        use_shared_styles=True     # Share styles across tables
     )
 
-Custom Style Providers
-~~~~~~~~~~~~~~~~~~~~~~
+The formatter settings affect all DataFrames displayed after configuration.
 
-For advanced styling needs, you can create a custom style provider class:
+Custom Style Providers
+-----------------------
+
+For advanced styling needs, you can create a custom style provider:
 
 .. code-block:: python
 
-    from datafusion.html_formatter import configure_formatter
+    from datafusion.html_formatter import StyleProvider, configure_formatter
     
-    class CustomStyleProvider:
-        def get_cell_style(self) -> str:
-            return "background-color: #f5f5f5; color: #333; padding: 8px; border: 1px solid #ddd;"
+    class MyStyleProvider(StyleProvider):
+        def get_table_styles(self):
+            return {
+                "table": "border-collapse: collapse; width: 100%;",
+                "th": "background-color: #007bff; color: white; padding: 8px; text-align: left;",
+                "td": "border: 1px solid #ddd; padding: 8px;",
+                "tr:nth-child(even)": "background-color: #f2f2f2;",
+            }
+            
+        def get_value_styles(self, dtype, value):
+            """Return custom styles for specific values"""
+            if dtype == "float" and value < 0:
+                return "color: red;"
+            return None
     
-        def get_header_style(self) -> str:
-            return "background-color: #4285f4; color: white; font-weight: bold; padding: 10px;"
-    
-    # Apply custom styling
-    configure_formatter(style_provider=CustomStyleProvider())
+    # Apply the custom style provider
+    configure_formatter(style_provider=MyStyleProvider())
 
-Custom Type Formatters
-~~~~~~~~~~~~~~~~~~~~~~
+Performance Optimization with Shared Styles
+--------------------------------------------
 
-You can register custom formatters for specific data types:
+The ``use_shared_styles`` parameter (enabled by default) optimizes performance when displaying 
+multiple DataFrames in notebook environments:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import StyleProvider, configure_formatter
+    # Default: Use shared styles (recommended for notebooks)
+    configure_formatter(use_shared_styles=True)
+
+    # Disable shared styles (each DataFrame includes its own styles)
+    configure_formatter(use_shared_styles=False)
+
+When ``use_shared_styles=True``:
+- CSS styles and JavaScript are included only once per notebook session
+- This reduces HTML output size and prevents style duplication
+- Improves rendering performance with many DataFrames
+- Applies consistent styling across all DataFrames
+
+Creating a Custom Formatter
+----------------------------
+
+For complete control over rendering, you can implement a custom formatter:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import Formatter, get_formatter
+    
+    class MyFormatter(Formatter):
+        def format_html(self, batches, schema, has_more=False, table_uuid=None):
+            # Create your custom HTML here
+            html = "<div class='my-custom-table'>"
+            # ... formatting logic ...
+            html += "</div>"
+            return html
+    
+    # Set as the global formatter
+    configure_formatter(formatter_class=MyFormatter)
+    
+    # Or use the formatter just for specific operations
+    formatter = get_formatter()
+    custom_html = formatter.format_html(batches, schema)
+
+Managing Formatters
+-------------------
+
+Reset to default formatting:
+
+.. code-block:: python
+
+    from datafusion.html_formatter import reset_formatter
+    
+    # Reset to default settings
+    reset_formatter()
+
+Get the current formatter settings:
 
 .. code-block:: python
 
     from datafusion.html_formatter import get_formatter
     
     formatter = get_formatter()
-    
-    # Format integers with color based on value
-    def format_int(value):
-        return f'<span style="color: {"red" if value > 100 else "blue"}">{value}</span>'
-    
-    formatter.register_formatter(int, format_int)
-    
-    # Format date values
-    def format_date(value):
-        return f'<span class="date-value">{value.isoformat()}</span>'
-    
-    formatter.register_formatter(datetime.date, format_date)
+    print(formatter.max_rows)
+    print(formatter.theme)
 
-Custom Cell Builders
-~~~~~~~~~~~~~~~~~~~~
+Contextual Formatting
+----------------------
 
-For complete control over cell rendering:
+You can also use a context manager to temporarily change formatting settings:
 
 .. code-block:: python
 
-    formatter = get_formatter()
+    from datafusion.html_formatter import formatting_context
     
-    def custom_cell_builder(value, row, col, table_id):
-        try:
-            num_value = float(value)
-            if num_value > 0:  # Positive values get green
-                return f'<td style="background-color: #d9f0d3">{value}</td>'
-            if num_value < 0:  # Negative values get red
-                return f'<td style="background-color: #f0d3d3">{value}</td>'
-        except (ValueError, TypeError):
-            pass
-        
-        # Default styling for non-numeric or zero values
-        return f'<td style="border: 1px solid #ddd">{value}</td>'
+    # Default formatting
+    df.show()
     
-    formatter.set_custom_cell_builder(custom_cell_builder)
+    # Temporarily use different formatting
+    with formatting_context(max_rows=100, theme="dark"):
+        df.show()  # Will use the temporary settings
+    
+    # Back to default formatting
+    df.show()
 
-Custom Header Builders
-~~~~~~~~~~~~~~~~~~~~~~
+Memory and Display Controls
+---------------------------
 
-Similarly, you can customize the rendering of table headers:
+You can control how much data is displayed and how much memory is used for rendering:
 
 .. code-block:: python
 
-    def custom_header_builder(field):
-        tooltip = f"Type: {field.type}"
-        return f'<th style="background-color: #333; color: white" title="{tooltip}">{field.name}</th>'
-    
-    formatter.set_custom_header_builder(custom_header_builder)
-
-Managing Formatter State
------------------------~
-
-The HTML formatter maintains global state that can be managed:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import reset_formatter, reset_styles_loaded_state, get_formatter
-    
-    # Reset the formatter to default settings
-    reset_formatter()
-    
-    # Reset only the styles loaded state (useful when styles were loaded but need reloading)
-    reset_styles_loaded_state()
-    
-    # Get the current formatter instance to make changes
-    formatter = get_formatter()
-
-Advanced Example: Dashboard-Style Formatting
-------------------------------------------~~
-
-This example shows how to create a dashboard-like styling for your DataFrames:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import configure_formatter, get_formatter
-    
-    # Define custom CSS
-    custom_css = """
-    .datafusion-table {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        border-collapse: collapse;
-        width: 100%;
-        box-shadow: 0 2px 3px rgba(0,0,0,0.1);
-    }
-    .datafusion-table th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-    .datafusion-table tr:hover td {
-        background-color: #f1f7fa !important;
-    }
-    .datafusion-table .numeric-positive {
-        color: #0a7c00;
-    }
-    .datafusion-table .numeric-negative {
-        color: #d13438;
-    }
-    """
-    
-    class DashboardStyleProvider:
-        def get_cell_style(self) -> str:
-            return "padding: 8px 12px; border-bottom: 1px solid #e0e0e0;"
-        
-        def get_header_style(self) -> str:
-            return ("background-color: #0078d4; color: white; font-weight: 600; "
-                    "padding: 12px; text-align: left; border-bottom: 2px solid #005a9e;")
-    
-    # Apply configuration
     configure_formatter(
-        max_height=500,
-        enable_cell_expansion=True,
-        custom_css=custom_css,
-        style_provider=DashboardStyleProvider(),
-        max_cell_length=50
+        max_memory_bytes=4 * 1024 * 1024,  # 4MB maximum memory for display
+        min_rows_display=50,               # Always show at least 50 rows
+        repr_rows=20                       # Show 20 rows in __repr__ output
     )
-    
-    # Add custom formatters for numbers
-    formatter = get_formatter()
-    
-    def format_number(value):
-        try:
-            num = float(value)
-            cls = "numeric-positive" if num > 0 else "numeric-negative" if num < 0 else ""
-            return f'<span class="{cls}">{value:,}</span>' if cls else f'{value:,}'
-        except (ValueError, TypeError):
-            return str(value)
-    
-    formatter.register_formatter(int, format_number)
-    formatter.register_formatter(float, format_number)
+
+These parameters help balance comprehensive data display against performance considerations.
 
 Best Practices
 --------------
 
-1. **Memory Management**: For large datasets, use ``max_memory_bytes`` to limit memory usage.
+1. **Global Configuration**: Use ``configure_formatter()`` at the beginning of your notebook to set up consistent formatting for all DataFrames.
 
-2. **Responsive Design**: Set reasonable ``max_width`` and ``max_height`` values to ensure tables display well on different screens.
+2. **Memory Management**: Set appropriate ``max_memory_bytes`` limits to prevent performance issues with large datasets.
 
-3. **Style Optimization**: Use ``use_shared_styles=True`` to avoid duplicate style definitions when displaying multiple tables.
+3. **Shared Styles**: Keep ``use_shared_styles=True`` (default) for better performance in notebooks with multiple DataFrames.
 
 4. **Reset When Needed**: Call ``reset_formatter()`` when you want to start fresh with default settings.
 

@@ -21,203 +21,143 @@ DataFrames
 Overview
 --------
 
-DataFusion's DataFrame API provides a powerful interface for building and executing queries against data sources. 
-It offers a familiar API similar to pandas and other DataFrame libraries, but with the performance benefits of Rust 
-and Arrow.
+The ``DataFrame`` class is the core abstraction in DataFusion that represents tabular data and operations
+on that data. DataFrames provide a flexible API for transforming data through various operations such as
+filtering, projection, aggregation, joining, and more.
 
-A DataFrame represents a logical plan that can be composed through operations like filtering, projection, and aggregation.
-The actual execution happens when terminal operations like ``collect()`` or ``show()`` are called.
+A DataFrame represents a logical plan that is lazily evaluated. The actual execution occurs only when 
+terminal operations like ``collect()``, ``show()``, or ``to_pandas()`` are called.
 
-Basic Usage
------------
+Creating DataFrames
+-------------------
+
+DataFrames can be created in several ways:
+
+* From SQL queries via a ``SessionContext``:
+
+  .. code-block:: python
+
+      from datafusion import SessionContext
+      
+      ctx = SessionContext()
+      df = ctx.sql("SELECT * FROM your_table")
+
+* From registered tables:
+
+  .. code-block:: python
+
+      df = ctx.table("your_table")
+
+* From various data sources:
+
+  .. code-block:: python
+
+      # From CSV files (see :ref:`io_csv` for detailed options)
+      df = ctx.read_csv("path/to/data.csv")
+      
+      # From Parquet files (see :ref:`io_parquet` for detailed options)
+      df = ctx.read_parquet("path/to/data.parquet")
+      
+      # From JSON files (see :ref:`io_json` for detailed options)
+      df = ctx.read_json("path/to/data.json")
+      
+      # From Avro files (see :ref:`io_avro` for detailed options)
+      df = ctx.read_avro("path/to/data.avro")
+      
+      # From Pandas DataFrame
+      import pandas as pd
+      pandas_df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+      df = ctx.from_pandas(pandas_df)
+      
+      # From Arrow data
+      import pyarrow as pa
+      batch = pa.RecordBatch.from_arrays(
+          [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+          names=["a", "b"]
+      )
+      df = ctx.from_arrow(batch)
+
+For detailed information about reading from different data sources, see the :doc:`I/O Guide <../io/index>`.
+For custom data sources, see :ref:`io_custom_table_provider`.
+
+Common DataFrame Operations
+---------------------------
+
+DataFusion's DataFrame API offers a wide range of operations:
 
 .. code-block:: python
 
-    import datafusion
-    from datafusion import col, lit
+    from datafusion import column, literal
+    
+    # Select specific columns
+    df = df.select("col1", "col2")
+    
+    # Select with expressions
+    df = df.select(column("a") + column("b"), column("a") - column("b"))
+    
+    # Filter rows
+    df = df.filter(column("age") > literal(25))
+    
+    # Add computed columns
+    df = df.with_column("full_name", column("first_name") + literal(" ") + column("last_name"))
+    
+    # Multiple column additions
+    df = df.with_columns(
+        (column("a") + column("b")).alias("sum"),
+        (column("a") * column("b")).alias("product")
+    )
+    
+    # Sort data
+    df = df.sort(column("age").sort(ascending=False))
+    
+    # Join DataFrames
+    df = df1.join(df2, on="user_id", how="inner")
+    
+    # Aggregate data
+    from datafusion import functions as f
+    df = df.aggregate(
+        [],  # Group by columns (empty for global aggregation)
+        [f.sum(column("amount")).alias("total_amount")]
+    )
+    
+    # Limit rows
+    df = df.limit(100)
+    
+    # Drop columns
+    df = df.drop("temporary_column")
 
-    # Create a context and register a data source
-    ctx = datafusion.SessionContext()
-    ctx.register_csv("my_table", "path/to/data.csv")
+Terminal Operations
+-------------------
+
+To materialize the results of your DataFrame operations:
+
+.. code-block:: python
+
+    # Collect all data as PyArrow RecordBatches
+    result_batches = df.collect()
     
-    # Create and manipulate a DataFrame
-    df = ctx.sql("SELECT * FROM my_table")
+    # Convert to various formats
+    pandas_df = df.to_pandas()        # Pandas DataFrame
+    polars_df = df.to_polars()        # Polars DataFrame
+    arrow_table = df.to_arrow_table() # PyArrow Table
+    py_dict = df.to_pydict()          # Python dictionary
+    py_list = df.to_pylist()          # Python list of dictionaries
     
-    # Or use the DataFrame API directly
-    df = (ctx.table("my_table")
-          .filter(col("age") > lit(25))
-          .select([col("name"), col("age")]))
+    # Display results
+    df.show()                         # Print tabular format to console
     
-    # Execute and collect results
-    result = df.collect()
-    
-    # Display the first few rows
-    df.show()
+    # Count rows
+    count = df.count()
 
 HTML Rendering
 --------------
 
 When working in Jupyter notebooks or other environments that support HTML rendering, DataFrames will
-automatically display as formatted HTML tables, making it easier to visualize your data.
-
-The ``_repr_html_`` method is called automatically by Jupyter to render a DataFrame. This method 
-controls how DataFrames appear in notebook environments, providing a richer visualization than
-plain text output.
-
-Customizing HTML Rendering
---------------------------
-
-You can customize how DataFrames are rendered in HTML by configuring the formatter:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import configure_formatter
-    
-    # Change the default styling
-    configure_formatter(
-        max_cell_length=25,        # Maximum characters in a cell before truncation
-        max_width=1000,            # Maximum width in pixels
-        max_height=300,            # Maximum height in pixels
-        max_memory_bytes=2097152,  # Maximum memory for rendering (2MB)
-        min_rows_display=20,       # Minimum number of rows to display
-        repr_rows=10,              # Number of rows to display in __repr__
-        enable_cell_expansion=True,# Allow expanding truncated cells
-        custom_css=None,           # Additional custom CSS
-        show_truncation_message=True, # Show message when data is truncated
-        style_provider=None,       # Custom styling provider
-        use_shared_styles=True     # Share styles across tables
-    )
-
-The formatter settings affect all DataFrames displayed after configuration.
-
-Custom Style Providers
-----------------------
-
-For advanced styling needs, you can create a custom style provider:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import StyleProvider, configure_formatter
-    
-    class MyStyleProvider(StyleProvider):
-        def get_table_styles(self):
-            return {
-                "table": "border-collapse: collapse; width: 100%;",
-                "th": "background-color: #007bff; color: white; padding: 8px; text-align: left;",
-                "td": "border: 1px solid #ddd; padding: 8px;",
-                "tr:nth-child(even)": "background-color: #f2f2f2;",
-            }
-            
-        def get_value_styles(self, dtype, value):
-            """Return custom styles for specific values"""
-            if dtype == "float" and value < 0:
-                return "color: red;"
-            return None
-    
-    # Apply the custom style provider
-    configure_formatter(style_provider=MyStyleProvider())
-
-Performance Optimization with Shared Styles
--------------------------------------------
-The ``use_shared_styles`` parameter (enabled by default) optimizes performance when displaying 
-multiple DataFrames in notebook environments:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import StyleProvider, configure_formatter
-    # Default: Use shared styles (recommended for notebooks)
-    configure_formatter(use_shared_styles=True)
-
-    # Disable shared styles (each DataFrame includes its own styles)
-    configure_formatter(use_shared_styles=False)
-
-When ``use_shared_styles=True``:
-- CSS styles and JavaScript are included only once per notebook session
-- This reduces HTML output size and prevents style duplication
-- Improves rendering performance with many DataFrames
-- Applies consistent styling across all DataFrames
-
-Creating a Custom Formatter
----------------------------
-
-For complete control over rendering, you can implement a custom formatter:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import Formatter, get_formatter
-    
-    class MyFormatter(Formatter):
-        def format_html(self, batches, schema, has_more=False, table_uuid=None):
-            # Create your custom HTML here
-            html = "<div class='my-custom-table'>"
-            # ... formatting logic ...
-            html += "</div>"
-            return html
-    
-    # Set as the global formatter
-    configure_formatter(formatter_class=MyFormatter)
-    
-    # Or use the formatter just for specific operations
-    formatter = get_formatter()
-    custom_html = formatter.format_html(batches, schema)
-
-Managing Formatters
--------------------
-
-Reset to default formatting:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import reset_formatter
-    
-    # Reset to default settings
-    reset_formatter()
-
-Get the current formatter settings:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import get_formatter
-    
-    formatter = get_formatter()
-    print(formatter.max_rows)
-    print(formatter.theme)
-
-Contextual Formatting
----------------------
-
-You can also use a context manager to temporarily change formatting settings:
-
-.. code-block:: python
-
-    from datafusion.html_formatter import formatting_context
-    
-    # Default formatting
-    df.show()
-    
-    # Temporarily use different formatting
-    with formatting_context(max_rows=100, theme="dark"):
-        df.show()  # Will use the temporary settings
-    
-    # Back to default formatting
-    df.show()
-
-Memory and Display Controls
----------------------------
-
-You can control how much data is displayed and how much memory is used for rendering:
-
- .. code-block:: python
- 
-    configure_formatter(
-        max_memory_bytes=4 * 1024 * 1024,  # 4MB maximum memory for display
-        min_rows_display=50,               # Always show at least 50 rows
-        repr_rows=20                       # Show 20 rows in __repr__ output
-    )
-
-These parameters help balance comprehensive data display against performance considerations.
+automatically display as formatted HTML tables. For detailed information about customizing HTML 
+rendering, formatting options, and advanced styling, see :doc:`rendering`.
 
 .. toctree::
    :maxdepth: 1
 
    rendering
+   api-reference

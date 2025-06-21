@@ -79,15 +79,6 @@ Example
    user-guide/sql
 
 
-.. _toc.api:
-.. toctree::
-   :hidden:
-   :maxdepth: 1
-   :caption: API REFERENCE
-
-   api/index
-
-
 .. _toc.contributor_guide:
 .. toctree::
    :hidden:
