@@ -446,11 +446,11 @@
 <span class="o">+-----+---------+--------+--------+</span>
 <span class="o">|</span> <span class="n">nrs</span> <span class="o">|</span> <span class="n">names</span>   <span class="o">|</span> <span class="n">random</span> <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
 <span class="o">+-----+---------+--------+--------+</span>
-<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span>  <span class="o">|</span> <span class="mi">770</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>    <span class="o">|</span> <span class="mi">331</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">3</span>   <span class="o">|</span> <span class="n">java</span>    <span class="o">|</span> <span class="mi">16</span>     <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">4</span>   <span class="o">|</span> <span class="n">haskell</span> <span class="o">|</span> <span class="mi">87</span>     <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">5</span>   <span class="o">|</span> <span class="n">go</span>      <span class="o">|</span> <span class="mi">264</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span>  <span class="o">|</span> <span class="mi">402</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>    <span class="o">|</span> <span class="mi">856</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">3</span>   <span class="o">|</span> <span class="n">java</span>    <span class="o">|</span> <span class="mi">926</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">4</span>   <span class="o">|</span> <span class="n">haskell</span> <span class="o">|</span> <span class="mi">154</span>    <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">5</span>   <span class="o">|</span> <span class="n">go</span>      <span class="o">|</span> <span class="mi">174</span>    <span class="o">|</span> <span class="n">B</span>      <span class="o">|</span>
 <span class="o">+-----+---------+--------+--------+</span>
 </pre></div>
 </div>
@@ -461,8 +461,8 @@
 <span class="o">+-----+--------+--------+--------+</span>
 <span class="o">|</span> <span class="n">nrs</span> <span class="o">|</span> <span class="n">names</span>  <span class="o">|</span> <span class="n">random</span> <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
 <span class="o">+-----+--------+--------+--------+</span>
-<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span> <span class="o">|</span> <span class="mi">770</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>   <span class="o">|</span> <span class="mi">331</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">1</span>   <span class="o">|</span> <span class="n">python</span> <span class="o">|</span> <span class="mi">402</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="mi">2</span>   <span class="o">|</span> <span class="n">ruby</span>   <span class="o">|</span> <span class="mi">856</span>    <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
 <span class="o">+-----+--------+--------+--------+</span>
 </pre></div>
 </div>
@@ -480,28 +480,28 @@ passing them to an Arrow table, and then converting them to a pandas DataFrame.<
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">8</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">to_pandas</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">8</span><span class="p">]:</span> 
    <span class="n">nrs</span>    <span class="n">names</span>  <span class="n">random</span> <span class="n">groups</span>
-<span class="mi">0</span>    <span class="mi">1</span>   <span class="n">python</span>     <span class="mi">770</span>      <span class="n">A</span>
-<span class="mi">1</span>    <span class="mi">2</span>     <span class="n">ruby</span>     <span class="mi">331</span>      <span class="n">A</span>
-<span class="mi">2</span>    <span class="mi">3</span>     <span class="n">java</span>      <span class="mi">16</span>      <span class="n">B</span>
-<span class="mi">3</span>    <span class="mi">4</span>  <span class="n">haskell</span>      <span class="mi">87</span>      <span class="n">C</span>
-<span class="mi">4</span>    <span class="mi">5</span>       <span class="n">go</span>     <span class="mi">264</span>      <span class="n">B</span>
+<span class="mi">0</span>    <span class="mi">1</span>   <span class="n">python</span>     <span class="mi">402</span>      <span class="n">A</span>
+<span class="mi">1</span>    <span class="mi">2</span>     <span class="n">ruby</span>     <span class="mi">856</span>      <span class="n">A</span>
+<span class="mi">2</span>    <span class="mi">3</span>     <span class="n">java</span>     <span class="mi">926</span>      <span class="n">B</span>
+<span class="mi">3</span>    <span class="mi">4</span>  <span class="n">haskell</span>     <span class="mi">154</span>      <span class="n">C</span>
+<span class="mi">4</span>    <span class="mi">5</span>       <span class="n">go</span>     <span class="mi">174</span>      <span class="n">B</span>
 </pre></div>
 </div>
 <p><a class="reference internal" href="../../autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.describe" title="datafusion.dataframe.DataFrame.describe"><code class="xref py py-func docutils literal notranslate"><span class="pre">describe()</span></code></a> shows a quick statistic summary of your data:</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
 <span class="n">Out</span><span class="p">[</span><span class="mi">9</span><span class="p">]:</span> 
 <span class="n">DataFrame</span><span class="p">()</span>
-<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
-<span class="o">|</span> <span class="n">describe</span>   <span class="o">|</span> <span class="n">nrs</span>                <span class="o">|</span> <span class="n">names</span> <span class="o">|</span> <span class="n">random</span>             <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
-<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
-<span class="o">|</span> <span class="n">count</span>      <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>     <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">null_count</span> <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>     <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">mean</span>       <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">293.6</span>              <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="n">std</span>        <span class="o">|</span> <span class="mf">1.5811388300841898</span> <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">295.37146104524044</span> <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">|</span> <span class="nb">min</span>        <span class="o">|</span> <span class="mf">1.0</span>                <span class="o">|</span> <span class="n">go</span>    <span class="o">|</span> <span class="mf">16.0</span>               <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="nb">max</span>        <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="n">ruby</span>  <span class="o">|</span> <span class="mf">770.0</span>              <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
-<span class="o">|</span> <span class="n">median</span>     <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">264.0</span>              <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
-<span class="o">+------------+--------------------+-------+--------------------+--------+</span>
+<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
+<span class="o">|</span> <span class="n">describe</span>   <span class="o">|</span> <span class="n">nrs</span>                <span class="o">|</span> <span class="n">names</span> <span class="o">|</span> <span class="n">random</span>            <span class="o">|</span> <span class="n">groups</span> <span class="o">|</span>
+<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
+<span class="o">|</span> <span class="n">count</span>      <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="mi">5</span>     <span class="o">|</span> <span class="mf">5.0</span>               <span class="o">|</span> <span class="mi">5</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">null_count</span> <span class="o">|</span> <span class="mf">0.0</span>                <span class="o">|</span> <span class="mi">0</span>     <span class="o">|</span> <span class="mf">0.0</span>               <span class="o">|</span> <span class="mi">0</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">mean</span>       <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">502.4</span>             <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="n">std</span>        <span class="o">|</span> <span class="mf">1.5811388300841898</span> <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">368.7069296880654</span> <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">|</span> <span class="nb">min</span>        <span class="o">|</span> <span class="mf">1.0</span>                <span class="o">|</span> <span class="n">go</span>    <span class="o">|</span> <span class="mf">154.0</span>             <span class="o">|</span> <span class="n">A</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="nb">max</span>        <span class="o">|</span> <span class="mf">5.0</span>                <span class="o">|</span> <span class="n">ruby</span>  <span class="o">|</span> <span class="mf">926.0</span>             <span class="o">|</span> <span class="n">C</span>      <span class="o">|</span>
+<span class="o">|</span> <span class="n">median</span>     <span class="o">|</span> <span class="mf">3.0</span>                <span class="o">|</span> <span class="n">null</span>  <span class="o">|</span> <span class="mf">402.0</span>             <span class="o">|</span> <span class="n">null</span>   <span class="o">|</span>
+<span class="o">+------------+--------------------+-------+-------------------+--------+</span>
 </pre></div>
 </div>
 </section>
