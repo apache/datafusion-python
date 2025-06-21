@@ -15,59 +15,37 @@
 .. specific language governing permissions and limitations
 .. under the License.
 
-DataFrames
-==========
+HTML Rendering in Jupyter
+=========================
 
-Overview
---------
+When working in Jupyter notebooks or other environments that support rich HTML display, 
+DataFusion DataFrames automatically render as nicely formatted HTML tables. This functionality
+is provided by the ``_repr_html_`` method, which is automatically called by Jupyter to provide
+a richer visualization than plain text output.
 
-DataFusion's DataFrame API provides a powerful interface for building and executing queries against data sources. 
-It offers a familiar API similar to pandas and other DataFrame libraries, but with the performance benefits of Rust 
-and Arrow.
+Basic HTML Rendering
+--------------------
 
-A DataFrame represents a logical plan that can be composed through operations like filtering, projection, and aggregation.
-The actual execution happens when terminal operations like ``collect()`` or ``show()`` are called.
-
-Basic Usage
------------
+In a Jupyter environment, simply displaying a DataFrame object will trigger HTML rendering:
 
 .. code-block:: python
 
-    import datafusion
-    from datafusion import col, lit
+    # Will display as HTML table in Jupyter
+    df
 
-    # Create a context and register a data source
-    ctx = datafusion.SessionContext()
-    ctx.register_csv("my_table", "path/to/data.csv")
-    
-    # Create and manipulate a DataFrame
-    df = ctx.sql("SELECT * FROM my_table")
-    
-    # Or use the DataFrame API directly
-    df = (ctx.table("my_table")
-          .filter(col("age") > lit(25))
-          .select([col("name"), col("age")]))
-    
-    # Execute and collect results
-    result = df.collect()
-    
-    # Display the first few rows
-    df.show()
-
-HTML Rendering
---------------
-
-When working in Jupyter notebooks or other environments that support HTML rendering, DataFrames will
-automatically display as formatted HTML tables, making it easier to visualize your data.
-
-The ``_repr_html_`` method is called automatically by Jupyter to render a DataFrame. This method 
-controls how DataFrames appear in notebook environments, providing a richer visualization than
-plain text output.
+    # Explicit display also uses HTML rendering
+    display(df)
 
 Customizing HTML Rendering
---------------------------
+---------------------------
 
-You can customize how DataFrames are rendered in HTML by configuring the formatter:
+DataFusion provides extensive customization options for HTML table rendering through the
+``datafusion.html_formatter`` module.
+
+Configuring the HTML Formatter
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can customize how DataFrames are rendered by configuring the formatter:
 
 .. code-block:: python
 
@@ -91,7 +69,7 @@ You can customize how DataFrames are rendered in HTML by configuring the formatt
 The formatter settings affect all DataFrames displayed after configuration.
 
 Custom Style Providers
-----------------------
+-----------------------
 
 For advanced styling needs, you can create a custom style provider:
 
@@ -118,7 +96,8 @@ For advanced styling needs, you can create a custom style provider:
     configure_formatter(style_provider=MyStyleProvider())
 
 Performance Optimization with Shared Styles
--------------------------------------------
+--------------------------------------------
+
 The ``use_shared_styles`` parameter (enabled by default) optimizes performance when displaying 
 multiple DataFrames in notebook environments:
 
@@ -138,7 +117,7 @@ When ``use_shared_styles=True``:
 - Applies consistent styling across all DataFrames
 
 Creating a Custom Formatter
----------------------------
+----------------------------
 
 For complete control over rendering, you can implement a custom formatter:
 
@@ -184,7 +163,7 @@ Get the current formatter settings:
     print(formatter.theme)
 
 Contextual Formatting
----------------------
+----------------------
 
 You can also use a context manager to temporarily change formatting settings:
 
@@ -207,8 +186,8 @@ Memory and Display Controls
 
 You can control how much data is displayed and how much memory is used for rendering:
 
- .. code-block:: python
- 
+.. code-block:: python
+
     configure_formatter(
         max_memory_bytes=4 * 1024 * 1024,  # 4MB maximum memory for display
         min_rows_display=50,               # Always show at least 50 rows
@@ -216,3 +195,29 @@ You can control how much data is displayed and how much memory is used for rende
     )
 
 These parameters help balance comprehensive data display against performance considerations.
+
+Best Practices
+--------------
+
+1. **Global Configuration**: Use ``configure_formatter()`` at the beginning of your notebook to set up consistent formatting for all DataFrames.
+
+2. **Memory Management**: Set appropriate ``max_memory_bytes`` limits to prevent performance issues with large datasets.
+
+3. **Shared Styles**: Keep ``use_shared_styles=True`` (default) for better performance in notebooks with multiple DataFrames.
+
+4. **Reset When Needed**: Call ``reset_formatter()`` when you want to start fresh with default settings.
+
+5. **Cell Expansion**: Use ``enable_cell_expansion=True`` when cells might contain longer content that users may want to see in full.
+
+Additional Resources
+--------------------
+
+* :doc:`../dataframe/index` - Complete guide to using DataFrames
+* :doc:`../io/index` - I/O Guide for reading data from various sources
+* :doc:`../data-sources` - Comprehensive data sources guide
+* :ref:`io_csv` - CSV file reading
+* :ref:`io_parquet` - Parquet file reading  
+* :ref:`io_json` - JSON file reading
+* :ref:`io_avro` - Avro file reading
+* :ref:`io_custom_table_provider` - Custom table providers
+* `API Reference <https://arrow.apache.org/datafusion-python/api/index.html>`_ - Full API reference
