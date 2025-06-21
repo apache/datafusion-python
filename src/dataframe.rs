@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::Arc;
 
@@ -27,7 +28,7 @@ use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
-use datafusion::config::{CsvOptions, TableParquetOptions};
+use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
@@ -183,6 +184,101 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     // Return the validated config, converting String error to PyErr
     config.validate().map_err(PyValueError::new_err)?;
     Ok(config)
+}
+
+/// Python mapping of `ParquetOptions` (includes just the writer-related options).
+#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetWriterOptions {
+    options: ParquetOptions,
+}
+
+#[pymethods]
+impl PyParquetWriterOptions {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        data_pagesize_limit: usize,
+        write_batch_size: usize,
+        writer_version: String,
+        skip_arrow_metadata: bool,
+        compression: Option<String>,
+        dictionary_enabled: Option<bool>,
+        dictionary_page_size_limit: usize,
+        statistics_enabled: Option<String>,
+        max_row_group_size: usize,
+        created_by: String,
+        column_index_truncate_length: Option<usize>,
+        statistics_truncate_length: Option<usize>,
+        data_page_row_count_limit: usize,
+        encoding: Option<String>,
+        bloom_filter_on_write: bool,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+        allow_single_file_parallelism: bool,
+        maximum_parallel_row_group_writers: usize,
+        maximum_buffered_record_batches_per_stream: usize,
+    ) -> Self {
+        Self {
+            options: ParquetOptions {
+                data_pagesize_limit,
+                write_batch_size,
+                writer_version,
+                skip_arrow_metadata,
+                compression,
+                dictionary_enabled,
+                dictionary_page_size_limit,
+                statistics_enabled,
+                max_row_group_size,
+                created_by,
+                column_index_truncate_length,
+                statistics_truncate_length,
+                data_page_row_count_limit,
+                encoding,
+                bloom_filter_on_write,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                allow_single_file_parallelism,
+                maximum_parallel_row_group_writers,
+                maximum_buffered_record_batches_per_stream,
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Python mapping of `ParquetColumnOptions`.
+#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetColumnOptions {
+    options: ParquetColumnOptions,
+}
+
+#[pymethods]
+impl PyParquetColumnOptions {
+    #[new]
+    pub fn new(
+        bloom_filter_enabled: Option<bool>,
+        encoding: Option<String>,
+        dictionary_enabled: Option<bool>,
+        compression: Option<String>,
+        statistics_enabled: Option<String>,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+    ) -> Self {
+        Self {
+            options: ParquetColumnOptions {
+                bloom_filter_enabled,
+                encoding,
+                dictionary_enabled,
+                compression,
+                statistics_enabled,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                ..Default::default()
+            },
+        }
+    }
 }
 
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
@@ -684,6 +780,34 @@ impl PyDataFrame {
                 path,
                 DataFrameWriteOptions::new(),
                 Option::from(options),
+            ),
+        )??;
+        Ok(())
+    }
+
+    /// Write a `DataFrame` to a Parquet file, using advanced options.
+    fn write_parquet_with_options(
+        &self,
+        path: &str,
+        options: PyParquetWriterOptions,
+        column_specific_options: HashMap<String, PyParquetColumnOptions>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let table_options = TableParquetOptions {
+            global: options.options,
+            column_specific_options: column_specific_options
+                .into_iter()
+                .map(|(k, v)| (k, v.options))
+                .collect(),
+            ..Default::default()
+        };
+
+        wait_for_future(
+            py,
+            self.df.as_ref().clone().write_parquet(
+                path,
+                DataFrameWriteOptions::new(),
+                Option::from(table_options),
             ),
         )??;
         Ok(())
