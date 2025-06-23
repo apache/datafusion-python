@@ -55,7 +55,6 @@ if TYPE_CHECKING:
     from datafusion._internal import DataFrame as DataFrameInternal
     from datafusion._internal import expr as expr_internal
 
-from dataclasses import dataclass
 from enum import Enum
 
 
@@ -192,6 +191,7 @@ class ParquetWriterOptions:
         writer_version: str = "1.0",
         skip_arrow_metadata: bool = False,
         compression: Optional[str] = "zstd(3)",
+        compression_level: Optional[int] = None,
         dictionary_enabled: Optional[bool] = True,
         dictionary_page_size_limit: int = 1024 * 1024,
         statistics_enabled: Optional[str] = "page",
@@ -214,7 +214,10 @@ class ParquetWriterOptions:
         self.write_batch_size = write_batch_size
         self.writer_version = writer_version
         self.skip_arrow_metadata = skip_arrow_metadata
-        self.compression = compression
+        if compression_level is not None:
+            self.compression = f"{compression}({compression_level})"
+        else:
+            self.compression = compression
         self.dictionary_enabled = dictionary_enabled
         self.dictionary_page_size_limit = dictionary_page_size_limit
         self.statistics_enabled = statistics_enabled

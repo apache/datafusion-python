@@ -46,11 +46,8 @@ from .context import (
     SessionContext,
     SQLOptions,
 )
-from .dataframe import (
-    DataFrame,
-    ParquetColumnOptions,
-    ParquetWriterOptions,
-)
+from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
+
 from .expr import (
     Expr,
     WindowFrame,
