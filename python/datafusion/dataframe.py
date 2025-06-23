@@ -321,6 +321,16 @@ class DataFrame:
         Returns:
             String representation of the DataFrame.
         """
+        # Check if we're in IPython/Jupyter. If so, we will only use
+        # the _repr_html_ output to avoid calling collect() twice.
+        try:
+            from IPython import get_ipython
+
+            if get_ipython() is not None:
+                return ""  # Return empty string to effectively disable
+        except ImportError:
+            pass
+
         return self.df.__repr__()
 
     def _repr_html_(self) -> str:
