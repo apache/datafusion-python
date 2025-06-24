@@ -30,13 +30,12 @@ try:
 except ImportError:
     import importlib_metadata
 
-from datafusion.col import col, column
-
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 from .catalog import Catalog, Database, Table
+from .col import col, column
 from .common import (
     DFSchema,
 )
@@ -47,7 +46,6 @@ from .context import (
     SQLOptions,
 )
 from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
-
 from .expr import (
     Expr,
     WindowFrame,
