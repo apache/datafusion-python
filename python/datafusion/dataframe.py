@@ -321,14 +321,15 @@ class DataFrame:
         Returns:
             String representation of the DataFrame.
         """
-        # Check if we're in IPython/Jupyter. If so, we will only use
+        # Check if we're in a Jupyter notebook. If so, we will only use
         # the _repr_html_ output to avoid calling collect() twice.
         try:
             from IPython import get_ipython
 
-            if get_ipython() is not None:
+            shell = get_ipython().__class__.__name__
+            if shell == "ZMQInteractiveShell":
                 return ""  # Return empty string to effectively disable
-        except ImportError:
+        except (ImportError, NameError):
             pass
 
         return self.df.__repr__()
