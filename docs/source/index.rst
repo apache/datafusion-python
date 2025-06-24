@@ -88,3 +88,8 @@ Example
    contributor-guide/introduction
    contributor-guide/ffi
 
+.. _toc.api:
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: API
