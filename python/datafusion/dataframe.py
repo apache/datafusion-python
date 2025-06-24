@@ -52,7 +52,6 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
-    from datafusion._internal import DataFrame as DataFrameInternal
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
@@ -1112,3 +1111,17 @@ class DataFrame:
             - For columns not in subset, the original column is kept unchanged
         """
         return DataFrame(self.df.fill_null(value, subset))
+
+    @staticmethod
+    def default_str_repr(
+        batches: list[pa.RecordBatch],
+        schema: pa.Schema,
+        has_more: bool,
+        table_uuid: str | None = None,
+    ) -> str:
+        """Return the default string representation of a DataFrame.
+
+        This method is used by the default formatter and implemented in Rust for
+        performance reasons.
+        """
+        return DataFrameInternal.default_str_repr(batches, schema, has_more, table_uuid)

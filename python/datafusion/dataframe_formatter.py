@@ -271,7 +271,7 @@ class DataFrameHtmlFormatter:
             True if styles have been loaded, False otherwise
 
         Example:
-            >>> from datafusion.html_formatter import DataFrameHtmlFormatter
+            >>> from datafusion.dataframe_formatter import DataFrameHtmlFormatter
             >>> DataFrameHtmlFormatter.is_styles_loaded()
             False
         """

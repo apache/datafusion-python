@@ -37,14 +37,14 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
-from datafusion.expr import Window
-from datafusion.html_formatter import (
+from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
     get_formatter,
     reset_formatter,
     reset_styles_loaded_state,
 )
+from datafusion.expr import Window
 from pyarrow.csv import write_csv
 
 MB = 1024 * 1024

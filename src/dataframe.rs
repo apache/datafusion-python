@@ -151,9 +151,9 @@ fn get_python_formatter_with_config(py: Python) -> PyResult<PythonFormatter> {
     Ok(PythonFormatter { formatter, config })
 }
 
-/// Get the Python formatter from the datafusion.html_formatter module
+/// Get the Python formatter from the datafusion.dataframe_formatter module
 fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
-    let formatter_module = py.import("datafusion.html_formatter")?;
+    let formatter_module = py.import("datafusion.dataframe_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
     get_formatter.call0()
 }
