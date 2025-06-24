@@ -24,6 +24,7 @@ use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
+use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -295,58 +296,8 @@ impl PyDataFrame {
     pub fn new(df: DataFrame) -> Self {
         Self { df: Arc::new(df) }
     }
-}
 
-#[pymethods]
-impl PyDataFrame {
-    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
-    fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
-        if let Ok(key) = key.extract::<PyBackedStr>() {
-            // df[col]
-            self.select_columns(vec![key])
-        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
-            // df[col1, col2, col3]
-            let keys = tuple
-                .iter()
-                .map(|item| item.extract::<PyBackedStr>())
-                .collect::<PyResult<Vec<PyBackedStr>>>()?;
-            self.select_columns(keys)
-        } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
-            // df[[col1, col2, col3]]
-            self.select_columns(keys)
-        } else {
-            let message = "DataFrame can only be indexed by string index or indices".to_string();
-            Err(PyDataFusionError::Common(message))
-        }
-    }
-
-    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter config
-        let PythonFormatter {
-            formatter: _,
-            config,
-        } = get_python_formatter_with_config(py)?;
-        let (batches, has_more) = wait_for_future(
-            py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )??;
-        if batches.is_empty() {
-            // This should not be reached, but do it for safety since we index into the vector below
-            return Ok("No data to display".to_string());
-        }
-
-        let batches_as_displ =
-            pretty::pretty_format_batches(&batches).map_err(py_datafusion_err)?;
-
-        let additional_str = match has_more {
-            true => "\nData truncated.",
-            false => "",
-        };
-
-        Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
-    }
-
-    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
+    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
         let (batches, has_more) = wait_for_future(
@@ -375,10 +326,78 @@ impl PyDataFrame {
         kwargs.set_item("has_more", has_more)?;
         kwargs.set_item("table_uuid", table_uuid)?;
 
-        let html_result = formatter.call_method("format_html", (), Some(&kwargs))?;
+        let method_name = match as_html {
+            true => "format_html",
+            false => "format_str",
+        };
+
+        let html_result = formatter.call_method(method_name, (), Some(&kwargs))?;
         let html_str: String = html_result.extract()?;
 
         Ok(html_str)
+    }
+}
+
+#[pymethods]
+impl PyDataFrame {
+    /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
+    fn __getitem__(&self, key: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if let Ok(key) = key.extract::<PyBackedStr>() {
+            // df[col]
+            self.select_columns(vec![key])
+        } else if let Ok(tuple) = key.downcast::<PyTuple>() {
+            // df[col1, col2, col3]
+            let keys = tuple
+                .iter()
+                .map(|item| item.extract::<PyBackedStr>())
+                .collect::<PyResult<Vec<PyBackedStr>>>()?;
+            self.select_columns(keys)
+        } else if let Ok(keys) = key.extract::<Vec<PyBackedStr>>() {
+            // df[[col1, col2, col3]]
+            self.select_columns(keys)
+        } else {
+            let message = "DataFrame can only be indexed by string index or indices".to_string();
+            Err(PyDataFusionError::Common(message))
+        }
+    }
+
+    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
+        self.prepare_repr_string(py, false)
+    }
+
+    #[staticmethod]
+    #[expect(unused_variables)]
+    fn default_str_repr<'py>(
+        batches: Vec<Bound<'py, PyAny>>,
+        schema: &Bound<'py, PyAny>,
+        has_more: bool,
+        table_uuid: &str,
+    ) -> PyResult<String> {
+        let batches = batches
+            .into_iter()
+            .map(|batch| RecordBatch::from_pyarrow_bound(&batch))
+            .collect::<PyResult<Vec<RecordBatch>>>()?
+            .into_iter()
+            .filter(|batch| batch.num_rows() > 0)
+            .collect::<Vec<_>>();
+
+        if batches.is_empty() {
+            return Ok("No data to display".to_owned());
+        }
+
+        let batches_as_displ =
+            pretty::pretty_format_batches(&batches).map_err(py_datafusion_err)?;
+
+        let additional_str = match has_more {
+            true => "\nData truncated.",
+            false => "",
+        };
+
+        Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
+    }
+
+    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
+        self.prepare_repr_string(py, true)
     }
 
     /// Calculate summary statistics for a DataFrame

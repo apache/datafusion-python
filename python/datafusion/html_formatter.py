@@ -26,6 +26,8 @@ from typing import (
     runtime_checkable,
 )
 
+from datafusion._internal import DataFrame as DataFrameInternal
+
 
 def _validate_positive_int(value: Any, param_name: str) -> None:
     """Validate that a parameter is a positive integer.
@@ -344,6 +346,32 @@ class DataFrameHtmlFormatter:
             html.append("<div>Data truncated due to size.</div>")
 
         return "\n".join(html)
+
+    def format_str(
+        self,
+        batches: list,
+        schema: Any,
+        has_more: bool = False,
+        table_uuid: str | None = None,
+    ) -> str:
+        """Format record batches as a string.
+
+        This method is used by DataFrame's __repr__ implementation and can be
+        called directly when string rendering is needed.
+
+        Args:
+            batches: List of Arrow RecordBatch objects
+            schema: Arrow Schema object
+            has_more: Whether there are more batches not shown
+            table_uuid: Unique ID for the table, used for JavaScript interactions
+
+        Returns:
+            String representation of the data
+
+        Raises:
+            TypeError: If schema is invalid and no batches are provided
+        """
+        return DataFrameInternal.default_str_repr(batches, schema, has_more, table_uuid)
 
     def _build_html_header(self) -> list[str]:
         """Build the HTML header with CSS styles."""
