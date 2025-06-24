@@ -77,10 +77,10 @@ pub(crate) struct TokioRuntime(tokio::runtime::Runtime);
 /// datafusion directory.
 #[pymodule]
 fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
+    // Initialize logging
+    pyo3_log::init();
+
     // Register the python classes
-    m.add_class::<catalog::PyCatalog>()?;
-    m.add_class::<catalog::PyDatabase>()?;
-    m.add_class::<catalog::PyTable>()?;
     m.add_class::<context::PyRuntimeEnvBuilder>()?;
     m.add_class::<context::PySessionConfig>()?;
     m.add_class::<context::PySessionContext>()?;
@@ -97,6 +97,10 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<physical_plan::PyExecutionPlan>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;
+
+    let catalog = PyModule::new(py, "catalog")?;
+    catalog::init_module(&catalog)?;
+    m.add_submodule(&catalog)?;
 
     // Register `common` as a submodule. Matching `datafusion-common` https://docs.rs/datafusion-common/latest/datafusion_common/
     let common = PyModule::new(py, "common")?;

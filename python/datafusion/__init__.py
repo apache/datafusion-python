@@ -32,7 +32,7 @@ except ImportError:
 
 from datafusion.col import col, column
 
-from . import functions, object_store, substrait, unparser
+from . import catalog, functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
@@ -93,6 +93,7 @@ __all__ = [
     "TableFunction",
     "WindowFrame",
     "WindowUDF",
+    "catalog",
     "col",
     "column",
     "common",
