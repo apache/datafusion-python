@@ -102,7 +102,7 @@ Module Contents
    create a :py:class:`DataFrame`.
 
 
-   .. py:method:: __arrow_c_stream__(requested_schema: pyarrow.Schema) -> Any
+   .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
 
       Export an Arrow PyCapsule Stream.
 
