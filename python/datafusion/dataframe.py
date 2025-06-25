@@ -1087,7 +1087,7 @@ class DataFrame:
         columns = list(columns)
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
 
-    def __arrow_c_stream__(self, requested_schema: pa.Schema) -> Any:
+    def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
         """Export an Arrow PyCapsule Stream.
 
         This will execute and collect the DataFrame. We will attempt to respect the

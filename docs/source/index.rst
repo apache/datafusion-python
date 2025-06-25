@@ -72,7 +72,7 @@ Example
    user-guide/introduction
    user-guide/basics
    user-guide/data-sources
-   user-guide/dataframe
+   user-guide/dataframe/index
    user-guide/common-operations/index
    user-guide/io/index
    user-guide/configuration
@@ -93,5 +93,3 @@ Example
    :hidden:
    :maxdepth: 1
    :caption: API
-   
-   api/index
