@@ -176,7 +176,7 @@ By convention the ``datafusion-python`` library expects a Python object that has
 ``TableProvider`` PyCapsule to have this capsule accessible by calling a function named
 ``__datafusion_table_provider__``. You can see a complete working example of how to
 share a ``TableProvider`` from one python library to DataFusion Python in the
-`repository examples folder <https://github.com/apache/datafusion-python/tree/main/examples/ffi-table-provider>`_.
+`repository examples folder <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_.
 
 This section has been written using ``TableProvider`` as an example. It is the first
 extension that has been written using this approach and the most thoroughly implemented.
