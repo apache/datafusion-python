@@ -39,6 +39,17 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
     RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
 }
 
+#[inline]
+pub(crate) fn is_ipython_env(py: Python) -> &'static bool {
+    static IS_IPYTHON_ENV: OnceLock<bool> = OnceLock::new();
+    IS_IPYTHON_ENV.get_or_init(|| {
+        py.import("IPython")
+            .and_then(|ipython| ipython.call_method0("get_ipython"))
+            .map(|ipython| !ipython.is_none())
+            .unwrap_or(false)
+    })
+}
+
 /// Utility to get the Global Datafussion CTX
 #[inline]
 pub(crate) fn get_global_ctx() -> &'static SessionContext {
