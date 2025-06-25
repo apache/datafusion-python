@@ -204,6 +204,17 @@ Module Contents
 
 
 
+   .. py:method:: default_str_repr(batches: list[pyarrow.RecordBatch], schema: pyarrow.Schema, has_more: bool, table_uuid: str | None = None) -> str
+      :staticmethod:
+
+
+      Return the default string representation of a DataFrame.
+
+      This method is used by the default formatter and implemented in Rust for
+      performance reasons.
+
+
+
    .. py:method:: describe() -> DataFrame
 
       Return the statistics for this DataFrame.

@@ -21,6 +21,7 @@ Submodules
    /autoapi/datafusion/catalog/index
    /autoapi/datafusion/context/index
    /autoapi/datafusion/dataframe/index
+   /autoapi/datafusion/dataframe_formatter/index
    /autoapi/datafusion/expr/index
    /autoapi/datafusion/functions/index
    /autoapi/datafusion/html_formatter/index

@@ -34,7 +34,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.expr" href="../expr/index.html" />
+    <link rel="next" title="datafusion.dataframe_formatter" href="../dataframe_formatter/index.html" />
     <link rel="prev" title="datafusion.context" href="../context/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -300,6 +300,11 @@
      <li class="toctree-l3 current active">
       <a class="current reference internal" href="#">
        datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../dataframe_formatter/index.html">
+       datafusion.dataframe_formatter
       </a>
      </li>
      <li class="toctree-l3">
@@ -599,6 +604,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.count()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.default_str_repr">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.default_str_repr()
         </span>
        </code>
       </a>
@@ -1770,6 +1784,14 @@ count, which may be slow for large or complicated DataFrames.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.default_str_repr">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">default_str_repr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batches</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.RecordBatch</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_more</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_uuid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.default_str_repr" title="Link to this definition">¶</a></dt>
+<dd><p>Return the default string representation of a DataFrame.</p>
+<p>This method is used by the default formatter and implemented in Rust for
+performance reasons.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.describe">
 <span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.describe" title="Link to this definition">¶</a></dt>
 <dd><p>Return the statistics for this DataFrame.</p>
@@ -2830,10 +2852,10 @@ is not a part of this dictionary, it will use the parameters provided here.</p>
             <p class="prev-next-title">datafusion.context</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../expr/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../dataframe_formatter/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.expr</p>
+        <p class="prev-next-title">datafusion.dataframe_formatter</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>
