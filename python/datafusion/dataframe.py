@@ -874,6 +874,30 @@ class DataFrame:
         """
         self.df.write_csv(str(path), with_header)
 
+    @overload
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: str,
+        compression_level: int | None = None,
+    ) -> None: ...
+
+    @overload
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: Compression = Compression.ZSTD,
+        compression_level: int | None = None,
+    ) -> None: ...
+
+    @overload
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: ParquetWriterOptions,
+        compression_level: None = None,
+    ) -> None: ...
+
     def write_parquet(
         self,
         path: str | pathlib.Path,
