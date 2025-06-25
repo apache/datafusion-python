@@ -2038,6 +2038,22 @@ def test_write_parquet_with_options_column_options(df, tmp_path):
                 assert col["encodings"] == result["encodings"]
 
 
+def test_write_parquet_options(df, tmp_path):
+    options = ParquetWriterOptions(compression="gzip", compression_level=6)
+    df.write_parquet(str(tmp_path), options)
+
+    result = pq.read_table(str(tmp_path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+def test_write_parquet_options_error(df, tmp_path):
+    options = ParquetWriterOptions(compression="gzip", compression_level=6)
+    with pytest.raises(ValueError):
+        df.write_parquet(str(tmp_path), options, compression_level=1)
+
+
 def test_dataframe_export(df) -> None:
     # Guarantees that we have the canonical implementation
     # reading our dataframe export

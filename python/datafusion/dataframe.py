@@ -191,6 +191,7 @@ class ParquetWriterOptions:
         writer_version: str = "1.0",
         skip_arrow_metadata: bool = False,
         compression: Optional[str] = "zstd(3)",
+        compression_level: Optional[int] = None,
         dictionary_enabled: Optional[bool] = True,
         dictionary_page_size_limit: int = 1024 * 1024,
         statistics_enabled: Optional[str] = "page",
@@ -213,7 +214,10 @@ class ParquetWriterOptions:
         self.write_batch_size = write_batch_size
         self.writer_version = writer_version
         self.skip_arrow_metadata = skip_arrow_metadata
-        self.compression = compression
+        if compression_level is not None:
+            self.compression = f"{compression}({compression_level})"
+        else:
+            self.compression = compression
         self.dictionary_enabled = dictionary_enabled
         self.dictionary_page_size_limit = dictionary_page_size_limit
         self.statistics_enabled = statistics_enabled
@@ -870,10 +874,34 @@ class DataFrame:
         """
         self.df.write_csv(str(path), with_header)
 
+    @overload
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: Union[str, Compression] = Compression.ZSTD,
+        compression: str,
+        compression_level: int | None = None,
+    ) -> None: ...
+
+    @overload
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: Compression = Compression.ZSTD,
+        compression_level: int | None = None,
+    ) -> None: ...
+
+    @overload
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: ParquetWriterOptions,
+        compression_level: None = None,
+    ) -> None: ...
+
+    def write_parquet(
+        self,
+        path: str | pathlib.Path,
+        compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
         compression_level: int | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
@@ -894,7 +922,13 @@ class DataFrame:
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
         """
-        # Convert string to Compression enum if necessary
+        if isinstance(compression, ParquetWriterOptions):
+            if compression_level is not None:
+                msg = "compression_level should be None when using ParquetWriterOptions"
+                raise ValueError(msg)
+            self.write_parquet_with_options(path, compression)
+            return
+
         if isinstance(compression, str):
             compression = Compression.from_str(compression)
 
