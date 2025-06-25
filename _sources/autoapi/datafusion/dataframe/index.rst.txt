@@ -675,7 +675,9 @@ Module Contents
 
 
 
-   .. py:method:: write_parquet(path: str | pathlib.Path, compression: Union[str, Compression] = Compression.ZSTD, compression_level: int | None = None) -> None
+   .. py:method:: write_parquet(path: str | pathlib.Path, compression: str, compression_level: int | None = None) -> None
+                  write_parquet(path: str | pathlib.Path, compression: Compression = Compression.ZSTD, compression_level: int | None = None) -> None
+                  write_parquet(path: str | pathlib.Path, compression: ParquetWriterOptions, compression_level: None = None) -> None
 
       Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -796,7 +798,7 @@ Module Contents
 
 
 
-.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: Optional[str] = 'zstd(3)', dictionary_enabled: Optional[bool] = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: Optional[str] = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: Optional[int] = 64, statistics_truncate_length: Optional[int] = None, data_page_row_count_limit: int = 20000, encoding: Optional[str] = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None)
+.. py:class:: ParquetWriterOptions(data_pagesize_limit: int = 1024 * 1024, write_batch_size: int = 1024, writer_version: str = '1.0', skip_arrow_metadata: bool = False, compression: Optional[str] = 'zstd(3)', compression_level: Optional[int] = None, dictionary_enabled: Optional[bool] = True, dictionary_page_size_limit: int = 1024 * 1024, statistics_enabled: Optional[str] = 'page', max_row_group_size: int = 1024 * 1024, created_by: str = 'datafusion-python', column_index_truncate_length: Optional[int] = 64, statistics_truncate_length: Optional[int] = None, data_page_row_count_limit: int = 20000, encoding: Optional[str] = None, bloom_filter_on_write: bool = False, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None, allow_single_file_parallelism: bool = True, maximum_parallel_row_group_writers: int = 1, maximum_buffered_record_batches_per_stream: int = 2, column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None)
 
    Advanced parquet writer options.
 
@@ -955,11 +957,6 @@ Module Contents
 
    .. py:attribute:: column_specific_options
       :value: None
-
-
-
-   .. py:attribute:: compression
-      :value: 'zstd(3)'
 
 
 
