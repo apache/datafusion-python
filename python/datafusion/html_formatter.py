@@ -25,5 +25,5 @@ warnings.warn(
     "The module 'html_formatter' is deprecated and will be removed in the next release."
     "Please use 'dataframe_formatter' instead.",
     DeprecationWarning,
-    stacklevel=2,
+    stacklevel=3,
 )
