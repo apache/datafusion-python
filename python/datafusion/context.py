@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 import pyarrow as pa
 
@@ -79,13 +79,40 @@ class TableProviderExportable(Protocol):
 
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
 
-
+@runtime_checkable
 class CatalogProviderExportable(Protocol):
     """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
 
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
-    def __datafusion_catalog_provider__(self) -> object: ...
+
+    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+
+@runtime_checkable
+class PySchemaProvider(Protocol):
+    def table_names(self) -> list[str]:
+        ...
+
+    def register_table(self, table: Table) -> None:
+        ...
+
+    def deregister_table(self, table_name: str) -> None:
+        ...
+
+    def table_exist(self, table_name: str) -> bool:
+        ...
+
+    def table(self, table_name: str) -> Table:
+        ...
+
+
+@runtime_checkable
+class PyCatalogProvider(Protocol):
+    def schema_names(self) -> list[str]:
+        ...
+
+    def schema(self, name: str) -> PySchemaProvider:
+        ...
 
 
 class SessionConfig:
@@ -758,9 +785,14 @@ class SessionContext:
         self.ctx.deregister_table(name)
 
     def register_catalog_provider(
-            self, name: str, provider: CatalogProviderExportable
+        self, name: str, provider: PyCatalogProvider | CatalogProviderExportable
     ) -> None:
         """Register a catalog provider."""
+        if not isinstance(provider, (PyCatalogProvider, CatalogProviderExportable)):
+            raise TypeError(
+                f"Expected provider to be CatalogProviderProtocol or rust version exposed through python, but got {type(provider)} instead."
+            )
+
         self.ctx.register_catalog_provider(name, provider)
 
     def register_table_provider(

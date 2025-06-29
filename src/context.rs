@@ -31,7 +31,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable};
+use crate::catalog::{PyCatalog, PyCatalogProvider, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -641,10 +641,18 @@ impl PySessionContext {
 
             Ok(())
         } else {
-            Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_catalog_provider__ does not exist on Catalog Provider object."
-                    .to_string(),
-            ))
+            let python_provider = PyCatalogProvider::new(provider.into());
+            let arc_provider = Arc::new(python_provider);
+            let option: Option<Arc<dyn CatalogProvider>> = self.ctx.register_catalog(name, arc_provider);
+            match option {
+                Some(existing) => {
+                    println!("Catalog '{}' already existed in python catalog, schema names: {:?}", name, existing.schema_names());
+                }
+                None => {
+                    println!("Catalog '{}' registered successfully from python catalog", name);
+                }
+            }
+            Ok(())
         }
     }
 

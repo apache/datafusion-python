@@ -15,9 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::any::Any;
 use std::collections::HashSet;
 use std::sync::Arc;
-
+use async_trait::async_trait;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 
@@ -28,6 +29,8 @@ use datafusion::{
     catalog::{CatalogProvider, SchemaProvider},
     datasource::{TableProvider, TableType},
 };
+use datafusion::common::DataFusionError;
+use pyo3::Py;
 
 #[pyclass(name = "Catalog", module = "datafusion", subclass)]
 pub struct PyCatalog {
@@ -42,6 +45,30 @@ pub struct PyDatabase {
 #[pyclass(name = "Table", module = "datafusion", subclass)]
 pub struct PyTable {
     pub table: Arc<dyn TableProvider>,
+}
+
+#[derive(Debug)]
+#[pyclass(name = "CatalogProvider", module = "datafusion", subclass)]
+pub struct PyCatalogProvider {
+    py_obj: Py<PyAny>,
+}
+
+#[derive(Debug)]
+#[pyclass(name = "SchemaProvider", module = "datafusion", subclass)]
+pub struct PySchemaProvider {
+    py_obj: Py<PyAny>,
+}
+
+impl PyCatalogProvider {
+    pub fn new(py_obj: Py<PyAny>) -> Self {
+        Self { py_obj }
+    }
+}
+
+impl PySchemaProvider {
+    pub fn new(py_obj: Py<PyAny>) -> Self {
+        Self { py_obj }
+    }
 }
 
 impl PyCatalog {
@@ -144,4 +171,121 @@ impl PyTable {
     // fn statistics
     // fn has_exact_statistics
     // fn supports_filter_pushdown
+}
+
+#[async_trait]
+impl SchemaProvider for PySchemaProvider {
+    fn owner_name(&self) -> Option<&str> {
+        // TODO Find a better way to share the string coming from python because of PyO3
+        None
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn table_names(&self) -> Vec<String> {
+        Python::with_gil(|py| {
+            let obj = self.py_obj.bind_borrowed(py);
+            obj.call_method0("table_names")
+                .and_then(|res| res.extract::<Vec<String>>())
+                .unwrap_or_else(|err| {
+                    eprintln!("Error calling table_names: {}", err);
+                    vec![]
+                })
+        })
+    }
+
+    async fn table(
+        &self,
+        name: &str,
+    ) -> Result<Option<Arc<dyn TableProvider + 'static>>, DataFusionError>
+    {
+        Err(DataFusionError::NotImplemented(
+            "Python SchemaProvider does not support `table` yet".to_string(),
+        ))
+    }
+
+    fn table_exist(&self, table_name: &str) -> bool {
+        Python::with_gil(|py| {
+            let obj = self.py_obj.bind_borrowed(py);
+            obj.call_method1("table_exist", (table_name,))
+                .and_then(|res| res.extract::<bool>())
+                .unwrap_or_else(|err| {
+                    eprintln!("Error calling table_exists: {}", err);
+                    false
+                })
+        })
+    }
+
+    fn register_table(&self, name: String, table: Arc<dyn TableProvider>) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>>
+    {
+        Err(DataFusionError::NotImplemented(
+            "Python CatalogProvider does not support `register_schema`".to_string(),
+        ))
+    }
+
+    fn deregister_table(&self, name: &str) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
+        Err(DataFusionError::NotImplemented(
+            "Python CatalogProvider does not support `register_schema`".to_string(),
+        ))
+    }
+}
+
+impl CatalogProvider for PyCatalogProvider {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn schema_names(&self) -> Vec<String> {
+        Python::with_gil(|py| {
+            let obj = self.py_obj.bind_borrowed(py);
+            obj.call_method0("schema_names")
+                .and_then(|res| res.extract::<Vec<String>>())
+                .unwrap_or_else(|err| {
+                    eprintln!("Error calling schema_names: {}", err);
+                    vec![]
+                })
+        })
+    }
+
+    fn schema(&self, name: &str) -> Option<Arc<dyn SchemaProvider>> {
+        Python::with_gil(|py| {
+            // let obj = self.py_obj.as_ref(py);
+            let obj = self.py_obj.bind_borrowed(py);
+            match obj.call_method1("schema", (name,)) {
+                Ok(py_schema) => {
+                    let schema_provider: PyResult<Py<PyAny>> = py_schema.extract();
+                    match schema_provider {
+                        Ok(py_obj) => {
+                            let rust_provider = Arc::new(PySchemaProvider { py_obj }) as Arc<dyn SchemaProvider>;
+                            Some(rust_provider)
+                        }
+                        Err(err) => {
+                            eprintln!("Failed to extract schema provider: {err}");
+                            None
+                        }
+                    }
+                }
+                Err(err) => {
+                    eprintln!("Error calling schema('{}'): {}", name, err);
+                    None
+                }
+            }
+        })
+    }
+
+    fn register_schema(&self, name: &str, schema: Arc<dyn SchemaProvider>)
+        -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
+        Err(DataFusionError::NotImplemented(
+            "Python CatalogProvider does not support `register_schema`".to_string(),
+        ))
+    }
+
+    fn deregister_schema(&self, _name: &str, _cascade: bool)
+        -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
+        Err(DataFusionError::NotImplemented(
+            "Python CatalogProvider does not support `deregister_schema`".to_string(),
+        ))
+    }
 }

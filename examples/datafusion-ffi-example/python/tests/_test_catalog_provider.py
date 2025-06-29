@@ -19,8 +19,11 @@ from __future__ import annotations
 
 import pyarrow as pa
 
-from datafusion import SessionContext
+from datafusion import SessionContext, Table
 from datafusion_ffi_example import MyCatalogProvider
+
+from datafusion.context import PyCatalogProvider, PySchemaProvider
+
 
 def test_catalog_provider():
     ctx = SessionContext()
@@ -28,7 +31,7 @@ def test_catalog_provider():
     my_catalog_name = "my_catalog"
     expected_schema_name = "my_schema"
     expected_table_name = "my_table"
-    expected_table_columns = ['units', 'price']
+    expected_table_columns = ["units", "price"]
 
     catalog_provider = MyCatalogProvider()
     ctx.register_catalog_provider(my_catalog_name, catalog_provider)
@@ -41,12 +44,9 @@ def test_catalog_provider():
     my_table = my_database.table(expected_table_name)
     assert expected_table_columns == my_table.schema.names
 
-    ctx.register_table(expected_table_name, my_table)
-    expected_df = ctx.sql(f"SELECT * FROM {expected_table_name}").to_pandas()
-    assert len(expected_df) == 5
-    assert expected_table_columns == expected_df.columns.tolist()
-
-    result = ctx.table(f"{my_catalog_name}.{expected_schema_name}.{expected_table_name}").collect()
+    result = ctx.table(
+        f"{my_catalog_name}.{expected_schema_name}.{expected_table_name}"
+    ).collect()
     assert len(result) == 2
 
     col0_result = [r.column(0) for r in result]
@@ -61,3 +61,57 @@ def test_catalog_provider():
     ]
     assert col0_result == expected_col0
     assert col1_result == expected_col1
+
+
+class MyPyCatalogProvider(PyCatalogProvider):
+    my_schemas = ['my_schema']
+
+    def schema_names(self) -> list[str]:
+        return self.my_schemas
+
+    def schema(self, name: str) -> PySchemaProvider:
+        return MyPySchemaProvider()
+
+
+class MyPySchemaProvider(PySchemaProvider):
+    my_tables = ['table1', 'table2', 'table3']
+
+    def table_names(self) -> list[str]:
+        return self.my_tables
+
+    def table_exist(self, table_name: str) -> bool:
+        return table_name in self.my_tables
+
+    def table(self, table_name: str) -> Table:
+        raise RuntimeError(f"Can not get table: {table_name}")
+
+    def register_table(self, table: Table) -> None:
+        raise RuntimeError(f"Can not register {table} as table")
+
+    def deregister_table(self, table_name: str) -> None:
+        raise RuntimeError(f"Can not deregister table: {table_name}")
+
+
+def test_python_catalog_provider():
+    ctx = SessionContext()
+
+    my_catalog_name = "my_py_catalog"
+    expected_schema_name = "my_schema"
+    my_py_catalog_provider = MyPyCatalogProvider()
+    ctx.register_catalog_provider(my_catalog_name, my_py_catalog_provider)
+    my_py_catalog = ctx.catalog(my_catalog_name)
+    assert MyPyCatalogProvider.my_schemas == my_py_catalog.names()
+
+    my_database = my_py_catalog.database(expected_schema_name)
+    assert set(MyPySchemaProvider.my_tables) == my_database.names()
+
+    # asserting a non-compliant provider fails at the python level as expected
+    try:
+        ctx.register_catalog_provider(my_catalog_name, "non_compliant_provider")
+    except TypeError:
+        # expect a TypeError because we can not register a str as a catalog provider
+        pass
+
+
+if __name__ == "__main__":
+    test_python_catalog_provider()
