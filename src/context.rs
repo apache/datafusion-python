@@ -31,7 +31,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable};
+use crate::catalog::{PyCatalog, PyCatalogProvider, PyTable};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -49,6 +49,7 @@ use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_f
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::catalog::CatalogProvider;
 use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -70,6 +71,7 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use tokio::task::JoinHandle;
 
@@ -612,6 +614,46 @@ impl PySessionContext {
     pub fn deregister_table(&mut self, name: &str) -> PyDataFusionResult<()> {
         self.ctx.deregister_table(name)?;
         Ok(())
+    }
+
+    pub fn register_catalog_provider(
+        &mut self,
+        name: &str,
+        provider: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        if provider.hasattr("__datafusion_catalog_provider__")? {
+            let capsule = provider.getattr("__datafusion_catalog_provider__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+            let provider: ForeignCatalogProvider = provider.into();
+
+            let option: Option<Arc<dyn CatalogProvider>> = self.ctx.register_catalog(name, Arc::new(provider));
+            match option {
+                Some(existing) => {
+                    println!("Catalog '{}' already existed, schema names: {:?}", name, existing.schema_names());
+                }
+                None => {
+                    println!("Catalog '{}' registered successfully", name);
+                }
+            }
+
+            Ok(())
+        } else {
+            let python_provider = PyCatalogProvider::new(provider.into());
+            let arc_provider = Arc::new(python_provider);
+            let option: Option<Arc<dyn CatalogProvider>> = self.ctx.register_catalog(name, arc_provider);
+            match option {
+                Some(existing) => {
+                    println!("Catalog '{}' already existed in python catalog, schema names: {:?}", name, existing.schema_names());
+                }
+                None => {
+                    println!("Catalog '{}' registered successfully from python catalog", name);
+                }
+            }
+            Ok(())
+        }
     }
 
     /// Construct datafusion dataframe from Arrow Table
