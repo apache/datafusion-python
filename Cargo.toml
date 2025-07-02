@@ -53,7 +53,7 @@ url = "2"
 log = "0.4.27"
 
 [build-dependencies]
-prost-types = "0.13.1" # keep in line with `datafusion-substrait`
+prost-types = "0.14.1" # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.24"
 
 [lib]
