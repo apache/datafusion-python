@@ -507,6 +507,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.from_pycapsule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.AggregateUDF.udaf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2680,6 +2689,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.from_pycapsule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.ScalarUDF.udf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -3077,6 +3095,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.from_pycapsule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.WindowUDF.udwf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -3448,6 +3475,14 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.AggregateUDFExportable" title="datafusion.user_defined.AggregateUDFExportable"><span class="pre">AggregateUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><span class="pre">AggregateUDF</span></a></span></span><a class="headerlink" href="#datafusion.AggregateUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create an Aggregate UDF from AggregateUDF PyCapsule object.</p>
+<p>This function will instantiate a Aggregate UDF that uses a DataFusion
+AggregateUDF that is exported via the FFI bindings.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.AggregateUDF.udaf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><span class="pre">AggregateUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.AggregateUDF.udaf" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
@@ -3509,7 +3544,11 @@ instance in which this UDAF is used. The following examples are all valid:</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>accum</strong> – The accumulator python function. Only needed when calling as a
-function. Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator.</p></li>
+function. Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator.
+If you have a Rust backed AggregateUDF within a PyCapsule, you can
+pass this parameter and ignore the rest. They will be determined
+directly from the underlying function. See the online documentation
+for more information.</p></li>
 <li><p><strong>input_types</strong> – The data types of the arguments to <code class="docutils literal notranslate"><span class="pre">accum</span></code>.</p></li>
 <li><p><strong>return_type</strong> – The data type of the return value.</p></li>
 <li><p><strong>state_type</strong> – The data types of the intermediate accumulation.</p></li>
@@ -5248,10 +5287,20 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.ScalarUDFExportable" title="datafusion.user_defined.ScalarUDFExportable"><span class="pre">ScalarUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create a Scalar UDF from ScalarUDF PyCapsule object.</p>
+<p>This function will instantiate a Scalar UDF that uses a DataFusion
+ScalarUDF that is exported via the FFI bindings.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ScalarUDF.udf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.ScalarUDF.udf" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.ScalarUDFExportable" title="datafusion.user_defined.ScalarUDFExportable"><span class="pre">ScalarUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span></dt>
 <dd><p>Create a new User-Defined Function (UDF).</p>
 <p>This class can be used both as either a function or a decorator.</p>
 <dl class="simple">
@@ -5266,7 +5315,10 @@ When used a decorator, do <strong>not</strong> pass <code class="docutils litera
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Only needed when calling as a function.
-Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udf</span></code> as a decorator.</p></li>
+Skip this argument when using <cite>udf</cite> as a decorator. If you have a Rust
+backed ScalarUDF within a PyCapsule, you can pass this parameter
+and ignore the rest. They will be determined directly from the
+underlying function. See the online documentation for more information.</p></li>
 <li><p><strong>input_types</strong> (<em>list</em><em>[</em><em>pa.DataType</em><em>]</em>) – The data types of the arguments
 to <code class="docutils literal notranslate"><span class="pre">func</span></code>. This list must be of the same length as the number of
 arguments.</p></li>
@@ -5691,6 +5743,14 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.WindowUDFExportable" title="datafusion.user_defined.WindowUDFExportable"><span class="pre">WindowUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><span class="pre">WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.WindowUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create a Window UDF from WindowUDF PyCapsule object.</p>
+<p>This function will instantiate a Window UDF that uses a DataFusion
+WindowUDF that is exported via the FFI bindings.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.WindowUDF.udwf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udwf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><span class="pre">WindowUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.WindowUDF.udwf" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
@@ -5734,7 +5794,10 @@ When using <code class="docutils literal notranslate"><span class="pre">udwf</sp
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> – Only needed when calling as a function. Skip this argument when
-using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator.</p></li>
+using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator. If you have a Rust backed WindowUDF
+within a PyCapsule, you can pass this parameter and ignore the rest.
+They will be determined directly from the underlying function. See
+the online documentation for more information.</p></li>
 <li><p><strong>input_types</strong> – The data types of the arguments.</p></li>
 <li><p><strong>return_type</strong> – The data type of the return value.</p></li>
 <li><p><strong>volatility</strong> – See <code class="xref py py-class docutils literal notranslate"><span class="pre">Volatility</span></code> for allowed values.</p></li>

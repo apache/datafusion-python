@@ -491,9 +491,15 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.__call__">(datafusion.WindowUDF method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDFExportable.__datafusion_aggregate_udf__">__datafusion_aggregate_udf__() (datafusion.user_defined.AggregateUDFExportable method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.CatalogProviderExportable.__datafusion_catalog_provider__">__datafusion_catalog_provider__() (datafusion.context.CatalogProviderExportable method)</a>
 </li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDFExportable.__datafusion_scalar_udf__">__datafusion_scalar_udf__() (datafusion.user_defined.ScalarUDFExportable method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable.__datafusion_table_provider__">__datafusion_table_provider__() (datafusion.context.TableProviderExportable method)</a>
+</li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDFExportable.__datafusion_window_udf__">__datafusion_window_udf__() (datafusion.user_defined.WindowUDFExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__eq__">__eq__() (datafusion.Expr method)</a>
 
@@ -867,6 +873,8 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF">(class in datafusion.user_defined)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDFExportable">AggregateUDFExportable (class in datafusion.user_defined)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Alias">Alias (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.alias">alias() (datafusion.Expr method)</a>
@@ -947,6 +955,8 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_join">array_join() (in module datafusion.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.array_length">array_length() (datafusion.Expr method)</a>
 
       <ul>
@@ -955,8 +965,6 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.array_length">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.array_ndims">array_ndims() (datafusion.Expr method)</a>
 
       <ul>
@@ -1889,14 +1897,14 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.floor">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_html">format_html() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.DataFrameHtmlFormatter.format_str">format_str() (datafusion.dataframe_formatter.DataFrameHtmlFormatter method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter.FormatterManager">FormatterManager (class in datafusion.dataframe_formatter)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.WindowFrameBound.frame_bound">frame_bound (datafusion.expr.WindowFrameBound attribute)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow">from_arrow() (datafusion.context.SessionContext method)</a>
@@ -1921,6 +1929,20 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.ExecutionPlan.from_proto">(datafusion.plan.ExecutionPlan static method)</a>
 </li>
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan.from_proto">(datafusion.plan.LogicalPlan static method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.AggregateUDF.from_pycapsule">from_pycapsule() (datafusion.AggregateUDF static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.ScalarUDF.from_pycapsule">(datafusion.ScalarUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.AggregateUDF.from_pycapsule">(datafusion.user_defined.AggregateUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF.from_pycapsule">(datafusion.user_defined.ScalarUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF.from_pycapsule">(datafusion.user_defined.WindowUDF static method)</a>
+</li>
+        <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.from_pycapsule">(datafusion.WindowUDF static method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pydict">from_pydict() (datafusion.context.SessionContext method)</a>
@@ -2858,6 +2880,8 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDF">(class in datafusion.user_defined)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.ScalarUDFExportable">ScalarUDFExportable (class in datafusion.user_defined)</a>
+</li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarVariable">ScalarVariable (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema">Schema (class in datafusion.catalog)</a>
@@ -3428,6 +3452,8 @@
         <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDF">(class in datafusion.user_defined)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowUDFExportable">WindowUDFExportable (class in datafusion.user_defined)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SQLOptions.with_allow_ddl">with_allow_ddl() (datafusion.context.SQLOptions method)</a>
 
       <ul>
