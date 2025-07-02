@@ -24,7 +24,6 @@ use datafusion::{
     catalog::{
         CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider, TableProvider,
     },
-    common::exec_err,
     datasource::MemTable,
     error::{DataFusionError, Result},
 };
