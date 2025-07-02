@@ -15,14 +15,16 @@ Classes
 .. autoapisummary::
 
    datafusion.catalog.Catalog
-   datafusion.catalog.Database
+   datafusion.catalog.CatalogProvider
+   datafusion.catalog.Schema
+   datafusion.catalog.SchemaProvider
    datafusion.catalog.Table
 
 
 Module Contents
 ---------------
 
-.. py:class:: Catalog(catalog: datafusion._internal.Catalog)
+.. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
    DataFusion data catalog.
 
@@ -35,50 +37,211 @@ Module Contents
 
 
 
-   .. py:method:: database(name: str = 'public') -> Database
+   .. py:method:: database(name: str = 'public') -> Schema
 
       Returns the database with the given ``name`` from this catalog.
 
 
 
-   .. py:method:: names() -> list[str]
+   .. py:method:: deregister_schema(name: str, cascade: bool = True) -> Schema | None
 
-      Returns the list of databases in this catalog.
+      Deregister a schema from this catalog.
+
+
+
+   .. py:method:: memory_catalog() -> Catalog
+      :staticmethod:
+
+
+      Create an in-memory catalog provider.
+
+
+
+   .. py:method:: names() -> set[str]
+
+      This is an alias for `schema_names`.
+
+
+
+   .. py:method:: register_schema(name, schema) -> Schema | None
+
+      Register a schema with this catalog.
+
+
+
+   .. py:method:: schema(name: str = 'public') -> Schema
+
+      Returns the database with the given ``name`` from this catalog.
+
+
+
+   .. py:method:: schema_names() -> set[str]
+
+      Returns the list of schemas in this catalog.
 
 
 
    .. py:attribute:: catalog
 
 
-.. py:class:: Database(db: datafusion._internal.Database)
+.. py:class:: CatalogProvider
 
-   DataFusion Database.
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract class for defining a Python based Catalog Provider.
+
+
+   .. py:method:: deregister_schema(name: str, cascade: bool) -> None
+
+      Remove a schema from this catalog.
+
+      This method is optional. If your catalog provides a fixed list of schemas, you
+      do not need to implement this method.
+
+      :param name: The name of the schema to remove.
+      :param cascade: If true, deregister the tables within the schema.
+
+
+
+   .. py:method:: register_schema(name: str, schema: SchemaProviderExportable | SchemaProvider | Schema) -> None
+
+      Add a schema to this catalog.
+
+      This method is optional. If your catalog provides a fixed list of schemas, you
+      do not need to implement this method.
+
+
+
+   .. py:method:: schema(name: str) -> Schema | None
+      :abstractmethod:
+
+
+      Retrieve a specific schema from this catalog.
+
+
+
+   .. py:method:: schema_names() -> set[str]
+      :abstractmethod:
+
+
+      Set of the names of all schemas in this catalog.
+
+
+
+.. py:class:: Schema(schema: datafusion._internal.catalog.RawSchema)
+
+   DataFusion Schema.
 
    This constructor is not typically called by the end user.
 
 
    .. py:method:: __repr__() -> str
 
-      Print a string representation of the database.
+      Print a string representation of the schema.
+
+
+
+   .. py:method:: deregister_table(name: str) -> None
+
+      Deregister a table provider from this schema.
+
+
+
+   .. py:method:: memory_schema() -> Schema
+      :staticmethod:
+
+
+      Create an in-memory schema provider.
 
 
 
    .. py:method:: names() -> set[str]
 
-      Returns the list of all tables in this database.
+      This is an alias for `table_names`.
+
+
+
+   .. py:method:: register_table(name, table) -> None
+
+      Register a table provider in this schema.
 
 
 
    .. py:method:: table(name: str) -> Table
 
-      Return the table with the given ``name`` from this database.
+      Return the table with the given ``name`` from this schema.
 
 
 
-   .. py:attribute:: db
+   .. py:method:: table_names() -> set[str]
+
+      Returns the list of all tables in this schema.
 
 
-.. py:class:: Table(table: datafusion._internal.Table)
+
+   .. py:attribute:: _raw_schema
+
+
+.. py:class:: SchemaProvider
+
+   Bases: :py:obj:`abc.ABC`
+
+
+   Abstract class for defining a Python based Schema Provider.
+
+
+   .. py:method:: deregister_table(name, cascade: bool) -> None
+
+      Remove a table from this schema.
+
+      This method is optional. If your schema provides a fixed list of tables, you do
+      not need to implement this method.
+
+
+
+   .. py:method:: owner_name() -> str | None
+
+      Returns the owner of the schema.
+
+      This is an optional method. The default return is None.
+
+
+
+   .. py:method:: register_table(name: str, table: Table) -> None
+
+      Add a table from this schema.
+
+      This method is optional. If your schema provides a fixed list of tables, you do
+      not need to implement this method.
+
+
+
+   .. py:method:: table(name: str) -> Table | None
+      :abstractmethod:
+
+
+      Retrieve a specific table from this schema.
+
+
+
+   .. py:method:: table_exist(name: str) -> bool
+      :abstractmethod:
+
+
+      Returns true if the table exists in this schema.
+
+
+
+   .. py:method:: table_names() -> set[str]
+      :abstractmethod:
+
+
+      Set of the names of all tables in this schema.
+
+
+
+.. py:class:: Table(table: datafusion._internal.catalog.RawTable)
 
    DataFusion table.
 
@@ -88,6 +251,14 @@ Module Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the table.
+
+
+
+   .. py:method:: from_dataset(dataset: pyarrow.dataset.Dataset) -> Table
+      :staticmethod:
+
+
+      Turn a pyarrow Dataset into a Table.
 
 
 

@@ -16,6 +16,7 @@ Classes
 
    datafusion.context.ArrowArrayExportable
    datafusion.context.ArrowStreamExportable
+   datafusion.context.CatalogProviderExportable
    datafusion.context.RuntimeConfig
    datafusion.context.RuntimeEnvBuilder
    datafusion.context.SQLOptions
@@ -51,6 +52,19 @@ Module Contents
 
 
    .. py:method:: __arrow_c_stream__(requested_schema: object | None = None) -> object
+
+
+.. py:class:: CatalogProviderExportable
+
+   Bases: :py:obj:`Protocol`
+
+
+   Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
+
+   https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
+
+
+   .. py:method:: __datafusion_catalog_provider__() -> object
 
 
 .. py:class:: RuntimeConfig
@@ -428,6 +442,12 @@ Module Contents
 
 
 
+   .. py:method:: catalog_names() -> set[str]
+
+      Returns the list of catalogs in this context.
+
+
+
    .. py:method:: create_dataframe(partitions: list[list[pyarrow.RecordBatch]], name: str | None = None, schema: pyarrow.Schema | None = None) -> datafusion.dataframe.DataFrame
 
       Create and return a dataframe using the provided partitions.
@@ -651,6 +671,12 @@ Module Contents
       :param schema: The data source schema.
       :param file_extension: File extension to select.
       :param table_partition_cols: Partition columns.
+
+
+
+   .. py:method:: register_catalog_provider(name: str, provider: CatalogProviderExportable | datafusion.catalog.CatalogProvider | datafusion.catalog.Catalog) -> None
+
+      Register a catalog provider.
 
 
 

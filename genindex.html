@@ -491,6 +491,8 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.WindowUDF.__call__">(datafusion.WindowUDF method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.CatalogProviderExportable.__datafusion_catalog_provider__">__datafusion_catalog_provider__() (datafusion.context.CatalogProviderExportable method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.TableProviderExportable.__datafusion_table_provider__">__datafusion_table_provider__() (datafusion.context.TableProviderExportable method)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.__eq__">__eq__() (datafusion.Expr method)</a>
@@ -592,13 +594,11 @@
 </li>
         <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.__repr__">(datafusion.catalog.Catalog method)</a>
 </li>
-        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.__repr__">(datafusion.catalog.Database method)</a>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.__repr__">(datafusion.catalog.Schema method)</a>
 </li>
         <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.__repr__">(datafusion.catalog.Table method)</a>
 </li>
         <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.__repr__">(datafusion.context.SessionContext method)</a>
-</li>
-        <li><a href="autoapi/datafusion/index.html#datafusion.Database.__repr__">(datafusion.Database method)</a>
 </li>
         <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.__repr__">(datafusion.dataframe.DataFrame method)</a>
 </li>
@@ -773,6 +773,8 @@
         <li><a href="autoapi/datafusion/plan/index.html#datafusion.plan.LogicalPlan._raw_plan">(datafusion.plan.LogicalPlan attribute)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema._raw_schema">_raw_schema (datafusion.catalog.Schema attribute)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe_formatter/index.html#datafusion.dataframe_formatter._refresh_formatter_reference">_refresh_formatter_reference() (in module datafusion.dataframe_formatter)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame._repr_html_">_repr_html_() (datafusion.dataframe.DataFrame method)</a>
@@ -1215,6 +1217,12 @@
       </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.catalog">catalog() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.catalog_names">catalog_names() (datafusion.context.SessionContext method)</a>
+</li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider">CatalogProvider (class in datafusion.catalog)</a>
+</li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.CatalogProviderExportable">CatalogProviderExportable (class in datafusion.context)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.cbrt">cbrt() (datafusion.Expr method)</a>
 
       <ul>
@@ -1289,14 +1297,14 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.ParquetWriterOptions.column_index_truncate_length">(datafusion.ParquetWriterOptions attribute)</a>, <a href="autoapi/datafusion/index.html#id12">[1]</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.column_name">column_name() (datafusion.Expr method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.column_name">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.ParquetWriterOptions.column_specific_options">column_specific_options (datafusion.dataframe.ParquetWriterOptions attribute)</a>, <a href="autoapi/datafusion/dataframe/index.html#id12">[1]</a>
 
       <ul>
@@ -1434,11 +1442,7 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Database">Database (class in datafusion)</a>
-
-      <ul>
-        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database">(class in datafusion.catalog)</a>
 </li>
-      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.database">database() (datafusion.Catalog method)</a>
 
       <ul>
@@ -1585,18 +1589,12 @@
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.datetrunc">datetrunc() (in module datafusion.functions)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.db">db (datafusion.catalog.Database attribute)</a>
-
-      <ul>
-        <li><a href="autoapi/datafusion/index.html#datafusion.Database.db">(datafusion.Database attribute)</a>
-</li>
-      </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Deallocate">Deallocate (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.decode">decode() (in module datafusion.functions)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/unparser/index.html#datafusion.unparser.Dialect.default">default() (datafusion.unparser.Dialect static method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.default_str_repr">default_str_repr() (datafusion.dataframe.DataFrame static method)</a>
@@ -1613,8 +1611,22 @@
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.dense_rank">dense_rank() (in module datafusion.functions)</a>
 </li>
-      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.deregister_table">deregister_table() (datafusion.context.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.deregister_schema">deregister_schema() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.deregister_schema">(datafusion.catalog.Catalog method)</a>
 </li>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider.deregister_schema">(datafusion.catalog.CatalogProvider method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.deregister_table">deregister_table() (datafusion.catalog.Schema method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.deregister_table">(datafusion.catalog.SchemaProvider method)</a>
+</li>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.deregister_table">(datafusion.context.SessionContext method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.describe">describe() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.DescribeTable">DescribeTable (in module datafusion.expr)</a>
@@ -1891,6 +1903,12 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow_table">from_arrow_table() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.from_dataset">from_dataset() (datafusion.catalog.Table static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/index.html#datafusion.Table.from_dataset">(datafusion.Table static method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_pandas">from_pandas() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_polars">from_polars() (datafusion.context.SessionContext method)</a>
@@ -2379,6 +2397,14 @@
 </li>
       <li><a href="autoapi/datafusion/user_defined/index.html#datafusion.user_defined.WindowEvaluator.memoize">memoize() (datafusion.user_defined.WindowEvaluator method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.memory_catalog">memory_catalog() (datafusion.Catalog static method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.memory_catalog">(datafusion.catalog.Catalog static method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.memory_schema">memory_schema() (datafusion.catalog.Schema static method)</a>
+</li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Accumulator.merge">merge() (datafusion.Accumulator method)</a>
 
       <ul>
@@ -2449,9 +2475,7 @@
       <ul>
         <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.names">(datafusion.catalog.Catalog method)</a>
 </li>
-        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.names">(datafusion.catalog.Database method)</a>
-</li>
-        <li><a href="autoapi/datafusion/index.html#datafusion.Database.names">(datafusion.Database method)</a>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.names">(datafusion.catalog.Schema method)</a>
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.nanvl">nanvl() (in module datafusion.functions)</a>
@@ -2529,6 +2553,8 @@
 </li>
       </ul></li>
       <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.overlay">overlay() (in module datafusion.functions)</a>
+</li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.owner_name">owner_name() (datafusion.catalog.SchemaProvider method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -2686,6 +2712,8 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_avro">register_avro() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_catalog_provider">register_catalog_provider() (datafusion.context.SessionContext method)</a>
+</li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_csv">register_csv() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_dataset">register_dataset() (datafusion.context.SessionContext method)</a>
@@ -2702,10 +2730,24 @@
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_record_batches">register_record_batches() (datafusion.context.SessionContext method)</a>
 </li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.register_schema">register_schema() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.register_schema">(datafusion.catalog.Catalog method)</a>
+</li>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider.register_schema">(datafusion.catalog.CatalogProvider method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_table">register_table() (datafusion.context.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.register_table">register_table() (datafusion.catalog.Schema method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.register_table">(datafusion.catalog.SchemaProvider method)</a>
 </li>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_table">(datafusion.context.SessionContext method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_table_provider">register_table_provider() (datafusion.context.SessionContext method)</a>
 </li>
       <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.register_udaf">register_udaf() (datafusion.context.SessionContext method)</a>
@@ -2818,20 +2860,40 @@
       </ul></li>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.ScalarVariable">ScalarVariable (in module datafusion.expr)</a>
 </li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema">Schema (class in datafusion.catalog)</a>
+</li>
       <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Table.schema">schema (datafusion.catalog.Table property)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/index.html#datafusion.Table.schema">(datafusion.Table property)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.schema">schema() (datafusion.dataframe.DataFrame method)</a>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.schema">schema() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.schema">(datafusion.catalog.Catalog method)</a>
 </li>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider.schema">(datafusion.catalog.CatalogProvider method)</a>
+</li>
+        <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.schema">(datafusion.dataframe.DataFrame method)</a>
+</li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.schema_name">schema_name() (datafusion.Expr method)</a>
 
       <ul>
         <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.Expr.schema_name">(datafusion.expr.Expr method)</a>
 </li>
       </ul></li>
+      <li><a href="autoapi/datafusion/index.html#datafusion.Catalog.schema_names">schema_names() (datafusion.Catalog method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog.schema_names">(datafusion.catalog.Catalog method)</a>
+</li>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider.schema_names">(datafusion.catalog.CatalogProvider method)</a>
+</li>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider">SchemaProvider (class in datafusion.catalog)</a>
+</li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select">select() (datafusion.dataframe.DataFrame method)</a>
 </li>
       <li><a href="autoapi/datafusion/dataframe/index.html#datafusion.dataframe.DataFrame.select_columns">select_columns() (datafusion.dataframe.DataFrame method)</a>
@@ -2916,6 +2978,8 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.signum">(in module datafusion.functions)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/expr/index.html#datafusion.expr.SimilarTo">SimilarTo (in module datafusion.expr)</a>
 </li>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sin">sin() (datafusion.Expr method)</a>
@@ -2926,8 +2990,6 @@
         <li><a href="autoapi/datafusion/functions/index.html#datafusion.functions.sin">(in module datafusion.functions)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="autoapi/datafusion/index.html#datafusion.Expr.sinh">sinh() (datafusion.Expr method)</a>
 
       <ul>
@@ -3058,16 +3120,26 @@
         <li><a href="autoapi/datafusion/index.html#datafusion.Table.table">(datafusion.Table attribute)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Database.table">table() (datafusion.catalog.Database method)</a>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.table">table() (datafusion.catalog.Schema method)</a>
 
       <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.table">(datafusion.catalog.SchemaProvider method)</a>
+</li>
         <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table">(datafusion.context.SessionContext method)</a>
 </li>
-        <li><a href="autoapi/datafusion/index.html#datafusion.Database.table">(datafusion.Database method)</a>
+      </ul></li>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.table_exist">table_exist() (datafusion.catalog.SchemaProvider method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_exist">(datafusion.context.SessionContext method)</a>
 </li>
       </ul></li>
-      <li><a href="autoapi/datafusion/context/index.html#datafusion.context.SessionContext.table_exist">table_exist() (datafusion.context.SessionContext method)</a>
+      <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema.table_names">table_names() (datafusion.catalog.Schema method)</a>
+
+      <ul>
+        <li><a href="autoapi/datafusion/catalog/index.html#datafusion.catalog.SchemaProvider.table_names">(datafusion.catalog.SchemaProvider method)</a>
 </li>
+      </ul></li>
       <li><a href="autoapi/datafusion/index.html#datafusion.TableFunction">TableFunction (class in datafusion)</a>
 
       <ul>

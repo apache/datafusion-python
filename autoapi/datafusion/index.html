@@ -554,10 +554,55 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.deregister_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.deregister_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.memory_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.memory_catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Catalog.names">
        <code class="docutils literal notranslate">
         <span class="pre">
          Catalog.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.register_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.register_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.schema_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema_names()
         </span>
        </code>
       </a>
@@ -581,44 +626,6 @@
       </span>
      </code>
     </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.__repr__">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.__repr__()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.names">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.names()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.table">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.table()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.db">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.db
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.ExecutionPlan">
@@ -2848,6 +2855,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.from_dataset">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.from_dataset()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Table.kind">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -3298,7 +3314,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <td><p>DataFusion data catalog.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
-<td><p>DataFusion Database.</p></td>
+<td><p>See <cite>Schema</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
 <td><p>Represent nodes in the DataFusion Physical Plan.</p></td>
@@ -3517,7 +3533,7 @@ aggregation or window function calls.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Catalog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Catalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Catalog" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawCatalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Catalog" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion data catalog.</p>
 <p>This constructor is not typically called by the end user.</p>
 <dl class="py method">
@@ -3528,14 +3544,44 @@ aggregation or window function calls.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Catalog.database">
-<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><span class="pre">Database</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.database" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.database" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.deregister_schema">
+<span class="sig-name descname"><span class="pre">deregister_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.deregister_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Deregister a schema from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.memory_catalog">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Catalog" title="datafusion.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.memory_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Create an in-memory catalog provider.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Catalog.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of databases in this catalog.</p>
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.names" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <cite>schema_names</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.register_schema">
+<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.register_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Register a schema with this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.schema_names">
+<span class="sig-name descname"><span class="pre">schema_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.schema_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of schemas in this catalog.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -3547,32 +3593,10 @@ aggregation or window function calls.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Database">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Database</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Database" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion Database.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawSchema</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Database" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Schema</span></code></p>
+<p>See <cite>Schema</cite>.</p>
 <p>This constructor is not typically called by the end user.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Database.__repr__">
-<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Database.__repr__" title="Link to this definition">¶</a></dt>
-<dd><p>Print a string representation of the database.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Database.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Database.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of all tables in this database.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Database.table">
-<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Database.table" title="Link to this definition">¶</a></dt>
-<dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this database.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.Database.db">
-<span class="sig-name descname"><span class="pre">db</span></span><a class="headerlink" href="#datafusion.Database.db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -5488,13 +5512,19 @@ automatically created.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Table">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawTable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion table.</p>
 <p>This constructor is not typically called by the end user.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Table.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Table.__repr__" title="Link to this definition">¶</a></dt>
 <dd><p>Print a string representation of the table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Table.from_dataset">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Table.from_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Turn a pyarrow Dataset into a Table.</p>
 </dd></dl>
 
 <dl class="py property">

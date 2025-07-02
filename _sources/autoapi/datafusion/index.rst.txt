@@ -231,7 +231,7 @@ Package Contents
    .. py:attribute:: _udaf
 
 
-.. py:class:: Catalog(catalog: datafusion._internal.Catalog)
+.. py:class:: Catalog(catalog: datafusion._internal.catalog.RawCatalog)
 
    DataFusion data catalog.
 
@@ -244,47 +244,61 @@ Package Contents
 
 
 
-   .. py:method:: database(name: str = 'public') -> Database
+   .. py:method:: database(name: str = 'public') -> Schema
 
       Returns the database with the given ``name`` from this catalog.
 
 
 
-   .. py:method:: names() -> list[str]
+   .. py:method:: deregister_schema(name: str, cascade: bool = True) -> Schema | None
 
-      Returns the list of databases in this catalog.
+      Deregister a schema from this catalog.
+
+
+
+   .. py:method:: memory_catalog() -> Catalog
+      :staticmethod:
+
+
+      Create an in-memory catalog provider.
+
+
+
+   .. py:method:: names() -> set[str]
+
+      This is an alias for `schema_names`.
+
+
+
+   .. py:method:: register_schema(name, schema) -> Schema | None
+
+      Register a schema with this catalog.
+
+
+
+   .. py:method:: schema(name: str = 'public') -> Schema
+
+      Returns the database with the given ``name`` from this catalog.
+
+
+
+   .. py:method:: schema_names() -> set[str]
+
+      Returns the list of schemas in this catalog.
 
 
 
    .. py:attribute:: catalog
 
 
-.. py:class:: Database(db: datafusion._internal.Database)
+.. py:class:: Database(schema: datafusion._internal.catalog.RawSchema)
 
-   DataFusion Database.
+   Bases: :py:obj:`Schema`
+
+
+   See `Schema`.
 
    This constructor is not typically called by the end user.
-
-
-   .. py:method:: __repr__() -> str
-
-      Print a string representation of the database.
-
-
-
-   .. py:method:: names() -> set[str]
-
-      Returns the list of all tables in this database.
-
-
-
-   .. py:method:: table(name: str) -> Table
-
-      Return the table with the given ``name`` from this database.
-
-
-
-   .. py:attribute:: db
 
 
 .. py:class:: ExecutionPlan(plan: datafusion._internal.ExecutionPlan)
@@ -2053,7 +2067,7 @@ Package Contents
    .. py:attribute:: config_internal
 
 
-.. py:class:: Table(table: datafusion._internal.Table)
+.. py:class:: Table(table: datafusion._internal.catalog.RawTable)
 
    DataFusion table.
 
@@ -2063,6 +2077,14 @@ Package Contents
    .. py:method:: __repr__() -> str
 
       Print a string representation of the table.
+
+
+
+   .. py:method:: from_dataset(dataset: pyarrow.dataset.Dataset) -> Table
+      :staticmethod:
+
+
+      Turn a pyarrow Dataset into a Table.
 
 
 
