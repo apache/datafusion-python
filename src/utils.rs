@@ -109,8 +109,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     let capsule_name = capsule_name.unwrap().to_str()?;
     if capsule_name != name {
         return Err(PyValueError::new_err(format!(
-            "Expected name '{}' in PyCapsule, instead got '{}'",
-            name, capsule_name
+            "Expected name '{name}' in PyCapsule, instead got '{capsule_name}'"
         )));
     }
 
@@ -127,7 +126,7 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<Scal
 
     // Convert PyArrow scalar to PyScalarValue
     let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
-        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {}", e)))?;
+        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
 
     // Convert PyScalarValue to ScalarValue
     Ok(py_scalar.into())

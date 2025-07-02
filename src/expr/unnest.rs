@@ -66,7 +66,7 @@ impl PyUnnest {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Unnest({})", self))
+        Ok(format!("Unnest({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

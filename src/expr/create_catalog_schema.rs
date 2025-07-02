@@ -81,7 +81,7 @@ impl PyCreateCatalogSchema {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateCatalogSchema({})", self))
+        Ok(format!("CreateCatalogSchema({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

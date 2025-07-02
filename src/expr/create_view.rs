@@ -75,7 +75,7 @@ impl PyCreateView {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateView({})", self))
+        Ok(format!("CreateView({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

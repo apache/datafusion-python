@@ -61,7 +61,7 @@ impl PyDescribeTable {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("DescribeTable({})", self))
+        Ok(format!("DescribeTable({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

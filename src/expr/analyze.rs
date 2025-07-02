@@ -69,7 +69,7 @@ impl PyAnalyze {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Analyze({})", self))
+        Ok(format!("Analyze({self})"))
     }
 }
 

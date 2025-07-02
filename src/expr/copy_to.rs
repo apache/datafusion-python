@@ -106,7 +106,7 @@ impl PyCopyTo {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CopyTo({})", self))
+        Ok(format!("CopyTo({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {
@@ -129,7 +129,7 @@ impl Display for PyFileType {
 #[pymethods]
 impl PyFileType {
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("FileType({})", self))
+        Ok(format!("FileType({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

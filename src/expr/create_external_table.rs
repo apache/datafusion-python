@@ -164,7 +164,7 @@ impl PyCreateExternalTable {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateExternalTable({})", self))
+        Ok(format!("CreateExternalTable({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

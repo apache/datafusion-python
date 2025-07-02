@@ -78,8 +78,7 @@ impl PyExecutionPlan {
         let proto_plan =
             datafusion_proto::protobuf::PhysicalPlanNode::decode(bytes).map_err(|e| {
                 PyRuntimeError::new_err(format!(
-                    "Unable to decode logical node from serialized bytes: {}",
-                    e
+                    "Unable to decode logical node from serialized bytes: {e}"
                 ))
             })?;
 

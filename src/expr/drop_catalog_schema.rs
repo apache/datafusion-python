@@ -101,7 +101,7 @@ impl PyDropCatalogSchema {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("DropCatalogSchema({})", self))
+        Ok(format!("DropCatalogSchema({self})"))
     }
 }
 

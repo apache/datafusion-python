@@ -31,7 +31,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable};
+use crate::catalog::{PyCatalog, PyTable, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -49,6 +49,7 @@ use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_f
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::catalog::CatalogProvider;
 use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -69,8 +70,10 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
+use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
+use pyo3::IntoPyObjectExt;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -365,7 +368,7 @@ impl PySessionContext {
         } else {
             &upstream_host
         };
-        let url_string = format!("{}{}", scheme, derived_host);
+        let url_string = format!("{scheme}{derived_host}");
         let url = Url::parse(&url_string).unwrap();
         self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())
@@ -614,6 +617,34 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn register_catalog_provider(
+        &mut self,
+        name: &str,
+        provider: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        let provider = if provider.hasattr("__datafusion_catalog_provider__")? {
+            let capsule = provider
+                .getattr("__datafusion_catalog_provider__")?
+                .call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+            let provider: ForeignCatalogProvider = provider.into();
+            Arc::new(provider) as Arc<dyn CatalogProvider>
+        } else {
+            match provider.extract::<PyCatalog>() {
+                Ok(py_catalog) => py_catalog.catalog,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
+                    as Arc<dyn CatalogProvider>,
+            }
+        };
+
+        let _ = self.ctx.register_catalog(name, provider);
+
+        Ok(())
+    }
+
     /// Construct datafusion dataframe from Arrow Table
     pub fn register_table_provider(
         &mut self,
@@ -845,14 +876,24 @@ impl PySessionContext {
     }
 
     #[pyo3(signature = (name="datafusion"))]
-    pub fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
-        match self.ctx.catalog(name) {
-            Some(catalog) => Ok(PyCatalog::new(catalog)),
-            None => Err(PyKeyError::new_err(format!(
-                "Catalog with name {} doesn't exist.",
-                &name,
-            ))),
-        }
+    pub fn catalog(&self, name: &str) -> PyResult<PyObject> {
+        let catalog = self.ctx.catalog(name).ok_or(PyKeyError::new_err(format!(
+            "Catalog with name {name} doesn't exist."
+        )))?;
+
+        Python::with_gil(|py| {
+            match catalog
+                .as_any()
+                .downcast_ref::<RustWrappedPyCatalogProvider>()
+            {
+                Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
+                None => PyCatalog::from(catalog).into_py_any(py),
+            }
+        })
+    }
+
+    pub fn catalog_names(&self) -> HashSet<String> {
+        self.ctx.catalog_names().into_iter().collect()
     }
 
     pub fn tables(&self) -> HashSet<String> {

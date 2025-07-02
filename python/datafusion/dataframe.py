@@ -760,19 +760,16 @@ class DataFrame:
         exprs = [expr.expr for expr in on_exprs]
         return DataFrame(self.df.join_on(right.df, exprs, how))
 
-    def explain(self, verbose: bool = False, analyze: bool = False) -> DataFrame:
-        """Return a DataFrame with the explanation of its plan so far.
+    def explain(self, verbose: bool = False, analyze: bool = False) -> None:
+        """Print an explanation of the DataFrame's plan so far.
 
         If ``analyze`` is specified, runs the plan and reports metrics.
 
         Args:
             verbose: If ``True``, more details will be included.
             analyze: If ``Tru`e``, the plan will run and metrics reported.
-
-        Returns:
-            DataFrame with the explanation of its plan.
         """
-        return DataFrame(self.df.explain(verbose, analyze))
+        self.df.explain(verbose, analyze)
 
     def logical_plan(self) -> LogicalPlan:
         """Return the unoptimized ``LogicalPlan``.

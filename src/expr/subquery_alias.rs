@@ -72,7 +72,7 @@ impl PySubqueryAlias {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("SubqueryAlias({})", self))
+        Ok(format!("SubqueryAlias({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

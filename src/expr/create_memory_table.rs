@@ -78,7 +78,7 @@ impl PyCreateMemoryTable {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateMemoryTable({})", self))
+        Ok(format!("CreateMemoryTable({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {
