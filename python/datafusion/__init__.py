@@ -92,6 +92,7 @@ __all__ = [
     "TableFunction",
     "WindowFrame",
     "WindowUDF",
+    "catalog",
     "col",
     "column",
     "common",
