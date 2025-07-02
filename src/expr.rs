@@ -171,12 +171,10 @@ impl PyExpr {
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
-                value
+                "Converting Expr::ScalarFunction to a Python object is not implemented: {value:?}"
             ))),
             Expr::WindowFunction(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::WindowFunction to a Python object is not implemented: {:?}",
-                value
+                "Converting Expr::WindowFunction to a Python object is not implemented: {value:?}"
             ))),
             Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_bound_py_any(py)?),
             Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_bound_py_any(py)?),
@@ -188,8 +186,7 @@ impl PyExpr {
             }
             #[allow(deprecated)]
             Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
-                qualifier, options
+                "Converting Expr::Wildcard to a Python object is not implemented : {qualifier:?} {options:?}"
             ))),
             Expr::GroupingSet(value) => {
                 Ok(grouping_set::PyGroupingSet::from(value.clone()).into_bound_py_any(py)?)
@@ -198,8 +195,7 @@ impl PyExpr {
                 Ok(placeholder::PyPlaceholder::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {:?} - {:?}",
-                data_type, column
+                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {data_type:?} - {column:?}"
             ))),
             Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?),
         }
@@ -755,8 +751,7 @@ impl PyExpr {
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
             Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => Err(py_type_err(format!(
-                "Non Expr::Literal encountered in types: {:?}",
-                expr
+                "Non Expr::Literal encountered in types: {expr:?}"
             ))),
         }
     }

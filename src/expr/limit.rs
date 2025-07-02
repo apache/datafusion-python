@@ -81,7 +81,7 @@ impl PyLimit {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Limit({})", self))
+        Ok(format!("Limit({self})"))
     }
 }
 

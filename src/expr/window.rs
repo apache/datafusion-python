@@ -185,8 +185,7 @@ impl PyWindowFrame {
             "groups" => WindowFrameUnits::Groups,
             _ => {
                 return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
-                    "{:?}",
-                    units,
+                    "{units:?}",
                 ))));
             }
         };
@@ -197,8 +196,7 @@ impl PyWindowFrame {
                 WindowFrameUnits::Rows => WindowFrameBound::Preceding(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Groups => {
                     return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
-                        "{:?}",
-                        units,
+                        "{units:?}",
                     ))));
                 }
             },
@@ -210,8 +208,7 @@ impl PyWindowFrame {
                 WindowFrameUnits::Range => WindowFrameBound::Following(ScalarValue::UInt64(None)),
                 WindowFrameUnits::Groups => {
                     return Err(py_datafusion_err(DataFusionError::NotImplemented(format!(
-                        "{:?}",
-                        units,
+                        "{units:?}",
                     ))));
                 }
             },
@@ -236,7 +233,7 @@ impl PyWindowFrame {
 
     /// Get a String representation of this window frame
     fn __repr__(&self) -> String {
-        format!("{}", self)
+        format!("{self}")
     }
 }
 

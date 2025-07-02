@@ -89,7 +89,7 @@ impl PyRecursiveQuery {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("RecursiveQuery({})", self))
+        Ok(format!("RecursiveQuery({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

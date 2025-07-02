@@ -110,7 +110,7 @@ impl PyCreateIndex {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateIndex({})", self))
+        Ok(format!("CreateIndex({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

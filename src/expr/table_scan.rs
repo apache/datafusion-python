@@ -136,7 +136,7 @@ impl PyTableScan {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("TableScan({})", self))
+        Ok(format!("TableScan({self})"))
     }
 }
 

@@ -75,7 +75,7 @@ impl PyLike {
     }
 
     fn __repr__(&self) -> String {
-        format!("Like({})", self)
+        format!("Like({self})")
     }
 }
 
@@ -133,7 +133,7 @@ impl PyILike {
     }
 
     fn __repr__(&self) -> String {
-        format!("Like({})", self)
+        format!("Like({self})")
     }
 }
 
@@ -191,6 +191,6 @@ impl PySimilarTo {
     }
 
     fn __repr__(&self) -> String {
-        format!("Like({})", self)
+        format!("Like({self})")
     }
 }

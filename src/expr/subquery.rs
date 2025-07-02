@@ -62,7 +62,7 @@ impl PySubquery {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Subquery({})", self))
+        Ok(format!("Subquery({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

@@ -368,7 +368,7 @@ impl PySessionContext {
         } else {
             &upstream_host
         };
-        let url_string = format!("{}{}", scheme, derived_host);
+        let url_string = format!("{scheme}{derived_host}");
         let url = Url::parse(&url_string).unwrap();
         self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())

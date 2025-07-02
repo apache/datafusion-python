@@ -87,7 +87,7 @@ impl PySort {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Sort({})", self))
+        Ok(format!("Sort({self})"))
     }
 }
 
