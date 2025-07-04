@@ -32,7 +32,6 @@ Functions
    datafusion.dataframe_formatter.configure_formatter
    datafusion.dataframe_formatter.get_formatter
    datafusion.dataframe_formatter.reset_formatter
-   datafusion.dataframe_formatter.reset_styles_loaded_state
    datafusion.dataframe_formatter.set_formatter
 
 
@@ -228,25 +227,6 @@ Module Contents
 
 
 
-   .. py:method:: is_styles_loaded() -> bool
-      :classmethod:
-
-
-      Check if HTML styles have been loaded in the current session.
-
-      This method is primarily intended for debugging UI rendering issues
-      related to style loading.
-
-      :returns: True if styles have been loaded, False otherwise
-
-      .. rubric:: Example
-
-      >>> from datafusion.dataframe_formatter import DataFrameHtmlFormatter
-      >>> DataFrameHtmlFormatter.is_styles_loaded()
-      False
-
-
-
    .. py:method:: register_formatter(type_class: type, formatter: CellFormatter) -> None
 
       Register a custom formatter for a specific data type.
@@ -282,11 +262,6 @@ Module Contents
    .. py:attribute:: _custom_header_builder
       :type:  Optional[Callable[[Any], str]]
       :value: None
-
-
-
-   .. py:attribute:: _styles_loaded
-      :value: False
 
 
 
@@ -496,19 +471,6 @@ Module Contents
 
    >>> from datafusion.html_formatter import reset_formatter
    >>> reset_formatter()  # Reset formatter to default settings
-
-
-.. py:function:: reset_styles_loaded_state() -> None
-
-   Reset the styles loaded state to force reloading of styles.
-
-   This can be useful when switching between notebook sessions or
-   when styles need to be refreshed.
-
-   .. rubric:: Example
-
-   >>> from datafusion.html_formatter import reset_styles_loaded_state
-   >>> reset_styles_loaded_state()  # Force styles to reload in next render
 
 
 .. py:function:: set_formatter(formatter: DataFrameHtmlFormatter) -> None

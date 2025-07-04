@@ -569,15 +569,6 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.is_styles_loaded">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter.is_styles_loaded()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -618,15 +609,6 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrameHtmlFormatter._custom_header_builder
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._styles_loaded">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         DataFrameHtmlFormatter._styles_loaded
         </span>
        </code>
       </a>
@@ -892,15 +874,6 @@
     </a>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.reset_styles_loaded_state">
-     <code class="docutils literal notranslate">
-      <span class="pre">
-       reset_styles_loaded_state()
-      </span>
-     </code>
-    </a>
-   </li>
-   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.dataframe_formatter.set_formatter">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -979,10 +952,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.reset_formatter" title="datafusion.dataframe_formatter.reset_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_formatter</span></code></a>(→ None)</p></td>
 <td><p>Reset the global DataFrame HTML formatter to default settings.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.reset_styles_loaded_state" title="datafusion.dataframe_formatter.reset_styles_loaded_state"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reset_styles_loaded_state</span></code></a>(→ None)</p></td>
-<td><p>Reset the styles loaded state to force reloading of styles.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.set_formatter" title="datafusion.dataframe_formatter.set_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_formatter</span></code></a>(→ None)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe_formatter.set_formatter" title="datafusion.dataframe_formatter.set_formatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_formatter</span></code></a>(→ None)</p></td>
 <td><p>Set the global DataFrame HTML formatter.</p></td>
 </tr>
 </tbody>
@@ -1195,25 +1165,6 @@ called directly when string rendering is needed.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.is_styles_loaded">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_styles_loaded</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.is_styles_loaded" title="Link to this definition">¶</a></dt>
-<dd><p>Check if HTML styles have been loaded in the current session.</p>
-<p>This method is primarily intended for debugging UI rendering issues
-related to style loading.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>True if styles have been loaded, False otherwise</p>
-</dd>
-</dl>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.dataframe_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataFrameHtmlFormatter</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">DataFrameHtmlFormatter</span><span class="o">.</span><span class="n">is_styles_loaded</span><span class="p">()</span>
-<span class="go">False</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter">
 <span class="sig-name descname"><span class="pre">register_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe_formatter.CellFormatter" title="datafusion.dataframe_formatter.CellFormatter"><span class="pre">CellFormatter</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter.register_formatter" title="Link to this definition">¶</a></dt>
 <dd><p>Register a custom formatter for a specific data type.</p>
@@ -1258,11 +1209,6 @@ a formatted string</p></li>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder">
 <span class="sig-name descname"><span class="pre">_custom_header_builder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._custom_header_builder" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.dataframe_formatter.DataFrameHtmlFormatter._styles_loaded">
-<span class="sig-name descname"><span class="pre">_styles_loaded</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#datafusion.dataframe_formatter.DataFrameHtmlFormatter._styles_loaded" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1505,19 +1451,6 @@ and sets it as the global formatter for all DataFrames.</p>
 <p class="rubric">Example</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">reset_formatter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">reset_formatter</span><span class="p">()</span>  <span class="c1"># Reset formatter to default settings</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="datafusion.dataframe_formatter.reset_styles_loaded_state">
-<span class="sig-prename descclassname"><span class="pre">datafusion.dataframe_formatter.</span></span><span class="sig-name descname"><span class="pre">reset_styles_loaded_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe_formatter.reset_styles_loaded_state" title="Link to this definition">¶</a></dt>
-<dd><p>Reset the styles loaded state to force reloading of styles.</p>
-<p>This can be useful when switching between notebook sessions or
-when styles need to be refreshed.</p>
-<p class="rubric">Example</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.html_formatter</span><span class="w"> </span><span class="kn">import</span> <span class="n">reset_styles_loaded_state</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">reset_styles_loaded_state</span><span class="p">()</span>  <span class="c1"># Force styles to reload in next render</span>
 </pre></div>
 </div>
 </dd></dl>
