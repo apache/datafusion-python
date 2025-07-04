@@ -42,7 +42,6 @@ from datafusion.dataframe_formatter import (
     configure_formatter,
     get_formatter,
     reset_formatter,
-    reset_styles_loaded_state,
 )
 from datafusion.expr import Window
 from pyarrow.csv import write_csv
@@ -2177,27 +2176,15 @@ def test_html_formatter_shared_styles(df, clean_formatter_state):
     # First, ensure we're using shared styles
     configure_formatter(use_shared_styles=True)
 
-    # Get HTML output for first table - should include styles
     html_first = df._repr_html_()
-
-    # Verify styles are included in first render
-    assert "<style>" in html_first
-    assert ".expandable-container" in html_first
-
-    # Get HTML output for second table - should NOT include styles
     html_second = df._repr_html_()
 
-    # Verify styles are NOT included in second render
+    assert "<script>" in html_first
+    assert "df-styles" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
     assert "<style>" not in html_second
-    assert ".expandable-container" not in html_second
-
-    # Reset the styles loaded state and verify styles are included again
-    reset_styles_loaded_state()
-    html_after_reset = df._repr_html_()
-
-    # Verify styles are included after reset
-    assert "<style>" in html_after_reset
-    assert ".expandable-container" in html_after_reset
 
 
 def test_html_formatter_no_shared_styles(df, clean_formatter_state):
@@ -2206,15 +2193,15 @@ def test_html_formatter_no_shared_styles(df, clean_formatter_state):
     # Configure formatter to NOT use shared styles
     configure_formatter(use_shared_styles=False)
 
-    # Generate HTML multiple times
     html_first = df._repr_html_()
     html_second = df._repr_html_()
 
-    # Verify styles are included in both renders
-    assert "<style>" in html_first
-    assert "<style>" in html_second
-    assert ".expandable-container" in html_first
-    assert ".expandable-container" in html_second
+    assert "<script>" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_first
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
+    assert "<style>" not in html_second
 
 
 def test_html_formatter_manual_format_html(clean_formatter_state):
@@ -2228,20 +2215,15 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
     formatter = get_formatter()
 
-    # First call should include styles
     html_first = formatter.format_html([batch], batch.schema)
-    assert "<style>" in html_first
-
-    # Second call should not include styles (using shared styles by default)
     html_second = formatter.format_html([batch], batch.schema)
+
+    assert "<script>" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_first
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
     assert "<style>" not in html_second
-
-    # Reset loaded state
-    reset_styles_loaded_state()
-
-    # After reset, styles should be included again
-    html_reset = formatter.format_html([batch], batch.schema)
-    assert "<style>" in html_reset
 
     # Create a new formatter with shared_styles=False
     local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
@@ -2250,8 +2232,12 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
     local_html_1 = local_formatter.format_html([batch], batch.schema)
     local_html_2 = local_formatter.format_html([batch], batch.schema)
 
-    assert "<style>" in local_html_1
-    assert "<style>" in local_html_2
+    assert "<script>" in local_html_1
+    assert "<script>" in local_html_2
+    assert "df-styles" in local_html_1
+    assert "df-styles" in local_html_2
+    assert "<style>" not in local_html_1
+    assert "<style>" not in local_html_2
 
 
 def test_fill_null_basic(null_df):

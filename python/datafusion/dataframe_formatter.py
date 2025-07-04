@@ -135,9 +135,6 @@ class DataFrameHtmlFormatter:
           session
     """
 
-    # Class variable to track if styles have been loaded in the notebook
-    _styles_loaded = False
-
     def __init__(
         self,
         max_cell_length: int = 25,
@@ -260,23 +257,6 @@ class DataFrameHtmlFormatter:
         """
         self._custom_header_builder = builder
 
-    @classmethod
-    def is_styles_loaded(cls) -> bool:
-        """Check if HTML styles have been loaded in the current session.
-
-        This method is primarily intended for debugging UI rendering issues
-        related to style loading.
-
-        Returns:
-            True if styles have been loaded, False otherwise
-
-        Example:
-            >>> from datafusion.dataframe_formatter import DataFrameHtmlFormatter
-            >>> DataFrameHtmlFormatter.is_styles_loaded()
-            False
-        """
-        return cls._styles_loaded
-
     def format_html(
         self,
         batches: list,
@@ -315,18 +295,7 @@ class DataFrameHtmlFormatter:
         # Build HTML components
         html = []
 
-        # Only include styles and scripts if:
-        # 1. Not using shared styles, OR
-        # 2. Using shared styles but they haven't been loaded yet
-        include_styles = (
-            not self.use_shared_styles or not DataFrameHtmlFormatter._styles_loaded
-        )
-
-        if include_styles:
-            html.extend(self._build_html_header())
-            # If we're using shared styles, mark them as loaded
-            if self.use_shared_styles:
-                DataFrameHtmlFormatter._styles_loaded = True
+        html.extend(self._build_html_header())
 
         html.extend(self._build_table_container_start())
 
@@ -338,7 +307,7 @@ class DataFrameHtmlFormatter:
         html.append("</div>")
 
         # Add footer (JavaScript and messages)
-        if include_styles and self.enable_cell_expansion:
+        if self.enable_cell_expansion:
             html.append(self._get_javascript())
 
         # Always add truncation message if needed (independent of styles)
@@ -375,14 +344,20 @@ class DataFrameHtmlFormatter:
 
     def _build_html_header(self) -> list[str]:
         """Build the HTML header with CSS styles."""
-        html = []
-        html.append("<style>")
-        # Only include expandable CSS if cell expansion is enabled
-        if self.enable_cell_expansion:
-            html.append(self._get_default_css())
+        default_css = self._get_default_css() if self.enable_cell_expansion else ""
+        script = f"""
+<script>
+if (!document.getElementById('df-styles')) {{
+  const style = document.createElement('style');
+  style.id = 'df-styles';
+  style.textContent = `{default_css}`;
+  document.head.appendChild(style);
+}}
+</script>
+"""
+        html = [script]
         if self.custom_css:
-            html.append(self.custom_css)
-        html.append("</style>")
+            html.append(f"<style>{self.custom_css}</style>")
         return html
 
     def _build_table_container_start(self) -> list[str]:
@@ -570,28 +545,31 @@ class DataFrameHtmlFormatter:
     def _get_javascript(self) -> str:
         """Get JavaScript code for interactive elements."""
         return """
-            <script>
-            function toggleDataFrameCellText(table_uuid, row, col) {
-                var shortText = document.getElementById(
-                    table_uuid + "-min-text-" + row + "-" + col
-                );
-                var fullText = document.getElementById(
-                    table_uuid + "-full-text-" + row + "-" + col
-                );
-                var button = event.target;
+<script>
+if (!window.__df_formatter_js_loaded__) {
+  window.__df_formatter_js_loaded__ = true;
+  window.toggleDataFrameCellText = function (table_uuid, row, col) {
+    var shortText = document.getElementById(
+      table_uuid + "-min-text-" + row + "-" + col
+    );
+    var fullText = document.getElementById(
+      table_uuid + "-full-text-" + row + "-" + col
+    );
+    var button = event.target;
 
-                if (fullText.style.display === "none") {
-                    shortText.style.display = "none";
-                    fullText.style.display = "inline";
-                    button.textContent = "(less)";
-                } else {
-                    shortText.style.display = "inline";
-                    fullText.style.display = "none";
-                    button.textContent = "...";
-                }
-            }
-            </script>
-        """
+    if (fullText.style.display === "none") {
+      shortText.style.display = "none";
+      fullText.style.display = "inline";
+      button.textContent = "(less)";
+    } else {
+      shortText.style.display = "inline";
+      fullText.style.display = "none";
+      button.textContent = "...";
+    }
+  };
+}
+</script>
+"""
 
 
 class FormatterManager:
@@ -712,22 +690,7 @@ def reset_formatter() -> None:
         >>> reset_formatter()  # Reset formatter to default settings
     """
     formatter = DataFrameHtmlFormatter()
-    # Reset the styles_loaded flag to ensure styles will be reloaded
-    DataFrameHtmlFormatter._styles_loaded = False
     set_formatter(formatter)
-
-
-def reset_styles_loaded_state() -> None:
-    """Reset the styles loaded state to force reloading of styles.
-
-    This can be useful when switching between notebook sessions or
-    when styles need to be refreshed.
-
-    Example:
-        >>> from datafusion.html_formatter import reset_styles_loaded_state
-        >>> reset_styles_loaded_state()  # Force styles to reload in next render
-    """
-    DataFrameHtmlFormatter._styles_loaded = False
 
 
 def _refresh_formatter_reference() -> None:
