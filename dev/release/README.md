@@ -101,7 +101,7 @@ git push apache 0.8.0-rc1
 ./dev/release/create-tarball.sh 0.8.0 1
 ```
 
-This will also create the email template to send to the mailing list. 
+This will also create the email template to send to the mailing list.
 
 Create a draft email using this content, but do not send until after completing the next step.
 
@@ -157,7 +157,14 @@ Send the email to start the vote.
 
 ## Verifying a Release
 
-Running the unit tests against a testpypi release candidate:
+Releases may be verified using `verify-release-candidate.sh`:
+
+```bash
+git clone https://github.com/apache/datafusion-python.git
+dev/release/verify-release-candidate.sh 48.0.0 1
+```
+
+Alternatively, one can run unit tests against a testpypi release candidate:
 
 ```bash
 # clone a fresh repo
@@ -176,11 +183,11 @@ source .venv/bin/activate
 # install release candidate
 pip install --extra-index-url https://test.pypi.org/simple/ datafusion==40.0.0
 
-# only dep needed to run tests is pytest
-pip install pytest
+# install test dependencies
+pip install pytest numpy pytest-asyncio
 
 # run the tests
-pytest --import-mode=importlib python/tests
+pytest --import-mode=importlib python/tests -vv
 ```
 
 Try running one of the examples from the top-level README, or write some custom Python code to query some available
@@ -233,7 +240,7 @@ git push apache 0.8.0
 Add the release to https://reporter.apache.org/addrelease.html?datafusion with a version name prefixed with `DATAFUSION-PYTHON`,
 for example `DATAFUSION-PYTHON-31.0.0`.
 
-The release information is used to generate a template for a board report (see example from Apache Arrow 
+The release information is used to generate a template for a board report (see example from Apache Arrow
 [here](https://github.com/apache/arrow/pull/14357)).
 
 ### Delete old RCs and Releases
