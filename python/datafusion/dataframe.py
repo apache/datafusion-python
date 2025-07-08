@@ -22,6 +22,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -55,6 +56,15 @@ if TYPE_CHECKING:
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
+
+
+@dataclass
+class JoinKeys:
+    """Represents the resolved join keys for a DataFrame join operation."""
+
+    on: str | Sequence[str] | None
+    left_names: list[str]
+    right_names: list[str]
 
 
 # excerpt from deltalake
@@ -698,15 +708,20 @@ class DataFrame:
         Returns:
             DataFrame after join.
         """
-        on, left_on, right_on = self._resolve_join_keys(
+        join_keys_resolved = self._resolve_join_keys(
             on, left_on, right_on, join_keys
         )
 
         drop_cols: list[str] | None = None
-        if deduplicate and on is not None:
-            right, drop_cols, left_on, right_on = self._prepare_deduplicate(right, on)
+        if deduplicate and join_keys_resolved.on is not None:
+            right, drop_cols, left_on_final, right_on_final = self._prepare_deduplicate(
+                right, join_keys_resolved.on
+            )
+        else:
+            left_on_final = join_keys_resolved.left_names
+            right_on_final = join_keys_resolved.right_names
 
-        result = DataFrame(self.df.join(right.df, how, left_on, right_on))
+        result = DataFrame(self.df.join(right.df, how, left_on_final, right_on_final))
         if drop_cols:
             result = result.drop(*drop_cols)
         return result
@@ -717,8 +732,10 @@ class DataFrame:
         left_on: str | Sequence[str] | None,
         right_on: str | Sequence[str] | None,
         join_keys: tuple[list[str], list[str]] | None,
-    ) -> tuple[str | Sequence[str] | None, list[str], list[str]]:
-        """Normalize join key arguments and validate them."""
+    ) -> JoinKeys:
+        """Normalize join key arguments and validate them."""        
+        # Handle the special case where on is a tuple of lists (legacy format)
+        resolved_on: str | Sequence[str] | None
         if (
             isinstance(on, tuple)
             and len(on) == 2
@@ -726,7 +743,9 @@ class DataFrame:
             and isinstance(on[1], list)
         ):
             join_keys = on  # type: ignore[assignment]
-            on = None
+            resolved_on = None
+        else:
+            resolved_on = on  # type: ignore[assignment]
 
         if join_keys is not None:
             warnings.warn(
@@ -737,12 +756,12 @@ class DataFrame:
             left_on = join_keys[0]
             right_on = join_keys[1]
 
-        if on is not None:
+        if resolved_on is not None:
             if left_on is not None or right_on is not None:
                 error_msg = "`left_on` or `right_on` should not provided with `on`"
                 raise ValueError(error_msg)
-            left_on = on
-            right_on = on
+            left_on = resolved_on
+            right_on = resolved_on
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
                 error_msg = "`left_on` and `right_on` should both be provided."
@@ -751,10 +770,13 @@ class DataFrame:
             error_msg = "either `on` or `left_on` and `right_on` should be provided."
             raise ValueError(error_msg)
 
+        # At this point, left_on and right_on are guaranteed to be non-None
+        assert left_on is not None and right_on is not None
+        
         left_names = [left_on] if isinstance(left_on, str) else list(left_on)
         right_names = [right_on] if isinstance(right_on, str) else list(right_on)
 
-        return on, left_names, right_names
+        return JoinKeys(on=resolved_on, left_names=left_names, right_names=right_names)
 
     def _prepare_deduplicate(
         self, right: DataFrame, on: str | Sequence[str]
