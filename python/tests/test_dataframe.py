@@ -558,7 +558,7 @@ def test_join_deduplicate_multi():
     right = ctx.create_dataframe([[batch]], "r")
 
     joined = left.join(right, on=["a", "b"], deduplicate=True)
-    joined = joined.sort([column("a"), column("b")])
+    joined = joined.sort(column("a"), column("b"))
     table = pa.Table.from_batches(joined.collect())
 
     expected = {"a": [1, 2], "b": [3, 4], "r": ["u", "v"], "l": ["x", "y"]}
@@ -2678,7 +2678,9 @@ def test_join_deduplicate_select():
 
     # Ensure no internal alias names like "__right_id" appear in the schema
     for col_name in column_names:
-        assert not col_name.startswith("__"), f"Internal alias '{col_name}' leaked into schema"
+        assert not col_name.startswith("__"), (
+            f"Internal alias '{col_name}' leaked into schema"
+        )
 
     # Test selecting each column individually to ensure they all work
     for col_name in expected_columns:
@@ -2693,13 +2695,13 @@ def test_join_deduplicate_select():
     assert all_result.schema.names == expected_columns
 
     # Verify that attempting to select a potential internal alias fails appropriately
-    with pytest.raises(Exception):  # Should raise an error for non-existent column
+    with pytest.raises(Exception):  # noqa: B017 - generic exception from FFI
         joined_df.select(column("__right_id")).collect()
 
 
 def test_join_deduplicate_all_types():
     """Test deduplication behavior across different join types (left, right, outer).
-    
+
     Note: This test may show linting errors due to method signature overloads,
     but the functionality should work correctly at runtime.
     """
@@ -2721,8 +2723,8 @@ def test_join_deduplicate_all_types():
 
     # Test inner join with deduplication (default behavior)
     inner_joined = left_df.join(right_df, on="id", how="inner", deduplicate=True)
-    inner_result = inner_joined.sort([column("id")]).collect()[0]
-    
+    inner_result = inner_joined.sort(column("id")).collect()[0]
+
     # Should only have matching rows (2, 3)
     expected_inner = {
         "id": [2, 3],
@@ -2733,8 +2735,8 @@ def test_join_deduplicate_all_types():
 
     # Test left join with deduplication
     left_joined = left_df.join(right_df, on="id", how="left", deduplicate=True)
-    left_result = left_joined.sort([column("id")]).collect()[0]
-    
+    left_result = left_joined.sort(column("id")).collect()[0]
+
     # Should have all left rows, with nulls for unmatched right rows
     expected_left = {
         "id": [1, 2, 3, 4],
@@ -2745,8 +2747,8 @@ def test_join_deduplicate_all_types():
 
     # Test right join with deduplication
     right_joined = left_df.join(right_df, on="id", how="right", deduplicate=True)
-    right_result = right_joined.sort([column("id")]).collect()[0]
-    
+    right_result = right_joined.sort(column("id")).collect()[0]
+
     # Should have all right rows, with nulls for unmatched left rows
     expected_right = {
         "id": [2, 3, 5, 6],
@@ -2756,9 +2758,9 @@ def test_join_deduplicate_all_types():
     assert right_result.to_pydict() == expected_right
 
     # Test full outer join with deduplication
-    outer_joined = left_df.join(right_df, on="id", how="outer", deduplicate=True)
-    outer_result = outer_joined.sort([column("id")]).collect()[0]
-    
+    outer_joined = left_df.join(right_df, on="id", how="full", deduplicate=True)
+    outer_result = outer_joined.sort(column("id")).collect()[0]
+
     # Should have all rows from both sides, with nulls for unmatched rows
     expected_outer = {
         "id": [1, 2, 3, 4, 5, 6],
@@ -2768,7 +2770,7 @@ def test_join_deduplicate_all_types():
     assert outer_result.to_pydict() == expected_outer
 
     # Verify that we can still select the deduplicated column without issues
-    for join_type in ["inner", "left", "right", "outer"]:
+    for join_type in ["inner", "left", "right", "full"]:
         joined = left_df.join(right_df, on="id", how=join_type, deduplicate=True)
         selected = joined.select(column("id"))
         # Should not raise an error and should have the same number of rows

@@ -46,6 +46,8 @@ from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
 
+from .functions import coalesce, col
+
 if TYPE_CHECKING:
     import pathlib
     from typing import Callable, Sequence
@@ -75,6 +77,31 @@ class JoinPreparation:
     join_keys: JoinKeys
     modified_right: DataFrame
     drop_cols: list[str]
+
+
+def _deduplicate_right(
+    right: DataFrame, columns: Sequence[str]
+) -> tuple[DataFrame, list[str]]:
+    """Rename join columns on the right DataFrame for deduplication."""
+    existing_columns = set(right.schema().names)
+    modified = right
+    aliases: list[str] = []
+
+    for col_name in columns:
+        base_alias = f"__right_{col_name}"
+        alias = base_alias
+        counter = 0
+        while alias in existing_columns:
+            counter += 1
+            alias = f"{base_alias}_{counter}"
+        if alias in existing_columns:
+            alias = f"__temp_{uuid.uuid4().hex[:8]}_{col_name}"
+
+        modified = modified.with_column_renamed(col_name, alias)
+        aliases.append(alias)
+        existing_columns.add(alias)
+
+    return modified, aliases
 
 
 # excerpt from deltalake
@@ -730,10 +757,23 @@ class DataFrame:
                 join_preparation.join_keys.right_names,
             )
         )
-        
+
+        if (
+            deduplicate
+            and how in ("right", "full")
+            and join_preparation.join_keys.on is not None
+        ):
+            for left_name, right_alias in zip(
+                join_preparation.join_keys.left_names,
+                join_preparation.drop_cols,
+            ):
+                result = result.with_column(
+                    left_name, coalesce(col(left_name), col(right_alias))
+                )
+
         if join_preparation.drop_cols:
             result = result.drop(*join_preparation.drop_cols)
-            
+
         return result
 
     def _prepare_join(
@@ -746,10 +786,10 @@ class DataFrame:
         deduplicate: bool,
     ) -> JoinPreparation:
         """Prepare join keys and handle deduplication if requested.
-        
+
         This method combines join key resolution and deduplication preparation
         to avoid parameter handling duplication and provide a unified interface.
-        
+
         Args:
             right: The right DataFrame to join with.
             on: Column names to join on in both dataframes.
@@ -757,7 +797,7 @@ class DataFrame:
             right_on: Join column of the right dataframe.
             join_keys: Tuple of two lists of column names to join on. [Deprecated]
             deduplicate: If True, prepare right DataFrame for column deduplication.
-            
+
         Returns:
             JoinPreparation containing resolved join keys, modified right DataFrame,
             and columns to drop after joining.
@@ -787,71 +827,41 @@ class DataFrame:
 
         if resolved_on is not None:
             if left_on is not None or right_on is not None:
-                error_msg = (
-                    "`left_on` or `right_on` should not be provided with `on`. "
-                    "Note: `deduplicate` must be specified as a keyword argument."
-                )
+                error_msg = "`left_on` or `right_on` should not provided with `on`"
                 raise ValueError(error_msg)
             left_on = resolved_on
             right_on = resolved_on
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
-                error_msg = (
-                    "`left_on` and `right_on` should both be provided. "
-                    "Note: `deduplicate` must be specified as a keyword argument."
-                )
+                error_msg = "`left_on` and `right_on` should both be provided."
                 raise ValueError(error_msg)
         else:
-            error_msg = (
-                "Either `on` or both `left_on` and `right_on` should be provided. "
-                "Note: `deduplicate` must be specified as a keyword argument."
-            )
+            error_msg = "either `on` or `left_on` and `right_on` should be provided."
             raise ValueError(error_msg)
 
         # At this point, left_on and right_on are guaranteed to be non-None
-        assert left_on is not None and right_on is not None
-        
+        if left_on is None or right_on is None:  # pragma: no cover - sanity check
+            msg = "join keys resolved to None"
+            raise ValueError(msg)
+
         left_names = [left_on] if isinstance(left_on, str) else list(left_on)
         right_names = [right_on] if isinstance(right_on, str) else list(right_on)
-        
+
+        drop_cols: list[str] = []
+        modified_right = right
+
+        if deduplicate and resolved_on is not None:
+            on_cols = (
+                [resolved_on] if isinstance(resolved_on, str) else list(resolved_on)
+            )
+            modified_right, aliases = _deduplicate_right(right, on_cols)
+            drop_cols.extend(aliases)
+            right_names = aliases.copy()
+
         join_keys_resolved = JoinKeys(
             on=resolved_on, left_names=left_names, right_names=right_names
         )
-        
-        # Step 2: Handle deduplication if requested
-        drop_cols: list[str] = []
-        modified_right = right
-        
-        if deduplicate and resolved_on is not None:
-            # Prepare deduplication by renaming columns in the right DataFrame
-            on_cols = [resolved_on] if isinstance(resolved_on, str) else list(resolved_on)
-            
-            # Get existing column names to avoid collisions
-            existing_columns = set(right.schema().names)
-            
-            for col_name in on_cols:
-                # Generate a collision-safe temporary alias
-                base_alias = f"__right_{col_name}"
-                alias = base_alias
-                counter = 0
-                
-                # Keep trying until we find a unique name
-                while alias in existing_columns:
-                    counter += 1
-                    alias = f"{base_alias}_{counter}"
-                
-                # If even that fails (very unlikely), use UUID
-                if alias in existing_columns:
-                    alias = f"__temp_{uuid.uuid4().hex[:8]}_{col_name}"
-                
-                modified_right = modified_right.with_column_renamed(col_name, alias)
-                drop_cols.append(alias)
-                # Add the new alias to existing columns to avoid future collisions
-                existing_columns.add(alias)
-                
-            # Update right_names to use the new aliases
-            right_names = drop_cols.copy()
-        
+
         return JoinPreparation(
             join_keys=join_keys_resolved,
             modified_right=modified_right,
