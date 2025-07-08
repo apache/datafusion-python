@@ -108,6 +108,8 @@ Disambiguating Columns
 
 When the join key exists in both DataFrames under the same name, the result contains two columns with that name. Assign a name to each DataFrame to use as a prefix and avoid ambiguity.
 
+When you create a DataFrame with a ``name`` argument, that name is used as a prefix in ``col("name.column")`` to reference specific columns.
+
 .. ipython:: python
 
     from datafusion import col
@@ -116,7 +118,9 @@ When the join key exists in both DataFrames under the same name, the result cont
     joined = left.join(right, on="id")
     joined.select(col("l.id"), col("r.id"))
 
-You can remove the duplicate column after joining.
+Note that the columns in the result appear in the same order as specified in the ``select()`` call.
+
+You can remove the duplicate column after joining. Note that ``drop()`` returns a new DataFrame (DataFusion's API is immutable).
 
 .. ipython:: python
 
@@ -126,7 +130,8 @@ Automatic Deduplication
 ----------------------
 
 Use the ``deduplicate`` argument of :py:meth:`DataFrame.join` to automatically
-drop the duplicate join column from the right DataFrame.
+drop the duplicate join column from the right DataFrame. Unlike PySpark which uses a ``_`` suffix by default, 
+DataFusion uses the ``__right_<col>`` naming convention for conflicting columns when not using deduplication.
 
 .. ipython:: python
 
