@@ -2635,3 +2635,34 @@ def test_collect_interrupted():
 
     # Make sure the interrupt thread has finished
     interrupt_thread.join(timeout=1.0)
+
+
+def test_join_deduplicate_select():
+    """Test that select works correctly after a deduplicated join."""
+    ctx = SessionContext()
+    
+    left_df = ctx.from_pydict({"id": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"]})
+    right_df = ctx.from_pydict({"id": [2, 3, 4], "city": ["New York", "London", "Paris"]})
+    
+    # Join and select the id column to confirm it works
+    joined_df = left_df.join(right_df, on="id")
+    selected_df = joined_df.select(column("id"))
+    result = selected_df.collect()[0]
+    
+    # Should have only the matching ids (2, 3)
+    expected_ids = [2, 3]
+    assert result.column(0).to_pylist() == expected_ids
+    
+    # Also test selecting multiple columns
+    multi_select_df = joined_df.select(column("id"), column("name"), column("city"))
+    multi_result = multi_select_df.collect()[0]
+    
+    expected_data = {
+        "id": [2, 3],
+        "name": ["Bob", "Charlie"], 
+        "city": ["New York", "London"]
+    }
+    
+    assert multi_result.column(0).to_pylist() == expected_data["id"]
+    assert multi_result.column(1).to_pylist() == expected_data["name"]
+    assert multi_result.column(2).to_pylist() == expected_data["city"]
