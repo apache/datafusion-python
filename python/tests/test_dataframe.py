@@ -1940,6 +1940,7 @@ def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, res
             data["float"] = [1.01, 2.02, 3.03]
         elif data_type == "str":
             data["str"] = ["a", "b", "c"]
+
         elif data_type == "bool":
             data["bool"] = [True, False, True]
 
@@ -2668,3 +2669,77 @@ def test_join_deduplicate_select():
     assert multi_result.column(0).to_pylist() == expected_data["id"]
     assert multi_result.column(1).to_pylist() == expected_data["name"]
     assert multi_result.column(2).to_pylist() == expected_data["city"]
+
+
+def test_join_deduplicate_all_types():
+    """Test deduplication behavior across different join types (left, right, outer)."""
+    ctx = SessionContext()
+
+    # Create left dataframe with some rows that won't match
+    left_batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4]), pa.array(["a", "b", "c", "d"])],
+        names=["id", "left_value"],
+    )
+    left_df = ctx.create_dataframe([[left_batch]], "left")
+
+    # Create right dataframe with some rows that won't match and duplicate column name
+    right_batch = pa.RecordBatch.from_arrays(
+        [pa.array([2, 3, 5, 6]), pa.array(["x", "y", "z", "w"])],
+        names=["id", "right_value"],
+    )
+    right_df = ctx.create_dataframe([[right_batch]], "right")
+
+    # Test inner join with deduplication (default behavior)
+    inner_joined = left_df.join(right_df, on="id", how="inner", deduplicate=True)
+    inner_result = inner_joined.sort([column("id")]).collect()[0]
+    
+    # Should only have matching rows (2, 3)
+    expected_inner = {
+        "id": [2, 3],
+        "left_value": ["b", "c"],
+        "right_value": ["x", "y"],
+    }
+    assert inner_result.to_pydict() == expected_inner
+
+    # Test left join with deduplication
+    left_joined = left_df.join(right_df, on="id", how="left", deduplicate=True)
+    left_result = left_joined.sort([column("id")]).collect()[0]
+    
+    # Should have all left rows, with nulls for unmatched right rows
+    expected_left = {
+        "id": [1, 2, 3, 4],
+        "left_value": ["a", "b", "c", "d"],
+        "right_value": [None, "x", "y", None],
+    }
+    assert left_result.to_pydict() == expected_left
+
+    # Test right join with deduplication
+    right_joined = left_df.join(right_df, on="id", how="right", deduplicate=True)
+    right_result = right_joined.sort([column("id")]).collect()[0]
+    
+    # Should have all right rows, with nulls for unmatched left rows
+    expected_right = {
+        "id": [2, 3, 5, 6],
+        "left_value": ["b", "c", None, None],
+        "right_value": ["x", "y", "z", "w"],
+    }
+    assert right_result.to_pydict() == expected_right
+
+    # Test full outer join with deduplication
+    outer_joined = left_df.join(right_df, on="id", how="outer", deduplicate=True)
+    outer_result = outer_joined.sort([column("id")]).collect()[0]
+    
+    # Should have all rows from both sides, with nulls for unmatched rows
+    expected_outer = {
+        "id": [1, 2, 3, 4, 5, 6],
+        "left_value": ["a", "b", "c", "d", None, None],
+        "right_value": [None, "x", "y", None, "z", "w"],
+    }
+    assert outer_result.to_pydict() == expected_outer
+
+    # Verify that we can still select the deduplicated column without issues
+    for join_type in ["inner", "left", "right", "outer"]:
+        joined = left_df.join(right_df, on="id", how=join_type, deduplicate=True)
+        selected = joined.select(column("id"))
+        # Should not raise an error and should have the same number of rows
+        assert len(selected.collect()[0]) == len(joined.collect()[0])
