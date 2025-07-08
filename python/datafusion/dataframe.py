@@ -21,6 +21,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 
 from __future__ import annotations
 
+import uuid
 import warnings
 from dataclasses import dataclass
 from typing import (
@@ -783,6 +784,8 @@ class DataFrame:
     ) -> tuple[DataFrame, list[str], list[str], list[str]]:
         """Rename join columns to drop them after joining.
         
+        Uses collision-safe temporary aliases to avoid conflicts with existing column names.
+        
         Args:
             right: The right DataFrame to modify.
             on: The join column name(s).
@@ -798,12 +801,30 @@ class DataFrame:
         right_aliases: list[str] = []
         on_cols = [on] if isinstance(on, str) else list(on)
         
+        # Get existing column names to avoid collisions
+        existing_columns = set(right.schema().names)
+        
         modified_right = right
         for col_name in on_cols:
-            alias = f"__right_{col_name}"
+            # Generate a collision-safe temporary alias
+            base_alias = f"__right_{col_name}"
+            alias = base_alias
+            counter = 0
+            
+            # Keep trying until we find a unique name
+            while alias in existing_columns:
+                counter += 1
+                alias = f"{base_alias}_{counter}"
+            
+            # If even that fails (very unlikely), use UUID
+            if alias in existing_columns:
+                alias = f"__temp_{uuid.uuid4().hex[:8]}_{col_name}"
+            
             modified_right = modified_right.with_column_renamed(col_name, alias)
             right_aliases.append(alias)
             drop_cols.append(alias)
+            # Add the new alias to existing columns to avoid future collisions
+            existing_columns.add(alias)
             
         return modified_right, drop_cols, on_cols, right_aliases
 
