@@ -781,16 +781,31 @@ class DataFrame:
     def _prepare_deduplicate(
         self, right: DataFrame, on: str | Sequence[str]
     ) -> tuple[DataFrame, list[str], list[str], list[str]]:
-        """Rename join columns to drop them after joining."""
+        """Rename join columns to drop them after joining.
+        
+        Args:
+            right: The right DataFrame to modify.
+            on: The join column name(s).
+            
+        Returns:
+            A tuple containing:
+            - modified_right: DataFrame with renamed join columns
+            - drop_cols: List of column names to drop after joining  
+            - left_cols: List of original left DataFrame column names
+            - right_aliases: List of renamed right DataFrame column names
+        """
         drop_cols: list[str] = []
         right_aliases: list[str] = []
         on_cols = [on] if isinstance(on, str) else list(on)
+        
+        modified_right = right
         for col_name in on_cols:
             alias = f"__right_{col_name}"
-            right = right.with_column_renamed(col_name, alias)
+            modified_right = modified_right.with_column_renamed(col_name, alias)
             right_aliases.append(alias)
             drop_cols.append(alias)
-        return right, drop_cols, on_cols, right_aliases
+            
+        return modified_right, drop_cols, on_cols, right_aliases
 
     def join_on(
         self,
