@@ -759,16 +759,25 @@ class DataFrame:
 
         if resolved_on is not None:
             if left_on is not None or right_on is not None:
-                error_msg = "`left_on` or `right_on` should not provided with `on`"
+                error_msg = (
+                    "`left_on` or `right_on` should not be provided with `on`. "
+                    "Note: `deduplicate` must be specified as a keyword argument."
+                )
                 raise ValueError(error_msg)
             left_on = resolved_on
             right_on = resolved_on
         elif left_on is not None or right_on is not None:
             if left_on is None or right_on is None:
-                error_msg = "`left_on` and `right_on` should both be provided."
+                error_msg = (
+                    "`left_on` and `right_on` should both be provided. "
+                    "Note: `deduplicate` must be specified as a keyword argument."
+                )
                 raise ValueError(error_msg)
         else:
-            error_msg = "either `on` or `left_on` and `right_on` should be provided."
+            error_msg = (
+                "Either `on` or both `left_on` and `right_on` should be provided. "
+                "Note: `deduplicate` must be specified as a keyword argument."
+            )
             raise ValueError(error_msg)
 
         # At this point, left_on and right_on are guaranteed to be non-None
