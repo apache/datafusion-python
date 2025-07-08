@@ -558,7 +558,7 @@ def test_join_deduplicate_multi():
     right = ctx.create_dataframe([[batch]], "r")
 
     joined = left.join(right, on=["a", "b"], deduplicate=True)
-    joined = joined.sort(column("a"))
+    joined = joined.sort([column("a"), column("b")])
     table = pa.Table.from_batches(joined.collect())
 
     expected = {"a": [1, 2], "b": [3, 4], "r": ["u", "v"], "l": ["x", "y"]}
