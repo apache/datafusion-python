@@ -519,6 +519,52 @@ def test_join_on():
     assert table.to_pydict() == expected
 
 
+def test_join_deduplicate():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array(["l1", "l2"])],
+        names=["id", "left_val"],
+    )
+    left = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array(["r1", "r2"])],
+        names=["id", "right_val"],
+    )
+    right = ctx.create_dataframe([[batch]], "r")
+
+    joined = left.join(right, on="id", deduplicate=True)
+    joined = joined.sort(column("id"))
+    table = pa.Table.from_batches(joined.collect())
+
+    expected = {"id": [1, 2], "right_val": ["r1", "r2"], "left_val": ["l1", "l2"]}
+    assert table.to_pydict() == expected
+
+
+def test_join_deduplicate_multi():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([3, 4]), pa.array(["x", "y"])],
+        names=["a", "b", "l"],
+    )
+    left = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([3, 4]), pa.array(["u", "v"])],
+        names=["a", "b", "r"],
+    )
+    right = ctx.create_dataframe([[batch]], "r")
+
+    joined = left.join(right, on=["a", "b"], deduplicate=True)
+    joined = joined.sort(column("a"))
+    table = pa.Table.from_batches(joined.collect())
+
+    expected = {"a": [1, 2], "b": [3, 4], "r": ["u", "v"], "l": ["x", "y"]}
+    assert table.to_pydict() == expected
+
+
 def test_distinct():
     ctx = SessionContext()
 

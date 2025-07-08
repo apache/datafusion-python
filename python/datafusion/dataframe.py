@@ -678,6 +678,7 @@ class DataFrame:
         left_on: str | Sequence[str] | None = None,
         right_on: str | Sequence[str] | None = None,
         join_keys: tuple[list[str], list[str]] | None = None,
+        deduplicate: bool = False,
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
@@ -691,20 +692,39 @@ class DataFrame:
             left_on: Join column of the left dataframe.
             right_on: Join column of the right dataframe.
             join_keys: Tuple of two lists of column names to join on. [Deprecated]
+            deduplicate: If ``True``, drop duplicate join columns from the
+                right DataFrame similar to PySpark's ``on`` behavior.
 
         Returns:
             DataFrame after join.
         """
-        # This check is to prevent breaking API changes where users prior to
-        # DF 43.0.0 would  pass the join_keys as a positional argument instead
-        # of a keyword argument.
+        on, left_on, right_on = self._resolve_join_keys(
+            on, left_on, right_on, join_keys
+        )
+
+        drop_cols: list[str] | None = None
+        if deduplicate and on is not None:
+            right, drop_cols, left_on, right_on = self._prepare_deduplicate(right, on)
+
+        result = DataFrame(self.df.join(right.df, how, left_on, right_on))
+        if drop_cols:
+            result = result.drop(*drop_cols)
+        return result
+
+    def _resolve_join_keys(
+        self,
+        on: str | Sequence[str] | tuple[list[str], list[str]] | None,
+        left_on: str | Sequence[str] | None,
+        right_on: str | Sequence[str] | None,
+        join_keys: tuple[list[str], list[str]] | None,
+    ) -> tuple[str | Sequence[str] | None, list[str], list[str]]:
+        """Normalize join key arguments and validate them."""
         if (
             isinstance(on, tuple)
             and len(on) == 2
             and isinstance(on[0], list)
             and isinstance(on[1], list)
         ):
-            # We know this is safe because we've checked the types
             join_keys = on  # type: ignore[assignment]
             on = None
 
@@ -730,12 +750,25 @@ class DataFrame:
         else:
             error_msg = "either `on` or `left_on` and `right_on` should be provided."
             raise ValueError(error_msg)
-        if isinstance(left_on, str):
-            left_on = [left_on]
-        if isinstance(right_on, str):
-            right_on = [right_on]
 
-        return DataFrame(self.df.join(right.df, how, left_on, right_on))
+        left_names = [left_on] if isinstance(left_on, str) else list(left_on)
+        right_names = [right_on] if isinstance(right_on, str) else list(right_on)
+
+        return on, left_names, right_names
+
+    def _prepare_deduplicate(
+        self, right: DataFrame, on: str | Sequence[str]
+    ) -> tuple[DataFrame, list[str], list[str], list[str]]:
+        """Rename join columns to drop them after joining."""
+        drop_cols: list[str] = []
+        right_aliases: list[str] = []
+        on_cols = [on] if isinstance(on, str) else list(on)
+        for col_name in on_cols:
+            alias = f"__right_{col_name}"
+            right = right.with_column_renamed(col_name, alias)
+            right_aliases.append(alias)
+            drop_cols.append(alias)
+        return right, drop_cols, on_cols, right_aliases
 
     def join_on(
         self,

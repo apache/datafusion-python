@@ -102,3 +102,33 @@ the right table.
 .. ipython:: python
 
     left.join(right, left_on="customer_id", right_on="id", how="anti")
+
+Disambiguating Columns
+----------------------
+
+When the join key exists in both DataFrames under the same name, the result contains two columns with that name. Assign a name to each DataFrame to use as a prefix and avoid ambiguity.
+
+.. ipython:: python
+
+    from datafusion import col
+    left = ctx.from_pydict({"id": [1, 2]}, name="l")
+    right = ctx.from_pydict({"id": [2, 3]}, name="r")
+    joined = left.join(right, on="id")
+    joined.select(col("l.id"), col("r.id"))
+
+You can remove the duplicate column after joining.
+
+.. ipython:: python
+
+    joined.drop("r.id")
+
+Automatic Deduplication
+----------------------
+
+Use the ``deduplicate`` argument of :py:meth:`DataFrame.join` to automatically
+drop the duplicate join column from the right DataFrame.
+
+.. ipython:: python
+
+    left.join(right, on="id", deduplicate=True)
+
