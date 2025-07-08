@@ -2670,9 +2670,39 @@ def test_join_deduplicate_select():
     assert multi_result.column(1).to_pylist() == expected_data["name"]
     assert multi_result.column(2).to_pylist() == expected_data["city"]
 
+    # Test that schema only contains expected column names (no internal aliases)
+    joined_schema = joined_df.schema()
+    column_names = [field.name for field in joined_schema]
+    expected_columns = ["id", "name", "city"]
+    assert column_names == expected_columns
+
+    # Ensure no internal alias names like "__right_id" appear in the schema
+    for col_name in column_names:
+        assert not col_name.startswith("__"), f"Internal alias '{col_name}' leaked into schema"
+
+    # Test selecting each column individually to ensure they all work
+    for col_name in expected_columns:
+        individual_select = joined_df.select(column(col_name))
+        result = individual_select.collect()[0]
+        assert len(result) == 2, f"Column '{col_name}' selection failed"
+        assert result.schema.field(0).name == col_name
+
+    # Test that we can select all columns using their names
+    all_columns_select = joined_df.select(*[column(name) for name in expected_columns])
+    all_result = all_columns_select.collect()[0]
+    assert all_result.schema.names == expected_columns
+
+    # Verify that attempting to select a potential internal alias fails appropriately
+    with pytest.raises(Exception):  # Should raise an error for non-existent column
+        joined_df.select(column("__right_id")).collect()
+
 
 def test_join_deduplicate_all_types():
-    """Test deduplication behavior across different join types (left, right, outer)."""
+    """Test deduplication behavior across different join types (left, right, outer).
+    
+    Note: This test may show linting errors due to method signature overloads,
+    but the functionality should work correctly at runtime.
+    """
     ctx = SessionContext()
 
     # Create left dataframe with some rows that won't match
