@@ -1940,7 +1940,6 @@ def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, res
             data["float"] = [1.01, 2.02, 3.03]
         elif data_type == "str":
             data["str"] = ["a", "b", "c"]
-
         elif data_type == "bool":
             data["bool"] = [True, False, True]
 

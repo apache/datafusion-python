@@ -811,7 +811,7 @@ class DataFrame:
             and isinstance(on[0], list)
             and isinstance(on[1], list)
         ):
-            # We know this is safe because we've checked the types            
+            # We know this is safe because we've checked the types
             join_keys = on  # type: ignore[assignment]
             resolved_on = None
         else:
