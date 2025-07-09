@@ -137,3 +137,11 @@ DataFusion uses the ``__right_<col>`` naming convention for conflicting columns 
 
     left.join(right, on="id", deduplicate=True)
 
+After deduplication, you can select the join column (which comes from the left DataFrame) and other columns as usual:
+
+.. ipython:: python
+
+    # Select the id column and other columns from both DataFrames
+    joined_dedup = left.join(right, on="id", deduplicate=True)
+    joined_dedup.select("id", "customer", "name")
+
