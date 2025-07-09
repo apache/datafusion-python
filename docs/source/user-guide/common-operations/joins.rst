@@ -112,7 +112,8 @@ When you create a DataFrame with a ``name`` argument, that name is used as a pre
 
 .. ipython:: python
 
-    from datafusion import col
+    from datafusion import col, SessionContext
+    ctx = SessionContext() 
     left = ctx.from_pydict({"id": [1, 2]}, name="l")
     right = ctx.from_pydict({"id": [2, 3]}, name="r")
     joined = left.join(right, on="id")
