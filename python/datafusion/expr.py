@@ -216,9 +216,11 @@ __all__ = [
 
 
 def expr_list_to_raw_expr_list(
-    expr_list: Optional[list[Expr]],
+    expr_list: Optional[list[Expr] | Expr],
 ) -> Optional[list[expr_internal.Expr]]:
     """Helper function to convert an optional list to raw expressions."""
+    if isinstance(expr_list, Expr):
+        expr_list = [expr_list]
     return [e.expr for e in expr_list] if expr_list is not None else None
 
 
@@ -230,9 +232,11 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[list[Expr | SortExpr]],
+    sort_list: Optional[list[Expr | SortExpr] | Expr | SortExpr],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
+    if isinstance(sort_list, (Expr, SortExpr)):
+        sort_list = [sort_list]
     return [sort_or_default(e) for e in sort_list] if sort_list is not None else None
 
 
@@ -1140,9 +1144,9 @@ class Window:
 
     def __init__(
         self,
-        partition_by: Optional[list[Expr]] = None,
+        partition_by: Optional[list[Expr] | Expr] = None,
         window_frame: Optional[WindowFrame] = None,
-        order_by: Optional[list[SortExpr | Expr]] = None,
+        order_by: Optional[list[SortExpr | Expr] | Expr | SortExpr] = None,
         null_treatment: Optional[NullTreatment] = None,
     ) -> None:
         """Construct a window definition.
