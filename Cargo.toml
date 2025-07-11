@@ -48,7 +48,7 @@ uuid = { version = "1.16", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
 async-trait = "0.1.88"
 futures = "0.3"
-object_store = { version = "0.12.1", features = ["aws", "gcp", "azure", "http"] }
+object_store = { git = "https://github.com/sap-contributions/arrow-rs-object-store/", branch = "hdlfs" , features = ["aws", "gcp", "azure", "http", "hdlfs"] }
 url = "2"
 log = "0.4.27"
 
@@ -63,3 +63,6 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+[patch.crates-io]
+object_store = { git = "https://github.com/sap-contributions/arrow-rs-object-store/",  branch = "hdlfs"}

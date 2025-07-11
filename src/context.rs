@@ -360,6 +360,7 @@ impl PySessionContext {
             StorageContexts::MicrosoftAzure(azure) => (azure.inner, azure.container_name),
             StorageContexts::LocalFileSystem(local) => (local.inner, "".to_string()),
             StorageContexts::HTTP(http) => (http.store, http.url),
+            StorageContexts::SAPHdlfs(hdlfs) => (hdlfs.inner, hdlfs.container_id),
         };
 
         // let users override the host to match the api signature from upstream

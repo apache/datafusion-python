@@ -23,5 +23,6 @@ GoogleCloud = object_store.GoogleCloud
 LocalFileSystem = object_store.LocalFileSystem
 MicrosoftAzure = object_store.MicrosoftAzure
 Http = object_store.Http
+SAPHdlfs = object_store.SAPHdlfs
 
-__all__ = ["AmazonS3", "GoogleCloud", "Http", "LocalFileSystem", "MicrosoftAzure"]
+__all__ = ["AmazonS3", "GoogleCloud", "Http", "LocalFileSystem", "MicrosoftAzure", "SAPHdlfs"]

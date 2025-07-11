@@ -22,6 +22,7 @@ use pyo3::prelude::*;
 use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
+use object_store::hdlfs::{SAPHdlfs, SAPHdlfsBuilder, SAPHdlfsCredential};
 use object_store::http::{HttpBuilder, HttpStore};
 use object_store::local::LocalFileSystem;
 use pyo3::exceptions::PyValueError;
@@ -34,6 +35,7 @@ pub enum StorageContexts {
     MicrosoftAzure(PyMicrosoftAzureContext),
     LocalFileSystem(PyLocalFileSystemContext),
     HTTP(PyHttpContext),
+    SAPHdlfs(PySAPHdlfsContext),
 }
 
 #[pyclass(name = "LocalFileSystem", module = "datafusion.store", subclass)]
@@ -249,11 +251,45 @@ impl PyHttpContext {
     }
 }
 
+#[pyclass(name = "SAPHdlfs", module = "datafusion.store", subclass)]
+#[derive(Debug, Clone)]
+pub struct PySAPHdlfsContext {
+    pub inner: Arc<SAPHdlfs>,
+    pub container_id: String,
+}
+
+#[pymethods]
+impl PySAPHdlfsContext {
+    #[allow(clippy::too_many_arguments)]
+    #[pyo3(signature = (certificate, private_key, endpoint, container_id))]
+    #[new]
+    fn new(
+        certificate: String,
+        private_key: String,
+        endpoint: String,
+        container_id: String,
+    ) -> Self {
+        let credential = SAPHdlfsCredential::new(certificate, private_key);
+        let hdlfs = Arc::new(SAPHdlfsBuilder::new()
+            .with_endpoint(endpoint)
+            .with_credential(credential)
+            .with_trace(true)
+            .build()
+            .expect("Could not create SAP HDLFS builder"));
+
+        Self {
+            inner: hdlfs,
+            container_id,
+        }
+    }
+}
+
 pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyAmazonS3Context>()?;
     m.add_class::<PyMicrosoftAzureContext>()?;
     m.add_class::<PyGoogleCloudContext>()?;
     m.add_class::<PyLocalFileSystemContext>()?;
     m.add_class::<PyHttpContext>()?;
+    m.add_class::<PySAPHdlfsContext>()?;
     Ok(())
 }
