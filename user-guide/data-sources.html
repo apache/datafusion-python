@@ -34,7 +34,7 @@
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="DataFrames" href="dataframe.html" />
+    <link rel="next" title="DataFrames" href="dataframe/index.html" />
     <link rel="prev" title="Concepts" href="basics.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -117,17 +117,29 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="dataframe.html">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="dataframe/index.html">
    DataFrames
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="dataframe/rendering.html">
+     HTML Rendering in Jupyter
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="common-operations/index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -183,8 +195,8 @@
   <a class="reference internal" href="io/index.html">
    IO
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -259,8 +271,8 @@
   <a class="reference internal" href="../autoapi/index.html">
    API Reference
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -269,8 +281,8 @@
     <a class="reference internal" href="../autoapi/datafusion/index.html">
      datafusion
     </a>
-    <input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -281,11 +293,6 @@
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../autoapi/datafusion/col/index.html">
-       datafusion.col
-      </a>
-     </li>
-     <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/context/index.html">
        datafusion.context
       </a>
@@ -293,6 +300,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/dataframe/index.html">
        datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../autoapi/datafusion/dataframe_formatter/index.html">
+       datafusion.dataframe_formatter
       </a>
      </li>
      <li class="toctree-l3">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="../autoapi/datafusion/input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -358,11 +370,6 @@
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../autoapi/datafusion/udf/index.html">
-       datafusion.udf
-      </a>
-     </li>
-     <li class="toctree-l3">
       <a class="reference internal" href="../autoapi/datafusion/unparser/index.html">
        datafusion.unparser
       </a>
@@ -400,40 +407,59 @@
 
 <nav id="bd-toc-nav">
     <ul class="visible nav section-nav flex-column">
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#local-file">
-   Local file
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#">
+   Data Sources
   </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#local-file">
+     Local file
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#create-in-memory">
+     Create in-memory
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#object-store">
+     Object Store
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#other-dataframe-libraries">
+     Other DataFrame Libraries
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#delta-lake">
+     Delta Lake
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#iceberg">
+     Iceberg
+    </a>
+   </li>
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#custom-table-provider">
+     Custom Table Provider
+    </a>
+   </li>
+  </ul>
  </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#create-in-memory">
-   Create in-memory
+ <li class="toc-h1 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#catalog">
+   Catalog
   </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#object-store">
-   Object Store
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#other-dataframe-libraries">
-   Other DataFrame Libraries
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#delta-lake">
-   Delta Lake
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#iceberg">
-   Iceberg
-  </a>
- </li>
- <li class="toc-h2 nav-item toc-entry">
-  <a class="reference internal nav-link" href="#custom-table-provider">
-   Custom Table Provider
-  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h2 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#user-defined-catalog-and-schema">
+     User Defined Catalog and Schema
+    </a>
+   </li>
+  </ul>
  </li>
 </ul>
 
@@ -661,6 +687,54 @@ section. This is an advanced topic, but a
 is provided in the DataFusion repository.</p>
 </section>
 </section>
+<section id="catalog">
+<h1>Catalog<a class="headerlink" href="#catalog" title="Link to this heading">¶</a></h1>
+<p>A common technique for organizing tables is using a three level hierarchical approach. DataFusion
+supports this form of organizing using the <a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><code class="xref py py-class docutils literal notranslate"><span class="pre">Catalog</span></code></a>,
+<a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><code class="xref py py-class docutils literal notranslate"><span class="pre">Schema</span></code></a>, and <a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>. By default,
+a <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext" title="datafusion.context.SessionContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionContext</span></code></a> comes with a single Catalog and a single Schema
+with the names <code class="docutils literal notranslate"><span class="pre">datafusion</span></code> and <code class="docutils literal notranslate"><span class="pre">default</span></code>, respectively.</p>
+<p>The default implementation uses an in-memory approach to the catalog and schema. We have support
+for adding additional in-memory catalogs and schemas. This can be done like in the following
+example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">Schema</span>
+
+<span class="n">my_catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="o">.</span><span class="n">memory_catalog</span><span class="p">()</span>
+<span class="n">my_schema</span> <span class="o">=</span> <span class="n">Schema</span><span class="o">.</span><span class="n">memory_schema</span><span class="p">()</span>
+
+<span class="n">my_catalog</span><span class="o">.</span><span class="n">register_schema</span><span class="p">(</span><span class="s2">&quot;my_schema_name&quot;</span><span class="p">,</span> <span class="n">my_schema</span><span class="p">)</span>
+
+<span class="n">ctx</span><span class="o">.</span><span class="n">register_catalog</span><span class="p">(</span><span class="s2">&quot;my_catalog_name&quot;</span><span class="p">,</span> <span class="n">my_catalog</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You could then register tables in <code class="docutils literal notranslate"><span class="pre">my_schema</span></code> and access them either through the DataFrame
+API or via sql commands such as <code class="docutils literal notranslate"><span class="pre">&quot;SELECT</span> <span class="pre">*</span> <span class="pre">from</span> <span class="pre">my_catalog_name.my_schema_name.my_table&quot;</span></code>.</p>
+<section id="user-defined-catalog-and-schema">
+<h2>User Defined Catalog and Schema<a class="headerlink" href="#user-defined-catalog-and-schema" title="Link to this heading">¶</a></h2>
+<p>If the in-memory catalogs are insufficient for your uses, there are two approaches you can take
+to implementing a custom catalog and/or schema. In the below discussion, we describe how to
+implement these for a Catalog, but the approach to implementing for a Schema is nearly
+identical.</p>
+<p>DataFusion supports Catalogs written in either Rust or Python. If you write a Catalog in Rust,
+you will need to export it as a Python library via PyO3. There is a complete example of a
+catalog implemented this way in the
+<a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/examples/">examples folder</a>
+of our repository. Writing catalog providers in Rust provides typically can lead to significant
+performance improvements over the Python based approach.</p>
+<p>To implement a Catalog in Python, you will need to inherit from the abstract base class
+<a class="reference internal" href="../autoapi/datafusion/catalog/index.html#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><code class="xref py py-class docutils literal notranslate"><span class="pre">CatalogProvider</span></code></a>. There are examples in the
+<a class="reference external" href="https://github.com/apache/datafusion-python/tree/main/python/tests">unit tests</a> of
+implementing a basic Catalog in Python where we simply keep a dictionary of the
+registered Schemas.</p>
+<p>One important note for developers is that when we have a Catalog defined in Python, we have
+two different ways of accessing this Catalog. First, we register the catalog with a Rust
+wrapper. This allows for any rust based code to call the Python functions as necessary.
+Second, if the user access the Catalog via the Python API, we identify this and return back
+the original Python object that implements the Catalog. This is an important distinction
+for developers because we do <em>not</em> return a Python wrapper around the Rust wrapper of the
+original Python object.</p>
+</section>
+</section>
 
 
               </div>
@@ -675,7 +749,7 @@ is provided in the DataFusion repository.</p>
             <p class="prev-next-title">Concepts</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="dataframe.html" title="next page">
+    <a class='right-next' id="next-link" href="dataframe/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
         <p class="prev-next-title">DataFrames</p>

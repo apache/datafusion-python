@@ -34,7 +34,7 @@
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="datafusion.col" href="../col/index.html" />
+    <link rel="next" title="datafusion.context" href="../context/index.html" />
     <link rel="prev" title="datafusion" href="../index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
@@ -117,17 +117,29 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/dataframe.html">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../user-guide/dataframe/index.html">
    DataFrames
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
+     HTML Rendering in Jupyter
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../user-guide/common-operations/index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -183,8 +195,8 @@
   <a class="reference internal" href="../../../user-guide/io/index.html">
    IO
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -259,8 +271,8 @@
   <a class="reference internal" href="../../index.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -269,8 +281,8 @@
     <a class="reference internal" href="../index.html">
      datafusion
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -281,11 +293,6 @@
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../col/index.html">
-       datafusion.col
-      </a>
-     </li>
-     <li class="toctree-l3">
       <a class="reference internal" href="../context/index.html">
        datafusion.context
       </a>
@@ -293,6 +300,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../dataframe/index.html">
        datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../dataframe_formatter/index.html">
+       datafusion.dataframe_formatter
       </a>
      </li>
      <li class="toctree-l3">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="../input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -355,11 +367,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../substrait/index.html">
        datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../udf/index.html">
-       datafusion.udf
       </a>
      </li>
      <li class="toctree-l3">
@@ -420,6 +427,15 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.database">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -429,10 +445,55 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.deregister_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.deregister_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.memory_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.memory_catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.names">
        <code class="docutils literal notranslate">
         <span class="pre">
          Catalog.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.register_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.register_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Catalog.schema_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema_names()
         </span>
        </code>
       </a>
@@ -449,37 +510,194 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
-    <a class="reference internal nav-link" href="#datafusion.catalog.Database">
+    <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider">
      <code class="docutils literal notranslate">
       <span class="pre">
-       Database
+       CatalogProvider
       </span>
      </code>
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.catalog.Database.names">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.deregister_schema">
        <code class="docutils literal notranslate">
         <span class="pre">
-         Database.names()
+         CatalogProvider.deregister_schema()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.catalog.Database.table">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.register_schema">
        <code class="docutils literal notranslate">
         <span class="pre">
-         Database.table()
+         CatalogProvider.register_schema()
         </span>
        </code>
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.catalog.Database.db">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.schema">
        <code class="docutils literal notranslate">
         <span class="pre">
-         Database.db
+         CatalogProvider.schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.CatalogProvider.schema_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         CatalogProvider.schema_names()
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.catalog.Schema">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       Schema
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.deregister_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.deregister_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.memory_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.memory_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.register_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.register_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema.table_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema.table_names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Schema._raw_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Schema._raw_schema
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       SchemaProvider
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.deregister_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.deregister_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.owner_name">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.owner_name()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.register_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.register_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table_exist">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.table_exist()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.SchemaProvider.table_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         SchemaProvider.table_names()
         </span>
        </code>
       </a>
@@ -495,6 +713,24 @@
      </code>
     </a>
     <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Table.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.catalog.Table.from_dataset">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.from_dataset()
+        </span>
+       </code>
+      </a>
+     </li>
      <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.catalog.Table.kind">
        <code class="docutils literal notranslate">
@@ -557,8 +793,14 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Catalog</span></code></a></p></td>
 <td><p>DataFusion data catalog.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.Database" title="datafusion.catalog.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
-<td><p>DataFusion Database.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.CatalogProvider" title="datafusion.catalog.CatalogProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CatalogProvider</span></code></a></p></td>
+<td><p>Abstract class for defining a Python based Catalog Provider.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Schema</span></code></a></p></td>
+<td><p>DataFusion Schema.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.catalog.SchemaProvider" title="datafusion.catalog.SchemaProvider"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SchemaProvider</span></code></a></p></td>
+<td><p>Abstract class for defining a Python based Schema Provider.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
 <td><p>DataFusion table.</p></td>
@@ -570,19 +812,55 @@
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.catalog.Catalog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Catalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Catalog" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawCatalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Catalog" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion data catalog.</p>
 <p>This constructor is not typically called by the end user.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the catalog.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.catalog.Catalog.database">
-<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Database" title="datafusion.catalog.Database"><span class="pre">Database</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.database" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.database" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.deregister_schema">
+<span class="sig-name descname"><span class="pre">deregister_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.deregister_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Deregister a schema from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.memory_catalog">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Catalog" title="datafusion.catalog.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.memory_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Create an in-memory catalog provider.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.catalog.Catalog.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of databases in this catalog.</p>
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.names" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <cite>schema_names</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.register_schema">
+<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.register_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Register a schema with this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Catalog.schema_names">
+<span class="sig-name descname"><span class="pre">schema_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Catalog.schema_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of schemas in this catalog.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -593,34 +871,167 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="datafusion.catalog.Database">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Database</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Database" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion Database.</p>
-<p>This constructor is not typically called by the end user.</p>
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">CatalogProvider</span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract class for defining a Python based Catalog Provider.</p>
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.catalog.Database.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Database.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of all tables in this database.</p>
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider.deregister_schema">
+<span class="sig-name descname"><span class="pre">deregister_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider.deregister_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a schema from this catalog.</p>
+<p>This method is optional. If your catalog provides a fixed list of schemas, you
+do not need to implement this method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the schema to remove.</p></li>
+<li><p><strong>cascade</strong> – If true, deregister the tables within the schema.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="datafusion.catalog.Database.table">
-<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Database.table" title="Link to this definition">¶</a></dt>
-<dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this database.</p>
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider.register_schema">
+<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">SchemaProviderExportable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.SchemaProvider" title="datafusion.catalog.SchemaProvider"><span class="pre">SchemaProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider.register_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Add a schema to this catalog.</p>
+<p>This method is optional. If your catalog provides a fixed list of schemas, you
+do not need to implement this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider.schema">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a specific schema from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.CatalogProvider.schema_names">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.CatalogProvider.schema_names" title="Link to this definition">¶</a></dt>
+<dd><p>Set of the names of all schemas in this catalog.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawSchema</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Schema" title="Link to this definition">¶</a></dt>
+<dd><p>DataFusion Schema.</p>
+<p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.deregister_table">
+<span class="sig-name descname"><span class="pre">deregister_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.deregister_table" title="Link to this definition">¶</a></dt>
+<dd><p>Deregister a table provider from this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.memory_schema">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_schema</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Schema.memory_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Create an in-memory schema provider.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.names">
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.names" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <cite>table_names</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.register_table">
+<span class="sig-name descname"><span class="pre">register_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.register_table" title="Link to this definition">¶</a></dt>
+<dd><p>Register a table provider in this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.table">
+<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Schema.table" title="Link to this definition">¶</a></dt>
+<dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Schema.table_names">
+<span class="sig-name descname"><span class="pre">table_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.Schema.table_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of all tables in this schema.</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.catalog.Database.db">
-<span class="sig-name descname"><span class="pre">db</span></span><a class="headerlink" href="#datafusion.catalog.Database.db" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="datafusion.catalog.Schema._raw_schema">
+<span class="sig-name descname"><span class="pre">_raw_schema</span></span><a class="headerlink" href="#datafusion.catalog.Schema._raw_schema" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">SchemaProvider</span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
+<p>Abstract class for defining a Python based Schema Provider.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.deregister_table">
+<span class="sig-name descname"><span class="pre">deregister_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.deregister_table" title="Link to this definition">¶</a></dt>
+<dd><p>Remove a table from this schema.</p>
+<p>This method is optional. If your schema provides a fixed list of tables, you do
+not need to implement this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.owner_name">
+<span class="sig-name descname"><span class="pre">owner_name</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.owner_name" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the owner of the schema.</p>
+<p>This is an optional method. The default return is None.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.register_table">
+<span class="sig-name descname"><span class="pre">register_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.register_table" title="Link to this definition">¶</a></dt>
+<dd><p>Add a table from this schema.</p>
+<p>This method is optional. If your schema provides a fixed list of tables, you do
+not need to implement this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.table">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.table" title="Link to this definition">¶</a></dt>
+<dd><p>Retrieve a specific table from this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.table_exist">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">table_exist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.table_exist" title="Link to this definition">¶</a></dt>
+<dd><p>Returns true if the table exists in this schema.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.SchemaProvider.table_names">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">table_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.catalog.SchemaProvider.table_names" title="Link to this definition">¶</a></dt>
+<dd><p>Set of the names of all tables in this schema.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.catalog.Table">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Table" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.catalog.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawTable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.catalog.Table" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion table.</p>
 <p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Table.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.catalog.Table.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.catalog.Table.from_dataset">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.catalog.Table.from_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Turn a pyarrow Dataset into a Table.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="datafusion.catalog.Table.kind">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kind</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.catalog.Table.kind" title="Link to this definition">¶</a></dt>
@@ -656,10 +1067,10 @@
             <p class="prev-next-title">datafusion</p>
         </div>
     </a>
-    <a class='right-next' id="next-link" href="../col/index.html" title="next page">
+    <a class='right-next' id="next-link" href="../context/index.html" title="next page">
     <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">datafusion.col</p>
+        <p class="prev-next-title">datafusion.context</p>
     </div>
     <i class="fas fa-angle-right"></i>
     </a>

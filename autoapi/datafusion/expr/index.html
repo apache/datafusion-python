@@ -35,7 +35,7 @@
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="datafusion.functions" href="../functions/index.html" />
-    <link rel="prev" title="datafusion.dataframe" href="../dataframe/index.html" />
+    <link rel="prev" title="datafusion.dataframe_formatter" href="../dataframe_formatter/index.html" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="docsearch:language" content="en">
     
@@ -117,17 +117,29 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../../user-guide/dataframe.html">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../../user-guide/dataframe/index.html">
    DataFrames
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../../user-guide/dataframe/rendering.html">
+     HTML Rendering in Jupyter
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../../user-guide/common-operations/index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -183,8 +195,8 @@
   <a class="reference internal" href="../../../user-guide/io/index.html">
    IO
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -259,8 +271,8 @@
   <a class="reference internal" href="../../index.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -269,8 +281,8 @@
     <a class="reference internal" href="../index.html">
      datafusion
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -281,11 +293,6 @@
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="../col/index.html">
-       datafusion.col
-      </a>
-     </li>
-     <li class="toctree-l3">
       <a class="reference internal" href="../context/index.html">
        datafusion.context
       </a>
@@ -293,6 +300,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../dataframe/index.html">
        datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="../dataframe_formatter/index.html">
+       datafusion.dataframe_formatter
       </a>
      </li>
      <li class="toctree-l3 current active">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="../input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -355,11 +367,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="../substrait/index.html">
        datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="../udf/index.html">
-       datafusion.udf
       </a>
      </li>
      <li class="toctree-l3">
@@ -1129,6 +1136,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.Expr.literal_with_metadata">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.literal_with_metadata()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.Expr.ln">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1665,6 +1681,15 @@
      </code>
     </a>
     <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.expr.WindowFrame.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
      <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.expr.WindowFrame.get_frame_units">
        <code class="docutils literal notranslate">
@@ -3329,6 +3354,20 @@ remaining characters to lowercase.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.Expr.literal_with_metadata">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal_with_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.literal_with_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a scalar value with metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – A valid PyArrow scalar value or easily castable to one.</p></li>
+<li><p><strong>metadata</strong> – Metadata to attach to the expression.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.Expr.ln">
 <span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.expr.Expr.ln" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the natural logarithm (base e) of the argument.</p>
@@ -3748,6 +3787,12 @@ parameter must be set.</p></li>
 </ul>
 </dd>
 </dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.expr.WindowFrame.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.WindowFrame.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the window frame.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.expr.WindowFrame.get_frame_units">
 <span class="sig-name descname"><span class="pre">get_frame_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.expr.WindowFrame.get_frame_units" title="Link to this definition">¶</a></dt>
@@ -4220,11 +4265,11 @@ parameter must be set.</p></li>
               
               <!-- Previous / next buttons -->
 <div class='prev-next-area'>
-    <a class='left-prev' id="prev-link" href="../dataframe/index.html" title="previous page">
+    <a class='left-prev' id="prev-link" href="../dataframe_formatter/index.html" title="previous page">
         <i class="fas fa-angle-left"></i>
         <div class="prev-next-info">
             <p class="prev-next-subtitle">previous</p>
-            <p class="prev-next-title">datafusion.dataframe</p>
+            <p class="prev-next-title">datafusion.dataframe_formatter</p>
         </div>
     </a>
     <a class='right-next' id="next-link" href="../functions/index.html" title="next page">

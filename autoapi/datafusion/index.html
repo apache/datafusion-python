@@ -117,17 +117,29 @@
    Data Sources
   </a>
  </li>
- <li class="toctree-l1">
-  <a class="reference internal" href="../../user-guide/dataframe.html">
+ <li class="toctree-l1 has-children">
+  <a class="reference internal" href="../../user-guide/dataframe/index.html">
    DataFrames
   </a>
+  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
+  <label for="toctree-checkbox-1">
+   <i class="fas fa-chevron-down">
+   </i>
+  </label>
+  <ul>
+   <li class="toctree-l2">
+    <a class="reference internal" href="../../user-guide/dataframe/rendering.html">
+     HTML Rendering in Jupyter
+    </a>
+   </li>
+  </ul>
  </li>
  <li class="toctree-l1 has-children">
   <a class="reference internal" href="../../user-guide/common-operations/index.html">
    Common Operations
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/>
-  <label for="toctree-checkbox-1">
+  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
+  <label for="toctree-checkbox-2">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -183,8 +195,8 @@
   <a class="reference internal" href="../../user-guide/io/index.html">
    IO
   </a>
-  <input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/>
-  <label for="toctree-checkbox-2">
+  <input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
+  <label for="toctree-checkbox-3">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -259,8 +271,8 @@
   <a class="reference internal" href="../index.html">
    API Reference
   </a>
-  <input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/>
-  <label for="toctree-checkbox-3">
+  <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
+  <label for="toctree-checkbox-4">
    <i class="fas fa-chevron-down">
    </i>
   </label>
@@ -269,8 +281,8 @@
     <a class="current reference internal" href="#">
      datafusion
     </a>
-    <input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/>
-    <label for="toctree-checkbox-4">
+    <input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
+    <label for="toctree-checkbox-5">
      <i class="fas fa-chevron-down">
      </i>
     </label>
@@ -281,11 +293,6 @@
       </a>
      </li>
      <li class="toctree-l3">
-      <a class="reference internal" href="col/index.html">
-       datafusion.col
-      </a>
-     </li>
-     <li class="toctree-l3">
       <a class="reference internal" href="context/index.html">
        datafusion.context
       </a>
@@ -293,6 +300,11 @@
      <li class="toctree-l3">
       <a class="reference internal" href="dataframe/index.html">
        datafusion.dataframe
+      </a>
+     </li>
+     <li class="toctree-l3">
+      <a class="reference internal" href="dataframe_formatter/index.html">
+       datafusion.dataframe_formatter
       </a>
      </li>
      <li class="toctree-l3">
@@ -314,8 +326,8 @@
       <a class="reference internal" href="input/index.html">
        datafusion.input
       </a>
-      <input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/>
-      <label for="toctree-checkbox-5">
+      <input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" type="checkbox"/>
+      <label for="toctree-checkbox-6">
        <i class="fas fa-chevron-down">
        </i>
       </label>
@@ -355,11 +367,6 @@
      <li class="toctree-l3">
       <a class="reference internal" href="substrait/index.html">
        datafusion.substrait
-      </a>
-     </li>
-     <li class="toctree-l3">
-      <a class="reference internal" href="udf/index.html">
-       datafusion.udf
       </a>
      </li>
      <li class="toctree-l3">
@@ -491,6 +498,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.AggregateUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         AggregateUDF.from_pycapsule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.AggregateUDF.udaf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -520,6 +545,15 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Catalog.database">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -529,10 +563,55 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.deregister_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.deregister_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.memory_catalog">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.memory_catalog()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Catalog.names">
        <code class="docutils literal notranslate">
         <span class="pre">
          Catalog.names()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.register_schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.register_schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.schema">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Catalog.schema_names">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Catalog.schema_names()
         </span>
        </code>
       </a>
@@ -556,35 +635,6 @@
       </span>
      </code>
     </a>
-    <ul class="nav section-nav flex-column">
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.names">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.names()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.table">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.table()
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Database.db">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Database.db
-        </span>
-       </code>
-      </a>
-     </li>
-    </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.ExecutionPlan">
@@ -1336,6 +1386,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Expr.literal_with_metadata">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Expr.literal_with_metadata()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Expr.ln">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -1862,6 +1921,523 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ParquetColumnOptions
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.encoding">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.encoding
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.dictionary_enabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.dictionary_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.compression">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.compression
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.statistics_enabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.statistics_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.bloom_filter_enabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.bloom_filter_fpp">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_fpp
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetColumnOptions.bloom_filter_ndv">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_ndv
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id0">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id2">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_fpp
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id3">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.bloom_filter_ndv
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id4">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.compression
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id5">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.dictionary_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id6">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.encoding
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id7">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetColumnOptions.statistics_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       ParquetWriterOptions
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.data_pagesize_limit">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.data_pagesize_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.write_batch_size">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.write_batch_size
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.writer_version">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.writer_version
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.skip_arrow_metadata">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.skip_arrow_metadata
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.compression">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.compression
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.dictionary_enabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.dictionary_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.dictionary_page_size_limit">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.dictionary_page_size_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.statistics_enabled">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.statistics_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.max_row_group_size">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.max_row_group_size
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.created_by">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.created_by
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.column_index_truncate_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.column_index_truncate_length
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.statistics_truncate_length">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.statistics_truncate_length
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.data_page_row_count_limit">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.data_page_row_count_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.encoding">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.encoding
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.bloom_filter_on_write">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_on_write
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.bloom_filter_fpp">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_fpp
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.bloom_filter_ndv">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_ndv
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.allow_single_file_parallelism">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.allow_single_file_parallelism
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.maximum_parallel_row_group_writers">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.maximum_parallel_row_group_writers
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.maximum_buffered_record_batches_per_stream">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.maximum_buffered_record_batches_per_stream
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ParquetWriterOptions.column_specific_options">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.column_specific_options
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id8">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.allow_single_file_parallelism
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id9">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_fpp
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id10">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_ndv
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id11">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.bloom_filter_on_write
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id12">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.column_index_truncate_length
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id13">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.column_specific_options
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id14">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.created_by
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id15">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.data_page_row_count_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id16">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.data_pagesize_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id17">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.dictionary_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id18">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.dictionary_page_size_limit
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id19">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.encoding
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id20">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.max_row_group_size
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id21">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.maximum_buffered_record_batches_per_stream
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id22">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.maximum_parallel_row_group_writers
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id23">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.skip_arrow_metadata
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id24">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.statistics_enabled
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id25">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.statistics_truncate_length
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id26">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.write_batch_size
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#id27">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ParquetWriterOptions.writer_version
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.RecordBatch">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -2104,6 +2680,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.ScalarUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         ScalarUDF.from_pycapsule()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.ScalarUDF.udf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2270,6 +2864,24 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.from_dataset">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.from_dataset()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Table.kind">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2373,6 +2985,15 @@
     </a>
     <ul class="nav section-nav flex-column">
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowFrame.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowFrame.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.WindowFrame.get_frame_units">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2429,6 +3050,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowUDF.__repr__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.__repr__()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.WindowUDF._create_window_udf">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2460,6 +3090,15 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          WindowUDF._normalize_input_types()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.WindowUDF.from_pycapsule">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         WindowUDF.from_pycapsule()
         </span>
        </code>
       </a>
@@ -2643,9 +3282,9 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="catalog/index.html">datafusion.catalog</a></li>
-<li class="toctree-l1"><a class="reference internal" href="col/index.html">datafusion.col</a></li>
 <li class="toctree-l1"><a class="reference internal" href="context/index.html">datafusion.context</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataframe/index.html">datafusion.dataframe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataframe_formatter/index.html">datafusion.dataframe_formatter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="expr/index.html">datafusion.expr</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions/index.html">datafusion.functions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="html_formatter/index.html">datafusion.html_formatter</a></li>
@@ -2655,7 +3294,6 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <li class="toctree-l1"><a class="reference internal" href="plan/index.html">datafusion.plan</a></li>
 <li class="toctree-l1"><a class="reference internal" href="record_batch/index.html">datafusion.record_batch</a></li>
 <li class="toctree-l1"><a class="reference internal" href="substrait/index.html">datafusion.substrait</a></li>
-<li class="toctree-l1"><a class="reference internal" href="udf/index.html">datafusion.udf</a></li>
 <li class="toctree-l1"><a class="reference internal" href="unparser/index.html">datafusion.unparser</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_defined/index.html">datafusion.user_defined</a></li>
 </ul>
@@ -2677,7 +3315,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.udaf" title="datafusion.udaf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udaf</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="udf/index.html#module-datafusion.udf" title="datafusion.udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udf</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.udf" title="datafusion.udf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udf</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.udtf" title="datafusion.udtf"><code class="xref py py-obj docutils literal notranslate"><span class="pre">udtf</span></code></a></p></td>
@@ -2703,7 +3341,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <td><p>DataFusion data catalog.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
-<td><p>DataFusion Database.</p></td>
+<td><p>See <cite>Schema</cite>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
 <td><p>Represent nodes in the DataFusion Physical Plan.</p></td>
@@ -2713,6 +3351,12 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
 <td><p>Logical Plan.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ParquetColumnOptions" title="datafusion.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
+<td><p>Parquet options for individual columns.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ParquetWriterOptions" title="datafusion.ParquetWriterOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetWriterOptions</span></code></a></p></td>
+<td><p>Advanced parquet writer options.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.RecordBatch" title="datafusion.RecordBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecordBatch</span></code></a></p></td>
 <td><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p></td>
@@ -2825,6 +3469,20 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.AggregateUDF.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the Aggregate UDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.AggregateUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.AggregateUDFExportable" title="datafusion.user_defined.AggregateUDFExportable"><span class="pre">AggregateUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><span class="pre">AggregateUDF</span></a></span></span><a class="headerlink" href="#datafusion.AggregateUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create an Aggregate UDF from AggregateUDF PyCapsule object.</p>
+<p>This function will instantiate a Aggregate UDF that uses a DataFusion
+AggregateUDF that is exported via the FFI bindings.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.AggregateUDF.udaf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udaf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><span class="pre">AggregateUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.AggregateUDF.udaf" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
@@ -2886,7 +3544,11 @@ instance in which this UDAF is used. The following examples are all valid:</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>accum</strong> – The accumulator python function. Only needed when calling as a
-function. Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator.</p></li>
+function. Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udaf</span></code> as a decorator.
+If you have a Rust backed AggregateUDF within a PyCapsule, you can
+pass this parameter and ignore the rest. They will be determined
+directly from the underlying function. See the online documentation
+for more information.</p></li>
 <li><p><strong>input_types</strong> – The data types of the arguments to <code class="docutils literal notranslate"><span class="pre">accum</span></code>.</p></li>
 <li><p><strong>return_type</strong> – The data type of the return value.</p></li>
 <li><p><strong>state_type</strong> – The data types of the intermediate accumulation.</p></li>
@@ -2910,19 +3572,55 @@ aggregation or window function calls.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Catalog">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Catalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Catalog" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Catalog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">catalog</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawCatalog</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Catalog" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion data catalog.</p>
 <p>This constructor is not typically called by the end user.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Catalog.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the catalog.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Catalog.database">
-<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><span class="pre">Database</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.database" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.database" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.deregister_schema">
+<span class="sig-name descname"><span class="pre">deregister_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cascade</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.deregister_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Deregister a schema from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.memory_catalog">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">memory_catalog</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Catalog" title="datafusion.Catalog"><span class="pre">Catalog</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.memory_catalog" title="Link to this definition">¶</a></dt>
+<dd><p>Create an in-memory catalog provider.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Catalog.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of databases in this catalog.</p>
+<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.names" title="Link to this definition">¶</a></dt>
+<dd><p>This is an alias for <cite>schema_names</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.register_schema">
+<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.register_schema" title="Link to this definition">¶</a></dt>
+<dd><p>Register a schema with this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'public'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a></span></span><a class="headerlink" href="#datafusion.Catalog.schema" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the database with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this catalog.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Catalog.schema_names">
+<span class="sig-name descname"><span class="pre">schema_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Catalog.schema_names" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the list of schemas in this catalog.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -2934,26 +3632,10 @@ aggregation or window function calls.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Database">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Database</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Database" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion Database.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Database</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawSchema</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Database" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Schema</span></code></p>
+<p>See <cite>Schema</cite>.</p>
 <p>This constructor is not typically called by the end user.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Database.names">
-<span class="sig-name descname"><span class="pre">names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">set</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.Database.names" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the list of all tables in this database.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="datafusion.Database.table">
-<span class="sig-name descname"><span class="pre">table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Database.table" title="Link to this definition">¶</a></dt>
-<dd><p>Return the table with the given <code class="docutils literal notranslate"><span class="pre">name</span></code> from this database.</p>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.Database.db">
-<span class="sig-name descname"><span class="pre">db</span></span><a class="headerlink" href="#datafusion.Database.db" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 <dl class="py class">
@@ -3522,6 +4204,20 @@ remaining characters to lowercase.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Expr.literal_with_metadata">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">literal_with_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.literal_with_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Creates a new expression representing a scalar value with metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>value</strong> – A valid PyArrow scalar value or easily castable to one.</p></li>
+<li><p><strong>metadata</strong> – Metadata to attach to the expression.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Expr.ln">
 <span class="sig-name descname"><span class="pre">ln</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><span class="pre">Expr</span></a></span></span><a class="headerlink" href="#datafusion.Expr.ln" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the natural logarithm (base e) of the argument.</p>
@@ -3929,6 +4625,378 @@ using the `DOT</cite> language. This format can be visualized using software fro
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">ParquetColumnOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_fpp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_ndv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.ParquetColumnOptions" title="Link to this definition">¶</a></dt>
+<dd><p>Parquet options for individual columns.</p>
+<p>Contains the available options that can be applied for an individual Parquet column,
+replacing the global options in <cite>ParquetWriterOptions</cite>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.encoding">
+<span class="sig-name descname"><span class="pre">encoding</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.encoding" title="Link to this definition">¶</a></dt>
+<dd><p>Sets encoding for the column path. Valid values are: <cite>plain</cite>,
+<cite>plain_dictionary</cite>, <cite>rle</cite>, <cite>bit_packed</cite>, <cite>delta_binary_packed</cite>,
+<cite>delta_length_byte_array</cite>, <cite>delta_byte_array</cite>, <cite>rle_dictionary</cite>, and
+<cite>byte_stream_split</cite>. These values are not case-sensitive. If <cite>None</cite>, uses
+the default parquet options</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.dictionary_enabled">
+<span class="sig-name descname"><span class="pre">dictionary_enabled</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.dictionary_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>Sets if dictionary encoding is enabled for the column path.
+If <cite>None</cite>, uses the default parquet options</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.compression">
+<span class="sig-name descname"><span class="pre">compression</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.compression" title="Link to this definition">¶</a></dt>
+<dd><p>Sets default parquet compression codec for the column path. Valid
+values are <cite>uncompressed</cite>, <cite>snappy</cite>, <cite>gzip(level)</cite>, <cite>lzo</cite>, <cite>brotli(level)</cite>,
+<cite>lz4</cite>, <cite>zstd(level)</cite>, and <cite>lz4_raw</cite>. These values are not case-sensitive. If
+<cite>None</cite>, uses the default parquet options.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.statistics_enabled">
+<span class="sig-name descname"><span class="pre">statistics_enabled</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.statistics_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>Sets if statistics are enabled for the column Valid values
+are: <cite>none</cite>, <cite>chunk</cite>, and <cite>page</cite> These values are not case sensitive. If
+<cite>None</cite>, uses the default parquet options.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.bloom_filter_enabled">
+<span class="sig-name descname"><span class="pre">bloom_filter_enabled</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.bloom_filter_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>Sets if bloom filter is enabled for the column path. If
+<cite>None</cite>, uses the default parquet options.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.bloom_filter_fpp">
+<span class="sig-name descname"><span class="pre">bloom_filter_fpp</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.bloom_filter_fpp" title="Link to this definition">¶</a></dt>
+<dd><p>Sets bloom filter false positive probability for the column
+path. If <cite>None</cite>, uses the default parquet options.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetColumnOptions.bloom_filter_ndv">
+<span class="sig-name descname"><span class="pre">bloom_filter_ndv</span></span><a class="headerlink" href="#datafusion.ParquetColumnOptions.bloom_filter_ndv" title="Link to this definition">¶</a></dt>
+<dd><p>Sets bloom filter number of distinct values. If <cite>None</cite>, uses
+the default parquet options.</p>
+</dd></dl>
+
+<p>Initialize the ParquetColumnOptions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">bloom_filter_enabled</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id0" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">bloom_filter_fpp</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id2" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">bloom_filter_ndv</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id3" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">compression</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id4" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">dictionary_enabled</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id5" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">encoding</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id6" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">statistics_enabled</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id7" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">ParquetWriterOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_pagesize_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">writer_version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'1.0'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_arrow_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'zstd(3)'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dictionary_page_size_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics_enabled</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'page'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_row_group_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1024</span> <span class="pre">*</span> <span class="pre">1024</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'datafusion-python'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_index_truncate_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">statistics_truncate_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_page_row_count_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">20000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_on_write</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_fpp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bloom_filter_ndv</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_single_file_parallelism</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_parallel_row_group_writers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maximum_buffered_record_batches_per_stream</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_specific_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.ParquetColumnOptions" title="datafusion.ParquetColumnOptions"><span class="pre">ParquetColumnOptions</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.ParquetWriterOptions" title="Link to this definition">¶</a></dt>
+<dd><p>Advanced parquet writer options.</p>
+<p>Allows settings the writer options that apply to the entire file. Some options can
+also be set on a column by column basis, with the field <cite>column_specific_options</cite>
+(see <cite>ParquetColumnOptions</cite>).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.data_pagesize_limit">
+<span class="sig-name descname"><span class="pre">data_pagesize_limit</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.data_pagesize_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Sets best effort maximum size of data page in bytes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.write_batch_size">
+<span class="sig-name descname"><span class="pre">write_batch_size</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.write_batch_size" title="Link to this definition">¶</a></dt>
+<dd><p>Sets write_batch_size in bytes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.writer_version">
+<span class="sig-name descname"><span class="pre">writer_version</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.writer_version" title="Link to this definition">¶</a></dt>
+<dd><p>Sets parquet writer version. Valid values are <cite>1.0</cite> and
+<cite>2.0</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.skip_arrow_metadata">
+<span class="sig-name descname"><span class="pre">skip_arrow_metadata</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.skip_arrow_metadata" title="Link to this definition">¶</a></dt>
+<dd><p>Skip encoding the embedded arrow metadata in the
+KV_meta.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.compression">
+<span class="sig-name descname"><span class="pre">compression</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.compression" title="Link to this definition">¶</a></dt>
+<dd><p>Compression type to use. Default is “zstd(3)”.
+Available compression types are
+- “uncompressed”: No compression.
+- “snappy”: Snappy compression.
+- “gzip(n)”: Gzip compression with level n.
+- “brotli(n)”: Brotli compression with level n.
+- “lz4”: LZ4 compression.
+- “lz4_raw”: LZ4_RAW compression.
+- “zstd(n)”: Zstandard compression with level n.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.dictionary_enabled">
+<span class="sig-name descname"><span class="pre">dictionary_enabled</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.dictionary_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>Sets if dictionary encoding is enabled. If None, uses
+the default parquet writer setting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.dictionary_page_size_limit">
+<span class="sig-name descname"><span class="pre">dictionary_page_size_limit</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.dictionary_page_size_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Sets best effort maximum dictionary page size,
+in bytes.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.statistics_enabled">
+<span class="sig-name descname"><span class="pre">statistics_enabled</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.statistics_enabled" title="Link to this definition">¶</a></dt>
+<dd><p>Sets if statistics are enabled for any column Valid
+values are <cite>none</cite>, <cite>chunk</cite>, and <cite>page</cite>. If None, uses the default
+parquet writer setting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.max_row_group_size">
+<span class="sig-name descname"><span class="pre">max_row_group_size</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.max_row_group_size" title="Link to this definition">¶</a></dt>
+<dd><p>Target maximum number of rows in each row group
+(defaults to 1M rows). Writing larger row groups requires more memory to
+write, but can get better compression and be faster to read.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.created_by">
+<span class="sig-name descname"><span class="pre">created_by</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.created_by" title="Link to this definition">¶</a></dt>
+<dd><p>Sets “created by” property.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.column_index_truncate_length">
+<span class="sig-name descname"><span class="pre">column_index_truncate_length</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.column_index_truncate_length" title="Link to this definition">¶</a></dt>
+<dd><p>Sets column index truncate length.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.statistics_truncate_length">
+<span class="sig-name descname"><span class="pre">statistics_truncate_length</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.statistics_truncate_length" title="Link to this definition">¶</a></dt>
+<dd><p>Sets statistics truncate length. If None, uses
+the default parquet writer setting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.data_page_row_count_limit">
+<span class="sig-name descname"><span class="pre">data_page_row_count_limit</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.data_page_row_count_limit" title="Link to this definition">¶</a></dt>
+<dd><p>Sets best effort maximum number of rows in a data
+page.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.encoding">
+<span class="sig-name descname"><span class="pre">encoding</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.encoding" title="Link to this definition">¶</a></dt>
+<dd><p>Sets default encoding for any column. Valid values are <cite>plain</cite>,
+<cite>plain_dictionary</cite>, <cite>rle</cite>, <cite>bit_packed</cite>, <cite>delta_binary_packed</cite>,
+<cite>delta_length_byte_array</cite>, <cite>delta_byte_array</cite>, <cite>rle_dictionary</cite>, and
+<cite>byte_stream_split</cite>. If None, uses the default parquet writer setting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.bloom_filter_on_write">
+<span class="sig-name descname"><span class="pre">bloom_filter_on_write</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.bloom_filter_on_write" title="Link to this definition">¶</a></dt>
+<dd><p>Write bloom filters for all columns when creating
+parquet files.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.bloom_filter_fpp">
+<span class="sig-name descname"><span class="pre">bloom_filter_fpp</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.bloom_filter_fpp" title="Link to this definition">¶</a></dt>
+<dd><p>Sets bloom filter false positive probability. If None,
+uses the default parquet writer setting</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.bloom_filter_ndv">
+<span class="sig-name descname"><span class="pre">bloom_filter_ndv</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.bloom_filter_ndv" title="Link to this definition">¶</a></dt>
+<dd><p>Sets bloom filter number of distinct values. If None, uses
+the default parquet writer setting.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.allow_single_file_parallelism">
+<span class="sig-name descname"><span class="pre">allow_single_file_parallelism</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.allow_single_file_parallelism" title="Link to this definition">¶</a></dt>
+<dd><p>Controls whether DataFusion will attempt to
+speed up writing parquet files by serializing them in parallel. Each
+column in each row group in each output file are serialized in parallel
+leveraging a maximum possible core count of n_files * n_row_groups *
+n_columns.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.maximum_parallel_row_group_writers">
+<span class="sig-name descname"><span class="pre">maximum_parallel_row_group_writers</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.maximum_parallel_row_group_writers" title="Link to this definition">¶</a></dt>
+<dd><p>By default parallel parquet writer is
+tuned for minimum memory usage in a streaming execution plan. You may
+see a performance benefit when writing large parquet files by increasing
+<cite>maximum_parallel_row_group_writers</cite> and
+<cite>maximum_buffered_record_batches_per_stream</cite> if your system has idle
+cores and can tolerate additional memory usage. Boosting these values is
+likely worthwhile when writing out already in-memory data, such as from
+a cached data frame.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.maximum_buffered_record_batches_per_stream">
+<span class="sig-name descname"><span class="pre">maximum_buffered_record_batches_per_stream</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.maximum_buffered_record_batches_per_stream" title="Link to this definition">¶</a></dt>
+<dd><p>See
+<cite>maximum_parallel_row_group_writers</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.ParquetWriterOptions.column_specific_options">
+<span class="sig-name descname"><span class="pre">column_specific_options</span></span><a class="headerlink" href="#datafusion.ParquetWriterOptions.column_specific_options" title="Link to this definition">¶</a></dt>
+<dd><p>Overrides options for specific columns. If a column
+is not a part of this dictionary, it will use the parameters provided here.</p>
+</dd></dl>
+
+<p>Initialize the ParquetWriterOptions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">allow_single_file_parallelism</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id8" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">bloom_filter_fpp</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id9" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">bloom_filter_ndv</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id10" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">bloom_filter_on_write</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id11" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">column_index_truncate_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#id12" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">column_specific_options</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id13" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">created_by</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'datafusion-python'</span></em><a class="headerlink" href="#id14" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">data_page_row_count_limit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">20000</span></em><a class="headerlink" href="#id15" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">data_pagesize_limit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1048576</span></em><a class="headerlink" href="#id16" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id17">
+<span class="sig-name descname"><span class="pre">dictionary_enabled</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id17" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id18">
+<span class="sig-name descname"><span class="pre">dictionary_page_size_limit</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1048576</span></em><a class="headerlink" href="#id18" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id19">
+<span class="sig-name descname"><span class="pre">encoding</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id19" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id20">
+<span class="sig-name descname"><span class="pre">max_row_group_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1048576</span></em><a class="headerlink" href="#id20" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id21">
+<span class="sig-name descname"><span class="pre">maximum_buffered_record_batches_per_stream</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#id21" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id22">
+<span class="sig-name descname"><span class="pre">maximum_parallel_row_group_writers</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#id22" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id23">
+<span class="sig-name descname"><span class="pre">skip_arrow_metadata</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id23" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id24">
+<span class="sig-name descname"><span class="pre">statistics_enabled</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'page'</span></em><a class="headerlink" href="#id24" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id25">
+<span class="sig-name descname"><span class="pre">statistics_truncate_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id25" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id26">
+<span class="sig-name descname"><span class="pre">write_batch_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1024</span></em><a class="headerlink" href="#id26" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id27">
+<span class="sig-name descname"><span class="pre">writer_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'1.0'</span></em><a class="headerlink" href="#id27" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.RecordBatch">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">RecordBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record_batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.RecordBatch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.RecordBatch" title="Link to this definition">¶</a></dt>
 <dd><p>This class is essentially a wrapper for <code class="xref py py-class docutils literal notranslate"><span class="pre">pa.RecordBatch</span></code>.</p>
@@ -4203,7 +5271,7 @@ multiple spillable operators that all will spill.</p>
 <p>Scalar UDFs operate on a row by row basis. See also <a class="reference internal" href="#datafusion.AggregateUDF" title="datafusion.AggregateUDF"><code class="xref py py-class docutils literal notranslate"><span class="pre">AggregateUDF</span></code></a> for
 operating on a group of rows.</p>
 <p>Instantiate a scalar user-defined function (UDF).</p>
-<p>See helper method <a class="reference internal" href="udf/index.html#module-datafusion.udf" title="datafusion.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
+<p>See helper method <a class="reference internal" href="#datafusion.udf" title="datafusion.udf"><code class="xref py py-func docutils literal notranslate"><span class="pre">udf()</span></code></a> for argument details.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ScalarUDF.__call__">
 <span class="sig-name descname"><span class="pre">__call__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.__call__" title="Link to this definition">¶</a></dt>
@@ -4213,10 +5281,26 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.ScalarUDF.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the Scalar UDF.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.ScalarUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.ScalarUDFExportable" title="datafusion.user_defined.ScalarUDFExportable"><span class="pre">ScalarUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span><a class="headerlink" href="#datafusion.ScalarUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create a Scalar UDF from ScalarUDF PyCapsule object.</p>
+<p>This function will instantiate a Scalar UDF that uses a DataFusion
+ScalarUDF that is exported via the FFI bindings.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.ScalarUDF.udf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.ScalarUDF.udf" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span></dt>
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.ScalarUDFExportable" title="datafusion.user_defined.ScalarUDFExportable"><span class="pre">ScalarUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.ScalarUDF" title="datafusion.ScalarUDF"><span class="pre">ScalarUDF</span></a></span></span></dt>
 <dd><p>Create a new User-Defined Function (UDF).</p>
 <p>This class can be used both as either a function or a decorator.</p>
 <dl class="simple">
@@ -4231,7 +5315,10 @@ When used a decorator, do <strong>not</strong> pass <code class="docutils litera
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Only needed when calling as a function.
-Skip this argument when using <code class="docutils literal notranslate"><span class="pre">udf</span></code> as a decorator.</p></li>
+Skip this argument when using <cite>udf</cite> as a decorator. If you have a Rust
+backed ScalarUDF within a PyCapsule, you can pass this parameter
+and ignore the rest. They will be determined directly from the
+underlying function. See the online documentation for more information.</p></li>
 <li><p><strong>input_types</strong> (<em>list</em><em>[</em><em>pa.DataType</em><em>]</em>) – The data types of the arguments
 to <code class="docutils literal notranslate"><span class="pre">func</span></code>. This list must be of the same length as the number of
 arguments.</p></li>
@@ -4477,9 +5564,21 @@ automatically created.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Table">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.Table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawTable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
 <dd><p>DataFusion table.</p>
 <p>This constructor is not typically called by the end user.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Table.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Table.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the table.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.Table.from_dataset">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Table.from_dataset" title="Link to this definition">¶</a></dt>
+<dd><p>Turn a pyarrow Dataset into a Table.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="datafusion.Table.kind">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">kind</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#datafusion.Table.kind" title="Link to this definition">¶</a></dt>
@@ -4566,6 +5665,12 @@ parameter must be set.</p></li>
 </dd>
 </dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowFrame.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.WindowFrame.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the window frame.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.WindowFrame.get_frame_units">
 <span class="sig-name descname"><span class="pre">get_frame_units</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.WindowFrame.get_frame_units" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the window frame units for the bounds.</p>
@@ -4608,6 +5713,12 @@ occur during the evaluation of the dataframe.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowUDF.__repr__">
+<span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.WindowUDF.__repr__" title="Link to this definition">¶</a></dt>
+<dd><p>Print a string representation of the Window UDF.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="datafusion.WindowUDF._create_window_udf">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_create_window_udf</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.WindowEvaluator" title="datafusion.user_defined.WindowEvaluator"><span class="pre">WindowEvaluator</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">volatility</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.Volatility" title="datafusion.user_defined.Volatility"><span class="pre">Volatility</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><span class="pre">WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.WindowUDF._create_window_udf" title="Link to this definition">¶</a></dt>
 <dd><p>Create a WindowUDF instance from function arguments.</p>
@@ -4629,6 +5740,14 @@ occur during the evaluation of the dataframe.</p>
 <dt class="sig sig-object py" id="datafusion.WindowUDF._normalize_input_types">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_normalize_input_types</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_types</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.DataType</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.WindowUDF._normalize_input_types" title="Link to this definition">¶</a></dt>
 <dd><p>Convert a single DataType to a list if needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.WindowUDF.from_pycapsule">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_pycapsule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="user_defined/index.html#datafusion.user_defined.WindowUDFExportable" title="datafusion.user_defined.WindowUDFExportable"><span class="pre">WindowUDFExportable</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.WindowUDF" title="datafusion.WindowUDF"><span class="pre">WindowUDF</span></a></span></span><a class="headerlink" href="#datafusion.WindowUDF.from_pycapsule" title="Link to this definition">¶</a></dt>
+<dd><p>Create a Window UDF from WindowUDF PyCapsule object.</p>
+<p>This function will instantiate a Window UDF that uses a DataFusion
+WindowUDF that is exported via the FFI bindings.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -4675,7 +5794,10 @@ When using <code class="docutils literal notranslate"><span class="pre">udwf</sp
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>func</strong> – Only needed when calling as a function. Skip this argument when
-using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator.</p></li>
+using <code class="docutils literal notranslate"><span class="pre">udwf</span></code> as a decorator. If you have a Rust backed WindowUDF
+within a PyCapsule, you can pass this parameter and ignore the rest.
+They will be determined directly from the underlying function. See
+the online documentation for more information.</p></li>
 <li><p><strong>input_types</strong> – The data types of the arguments.</p></li>
 <li><p><strong>return_type</strong> – The data type of the return value.</p></li>
 <li><p><strong>volatility</strong> – See <code class="xref py py-class docutils literal notranslate"><span class="pre">Volatility</span></code> for allowed values.</p></li>
@@ -4736,7 +5858,7 @@ max_width, max_height, enable_cell_expansion, etc.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.read_avro">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.avro'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_avro" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_avro</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.avro'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_avro" title="Link to this definition">¶</a></dt>
 <dd><p>Create a <code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code> for reading Avro data source.</p>
 <p>This function will use the global context. Any functions or tables registered
 with another context may not be accessible when used with a DataFrame created
@@ -4758,7 +5880,7 @@ using this function.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.read_csv">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_csv" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pathlib.Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">has_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delimiter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">','</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_csv" title="Link to this definition">¶</a></dt>
 <dd><p>Read a CSV data source.</p>
 <p>This function will use the global context. Any functions or tables registered
 with another context may not be accessible when used with a DataFrame created
@@ -4789,7 +5911,7 @@ selected for data input.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.read_json">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_json" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema_infer_max_records</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.json'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_compression_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_json" title="Link to this definition">¶</a></dt>
 <dd><p>Read a line-delimited JSON data source.</p>
 <p>This function will use the global context. Any functions or tables registered
 with another context may not be accessible when used with a DataFrame created
@@ -4815,7 +5937,7 @@ selected for data input.</p></li>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="datafusion.read_parquet">
-<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sort_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_parquet" title="Link to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">read_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_partition_cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.DataType</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parquet_pruning</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.parquet'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.Schema</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_sort_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="dataframe/index.html#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">datafusion.dataframe.DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.read_parquet" title="Link to this definition">¶</a></dt>
 <dd><p>Read a Parquet source into a <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataframe</span></code>.</p>
 <p>This function will use the global context. Any functions or tables registered
 with another context may not be accessible when used with a DataFrame created

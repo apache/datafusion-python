@@ -677,6 +677,17 @@ Module Contents
 
 
 
+   .. py:method:: literal_with_metadata(value: Any, metadata: dict[str, str]) -> Expr
+      :staticmethod:
+
+
+      Creates a new expression representing a scalar value with metadata.
+
+      :param value: A valid PyArrow scalar value or easily castable to one.
+      :param metadata: Metadata to attach to the expression.
+
+
+
    .. py:method:: ln() -> Expr
 
       Returns the natural logarithm (base e) of the argument.
@@ -1066,6 +1077,12 @@ Module Contents
    :param end_bound: Sets the following bound. Must be >= 0. If none, this
                      will be set to unbounded. If unit type is ``groups``, this
                      parameter must be set.
+
+
+   .. py:method:: __repr__() -> str
+
+      Print a string representation of the window frame.
+
 
 
    .. py:method:: get_frame_units() -> str
