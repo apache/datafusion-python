@@ -31,8 +31,11 @@ github:
     issues: true
   protected_branches:
     main:
-      required_pull_request_reviews:
-        required_approving_review_count: 1
+      required_status_checks:
+        # require branches to be up-to-date before merging
+        strict: true
+        # don't require any jobs to pass
+        contexts: []
 
 staging:
   whoami: asf-staging
