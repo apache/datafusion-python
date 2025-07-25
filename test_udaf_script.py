@@ -1,5 +1,4 @@
 import pyarrow as pa
-import pyarrow.compute as pc
 from datafusion import Accumulator, SessionContext, udaf
 
 
@@ -13,12 +12,12 @@ class MyAccumulator(Accumulator):
         self._sum = pa.scalar(0.0)
 
     def update(self, values: pa.Array) -> None:
-        # Not nice since pyarrow scalars can't be summed yet. This breaks on `None`
+        # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(values).as_py())
 
     def merge(self, states: list[pa.Array]) -> None:
-        # Not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states).as_py())
+        # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states[0]).as_py())
 
     def state(self) -> list[pa.Scalar]:
         return [self._sum]
