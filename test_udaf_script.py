@@ -14,11 +14,11 @@ class MyAccumulator(Accumulator):
 
     def update(self, values: pa.Array) -> None:
         # Not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pc.sum(values).as_py())
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(values).as_py())
 
     def merge(self, states: list[pa.Array]) -> None:
         # Not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pc.sum(states[0]).as_py())
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states).as_py())
 
     def state(self) -> list[pa.Scalar]:
         return [self._sum]
