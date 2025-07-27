@@ -15,10 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::{AggregateFunctionParams, WindowFunctionParams};
+use datafusion::logical_expr::expr::AggregateFunctionParams;
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
-    ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
+    lit_with_metadata, ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
 };
 use pyo3::IntoPyObjectExt;
 use pyo3::{basic::CompareOp, prelude::*};
@@ -150,7 +150,7 @@ impl PyExpr {
                 Ok(PyScalarVariable::new(data_type, variables).into_bound_py_any(py)?)
             }
             Expr::Like(value) => Ok(PyLike::from(value.clone()).into_bound_py_any(py)?),
-            Expr::Literal(value) => Ok(PyLiteral::from(value.clone()).into_bound_py_any(py)?),
+            Expr::Literal(value, metadata) => Ok(PyLiteral::new_with_metadata(value.clone(), metadata.clone()).into_bound_py_any(py)?),
             Expr::BinaryExpr(expr) => Ok(PyBinaryExpr::from(expr.clone()).into_bound_py_any(py)?),
             Expr::Not(expr) => Ok(PyNot::new(*expr.clone()).into_bound_py_any(py)?),
             Expr::IsNotNull(expr) => Ok(PyIsNotNull::new(*expr.clone()).into_bound_py_any(py)?),
@@ -171,12 +171,10 @@ impl PyExpr {
             Expr::Cast(value) => Ok(cast::PyCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::TryCast(value) => Ok(cast::PyTryCast::from(value.clone()).into_bound_py_any(py)?),
             Expr::ScalarFunction(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::ScalarFunction to a Python object is not implemented: {:?}",
-                value
+                "Converting Expr::ScalarFunction to a Python object is not implemented: {value:?}"
             ))),
             Expr::WindowFunction(value) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::WindowFunction to a Python object is not implemented: {:?}",
-                value
+                "Converting Expr::WindowFunction to a Python object is not implemented: {value:?}"
             ))),
             Expr::InList(value) => Ok(in_list::PyInList::from(value.clone()).into_bound_py_any(py)?),
             Expr::Exists(value) => Ok(exists::PyExists::from(value.clone()).into_bound_py_any(py)?),
@@ -188,8 +186,7 @@ impl PyExpr {
             }
             #[allow(deprecated)]
             Expr::Wildcard { qualifier, options } => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::Wildcard to a Python object is not implemented : {:?} {:?}",
-                qualifier, options
+                "Converting Expr::Wildcard to a Python object is not implemented : {qualifier:?} {options:?}"
             ))),
             Expr::GroupingSet(value) => {
                 Ok(grouping_set::PyGroupingSet::from(value.clone()).into_bound_py_any(py)?)
@@ -198,8 +195,7 @@ impl PyExpr {
                 Ok(placeholder::PyPlaceholder::from(value.clone()).into_bound_py_any(py)?)
             }
             Expr::OuterReferenceColumn(data_type, column) => Err(py_unsupported_variant_err(format!(
-                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {:?} - {:?}",
-                data_type, column
+                "Converting Expr::OuterReferenceColumn to a Python object is not implemented: {data_type:?} - {column:?}"
             ))),
             Expr::Unnest(value) => Ok(unnest_expr::PyUnnestExpr::from(value.clone()).into_bound_py_any(py)?),
         }
@@ -280,6 +276,14 @@ impl PyExpr {
     #[staticmethod]
     pub fn literal(value: PyScalarValue) -> PyExpr {
         lit(value.0).into()
+    }
+
+    #[staticmethod]
+    pub fn literal_with_metadata(
+        value: PyScalarValue,
+        metadata: HashMap<String, String>,
+    ) -> PyExpr {
+        lit_with_metadata(value.0, metadata).into()
     }
 
     #[staticmethod]
@@ -377,7 +381,7 @@ impl PyExpr {
     /// Extracts the Expr value into a PyObject that can be shared with Python
     pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
         match &self.expr {
-            Expr::Literal(scalar_value) => scalar_to_pyarrow(scalar_value, py),
+            Expr::Literal(scalar_value, _) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(
                 "Non Expr::Literal encountered in types: {:?}",
                 &self.expr
@@ -417,11 +421,13 @@ impl PyExpr {
                 params: AggregateFunctionParams { args, .. },
                 ..
             })
-            | Expr::ScalarFunction(ScalarFunction { args, .. })
-            | Expr::WindowFunction(WindowFunction {
-                params: WindowFunctionParams { args, .. },
-                ..
-            }) => Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect()),
+            | Expr::ScalarFunction(ScalarFunction { args, .. }) => {
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
+            Expr::WindowFunction(boxed_window_fn) => {
+                let args = &boxed_window_fn.params.args;
+                Ok(args.iter().map(|arg| PyExpr::from(arg.clone())).collect())
+            }
 
             // Expr(s) that require more specific processing
             Expr::Case(Case {
@@ -600,10 +606,10 @@ impl PyExpr {
     ) -> PyDataFusionResult<PyExpr> {
         match &self.expr {
             Expr::AggregateFunction(agg_fn) => {
-                let window_fn = Expr::WindowFunction(WindowFunction::new(
+                let window_fn = Expr::WindowFunction(Box::new(WindowFunction::new(
                     WindowFunctionDefinition::AggregateUDF(agg_fn.func.clone()),
                     agg_fn.params.args.clone(),
-                ));
+                )));
 
                 add_builder_fns_to_window(
                     window_fn,
@@ -743,10 +749,9 @@ impl PyExpr {
                 | Operator::QuestionPipe => Err(py_type_err(format!("Unsupported expr: ${op}"))),
             },
             Expr::Cast(Cast { expr: _, data_type }) => DataTypeMap::map_from_arrow_type(data_type),
-            Expr::Literal(scalar_value) => DataTypeMap::map_from_scalar_value(scalar_value),
+            Expr::Literal(scalar_value, _) => DataTypeMap::map_from_scalar_value(scalar_value),
             _ => Err(py_type_err(format!(
-                "Non Expr::Literal encountered in types: {:?}",
-                expr
+                "Non Expr::Literal encountered in types: {expr:?}"
             ))),
         }
     }

@@ -70,7 +70,7 @@ impl PyDropTable {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("DropTable({})", self))
+        Ok(format!("DropTable({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

@@ -63,7 +63,7 @@ impl PyRecordBatchStream {
 impl PyRecordBatchStream {
     fn next(&mut self, py: Python) -> PyResult<PyRecordBatch> {
         let stream = self.stream.clone();
-        wait_for_future(py, next_stream(stream, true))
+        wait_for_future(py, next_stream(stream, true))?
     }
 
     fn __next__(&mut self, py: Python) -> PyResult<PyRecordBatch> {

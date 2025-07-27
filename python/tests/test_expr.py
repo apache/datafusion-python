@@ -19,7 +19,14 @@ from datetime import datetime, timezone
 
 import pyarrow as pa
 import pytest
-from datafusion import SessionContext, col, functions, lit
+from datafusion import (
+    SessionContext,
+    col,
+    functions,
+    lit,
+    lit_with_metadata,
+    literal_with_metadata,
+)
 from datafusion.expr import (
     Aggregate,
     AggregateFunction,
@@ -103,7 +110,7 @@ def test_limit(test_ctx):
 
     plan = plan.to_variant()
     assert isinstance(plan, Limit)
-    assert "Skip: Some(Literal(Int64(5)))" in str(plan)
+    assert "Skip: Some(Literal(Int64(5), None))" in str(plan)
 
 
 def test_aggregate_query(test_ctx):
@@ -824,3 +831,52 @@ def test_expr_functions(ctx, function, expected_result):
 
     assert len(result) == 1
     assert result[0].column(0).equals(expected_result)
+
+
+def test_literal_metadata(ctx):
+    result = (
+        ctx.from_pydict({"a": [1]})
+        .select(
+            lit(1).alias("no_metadata"),
+            lit_with_metadata(2, {"key1": "value1"}).alias("lit_with_metadata_fn"),
+            literal_with_metadata(3, {"key2": "value2"}).alias(
+                "literal_with_metadata_fn"
+            ),
+        )
+        .collect()
+    )
+
+    expected_schema = pa.schema(
+        [
+            pa.field("no_metadata", pa.int64(), nullable=False),
+            pa.field(
+                "lit_with_metadata_fn",
+                pa.int64(),
+                nullable=False,
+                metadata={"key1": "value1"},
+            ),
+            pa.field(
+                "literal_with_metadata_fn",
+                pa.int64(),
+                nullable=False,
+                metadata={"key2": "value2"},
+            ),
+        ]
+    )
+
+    expected = pa.RecordBatch.from_pydict(
+        {
+            "no_metadata": pa.array([1]),
+            "lit_with_metadata_fn": pa.array([2]),
+            "literal_with_metadata_fn": pa.array([3]),
+        },
+        schema=expected_schema,
+    )
+
+    assert result[0] == expected
+
+    # Testing result[0].schema == expected_schema does not check each key/value pair
+    # so we want to explicitly test these
+    for expected_field in expected_schema:
+        actual_field = result[0].schema.field(expected_field.name)
+        assert expected_field.metadata == actual_field.metadata

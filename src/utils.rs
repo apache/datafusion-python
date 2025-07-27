@@ -15,19 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::common::data_type::PyScalarValue;
-use crate::errors::{PyDataFusionError, PyDataFusionResult};
-use crate::TokioRuntime;
-use datafusion::common::ScalarValue;
-use datafusion::execution::context::SessionContext;
-use datafusion::logical_expr::Volatility;
-use pyo3::exceptions::PyValueError;
+use crate::{
+    common::data_type::PyScalarValue,
+    errors::{PyDataFusionError, PyDataFusionResult},
+    TokioRuntime,
+};
+use datafusion::{
+    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
+};
 use pyo3::prelude::*;
-use pyo3::types::PyCapsule;
-use std::future::Future;
-use std::sync::OnceLock;
-use tokio::runtime::Runtime;
-
+use pyo3::{exceptions::PyValueError, types::PyCapsule};
+use std::{future::Future, sync::OnceLock, time::Duration};
+use tokio::{runtime::Runtime, time::sleep};
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -40,6 +39,17 @@ pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
     RUNTIME.get_or_init(|| TokioRuntime(tokio::runtime::Runtime::new().unwrap()))
 }
 
+#[inline]
+pub(crate) fn is_ipython_env(py: Python) -> &'static bool {
+    static IS_IPYTHON_ENV: OnceLock<bool> = OnceLock::new();
+    IS_IPYTHON_ENV.get_or_init(|| {
+        py.import("IPython")
+            .and_then(|ipython| ipython.call_method0("get_ipython"))
+            .map(|ipython| !ipython.is_none())
+            .unwrap_or(false)
+    })
+}
+
 /// Utility to get the Global Datafussion CTX
 #[inline]
 pub(crate) fn get_global_ctx() -> &'static SessionContext {
@@ -47,14 +57,31 @@ pub(crate) fn get_global_ctx() -> &'static SessionContext {
     CTX.get_or_init(SessionContext::new)
 }
 
-/// Utility to collect rust futures with GIL released
-pub fn wait_for_future<F>(py: Python, f: F) -> F::Output
+/// Utility to collect rust futures with GIL released and respond to
+/// Python interrupts such as ``KeyboardInterrupt``. If a signal is
+/// received while the future is running, the future is aborted and the
+/// corresponding Python exception is raised.
+pub fn wait_for_future<F>(py: Python, fut: F) -> PyResult<F::Output>
 where
     F: Future + Send,
     F::Output: Send,
 {
     let runtime: &Runtime = &get_tokio_runtime().0;
-    py.allow_threads(|| runtime.block_on(f))
+    const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
+
+    py.allow_threads(|| {
+        runtime.block_on(async {
+            tokio::pin!(fut);
+            loop {
+                tokio::select! {
+                    res = &mut fut => break Ok(res),
+                    _ = sleep(INTERVAL_CHECK_SIGNALS) => {
+                        Python::with_gil(|py| py.check_signals())?;
+                    }
+                }
+            }
+        })
+    })
 }
 
 pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
@@ -82,8 +109,7 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     let capsule_name = capsule_name.unwrap().to_str()?;
     if capsule_name != name {
         return Err(PyValueError::new_err(format!(
-            "Expected name '{}' in PyCapsule, instead got '{}'",
-            name, capsule_name
+            "Expected name '{name}' in PyCapsule, instead got '{capsule_name}'"
         )));
     }
 
@@ -100,7 +126,7 @@ pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<Scal
 
     // Convert PyArrow scalar to PyScalarValue
     let py_scalar = PyScalarValue::extract_bound(scalar.as_ref())
-        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {}", e)))?;
+        .map_err(|e| PyValueError::new_err(format!("Failed to extract PyScalarValue: {e}")))?;
 
     // Convert PyScalarValue to ScalarValue
     Ok(py_scalar.into())

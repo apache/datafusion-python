@@ -116,7 +116,7 @@ impl PyAggregate {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Aggregate({})", self))
+        Ok(format!("Aggregate({self})"))
     }
 }
 

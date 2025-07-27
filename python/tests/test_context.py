@@ -57,7 +57,7 @@ def test_runtime_configs(tmp_path, path_to_str):
     ctx = SessionContext(config, runtime)
     assert ctx is not None
 
-    db = ctx.catalog("foo").database("bar")
+    db = ctx.catalog("foo").schema("bar")
     assert db is not None
 
 
@@ -70,7 +70,7 @@ def test_temporary_files(tmp_path, path_to_str):
     ctx = SessionContext(config, runtime)
     assert ctx is not None
 
-    db = ctx.catalog("foo").database("bar")
+    db = ctx.catalog("foo").schema("bar")
     assert db is not None
 
 
@@ -91,7 +91,7 @@ def test_create_context_with_all_valid_args():
     ctx = SessionContext(config, runtime)
 
     # verify that at least some of the arguments worked
-    ctx.catalog("foo").database("bar")
+    ctx.catalog("foo").schema("bar")
     with pytest.raises(KeyError):
         ctx.catalog("datafusion")
 
@@ -105,7 +105,7 @@ def test_register_record_batches(ctx):
 
     ctx.register_record_batches("t", [[batch]])
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -121,7 +121,7 @@ def test_create_dataframe_registers_unique_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]])
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -141,7 +141,7 @@ def test_create_dataframe_registers_with_defined_table_name(ctx):
     )
 
     df = ctx.create_dataframe([[batch]], name="tbl")
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -155,7 +155,7 @@ def test_from_arrow_table(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow(table)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -200,7 +200,7 @@ def test_from_arrow_table_with_name(ctx):
 
     # convert to DataFrame with optional name
     df = ctx.from_arrow(table, name="tbl")
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert tables[0] == "tbl"
@@ -213,7 +213,7 @@ def test_from_arrow_table_empty(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow(table)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -228,7 +228,7 @@ def test_from_arrow_table_empty_no_schema(ctx):
 
     # convert to DataFrame
     df = ctx.from_arrow(table)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -246,7 +246,7 @@ def test_from_pylist(ctx):
     ]
 
     df = ctx.from_pylist(data)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -260,7 +260,7 @@ def test_from_pydict(ctx):
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
 
     df = ctx.from_pydict(data)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -276,7 +276,7 @@ def test_from_pandas(ctx):
     pandas_df = pd.DataFrame(data)
 
     df = ctx.from_pandas(pandas_df)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -292,7 +292,7 @@ def test_from_polars(ctx):
     polars_df = pd.DataFrame(data)
 
     df = ctx.from_polars(polars_df)
-    tables = list(ctx.catalog().database().names())
+    tables = list(ctx.catalog().schema().names())
 
     assert df
     assert len(tables) == 1
@@ -303,7 +303,7 @@ def test_from_polars(ctx):
 
 def test_register_table(ctx, database):
     default = ctx.catalog()
-    public = default.database("public")
+    public = default.schema("public")
     assert public.names() == {"csv", "csv1", "csv2"}
     table = public.table("csv")
 
@@ -313,7 +313,7 @@ def test_register_table(ctx, database):
 
 def test_read_table(ctx, database):
     default = ctx.catalog()
-    public = default.database("public")
+    public = default.schema("public")
     assert public.names() == {"csv", "csv1", "csv2"}
 
     table = public.table("csv")
@@ -323,7 +323,7 @@ def test_read_table(ctx, database):
 
 def test_deregister_table(ctx, database):
     default = ctx.catalog()
-    public = default.database("public")
+    public = default.schema("public")
     assert public.names() == {"csv", "csv1", "csv2"}
 
     ctx.deregister_table("csv")
@@ -339,7 +339,7 @@ def test_register_dataset(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     result = ctx.sql("SELECT a+b, a-b FROM t").collect()
 
@@ -356,7 +356,7 @@ def test_dataset_filter(ctx, capfd):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
     df = ctx.sql("SELECT a+b, a-b FROM t WHERE a BETWEEN 2 and 3 AND b > 5")
 
     # Make sure the filter was pushed down in Physical Plan
@@ -455,7 +455,7 @@ def test_dataset_filter_nested_data(ctx):
     dataset = ds.dataset([batch])
     ctx.register_dataset("t", dataset)
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     df = ctx.table("t")
 

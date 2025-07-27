@@ -14,9 +14,12 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+import ctypes
 import datetime
 import os
 import re
+import threading
+import time
 from typing import Any
 
 import pyarrow as pa
@@ -24,6 +27,8 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
+    ParquetColumnOptions,
+    ParquetWriterOptions,
     SessionContext,
     WindowFrame,
     column,
@@ -32,14 +37,13 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
-from datafusion.expr import Window
-from datafusion.html_formatter import (
+from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
     get_formatter,
     reset_formatter,
-    reset_styles_loaded_state,
 )
+from datafusion.expr import Window
 from pyarrow.csv import write_csv
 
 MB = 1024 * 1024
@@ -59,6 +63,21 @@ def df():
         [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
         names=["a", "b", "c"],
     )
+
+    return ctx.from_arrow(batch)
+
+
+@pytest.fixture
+def large_df():
+    ctx = SessionContext()
+
+    rows = 100000
+    data = {
+        "a": list(range(rows)),
+        "b": [f"s-{i}" for i in range(rows)],
+        "c": [float(i + 0.1) for i in range(rows)],
+    }
+    batch = pa.record_batch(data)
 
     return ctx.from_arrow(batch)
 
@@ -1629,6 +1648,411 @@ def test_write_compressed_parquet_default_compression_level(df, tmp_path, compre
     df.write_parquet(str(path), compression=compression)
 
 
+def test_write_parquet_with_options_default_compression(df, tmp_path):
+    """Test that the default compression is ZSTD."""
+    df.write_parquet(tmp_path)
+
+    for file in tmp_path.rglob("*.parquet"):
+        metadata = pq.ParquetFile(file).metadata.to_dict()
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                assert col["compression"].lower() == "zstd"
+
+
+@pytest.mark.parametrize(
+    "compression",
+    ["gzip(6)", "brotli(7)", "zstd(15)", "snappy", "uncompressed"],
+)
+def test_write_parquet_with_options_compression(df, tmp_path, compression):
+    import re
+
+    path = tmp_path
+    df.write_parquet_with_options(
+        str(path), ParquetWriterOptions(compression=compression)
+    )
+
+    # test that the actual compression scheme is the one written
+    for _root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".parquet"):
+                metadata = pq.ParquetFile(tmp_path / file).metadata.to_dict()
+                for row_group in metadata["row_groups"]:
+                    for col in row_group["columns"]:
+                        assert col["compression"].lower() == re.sub(
+                            r"\(\d+\)", "", compression
+                        )
+
+    result = pq.read_table(str(path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    "compression",
+    ["gzip(12)", "brotli(15)", "zstd(23)"],
+)
+def test_write_parquet_with_options_wrong_compression_level(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(Exception, match=r"valid compression range .*? exceeded."):
+        df.write_parquet_with_options(
+            str(path), ParquetWriterOptions(compression=compression)
+        )
+
+
+@pytest.mark.parametrize("compression", ["wrong", "wrong(12)"])
+def test_write_parquet_with_options_invalid_compression(df, tmp_path, compression):
+    path = tmp_path
+
+    with pytest.raises(Exception, match="Unknown or unsupported parquet compression"):
+        df.write_parquet_with_options(
+            str(path), ParquetWriterOptions(compression=compression)
+        )
+
+
+@pytest.mark.parametrize(
+    ("writer_version", "format_version"),
+    [("1.0", "1.0"), ("2.0", "2.6"), (None, "1.0")],
+)
+def test_write_parquet_with_options_writer_version(
+    df, tmp_path, writer_version, format_version
+):
+    """Test the Parquet writer version. Note that writer_version=2.0 results in
+    format_version=2.6"""
+    if writer_version is None:
+        df.write_parquet_with_options(tmp_path, ParquetWriterOptions())
+    else:
+        df.write_parquet_with_options(
+            tmp_path, ParquetWriterOptions(writer_version=writer_version)
+        )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+        assert metadata["format_version"] == format_version
+
+
+@pytest.mark.parametrize("writer_version", ["1.2.3", "custom-version", "0"])
+def test_write_parquet_with_options_wrong_writer_version(df, tmp_path, writer_version):
+    """Test that invalid writer versions in Parquet throw an exception."""
+    with pytest.raises(
+        Exception, match="Unknown or unsupported parquet writer version"
+    ):
+        df.write_parquet_with_options(
+            tmp_path, ParquetWriterOptions(writer_version=writer_version)
+        )
+
+
+@pytest.mark.parametrize("dictionary_enabled", [True, False, None])
+def test_write_parquet_with_options_dictionary_enabled(
+    df, tmp_path, dictionary_enabled
+):
+    """Test enabling/disabling the dictionaries in Parquet."""
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(dictionary_enabled=dictionary_enabled)
+    )
+    # by default, the dictionary is enabled, so None results in True
+    result = dictionary_enabled if dictionary_enabled is not None else True
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                assert col["has_dictionary_page"] == result
+
+
+@pytest.mark.parametrize(
+    ("statistics_enabled", "has_statistics"),
+    [("page", True), ("chunk", True), ("none", False), (None, True)],
+)
+def test_write_parquet_with_options_statistics_enabled(
+    df, tmp_path, statistics_enabled, has_statistics
+):
+    """Test configuring the statistics in Parquet. In pyarrow we can only check for
+    column-level statistics, so "page" and "chunk" are tested in the same way."""
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(statistics_enabled=statistics_enabled)
+    )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                if has_statistics:
+                    assert col["statistics"] is not None
+                else:
+                    assert col["statistics"] is None
+
+
+@pytest.mark.parametrize("max_row_group_size", [1000, 5000, 10000, 100000])
+def test_write_parquet_with_options_max_row_group_size(
+    large_df, tmp_path, max_row_group_size
+):
+    """Test configuring the max number of rows per group in Parquet. These test cases
+    guarantee that the number of rows for each row group is max_row_group_size, given
+    the total number of rows is a multiple of max_row_group_size."""
+    large_df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
+    )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+        for row_group in metadata["row_groups"]:
+            assert row_group["num_rows"] == max_row_group_size
+
+
+@pytest.mark.parametrize("created_by", ["datafusion", "datafusion-python", "custom"])
+def test_write_parquet_with_options_created_by(df, tmp_path, created_by):
+    """Test configuring the created by metadata in Parquet."""
+    df.write_parquet_with_options(tmp_path, ParquetWriterOptions(created_by=created_by))
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+        assert metadata["created_by"] == created_by
+
+
+@pytest.mark.parametrize("statistics_truncate_length", [5, 25, 50])
+def test_write_parquet_with_options_statistics_truncate_length(
+    df, tmp_path, statistics_truncate_length
+):
+    """Test configuring the truncate limit in Parquet's row-group-level statistics."""
+    ctx = SessionContext()
+    data = {
+        "a": [
+            "a_the_quick_brown_fox_jumps_over_the_lazy_dog",
+            "m_the_quick_brown_fox_jumps_over_the_lazy_dog",
+            "z_the_quick_brown_fox_jumps_over_the_lazy_dog",
+        ],
+        "b": ["a_smaller", "m_smaller", "z_smaller"],
+    }
+    df = ctx.from_arrow(pa.record_batch(data))
+    df.write_parquet_with_options(
+        tmp_path,
+        ParquetWriterOptions(statistics_truncate_length=statistics_truncate_length),
+    )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                statistics = col["statistics"]
+                assert len(statistics["min"]) <= statistics_truncate_length
+                assert len(statistics["max"]) <= statistics_truncate_length
+
+
+def test_write_parquet_with_options_default_encoding(tmp_path):
+    """Test that, by default, Parquet files are written with dictionary encoding.
+    Note that dictionary encoding is not used for boolean values, so it is not tested
+    here."""
+    ctx = SessionContext()
+    data = {
+        "a": [1, 2, 3],
+        "b": ["1", "2", "3"],
+        "c": [1.01, 2.02, 3.03],
+    }
+    df = ctx.from_arrow(pa.record_batch(data))
+    df.write_parquet_with_options(tmp_path, ParquetWriterOptions())
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                assert col["encodings"] == ("PLAIN", "RLE", "RLE_DICTIONARY")
+
+
+@pytest.mark.parametrize(
+    ("encoding", "data_types", "result"),
+    [
+        ("plain", ["int", "float", "str", "bool"], ("PLAIN", "RLE")),
+        ("rle", ["bool"], ("RLE",)),
+        ("delta_binary_packed", ["int"], ("RLE", "DELTA_BINARY_PACKED")),
+        ("delta_length_byte_array", ["str"], ("RLE", "DELTA_LENGTH_BYTE_ARRAY")),
+        ("delta_byte_array", ["str"], ("RLE", "DELTA_BYTE_ARRAY")),
+        ("byte_stream_split", ["int", "float"], ("RLE", "BYTE_STREAM_SPLIT")),
+    ],
+)
+def test_write_parquet_with_options_encoding(tmp_path, encoding, data_types, result):
+    """Test different encodings in Parquet in their respective support column types."""
+    ctx = SessionContext()
+
+    data = {}
+    for data_type in data_types:
+        if data_type == "int":
+            data["int"] = [1, 2, 3]
+        elif data_type == "float":
+            data["float"] = [1.01, 2.02, 3.03]
+        elif data_type == "str":
+            data["str"] = ["a", "b", "c"]
+        elif data_type == "bool":
+            data["bool"] = [True, False, True]
+
+    df = ctx.from_arrow(pa.record_batch(data))
+    df.write_parquet_with_options(
+        tmp_path, ParquetWriterOptions(encoding=encoding, dictionary_enabled=False)
+    )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                assert col["encodings"] == result
+
+
+@pytest.mark.parametrize("encoding", ["bit_packed"])
+def test_write_parquet_with_options_unsupported_encoding(df, tmp_path, encoding):
+    """Test that unsupported Parquet encodings do not work."""
+    # BaseException is used since this throws a Rust panic: https://github.com/PyO3/pyo3/issues/3519
+    with pytest.raises(BaseException, match="Encoding .*? is not supported"):
+        df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding))
+
+
+@pytest.mark.parametrize("encoding", ["non_existent", "unknown", "plain123"])
+def test_write_parquet_with_options_invalid_encoding(df, tmp_path, encoding):
+    """Test that invalid Parquet encodings do not work."""
+    with pytest.raises(Exception, match="Unknown or unsupported parquet encoding"):
+        df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding))
+
+
+@pytest.mark.parametrize("encoding", ["plain_dictionary", "rle_dictionary"])
+def test_write_parquet_with_options_dictionary_encoding_fallback(
+    df, tmp_path, encoding
+):
+    """Test that the dictionary encoding cannot be used as fallback in Parquet."""
+    # BaseException is used since this throws a Rust panic: https://github.com/PyO3/pyo3/issues/3519
+    with pytest.raises(
+        BaseException, match="Dictionary encoding can not be used as fallback encoding"
+    ):
+        df.write_parquet_with_options(tmp_path, ParquetWriterOptions(encoding=encoding))
+
+
+def test_write_parquet_with_options_bloom_filter(df, tmp_path):
+    """Test Parquet files with and without (default) bloom filters. Since pyarrow does
+    not expose any information about bloom filters, the easiest way to confirm that they
+    are actually written is to compare the file size."""
+    path_no_bloom_filter = tmp_path / "1"
+    path_bloom_filter = tmp_path / "2"
+
+    df.write_parquet_with_options(path_no_bloom_filter, ParquetWriterOptions())
+    df.write_parquet_with_options(
+        path_bloom_filter, ParquetWriterOptions(bloom_filter_on_write=True)
+    )
+
+    size_no_bloom_filter = 0
+    for file in path_no_bloom_filter.rglob("*.parquet"):
+        size_no_bloom_filter += os.path.getsize(file)
+
+    size_bloom_filter = 0
+    for file in path_bloom_filter.rglob("*.parquet"):
+        size_bloom_filter += os.path.getsize(file)
+
+    assert size_no_bloom_filter < size_bloom_filter
+
+
+def test_write_parquet_with_options_column_options(df, tmp_path):
+    """Test writing Parquet files with different options for each column, which replace
+    the global configs (when provided)."""
+    data = {
+        "a": [1, 2, 3],
+        "b": ["a", "b", "c"],
+        "c": [False, True, False],
+        "d": [1.01, 2.02, 3.03],
+        "e": [4, 5, 6],
+    }
+
+    column_specific_options = {
+        "a": ParquetColumnOptions(statistics_enabled="none"),
+        "b": ParquetColumnOptions(encoding="plain", dictionary_enabled=False),
+        "c": ParquetColumnOptions(
+            compression="snappy", encoding="rle", dictionary_enabled=False
+        ),
+        "d": ParquetColumnOptions(
+            compression="zstd(6)",
+            encoding="byte_stream_split",
+            dictionary_enabled=False,
+            statistics_enabled="none",
+        ),
+        # column "e" will use the global configs
+    }
+
+    results = {
+        "a": {
+            "statistics": False,
+            "compression": "brotli",
+            "encodings": ("PLAIN", "RLE", "RLE_DICTIONARY"),
+        },
+        "b": {
+            "statistics": True,
+            "compression": "brotli",
+            "encodings": ("PLAIN", "RLE"),
+        },
+        "c": {
+            "statistics": True,
+            "compression": "snappy",
+            "encodings": ("RLE",),
+        },
+        "d": {
+            "statistics": False,
+            "compression": "zstd",
+            "encodings": ("RLE", "BYTE_STREAM_SPLIT"),
+        },
+        "e": {
+            "statistics": True,
+            "compression": "brotli",
+            "encodings": ("PLAIN", "RLE", "RLE_DICTIONARY"),
+        },
+    }
+
+    ctx = SessionContext()
+    df = ctx.from_arrow(pa.record_batch(data))
+    df.write_parquet_with_options(
+        tmp_path,
+        ParquetWriterOptions(
+            compression="brotli(8)", column_specific_options=column_specific_options
+        ),
+    )
+
+    for file in tmp_path.rglob("*.parquet"):
+        parquet = pq.ParquetFile(file)
+        metadata = parquet.metadata.to_dict()
+
+        for row_group in metadata["row_groups"]:
+            for col in row_group["columns"]:
+                column_name = col["path_in_schema"]
+                result = results[column_name]
+                assert (col["statistics"] is not None) == result["statistics"]
+                assert col["compression"].lower() == result["compression"].lower()
+                assert col["encodings"] == result["encodings"]
+
+
+def test_write_parquet_options(df, tmp_path):
+    options = ParquetWriterOptions(compression="gzip", compression_level=6)
+    df.write_parquet(str(tmp_path), options)
+
+    result = pq.read_table(str(tmp_path)).to_pydict()
+    expected = df.to_pydict()
+
+    assert result == expected
+
+
+def test_write_parquet_options_error(df, tmp_path):
+    options = ParquetWriterOptions(compression="gzip", compression_level=6)
+    with pytest.raises(ValueError):
+        df.write_parquet(str(tmp_path), options, compression_level=1)
+
+
 def test_dataframe_export(df) -> None:
     # Guarantees that we have the canonical implementation
     # reading our dataframe export
@@ -1752,27 +2176,15 @@ def test_html_formatter_shared_styles(df, clean_formatter_state):
     # First, ensure we're using shared styles
     configure_formatter(use_shared_styles=True)
 
-    # Get HTML output for first table - should include styles
     html_first = df._repr_html_()
-
-    # Verify styles are included in first render
-    assert "<style>" in html_first
-    assert ".expandable-container" in html_first
-
-    # Get HTML output for second table - should NOT include styles
     html_second = df._repr_html_()
 
-    # Verify styles are NOT included in second render
+    assert "<script>" in html_first
+    assert "df-styles" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
     assert "<style>" not in html_second
-    assert ".expandable-container" not in html_second
-
-    # Reset the styles loaded state and verify styles are included again
-    reset_styles_loaded_state()
-    html_after_reset = df._repr_html_()
-
-    # Verify styles are included after reset
-    assert "<style>" in html_after_reset
-    assert ".expandable-container" in html_after_reset
 
 
 def test_html_formatter_no_shared_styles(df, clean_formatter_state):
@@ -1781,15 +2193,15 @@ def test_html_formatter_no_shared_styles(df, clean_formatter_state):
     # Configure formatter to NOT use shared styles
     configure_formatter(use_shared_styles=False)
 
-    # Generate HTML multiple times
     html_first = df._repr_html_()
     html_second = df._repr_html_()
 
-    # Verify styles are included in both renders
-    assert "<style>" in html_first
-    assert "<style>" in html_second
-    assert ".expandable-container" in html_first
-    assert ".expandable-container" in html_second
+    assert "<script>" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_first
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
+    assert "<style>" not in html_second
 
 
 def test_html_formatter_manual_format_html(clean_formatter_state):
@@ -1803,20 +2215,15 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
 
     formatter = get_formatter()
 
-    # First call should include styles
     html_first = formatter.format_html([batch], batch.schema)
-    assert "<style>" in html_first
-
-    # Second call should not include styles (using shared styles by default)
     html_second = formatter.format_html([batch], batch.schema)
+
+    assert "<script>" in html_first
+    assert "<script>" in html_second
+    assert "df-styles" in html_first
+    assert "df-styles" in html_second
+    assert "<style>" not in html_first
     assert "<style>" not in html_second
-
-    # Reset loaded state
-    reset_styles_loaded_state()
-
-    # After reset, styles should be included again
-    html_reset = formatter.format_html([batch], batch.schema)
-    assert "<style>" in html_reset
 
     # Create a new formatter with shared_styles=False
     local_formatter = DataFrameHtmlFormatter(use_shared_styles=False)
@@ -1825,8 +2232,12 @@ def test_html_formatter_manual_format_html(clean_formatter_state):
     local_html_1 = local_formatter.format_html([batch], batch.schema)
     local_html_2 = local_formatter.format_html([batch], batch.schema)
 
-    assert "<style>" in local_html_1
-    assert "<style>" in local_html_2
+    assert "<script>" in local_html_1
+    assert "<script>" in local_html_2
+    assert "df-styles" in local_html_1
+    assert "df-styles" in local_html_2
+    assert "<style>" not in local_html_1
+    assert "<style>" not in local_html_2
 
 
 def test_fill_null_basic(null_df):
@@ -2060,3 +2471,121 @@ def test_fill_null_all_null_column(ctx):
     # Check that all nulls were filled
     result = filled_df.collect()[0]
     assert result.column(1).to_pylist() == ["filled", "filled", "filled"]
+
+
+def test_collect_interrupted():
+    """Test that a long-running query can be interrupted with Ctrl-C.
+
+    This test simulates a Ctrl-C keyboard interrupt by raising a KeyboardInterrupt
+    exception in the main thread during a long-running query execution.
+    """
+    # Create a context and a DataFrame with a query that will run for a while
+    ctx = SessionContext()
+
+    # Create a recursive computation that will run for some time
+    batches = []
+    for i in range(10):
+        batch = pa.RecordBatch.from_arrays(
+            [
+                pa.array(list(range(i * 1000, (i + 1) * 1000))),
+                pa.array([f"value_{j}" for j in range(i * 1000, (i + 1) * 1000)]),
+            ],
+            names=["a", "b"],
+        )
+        batches.append(batch)
+
+    # Register tables
+    ctx.register_record_batches("t1", [batches])
+    ctx.register_record_batches("t2", [batches])
+
+    # Create a large join operation that will take time to process
+    df = ctx.sql("""
+        WITH t1_expanded AS (
+            SELECT
+                a,
+                b,
+                CAST(a AS DOUBLE) / 1.5 AS c,
+                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS d
+            FROM t1
+            CROSS JOIN (SELECT 1 AS dummy FROM t1 LIMIT 5)
+        ),
+        t2_expanded AS (
+            SELECT
+                a,
+                b,
+                CAST(a AS DOUBLE) * 2.5 AS e,
+                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS f
+            FROM t2
+            CROSS JOIN (SELECT 1 AS dummy FROM t2 LIMIT 5)
+        )
+        SELECT
+            t1.a, t1.b, t1.c, t1.d,
+            t2.a AS a2, t2.b AS b2, t2.e, t2.f
+        FROM t1_expanded t1
+        JOIN t2_expanded t2 ON t1.a % 100 = t2.a % 100
+        WHERE t1.a > 100 AND t2.a > 100
+    """)
+
+    # Flag to track if the query was interrupted
+    interrupted = False
+    interrupt_error = None
+    main_thread = threading.main_thread()
+
+    # Shared flag to indicate query execution has started
+    query_started = threading.Event()
+    max_wait_time = 5.0  # Maximum wait time in seconds
+
+    # This function will be run in a separate thread and will raise
+    # KeyboardInterrupt in the main thread
+    def trigger_interrupt():
+        """Poll for query start, then raise KeyboardInterrupt in the main thread"""
+        # Poll for query to start with small sleep intervals
+        start_time = time.time()
+        while not query_started.is_set():
+            time.sleep(0.1)  # Small sleep between checks
+            if time.time() - start_time > max_wait_time:
+                msg = f"Query did not start within {max_wait_time} seconds"
+                raise RuntimeError(msg)
+
+        # Check if thread ID is available
+        thread_id = main_thread.ident
+        if thread_id is None:
+            msg = "Cannot get main thread ID"
+            raise RuntimeError(msg)
+
+        # Use ctypes to raise exception in main thread
+        exception = ctypes.py_object(KeyboardInterrupt)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_long(thread_id), exception
+        )
+        if res != 1:
+            # If res is 0, the thread ID was invalid
+            # If res > 1, we modified multiple threads
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(thread_id), ctypes.py_object(0)
+            )
+            msg = "Failed to raise KeyboardInterrupt in main thread"
+            raise RuntimeError(msg)
+
+    # Start a thread to trigger the interrupt
+    interrupt_thread = threading.Thread(target=trigger_interrupt)
+    # we mark as daemon so the test process can exit even if this thread doesn't finish
+    interrupt_thread.daemon = True
+    interrupt_thread.start()
+
+    # Execute the query and expect it to be interrupted
+    try:
+        # Signal that we're about to start the query
+        query_started.set()
+        df.collect()
+    except KeyboardInterrupt:
+        interrupted = True
+    except Exception as e:
+        interrupt_error = e
+
+    # Assert that the query was interrupted properly
+    if not interrupted:
+        pytest.fail(f"Query was not interrupted; got error: {interrupt_error}")
+
+    # Make sure the interrupt thread has finished
+    interrupt_thread.join(timeout=1.0)

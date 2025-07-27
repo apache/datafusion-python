@@ -31,10 +31,10 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable};
+use crate::catalog::{PyCatalog, PyTable, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionResult};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -49,6 +49,7 @@ use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_f
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::catalog::CatalogProvider;
 use datafusion::common::TableReference;
 use datafusion::common::{exec_err, ScalarValue};
 use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
@@ -61,7 +62,7 @@ use datafusion::datasource::TableProvider;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
-use datafusion::execution::disk_manager::DiskManagerConfig;
+use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
@@ -69,8 +70,10 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
+use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
+use pyo3::IntoPyObjectExt;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
@@ -183,22 +186,49 @@ impl PyRuntimeEnvBuilder {
     }
 
     fn with_disk_manager_disabled(&self) -> Self {
-        let mut builder = self.builder.clone();
-        builder = builder.with_disk_manager(DiskManagerConfig::Disabled);
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::Disabled);
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_disk_manager_os(&self) -> Self {
-        let builder = self.builder.clone();
-        let builder = builder.with_disk_manager(DiskManagerConfig::NewOs);
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::OsTmpDirectory);
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_disk_manager_specified(&self, paths: Vec<String>) -> Self {
-        let builder = self.builder.clone();
         let paths = paths.iter().map(|s| s.into()).collect();
-        let builder = builder.with_disk_manager(DiskManagerConfig::NewSpecified(paths));
-        Self { builder }
+        let mut runtime_builder = self.builder.clone();
+
+        let mut disk_mgr_builder = runtime_builder
+            .disk_manager_builder
+            .clone()
+            .unwrap_or_default();
+        disk_mgr_builder.set_mode(DiskManagerMode::Directories(paths));
+
+        runtime_builder = runtime_builder.with_disk_manager_builder(disk_mgr_builder);
+        Self {
+            builder: runtime_builder,
+        }
     }
 
     fn with_unbounded_memory_pool(&self) -> Self {
@@ -338,7 +368,7 @@ impl PySessionContext {
         } else {
             &upstream_host
         };
-        let url_string = format!("{}{}", scheme, derived_host);
+        let url_string = format!("{scheme}{derived_host}");
         let url = Url::parse(&url_string).unwrap();
         self.ctx.runtime_env().register_object_store(&url, store);
         Ok(())
@@ -353,7 +383,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         schema: Option<PyArrowType<Schema>>,
         file_sort_order: Option<Vec<Vec<PySortExpr>>>,
@@ -361,7 +391,12 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         let options = ListingOptions::new(Arc::new(ParquetFormat::new()))
             .with_file_extension(file_extension)
-            .with_table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .with_table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            )
             .with_file_sort_order(
                 file_sort_order
                     .unwrap_or_default()
@@ -375,7 +410,7 @@ impl PySessionContext {
             None => {
                 let state = self.ctx.state();
                 let schema = options.infer_schema(&state, &table_path);
-                wait_for_future(py, schema)?
+                wait_for_future(py, schema)??
             }
         };
         let config = ListingTableConfig::new(table_path)
@@ -400,7 +435,7 @@ impl PySessionContext {
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)?;
+        let df = wait_for_future(py, result)??;
         Ok(PyDataFrame::new(df))
     }
 
@@ -417,7 +452,7 @@ impl PySessionContext {
             SQLOptions::new()
         };
         let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)?;
+        let df = wait_for_future(py, result)??;
         Ok(PyDataFrame::new(df))
     }
 
@@ -451,7 +486,7 @@ impl PySessionContext {
 
         self.ctx.register_table(&*table_name, Arc::new(table))?;
 
-        let table = wait_for_future(py, self._table(&table_name))?;
+        let table = wait_for_future(py, self._table(&table_name))??;
 
         let df = PyDataFrame::new(table);
         Ok(df)
@@ -582,6 +617,34 @@ impl PySessionContext {
         Ok(())
     }
 
+    pub fn register_catalog_provider(
+        &mut self,
+        name: &str,
+        provider: Bound<'_, PyAny>,
+    ) -> PyDataFusionResult<()> {
+        let provider = if provider.hasattr("__datafusion_catalog_provider__")? {
+            let capsule = provider
+                .getattr("__datafusion_catalog_provider__")?
+                .call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_catalog_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
+            let provider: ForeignCatalogProvider = provider.into();
+            Arc::new(provider) as Arc<dyn CatalogProvider>
+        } else {
+            match provider.extract::<PyCatalog>() {
+                Ok(py_catalog) => py_catalog.catalog,
+                Err(_) => Arc::new(RustWrappedPyCatalogProvider::new(provider.into()))
+                    as Arc<dyn CatalogProvider>,
+            }
+        };
+
+        let _ = self.ctx.register_catalog(name, provider);
+
+        Ok(())
+    }
+
     /// Construct datafusion dataframe from Arrow Table
     pub fn register_table_provider(
         &mut self,
@@ -629,7 +692,7 @@ impl PySessionContext {
         &mut self,
         name: &str,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
@@ -638,7 +701,12 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<()> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
@@ -650,7 +718,7 @@ impl PySessionContext {
             .collect();
 
         let result = self.ctx.register_parquet(name, path, options);
-        wait_for_future(py, result)?;
+        wait_for_future(py, result)??;
         Ok(())
     }
 
@@ -693,11 +761,11 @@ impl PySessionContext {
         if path.is_instance_of::<PyList>() {
             let paths = path.extract::<Vec<String>>()?;
             let result = self.register_csv_from_multiple_paths(name, paths, options);
-            wait_for_future(py, result)?;
+            wait_for_future(py, result)??;
         } else {
             let path = path.extract::<String>()?;
             let result = self.ctx.register_csv(name, &path, options);
-            wait_for_future(py, result)?;
+            wait_for_future(py, result)??;
         }
 
         Ok(())
@@ -718,7 +786,7 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<()> {
@@ -728,13 +796,18 @@ impl PySessionContext {
 
         let mut options = NdJsonReadOptions::default()
             .file_compression_type(parse_file_compression_type(file_compression_type)?)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            );
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_json(name, path, options);
-        wait_for_future(py, result)?;
+        wait_for_future(py, result)??;
 
         Ok(())
     }
@@ -751,20 +824,24 @@ impl PySessionContext {
         path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let path = path
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
 
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        let mut options = AvroReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
         options.file_extension = file_extension;
         options.schema = schema.as_ref().map(|x| &x.0);
 
         let result = self.ctx.register_avro(name, path, options);
-        wait_for_future(py, result)?;
+        wait_for_future(py, result)??;
 
         Ok(())
     }
@@ -799,14 +876,24 @@ impl PySessionContext {
     }
 
     #[pyo3(signature = (name="datafusion"))]
-    pub fn catalog(&self, name: &str) -> PyResult<PyCatalog> {
-        match self.ctx.catalog(name) {
-            Some(catalog) => Ok(PyCatalog::new(catalog)),
-            None => Err(PyKeyError::new_err(format!(
-                "Catalog with name {} doesn't exist.",
-                &name,
-            ))),
-        }
+    pub fn catalog(&self, name: &str) -> PyResult<PyObject> {
+        let catalog = self.ctx.catalog(name).ok_or(PyKeyError::new_err(format!(
+            "Catalog with name {name} doesn't exist."
+        )))?;
+
+        Python::with_gil(|py| {
+            match catalog
+                .as_any()
+                .downcast_ref::<RustWrappedPyCatalogProvider>()
+            {
+                Some(wrapped_schema) => Ok(wrapped_schema.catalog_provider.clone_ref(py)),
+                None => PyCatalog::from(catalog).into_py_any(py),
+            }
+        })
+    }
+
+    pub fn catalog_names(&self) -> HashSet<String> {
+        self.ctx.catalog_names().into_iter().collect()
     }
 
     pub fn tables(&self) -> HashSet<String> {
@@ -825,9 +912,19 @@ impl PySessionContext {
     }
 
     pub fn table(&self, name: &str, py: Python) -> PyResult<PyDataFrame> {
-        let x = wait_for_future(py, self.ctx.table(name))
+        let res = wait_for_future(py, self.ctx.table(name))
             .map_err(|e| PyKeyError::new_err(e.to_string()))?;
-        Ok(PyDataFrame::new(x))
+        match res {
+            Ok(df) => Ok(PyDataFrame::new(df)),
+            Err(e) => {
+                if let datafusion::error::DataFusionError::Plan(msg) = &e {
+                    if msg.contains("No table named") {
+                        return Err(PyKeyError::new_err(msg.to_string()));
+                    }
+                }
+                Err(py_datafusion_err(e))
+            }
+        }
     }
 
     pub fn table_exist(&self, name: &str) -> PyDataFusionResult<bool> {
@@ -850,7 +947,7 @@ impl PySessionContext {
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
@@ -858,17 +955,22 @@ impl PySessionContext {
             .to_str()
             .ok_or_else(|| PyValueError::new_err("Unable to convert path to a string"))?;
         let mut options = NdJsonReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema_infer_max_records = schema_infer_max_records;
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
             let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?
+            wait_for_future(py, result)??
         } else {
             let result = self.ctx.read_json(path, options);
-            wait_for_future(py, result)?
+            wait_for_future(py, result)??
         };
         Ok(PyDataFrame::new(df))
     }
@@ -891,7 +993,7 @@ impl PySessionContext {
         delimiter: &str,
         schema_infer_max_records: usize,
         file_extension: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_compression_type: Option<String>,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
@@ -907,7 +1009,12 @@ impl PySessionContext {
             .delimiter(delimiter[0])
             .schema_infer_max_records(schema_infer_max_records)
             .file_extension(file_extension)
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            )
             .file_compression_type(parse_file_compression_type(file_compression_type)?);
         options.schema = schema.as_ref().map(|x| &x.0);
 
@@ -915,12 +1022,12 @@ impl PySessionContext {
             let paths = path.extract::<Vec<String>>()?;
             let paths = paths.iter().map(|p| p as &str).collect::<Vec<&str>>();
             let result = self.ctx.read_csv(paths, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
+            let df = PyDataFrame::new(wait_for_future(py, result)??);
             Ok(df)
         } else {
             let path = path.extract::<String>()?;
             let result = self.ctx.read_csv(path, options);
-            let df = PyDataFrame::new(wait_for_future(py, result)?);
+            let df = PyDataFrame::new(wait_for_future(py, result)??);
             Ok(df)
         }
     }
@@ -937,7 +1044,7 @@ impl PySessionContext {
     pub fn read_parquet(
         &self,
         path: &str,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         parquet_pruning: bool,
         file_extension: &str,
         skip_metadata: bool,
@@ -946,7 +1053,12 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
         let mut options = ParquetReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?)
+            .table_partition_cols(
+                table_partition_cols
+                    .into_iter()
+                    .map(|(name, ty)| (name, ty.0))
+                    .collect::<Vec<(String, DataType)>>(),
+            )
             .parquet_pruning(parquet_pruning)
             .skip_metadata(skip_metadata);
         options.file_extension = file_extension;
@@ -958,7 +1070,7 @@ impl PySessionContext {
             .collect();
 
         let result = self.ctx.read_parquet(path, options);
-        let df = PyDataFrame::new(wait_for_future(py, result)?);
+        let df = PyDataFrame::new(wait_for_future(py, result)??);
         Ok(df)
     }
 
@@ -968,20 +1080,24 @@ impl PySessionContext {
         &self,
         path: &str,
         schema: Option<PyArrowType<Schema>>,
-        table_partition_cols: Vec<(String, String)>,
+        table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
         file_extension: &str,
         py: Python,
     ) -> PyDataFusionResult<PyDataFrame> {
-        let mut options = AvroReadOptions::default()
-            .table_partition_cols(convert_table_partition_cols(table_partition_cols)?);
+        let mut options = AvroReadOptions::default().table_partition_cols(
+            table_partition_cols
+                .into_iter()
+                .map(|(name, ty)| (name, ty.0))
+                .collect::<Vec<(String, DataType)>>(),
+        );
         options.file_extension = file_extension;
         let df = if let Some(schema) = schema {
             options.schema = Some(&schema.0);
             let read_future = self.ctx.read_avro(path, options);
-            wait_for_future(py, read_future)?
+            wait_for_future(py, read_future)??
         } else {
             let read_future = self.ctx.read_avro(path, options);
-            wait_for_future(py, read_future)?
+            wait_for_future(py, read_future)??
         };
         Ok(PyDataFrame::new(df))
     }
@@ -1021,8 +1137,8 @@ impl PySessionContext {
         let plan = plan.plan.clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })???;
+        Ok(PyRecordBatchStream::new(stream))
     }
 }
 
@@ -1070,21 +1186,6 @@ impl PySessionContext {
             .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
         Ok(())
     }
-}
-
-pub fn convert_table_partition_cols(
-    table_partition_cols: Vec<(String, String)>,
-) -> PyDataFusionResult<Vec<(String, DataType)>> {
-    table_partition_cols
-        .into_iter()
-        .map(|(name, ty)| match ty.as_str() {
-            "string" => Ok((name, DataType::Utf8)),
-            "int" => Ok((name, DataType::Int32)),
-            _ => Err(crate::errors::PyDataFusionError::Common(format!(
-                "Unsupported data type '{ty}' for partition column. Supported types are 'string' and 'int'"
-            ))),
-        })
-        .collect::<Result<Vec<_>, _>>()
 }
 
 pub fn parse_file_compression_type(

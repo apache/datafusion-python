@@ -163,7 +163,7 @@ impl PyCreateFunction {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("CreateFunction({})", self))
+        Ok(format!("CreateFunction({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

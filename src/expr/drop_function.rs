@@ -76,7 +76,7 @@ impl PyDropFunction {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("DropFunction({})", self))
+        Ok(format!("DropFunction({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

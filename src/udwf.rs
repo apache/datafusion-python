@@ -27,16 +27,17 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use crate::common::data_type::PyScalarValue;
-use crate::errors::to_datafusion_err;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
-use crate::utils::parse_volatility;
+use crate::utils::{parse_volatility, validate_pycapsule};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::{
     PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
 };
-use pyo3::types::{PyList, PyTuple};
+use datafusion_ffi::udwf::{FFI_WindowUDF, ForeignWindowUDF};
+use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {
@@ -245,6 +246,26 @@ impl PyWindowUDF {
         Ok(self.function.call(args).into())
     }
 
+    #[staticmethod]
+    pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if func.hasattr("__datafusion_window_udf__")? {
+            let capsule = func.getattr("__datafusion_window_udf__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_window_udf")?;
+
+            let udwf = unsafe { capsule.reference::<FFI_WindowUDF>() };
+            let udwf: ForeignWindowUDF = udwf.try_into()?;
+
+            Ok(Self {
+                function: udwf.into(),
+            })
+        } else {
+            Err(crate::errors::PyDataFusionError::Common(
+                "__datafusion_window_udf__ does not exist on WindowUDF object.".to_string(),
+            ))
+        }
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("WindowUDF({})", self.function.name()))
     }
@@ -300,13 +321,9 @@ impl WindowUDFImpl for MultiColumnWindowUDF {
         &self.signature
     }
 
-    fn field(&self, field_args: WindowUDFFieldArgs) -> Result<arrow::datatypes::Field> {
+    fn field(&self, field_args: WindowUDFFieldArgs) -> Result<arrow::datatypes::FieldRef> {
         // TODO: Should nullable always be `true`?
-        Ok(arrow::datatypes::Field::new(
-            field_args.name(),
-            self.return_type.clone(),
-            true,
-        ))
+        Ok(arrow::datatypes::Field::new(field_args.name(), self.return_type.clone(), true).into())
     }
 
     // TODO: Enable passing partition_evaluator_args to python?

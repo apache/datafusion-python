@@ -185,3 +185,59 @@ the interface as describe in the :ref:`Custom Table Provider <io_custom_table_pr
 section. This is an advanced topic, but a
 `user example <https://github.com/apache/datafusion-python/tree/main/examples/ffi-table-provider>`_
 is provided in the DataFusion repository.
+
+Catalog
+=======
+
+A common technique for organizing tables is using a three level hierarchical approach. DataFusion
+supports this form of organizing using the :py:class:`~datafusion.catalog.Catalog`,
+:py:class:`~datafusion.catalog.Schema`, and :py:class:`~datafusion.catalog.Table`. By default,
+a :py:class:`~datafusion.context.SessionContext` comes with a single Catalog and a single Schema
+with the names ``datafusion`` and ``default``, respectively.
+
+The default implementation uses an in-memory approach to the catalog and schema. We have support
+for adding additional in-memory catalogs and schemas. This can be done like in the following
+example:
+
+.. code-block:: python
+
+    from datafusion.catalog import Catalog, Schema
+
+    my_catalog = Catalog.memory_catalog()
+    my_schema = Schema.memory_schema()
+
+    my_catalog.register_schema("my_schema_name", my_schema)
+
+    ctx.register_catalog("my_catalog_name", my_catalog)
+
+You could then register tables in ``my_schema`` and access them either through the DataFrame
+API or via sql commands such as ``"SELECT * from my_catalog_name.my_schema_name.my_table"``.
+
+User Defined Catalog and Schema
+-------------------------------
+
+If the in-memory catalogs are insufficient for your uses, there are two approaches you can take
+to implementing a custom catalog and/or schema. In the below discussion, we describe how to
+implement these for a Catalog, but the approach to implementing for a Schema is nearly
+identical.
+
+DataFusion supports Catalogs written in either Rust or Python. If you write a Catalog in Rust,
+you will need to export it as a Python library via PyO3. There is a complete example of a
+catalog implemented this way in the
+`examples folder <https://github.com/apache/datafusion-python/tree/main/examples/>`_
+of our repository. Writing catalog providers in Rust provides typically can lead to significant
+performance improvements over the Python based approach.
+
+To implement a Catalog in Python, you will need to inherit from the abstract base class
+:py:class:`~datafusion.catalog.CatalogProvider`. There are examples in the
+`unit tests <https://github.com/apache/datafusion-python/tree/main/python/tests>`_ of
+implementing a basic Catalog in Python where we simply keep a dictionary of the
+registered Schemas.
+
+One important note for developers is that when we have a Catalog defined in Python, we have
+two different ways of accessing this Catalog. First, we register the catalog with a Rust
+wrapper. This allows for any rust based code to call the Python functions as necessary.
+Second, if the user access the Catalog via the Python API, we identify this and return back
+the original Python object that implements the Catalog. This is an important distinction
+for developers because we do *not* return a Python wrapper around the Rust wrapper of the
+original Python object.

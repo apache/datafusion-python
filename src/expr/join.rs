@@ -177,7 +177,7 @@ impl PyJoin {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Join({})", self))
+        Ok(format!("Join({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

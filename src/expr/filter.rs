@@ -72,7 +72,7 @@ impl PyFilter {
     }
 
     fn __repr__(&self) -> String {
-        format!("Filter({})", self)
+        format!("Filter({self})")
     }
 }
 

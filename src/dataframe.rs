@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::Arc;
 
@@ -23,11 +24,12 @@ use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
+use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
-use datafusion::config::{CsvOptions, TableParquetOptions};
+use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
 use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
@@ -43,13 +45,13 @@ use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
 use crate::catalog::PyTable;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{
-    get_tokio_runtime, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
 };
 use crate::{
     errors::PyDataFusionResult,
@@ -149,9 +151,9 @@ fn get_python_formatter_with_config(py: Python) -> PyResult<PythonFormatter> {
     Ok(PythonFormatter { formatter, config })
 }
 
-/// Get the Python formatter from the datafusion.html_formatter module
+/// Get the Python formatter from the datafusion.dataframe_formatter module
 fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
-    let formatter_module = py.import("datafusion.html_formatter")?;
+    let formatter_module = py.import("datafusion.dataframe_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
     get_formatter.call0()
 }
@@ -185,6 +187,101 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
     Ok(config)
 }
 
+/// Python mapping of `ParquetOptions` (includes just the writer-related options).
+#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetWriterOptions {
+    options: ParquetOptions,
+}
+
+#[pymethods]
+impl PyParquetWriterOptions {
+    #[new]
+    #[allow(clippy::too_many_arguments)]
+    pub fn new(
+        data_pagesize_limit: usize,
+        write_batch_size: usize,
+        writer_version: String,
+        skip_arrow_metadata: bool,
+        compression: Option<String>,
+        dictionary_enabled: Option<bool>,
+        dictionary_page_size_limit: usize,
+        statistics_enabled: Option<String>,
+        max_row_group_size: usize,
+        created_by: String,
+        column_index_truncate_length: Option<usize>,
+        statistics_truncate_length: Option<usize>,
+        data_page_row_count_limit: usize,
+        encoding: Option<String>,
+        bloom_filter_on_write: bool,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+        allow_single_file_parallelism: bool,
+        maximum_parallel_row_group_writers: usize,
+        maximum_buffered_record_batches_per_stream: usize,
+    ) -> Self {
+        Self {
+            options: ParquetOptions {
+                data_pagesize_limit,
+                write_batch_size,
+                writer_version,
+                skip_arrow_metadata,
+                compression,
+                dictionary_enabled,
+                dictionary_page_size_limit,
+                statistics_enabled,
+                max_row_group_size,
+                created_by,
+                column_index_truncate_length,
+                statistics_truncate_length,
+                data_page_row_count_limit,
+                encoding,
+                bloom_filter_on_write,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                allow_single_file_parallelism,
+                maximum_parallel_row_group_writers,
+                maximum_buffered_record_batches_per_stream,
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Python mapping of `ParquetColumnOptions`.
+#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[derive(Clone, Default)]
+pub struct PyParquetColumnOptions {
+    options: ParquetColumnOptions,
+}
+
+#[pymethods]
+impl PyParquetColumnOptions {
+    #[new]
+    pub fn new(
+        bloom_filter_enabled: Option<bool>,
+        encoding: Option<String>,
+        dictionary_enabled: Option<bool>,
+        compression: Option<String>,
+        statistics_enabled: Option<String>,
+        bloom_filter_fpp: Option<f64>,
+        bloom_filter_ndv: Option<u64>,
+    ) -> Self {
+        Self {
+            options: ParquetColumnOptions {
+                bloom_filter_enabled,
+                encoding,
+                dictionary_enabled,
+                compression,
+                statistics_enabled,
+                bloom_filter_fpp,
+                bloom_filter_ndv,
+                ..Default::default()
+            },
+        }
+    }
+}
+
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
@@ -192,12 +289,68 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
+
+    // In IPython environment cache batches between __repr__ and _repr_html_ calls.
+    batches: Option<(Vec<RecordBatch>, bool)>,
 }
 
 impl PyDataFrame {
     /// creates a new PyDataFrame
     pub fn new(df: DataFrame) -> Self {
-        Self { df: Arc::new(df) }
+        Self {
+            df: Arc::new(df),
+            batches: None,
+        }
+    }
+
+    fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+        // Get the Python formatter and config
+        let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
+
+        let should_cache = *is_ipython_env(py) && self.batches.is_none();
+        let (batches, has_more) = match self.batches.take() {
+            Some(b) => b,
+            None => wait_for_future(
+                py,
+                collect_record_batches_to_display(self.df.as_ref().clone(), config),
+            )??,
+        };
+
+        if batches.is_empty() {
+            // This should not be reached, but do it for safety since we index into the vector below
+            return Ok("No data to display".to_string());
+        }
+
+        let table_uuid = uuid::Uuid::new_v4().to_string();
+
+        // Convert record batches to PyObject list
+        let py_batches = batches
+            .iter()
+            .map(|rb| rb.to_pyarrow(py))
+            .collect::<PyResult<Vec<PyObject>>>()?;
+
+        let py_schema = self.schema().into_pyobject(py)?;
+
+        let kwargs = pyo3::types::PyDict::new(py);
+        let py_batches_list = PyList::new(py, py_batches.as_slice())?;
+        kwargs.set_item("batches", py_batches_list)?;
+        kwargs.set_item("schema", py_schema)?;
+        kwargs.set_item("has_more", has_more)?;
+        kwargs.set_item("table_uuid", table_uuid)?;
+
+        let method_name = match as_html {
+            true => "format_html",
+            false => "format_str",
+        };
+
+        let html_result = formatter.call_method(method_name, (), Some(&kwargs))?;
+        let html_str: String = html_result.extract()?;
+
+        if should_cache {
+            self.batches = Some((batches, has_more));
+        }
+
+        Ok(html_str)
     }
 }
 
@@ -224,19 +377,28 @@ impl PyDataFrame {
         }
     }
 
-    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter config
-        let PythonFormatter {
-            formatter: _,
-            config,
-        } = get_python_formatter_with_config(py)?;
-        let (batches, has_more) = wait_for_future(
-            py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
+    fn __repr__(&mut self, py: Python) -> PyDataFusionResult<String> {
+        self.prepare_repr_string(py, false)
+    }
+
+    #[staticmethod]
+    #[expect(unused_variables)]
+    fn default_str_repr<'py>(
+        batches: Vec<Bound<'py, PyAny>>,
+        schema: &Bound<'py, PyAny>,
+        has_more: bool,
+        table_uuid: &str,
+    ) -> PyResult<String> {
+        let batches = batches
+            .into_iter()
+            .map(|batch| RecordBatch::from_pyarrow_bound(&batch))
+            .collect::<PyResult<Vec<RecordBatch>>>()?
+            .into_iter()
+            .filter(|batch| batch.num_rows() > 0)
+            .collect::<Vec<_>>();
+
         if batches.is_empty() {
-            // This should not be reached, but do it for safety since we index into the vector below
-            return Ok("No data to display".to_string());
+            return Ok("No data to display".to_owned());
         }
 
         let batches_as_displ =
@@ -250,45 +412,14 @@ impl PyDataFrame {
         Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
     }
 
-    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
-        // Get the Python formatter and config
-        let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
-        let (batches, has_more) = wait_for_future(
-            py,
-            collect_record_batches_to_display(self.df.as_ref().clone(), config),
-        )?;
-        if batches.is_empty() {
-            // This should not be reached, but do it for safety since we index into the vector below
-            return Ok("No data to display".to_string());
-        }
-
-        let table_uuid = uuid::Uuid::new_v4().to_string();
-
-        // Convert record batches to PyObject list
-        let py_batches = batches
-            .into_iter()
-            .map(|rb| rb.to_pyarrow(py))
-            .collect::<PyResult<Vec<PyObject>>>()?;
-
-        let py_schema = self.schema().into_pyobject(py)?;
-
-        let kwargs = pyo3::types::PyDict::new(py);
-        let py_batches_list = PyList::new(py, py_batches.as_slice())?;
-        kwargs.set_item("batches", py_batches_list)?;
-        kwargs.set_item("schema", py_schema)?;
-        kwargs.set_item("has_more", has_more)?;
-        kwargs.set_item("table_uuid", table_uuid)?;
-
-        let html_result = formatter.call_method("format_html", (), Some(&kwargs))?;
-        let html_str: String = html_result.extract()?;
-
-        Ok(html_str)
+    fn _repr_html_(&mut self, py: Python) -> PyDataFusionResult<String> {
+        self.prepare_repr_string(py, true)
     }
 
     /// Calculate summary statistics for a DataFrame
     fn describe(&self, py: Python) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone();
-        let stat_df = wait_for_future(py, df.describe())?;
+        let stat_df = wait_for_future(py, df.describe())??;
         Ok(Self::new(stat_df))
     }
 
@@ -391,7 +522,7 @@ impl PyDataFrame {
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
     fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
         // https://github.com/PyO3/pyo3/issues/1813
@@ -400,14 +531,14 @@ impl PyDataFrame {
 
     /// Cache DataFrame.
     fn cache(&self, py: Python) -> PyDataFusionResult<Self> {
-        let df = wait_for_future(py, self.df.as_ref().clone().cache())?;
+        let df = wait_for_future(py, self.df.as_ref().clone().cache())??;
         Ok(Self::new(df))
     }
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
     fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
-        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())
+        let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
             .map_err(PyDataFusionError::from)?;
 
         batches
@@ -511,7 +642,7 @@ impl PyDataFrame {
 
     /// Get the execution plan for this `DataFrame`
     fn execution_plan(&self, py: Python) -> PyDataFusionResult<PyExecutionPlan> {
-        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())?;
+        let plan = wait_for_future(py, self.df.as_ref().clone().create_physical_plan())??;
         Ok(plan.into())
     }
 
@@ -624,7 +755,7 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Some(csv_options),
             ),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -685,7 +816,35 @@ impl PyDataFrame {
                 DataFrameWriteOptions::new(),
                 Option::from(options),
             ),
-        )?;
+        )??;
+        Ok(())
+    }
+
+    /// Write a `DataFrame` to a Parquet file, using advanced options.
+    fn write_parquet_with_options(
+        &self,
+        path: &str,
+        options: PyParquetWriterOptions,
+        column_specific_options: HashMap<String, PyParquetColumnOptions>,
+        py: Python,
+    ) -> PyDataFusionResult<()> {
+        let table_options = TableParquetOptions {
+            global: options.options,
+            column_specific_options: column_specific_options
+                .into_iter()
+                .map(|(k, v)| (k, v.options))
+                .collect(),
+            ..Default::default()
+        };
+
+        wait_for_future(
+            py,
+            self.df.as_ref().clone().write_parquet(
+                path,
+                DataFrameWriteOptions::new(),
+                Option::from(table_options),
+            ),
+        )??;
         Ok(())
     }
 
@@ -697,7 +856,7 @@ impl PyDataFrame {
                 .as_ref()
                 .clone()
                 .write_json(path, DataFrameWriteOptions::new(), None),
-        )?;
+        )??;
         Ok(())
     }
 
@@ -720,7 +879,7 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())?;
+        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())??;
         let mut schema: Schema = self.df.schema().to_owned().into();
 
         if let Some(schema_capsule) = requested_schema {
@@ -753,8 +912,8 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
             rt.spawn(async move { df.execute_stream().await });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
-        Ok(PyRecordBatchStream::new(stream?))
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })???;
+        Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
@@ -763,14 +922,11 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
             rt.spawn(async move { df.execute_stream_partitioned().await });
-        let stream = wait_for_future(py, fut).map_err(py_datafusion_err)?;
+        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })?
+            .map_err(py_datafusion_err)?
+            .map_err(py_datafusion_err)?;
 
-        match stream {
-            Ok(batches) => Ok(batches.into_iter().map(PyRecordBatchStream::new).collect()),
-            _ => Err(PyValueError::new_err(
-                "Unable to execute stream partitioned",
-            )),
-        }
+        Ok(stream.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
     /// Convert to pandas dataframe with pyarrow
@@ -815,7 +971,7 @@ impl PyDataFrame {
 
     // Executes this DataFrame to get the total number of rows.
     fn count(&self, py: Python) -> PyDataFusionResult<usize> {
-        Ok(wait_for_future(py, self.df.as_ref().clone().count())?)
+        Ok(wait_for_future(py, self.df.as_ref().clone().count())??)
     }
 
     /// Fill null values with a specified value for specific columns
@@ -841,7 +997,7 @@ impl PyDataFrame {
 /// Print DataFrame
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
-    let batches = wait_for_future(py, df.collect())?;
+    let batches = wait_for_future(py, df.collect())??;
     let batches_as_string = pretty::pretty_format_batches(&batches);
     let result = match batches_as_string {
         Ok(batch) => format!("DataFrame()\n{batch}"),

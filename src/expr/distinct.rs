@@ -48,8 +48,7 @@ impl Display for PyDistinct {
             Distinct::All(input) => write!(
                 f,
                 "Distinct ALL
-            \nInput: {:?}",
-                input,
+            \nInput: {input:?}",
             ),
             Distinct::On(distinct_on) => {
                 write!(
@@ -71,7 +70,7 @@ impl PyDistinct {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Distinct({})", self))
+        Ok(format!("Distinct({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

@@ -103,7 +103,7 @@ fn array_cat(exprs: Vec<PyExpr>) -> PyExpr {
 #[pyo3(signature = (array, element, index=None))]
 fn array_position(array: PyExpr, element: PyExpr, index: Option<i64>) -> PyExpr {
     let index = ScalarValue::Int64(index);
-    let index = Expr::Literal(index);
+    let index = Expr::Literal(index, None);
     datafusion::functions_nested::expr_fn::array_position(array.into(), element.into(), index)
         .into()
 }
@@ -334,7 +334,7 @@ fn window(
         .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
 
     Ok(PyExpr {
-        expr: datafusion::logical_expr::Expr::WindowFunction(WindowFunction {
+        expr: datafusion::logical_expr::Expr::WindowFunction(Box::new(WindowFunction {
             fun,
             params: WindowFunctionParams {
                 args: args.into_iter().map(|x| x.expr).collect::<Vec<_>>(),
@@ -351,7 +351,7 @@ fn window(
                 window_frame,
                 null_treatment: None,
             },
-        }),
+        })),
     })
 }
 
@@ -682,7 +682,7 @@ pub fn approx_percentile_cont_with_weight(
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
 
-// We handle first_value explicitly because the signature expects an order_by
+// We handle last_value explicitly because the signature expects an order_by
 // https://github.com/apache/datafusion/issues/12376
 #[pyfunction]
 #[pyo3(signature = (expr, distinct=None, filter=None, order_by=None, null_treatment=None))]
@@ -937,7 +937,7 @@ pub(crate) fn init_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(left))?;
     m.add_wrapped(wrap_pyfunction!(length))?;
     m.add_wrapped(wrap_pyfunction!(ln))?;
-    m.add_wrapped(wrap_pyfunction!(log))?;
+    m.add_wrapped(wrap_pyfunction!(self::log))?;
     m.add_wrapped(wrap_pyfunction!(log10))?;
     m.add_wrapped(wrap_pyfunction!(log2))?;
     m.add_wrapped(wrap_pyfunction!(lower))?;

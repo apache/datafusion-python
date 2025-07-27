@@ -108,7 +108,7 @@ impl PyRepartition {
     }
 
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("Repartition({})", self))
+        Ok(format!("Repartition({self})"))
     }
 
     fn __name__(&self) -> PyResult<String> {

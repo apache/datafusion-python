@@ -75,7 +75,7 @@ def test_register_csv(ctx, tmp_path):
     )
     ctx.register_csv("csv3", path, schema=alternative_schema)
 
-    assert ctx.catalog().database().names() == {
+    assert ctx.catalog().schema().names() == {
         "csv",
         "csv1",
         "csv2",
@@ -150,15 +150,17 @@ def test_register_parquet(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
     ctx.register_parquet("t", path)
     ctx.register_parquet("t1", str(path))
-    assert ctx.catalog().database().names() == {"t", "t1"}
+    assert ctx.catalog().schema().names() == {"t", "t1"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
     assert result.to_pydict() == {"cnt": [100]}
 
 
-@pytest.mark.parametrize("path_to_str", [True, False])
-def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
+@pytest.mark.parametrize(
+    ("path_to_str", "legacy_data_type"), [(True, False), (False, False), (False, True)]
+)
+def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_type):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
     (dir_root / "grp=a").mkdir(exist_ok=False)
@@ -177,14 +179,16 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str):
 
     dir_root = str(dir_root) if path_to_str else dir_root
 
+    partition_data_type = "string" if legacy_data_type else pa.string()
+
     ctx.register_parquet(
         "datapp",
         dir_root,
-        table_partition_cols=[("grp", "string")],
+        table_partition_cols=[("grp", partition_data_type)],
         parquet_pruning=True,
         file_extension=".parquet",
     )
-    assert ctx.catalog().database().names() == {"datapp"}
+    assert ctx.catalog().schema().names() == {"datapp"}
 
     result = ctx.sql("SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp").collect()
     result = pa.Table.from_batches(result)
@@ -200,7 +204,7 @@ def test_register_dataset(ctx, tmp_path, path_to_str):
     dataset = ds.dataset(path, format="parquet")
 
     ctx.register_dataset("t", dataset)
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t").collect()
     result = pa.Table.from_batches(result)
@@ -247,7 +251,7 @@ def test_register_json(ctx, tmp_path):
     )
     ctx.register_json("json3", path, schema=alternative_schema)
 
-    assert ctx.catalog().database().names() == {
+    assert ctx.catalog().schema().names() == {
         "json",
         "json1",
         "json2",
@@ -304,7 +308,7 @@ def test_execute(ctx, tmp_path):
     path = helpers.write_parquet(tmp_path / "a.parquet", pa.array(data))
     ctx.register_parquet("t", path)
 
-    assert ctx.catalog().database().names() == {"t"}
+    assert ctx.catalog().schema().names() == {"t"}
 
     # count
     result = ctx.sql("SELECT COUNT(a) AS cnt FROM t WHERE a IS NOT NULL").collect()
@@ -447,18 +451,10 @@ _null_mask = np.array([False, True, False])
             id="datetime_ns",
         ),
         # Not writtable to parquet
-        pytest.param(
-            helpers.data_timedelta("s"), id="timedelta_s", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("ms"), id="timedelta_ms", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("us"), id="timedelta_us", marks=pytest.mark.xfail
-        ),
-        pytest.param(
-            helpers.data_timedelta("ns"), id="timedelta_ns", marks=pytest.mark.xfail
-        ),
+        pytest.param(helpers.data_timedelta("s"), id="timedelta_s"),
+        pytest.param(helpers.data_timedelta("ms"), id="timedelta_ms"),
+        pytest.param(helpers.data_timedelta("us"), id="timedelta_us"),
+        pytest.param(helpers.data_timedelta("ns"), id="timedelta_ns"),
     ],
 )
 def test_simple_select(ctx, tmp_path, arr):
@@ -488,9 +484,9 @@ def test_register_listing_table(
 ):
     dir_root = tmp_path / "dataset_parquet_partitioned"
     dir_root.mkdir(exist_ok=False)
-    (dir_root / "grp=a/date_id=20201005").mkdir(exist_ok=False, parents=True)
-    (dir_root / "grp=a/date_id=20211005").mkdir(exist_ok=False, parents=True)
-    (dir_root / "grp=b/date_id=20201005").mkdir(exist_ok=False, parents=True)
+    (dir_root / "grp=a/date=2020-10-05").mkdir(exist_ok=False, parents=True)
+    (dir_root / "grp=a/date=2021-10-05").mkdir(exist_ok=False, parents=True)
+    (dir_root / "grp=b/date=2020-10-05").mkdir(exist_ok=False, parents=True)
 
     table = pa.Table.from_arrays(
         [
@@ -501,13 +497,13 @@ def test_register_listing_table(
         names=["int", "str", "float"],
     )
     pa.parquet.write_table(
-        table.slice(0, 3), dir_root / "grp=a/date_id=20201005/file.parquet"
+        table.slice(0, 3), dir_root / "grp=a/date=2020-10-05/file.parquet"
     )
     pa.parquet.write_table(
-        table.slice(3, 2), dir_root / "grp=a/date_id=20211005/file.parquet"
+        table.slice(3, 2), dir_root / "grp=a/date=2021-10-05/file.parquet"
     )
     pa.parquet.write_table(
-        table.slice(5, 10), dir_root / "grp=b/date_id=20201005/file.parquet"
+        table.slice(5, 10), dir_root / "grp=b/date=2020-10-05/file.parquet"
     )
 
     dir_root = f"file://{dir_root}/" if path_to_str else dir_root
@@ -515,12 +511,12 @@ def test_register_listing_table(
     ctx.register_listing_table(
         "my_table",
         dir_root,
-        table_partition_cols=[("grp", "string"), ("date_id", "int")],
+        table_partition_cols=[("grp", pa.string()), ("date", pa.date64())],
         file_extension=".parquet",
         schema=table.schema if pass_schema else None,
         file_sort_order=file_sort_order,
     )
-    assert ctx.catalog().database().names() == {"my_table"}
+    assert ctx.catalog().schema().names() == {"my_table"}
 
     result = ctx.sql(
         "SELECT grp, COUNT(*) AS count FROM my_table GROUP BY grp"
@@ -531,7 +527,7 @@ def test_register_listing_table(
     assert dict(zip(rd["grp"], rd["count"])) == {"a": 5, "b": 2}
 
     result = ctx.sql(
-        "SELECT grp, COUNT(*) AS count FROM my_table WHERE date_id=20201005 GROUP BY grp"  # noqa: E501
+        "SELECT grp, COUNT(*) AS count FROM my_table WHERE date='2020-10-05' GROUP BY grp"  # noqa: E501
     ).collect()
     result = pa.Table.from_batches(result)
 

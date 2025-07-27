@@ -34,7 +34,7 @@ if TYPE_CHECKING:
 
 def read_parquet(
     path: str | pathlib.Path,
-    table_partition_cols: list[tuple[str, str]] | None = None,
+    table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     parquet_pruning: bool = True,
     file_extension: str = ".parquet",
     skip_metadata: bool = True,
@@ -83,7 +83,7 @@ def read_json(
     schema: pa.Schema | None = None,
     schema_infer_max_records: int = 1000,
     file_extension: str = ".json",
-    table_partition_cols: list[tuple[str, str]] | None = None,
+    table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     file_compression_type: str | None = None,
 ) -> DataFrame:
     """Read a line-delimited JSON data source.
@@ -124,7 +124,7 @@ def read_csv(
     delimiter: str = ",",
     schema_infer_max_records: int = 1000,
     file_extension: str = ".csv",
-    table_partition_cols: list[tuple[str, str]] | None = None,
+    table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     file_compression_type: str | None = None,
 ) -> DataFrame:
     """Read a CSV data source.
@@ -171,7 +171,7 @@ def read_csv(
 def read_avro(
     path: str | pathlib.Path,
     schema: pa.Schema | None = None,
-    file_partition_cols: list[tuple[str, str]] | None = None,
+    file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     file_extension: str = ".avro",
 ) -> DataFrame:
     """Create a :py:class:`DataFrame` for reading Avro data source.
