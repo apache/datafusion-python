@@ -28,16 +28,16 @@ class MyAccumulator(Accumulator):
     def __init__(self) -> None:
         self._sum = pa.scalar(0.0)
 
-    def update(self, values: pa.Array) -> None:
+    def update(self, values: list[pa.Array]) -> None:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
         self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(values).as_py())
 
     def merge(self, states: pa.Array) -> None:
         # not nice since pyarrow scalars can't be summed yet. This breaks on `None`
-        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states).as_py())
+        self._sum = pa.scalar(self._sum.as_py() + pa.compute.sum(states[0]).as_py())
 
-    def state(self) -> pa.Array:
-        return pa.array([self._sum.as_py()])
+    def state(self) -> list[pa.Array]:
+        return [self._sum]
 
     def evaluate(self) -> pa.Scalar:
         return self._sum
