@@ -42,7 +42,7 @@ arrow = { version = "55.1.0", features = ["pyarrow"] }
 datafusion = { version = "48.0.0", features = ["avro", "unicode_expressions"] }
 datafusion-substrait = { version = "48.0.0", optional = true }
 datafusion-proto = { version = "48.0.0" }
-datafusion-ffi = { version = "48.0.0" }
+datafusion-ffi = { version = "49.0.0" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.16", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
