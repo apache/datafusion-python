@@ -26,7 +26,7 @@ readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.78"
-include = ["/src", "/datafusion", "/LICENSE.txt", "pyproject.toml", "Cargo.toml", "Cargo.lock"]
+include = ["/src", "/datafusion", "/LICENSE.txt", "build.rs", "pyproject.toml", "Cargo.toml", "Cargo.lock"]
 
 [features]
 default = ["mimalloc"]
