@@ -19,6 +19,7 @@ use std::collections::HashMap;
 
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion::functions_window::all_default_window_functions;
+use datafusion::logical_expr::expr::FieldMetadata;
 use datafusion::logical_expr::expr::WindowFunctionParams;
 use datafusion::logical_expr::ExprFunctionExt;
 use datafusion::logical_expr::WindowFrame;
@@ -210,6 +211,7 @@ fn order_by(expr: PyExpr, asc: bool, nulls_first: bool) -> PyResult<PySortExpr> 
 #[pyo3(signature = (expr, name, metadata=None))]
 fn alias(expr: PyExpr, name: &str, metadata: Option<HashMap<String, String>>) -> PyResult<PyExpr> {
     let relation: Option<TableReference> = None;
+    let metadata = metadata.map(|m| FieldMetadata::new(m.into_iter().collect()));
     Ok(PyExpr {
         expr: datafusion::logical_expr::Expr::Alias(
             Alias::new(expr.expr, relation, name).with_metadata(metadata),
@@ -694,7 +696,7 @@ pub fn last_value(
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::last_value(expr.expr, None);
+    let agg_fn = functions_aggregate::expr_fn::last_value(expr.expr, vec![]);
 
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }
@@ -710,7 +712,7 @@ pub fn first_value(
     null_treatment: Option<NullTreatment>,
 ) -> PyDataFusionResult<PyExpr> {
     // If we initialize the UDAF with order_by directly, then it gets over-written by the builder
-    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, None);
+    let agg_fn = functions_aggregate::expr_fn::first_value(expr.expr, vec![]);
 
     add_builder_fns_to_aggregate(agg_fn, distinct, filter, order_by, null_treatment)
 }

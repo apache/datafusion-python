@@ -73,13 +73,13 @@ impl PyCopyTo {
         options: HashMap<String, String>,
     ) -> Self {
         PyCopyTo {
-            copy: CopyTo {
-                input: input.plan(),
+            copy: CopyTo::new(
+                input.plan(),
                 output_url,
                 partition_by,
-                file_type: file_type.file_type,
+                file_type.file_type,
                 options,
-            },
+            ),
         }
     }
 
