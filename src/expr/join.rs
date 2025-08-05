@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::common::NullEquality;
 use datafusion::logical_expr::logical_plan::{Join, JoinConstraint, JoinType};
 use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
@@ -116,7 +117,7 @@ impl Display for PyJoin {
             JoinType: {:?}
             JoinConstraint: {:?}
             Schema: {:?}
-            NullEqualsNull: {:?}",
+            NullEquality: {:?}",
             &self.join.left,
             &self.join.right,
             &self.join.on,
@@ -124,7 +125,7 @@ impl Display for PyJoin {
             &self.join.join_type,
             &self.join.join_constraint,
             &self.join.schema,
-            &self.join.null_equals_null,
+            &self.join.null_equality,
         )
     }
 }
@@ -173,7 +174,10 @@ impl PyJoin {
 
     /// If null_equals_null is true, null == null else null != null
     fn null_equals_null(&self) -> PyResult<bool> {
-        Ok(self.join.null_equals_null)
+        match self.join.null_equality {
+            NullEquality::NullEqualsNothing => Ok(false),
+            NullEquality::NullEqualsNull => Ok(true),
+        }
     }
 
     fn __repr__(&self) -> PyResult<String> {

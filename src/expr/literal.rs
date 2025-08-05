@@ -16,22 +16,18 @@
 // under the License.
 
 use crate::errors::PyDataFusionError;
-use datafusion::common::ScalarValue;
+use datafusion::{common::ScalarValue, logical_expr::expr::FieldMetadata};
 use pyo3::{prelude::*, IntoPyObjectExt};
-use std::collections::BTreeMap;
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyLiteral {
     pub value: ScalarValue,
-    pub metadata: Option<BTreeMap<String, String>>,
+    pub metadata: Option<FieldMetadata>,
 }
 
 impl PyLiteral {
-    pub fn new_with_metadata(
-        value: ScalarValue,
-        metadata: Option<BTreeMap<String, String>>,
-    ) -> PyLiteral {
+    pub fn new_with_metadata(value: ScalarValue, metadata: Option<FieldMetadata>) -> PyLiteral {
         Self { value, metadata }
     }
 }

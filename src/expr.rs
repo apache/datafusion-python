@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::AggregateFunctionParams;
+use datafusion::logical_expr::expr::{AggregateFunctionParams, FieldMetadata};
 use datafusion::logical_expr::utils::exprlist_to_fields;
 use datafusion::logical_expr::{
     lit_with_metadata, ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
@@ -283,7 +283,8 @@ impl PyExpr {
         value: PyScalarValue,
         metadata: HashMap<String, String>,
     ) -> PyExpr {
-        lit_with_metadata(value.0, metadata).into()
+        let metadata = FieldMetadata::new(metadata.into_iter().collect());
+        lit_with_metadata(value.0, Some(metadata)).into()
     }
 
     #[staticmethod]
@@ -294,6 +295,7 @@ impl PyExpr {
     /// assign a name to the PyExpr
     #[pyo3(signature = (name, metadata=None))]
     pub fn alias(&self, name: &str, metadata: Option<HashMap<String, String>>) -> PyExpr {
+        let metadata = metadata.map(|m| FieldMetadata::new(m.into_iter().collect()));
         self.expr.clone().alias_with_metadata(name, metadata).into()
     }
 

@@ -651,7 +651,7 @@ def test_alias_with_metadata(df):
                     "9033e0e305f247c0c3c80d0c7848c8b3",
                     None,
                 ],
-                type=pa.string(),
+                type=pa.string_view(),
             ),
             id="md5",
         ),

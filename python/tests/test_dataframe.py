@@ -1796,15 +1796,15 @@ def test_write_parquet_with_options_max_row_group_size(
     """Test configuring the max number of rows per group in Parquet. These test cases
     guarantee that the number of rows for each row group is max_row_group_size, given
     the total number of rows is a multiple of max_row_group_size."""
+    path = f"{tmp_path}/t.parquet"
     large_df.write_parquet_with_options(
-        tmp_path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
+        path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
     )
 
-    for file in tmp_path.rglob("*.parquet"):
-        parquet = pq.ParquetFile(file)
-        metadata = parquet.metadata.to_dict()
-        for row_group in metadata["row_groups"]:
-            assert row_group["num_rows"] == max_row_group_size
+    parquet = pq.ParquetFile(path)
+    metadata = parquet.metadata.to_dict()
+    for row_group in metadata["row_groups"]:
+        assert row_group["num_rows"] == max_row_group_size
 
 
 @pytest.mark.parametrize("created_by", ["datafusion", "datafusion-python", "custom"])

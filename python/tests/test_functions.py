@@ -685,7 +685,8 @@ def test_array_function_obj_tests(stmt, py_expr):
                     "8b1a9953c4611296a827abf8c47804d7",
                     "f5a7924e621e84c9280a9a27e1bcb7f6",
                     "9033e0e305f247c0c3c80d0c7848c8b3",
-                ]
+                ],
+                type=pa.string_view(),
             ),
         ),
         (f.octet_length(column("a")), pa.array([5, 5, 1], type=pa.int32())),
