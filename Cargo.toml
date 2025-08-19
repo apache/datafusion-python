@@ -44,7 +44,7 @@ datafusion-substrait = { version = "49.0.1", optional = true }
 datafusion-proto = { version = "49.0.1" }
 datafusion-ffi = { version = "49.0.1" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
-uuid = { version = "1.16", features = ["v4"] }
+uuid = { version = "1.18", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
 async-trait = "0.1.88"
 futures = "0.3"
