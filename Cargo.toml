@@ -46,7 +46,7 @@ datafusion-ffi = { version = "49.0.1" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.16", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
-async-trait = "0.1.88"
+async-trait = "0.1.89"
 futures = "0.3"
 object_store = { version = "0.12.1", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
