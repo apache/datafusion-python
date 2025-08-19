@@ -698,7 +698,7 @@ impl PyExpr {
 
     /// Create a [Field] representing an [Expr], given an input [LogicalPlan] to resolve against
     pub fn expr_to_field(expr: &Expr, input_plan: &LogicalPlan) -> PyDataFusionResult<Arc<Field>> {
-        let fields = exprlist_to_fields(&[expr.clone()], input_plan)?;
+        let fields = exprlist_to_fields(std::slice::from_ref(expr), input_plan)?;
         Ok(fields[0].1.clone())
     }
     fn _types(expr: &Expr) -> PyResult<DataTypeMap> {

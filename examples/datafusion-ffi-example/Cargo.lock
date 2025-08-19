@@ -759,9 +759,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion"
-version = "49.0.0"
+version = "49.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f47772c28553d837e12cdcc0fb04c2a0fe8eca8b704a30f721d076f32407435"
+checksum = "f4539076347adb068dd1950f64c6437e946dd3449b8284c971bd05f025a2e648"
 dependencies = [
  "arrow",
  "arrow-ipc",
@@ -1079,9 +1079,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-ffi"
-version = "49.0.0"
+version = "49.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba959e6fd3a9a503201600e5575b3cb2aaa066b876317218ce25f0c0f836ac5f"
+checksum = "79d43210e2e9c006b1be88d73fee467858382bc1928b827fd199518d1a226c3a"
 dependencies = [
  "abi_stable",
  "arrow",
