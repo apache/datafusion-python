@@ -1032,7 +1032,7 @@ Module Contents
    .. py:attribute:: raw_sort
 
 
-.. py:class:: Window(partition_by: Optional[list[Expr] | Expr] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[list[SortExpr | Expr] | Expr | SortExpr] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
+.. py:class:: Window(partition_by: Optional[list[Expr]] = None, window_frame: Optional[WindowFrame] = None, order_by: Optional[list[SortExpr | Expr]] = None, null_treatment: Optional[datafusion.common.NullTreatment] = None)
 
    Define reusable window parameters.
 
