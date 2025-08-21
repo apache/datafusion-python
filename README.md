@@ -216,6 +216,8 @@ You can verify the installation by running:
 This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin). The Maturin tools used in this workflow can be installed either via `uv` or `pip`. Both approaches should offer the same experience. It is recommended to use `uv` since it has significant performance improvements
 over `pip`.
 
+Currently for protobuf support either [protobuf](https://protobuf.dev/installation/) or cmake must be installed.
+
 Bootstrap (`uv`):
 
 By default `uv` will attempt to build the datafusion python package. For our development we prefer to build manually. This means
@@ -278,7 +280,9 @@ Our pre-commit hooks can be installed by running `pre-commit install`, which wil
 your DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete
 the commit if an offending lint is found allowing you to make changes locally before pushing.
 
-The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`
+The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`.
+
+NOTE: the current `pre-commit` hooks require docker, and cmake. See note on protobuf above.
 
 ## Running linters without using pre-commit
 
