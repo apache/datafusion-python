@@ -2665,6 +2665,7 @@ def test_collect_interrupted():
     # Make sure the interrupt thread has finished
     interrupt_thread.join(timeout=1.0)
 
+
 def test_show_select_where_no_rows(capsys) -> None:
     ctx = SessionContext()
     df = ctx.sql("SELECT 1 WHERE 1=0")
