@@ -252,6 +252,13 @@ def test_filter(df):
     assert result.column(2) == pa.array([5])
 
 
+def test_show_empty(df, capsys):
+    df_empty = df.filter(column("a") > literal(3))
+    df_empty.show()
+    captured = capsys.readouterr()
+    assert "DataFrame has no rows" in captured.out
+
+
 def test_sort(df):
     df = df.sort(column("b").sort(ascending=False))
 
