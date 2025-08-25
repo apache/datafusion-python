@@ -998,10 +998,13 @@ impl PyDataFrame {
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
     let batches = wait_for_future(py, df.collect())??;
-    let batches_as_string = pretty::pretty_format_batches(&batches);
-    let result = match batches_as_string {
-        Ok(batch) => format!("DataFrame()\n{batch}"),
-        Err(err) => format!("Error: {:?}", err.to_string()),
+    let result = if batches.is_empty() {
+        "DataFrame has no rows".to_string()
+    } else {
+        match pretty::pretty_format_batches(&batches) {
+            Ok(batch) => format!("DataFrame()\n{batch}"),
+            Err(err) => format!("Error: {:?}", err.to_string()),
+        }
     };
 
     // Import the Python 'builtins' module to access the print function

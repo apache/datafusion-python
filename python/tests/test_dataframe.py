@@ -252,6 +252,13 @@ def test_filter(df):
     assert result.column(2) == pa.array([5])
 
 
+def test_show_empty(df, capsys):
+    df_empty = df.filter(column("a") > literal(3))
+    df_empty.show()
+    captured = capsys.readouterr()
+    assert "DataFrame has no rows" in captured.out
+
+
 def test_sort(df):
     df = df.sort(column("b").sort(ascending=False))
 
@@ -2657,3 +2664,19 @@ def test_collect_interrupted():
 
     # Make sure the interrupt thread has finished
     interrupt_thread.join(timeout=1.0)
+
+
+def test_show_select_where_no_rows(capsys) -> None:
+    ctx = SessionContext()
+    df = ctx.sql("SELECT 1 WHERE 1=0")
+    df.show()
+    out = capsys.readouterr().out
+    assert "DataFrame has no rows" in out
+
+
+def test_show_from_empty_batch(capsys) -> None:
+    ctx = SessionContext()
+    batch = pa.record_batch([pa.array([], type=pa.int32())], names=["a"])
+    ctx.create_dataframe([[batch]]).show()
+    out = capsys.readouterr().out
+    assert "| a |" in out
