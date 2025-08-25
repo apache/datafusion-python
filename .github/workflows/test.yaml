@@ -42,7 +42,7 @@ jobs:
           - "stable"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable

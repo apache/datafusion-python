@@ -38,10 +38,10 @@ jobs:
             exit 1
           fi
       - name: Checkout docs sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Checkout docs target branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
