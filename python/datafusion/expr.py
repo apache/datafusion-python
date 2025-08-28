@@ -352,7 +352,7 @@ class Expr:
         """Binary not (~)."""
         return Expr(self.expr.__invert__())
 
-    def __getitem__(self, key: str | int) -> Expr:
+    def __getitem__(self, key: str | int | slice) -> Expr:
         """Retrieve sub-object.
 
         If ``key`` is a string, returns the subfield of the struct.
@@ -363,6 +363,28 @@ class Expr:
             return Expr(
                 functions_internal.array_element(self.expr, Expr.literal(key + 1).expr)
             )
+        if isinstance(key, slice):
+            if isinstance(key.start, int):
+                start = Expr.literal(key.start + 1).expr
+            elif isinstance(key.start, Expr):
+                start = (key.start + Expr.literal(1)).expr
+            else:
+                # Default start at the first element, index 1
+                start = Expr.literal(1).expr
+
+            if isinstance(key.stop, int):
+                stop = Expr.literal(key.stop).expr
+            else:
+                stop = key.stop.expr
+
+            if isinstance(key.step, int):
+                step = Expr.literal(key.step).expr
+            elif isinstance(key.step, Expr):
+                step = key.step.expr
+            else:
+                step = key.step
+
+            return Expr(functions_internal.array_slice(self.expr, start, stop, step))
         return Expr(self.expr.__getitem__(key))
 
     def __eq__(self, rhs: object) -> Expr:

@@ -495,6 +495,26 @@ def py_flatten(arr):
             lambda data: [arr[-1:2] for arr in data],
         ),
         (
+            lambda col: col[:3],
+            lambda data: [arr[:3] for arr in data],
+        ),
+        (
+            lambda col: col[1:3],
+            lambda data: [arr[1:3] for arr in data],
+        ),
+        (
+            lambda col: col[1:4:2],
+            lambda data: [arr[1:4:2] for arr in data],
+        ),
+        (
+            lambda col: col[literal(1) : literal(4)],
+            lambda data: [arr[1:4] for arr in data],
+        ),
+        (
+            lambda col: col[literal(1) : literal(4) : literal(2)],
+            lambda data: [arr[1:4:2] for arr in data],
+        ),
+        (
             lambda col: f.array_intersect(col, literal([3.0, 4.0])),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
