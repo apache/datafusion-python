@@ -227,6 +227,8 @@ and for `uv run` commands the additional parameter `--no-project`
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
+# cd to the repo root
+cd datafusion-python/
 # create the virtual enviornment
 uv sync --dev --no-install-package datafusion
 # activate the environment
@@ -238,6 +240,8 @@ Bootstrap (`pip`):
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
+# cd to the repo root
+cd datafusion-python/
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv .venv
 # activate the venv
