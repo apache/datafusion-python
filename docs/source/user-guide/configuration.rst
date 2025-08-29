@@ -46,6 +46,54 @@ a :py:class:`~datafusion.context.SessionConfig` and :py:class:`~datafusion.conte
     ctx = SessionContext(config, runtime)
     print(ctx)
 
+Maximizing CPU Usage
+--------------------
+
+DataFusion uses partitions to parallelize work. For small queries the
+default configuration (number of CPU cores) is often sufficient, but to
+fully utilize available hardware you can tune how many partitions are
+created and when DataFusion will repartition data automatically.
+
+Configure a ``SessionContext`` with a higher partition count:
+
+.. code-block:: python
+
+    from datafusion import SessionConfig, SessionContext
+
+    # allow up to 16 concurrent partitions
+    config = SessionConfig().with_target_partitions(16)
+    ctx = SessionContext(config)
+
+Automatic repartitioning for joins, aggregations, window functions and
+other operations can be enabled to increase parallelism:
+
+.. code-block:: python
+
+    config = (
+        SessionConfig()
+        .with_target_partitions(16)
+        .with_repartition_joins(True)
+        .with_repartition_aggregations(True)
+        .with_repartition_windows(True)
+    )
+
+Manual repartitioning is available on DataFrames when you need precise
+control:
+
+.. code-block:: python
+
+    from datafusion import col
+
+    df = ctx.read_parquet("data.parquet")
+
+    # Evenly divide into 16 partitions
+    df = df.repartition(16)
+
+    # Or partition by the hash of a column
+    df = df.repartition_by_hash(col("a"), num=16)
+
+    result = df.collect()
+
 
 You can read more about available :py:class:`~datafusion.context.SessionConfig` options in the `rust DataFusion Configuration guide <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
 and about :code:`RuntimeEnvBuilder` options in the rust `online API documentation <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html>`_.

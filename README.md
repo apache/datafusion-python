@@ -42,6 +42,10 @@ DataFusion's Python bindings can be used as a foundation for building new data s
 - Serialize and deserialize query plans in Substrait format.
 - Experimental support for transpiling SQL queries to DataFrame calls with Polars, Pandas, and cuDF.
 
+For tips on tuning parallelism, see
+[Maximizing CPU Usage](docs/source/user-guide/configuration.rst#maximizing-cpu-usage)
+in the configuration guide.
+
 ## Example Usage
 
 The following example demonstrates running a SQL query against a Parquet file using DataFusion, storing the results
