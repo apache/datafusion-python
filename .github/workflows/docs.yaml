@@ -7,25 +7,19 @@ on:
   pull_request:
     branches:
       - main
-  # Run after build workflow completes so we can get the built artifact
-  workflow_run:
-    workflows: ["Python Release Build"]
-    types:
-      - completed
 
 name: Deploy DataFusion Python site
 
 jobs:
-  debug-github-context:
+  debug-github-context:    
     name: Print github context
     runs-on: ubuntu-latest
     steps:
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo "$GITHUB_CONTEXT"
-
+    - name: Dump GitHub context
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
   build-docs:
     name: Build docs
     runs-on: ubuntu-latest
@@ -43,10 +37,8 @@ jobs:
             echo "Unsupported input: ${{ github.ref }} / ${{ github.ref_type }}"
             exit 1
           fi
-
       - name: Checkout docs sources
         uses: actions/checkout@v5
-
       - name: Checkout docs target branch
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
         uses: actions/checkout@v5
@@ -54,75 +46,24 @@ jobs:
           fetch-depth: 0
           ref: ${{ steps.target-branch.outputs.value }}
           path: docs-target
-
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v3
+        with:
+          version: '27.4'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install dependencies and build
         uses: astral-sh/setup-uv@v6
         with:
-          enable-cache: true
+            enable-cache: true
 
-      # Try to download pre-built wheel from the build workflow
-      - name: Download wheel from build workflow
-        id: download-wheel
-        continue-on-error: true
-        uses: actions/download-artifact@v5
-        with:
-          name: dist
-          path: wheels/
-          # For workflow_run events, get artifacts from the triggering workflow
-          run-id: ${{ github.event.workflow_run.id || github.run_id }}
-
-      # Check if we have a compatible wheel
-      - name: Check for compatible wheel
-        id: check-wheel
+      - name: Build repo
         run: |
-          set -x
-          if [ -d "wheels/" ] && [ "$(ls -A wheels/)" ]; then
-            echo "Available wheels:"
-            ls -la wheels/
-
-            # Find a compatible wheel for Linux x86_64 (the docs runner)
-            WHEEL=$(find wheels/ -name "*linux_x86_64*.whl" -o -name "*manylinux*x86_64*.whl" | head -1)
-            if [ -n "$WHEEL" ]; then
-              echo "Found compatible wheel: $WHEEL"
-              echo "wheel-found=true" >> "$GITHUB_OUTPUT"
-              echo "wheel-path=$WHEEL" >> "$GITHUB_OUTPUT"
-            else
-              echo "No compatible wheel found for Linux x86_64"
-              echo "wheel-found=false" >> "$GITHUB_OUTPUT"
-            fi
-          else
-            echo "No wheels directory or wheels found"
-            echo "wheel-found=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      # Install from pre-built wheel if available
-      - name: Install from pre-built wheel
-        if: steps.check-wheel.outputs.wheel-found == 'true'
-        run: |
-          set -x
-          uv venv
-          # Install documentation dependencies
-          uv sync --dev --no-install-package datafusion --group docs
-          # Install the pre-built wheel
-          uv pip install "${{ steps.check-wheel.outputs.wheel-path }}"
-          echo "Installed datafusion from pre-built wheel"
-
-      # Fallback: Build from source if no wheel is available
-      - name: Build from source (fallback)
-        if: steps.check-wheel.outputs.wheel-found != 'true'
-        run: |
-          set -x
-          echo "No compatible pre-built wheel found, building from source"
-          
-          # Install Protoc for building from source
-          sudo apt-get update
-          sudo apt-get install -y protobuf-compiler
-          
           uv venv
           uv sync --dev --no-install-package datafusion --group docs
           uv run --no-project maturin develop --uv
