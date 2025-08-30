@@ -357,7 +357,12 @@ class Expr:
 
         If ``key`` is a string, returns the subfield of the struct.
         If ``key`` is an integer, retrieves the element in the array. Note that the
-        element index begins at ``0``, unlike `array_element` which begins at ``1``.
+        element index begins at ``0``, unlike
+        :py:func:`~datafusion.functions.array_element` which begins at ``1``.
+        If ``key`` is a slice, returns an array that contains a slice of the
+        original array. Similar to integer indexing, this follows Python convention
+        where the index begins at ``0`` unlike
+        :py:func:`~datafusion.functions.array_slice` which begins at ``1``.
         """
         if isinstance(key, int):
             return Expr(
