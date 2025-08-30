@@ -2655,7 +2655,7 @@ def cume_dist(
     """Create a cumulative distribution window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
-    are the ratio of the row number to the total numebr of rows. Here is an example of a
+    are the ratio of the row number to the total number of rows. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated
     cumulative distribution::
 
