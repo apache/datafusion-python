@@ -272,8 +272,8 @@ class ParquetColumnOptions:
             compression: Sets default parquet compression codec for the column path.
                 Valid values are ``uncompressed``, ``snappy``, ``gzip(level)``, ``lzo``,
                 ``brotli(level)``, ``lz4``, ``zstd(level)``, and ``lz4_raw``. These
-                 values are not case-sensitive. If ``None``, uses the default parquet
-                 options.
+                values are not case-sensitive. If ``None``, uses the default parquet
+                options.
             statistics_enabled: Sets if statistics are enabled for the column Valid
                 values are: ``none``, ``chunk``, and ``page`` These values are not case
                 sensitive. If ``None``, uses the default parquet options.
