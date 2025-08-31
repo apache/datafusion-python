@@ -14,7 +14,31 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-"""Benchmark script showing how to maximize CPU usage."""
+"""Benchmark script showing how to maximize CPU usage.
+
+This script demonstrates one example of tuning DataFusion for improved parallelism
+and CPU utilization. It uses synthetic in-memory data and performs simple aggregation
+operations to showcase the impact of partitioning configuration.
+
+IMPORTANT: This is a simplified example designed to illustrate partitioning concepts.
+Actual performance in your applications may vary significantly based on many factors:
+
+- Type of table providers (Parquet files, CSV, databases, etc.)
+- I/O operations and storage characteristics (local disk, network, cloud storage)
+- Query complexity and operation types (joins, window functions, complex expressions)
+- Data distribution and size characteristics
+- Memory available and hardware specifications
+- Network latency for distributed data sources
+
+It is strongly recommended that you create similar benchmarks tailored to your specific:
+- Hardware configuration
+- Data sources and formats
+- Typical query patterns and workloads
+- Performance requirements
+
+This will give you more accurate insights into how DataFusion configuration options
+will affect your particular use case.
+"""
 
 from __future__ import annotations
 
@@ -28,8 +52,15 @@ from datafusion import functions as f
 
 
 def main(num_rows: int, partitions: int) -> None:
-    """Run a simple aggregation after repartitioning."""
-    # Create some example data
+    """Run a simple aggregation after repartitioning.
+    
+    This function demonstrates basic partitioning concepts using synthetic data.
+    Real-world performance will depend on your specific data sources, query types,
+    and system configuration.
+    """
+    # Create some example data (synthetic in-memory data for demonstration)
+    # Note: Real applications typically work with files, databases, or other
+    # data sources that have different I/O and distribution characteristics
     array = pa.array(range(num_rows))
     batch = pa.record_batch([array], names=["a"])
 

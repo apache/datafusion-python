@@ -142,5 +142,45 @@ The benchmark creates synthetic data and measures the time taken to perform a su
 across the specified number of partitions. This helps you understand how partition configuration
 affects performance on your specific hardware.
 
+Important Considerations
+""""""""""""""""""""""""
+
+The provided benchmark script demonstrates partitioning concepts using synthetic in-memory data
+and simple aggregation operations. While useful for understanding basic configuration principles,
+actual performance in production environments may vary significantly based on numerous factors:
+
+**Data Sources and I/O Characteristics:**
+
+- **Table providers**: Performance differs greatly between Parquet files, CSV files, databases, and cloud storage
+- **Storage type**: Local SSD, network-attached storage, and cloud storage have vastly different characteristics  
+- **Network latency**: Remote data sources introduce additional latency considerations
+- **File sizes and distribution**: Large files may benefit differently from partitioning than many small files
+
+**Query and Workload Characteristics:**
+
+- **Operation complexity**: Simple aggregations versus complex joins, window functions, or nested queries
+- **Data distribution**: Skewed data may not partition evenly, affecting parallel efficiency
+- **Memory usage**: Large datasets may require different memory management strategies
+- **Concurrent workloads**: Multiple queries running simultaneously affect resource allocation
+
+**Hardware and Environment Factors:**
+
+- **CPU architecture**: Different processors have varying parallel processing capabilities
+- **Available memory**: Limited RAM may require different optimization strategies
+- **System load**: Other applications competing for resources affect DataFusion performance
+
+**Recommendations for Production Use:**
+
+To optimize DataFusion for your specific use case, it is strongly recommended to:
+
+1. **Create custom benchmarks** using your actual data sources, formats, and query patterns
+2. **Test with representative data volumes** that match your production workloads  
+3. **Measure end-to-end performance** including data loading, processing, and result handling
+4. **Evaluate different configuration combinations** for your specific hardware and workload
+5. **Monitor resource utilization** (CPU, memory, I/O) to identify bottlenecks in your environment
+
+This approach will provide more accurate insights into how DataFusion configuration options
+will impact your particular applications and infrastructure.
+
 For more information about available :py:class:`~datafusion.context.SessionConfig` options, see the `rust DataFusion Configuration guide <https://arrow.apache.org/datafusion/user-guide/configs.html>`_,
 and about :code:`RuntimeEnvBuilder` options in the rust `online API documentation <https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html>`_.
