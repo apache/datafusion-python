@@ -48,6 +48,10 @@ jobs:
           uv run --no-project ruff check --output-format=github python/
           uv run --no-project ruff format --check python/
 
+      - name: Run codespell
+        run: |
+            uv run --no-project codespell --toml pyproject.toml
+
   generate-license:
     runs-on: ubuntu-latest
     steps:
