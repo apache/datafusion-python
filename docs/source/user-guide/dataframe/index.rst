@@ -142,21 +142,21 @@ For such methods, you can pass column names directly:
 
 .. code-block:: python
 
-    from datafusion import col, column, functions as f
+    from datafusion import col, functions as f
 
     df.sort('id')
     df.aggregate('id', [f.count(col('value'))])
 
-The same operation can also be written with an explicit column expression:
+The same operation can also be written with explicit column expressions, using either ``col()`` or ``column()``:
 
 .. code-block:: python
 
     from datafusion import col, column, functions as f
 
     df.sort(col('id'))
-    df.aggregate(col('id'), [f.count(col('value'))])
+    df.aggregate(column('id'), [f.count(col('value'))])
 
-Note that ``column()`` is an alias of ``col()``, so you can use either name.
+Note that ``column()`` is an alias of ``col()``, so you can use either name; the example above shows both in action.
 
 Whenever an argument represents an expression—such as in
 :py:meth:`~datafusion.DataFrame.filter` or

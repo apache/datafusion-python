@@ -41,9 +41,9 @@ from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import (
-    _EXPR_TYPE_ERROR,
+    EXPR_TYPE_ERROR,
     Expr,
-    SortExpr,
+    SortKey,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
 )
@@ -431,7 +431,7 @@ class DataFrame:
         df = self.df
         for p in predicates:
             if not isinstance(p, Expr):
-                raise TypeError(_EXPR_TYPE_ERROR)
+                raise TypeError(EXPR_TYPE_ERROR)
             df = df.filter(p.expr)
         return DataFrame(df)
 
@@ -446,7 +446,7 @@ class DataFrame:
             DataFrame with the new column.
         """
         if not isinstance(expr, Expr):
-            raise TypeError(_EXPR_TYPE_ERROR)
+            raise TypeError(EXPR_TYPE_ERROR)
         return DataFrame(self.df.with_column(name, expr.expr))
 
     def with_columns(
@@ -478,19 +478,21 @@ class DataFrame:
         ) -> list[expr_internal.Expr]:
             expr_list: list[expr_internal.Expr] = []
             for expr in exprs:
-                if isinstance(expr, str) or (
-                    isinstance(expr, Iterable)
-                    and not isinstance(expr, Expr)
-                    and any(isinstance(inner, str) for inner in expr)
-                ):
-                    raise TypeError(_EXPR_TYPE_ERROR)
+                if isinstance(expr, str):
+                    raise TypeError(EXPR_TYPE_ERROR)
+                if isinstance(expr, Iterable) and not isinstance(expr, Expr):
+                    expr_value = list(expr)
+                    if any(isinstance(inner, str) for inner in expr_value):
+                        raise TypeError(EXPR_TYPE_ERROR)
+                else:
+                    expr_value = expr
                 try:
-                    expr_list.extend(expr_list_to_raw_expr_list(expr))
+                    expr_list.extend(expr_list_to_raw_expr_list(expr_value))
                 except TypeError as err:
-                    raise TypeError(_EXPR_TYPE_ERROR) from err
+                    raise TypeError(EXPR_TYPE_ERROR) from err
             for alias, expr in named_exprs.items():
                 if not isinstance(expr, Expr):
-                    raise TypeError(_EXPR_TYPE_ERROR)
+                    raise TypeError(EXPR_TYPE_ERROR)
                 expr_list.append(expr.alias(alias).expr)
             return expr_list
 
@@ -536,11 +538,11 @@ class DataFrame:
         aggs_exprs = []
         for agg in aggs_list:
             if not isinstance(agg, Expr):
-                raise TypeError(_EXPR_TYPE_ERROR)
+                raise TypeError(EXPR_TYPE_ERROR)
             aggs_exprs.append(agg.expr)
         return DataFrame(self.df.aggregate(group_by_exprs, aggs_exprs))
 
-    def sort(self, *exprs: Expr | SortExpr | str) -> DataFrame:
+    def sort(self, *exprs: SortKey) -> DataFrame:
         """Sort the DataFrame by the specified sorting expressions or column names.
 
         Note that any expression can be turned into a sort expression by
@@ -779,7 +781,7 @@ class DataFrame:
         exprs = []
         for expr in on_exprs:
             if not isinstance(expr, Expr):
-                raise TypeError(_EXPR_TYPE_ERROR)
+                raise TypeError(EXPR_TYPE_ERROR)
             exprs.append(expr.expr)
         return DataFrame(self.df.join_on(right.df, exprs, how))
 

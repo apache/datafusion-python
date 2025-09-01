@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence, Union
 
 import pyarrow as pa
 
@@ -41,7 +41,9 @@ if TYPE_CHECKING:
 
 
 # Standard error message for invalid expression types
-_EXPR_TYPE_ERROR = "Use col() or lit() to construct expressions"
+EXPR_TYPE_ERROR = "Use col() or lit() to construct expressions"
+
+SortKey = Union["Expr", "SortExpr", str]
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -199,6 +201,7 @@ __all__ = [
     "SimilarTo",
     "Sort",
     "SortExpr",
+    "SortKey",
     "Subquery",
     "SubqueryAlias",
     "TableScan",
@@ -236,7 +239,7 @@ def expr_list_to_raw_expr_list(
         else:
             error = (
                 "Expected Expr or column name, found:"
-                f" {type(e).__name__}. {_EXPR_TYPE_ERROR}."
+                f" {type(e).__name__}. {EXPR_TYPE_ERROR}."
             )
             raise TypeError(error)
     return raw_exprs
@@ -250,7 +253,7 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str],
+    sort_list: Optional[list[SortKey] | SortKey],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
     if isinstance(sort_list, (Expr, SortExpr, str)):
@@ -266,7 +269,7 @@ def sort_list_to_raw_sort_list(
         else:
             error = (
                 "Expected Expr or column name, found:"
-                f" {type(item).__name__}. {_EXPR_TYPE_ERROR}."
+                f" {type(item).__name__}. {EXPR_TYPE_ERROR}."
             )
             raise TypeError(error)
         raw_sort_list.append(sort_or_default(expr_obj))
@@ -693,7 +696,7 @@ class Expr:
             window: Window definition
         """
         partition_by_raw = expr_list_to_raw_expr_list(window._partition_by)
-        order_by_raw = sort_list_to_raw_sort_list(window._order_by)
+        order_by_raw = window._order_by
         window_frame_raw = (
             window._window_frame.window_frame
             if window._window_frame is not None
@@ -1179,7 +1182,7 @@ class Window:
         self,
         partition_by: Optional[list[Expr] | Expr] = None,
         window_frame: Optional[WindowFrame] = None,
-        order_by: Optional[list[SortExpr | Expr] | Expr | SortExpr] = None,
+        order_by: Optional[list[SortExpr | Expr | str] | Expr | SortExpr | str] = None,
         null_treatment: Optional[NullTreatment] = None,
     ) -> None:
         """Construct a window definition.
@@ -1192,7 +1195,7 @@ class Window:
         """
         self._partition_by = partition_by
         self._window_frame = window_frame
-        self._order_by = order_by
+        self._order_by = sort_list_to_raw_sort_list(order_by)
         self._null_treatment = null_treatment
 
 

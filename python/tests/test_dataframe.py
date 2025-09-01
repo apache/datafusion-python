@@ -33,7 +33,6 @@ from datafusion import (
     WindowFrame,
     column,
     literal,
-    col,
 )
 from datafusion import (
     functions as f,
@@ -292,8 +291,10 @@ def test_sort_unsupported(df):
 
 
 def test_aggregate_string_and_expression_equivalent(df):
-    result_str = df.aggregate("a", [f.count()]).to_pydict()
-    result_expr = df.aggregate(col("a"), [f.count()]).to_pydict()
+    from datafusion import col
+
+    result_str = df.aggregate("a", [f.count()]).sort("a").to_pydict()
+    result_expr = df.aggregate(col("a"), [f.count()]).sort("a").to_pydict()
     assert result_str == result_expr
 
 
@@ -775,6 +776,13 @@ data_test_window_functions = [
         "first_value_without_list_args",
         f.first_value(column("a")).over(
             Window(partition_by=column("c"), order_by=column("b"))
+        ),
+        [1, 1, 1, 1, 5, 5, 5],
+    ),
+    (
+        "first_value_order_by_string",
+        f.first_value(column("a")).over(
+            Window(partition_by=[column("c")], order_by="b")
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
