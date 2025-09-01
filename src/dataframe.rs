@@ -152,7 +152,7 @@ fn get_python_formatter_with_config(py: Python) -> PyResult<PythonFormatter> {
 }
 
 /// Get the Python formatter from the datafusion.dataframe_formatter module
-fn import_python_formatter(py: Python) -> PyResult<Bound<'_, PyAny>> {
+fn import_python_formatter(py: Python<'_>) -> PyResult<Bound<'_, PyAny>> {
     let formatter_module = py.import("datafusion.dataframe_formatter")?;
     let get_formatter = formatter_module.getattr("get_formatter")?;
     get_formatter.call0()
@@ -998,10 +998,13 @@ impl PyDataFrame {
 fn print_dataframe(py: Python, df: DataFrame) -> PyDataFusionResult<()> {
     // Get string representation of record batches
     let batches = wait_for_future(py, df.collect())??;
-    let batches_as_string = pretty::pretty_format_batches(&batches);
-    let result = match batches_as_string {
-        Ok(batch) => format!("DataFrame()\n{batch}"),
-        Err(err) => format!("Error: {:?}", err.to_string()),
+    let result = if batches.is_empty() {
+        "DataFrame has no rows".to_string()
+    } else {
+        match pretty::pretty_format_batches(&batches) {
+            Ok(batch) => format!("DataFrame()\n{batch}"),
+            Err(err) => format!("Error: {:?}", err.to_string()),
+        }
     };
 
     // Import the Python 'builtins' module to access the print function

@@ -154,6 +154,11 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
             pa.array([[6, 4, 4]]),
             False,
         ),
+        (
+            f.array_agg(column("b"), order_by=column("c")),
+            pa.array([[6, 4, 4]]),
+            False,
+        ),
         (f.avg(column("b"), filter=column("a") != lit(1)), pa.array([5.0]), False),
         (f.sum(column("b"), filter=column("a") != lit(1)), pa.array([10]), False),
         (f.count(column("b"), distinct=True), pa.array([2]), False),
@@ -330,6 +335,15 @@ def test_bit_and_bool_fns(df, name, expr, result):
             [None, None],
         ),
         (
+            "first_value_no_list_order_by",
+            f.first_value(
+                column("b"),
+                order_by=column("b"),
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            ),
+            [None, None],
+        ),
+        (
             "first_value_ignore_null",
             f.first_value(
                 column("b"),
@@ -342,6 +356,11 @@ def test_bit_and_bool_fns(df, name, expr, result):
             "last_value_ordered",
             f.last_value(column("a"), order_by=[column("a").sort(ascending=False)]),
             [0, 4],
+        ),
+        (
+            "last_value_no_list_ordered",
+            f.last_value(column("a"), order_by=column("a")),
+            [3, 6],
         ),
         (
             "last_value_with_null",
@@ -364,6 +383,11 @@ def test_bit_and_bool_fns(df, name, expr, result):
         (
             "nth_value_ordered",
             f.nth_value(column("a"), 2, order_by=[column("a").sort(ascending=False)]),
+            [2, 5],
+        ),
+        (
+            "nth_value_no_list_ordered",
+            f.nth_value(column("a"), 2, order_by=column("a").sort(ascending=False)),
             [2, 5],
         ),
         (
@@ -412,6 +436,11 @@ def test_first_last_value(df_partitioned, name, expr, result) -> None:
         (
             "string_agg",
             f.string_agg(column("a"), ",", order_by=[column("b")]),
+            "one,three,two,two",
+        ),
+        (
+            "string_agg",
+            f.string_agg(column("a"), ",", order_by=column("b")),
             "one,three,two,two",
         ),
     ],

@@ -252,6 +252,13 @@ def test_filter(df):
     assert result.column(2) == pa.array([5])
 
 
+def test_show_empty(df, capsys):
+    df_empty = df.filter(column("a") > literal(3))
+    df_empty.show()
+    captured = capsys.readouterr()
+    assert "DataFrame has no rows" in captured.out
+
+
 def test_sort(df):
     df = df.sort(column("b").sort(ascending=False))
 
@@ -551,11 +558,24 @@ data_test_window_functions = [
         ),
         [2, 1, 3, 4, 2, 1, 3],
     ),
+    (
+        "row_w_params_no_lists",
+        f.row_number(
+            order_by=column("b"),
+            partition_by=column("c"),
+        ),
+        [2, 1, 3, 4, 2, 1, 3],
+    ),
     ("rank", f.rank(order_by=[column("b")]), [3, 1, 3, 5, 6, 1, 6]),
     (
         "rank_w_params",
         f.rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
         [2, 1, 3, 4, 2, 1, 3],
+    ),
+    (
+        "rank_w_params_no_lists",
+        f.rank(order_by=column("a"), partition_by=column("c")),
+        [1, 2, 3, 4, 1, 2, 3],
     ),
     (
         "dense_rank",
@@ -566,6 +586,11 @@ data_test_window_functions = [
         "dense_rank_w_params",
         f.dense_rank(order_by=[column("b"), column("a")], partition_by=[column("c")]),
         [2, 1, 3, 4, 2, 1, 3],
+    ),
+    (
+        "dense_rank_w_params_no_lists",
+        f.dense_rank(order_by=column("a"), partition_by=column("c")),
+        [1, 2, 3, 4, 1, 2, 3],
     ),
     (
         "percent_rank",
@@ -583,6 +608,14 @@ data_test_window_functions = [
         [0.333, 0.0, 0.667, 1.0, 0.5, 0.0, 1.0],
     ),
     (
+        "percent_rank_w_params_no_lists",
+        f.round(
+            f.percent_rank(order_by=column("a"), partition_by=column("c")),
+            literal(3),
+        ),
+        [0.0, 0.333, 0.667, 1.0, 0.0, 0.5, 1.0],
+    ),
+    (
         "cume_dist",
         f.round(f.cume_dist(order_by=[column("b")]), literal(3)),
         [0.571, 0.286, 0.571, 0.714, 1.0, 0.286, 1.0],
@@ -598,6 +631,14 @@ data_test_window_functions = [
         [0.5, 0.25, 0.75, 1.0, 0.667, 0.333, 1.0],
     ),
     (
+        "cume_dist_w_params_no_lists",
+        f.round(
+            f.cume_dist(order_by=column("a"), partition_by=column("c")),
+            literal(3),
+        ),
+        [0.25, 0.5, 0.75, 1.0, 0.333, 0.667, 1.0],
+    ),
+    (
         "ntile",
         f.ntile(2, order_by=[column("b")]),
         [1, 1, 1, 2, 2, 1, 2],
@@ -605,6 +646,11 @@ data_test_window_functions = [
     (
         "ntile_w_params",
         f.ntile(2, order_by=[column("b"), column("a")], partition_by=[column("c")]),
+        [1, 1, 2, 2, 1, 1, 2],
+    ),
+    (
+        "ntile_w_params_no_lists",
+        f.ntile(2, order_by=column("b"), partition_by=column("c")),
         [1, 1, 2, 2, 1, 1, 2],
     ),
     ("lead", f.lead(column("b"), order_by=[column("b")]), [7, None, 8, 9, 9, 7, None]),
@@ -616,6 +662,17 @@ data_test_window_functions = [
             default_value=-1,
             order_by=[column("b"), column("a")],
             partition_by=[column("c")],
+        ),
+        [8, 7, -1, -1, -1, 9, -1],
+    ),
+    (
+        "lead_w_params_no_lists",
+        f.lead(
+            column("b"),
+            shift_offset=2,
+            default_value=-1,
+            order_by=column("b"),
+            partition_by=column("c"),
         ),
         [8, 7, -1, -1, -1, 9, -1],
     ),
@@ -632,9 +689,27 @@ data_test_window_functions = [
         [-1, -1, None, 7, -1, -1, None],
     ),
     (
+        "lag_w_params_no_lists",
+        f.lag(
+            column("b"),
+            shift_offset=2,
+            default_value=-1,
+            order_by=column("b"),
+            partition_by=column("c"),
+        ),
+        [-1, -1, None, 7, -1, -1, None],
+    ),
+    (
         "first_value",
         f.first_value(column("a")).over(
             Window(partition_by=[column("c")], order_by=[column("b")])
+        ),
+        [1, 1, 1, 1, 5, 5, 5],
+    ),
+    (
+        "first_value_without_list_args",
+        f.first_value(column("a")).over(
+            Window(partition_by=column("c"), order_by=column("b"))
         ),
         [1, 1, 1, 1, 5, 5, 5],
     ),
@@ -1796,15 +1871,15 @@ def test_write_parquet_with_options_max_row_group_size(
     """Test configuring the max number of rows per group in Parquet. These test cases
     guarantee that the number of rows for each row group is max_row_group_size, given
     the total number of rows is a multiple of max_row_group_size."""
+    path = f"{tmp_path}/t.parquet"
     large_df.write_parquet_with_options(
-        tmp_path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
+        path, ParquetWriterOptions(max_row_group_size=max_row_group_size)
     )
 
-    for file in tmp_path.rglob("*.parquet"):
-        parquet = pq.ParquetFile(file)
-        metadata = parquet.metadata.to_dict()
-        for row_group in metadata["row_groups"]:
-            assert row_group["num_rows"] == max_row_group_size
+    parquet = pq.ParquetFile(path)
+    metadata = parquet.metadata.to_dict()
+    for row_group in metadata["row_groups"]:
+        assert row_group["num_rows"] == max_row_group_size
 
 
 @pytest.mark.parametrize("created_by", ["datafusion", "datafusion-python", "custom"])
@@ -2589,3 +2664,19 @@ def test_collect_interrupted():
 
     # Make sure the interrupt thread has finished
     interrupt_thread.join(timeout=1.0)
+
+
+def test_show_select_where_no_rows(capsys) -> None:
+    ctx = SessionContext()
+    df = ctx.sql("SELECT 1 WHERE 1=0")
+    df.show()
+    out = capsys.readouterr().out
+    assert "DataFrame has no rows" in out
+
+
+def test_show_from_empty_batch(capsys) -> None:
+    ctx = SessionContext()
+    batch = pa.record_batch([pa.array([], type=pa.int32())], names=["a"])
+    ctx.create_dataframe([[batch]]).show()
+    out = capsys.readouterr().out
+    assert "| a |" in out

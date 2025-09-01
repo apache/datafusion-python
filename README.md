@@ -42,6 +42,10 @@ DataFusion's Python bindings can be used as a foundation for building new data s
 - Serialize and deserialize query plans in Substrait format.
 - Experimental support for transpiling SQL queries to DataFrame calls with Polars, Pandas, and cuDF.
 
+For tips on tuning parallelism, see
+[Maximizing CPU Usage](docs/source/user-guide/configuration.rst#maximizing-cpu-usage)
+in the configuration guide.
+
 ## Example Usage
 
 The following example demonstrates running a SQL query against a Parquet file using DataFusion, storing the results
@@ -216,6 +220,8 @@ You can verify the installation by running:
 This assumes that you have rust and cargo installed. We use the workflow recommended by [pyo3](https://github.com/PyO3/pyo3) and [maturin](https://github.com/PyO3/maturin). The Maturin tools used in this workflow can be installed either via `uv` or `pip`. Both approaches should offer the same experience. It is recommended to use `uv` since it has significant performance improvements
 over `pip`.
 
+Currently for protobuf support either [protobuf](https://protobuf.dev/installation/) or cmake must be installed.
+
 Bootstrap (`uv`):
 
 By default `uv` will attempt to build the datafusion python package. For our development we prefer to build manually. This means
@@ -225,6 +231,8 @@ and for `uv run` commands the additional parameter `--no-project`
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
+# cd to the repo root
+cd datafusion-python/
 # create the virtual environment
 uv sync --dev --no-install-package datafusion
 # activate the environment
@@ -236,6 +244,8 @@ Bootstrap (`pip`):
 ```bash
 # fetch this repo
 git clone git@github.com:apache/datafusion-python.git
+# cd to the repo root
+cd datafusion-python/
 # prepare development environment (used to build wheel / install in development)
 python3 -m venv .venv
 # activate the venv
@@ -278,7 +288,9 @@ Our pre-commit hooks can be installed by running `pre-commit install`, which wil
 your DATAFUSION_PYTHON_ROOT/.github directory and run each time you perform a commit, failing to complete
 the commit if an offending lint is found allowing you to make changes locally before pushing.
 
-The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`
+The pre-commit hooks can also be run adhoc without installing them by simply running `pre-commit run --all-files`.
+
+NOTE: the current `pre-commit` hooks require docker, and cmake. See note on protobuf above.
 
 ## Running linters without using pre-commit
 
