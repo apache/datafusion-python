@@ -429,7 +429,7 @@ def window(
     name: str,
     args: list[Expr],
     partition_by: list[Expr] | Expr | None = None,
-    order_by: list[Expr | SortExpr] | Expr | SortExpr | None = None,
+    order_by: list[Expr | SortExpr | str] | Expr | SortExpr | str | None = None,
     window_frame: WindowFrame | None = None,
     ctx: SessionContext | None = None,
 ) -> Expr:
@@ -1723,7 +1723,7 @@ def array_agg(
     expression: Expr,
     distinct: bool = False,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Aggregate values into an array.
 
@@ -2222,7 +2222,7 @@ def regr_syy(
 def first_value(
     expression: Expr,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the first value in a group of values.
@@ -2254,7 +2254,7 @@ def first_value(
 def last_value(
     expression: Expr,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
@@ -2287,7 +2287,7 @@ def nth_value(
     expression: Expr,
     n: int,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the n-th value in a group of values.
@@ -2408,7 +2408,7 @@ def lead(
     shift_offset: int = 1,
     default_value: Optional[Any] = None,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a lead window function.
 
@@ -2461,7 +2461,7 @@ def lag(
     shift_offset: int = 1,
     default_value: Optional[Any] = None,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a lag window function.
 
@@ -2508,7 +2508,7 @@ def lag(
 
 def row_number(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a row number window function.
 
@@ -2542,7 +2542,7 @@ def row_number(
 
 def rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a rank window function.
 
@@ -2581,7 +2581,7 @@ def rank(
 
 def dense_rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a dense_rank window function.
 
@@ -2615,7 +2615,7 @@ def dense_rank(
 
 def percent_rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a percent_rank window function.
 
@@ -2650,7 +2650,7 @@ def percent_rank(
 
 def cume_dist(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a cumulative distribution window function.
 
@@ -2686,7 +2686,7 @@ def cume_dist(
 def ntile(
     groups: int,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Create a n-tile window function.
 
@@ -2727,7 +2727,7 @@ def string_agg(
     expression: Expr,
     delimiter: str,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str] = None,
 ) -> Expr:
     """Concatenates the input strings.
 

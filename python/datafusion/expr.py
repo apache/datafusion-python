@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Optional
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence
 
 import pyarrow as pa
 
@@ -38,6 +38,10 @@ from ._internal import functions as functions_internal
 
 if TYPE_CHECKING:
     from datafusion.plan import LogicalPlan
+
+
+# Standard error message for invalid expression types
+_EXPR_TYPE_ERROR = "Use col() or lit() to construct expressions"
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -216,12 +220,26 @@ __all__ = [
 
 
 def expr_list_to_raw_expr_list(
-    expr_list: Optional[list[Expr] | Expr],
+    expr_list: Optional[Sequence[Expr | str] | Expr | str],
 ) -> Optional[list[expr_internal.Expr]]:
-    """Helper function to convert an optional list to raw expressions."""
-    if isinstance(expr_list, Expr):
+    """Convert a sequence of expressions or column names to raw expressions."""
+    if isinstance(expr_list, (Expr, str)):
         expr_list = [expr_list]
-    return [e.expr for e in expr_list] if expr_list is not None else None
+    if expr_list is None:
+        return None
+    raw_exprs: list[expr_internal.Expr] = []
+    for e in expr_list:
+        if isinstance(e, str):
+            raw_exprs.append(Expr.column(e).expr)
+        elif isinstance(e, Expr):
+            raw_exprs.append(e.expr)
+        else:
+            error = (
+                "Expected Expr or column name, found:"
+                f" {type(e).__name__}. {_EXPR_TYPE_ERROR}."
+            )
+            raise TypeError(error)
+    return raw_exprs
 
 
 def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
@@ -232,12 +250,27 @@ def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[list[Expr | SortExpr] | Expr | SortExpr],
+    sort_list: Optional[list[Expr | SortExpr | str] | Expr | SortExpr | str],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
-    if isinstance(sort_list, (Expr, SortExpr)):
+    if isinstance(sort_list, (Expr, SortExpr, str)):
         sort_list = [sort_list]
-    return [sort_or_default(e) for e in sort_list] if sort_list is not None else None
+    if sort_list is None:
+        return None
+    raw_sort_list = []
+    for item in sort_list:
+        if isinstance(item, str):
+            expr_obj = Expr.column(item)
+        elif isinstance(item, (Expr, SortExpr)):
+            expr_obj = item
+        else:
+            error = (
+                "Expected Expr or column name, found:"
+                f" {type(item).__name__}. {_EXPR_TYPE_ERROR}."
+            )
+            raise TypeError(error)
+        raw_sort_list.append(sort_or_default(expr_obj))
+    return raw_sort_list
 
 
 class Expr:

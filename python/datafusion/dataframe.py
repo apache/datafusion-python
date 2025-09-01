@@ -40,7 +40,13 @@ except ImportError:
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
-from datafusion.expr import Expr, SortExpr, sort_or_default
+from datafusion.expr import (
+    _EXPR_TYPE_ERROR,
+    Expr,
+    SortExpr,
+    expr_list_to_raw_expr_list,
+    sort_list_to_raw_sort_list,
+)
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
 
@@ -394,9 +400,7 @@ class DataFrame:
             df = df.select("a", col("b"), col("a").alias("alternate_a"))
 
         """
-        exprs_internal = [
-            Expr.column(arg).expr if isinstance(arg, str) else arg.expr for arg in exprs
-        ]
+        exprs_internal = expr_list_to_raw_expr_list(exprs)
         return DataFrame(self.df.select(*exprs_internal))
 
     def drop(self, *columns: str) -> DataFrame:
@@ -426,6 +430,8 @@ class DataFrame:
         """
         df = self.df
         for p in predicates:
+            if not isinstance(p, Expr):
+                raise TypeError(_EXPR_TYPE_ERROR)
             df = df.filter(p.expr)
         return DataFrame(df)
 
@@ -439,6 +445,8 @@ class DataFrame:
         Returns:
             DataFrame with the new column.
         """
+        if not isinstance(expr, Expr):
+            raise TypeError(_EXPR_TYPE_ERROR)
         return DataFrame(self.df.with_column(name, expr.expr))
 
     def with_columns(
@@ -468,17 +476,22 @@ class DataFrame:
         def _simplify_expression(
             *exprs: Expr | Iterable[Expr], **named_exprs: Expr
         ) -> list[expr_internal.Expr]:
-            expr_list = []
+            expr_list: list[expr_internal.Expr] = []
             for expr in exprs:
-                if isinstance(expr, Expr):
-                    expr_list.append(expr.expr)
-                elif isinstance(expr, Iterable):
-                    expr_list.extend(inner_expr.expr for inner_expr in expr)
-                else:
-                    raise NotImplementedError
-            if named_exprs:
-                for alias, expr in named_exprs.items():
-                    expr_list.append(expr.alias(alias).expr)
+                if isinstance(expr, str) or (
+                    isinstance(expr, Iterable)
+                    and not isinstance(expr, Expr)
+                    and any(isinstance(inner, str) for inner in expr)
+                ):
+                    raise TypeError(_EXPR_TYPE_ERROR)
+                try:
+                    expr_list.extend(expr_list_to_raw_expr_list(expr))
+                except TypeError as err:
+                    raise TypeError(_EXPR_TYPE_ERROR) from err
+            for alias, expr in named_exprs.items():
+                if not isinstance(expr, Expr):
+                    raise TypeError(_EXPR_TYPE_ERROR)
+                expr_list.append(expr.alias(alias).expr)
             return expr_list
 
         expressions = _simplify_expression(*exprs, **named_exprs)
@@ -503,37 +516,43 @@ class DataFrame:
         return DataFrame(self.df.with_column_renamed(old_name, new_name))
 
     def aggregate(
-        self, group_by: list[Expr] | Expr, aggs: list[Expr] | Expr
+        self,
+        group_by: list[Expr | str] | Expr | str,
+        aggs: list[Expr] | Expr,
     ) -> DataFrame:
         """Aggregates the rows of the current DataFrame.
 
         Args:
-            group_by: List of expressions to group by.
+            group_by: List of expressions or column names to group by.
             aggs: List of expressions to aggregate.
 
         Returns:
             DataFrame after aggregation.
         """
-        group_by = group_by if isinstance(group_by, list) else [group_by]
-        aggs = aggs if isinstance(aggs, list) else [aggs]
+        group_by_list = group_by if isinstance(group_by, list) else [group_by]
+        aggs_list = aggs if isinstance(aggs, list) else [aggs]
 
-        group_by = [e.expr for e in group_by]
-        aggs = [e.expr for e in aggs]
-        return DataFrame(self.df.aggregate(group_by, aggs))
+        group_by_exprs = expr_list_to_raw_expr_list(group_by_list)
+        aggs_exprs = []
+        for agg in aggs_list:
+            if not isinstance(agg, Expr):
+                raise TypeError(_EXPR_TYPE_ERROR)
+            aggs_exprs.append(agg.expr)
+        return DataFrame(self.df.aggregate(group_by_exprs, aggs_exprs))
 
-    def sort(self, *exprs: Expr | SortExpr) -> DataFrame:
-        """Sort the DataFrame by the specified sorting expressions.
+    def sort(self, *exprs: Expr | SortExpr | str) -> DataFrame:
+        """Sort the DataFrame by the specified sorting expressions or column names.
 
         Note that any expression can be turned into a sort expression by
-        calling its` ``sort`` method.
+        calling its ``sort`` method.
 
         Args:
-            exprs: Sort expressions, applied in order.
+            exprs: Sort expressions or column names, applied in order.
 
         Returns:
             DataFrame after sorting.
         """
-        exprs_raw = [sort_or_default(expr) for expr in exprs]
+        exprs_raw = sort_list_to_raw_sort_list(list(exprs))
         return DataFrame(self.df.sort(*exprs_raw))
 
     def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
@@ -757,7 +776,11 @@ class DataFrame:
         Returns:
             DataFrame after join.
         """
-        exprs = [expr.expr for expr in on_exprs]
+        exprs = []
+        for expr in on_exprs:
+            if not isinstance(expr, Expr):
+                raise TypeError(_EXPR_TYPE_ERROR)
+            exprs.append(expr.expr)
         return DataFrame(self.df.join_on(right.df, exprs, how))
 
     def explain(self, verbose: bool = False, analyze: bool = False) -> None:

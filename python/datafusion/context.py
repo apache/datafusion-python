@@ -553,7 +553,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".parquet",
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[Expr | SortExpr]] | None = None,
+        file_sort_order: list[list[Expr | SortExpr | str]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
 
@@ -808,7 +808,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[SortExpr]] | None = None,
+        file_sort_order: list[list[Expr | SortExpr | str]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -1099,7 +1099,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[Expr | SortExpr]] | None = None,
+        file_sort_order: list[list[Expr | SortExpr | str]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 

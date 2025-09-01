@@ -33,6 +33,7 @@ from datafusion import (
     WindowFrame,
     column,
     literal,
+    col,
 )
 from datafusion import (
     functions as f,
@@ -227,6 +228,13 @@ def test_select_mixed_expr_string(df):
     assert result.column(1) == pa.array([1, 2, 3])
 
 
+def test_select_unsupported(df):
+    with pytest.raises(
+        TypeError, match=r"Expected Expr or column name.*col\(\) or lit\(\)"
+    ):
+        df.select(1)
+
+
 def test_filter(df):
     df1 = df.filter(column("a") > literal(2)).select(
         column("a") + column("b"),
@@ -266,6 +274,32 @@ def test_sort(df):
     expected = {"a": [3, 2, 1], "b": [6, 5, 4], "c": [8, 5, 8]}
 
     assert table.to_pydict() == expected
+
+
+def test_sort_string_and_expression_equivalent(df):
+    from datafusion import col
+
+    result_str = df.sort("a").to_pydict()
+    result_expr = df.sort(col("a")).to_pydict()
+    assert result_str == result_expr
+
+
+def test_sort_unsupported(df):
+    with pytest.raises(
+        TypeError, match=r"Expected Expr or column name.*col\(\) or lit\(\)"
+    ):
+        df.sort(1)
+
+
+def test_aggregate_string_and_expression_equivalent(df):
+    result_str = df.aggregate("a", [f.count()]).to_pydict()
+    result_expr = df.aggregate(col("a"), [f.count()]).to_pydict()
+    assert result_str == result_expr
+
+
+def test_filter_string_unsupported(df):
+    with pytest.raises(TypeError, match=r"col\(\) or lit\(\)"):
+        df.filter("a > 1")
 
 
 def test_drop(df):
@@ -337,6 +371,11 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
+def test_with_column_invalid_expr(df):
+    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+        df.with_column("c", "a")
+
+
 def test_with_columns(df):
     df = df.with_columns(
         (column("a") + column("b")).alias("c"),
@@ -366,6 +405,13 @@ def test_with_columns(df):
     assert result.column(4) == pa.array([5, 7, 9])
     assert result.column(5) == pa.array([5, 7, 9])
     assert result.column(6) == pa.array([5, 7, 9])
+
+
+def test_with_columns_invalid_expr(df):
+    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+        df.with_columns("a")
+    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+        df.with_columns(c="a")
 
 
 def test_cast(df):
@@ -524,6 +570,25 @@ def test_join_on():
     table = pa.Table.from_batches(df3.collect())
     expected = {"a": [2], "c": [10], "b": [5]}
     assert table.to_pydict() == expected
+
+
+def test_join_on_invalid_expr():
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([4, 5])],
+        names=["a", "b"],
+    )
+    df = ctx.create_dataframe([[batch]], "l")
+    df1 = ctx.create_dataframe([[batch]], "r")
+
+    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+        df.join_on(df1, "a")
+
+
+def test_aggregate_invalid_aggs(df):
+    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+        df.aggregate([], "a")
 
 
 def test_distinct():
