@@ -35,6 +35,9 @@ from datafusion import (
     literal,
 )
 from datafusion import (
+    col as df_col,
+)
+from datafusion import (
     functions as f,
 )
 from datafusion.dataframe_formatter import (
@@ -43,7 +46,7 @@ from datafusion.dataframe_formatter import (
     get_formatter,
     reset_formatter,
 )
-from datafusion.expr import Window
+from datafusion.expr import EXPR_TYPE_ERROR, Window
 from pyarrow.csv import write_csv
 
 MB = 1024 * 1024
@@ -229,7 +232,8 @@ def test_select_mixed_expr_string(df):
 
 def test_select_unsupported(df):
     with pytest.raises(
-        TypeError, match=r"Expected Expr or column name.*col\(\) or lit\(\)"
+        TypeError,
+        match=f"Expected Expr or column name.*{re.escape(EXPR_TYPE_ERROR)}",
     ):
         df.select(1)
 
@@ -285,7 +289,8 @@ def test_sort_string_and_expression_equivalent(df):
 
 def test_sort_unsupported(df):
     with pytest.raises(
-        TypeError, match=r"Expected Expr or column name.*col\(\) or lit\(\)"
+        TypeError,
+        match=f"Expected Expr or column name.*{re.escape(EXPR_TYPE_ERROR)}",
     ):
         df.sort(1)
 
@@ -299,7 +304,7 @@ def test_aggregate_string_and_expression_equivalent(df):
 
 
 def test_filter_string_unsupported(df):
-    with pytest.raises(TypeError, match=r"col\(\) or lit\(\)"):
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         df.filter("a > 1")
 
 
@@ -373,7 +378,9 @@ def test_with_column(df):
 
 
 def test_with_column_invalid_expr(df):
-    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+    with pytest.raises(
+        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
+    ):
         df.with_column("c", "a")
 
 
@@ -409,9 +416,13 @@ def test_with_columns(df):
 
 
 def test_with_columns_invalid_expr(df):
-    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+    with pytest.raises(
+        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
+    ):
         df.with_columns("a")
-    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+    with pytest.raises(
+        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
+    ):
         df.with_columns(c="a")
 
 
@@ -583,12 +594,16 @@ def test_join_on_invalid_expr():
     df = ctx.create_dataframe([[batch]], "l")
     df1 = ctx.create_dataframe([[batch]], "r")
 
-    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+    with pytest.raises(
+        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
+    ):
         df.join_on(df1, "a")
 
 
 def test_aggregate_invalid_aggs(df):
-    with pytest.raises(TypeError, match=r"Use col\(\) or lit\(\)"):
+    with pytest.raises(
+        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
+    ):
         df.aggregate([], "a")
 
 
@@ -2753,3 +2768,34 @@ def test_show_from_empty_batch(capsys) -> None:
     ctx.create_dataframe([[batch]]).show()
     out = capsys.readouterr().out
     assert "| a |" in out
+
+
+@pytest.mark.parametrize("file_sort_order", [[["a"]], [[df_col("a")]]])
+def test_register_parquet_file_sort_order(ctx, tmp_path, file_sort_order):
+    table = pa.table({"a": [1, 2]})
+    path = tmp_path / "file.parquet"
+    pa.parquet.write_table(table, path)
+    ctx.register_parquet("t", path, file_sort_order=file_sort_order)
+    assert "t" in ctx.catalog().schema().names()
+
+
+@pytest.mark.parametrize("file_sort_order", [[["a"]], [[df_col("a")]]])
+def test_register_listing_table_file_sort_order(ctx, tmp_path, file_sort_order):
+    table = pa.table({"a": [1, 2]})
+    dir_path = tmp_path / "dir"
+    dir_path.mkdir()
+    pa.parquet.write_table(table, dir_path / "file.parquet")
+    ctx.register_listing_table(
+        "t", dir_path, schema=table.schema, file_sort_order=file_sort_order
+    )
+    assert "t" in ctx.catalog().schema().names()
+
+
+@pytest.mark.parametrize("file_sort_order", [[["a"]], [[df_col("a")]]])
+def test_read_parquet_file_sort_order(tmp_path, file_sort_order):
+    ctx = SessionContext()
+    table = pa.table({"a": [1, 2]})
+    path = tmp_path / "data.parquet"
+    pa.parquet.write_table(table, path)
+    df = ctx.read_parquet(path, file_sort_order=file_sort_order)
+    assert df.collect()[0].column(0).to_pylist() == [1, 2]

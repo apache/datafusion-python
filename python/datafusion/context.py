@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, Sequence
 
 import pyarrow as pa
 
@@ -553,7 +553,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".parquet",
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[SortKey]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
 
@@ -805,7 +805,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[SortKey]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -1096,7 +1096,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[SortKey]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1176,8 +1176,16 @@ class SessionContext:
 
     @staticmethod
     def _convert_file_sort_order(
-        file_sort_order: list[list[Expr | SortExpr | str]] | None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None,
     ) -> list[list[Any]] | None:
+        """Convert nested ``SortKey`` sequences into raw sort representations.
+
+        Each ``SortKey`` can be a column name string, an ``Expr``, or a
+        ``SortExpr`` and will be converted using
+        :func:`datafusion.expr.sort_list_to_raw_sort_list`.
+        """
+        # Convert each ``SortKey`` in the provided sort order to the low-level
+        # representation expected by the Rust bindings.
         return (
             [sort_list_to_raw_sort_list(f) for f in file_sort_order]
             if file_sort_order is not None

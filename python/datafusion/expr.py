@@ -22,7 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence
 
 import pyarrow as pa
 
@@ -41,9 +41,8 @@ if TYPE_CHECKING:
 
 
 # Standard error message for invalid expression types
-EXPR_TYPE_ERROR = "Use col() or lit() to construct expressions"
-
-SortKey = Union["Expr", "SortExpr", str]
+# Mention both alias forms of column and literal helpers
+EXPR_TYPE_ERROR = "Use col()/column() or lit()/literal() to construct expressions"
 
 # The following are imported from the internal representation. We may choose to
 # give these all proper wrappers, or to simply leave as is. These were added
@@ -219,7 +218,52 @@ __all__ = [
     "WindowExpr",
     "WindowFrame",
     "WindowFrameBound",
+    "ensure_expr",
 ]
+
+
+def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
+    """Return the internal expression from ``Expr`` or raise ``TypeError``.
+
+    This helper rejects plain strings and other non-:class:`Expr` values so
+    higher level APIs consistently require explicit :func:`~datafusion.col` or
+    :func:`~datafusion.lit` expressions.
+
+    Args:
+        value: Candidate expression or other object.
+
+    Returns:
+        The internal expression representation.
+
+    Raises:
+        TypeError: If ``value`` is not an instance of :class:`Expr`.
+    """
+    if not isinstance(value, Expr):
+        raise TypeError(EXPR_TYPE_ERROR)
+    return value.expr
+
+
+def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
+    """Convert a Python expression or column name to its raw variant.
+
+    Args:
+        value: Candidate expression or column name.
+
+    Returns:
+        The internal :class:`~datafusion._internal.expr.Expr` representation.
+
+    Raises:
+        TypeError: If ``value`` is neither an :class:`Expr` nor ``str``.
+    """
+    if isinstance(value, str):
+        return Expr.column(value).expr
+    if isinstance(value, Expr):
+        return value.expr
+    error = (
+        "Expected Expr or column name, found:"
+        f" {type(value).__name__}. {EXPR_TYPE_ERROR}."
+    )
+    raise TypeError(error)
 
 
 def expr_list_to_raw_expr_list(
@@ -230,30 +274,18 @@ def expr_list_to_raw_expr_list(
         expr_list = [expr_list]
     if expr_list is None:
         return None
-    raw_exprs: list[expr_internal.Expr] = []
-    for e in expr_list:
-        if isinstance(e, str):
-            raw_exprs.append(Expr.column(e).expr)
-        elif isinstance(e, Expr):
-            raw_exprs.append(e.expr)
-        else:
-            error = (
-                "Expected Expr or column name, found:"
-                f" {type(e).__name__}. {EXPR_TYPE_ERROR}."
-            )
-            raise TypeError(error)
-    return raw_exprs
+    return [_to_raw_expr(e) for e in expr_list]
 
 
 def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
-    """Helper function to return a default Sort if an Expr is provided."""
+    """Return a :class:`SortExpr`, defaulting attributes when necessary."""
     if isinstance(e, SortExpr):
         return e.raw_sort
     return SortExpr(e, ascending=True, nulls_first=True).raw_sort
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[list[SortKey] | SortKey],
+    sort_list: Optional[Sequence[SortKey] | SortKey],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
     if isinstance(sort_list, (Expr, SortExpr, str)):
@@ -262,17 +294,11 @@ def sort_list_to_raw_sort_list(
         return None
     raw_sort_list = []
     for item in sort_list:
-        if isinstance(item, str):
-            expr_obj = Expr.column(item)
-        elif isinstance(item, (Expr, SortExpr)):
-            expr_obj = item
+        if isinstance(item, SortExpr):
+            raw_sort_list.append(sort_or_default(item))
         else:
-            error = (
-                "Expected Expr or column name, found:"
-                f" {type(item).__name__}. {EXPR_TYPE_ERROR}."
-            )
-            raise TypeError(error)
-        raw_sort_list.append(sort_or_default(expr_obj))
+            raw_expr = _to_raw_expr(item)  # may raise ``TypeError``
+            raw_sort_list.append(sort_or_default(Expr(raw_expr)))
     return raw_sort_list
 
 
@@ -1335,3 +1361,6 @@ class SortExpr:
     def __repr__(self) -> str:
         """Generate a string representation of this expression."""
         return self.raw_sort.__repr__()
+
+
+SortKey = Expr | SortExpr | str

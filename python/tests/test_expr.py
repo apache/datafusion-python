@@ -15,6 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import re
 from datetime import datetime, timezone
 
 import pyarrow as pa
@@ -28,6 +29,7 @@ from datafusion import (
     literal_with_metadata,
 )
 from datafusion.expr import (
+    EXPR_TYPE_ERROR,
     Aggregate,
     AggregateFunction,
     BinaryExpr,
@@ -47,6 +49,7 @@ from datafusion.expr import (
     TransactionEnd,
     TransactionStart,
     Values,
+    ensure_expr,
 )
 
 
@@ -880,3 +883,10 @@ def test_literal_metadata(ctx):
     for expected_field in expected_schema:
         actual_field = result[0].schema.field(expected_field.name)
         assert expected_field.metadata == actual_field.metadata
+
+
+def test_ensure_expr():
+    e = col("a")
+    assert ensure_expr(e) is e.expr
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        ensure_expr("a")

@@ -41,9 +41,9 @@ from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import (
-    EXPR_TYPE_ERROR,
     Expr,
     SortKey,
+    ensure_expr,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
 )
@@ -57,8 +57,6 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl
     import pyarrow as pa
-
-    from datafusion._internal import expr as expr_internal
 
 from enum import Enum
 
@@ -418,9 +416,17 @@ class DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
-        out.  If more than one predicate is provided, these predicates will be
-        combined as a logical AND. If more complex logic is required, see the
-        logical operations in :py:mod:`~datafusion.functions`.
+        out. If more than one predicate is provided, these predicates will be
+        combined as a logical AND. Each ``predicate`` must be an
+        :class:`~datafusion.expr.Expr` created using helper functions such as
+        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
+        accepted. If more complex logic is required, see the logical operations in
+        :py:mod:`~datafusion.functions`.
+
+        Example::
+
+            from datafusion import col, lit
+            df.filter(col("a") > lit(1))
 
         Args:
             predicates: Predicate expression(s) to filter the DataFrame.
@@ -430,13 +436,20 @@ class DataFrame:
         """
         df = self.df
         for p in predicates:
-            if not isinstance(p, Expr):
-                raise TypeError(EXPR_TYPE_ERROR)
-            df = df.filter(p.expr)
+            df = df.filter(ensure_expr(p))
         return DataFrame(df)
 
     def with_column(self, name: str, expr: Expr) -> DataFrame:
         """Add an additional column to the DataFrame.
+
+        The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
+        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
+        accepted.
+
+        Example::
+
+            from datafusion import col, lit
+            df.with_column("b", col("a") + lit(1))
 
         Args:
             name: Name of the column to add.
@@ -445,25 +458,27 @@ class DataFrame:
         Returns:
             DataFrame with the new column.
         """
-        if not isinstance(expr, Expr):
-            raise TypeError(EXPR_TYPE_ERROR)
-        return DataFrame(self.df.with_column(name, expr.expr))
+        return DataFrame(self.df.with_column(name, ensure_expr(expr)))
 
     def with_columns(
         self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
     ) -> DataFrame:
         """Add columns to the DataFrame.
 
-        By passing expressions, iteratables of expressions, or named expressions. To
-        pass named expressions use the form name=Expr.
+        By passing expressions, iterables of expressions, or named expressions.
+        All expressions must be :class:`~datafusion.expr.Expr` objects created via
+        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
+        accepted. To pass named expressions use the form ``name=Expr``.
 
-        Example usage: The following will add 4 columns labeled a, b, c, and d::
+        Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
+        and ``d``::
 
+            from datafusion import col, lit
             df = df.with_columns(
-                lit(0).alias('a'),
-                [lit(1).alias('b'), lit(2).alias('c')],
+                col("x").alias("a"),
+                [lit(1).alias("b"), col("y").alias("c")],
                 d=lit(3)
-                )
+            )
 
         Args:
             exprs: Either a single expression or an iterable of expressions to add.
@@ -473,30 +488,19 @@ class DataFrame:
             DataFrame with the new columns added.
         """
 
-        def _simplify_expression(
-            *exprs: Expr | Iterable[Expr], **named_exprs: Expr
-        ) -> list[expr_internal.Expr]:
-            expr_list: list[expr_internal.Expr] = []
-            for expr in exprs:
+        def _iter_exprs(items: Iterable[Expr | Iterable[Expr]]) -> Iterable[Expr | str]:
+            for expr in items:
                 if isinstance(expr, str):
-                    raise TypeError(EXPR_TYPE_ERROR)
-                if isinstance(expr, Iterable) and not isinstance(expr, Expr):
-                    expr_value = list(expr)
-                    if any(isinstance(inner, str) for inner in expr_value):
-                        raise TypeError(EXPR_TYPE_ERROR)
+                    yield expr
+                elif isinstance(expr, Iterable) and not isinstance(expr, Expr):
+                    yield from _iter_exprs(expr)
                 else:
-                    expr_value = expr
-                try:
-                    expr_list.extend(expr_list_to_raw_expr_list(expr_value))
-                except TypeError as err:
-                    raise TypeError(EXPR_TYPE_ERROR) from err
-            for alias, expr in named_exprs.items():
-                if not isinstance(expr, Expr):
-                    raise TypeError(EXPR_TYPE_ERROR)
-                expr_list.append(expr.alias(alias).expr)
-            return expr_list
+                    yield expr
 
-        expressions = _simplify_expression(*exprs, **named_exprs)
+        expressions = [ensure_expr(e) for e in _iter_exprs(exprs)]
+        for alias, expr in named_exprs.items():
+            ensure_expr(expr)
+            expressions.append(expr.alias(alias).expr)
 
         return DataFrame(self.df.with_columns(expressions))
 
@@ -535,11 +539,7 @@ class DataFrame:
         aggs_list = aggs if isinstance(aggs, list) else [aggs]
 
         group_by_exprs = expr_list_to_raw_expr_list(group_by_list)
-        aggs_exprs = []
-        for agg in aggs_list:
-            if not isinstance(agg, Expr):
-                raise TypeError(EXPR_TYPE_ERROR)
-            aggs_exprs.append(agg.expr)
+        aggs_exprs = [ensure_expr(agg) for agg in aggs_list]
         return DataFrame(self.df.aggregate(group_by_exprs, aggs_exprs))
 
     def sort(self, *exprs: SortKey) -> DataFrame:
@@ -554,7 +554,7 @@ class DataFrame:
         Returns:
             DataFrame after sorting.
         """
-        exprs_raw = sort_list_to_raw_sort_list(list(exprs))
+        exprs_raw = sort_list_to_raw_sort_list(exprs)
         return DataFrame(self.df.sort(*exprs_raw))
 
     def cast(self, mapping: dict[str, pa.DataType[Any]]) -> DataFrame:
@@ -766,8 +766,15 @@ class DataFrame:
     ) -> DataFrame:
         """Join two :py:class:`DataFrame` using the specified expressions.
 
-        On expressions are used to support in-equality predicates. Equality
-        predicates are correctly optimized
+        Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
+        built with :func:`datafusion.col`; plain strings are not accepted. On
+        expressions are used to support in-equality predicates. Equality predicates
+        are correctly optimized.
+
+        Example::
+
+            from datafusion import col
+            df.join_on(other_df, col("id") == col("other_id"))
 
         Args:
             right: Other DataFrame to join with.
@@ -778,11 +785,7 @@ class DataFrame:
         Returns:
             DataFrame after join.
         """
-        exprs = []
-        for expr in on_exprs:
-            if not isinstance(expr, Expr):
-                raise TypeError(EXPR_TYPE_ERROR)
-            exprs.append(expr.expr)
+        exprs = [ensure_expr(expr) for expr in on_exprs]
         return DataFrame(self.df.join_on(right.df, exprs, how))
 
     def explain(self, verbose: bool = False, analyze: bool = False) -> None:
