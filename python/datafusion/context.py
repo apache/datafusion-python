@@ -731,6 +731,37 @@ class SessionContext:
         """
         return DataFrame(self.ctx.from_polars(data, name))
 
+    def range(
+        self,
+        start: int,
+        stop: int | None = None,
+        step: int = 1,
+        partitions: int | None = None,
+    ) -> DataFrame:
+        """Create a DataFrame containing a sequence of numbers.
+
+        This is backed by DataFusion's ``range`` table function, which generates
+        values lazily and therefore does not materialize the full range in
+        memory. When ``stop`` is omitted, ``start`` is treated as the stop value
+        and the sequence begins at zero.
+
+        Args:
+            start: Starting value for the sequence or the exclusive stop if
+                ``stop`` is ``None``.
+            stop: Exclusive upper bound of the sequence.
+            step: Increment between successive values.
+            partitions: Optional number of partitions for the generated data.
+
+        Returns:
+            DataFrame yielding the requested range of values.
+        """
+        if stop is None:
+            start, stop = 0, start
+
+        parts = f", {int(partitions)}" if partitions is not None else ""
+        sql = f"SELECT * FROM range({int(start)}, {int(stop)}, {int(step)}{parts})"  # noqa: S608
+        return self.sql(sql)
+
     # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
     # is the discussion on how we arrived at adding register_view
     def register_view(self, name: str, df: DataFrame) -> None:

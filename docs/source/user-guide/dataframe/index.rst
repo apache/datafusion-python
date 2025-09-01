@@ -145,9 +145,30 @@ To materialize the results of your DataFrame operations:
     
     # Display results
     df.show()                         # Print tabular format to console
-    
+
     # Count rows
     count = df.count()
+
+PyArrow Streaming
+-----------------
+
+DataFusion DataFrames implement the ``__arrow_c_stream__`` protocol, enabling
+zero-copy streaming into libraries like `PyArrow <https://arrow.apache.org/>`_.
+Earlier versions eagerly converted the entire DataFrame when exporting to
+PyArrow, which could exhaust memory on large datasets. With streaming, batches
+are produced lazily so you can process arbitrarily large results without
+out-of-memory errors.
+
+.. code-block:: python
+
+    import pyarrow as pa
+
+    # Create a PyArrow RecordBatchReader without materializing all batches
+    reader = pa.RecordBatchReader._import_from_c(df.__arrow_c_stream__())
+    for batch in reader:
+        ...  # process each batch as it is produced
+
+See :doc:`../io/arrow` for additional details on the Arrow interface.
 
 HTML Rendering
 --------------

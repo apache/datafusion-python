@@ -17,16 +17,17 @@
 
 use crate::{
     common::data_type::PyScalarValue,
-    errors::{PyDataFusionError, PyDataFusionResult},
+    errors::{to_datafusion_err, PyDataFusionError, PyDataFusionResult},
     TokioRuntime,
 };
 use datafusion::{
-    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
+    common::ScalarValue, execution::context::SessionContext, execution::SendableRecordBatchStream,
+    logical_expr::Volatility,
 };
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
 use std::{future::Future, sync::OnceLock, time::Duration};
-use tokio::{runtime::Runtime, time::sleep};
+use tokio::{runtime::Runtime, task::JoinHandle, time::sleep};
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -82,6 +83,36 @@ where
             }
         })
     })
+}
+
+/// Spawn a [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
+/// while respecting Python signal handling.
+pub(crate) fn spawn_stream<F>(py: Python, fut: F) -> PyDataFusionResult<SendableRecordBatchStream>
+where
+    F: Future<Output = datafusion::common::Result<SendableRecordBatchStream>> + Send + 'static,
+{
+    let rt = &get_tokio_runtime().0;
+    let handle: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> = rt.spawn(fut);
+    Ok(wait_for_future(py, async {
+        handle.await.map_err(to_datafusion_err)
+    })???)
+}
+
+/// Spawn a partitioned [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
+/// while respecting Python signal handling.
+pub(crate) fn spawn_streams<F>(
+    py: Python,
+    fut: F,
+) -> PyDataFusionResult<Vec<SendableRecordBatchStream>>
+where
+    F: Future<Output = datafusion::common::Result<Vec<SendableRecordBatchStream>>> + Send + 'static,
+{
+    let rt = &get_tokio_runtime().0;
+    let handle: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
+        rt.spawn(fut);
+    Ok(wait_for_future(py, async {
+        handle.await.map_err(to_datafusion_err)
+    })???)
 }
 
 pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {

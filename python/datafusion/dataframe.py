@@ -26,6 +26,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Iterable,
+    Iterator,
     Literal,
     Optional,
     Union,
@@ -1098,20 +1099,36 @@ class DataFrame:
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
 
     def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
-        """Export an Arrow PyCapsule Stream.
+        """Export the DataFrame as an Arrow C Stream.
 
-        This will execute and collect the DataFrame. We will attempt to respect the
-        requested schema, but only trivial transformations will be applied such as only
-        returning the fields listed in the requested schema if their data types match
-        those in the DataFrame.
+        The DataFrame is executed using DataFusion's streaming APIs and exposed via
+        Arrow's C Stream interface. Record batches are produced incrementally, so the
+        full result set is never materialized in memory. When ``requested_schema`` is
+        provided, only straightforward projections such as column selection or
+        reordering are applied.
 
         Args:
             requested_schema: Attempt to provide the DataFrame using this schema.
 
         Returns:
-            Arrow PyCapsule object.
+            Arrow PyCapsule object representing an ``ArrowArrayStream``.
         """
+        # ``DataFrame.__arrow_c_stream__`` in the Rust extension leverages
+        # ``execute_stream`` under the hood to stream batches one at a time.
         return self.df.__arrow_c_stream__(requested_schema)
+
+    def __iter__(self) -> Iterator[pa.RecordBatch]:
+        """Yield record batches from the DataFrame without materializing results.
+
+        This implementation streams record batches via the Arrow C Stream
+        interface, allowing callers such as :func:`pyarrow.Table.from_batches` to
+        consume results lazily. The DataFrame is executed using DataFusion's
+        streaming APIs so ``collect`` is never invoked.
+        """
+        import pyarrow as pa
+
+        reader = pa.RecordBatchReader._import_from_c(self.__arrow_c_stream__())
+        yield from reader
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.

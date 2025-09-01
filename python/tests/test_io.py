@@ -17,6 +17,7 @@
 from pathlib import Path
 
 import pyarrow as pa
+import pytest
 from datafusion import column
 from datafusion.io import read_avro, read_csv, read_json, read_parquet
 
@@ -92,3 +93,30 @@ def test_read_avro():
     path = Path.cwd() / "testing/data/avro/alltypes_plain.avro"
     avro_df = read_avro(path=path)
     assert avro_df is not None
+
+
+def test_arrow_c_stream_large_dataset(ctx):
+    """DataFrame.__arrow_c_stream__ yields batches incrementally.
+
+    This test constructs a DataFrame that would be far larger than available
+    memory if materialized. The ``__arrow_c_stream__`` method should expose a
+    stream of record batches without collecting the full dataset, so reading a
+    handful of batches should not exhaust process memory.
+    """
+    # Create a very large DataFrame using range; this would be terabytes if collected
+    df = ctx.range(0, 1 << 40)
+
+    reader = pa.RecordBatchReader._import_from_c(df.__arrow_c_stream__())
+
+    # Track RSS before consuming batches
+    psutil = pytest.importorskip("psutil")
+    process = psutil.Process()
+    start_rss = process.memory_info().rss
+
+    for _ in range(5):
+        batch = reader.read_next_batch()
+        assert batch is not None
+        assert len(batch) > 0
+        current_rss = process.memory_info().rss
+        # Ensure memory usage hasn't grown substantially (>50MB)
+        assert current_rss - start_rss < 50 * 1024 * 1024
