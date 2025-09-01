@@ -1605,6 +1605,14 @@ def test_arrow_c_stream_to_table(monkeypatch):
     assert table.column("a").num_chunks == 2
 
 
+def test_arrow_c_stream_reader(df):
+    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
+    assert isinstance(reader, pa.RecordBatchReader)
+    table = pa.Table.from_batches(reader)
+    expected = pa.Table.from_batches(df.collect())
+    assert table.equals(expected)
+
+
 def test_to_pylist(df):
     # Convert datafusion dataframe to Python list
     pylist = df.to_pylist()
@@ -2743,7 +2751,7 @@ def test_arrow_c_stream_interrupted():
         """
     )
 
-    reader = pa.RecordBatchReader._import_from_c(df.__arrow_c_stream__())
+    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
 
     interrupted = False
     interrupt_error = None

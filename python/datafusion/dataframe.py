@@ -1127,7 +1127,7 @@ class DataFrame:
         """
         import pyarrow as pa
 
-        reader = pa.RecordBatchReader._import_from_c(self.__arrow_c_stream__())
+        reader = pa.RecordBatchReader._import_from_c_capsule(self.__arrow_c_stream__())
         yield from reader
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:

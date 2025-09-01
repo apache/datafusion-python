@@ -85,17 +85,42 @@ where
     })
 }
 
+/// Spawn a [`Future`] on the Tokio runtime and wait for completion
+/// while respecting Python signal handling.
+pub(crate) fn spawn_future<F, T>(py: Python, fut: F) -> PyDataFusionResult<T>
+where
+    F: Future<Output = datafusion::common::Result<T>> + Send + 'static,
+    T: Send + 'static,
+{
+    let rt = &get_tokio_runtime().0;
+    let handle: JoinHandle<datafusion::common::Result<T>> = rt.spawn(fut);
+    // Wait for the join handle while respecting Python signal handling.
+    // We handle errors in two steps so `?` maps the error types correctly:
+    // 1) convert any Python-related error from `wait_for_future` into `PyDataFusionError`
+    // 2) convert any DataFusion error (inner result) into `PyDataFusionError`
+    let inner_result = wait_for_future(py, async {
+        // handle.await yields `Result<datafusion::common::Result<T>, JoinError>`
+        // map JoinError into a DataFusion error so the async block returns
+        // `datafusion::common::Result<T>` (i.e. Result<T, DataFusionError>)
+        match handle.await {
+            Ok(inner) => inner,
+            Err(join_err) => Err(to_datafusion_err(join_err)),
+        }
+    })?; // converts PyErr -> PyDataFusionError
+
+    // `inner_result` is `datafusion::common::Result<T>`; use `?` to convert
+    // the inner DataFusion error into `PyDataFusionError` via `From` and
+    // return the inner `T` on success.
+    Ok(inner_result?)
+}
+
 /// Spawn a [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
 /// while respecting Python signal handling.
 pub(crate) fn spawn_stream<F>(py: Python, fut: F) -> PyDataFusionResult<SendableRecordBatchStream>
 where
     F: Future<Output = datafusion::common::Result<SendableRecordBatchStream>> + Send + 'static,
 {
-    let rt = &get_tokio_runtime().0;
-    let handle: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> = rt.spawn(fut);
-    Ok(wait_for_future(py, async {
-        handle.await.map_err(to_datafusion_err)
-    })???)
+    spawn_future(py, fut)
 }
 
 /// Spawn a partitioned [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
@@ -107,12 +132,7 @@ pub(crate) fn spawn_streams<F>(
 where
     F: Future<Output = datafusion::common::Result<Vec<SendableRecordBatchStream>>> + Send + 'static,
 {
-    let rt = &get_tokio_runtime().0;
-    let handle: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
-        rt.spawn(fut);
-    Ok(wait_for_future(py, async {
-        handle.await.map_err(to_datafusion_err)
-    })???)
+    spawn_future(py, fut)
 }
 
 pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {

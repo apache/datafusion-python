@@ -164,7 +164,7 @@ out-of-memory errors.
     import pyarrow as pa
 
     # Create a PyArrow RecordBatchReader without materializing all batches
-    reader = pa.RecordBatchReader._import_from_c(df.__arrow_c_stream__())
+    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
     for batch in reader:
         ...  # process each batch as it is produced
 

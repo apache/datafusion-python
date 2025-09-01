@@ -16,7 +16,7 @@
 // under the License.
 
 use std::collections::HashMap;
-use std::ffi::CString;
+use std::ffi::{c_void, CStr, CString};
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
@@ -39,6 +39,7 @@ use datafusion::prelude::*;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
+use pyo3::ffi;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
@@ -47,7 +48,7 @@ use crate::catalog::PyTable;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
-use crate::record_batch::PyRecordBatchStream;
+use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{
     get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, spawn_stream, spawn_streams,
@@ -57,6 +58,21 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
+
+#[allow(clippy::manual_c_str_literals)]
+static ARROW_STREAM_NAME: &CStr =
+    unsafe { CStr::from_bytes_with_nul_unchecked(b"arrow_array_stream\0") };
+
+unsafe extern "C" fn drop_stream(capsule: *mut ffi::PyObject) {
+    if capsule.is_null() {
+        return;
+    }
+    let stream_ptr =
+        ffi::PyCapsule_GetPointer(capsule, ARROW_STREAM_NAME.as_ptr()) as *mut FFI_ArrowArrayStream;
+    if !stream_ptr.is_null() {
+        drop(Box::from_raw(stream_ptr));
+    }
+}
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
@@ -374,11 +390,11 @@ impl Iterator for DataFrameStreamReader {
         // respecting Python signal handling (e.g. ``KeyboardInterrupt``).
         // This mirrors the behaviour of other synchronous wrappers and
         // prevents blocking indefinitely when a Python interrupt is raised.
-        let fut = self.stream.next();
+        let fut = poll_next_batch(&mut self.stream);
         let result = Python::with_gil(|py| wait_for_future(py, fut));
 
         match result {
-            Ok(Some(Ok(batch))) => {
+            Ok(Ok(Some(batch))) => {
                 let batch = if let Some(ref schema) = self.projection {
                     match record_batch_into_schema(batch, schema.as_ref()) {
                         Ok(b) => b,
@@ -389,8 +405,8 @@ impl Iterator for DataFrameStreamReader {
                 };
                 Some(Ok(batch))
             }
-            Ok(Some(Err(e))) => Some(Err(ArrowError::ExternalError(Box::new(e)))),
-            Ok(None) => None,
+            Ok(Ok(None)) => None,
+            Ok(Err(e)) => Some(Err(ArrowError::ExternalError(Box::new(e)))),
             Err(e) => Some(Err(ArrowError::ExternalError(Box::new(e)))),
         }
     }
@@ -943,7 +959,7 @@ impl PyDataFrame {
             projection = Some(Arc::new(schema.clone()));
         }
 
-        let schema_ref = projection.clone().unwrap_or_else(|| Arc::new(schema));
+        let schema_ref = Arc::new(schema.clone());
 
         let reader = DataFrameStreamReader {
             stream,
@@ -952,9 +968,26 @@ impl PyDataFrame {
         };
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
-        let ffi_stream = FFI_ArrowArrayStream::new(reader);
-        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
-        PyCapsule::new(py, ffi_stream, Some(stream_capsule_name)).map_err(PyDataFusionError::from)
+        let stream = Box::new(FFI_ArrowArrayStream::new(reader));
+        let stream_ptr = Box::into_raw(stream);
+        assert!(
+            !stream_ptr.is_null(),
+            "ArrowArrayStream pointer should never be null"
+        );
+        let capsule = unsafe {
+            ffi::PyCapsule_New(
+                stream_ptr as *mut c_void,
+                ARROW_STREAM_NAME.as_ptr(),
+                Some(drop_stream),
+            )
+        };
+        if capsule.is_null() {
+            unsafe { drop(Box::from_raw(stream_ptr)) };
+            Err(PyErr::fetch(py).into())
+        } else {
+            let any = unsafe { Bound::from_owned_ptr(py, capsule) };
+            Ok(any.downcast_into::<PyCapsule>().unwrap())
+        }
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {

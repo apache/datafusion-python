@@ -18,7 +18,8 @@ from pathlib import Path
 
 import pyarrow as pa
 import pytest
-from datafusion import column
+from datafusion import DataFrame, column
+from datafusion._testing import range_table
 from datafusion.io import read_avro, read_csv, read_json, read_parquet
 
 
@@ -104,9 +105,9 @@ def test_arrow_c_stream_large_dataset(ctx):
     handful of batches should not exhaust process memory.
     """
     # Create a very large DataFrame using range; this would be terabytes if collected
-    df = ctx.range(0, 1 << 40)
+    df = range_table(ctx, 0, 1 << 40)
 
-    reader = pa.RecordBatchReader._import_from_c(df.__arrow_c_stream__())
+    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
 
     # Track RSS before consuming batches
     psutil = pytest.importorskip("psutil")
@@ -120,3 +121,17 @@ def test_arrow_c_stream_large_dataset(ctx):
         current_rss = process.memory_info().rss
         # Ensure memory usage hasn't grown substantially (>50MB)
         assert current_rss - start_rss < 50 * 1024 * 1024
+
+
+def test_table_from_batches_stream(ctx, monkeypatch):
+    df = range_table(ctx, 0, 10)
+
+    def fail_collect(self):  # pragma: no cover - failure path
+        msg = "collect should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(DataFrame, "collect", fail_collect)
+
+    table = pa.Table.from_batches(df)
+    assert table.shape == (10, 1)
+    assert table.column_names == ["value"]
