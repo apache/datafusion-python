@@ -21,14 +21,13 @@ from __future__ import annotations
 
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
-from collections.abc import Sequence
-
-import pyarrow as pa
 
 try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
+
+import pyarrow as pa
 
 from datafusion.catalog import Catalog, CatalogProvider, Table
 from datafusion.dataframe import DataFrame
@@ -44,9 +43,10 @@ from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
+    from collections.abc import Sequence
 
     import pandas as pd
-    import polars as pl
+    import polars as pl  # type: ignore[import]
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
 

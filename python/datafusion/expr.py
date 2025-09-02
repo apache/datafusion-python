@@ -23,7 +23,6 @@ See :ref:`Expressions` in the online documentation for more details.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Optional
-from collections.abc import Sequence
 
 import pyarrow as pa
 
@@ -38,6 +37,9 @@ from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from datafusion.common import DataTypeMap, RexType
     from datafusion.plan import LogicalPlan
 
 
