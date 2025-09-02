@@ -14,13 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 from pathlib import Path
 
 import pyarrow as pa
 import pytest
 from datafusion import column
-from datafusion._testing import range_table
 from datafusion.io import read_avro, read_csv, read_json, read_parquet
+
+from .utils import range_table
 
 
 def test_read_json_global_ctx(ctx):

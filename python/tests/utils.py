@@ -9,10 +9,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .context import SessionContext
-
 if TYPE_CHECKING:
     from datafusion import DataFrame
+    from datafusion.context import SessionContext
 
 
 def range_table(
@@ -42,5 +41,5 @@ def range_table(
         start, stop = 0, start
 
     parts = f", {int(partitions)}" if partitions is not None else ""
-    sql = f"SELECT * FROM range({int(start)}, {int(stop)}, {int(step)}{parts})"  # noqa: S608
+    sql = f"SELECT * FROM range({int(start)}, {int(stop)}, {int(step)}{parts})"
     return ctx.sql(sql)
