@@ -46,6 +46,8 @@ from datafusion.dataframe_formatter import (
 from datafusion.expr import Window
 from pyarrow.csv import write_csv
 
+pa_cffi = pytest.importorskip("pyarrow.cffi")
+
 MB = 1024 * 1024
 
 
@@ -1635,6 +1637,44 @@ def test_arrow_c_stream_reader(df):
     table = pa.Table.from_batches(reader)
     expected = pa.Table.from_batches(df.collect())
     assert table.equals(expected)
+
+
+def test_arrow_c_stream_schema_selection(fail_collect):
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, 2]),
+            pa.array([3, 4]),
+            pa.array([5, 6]),
+        ],
+        names=["a", "b", "c"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    requested_schema = pa.schema([("c", pa.int64()), ("a", pa.int64())])
+
+    c_schema = pa_cffi.ffi.new("struct ArrowSchema*")
+    address = int(pa_cffi.ffi.cast("uintptr_t", c_schema))
+    requested_schema._export_to_c(address)
+    capsule_new = ctypes.pythonapi.PyCapsule_New
+    capsule_new.restype = ctypes.py_object
+    capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
+    schema_capsule = capsule_new(ctypes.c_void_p(address), b"arrow_schema", None)
+
+    reader = pa.RecordBatchReader._import_from_c_capsule(
+        df.__arrow_c_stream__(schema_capsule)
+    )
+
+    assert reader.schema == requested_schema
+
+    batches = list(reader)
+
+    assert len(batches) == 1
+    expected_batch = pa.record_batch(
+        [pa.array([5, 6]), pa.array([1, 2])], names=["c", "a"]
+    )
+    assert batches[0].equals(expected_batch)
 
 
 def test_to_pylist(df):
