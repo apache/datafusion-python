@@ -21,6 +21,7 @@ This module contains utilities used by the test-suite that should not be
 exposed as part of the public API. Keep the implementation minimal and
 documented so reviewers can easily see it's test-only.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
