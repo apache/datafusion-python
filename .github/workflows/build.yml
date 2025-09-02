@@ -275,7 +275,100 @@ jobs:
         with:
           name: dist
           pattern: dist-*
-  
+
+  # Documentation build job that runs after wheels are built
+  build-docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    needs: [build-manylinux-x86_64]  # Only need the Linux wheel for docs
+    # Only run docs on main branch pushes, tags, or PRs
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - name: Set target branch
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+        id: target-branch
+        run: |
+          set -x
+          if test '${{ github.ref }}' = 'refs/heads/main'; then
+            echo "value=asf-staging" >> "$GITHUB_OUTPUT"
+          elif test '${{ github.ref_type }}' = 'tag'; then
+            echo "value=asf-site" >> "$GITHUB_OUTPUT"
+          else
+            echo "Unsupported input: ${{ github.ref }} / ${{ github.ref_type }}"
+            exit 1
+          fi
+
+      - name: Checkout docs sources
+        uses: actions/checkout@v5
+
+      - name: Checkout docs target branch
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.target-branch.outputs.value }}
+          path: docs-target
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # Download the Linux wheel built in the previous job
+      - name: Download pre-built Linux wheel
+        uses: actions/download-artifact@v5
+        with:
+          name: dist-manylinux-x86_64
+          path: wheels/
+
+      # Install from the pre-built wheel
+      - name: Install from pre-built wheel
+        run: |
+          set -x
+          uv venv
+          # Install documentation dependencies
+          uv sync --dev --no-install-package datafusion --group docs
+          # Install the pre-built wheel
+          WHEEL=$(find wheels/ -name "*.whl" | head -1)
+          if [ -n "$WHEEL" ]; then
+            echo "Installing wheel: $WHEEL"
+            uv pip install "$WHEEL"
+          else
+            echo "ERROR: No wheel found!"
+            exit 1
+          fi
+
+      - name: Build docs
+        run: |
+          set -x
+          cd docs
+          curl -O https://gist.githubusercontent.com/ritchie46/cac6b337ea52281aa23c049250a4ff03/raw/89a957ff3919d90e6ef2d34235e6bf22304f3366/pokemon.csv
+          curl -O https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet
+          uv run --no-project make html
+
+      - name: Copy & push the generated HTML
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref_type == 'tag')
+        run: |
+          set -x
+          cd docs-target
+          # delete anything but: 1) '.'; 2) '..'; 3) .git/
+          find ./ | grep -vE "^./$|^../$|^./.git" | xargs rm -rf
+          cp ../.asf.yaml .
+          cp -r ../docs/build/html/* .
+          git status --porcelain
+          if [ "$(git status --porcelain)" != "" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add --all
+            git commit -m 'Publish built docs triggered by ${{ github.sha }}'
+            git push || git push --force
+          fi
+
   # NOTE: PyPI publish needs to be done manually for now after release passed the vote
   # release:
   #   name: Publish in PyPI
