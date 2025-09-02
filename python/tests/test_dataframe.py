@@ -1596,7 +1596,7 @@ def test_iter_batches_dataframe(fail_collect):
         assert got.equals(exp)
 
 
-def test_arrow_c_stream_to_table(fail_collect):
+def test_arrow_c_stream_to_table_and_reader(fail_collect):
     ctx = SessionContext()
 
     # Create a DataFrame with two separate record batches
@@ -1612,6 +1612,12 @@ def test_arrow_c_stream_to_table(fail_collect):
     assert batches[1].equals(batch2)
     assert table.schema == df.schema()
     assert table.column("a").num_chunks == 2
+
+    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
+    assert isinstance(reader, pa.RecordBatchReader)
+    reader_table = pa.Table.from_batches(reader)
+    expected = pa.Table.from_batches([batch1, batch2])
+    assert reader_table.equals(expected)
 
 
 def test_arrow_c_stream_order():
@@ -1629,14 +1635,6 @@ def test_arrow_c_stream_order():
     col = table.column("a")
     assert col.chunk(0)[0].as_py() == 1
     assert col.chunk(1)[0].as_py() == 2
-
-
-def test_arrow_c_stream_reader(df):
-    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
-    assert isinstance(reader, pa.RecordBatchReader)
-    table = pa.Table.from_batches(reader)
-    expected = pa.Table.from_batches(df.collect())
-    assert table.equals(expected)
 
 
 def test_arrow_c_stream_schema_selection(fail_collect):
