@@ -1743,7 +1743,7 @@ those in the DataFrame.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.collect">
 <span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">pyarrow.RecordBatch</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.collect" title="Link to this definition">¶</a></dt>
 <dd><p>Execute this <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and collect results into memory.</p>
-<p>Prior to calling <code class="docutils literal notranslate"><span class="pre">collect</span></code>, modifying a DataFrme simply updates a plan
+<p>Prior to calling <code class="docutils literal notranslate"><span class="pre">collect</span></code>, modifying a DataFrame simply updates a plan
 (no actual computation is performed). Calling <code class="docutils literal notranslate"><span class="pre">collect</span></code> triggers the
 computation.</p>
 <dl class="field-list simple">
@@ -1887,7 +1887,7 @@ for non-numeric datatypes.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>verbose</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, more details will be included.</p></li>
-<li><p><strong>analyze</strong> – If <code class="docutils literal notranslate"><span class="pre">Tru`e</span></code>, the plan will run and metrics reported.</p></li>
+<li><p><strong>analyze</strong> – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, the plan will run and metrics reported.</p></li>
 </ul>
 </dd>
 </dl>

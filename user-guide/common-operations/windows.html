@@ -470,7 +470,7 @@
 <p>In this section you will learn about window functions. A window function utilizes values from one or
 multiple rows to produce a result for each individual row, unlike an aggregate function that
 provides a single value for multiple rows.</p>
-<p>The window functions are availble in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
+<p>The window functions are available in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
@@ -590,8 +590,8 @@ If you do not specify a Window Frame, the frame will be set depending on the fol
 criteria.</p>
 <ul class="simple">
 <li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> clause is set, the default window frame is defined as the rows between
-unbounded preceeding and the current row.</p></li>
-<li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> is not set, the default frame is defined as the rows betwene unbounded
+unbounded preceding and the current row.</p></li>
+<li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> is not set, the default frame is defined as the rows between unbounded
 and unbounded following (the entire partition).</p></li>
 </ul>
 <p>Window Frames are defined by three parameters: unit type, starting bound, and ending bound.</p>
@@ -606,7 +606,7 @@ parameter.</p></li>
 <code class="docutils literal notranslate"><span class="pre">order_by</span></code> clause.</p></li>
 </ul>
 <p>In this example we perform a “rolling average” of the speed of the current Pokemon and the
-two preceeding rows.</p>
+two preceding rows.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">WindowFrame</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>

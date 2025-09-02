@@ -487,7 +487,7 @@
 <p>DataFusion provides a wide variety of ways to get data into a DataFrame to perform operations.</p>
 <section id="local-file">
 <h2>Local file<a class="headerlink" href="#local-file" title="Link to this heading">¶</a></h2>
-<p>DataFusion has the abilty to read from a variety of popular file formats, such as <a class="reference internal" href="io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a>,
+<p>DataFusion has the ability to read from a variety of popular file formats, such as <a class="reference internal" href="io/parquet.html#io-parquet"><span class="std std-ref">Parquet</span></a>,
 <a class="reference internal" href="io/csv.html#io-csv"><span class="std std-ref">CSV</span></a>, <a class="reference internal" href="io/json.html#io-json"><span class="std std-ref">JSON</span></a>, and <a class="reference internal" href="io/avro.html#io-avro"><span class="std std-ref">AVRO</span></a>.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
@@ -628,7 +628,7 @@ The example below requires an appropriate S3 account with access credentials.</p
 <a class="reference external" href="https://pola.rs/">Polars</a> and <a class="reference external" href="https://pandas.pydata.org/">Pandas</a>.
 Since DataFusion version 42.0.0, any DataFrame library that supports the Arrow FFI PyCapsule
 interface can be imported to DataFusion using the
-<a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_arrow()</span></code></a> function. Older verions of Polars may
+<a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_arrow" title="datafusion.context.SessionContext.from_arrow"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_arrow()</span></code></a> function. Older versions of Polars may
 not support the arrow interface. In those cases, you can still import via the
 <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionContext.from_polars" title="datafusion.context.SessionContext.from_polars"><code class="xref py py-func docutils literal notranslate"><span class="pre">from_polars()</span></code></a> function.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
