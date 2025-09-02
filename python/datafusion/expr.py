@@ -648,7 +648,7 @@ class Expr:
 
         return Expr(self.expr.between(low.expr, high.expr, negated=negated))
 
-    def rex_type(self) -> RexType:  # type: ignore[call-arg]
+    def rex_type(self) -> RexType:
         """Return the Rex Type of this expression.
 
         A Rex (Row Expression) specifies a single row of data.That specification
@@ -657,7 +657,7 @@ class Expr:
         """
         return self.expr.rex_type()
 
-    def types(self) -> DataTypeMap:  # type: ignore[call-arg]
+    def types(self) -> DataTypeMap:
         """Return the ``DataTypeMap``.
 
         Returns:
