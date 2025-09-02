@@ -168,6 +168,14 @@ out-of-memory errors.
     for batch in reader:
         ...  # process each batch as it is produced
 
+DataFrames are also iterable, yielding :class:`pyarrow.RecordBatch` objects
+lazily so you can loop over results directly:
+
+.. code-block:: python
+
+    for batch in df:
+        ...  # process each batch as it is produced
+
 See :doc:`../io/arrow` for additional details on the Arrow interface.
 
 HTML Rendering

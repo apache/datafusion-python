@@ -1582,7 +1582,19 @@ def test_empty_to_arrow_table(df):
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 
-def test_arrow_c_stream_to_table(monkeypatch):
+def test_iter_batches_dataframe(fail_collect):
+    ctx = SessionContext()
+
+    batch1 = pa.record_batch([pa.array([1])], names=["a"])
+    batch2 = pa.record_batch([pa.array([2])], names=["a"])
+    df = ctx.create_dataframe([[batch1], [batch2]])
+
+    expected = [batch1, batch2]
+    for got, exp in zip(df, expected):
+        assert got.equals(exp)
+
+
+def test_arrow_c_stream_to_table(fail_collect):
     ctx = SessionContext()
 
     # Create a DataFrame with two separate record batches
@@ -1590,19 +1602,31 @@ def test_arrow_c_stream_to_table(monkeypatch):
     batch2 = pa.record_batch([pa.array([2])], names=["a"])
     df = ctx.create_dataframe([[batch1], [batch2]])
 
-    # Fail if the DataFrame is pre-collected
-    def fail_collect(self):  # pragma: no cover - failure path
-        msg = "collect should not be called"
-        raise AssertionError(msg)
+    table = pa.Table.from_batches(df)
+    batches = table.to_batches()
 
-    monkeypatch.setattr(DataFrame, "collect", fail_collect)
+    assert len(batches) == 2
+    assert batches[0].equals(batch1)
+    assert batches[1].equals(batch2)
+    assert table.schema == df.schema()
+    assert table.column("a").num_chunks == 2
+
+
+def test_arrow_c_stream_order():
+    ctx = SessionContext()
+
+    batch1 = pa.record_batch([pa.array([1])], names=["a"])
+    batch2 = pa.record_batch([pa.array([2])], names=["a"])
+
+    df = ctx.create_dataframe([[batch1, batch2]])
 
     table = pa.Table.from_batches(df)
     expected = pa.Table.from_batches([batch1, batch2])
 
     assert table.equals(expected)
-    assert table.schema == df.schema()
-    assert table.column("a").num_chunks == 2
+    col = table.column("a")
+    assert col.chunk(0)[0].as_py() == 1
+    assert col.chunk(1)[0].as_py() == 2
 
 
 def test_arrow_c_stream_reader(df):

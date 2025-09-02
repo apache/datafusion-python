@@ -67,11 +67,25 @@ unsafe extern "C" fn drop_stream(capsule: *mut ffi::PyObject) {
     if capsule.is_null() {
         return;
     }
-    let stream_ptr =
-        ffi::PyCapsule_GetPointer(capsule, ARROW_STREAM_NAME.as_ptr()) as *mut FFI_ArrowArrayStream;
-    if !stream_ptr.is_null() {
-        drop(Box::from_raw(stream_ptr));
+
+    // When PyArrow imports this capsule it steals the raw stream pointer and
+    // sets the capsule's internal pointer to NULL. In that case
+    // `PyCapsule_IsValid` returns 0 and this destructor must not drop the
+    // stream as ownership has been transferred to PyArrow. If the capsule was
+    // never imported, the pointer remains valid and we are responsible for
+    // freeing the stream here.
+    if ffi::PyCapsule_IsValid(capsule, ARROW_STREAM_NAME.as_ptr()) == 1 {
+        let stream_ptr = ffi::PyCapsule_GetPointer(capsule, ARROW_STREAM_NAME.as_ptr())
+            as *mut FFI_ArrowArrayStream;
+        if !stream_ptr.is_null() {
+            drop(Box::from_raw(stream_ptr));
+        }
     }
+
+    // `PyCapsule_GetPointer` sets a Python error on failure. Clear it only
+    // after the stream has been released (or determined to be owned
+    // elsewhere).
+    ffi::PyErr_Clear();
 }
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
@@ -369,50 +383,59 @@ impl PyDataFrame {
         Ok(html_str)
     }
 }
-/// Synchronous wrapper around a [`SendableRecordBatchStream`] used for
-/// the `__arrow_c_stream__` implementation.
+
+/// Synchronous wrapper around partitioned [`SendableRecordBatchStream`]s used
+/// for the `__arrow_c_stream__` implementation.
 ///
-/// It uses `runtime.block_on` to consume the underlying async stream,
-/// providing synchronous iteration. When a `projection` is set, each
-/// batch is converted via `record_batch_into_schema` to apply schema
-/// changes per batch.
-struct DataFrameStreamReader {
-    stream: SendableRecordBatchStream,
+/// It drains each partition's stream sequentially, yielding record batches in
+/// their original partition order. When a `projection` is set, each batch is
+/// converted via `record_batch_into_schema` to apply schema changes per batch.
+struct PartitionedDataFrameStreamReader {
+    streams: Vec<SendableRecordBatchStream>,
     schema: SchemaRef,
     projection: Option<SchemaRef>,
+    current: usize,
 }
 
-impl Iterator for DataFrameStreamReader {
+impl Iterator for PartitionedDataFrameStreamReader {
     type Item = Result<RecordBatch, ArrowError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        // Use wait_for_future to poll the underlying async stream while
-        // respecting Python signal handling (e.g. ``KeyboardInterrupt``).
-        // This mirrors the behaviour of other synchronous wrappers and
-        // prevents blocking indefinitely when a Python interrupt is raised.
-        let fut = poll_next_batch(&mut self.stream);
-        let result = Python::with_gil(|py| wait_for_future(py, fut));
+        while self.current < self.streams.len() {
+            let stream = &mut self.streams[self.current];
+            let fut = poll_next_batch(stream);
+            let result = Python::with_gil(|py| wait_for_future(py, fut));
 
-        match result {
-            Ok(Ok(Some(batch))) => {
-                let batch = if let Some(ref schema) = self.projection {
-                    match record_batch_into_schema(batch, schema.as_ref()) {
-                        Ok(b) => b,
-                        Err(e) => return Some(Err(e)),
-                    }
-                } else {
-                    batch
-                };
-                Some(Ok(batch))
+            match result {
+                Ok(Ok(Some(batch))) => {
+                    let batch = if let Some(ref schema) = self.projection {
+                        match record_batch_into_schema(batch, schema.as_ref()) {
+                            Ok(b) => b,
+                            Err(e) => return Some(Err(e)),
+                        }
+                    } else {
+                        batch
+                    };
+                    return Some(Ok(batch));
+                }
+                Ok(Ok(None)) => {
+                    self.current += 1;
+                    continue;
+                }
+                Ok(Err(e)) => {
+                    return Some(Err(ArrowError::ExternalError(Box::new(e))));
+                }
+                Err(e) => {
+                    return Some(Err(ArrowError::ExternalError(Box::new(e))));
+                }
             }
-            Ok(Ok(None)) => None,
-            Ok(Err(e)) => Some(Err(ArrowError::ExternalError(Box::new(e)))),
-            Err(e) => Some(Err(ArrowError::ExternalError(Box::new(e)))),
         }
+
+        None
     }
 }
 
-impl RecordBatchReader for DataFrameStreamReader {
+impl RecordBatchReader for PartitionedDataFrameStreamReader {
     fn schema(&self) -> SchemaRef {
         self.schema.clone()
     }
@@ -944,7 +967,7 @@ impl PyDataFrame {
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
         let df = self.df.as_ref().clone();
-        let stream = spawn_stream(py, async move { df.execute_stream().await })?;
+        let streams = spawn_streams(py, async move { df.execute_stream_partitioned().await })?;
 
         let mut schema: Schema = self.df.schema().to_owned().into();
         let mut projection: Option<SchemaRef> = None;
@@ -961,19 +984,24 @@ impl PyDataFrame {
 
         let schema_ref = Arc::new(schema.clone());
 
-        let reader = DataFrameStreamReader {
-            stream,
+        let reader = PartitionedDataFrameStreamReader {
+            streams,
             schema: schema_ref,
             projection,
+            current: 0,
         };
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
         let stream = Box::new(FFI_ArrowArrayStream::new(reader));
         let stream_ptr = Box::into_raw(stream);
-        assert!(
+        debug_assert!(
             !stream_ptr.is_null(),
-            "ArrowArrayStream pointer should never be null"
+            "ArrowArrayStream pointer should never be null",
         );
+        // The returned capsule allows zero-copy hand-off to PyArrow. When
+        // PyArrow imports the capsule it assumes ownership of the stream and
+        // nulls out the capsule's internal pointer so `drop_stream` knows not to
+        // free it.
         let capsule = unsafe {
             ffi::PyCapsule_New(
                 stream_ptr as *mut c_void,

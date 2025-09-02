@@ -84,6 +84,7 @@ impl PyRecordBatchStream {
     }
 }
 
+/// Polls the next batch from a `SendableRecordBatchStream`, converting the `Option<Result<_>>` form.
 pub(crate) async fn poll_next_batch(
     stream: &mut SendableRecordBatchStream,
 ) -> datafusion::error::Result<Option<RecordBatch>> {

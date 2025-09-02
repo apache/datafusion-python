@@ -18,7 +18,7 @@ from pathlib import Path
 
 import pyarrow as pa
 import pytest
-from datafusion import DataFrame, column
+from datafusion import column
 from datafusion._testing import range_table
 from datafusion.io import read_avro, read_csv, read_json, read_parquet
 
@@ -123,14 +123,8 @@ def test_arrow_c_stream_large_dataset(ctx):
         assert current_rss - start_rss < 50 * 1024 * 1024
 
 
-def test_table_from_batches_stream(ctx, monkeypatch):
+def test_table_from_batches_stream(ctx, fail_collect):
     df = range_table(ctx, 0, 10)
-
-    def fail_collect(self):  # pragma: no cover - failure path
-        msg = "collect should not be called"
-        raise AssertionError(msg)
-
-    monkeypatch.setattr(DataFrame, "collect", fail_collect)
 
     table = pa.Table.from_batches(df)
     assert table.shape == (10, 1)

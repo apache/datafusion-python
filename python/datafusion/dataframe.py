@@ -290,6 +290,9 @@ class ParquetColumnOptions:
 class DataFrame:
     """Two dimensional table representation of data.
 
+    DataFrame objects are iterable; iterating over a DataFrame yields
+    :class:`pyarrow.RecordBatch` instances lazily.
+
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
 
@@ -1114,7 +1117,8 @@ class DataFrame:
             Arrow PyCapsule object representing an ``ArrowArrayStream``.
         """
         # ``DataFrame.__arrow_c_stream__`` in the Rust extension leverages
-        # ``execute_stream`` under the hood to stream batches one at a time.
+        # ``execute_stream_partitioned`` under the hood to stream batches while
+        # preserving the original partition order.
         return self.df.__arrow_c_stream__(requested_schema)
 
     def __iter__(self) -> Iterator[pa.RecordBatch]:
@@ -1123,7 +1127,8 @@ class DataFrame:
         This implementation streams record batches via the Arrow C Stream
         interface, allowing callers such as :func:`pyarrow.Table.from_batches` to
         consume results lazily. The DataFrame is executed using DataFusion's
-        streaming APIs so ``collect`` is never invoked.
+        partitioned streaming APIs so ``collect`` is never invoked and batch
+        order across partitions is preserved.
         """
         import pyarrow as pa
 

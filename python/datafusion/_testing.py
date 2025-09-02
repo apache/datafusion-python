@@ -4,11 +4,15 @@ This module contains utilities used by the test-suite that should not be
 exposed as part of the public API. Keep the implementation minimal and
 documented so reviewers can easily see it's test-only.
 """
+
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from .context import SessionContext
+
+if TYPE_CHECKING:
+    from datafusion import DataFrame
 
 
 def range_table(
@@ -17,7 +21,7 @@ def range_table(
     stop: int | None = None,
     step: int = 1,
     partitions: int | None = None,
-) -> Any:
+) -> DataFrame:
     """Create a DataFrame containing a sequence of numbers using SQL RANGE.
 
     This mirrors the previous ``SessionContext.range`` convenience method but
@@ -38,5 +42,5 @@ def range_table(
         start, stop = 0, start
 
     parts = f", {int(partitions)}" if partitions is not None else ""
-    sql = f"SELECT * FROM range({int(start)}, {int(stop)}, {int(step)}{parts})"
+    sql = f"SELECT * FROM range({int(start)}, {int(stop)}, {int(step)}{parts})"  # noqa: S608
     return ctx.sql(sql)
