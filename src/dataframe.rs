@@ -51,8 +51,8 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{
-    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, spawn_stream, spawn_streams,
-    validate_pycapsule, wait_for_future,
+    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule,
+    wait_for_future,
 };
 use crate::{
     errors::PyDataFusionResult,
@@ -967,7 +967,7 @@ impl PyDataFrame {
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
         let df = self.df.as_ref().clone();
-        let streams = spawn_streams(py, async move { df.execute_stream_partitioned().await })?;
+        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
 
         let mut schema: Schema = self.df.schema().to_owned().into();
         let mut projection: Option<SchemaRef> = None;
@@ -1020,13 +1020,13 @@ impl PyDataFrame {
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
         let df = self.df.as_ref().clone();
-        let stream = spawn_stream(py, async move { df.execute_stream().await })?;
+        let stream = spawn_future(py, async move { df.execute_stream().await })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
         let df = self.df.as_ref().clone();
-        let streams = spawn_streams(py, async move { df.execute_stream_partitioned().await })?;
+        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
         Ok(streams.into_iter().map(PyRecordBatchStream::new).collect())
     }
 

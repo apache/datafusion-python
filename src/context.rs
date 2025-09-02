@@ -45,7 +45,7 @@ use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_global_ctx, spawn_stream, validate_pycapsule, wait_for_future};
+use crate::utils::{get_global_ctx, spawn_future, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -1131,7 +1131,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyRecordBatchStream> {
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
         let plan = plan.plan.clone();
-        let stream = spawn_stream(py, async move { plan.execute(part, Arc::new(ctx)) })?;
+        let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 }

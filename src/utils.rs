@@ -21,8 +21,7 @@ use crate::{
     TokioRuntime,
 };
 use datafusion::{
-    common::ScalarValue, execution::context::SessionContext, execution::SendableRecordBatchStream,
-    logical_expr::Volatility,
+    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
 };
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
@@ -112,27 +111,6 @@ where
     // the inner DataFusion error into `PyDataFusionError` via `From` and
     // return the inner `T` on success.
     Ok(inner_result?)
-}
-
-/// Spawn a [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
-/// while respecting Python signal handling.
-pub(crate) fn spawn_stream<F>(py: Python, fut: F) -> PyDataFusionResult<SendableRecordBatchStream>
-where
-    F: Future<Output = datafusion::common::Result<SendableRecordBatchStream>> + Send + 'static,
-{
-    spawn_future(py, fut)
-}
-
-/// Spawn a partitioned [`SendableRecordBatchStream`] on the Tokio runtime and wait for completion
-/// while respecting Python signal handling.
-pub(crate) fn spawn_streams<F>(
-    py: Python,
-    fut: F,
-) -> PyDataFusionResult<Vec<SendableRecordBatchStream>>
-where
-    F: Future<Output = datafusion::common::Result<Vec<SendableRecordBatchStream>>> + Send + 'static,
-{
-    spawn_future(py, fut)
 }
 
 pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
