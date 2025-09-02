@@ -309,7 +309,7 @@ def expr_list_to_raw_expr_list(
 
 
 def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
-    """Return a :class:`SortExpr`, defaulting attributes when necessary."""
+    """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
     return SortExpr(e, ascending=True, nulls_first=True).raw_sort
