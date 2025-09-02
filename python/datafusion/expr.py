@@ -32,7 +32,7 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-from datafusion.common import DataTypeMap, NullTreatment, RexType
+from datafusion.common import NullTreatment
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
@@ -40,8 +40,16 @@ from ._internal import functions as functions_internal
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+    # These are only imported for type checking to avoid runtime
+    # evaluation issues with typing constructs.
     from datafusion.common import DataTypeMap, RexType
+    # Make the datafusion package available to type checkers for
+    # fully-qualified string-literal annotations.
+    import datafusion  # type: ignore
     from datafusion.plan import LogicalPlan
+# Note: DataTypeMap and RexType are only available for type checking.
+# We intentionally avoid importing them at runtime to prevent evaluation
+# issues with complex typing constructs.
 
 
 # Standard error message for invalid expression types
@@ -228,7 +236,7 @@ __all__ = [
 ]
 
 
-def ensure_expr(value: _typing.Union["Expr", Any]) -> expr_internal.Expr:
+def ensure_expr(value: _typing.Union[Expr, Any]) -> expr_internal.Expr:
     """Return the internal expression from ``Expr`` or raise ``TypeError``.
 
     This helper rejects plain strings and other non-:class:`Expr` values so
@@ -250,7 +258,7 @@ def ensure_expr(value: _typing.Union["Expr", Any]) -> expr_internal.Expr:
 
 
 def ensure_expr_list(
-    exprs: Iterable[_typing.Union["Expr", Iterable["Expr"]]],
+    exprs: Iterable[_typing.Union[Expr, Iterable[Expr]]],
 ) -> list[expr_internal.Expr]:
     """Flatten an iterable of expressions, validating each via ``ensure_expr``.
 
@@ -264,7 +272,9 @@ def ensure_expr_list(
         TypeError: If any item is not an instance of :class:`Expr`.
     """
 
-    def _iter(items: Iterable[_typing.Union["Expr", Iterable["Expr"]]]) -> Iterable[expr_internal.Expr]:
+    def _iter(
+        items: Iterable[_typing.Union[Expr, Iterable[Expr]]],
+    ) -> Iterable[expr_internal.Expr]:
         for expr in items:
             if isinstance(expr, Iterable) and not isinstance(
                 expr, (Expr, str, bytes, bytearray)
@@ -277,7 +287,7 @@ def ensure_expr_list(
     return list(_iter(exprs))
 
 
-def _to_raw_expr(value: _typing.Union["Expr", str]) -> expr_internal.Expr:
+def _to_raw_expr(value: _typing.Union[Expr, str]) -> expr_internal.Expr:
     """Convert a Python expression or column name to its raw variant.
 
     Args:
@@ -301,7 +311,7 @@ def _to_raw_expr(value: _typing.Union["Expr", str]) -> expr_internal.Expr:
 
 
 def expr_list_to_raw_expr_list(
-    expr_list: Optional[_typing.Union[Sequence[_typing.Union["Expr", str]], "Expr", str]],
+    expr_list: Optional[_typing.Union[Sequence[_typing.Union[Expr, str]], Expr, str]],
 ) -> Optional[list[expr_internal.Expr]]:
     """Convert a sequence of expressions or column names to raw expressions."""
     if isinstance(expr_list, (Expr, str)):
@@ -311,7 +321,7 @@ def expr_list_to_raw_expr_list(
     return [_to_raw_expr(e) for e in expr_list]
 
 
-def sort_or_default(e: _typing.Union["Expr", "SortExpr"]) -> expr_internal.SortExpr:
+def sort_or_default(e: _typing.Union[Expr, SortExpr]) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
@@ -319,7 +329,7 @@ def sort_or_default(e: _typing.Union["Expr", "SortExpr"]) -> expr_internal.SortE
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[_typing.Union[Sequence["SortKey"], "SortKey"]],
+    sort_list: Optional[_typing.Union[Sequence[SortKey], SortKey]],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
     if isinstance(sort_list, (Expr, SortExpr, str)):
@@ -448,7 +458,7 @@ class Expr:
         """Binary not (~)."""
         return Expr(self.expr.__invert__())
 
-    def __getitem__(self, key: _typing.Union[str, int]) -> "Expr":
+    def __getitem__(self, key: _typing.Union[str, int]) -> Expr:
         """Retrieve sub-object.
 
         If ``key`` is a string, returns the subfield of the struct.
@@ -599,13 +609,13 @@ class Expr:
         """Returns ``True`` if this expression is not null."""
         return Expr(self.expr.is_not_null())
 
-    def fill_nan(self, value: Optional[_typing.Union[Any, "Expr"]] = None) -> "Expr":
+    def fill_nan(self, value: Optional[_typing.Union[Any, Expr]] = None) -> Expr:
         """Fill NaN values with a provided value."""
         if not isinstance(value, Expr):
             value = Expr.literal(value)
         return Expr(functions_internal.nanvl(self.expr, value.expr))
 
-    def fill_null(self, value: Optional[_typing.Union[Any, "Expr"]] = None) -> "Expr":
+    def fill_null(self, value: Optional[_typing.Union[Any, Expr]] = None) -> Expr:
         """Fill NULL values with a provided value."""
         if not isinstance(value, Expr):
             value = Expr.literal(value)
@@ -618,7 +628,7 @@ class Expr:
         bool: pa.bool_(),
     }
 
-    def cast(self, to: _typing.Union[pa.DataType[Any], type]) -> "Expr":
+    def cast(self, to: _typing.Union[pa.DataType[Any], type]) -> Expr:
         """Cast to a new data type."""
         if not isinstance(to, pa.DataType):
             try:
@@ -645,7 +655,7 @@ class Expr:
 
         return Expr(self.expr.between(low.expr, high.expr, negated=negated))
 
-    def rex_type(self) -> RexType:
+    def rex_type(self) -> "datafusion.common.RexType":
         """Return the Rex Type of this expression.
 
         A Rex (Row Expression) specifies a single row of data.That specification
@@ -654,7 +664,7 @@ class Expr:
         """
         return self.expr.rex_type()
 
-    def types(self) -> DataTypeMap:
+    def types(self) -> "datafusion.common.DataTypeMap":
         """Return the ``DataTypeMap``.
 
         Returns:
@@ -691,7 +701,7 @@ class Expr:
         """Compute the output column name based on the provided logical plan."""
         return self.expr.column_name(plan._raw_plan)
 
-    def order_by(self, *exprs: _typing.Union["Expr", "SortExpr"]) -> ExprFuncBuilder:
+    def order_by(self, *exprs: _typing.Union[Expr, SortExpr]) -> ExprFuncBuilder:
         """Set the ordering for a window or aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
@@ -1240,9 +1250,16 @@ class Window:
 
     def __init__(
         self,
-        partition_by: Optional[_typing.Union[list["Expr"], "Expr"]] = None,
+        partition_by: Optional[_typing.Union[list[Expr], Expr]] = None,
         window_frame: Optional[WindowFrame] = None,
-        order_by: Optional[_typing.Union[list[_typing.Union["SortExpr", "Expr", str]], "Expr", "SortExpr", str]] = None,
+        order_by: Optional[
+            _typing.Union[
+                list[_typing.Union[SortExpr, Expr, str]],
+                Expr,
+                SortExpr,
+                str,
+            ]
+        ] = None,
         null_treatment: Optional[NullTreatment] = None,
     ) -> None:
         """Construct a window definition.
