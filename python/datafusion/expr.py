@@ -22,7 +22,8 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Optional
+from collections.abc import Sequence
 
 import pyarrow as pa
 
@@ -131,6 +132,7 @@ Values = expr_internal.Values
 WindowExpr = expr_internal.WindowExpr
 
 __all__ = [
+    "EXPR_TYPE_ERROR",
     "Aggregate",
     "AggregateFunction",
     "Alias",
@@ -219,6 +221,7 @@ __all__ = [
     "WindowFrame",
     "WindowFrameBound",
     "ensure_expr",
+    "ensure_expr_list",
 ]
 
 
@@ -241,6 +244,34 @@ def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     if not isinstance(value, Expr):
         raise TypeError(EXPR_TYPE_ERROR)
     return value.expr
+
+
+def ensure_expr_list(
+    exprs: Iterable[Expr | Iterable[Expr]],
+) -> list[expr_internal.Expr]:
+    """Flatten an iterable of expressions, validating each via ``ensure_expr``.
+
+    Args:
+        exprs: Possibly nested iterable containing expressions.
+
+    Returns:
+        A flat list of raw expressions.
+
+    Raises:
+        TypeError: If any item is not an instance of :class:`Expr`.
+    """
+
+    def _iter(items: Iterable[Expr | Iterable[Expr]]) -> Iterable[expr_internal.Expr]:
+        for expr in items:
+            if isinstance(expr, Iterable) and not isinstance(
+                expr, (Expr, str, bytes, bytearray)
+            ):
+                # Treat string-like objects as atomic to surface standard errors
+                yield from _iter(expr)
+            else:
+                yield ensure_expr(expr)
+
+    return list(_iter(exprs))
 
 
 def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:

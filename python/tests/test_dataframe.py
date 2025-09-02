@@ -303,6 +303,18 @@ def test_aggregate_string_and_expression_equivalent(df):
     assert result_str == result_expr
 
 
+def test_aggregate_tuple_group_by(df):
+    result_list = df.aggregate(["a"], [f.count()]).sort("a").to_pydict()
+    result_tuple = df.aggregate(("a",), [f.count()]).sort("a").to_pydict()
+    assert result_tuple == result_list
+
+
+def test_aggregate_tuple_aggs(df):
+    result_list = df.aggregate("a", [f.count()]).sort("a").to_pydict()
+    result_tuple = df.aggregate("a", (f.count(),)).sort("a").to_pydict()
+    assert result_tuple == result_list
+
+
 def test_filter_string_unsupported(df):
     with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         df.filter("a > 1")
@@ -416,14 +428,14 @@ def test_with_columns(df):
 
 
 def test_with_columns_invalid_expr(df):
-    with pytest.raises(
-        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
-    ):
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         df.with_columns("a")
-    with pytest.raises(
-        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
-    ):
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         df.with_columns(c="a")
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        df.with_columns(["a"])
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        df.with_columns(c=["a"])
 
 
 def test_cast(df):
@@ -843,6 +855,27 @@ def test_window_functions(partitioned_df, name, expr, result):
     assert table.sort_by("a").to_pydict() == expected
 
 
+@pytest.mark.parametrize("partition", ["c", df_col("c")])
+def test_rank_partition_by_accepts_string(partitioned_df, partition):
+    """Passing a string to partition_by should match using col()."""
+    df = partitioned_df.select(
+        f.rank(order_by=column("a"), partition_by=partition).alias("r")
+    )
+    table = pa.Table.from_batches(df.sort(column("a")).collect())
+    assert table.column("r").to_pylist() == [1, 2, 3, 4, 1, 2, 3]
+
+
+@pytest.mark.parametrize("partition", ["c", df_col("c")])
+def test_window_partition_by_accepts_string(partitioned_df, partition):
+    """Window.partition_by accepts string identifiers."""
+    expr = f.first_value(column("a")).over(
+        Window(partition_by=partition, order_by=column("b"))
+    )
+    df = partitioned_df.select(expr.alias("fv"))
+    table = pa.Table.from_batches(df.sort(column("a")).collect())
+    assert table.column("fv").to_pylist() == [1, 1, 1, 1, 5, 5, 5]
+
+
 @pytest.mark.parametrize(
     ("units", "start_bound", "end_bound"),
     [
@@ -911,6 +944,69 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
     }
 
     assert df_2.sort(col_a).to_pydict() == expected
+
+
+def _build_last_value_df(df):
+    return df.select(
+        f.last_value(column("a"))
+        .over(
+            Window(
+                partition_by=[column("c")],
+                order_by=[column("b")],
+                window_frame=WindowFrame("rows", None, None),
+            )
+        )
+        .alias("expr"),
+        f.last_value(column("a"))
+        .over(
+            Window(
+                partition_by=[column("c")],
+                order_by="b",
+                window_frame=WindowFrame("rows", None, None),
+            )
+        )
+        .alias("str"),
+    )
+
+
+def _build_nth_value_df(df):
+    return df.select(
+        f.nth_value(column("b"), 3).over(Window(order_by=[column("a")])).alias("expr"),
+        f.nth_value(column("b"), 3).over(Window(order_by="a")).alias("str"),
+    )
+
+
+def _build_rank_df(df):
+    return df.select(
+        f.rank(order_by=[column("b")]).alias("expr"),
+        f.rank(order_by="b").alias("str"),
+    )
+
+
+def _build_array_agg_df(df):
+    return df.aggregate(
+        [column("c")],
+        [
+            f.array_agg(column("a"), order_by=[column("a")]).alias("expr"),
+            f.array_agg(column("a"), order_by="a").alias("str"),
+        ],
+    ).sort(column("c"))
+
+
+@pytest.mark.parametrize(
+    ("builder", "expected"),
+    [
+        pytest.param(_build_last_value_df, [3, 3, 3, 3, 6, 6, 6], id="last_value"),
+        pytest.param(_build_nth_value_df, [None, None, 7, 7, 7, 7, 7], id="nth_value"),
+        pytest.param(_build_rank_df, [1, 1, 3, 3, 5, 6, 6], id="rank"),
+        pytest.param(_build_array_agg_df, [[0, 1, 2, 3], [4, 5, 6]], id="array_agg"),
+    ],
+)
+def test_order_by_string_equivalence(partitioned_df, builder, expected):
+    df = builder(partitioned_df)
+    table = pa.Table.from_batches(df.collect())
+    assert table.column("expr").to_pylist() == expected
+    assert table.column("expr").to_pylist() == table.column("str").to_pylist()
 
 
 def test_html_formatter_cell_dimension(df, clean_formatter_state):

@@ -138,6 +138,8 @@ existing column. These include:
 * :py:meth:`~datafusion.DataFrame.join` (``on`` argument)
 * :py:meth:`~datafusion.DataFrame.aggregate` (grouping columns)
 
+Note that :py:meth:`~datafusion.DataFrame.join_on` expects ``col()``/``column()`` expressions rather than plain strings.
+
 For such methods, you can pass column names directly:
 
 .. code-block:: python

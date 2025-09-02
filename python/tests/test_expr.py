@@ -50,6 +50,7 @@ from datafusion.expr import (
     TransactionStart,
     Values,
     ensure_expr,
+    ensure_expr_list,
 )
 
 
@@ -890,3 +891,18 @@ def test_ensure_expr():
     assert ensure_expr(e) is e.expr
     with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
         ensure_expr("a")
+
+
+def test_ensure_expr_list_string():
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        ensure_expr_list("a")
+
+
+def test_ensure_expr_list_bytes():
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        ensure_expr_list(b"a")
+
+
+def test_ensure_expr_list_bytearray():
+    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
+        ensure_expr_list(bytearray(b"a"))

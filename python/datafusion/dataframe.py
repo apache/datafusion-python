@@ -22,6 +22,7 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
+from collections.abc import Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -44,6 +45,7 @@ from datafusion.expr import (
     Expr,
     SortKey,
     ensure_expr,
+    ensure_expr_list,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
 )
@@ -52,7 +54,7 @@ from datafusion.record_batch import RecordBatchStream
 
 if TYPE_CHECKING:
     import pathlib
-    from typing import Callable, Sequence
+    from typing import Callable
 
     import pandas as pd
     import polars as pl
@@ -487,17 +489,7 @@ class DataFrame:
         Returns:
             DataFrame with the new columns added.
         """
-
-        def _iter_exprs(items: Iterable[Expr | Iterable[Expr]]) -> Iterable[Expr | str]:
-            for expr in items:
-                if isinstance(expr, str):
-                    yield expr
-                elif isinstance(expr, Iterable) and not isinstance(expr, Expr):
-                    yield from _iter_exprs(expr)
-                else:
-                    yield expr
-
-        expressions = [ensure_expr(e) for e in _iter_exprs(exprs)]
+        expressions = ensure_expr_list(exprs)
         for alias, expr in named_exprs.items():
             ensure_expr(expr)
             expressions.append(expr.alias(alias).expr)
@@ -523,23 +515,31 @@ class DataFrame:
 
     def aggregate(
         self,
-        group_by: list[Expr | str] | Expr | str,
-        aggs: list[Expr] | Expr,
+        group_by: Sequence[Expr | str] | Expr | str,
+        aggs: Sequence[Expr] | Expr,
     ) -> DataFrame:
         """Aggregates the rows of the current DataFrame.
 
         Args:
-            group_by: List of expressions or column names to group by.
-            aggs: List of expressions to aggregate.
+            group_by: Sequence of expressions or column names to group by.
+            aggs: Sequence of expressions to aggregate.
 
         Returns:
             DataFrame after aggregation.
         """
-        group_by_list = group_by if isinstance(group_by, list) else [group_by]
-        aggs_list = aggs if isinstance(aggs, list) else [aggs]
+        group_by_list = (
+            list(group_by)
+            if isinstance(group_by, Sequence) and not isinstance(group_by, (Expr, str))
+            else [group_by]
+        )
+        aggs_list = (
+            list(aggs)
+            if isinstance(aggs, Sequence) and not isinstance(aggs, Expr)
+            else [aggs]
+        )
 
         group_by_exprs = expr_list_to_raw_expr_list(group_by_list)
-        aggs_exprs = [ensure_expr(agg) for agg in aggs_list]
+        aggs_exprs = ensure_expr_list(aggs_list)
         return DataFrame(self.df.aggregate(group_by_exprs, aggs_exprs))
 
     def sort(self, *exprs: SortKey) -> DataFrame:

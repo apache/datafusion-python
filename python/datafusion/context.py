@@ -20,7 +20,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol, Sequence
+from typing import TYPE_CHECKING, Any, Protocol
+from collections.abc import Sequence
 
 import pyarrow as pa
 
@@ -39,6 +40,7 @@ from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
 from ._internal import SQLOptions as SQLOptionsInternal
+from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
@@ -1177,8 +1179,8 @@ class SessionContext:
     @staticmethod
     def _convert_file_sort_order(
         file_sort_order: Sequence[Sequence[SortKey]] | None,
-    ) -> list[list[Any]] | None:
-        """Convert nested ``SortKey`` sequences into raw sort representations.
+    ) -> list[list[expr_internal.SortExpr]] | None:
+        """Convert nested ``SortKey`` sequences into raw sort expressions.
 
         Each ``SortKey`` can be a column name string, an ``Expr``, or a
         ``SortExpr`` and will be converted using
