@@ -25,7 +25,7 @@ DataFusion provides a wide variety of ways to get data into a DataFrame to perfo
 Local file
 ----------
 
-DataFusion has the abilty to read from a variety of popular file formats, such as :ref:`Parquet <io_parquet>`,
+DataFusion has the ability to read from a variety of popular file formats, such as :ref:`Parquet <io_parquet>`,
 :ref:`CSV <io_csv>`, :ref:`JSON <io_json>`, and :ref:`AVRO <io_avro>`.
 
 .. ipython:: python
@@ -120,7 +120,7 @@ DataFusion can import DataFrames directly from other libraries, such as
 `Polars <https://pola.rs/>`_ and `Pandas <https://pandas.pydata.org/>`_.
 Since DataFusion version 42.0.0, any DataFrame library that supports the Arrow FFI PyCapsule
 interface can be imported to DataFusion using the
-:py:func:`~datafusion.context.SessionContext.from_arrow` function. Older verions of Polars may
+:py:func:`~datafusion.context.SessionContext.from_arrow` function. Older versions of Polars may
 not support the arrow interface. In those cases, you can still import via the
 :py:func:`~datafusion.context.SessionContext.from_polars` function.
 

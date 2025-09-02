@@ -588,7 +588,7 @@ class DataFrame:
     def collect(self) -> list[pa.RecordBatch]:
         """Execute this :py:class:`DataFrame` and collect results into memory.
 
-        Prior to calling ``collect``, modifying a DataFrme simply updates a plan
+        Prior to calling ``collect``, modifying a DataFrame simply updates a plan
         (no actual computation is performed). Calling ``collect`` triggers the
         computation.
 
@@ -767,7 +767,7 @@ class DataFrame:
 
         Args:
             verbose: If ``True``, more details will be included.
-            analyze: If ``Tru`e``, the plan will run and metrics reported.
+            analyze: If ``True``, the plan will run and metrics reported.
         """
         self.df.explain(verbose, analyze)
 

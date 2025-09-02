@@ -64,7 +64,7 @@ Arrays
 ------
 
 For columns that contain arrays of values, you can access individual elements of the array by index
-using bracket indexing. This is similar to callling the function
+using bracket indexing. This is similar to calling the function
 :py:func:`datafusion.functions.array_element`, except that array indexing using brackets is 0 based,
 similar to Python arrays and ``array_element`` is 1 based indexing to be compatible with other SQL
 approaches.
