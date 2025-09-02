@@ -40,16 +40,9 @@ from ._internal import functions as functions_internal
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    # These are only imported for type checking to avoid runtime
-    # evaluation issues with typing constructs.
+    # Type-only imports
     from datafusion.common import DataTypeMap, RexType
-    # Make the datafusion package available to type checkers for
-    # fully-qualified string-literal annotations.
-    import datafusion  # type: ignore
     from datafusion.plan import LogicalPlan
-# Note: DataTypeMap and RexType are only available for type checking.
-# We intentionally avoid importing them at runtime to prevent evaluation
-# issues with complex typing constructs.
 
 
 # Standard error message for invalid expression types
@@ -655,23 +648,23 @@ class Expr:
 
         return Expr(self.expr.between(low.expr, high.expr, negated=negated))
 
-    def rex_type(self) -> "datafusion.common.RexType":
+    def rex_type(self) -> "RexType":  # type: ignore[call-arg]
         """Return the Rex Type of this expression.
 
         A Rex (Row Expression) specifies a single row of data.That specification
         could include user defined functions or types. RexType identifies the
         row as one of the possible valid ``RexType``.
         """
-        return self.expr.rex_type()
+        return self.expr.rex_type()  # type: ignore
 
-    def types(self) -> "datafusion.common.DataTypeMap":
+    def types(self) -> "DataTypeMap":  # type: ignore[call-arg]
         """Return the ``DataTypeMap``.
 
         Returns:
             DataTypeMap which represents the PythonType, Arrow DataType, and
             SqlType Enum which this expression represents.
         """
-        return self.expr.types()
+        return self.expr.types()  # type: ignore
 
     def python_value(self) -> Any:
         """Extracts the Expr value into a PyObject.
