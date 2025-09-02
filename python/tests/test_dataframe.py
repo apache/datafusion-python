@@ -1675,6 +1675,29 @@ def test_arrow_c_stream_schema_selection(fail_collect):
     assert batches[0].equals(expected_batch)
 
 
+def test_arrow_c_stream_schema_mismatch(fail_collect):
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([3, 4])], names=["a", "b"]
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    bad_schema = pa.schema([("a", pa.string())])
+
+    c_schema = pa_cffi.ffi.new("struct ArrowSchema*")
+    address = int(pa_cffi.ffi.cast("uintptr_t", c_schema))
+    bad_schema._export_to_c(address)
+
+    capsule_new = ctypes.pythonapi.PyCapsule_New
+    capsule_new.restype = ctypes.py_object
+    capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
+    bad_capsule = capsule_new(ctypes.c_void_p(address), b"arrow_schema", None)
+
+    with pytest.raises(Exception, match="Fail to merge schema"):
+        df.__arrow_c_stream__(bad_capsule)
+
+
 def test_to_pylist(df):
     # Convert datafusion dataframe to Python list
     pylist = df.to_pylist()
