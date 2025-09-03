@@ -1246,7 +1246,7 @@ class CaseBuilder:
         import datafusion.functions as f
         from datafusion import lit, col
         df.select(
-            f.case(col("column_a")
+            f.case(col("column_a"))
             .when(lit(1), lit("One"))
             .when(lit(2), lit("Two"))
             .otherwise(lit("Unknown"))
