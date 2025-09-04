@@ -183,7 +183,7 @@ Custom Table Provider
 You can implement a custom Data Provider in Rust and expose it to DataFusion through the
 the interface as describe in the :ref:`Custom Table Provider <io_custom_table_provider>`
 section. This is an advanced topic, but a
-`user example <https://github.com/apache/datafusion-python/tree/main/examples/ffi-table-provider>`_
+`user example <https://github.com/apache/datafusion-python/tree/main/examples/datafusion-ffi-example>`_
 is provided in the DataFusion repository.
 
 Catalog
