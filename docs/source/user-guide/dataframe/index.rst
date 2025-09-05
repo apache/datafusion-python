@@ -126,6 +126,53 @@ DataFusion's DataFrame API offers a wide range of operations:
     # Drop columns
     df = df.drop("temporary_column")
 
+String Columns and Expressions
+------------------------------
+
+Some ``DataFrame`` methods accept plain strings when an argument refers to an
+existing column. These include:
+
+* :py:meth:`~datafusion.DataFrame.select`
+* :py:meth:`~datafusion.DataFrame.sort`
+* :py:meth:`~datafusion.DataFrame.drop`
+* :py:meth:`~datafusion.DataFrame.join` (``on`` argument)
+* :py:meth:`~datafusion.DataFrame.aggregate` (grouping columns)
+
+Note that :py:meth:`~datafusion.DataFrame.join_on` expects ``col()``/``column()`` expressions rather than plain strings.
+
+For such methods, you can pass column names directly:
+
+.. code-block:: python
+
+    from datafusion import col, functions as f
+
+    df.sort('id')
+    df.aggregate('id', [f.count(col('value'))])
+
+The same operation can also be written with explicit column expressions, using either ``col()`` or ``column()``:
+
+.. code-block:: python
+
+    from datafusion import col, column, functions as f
+
+    df.sort(col('id'))
+    df.aggregate(column('id'), [f.count(col('value'))])
+
+Note that ``column()`` is an alias of ``col()``, so you can use either name; the example above shows both in action.
+
+Whenever an argument represents an expression—such as in
+:py:meth:`~datafusion.DataFrame.filter` or
+:py:meth:`~datafusion.DataFrame.with_column`—use ``col()`` to reference columns
+and wrap constant values with ``lit()`` (also available as ``literal()``):
+
+.. code-block:: python
+
+    from datafusion import col, lit
+    df.filter(col('age') > lit(21))
+
+Without ``lit()`` DataFusion would treat ``21`` as a column name rather than a
+constant value.
+
 Terminal Operations
 -------------------
 

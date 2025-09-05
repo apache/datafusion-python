@@ -28,6 +28,7 @@ from datafusion.expr import (
     CaseBuilder,
     Expr,
     SortExpr,
+    SortKey,
     WindowFrame,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
@@ -429,7 +430,7 @@ def window(
     name: str,
     args: list[Expr],
     partition_by: list[Expr] | Expr | None = None,
-    order_by: list[Expr | SortExpr] | Expr | SortExpr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
     window_frame: WindowFrame | None = None,
     ctx: SessionContext | None = None,
 ) -> Expr:
@@ -440,6 +441,10 @@ def window(
     lag use::
 
         df.select(functions.lag(col("a")).partition_by(col("b")).build())
+
+    The ``order_by`` parameter accepts column names or expressions, e.g.::
+
+        window("lag", [col("a")], order_by="ts")
     """
     args = [a.expr for a in args]
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
@@ -1723,7 +1728,7 @@ def array_agg(
     expression: Expr,
     distinct: bool = False,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Aggregate values into an array.
 
@@ -1738,7 +1743,11 @@ def array_agg(
         expression: Values to combine into an array
         distinct: If True, a single entry for each distinct value will be in the result
         filter: If provided, only compute against rows for which the filter is True
-        order_by: Order the resultant array values
+        order_by: Order the resultant array values. Accepts column names or expressions.
+
+    For example::
+
+        df.select(array_agg(col("a"), order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2222,7 +2231,7 @@ def regr_syy(
 def first_value(
     expression: Expr,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the first value in a group of values.
@@ -2235,8 +2244,13 @@ def first_value(
     Args:
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
-        order_by: Set the ordering of the expression to evaluate
+        order_by: Set the ordering of the expression to evaluate. Accepts
+            column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
+
+    For example::
+
+        df.select(first_value(col("a"), order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2254,7 +2268,7 @@ def first_value(
 def last_value(
     expression: Expr,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
@@ -2267,8 +2281,13 @@ def last_value(
     Args:
         expression: Argument to perform bitwise calculation on
         filter: If provided, only compute against rows for which the filter is True
-        order_by: Set the ordering of the expression to evaluate
+        order_by: Set the ordering of the expression to evaluate. Accepts
+            column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
+
+    For example::
+
+        df.select(last_value(col("a"), order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2287,7 +2306,7 @@ def nth_value(
     expression: Expr,
     n: int,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the n-th value in a group of values.
@@ -2301,8 +2320,13 @@ def nth_value(
         expression: Argument to perform bitwise calculation on
         n: Index of value to return. Starts at 1.
         filter: If provided, only compute against rows for which the filter is True
-        order_by: Set the ordering of the expression to evaluate
+        order_by: Set the ordering of the expression to evaluate. Accepts
+            column names or expressions.
         null_treatment: Assign whether to respect or ignore null values.
+
+    For example::
+
+        df.select(nth_value(col("a"), 2, order_by="ts"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
@@ -2408,7 +2432,7 @@ def lead(
     shift_offset: int = 1,
     default_value: Optional[Any] = None,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a lead window function.
 
@@ -2437,7 +2461,12 @@ def lead(
         shift_offset: Number of rows following the current row.
         default_value: Value to return if shift_offet row does not exist.
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        lead(col("b"), order_by="ts")
     """
     if not isinstance(default_value, pa.Scalar) and default_value is not None:
         default_value = pa.scalar(default_value)
@@ -2461,7 +2490,7 @@ def lag(
     shift_offset: int = 1,
     default_value: Optional[Any] = None,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a lag window function.
 
@@ -2487,7 +2516,12 @@ def lag(
         shift_offset: Number of rows before the current row.
         default_value: Value to return if shift_offet row does not exist.
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        lag(col("b"), order_by="ts")
     """
     if not isinstance(default_value, pa.Scalar):
         default_value = pa.scalar(default_value)
@@ -2508,7 +2542,7 @@ def lag(
 
 def row_number(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a row number window function.
 
@@ -2527,7 +2561,12 @@ def row_number(
 
     Args:
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        row_number(order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2542,7 +2581,7 @@ def row_number(
 
 def rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a rank window function.
 
@@ -2566,7 +2605,12 @@ def rank(
 
     Args:
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        rank(order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2581,7 +2625,7 @@ def rank(
 
 def dense_rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a dense_rank window function.
 
@@ -2600,7 +2644,12 @@ def dense_rank(
 
     Args:
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        dense_rank(order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2615,7 +2664,7 @@ def dense_rank(
 
 def percent_rank(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a percent_rank window function.
 
@@ -2635,7 +2684,12 @@ def percent_rank(
 
     Args:
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        percent_rank(order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2650,7 +2704,7 @@ def percent_rank(
 
 def cume_dist(
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a cumulative distribution window function.
 
@@ -2670,7 +2724,12 @@ def cume_dist(
 
     Args:
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        cume_dist(order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2686,7 +2745,7 @@ def cume_dist(
 def ntile(
     groups: int,
     partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Create a n-tile window function.
 
@@ -2709,7 +2768,12 @@ def ntile(
     Args:
         groups: Number of groups for the n-tile to be divided into.
         partition_by: Expressions to partition the window frame on.
-        order_by: Set ordering within the window frame.
+        order_by: Set ordering within the window frame. Accepts
+            column names or expressions.
+
+    For example::
+
+        ntile(3, order_by="points")
     """
     partition_by_raw = expr_list_to_raw_expr_list(partition_by)
     order_by_raw = sort_list_to_raw_sort_list(order_by)
@@ -2727,7 +2791,7 @@ def string_agg(
     expression: Expr,
     delimiter: str,
     filter: Optional[Expr] = None,
-    order_by: Optional[list[Expr | SortExpr] | Expr | SortExpr] = None,
+    order_by: Optional[list[SortKey] | SortKey] = None,
 ) -> Expr:
     """Concatenates the input strings.
 
@@ -2742,7 +2806,12 @@ def string_agg(
         expression: Argument to perform bitwise calculation on
         delimiter: Text to place between each value of expression
         filter: If provided, only compute against rows for which the filter is True
-        order_by: Set the ordering of the expression to evaluate
+        order_by: Set the ordering of the expression to evaluate. Accepts
+            column names or expressions.
+
+    For example::
+
+        df.select(string_agg(col("a"), ",", order_by="b"))
     """
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     filter_raw = filter.expr if filter is not None else None
