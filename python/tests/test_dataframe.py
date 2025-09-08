@@ -1624,7 +1624,8 @@ def test_iter_batches_dataframe(fail_collect):
 
     expected = [batch1, batch2]
     for got, exp in zip(df, expected):
-        assert got.equals(exp)
+        assert isinstance(got, RecordBatch)
+        assert got.to_pyarrow().equals(exp)
 
 
 def test_arrow_c_stream_to_table_and_reader(fail_collect):
