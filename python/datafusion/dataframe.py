@@ -43,7 +43,7 @@ from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInt
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
-from datafusion.record_batch import RecordBatchStream
+from datafusion.record_batch import RecordBatch, RecordBatchStream
 
 if TYPE_CHECKING:
     import pathlib
@@ -1030,6 +1030,10 @@ class DataFrame:
         """
         return RecordBatchStream(self.df.execute_stream())
 
+    def to_record_batch_stream(self) -> RecordBatchStream:
+        """Return a :class:`RecordBatchStream` executing this DataFrame."""
+        return self.execute_stream()
+
     def execute_stream_partitioned(self) -> list[RecordBatchStream]:
         """Executes this DataFrame and returns a stream for each partition.
 
@@ -1121,22 +1125,13 @@ class DataFrame:
         # preserving the original partition order.
         return self.df.__arrow_c_stream__(requested_schema)
 
-    def __iter__(self) -> Iterator[pa.RecordBatch]:
-        """Yield record batches from the DataFrame without materializing results.
+    def __iter__(self) -> Iterator[RecordBatch]:
+        """Yield :class:`RecordBatch` objects by streaming execution."""
+        yield from self.to_record_batch_stream()
 
-        This implementation streams record batches via the Arrow C Stream
-        interface, allowing callers such as :func:`pyarrow.Table.from_batches` to
-        consume results lazily. The DataFrame is executed using DataFusion's
-        partitioned streaming APIs so ``collect`` is never invoked and batch
-        order across partitions is preserved.
-        """
-        from contextlib import closing
-
-        import pyarrow as pa
-
-        reader = pa.RecordBatchReader._import_from_c_capsule(self.__arrow_c_stream__())
-        with closing(reader):
-            yield from reader
+    async def __aiter__(self) -> RecordBatchStream:
+        """Return an asynchronous iterator over streamed ``RecordBatch`` objects."""
+        return await self.to_record_batch_stream().__aiter__()
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.

@@ -168,13 +168,32 @@ out-of-memory errors.
     for batch in reader:
         ...  # process each batch as it is produced
 
-DataFrames are also iterable, yielding :class:`pyarrow.RecordBatch` objects
-lazily so you can loop over results directly:
+DataFrames are also iterable, yielding :class:`datafusion.RecordBatch`
+objects lazily so you can loop over results directly without importing
+PyArrow:
 
 .. code-block:: python
 
     for batch in df:
+        ...  # each batch is a ``RecordBatch``
+
+Asynchronous iteration is supported as well, allowing integration with
+``asyncio`` event loops:
+
+.. code-block:: python
+
+    async for batch in df:
         ...  # process each batch as it is produced
+
+To work with the stream directly, use
+``to_record_batch_stream()``, which returns a
+:class:`~datafusion.RecordBatchStream`:
+
+.. code-block:: python
+
+    stream = df.to_record_batch_stream()
+    for batch in stream:
+        ...
 
 See :doc:`../io/arrow` for additional details on the Arrow interface.
 
