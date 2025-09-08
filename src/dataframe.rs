@@ -16,7 +16,7 @@
 // under the License.
 
 use std::collections::HashMap;
-use std::ffi::{c_void, CStr, CString};
+use std::ffi::CString;
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
@@ -39,7 +39,6 @@ use datafusion::prelude::*;
 use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
-use pyo3::ffi;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
@@ -58,35 +57,6 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
-
-#[allow(clippy::manual_c_str_literals)]
-static ARROW_STREAM_NAME: &CStr =
-    unsafe { CStr::from_bytes_with_nul_unchecked(b"arrow_array_stream\0") };
-
-unsafe extern "C" fn drop_stream(capsule: *mut ffi::PyObject) {
-    if capsule.is_null() {
-        return;
-    }
-
-    // When PyArrow imports this capsule it steals the raw stream pointer and
-    // sets the capsule's internal pointer to NULL. In that case
-    // `PyCapsule_IsValid` returns 0 and this destructor must not drop the
-    // stream as ownership has been transferred to PyArrow. If the capsule was
-    // never imported, the pointer remains valid and we are responsible for
-    // freeing the stream here.
-    if ffi::PyCapsule_IsValid(capsule, ARROW_STREAM_NAME.as_ptr()) == 1 {
-        let stream_ptr = ffi::PyCapsule_GetPointer(capsule, ARROW_STREAM_NAME.as_ptr())
-            as *mut FFI_ArrowArrayStream;
-        if !stream_ptr.is_null() {
-            drop(Box::from_raw(stream_ptr));
-        }
-    }
-
-    // `PyCapsule_GetPointer` sets a Python error on failure. Clear it only
-    // after the stream has been released (or determined to be owned
-    // elsewhere).
-    ffi::PyErr_Clear();
-}
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
@@ -993,29 +963,9 @@ impl PyDataFrame {
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
         let stream = Box::new(FFI_ArrowArrayStream::new(reader));
-        let stream_ptr = Box::into_raw(stream);
-        debug_assert!(
-            !stream_ptr.is_null(),
-            "ArrowArrayStream pointer should never be null",
-        );
-        // The returned capsule allows zero-copy hand-off to PyArrow. When
-        // PyArrow imports the capsule it assumes ownership of the stream and
-        // nulls out the capsule's internal pointer so `drop_stream` knows not to
-        // free it.
-        let capsule = unsafe {
-            ffi::PyCapsule_New(
-                stream_ptr as *mut c_void,
-                ARROW_STREAM_NAME.as_ptr(),
-                Some(drop_stream),
-            )
-        };
-        if capsule.is_null() {
-            unsafe { drop(Box::from_raw(stream_ptr)) };
-            Err(PyErr::fetch(py).into())
-        } else {
-            let any = unsafe { Bound::from_owned_ptr(py, capsule) };
-            Ok(any.downcast_into::<PyCapsule>().unwrap())
-        }
+
+        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
+        Ok(PyCapsule::new(py, stream, Some(stream_capsule_name))?)
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
