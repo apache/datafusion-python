@@ -53,7 +53,7 @@ from datafusion import functions as f
 
 def main(num_rows: int, partitions: int) -> None:
     """Run a simple aggregation after repartitioning.
-    
+
     This function demonstrates basic partitioning concepts using synthetic data.
     Real-world performance will depend on your specific data sources, query types,
     and system configuration.
