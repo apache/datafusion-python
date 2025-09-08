@@ -25,6 +25,7 @@ import warnings
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncIterator,
     Iterable,
     Iterator,
     Literal,
@@ -1043,6 +1044,15 @@ class DataFrame:
         streams = self.df.execute_stream_partitioned()
         return [RecordBatchStream(rbs) for rbs in streams]
 
+    def to_record_batch_stream(self) -> RecordBatchStream:
+        """Return a :py:class:`RecordBatchStream` over this DataFrame's results.
+
+        Returns:
+            A ``RecordBatchStream`` representing the lazily generated record
+            batches for this DataFrame.
+        """
+        return self.execute_stream()
+
     def to_pandas(self) -> pd.DataFrame:
         """Execute the :py:class:`DataFrame` and convert it into a Pandas DataFrame.
 
@@ -1126,12 +1136,12 @@ class DataFrame:
         return self.df.__arrow_c_stream__(requested_schema)
 
     def __iter__(self) -> Iterator[RecordBatch]:
-        """Yield :class:`RecordBatch` objects by streaming execution."""
-        yield from self.to_record_batch_stream()
+        """Return an iterator over this DataFrame's record batches."""
+        return iter(self.to_record_batch_stream())
 
-    async def __aiter__(self) -> RecordBatchStream:
-        """Return an asynchronous iterator over streamed ``RecordBatch`` objects."""
-        return await self.to_record_batch_stream().__aiter__()
+    def __aiter__(self) -> AsyncIterator[RecordBatch]:
+        """Return an async iterator over this DataFrame's record batches."""
+        return self.to_record_batch_stream().__aiter__()
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.

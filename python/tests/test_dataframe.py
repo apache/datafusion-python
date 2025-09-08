@@ -29,6 +29,7 @@ from datafusion import (
     DataFrame,
     ParquetColumnOptions,
     ParquetWriterOptions,
+    RecordBatch,
     SessionContext,
     WindowFrame,
     column,
@@ -390,10 +391,23 @@ def test_iter_batches(df):
     assert len(batches) == 1
 
     batch = batches[0]
-    assert isinstance(batch, pa.RecordBatch)
-    assert batch.column(0).to_pylist() == [1, 2, 3]
-    assert batch.column(1).to_pylist() == [4, 5, 6]
-    assert batch.column(2).to_pylist() == [8, 5, 8]
+    assert isinstance(batch, RecordBatch)
+    pa_batch = batch.to_pyarrow()
+    assert pa_batch.column(0).to_pylist() == [1, 2, 3]
+    assert pa_batch.column(1).to_pylist() == [4, 5, 6]
+    assert pa_batch.column(2).to_pylist() == [8, 5, 8]
+
+
+def test_to_record_batch_stream(df):
+    stream = df.to_record_batch_stream()
+    batches = list(stream)
+
+    assert len(batches) == 1
+    assert isinstance(batches[0], RecordBatch)
+    pa_batch = batches[0].to_pyarrow()
+    assert pa_batch.column(0).to_pylist() == [1, 2, 3]
+    assert pa_batch.column(1).to_pylist() == [4, 5, 6]
+    assert pa_batch.column(2).to_pylist() == [8, 5, 8]
 
 
 def test_with_column_renamed(df):
@@ -1331,7 +1345,7 @@ def test_execution_plan(aggregate_df):
 @pytest.mark.asyncio
 async def test_async_iteration_of_df(aggregate_df):
     rows_returned = 0
-    async for batch in aggregate_df.execute_stream():
+    async for batch in aggregate_df:
         assert batch is not None
         rows_returned += len(batch.to_pyarrow()[0])
 
