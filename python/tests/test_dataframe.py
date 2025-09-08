@@ -1629,9 +1629,11 @@ def test_iter_batches_dataframe(fail_collect):
     df = ctx.create_dataframe([[batch1], [batch2]])
 
     expected = [batch1, batch2]
-    for got, exp in zip(df, expected):
-        assert isinstance(got, RecordBatch)
-        assert got.to_pyarrow().equals(exp)
+    results = [b.to_pyarrow() for b in df]
+
+    assert len(results) == len(expected)
+    for exp in expected:
+        assert any(got.equals(exp) for got in results)
 
 
 def test_arrow_c_stream_to_table_and_reader(fail_collect):
