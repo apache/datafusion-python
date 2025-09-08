@@ -1636,7 +1636,7 @@ def test_arrow_c_stream_to_table_and_reader(fail_collect):
     batch2 = pa.record_batch([pa.array([2])], names=["a"])
     df = ctx.create_dataframe([[batch1], [batch2]])
 
-    table = pa.Table.from_batches(df)
+    table = pa.Table.from_batches(batch.to_pyarrow() for batch in df)
     batches = table.to_batches()
 
     assert len(batches) == 2
@@ -1660,7 +1660,7 @@ def test_arrow_c_stream_order():
 
     df = ctx.create_dataframe([[batch1, batch2]])
 
-    table = pa.Table.from_batches(df)
+    table = pa.Table.from_batches(batch.to_pyarrow() for batch in df)
     expected = pa.Table.from_batches([batch1, batch2])
 
     assert table.equals(expected)
