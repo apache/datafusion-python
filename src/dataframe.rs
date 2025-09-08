@@ -16,7 +16,7 @@
 // under the License.
 
 use std::collections::HashMap;
-use std::ffi::CString;
+use std::ffi::{c_void, CString};
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
@@ -42,6 +42,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
+use pyo3::PyErr;
 
 use crate::catalog::PyTable;
 use crate::errors::{py_datafusion_err, PyDataFusionError};
@@ -962,10 +963,53 @@ impl PyDataFrame {
         };
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
-        let stream = Box::new(FFI_ArrowArrayStream::new(reader));
+        // Create a stream and transfer it to a raw pointer. The capsule takes
+        // ownership and is responsible for freeing the stream unless PyArrow
+        // steals it. PyArrow will set the capsule's pointer to NULL when it
+        // imports the stream, signaling that it now owns the resources.
+        let raw_stream = Box::into_raw(Box::new(FFI_ArrowArrayStream::new(reader)));
 
-        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
-        Ok(PyCapsule::new(py, stream, Some(stream_capsule_name))?)
+        // Name used both for capsule creation and lookup in the destructor.
+        const STREAM_NAME: &[u8] = b"arrow_array_stream\0";
+
+        unsafe extern "C" fn drop_stream_capsule(capsule: *mut pyo3::ffi::PyObject) {
+            // Attempt to recover the raw stream pointer. If PyArrow imported the
+            // stream it will have set the capsule pointer to NULL, in which case
+            // `PyCapsule_GetPointer` returns NULL and we simply clear the error.
+            let ptr = pyo3::ffi::PyCapsule_GetPointer(capsule, STREAM_NAME.as_ptr() as *const _)
+                as *mut FFI_ArrowArrayStream;
+
+            if ptr.is_null() {
+                // Ignore any exception raised by `PyCapsule_GetPointer` when the
+                // pointer is already NULL.
+                pyo3::ffi::PyErr_Clear();
+            } else {
+                // Reconstruct the Box and drop it so resources are released.
+                drop(Box::from_raw(ptr));
+            }
+        }
+
+        let capsule_ptr = unsafe {
+            pyo3::ffi::PyCapsule_New(
+                raw_stream as *mut c_void,
+                STREAM_NAME.as_ptr() as *const std::ffi::c_char,
+                Some(drop_stream_capsule),
+            )
+        };
+
+        if capsule_ptr.is_null() {
+            // Reclaim ownership to avoid leaking on failure
+            unsafe {
+                drop(Box::from_raw(raw_stream));
+            }
+            return Err(PyErr::fetch(py).into());
+        }
+
+        // Safety: `capsule_ptr` is a new reference from `PyCapsule_New`
+        let capsule = unsafe {
+            Bound::from_owned_ptr(py, capsule_ptr).downcast_into_unchecked::<PyCapsule>()
+        };
+        Ok(capsule)
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
