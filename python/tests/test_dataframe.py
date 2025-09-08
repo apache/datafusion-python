@@ -379,6 +379,23 @@ def test_cast(df):
     assert df.schema() == expected
 
 
+def test_iter_batches(df):
+    batches = []
+    for batch in df:
+        batches.append(batch)  # noqa: PERF402
+
+    # Delete DataFrame to ensure RecordBatches remain valid
+    del df
+
+    assert len(batches) == 1
+
+    batch = batches[0]
+    assert isinstance(batch, pa.RecordBatch)
+    assert batch.column(0).to_pylist() == [1, 2, 3]
+    assert batch.column(1).to_pylist() == [4, 5, 6]
+    assert batch.column(2).to_pylist() == [8, 5, 8]
+
+
 def test_with_column_renamed(df):
     df = df.with_column("c", column("a") + column("b")).with_column_renamed("c", "sum")
 
