@@ -215,6 +215,16 @@ impl DataTypeMap {
             DataType::Dictionary(_, _) => {
                 Err(PyNotImplementedError::new_err(format!("{arrow_type:?}")))
             }
+            DataType::Decimal32(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal32(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
+            DataType::Decimal64(precision, scale) => Ok(DataTypeMap::new(
+                DataType::Decimal64(*precision, *scale),
+                PythonType::Float,
+                SqlType::DECIMAL,
+            )),
             DataType::Decimal128(precision, scale) => Ok(DataTypeMap::new(
                 DataType::Decimal128(*precision, *scale),
                 PythonType::Float,
@@ -549,6 +559,8 @@ impl DataTypeMap {
             DataType::Struct(_) => "Struct",
             DataType::Union(_, _) => "Union",
             DataType::Dictionary(_, _) => "Dictionary",
+            DataType::Decimal32(_, _) => "Decimal32",
+            DataType::Decimal64(_, _) => "Decimal64",
             DataType::Decimal128(_, _) => "Decimal128",
             DataType::Decimal256(_, _) => "Decimal256",
             DataType::Map(_, _) => "Map",
