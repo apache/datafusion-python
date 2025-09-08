@@ -72,6 +72,12 @@ autoapi_member_order = "groupwise"
 suppress_warnings = ["autoapi.python_import_resolution"]
 autoapi_python_class_content = "both"
 autoapi_keep_files = False  # set to True for debugging generated files
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "special-members",
+    "show-inheritance",
+]
 
 
 def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa: ARG001

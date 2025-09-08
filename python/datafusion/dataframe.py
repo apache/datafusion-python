@@ -309,7 +309,7 @@ class DataFrame:
         return self.df.into_view()
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
-        """Return a new :py:class`DataFrame` with the specified column or columns.
+        """Return a new :py:class:`DataFrame` with the specified column or columns.
 
         Args:
             key: Column name or list of column names to select.

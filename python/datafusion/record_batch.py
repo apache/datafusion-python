@@ -83,20 +83,19 @@ class RecordBatchStream:
         return next(self)
 
     async def __anext__(self) -> RecordBatch:
-        """Async iterator function."""
+        """Return the next :py:class:`RecordBatch` in the stream asynchronously."""
         next_batch = await self.rbs.__anext__()
         return RecordBatch(next_batch)
 
     def __next__(self) -> RecordBatch:
-        """Iterator function."""
+        """Return the next :py:class:`RecordBatch` in the stream."""
         next_batch = next(self.rbs)
         return RecordBatch(next_batch)
 
-    async def __aiter__(self) -> typing_extensions.Self:
-        """Async iterator function."""
-        await self.rbs.__aiter__()
+    def __aiter__(self) -> typing_extensions.Self:
+        """Return an asynchronous iterator over record batches."""
         return self
 
     def __iter__(self) -> typing_extensions.Self:
-        """Iterator function."""
+        """Return an iterator over record batches."""
         return self
