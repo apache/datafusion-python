@@ -175,7 +175,15 @@ PyArrow:
 .. code-block:: python
 
     for batch in df:
-        ...  # each batch is a ``RecordBatch``
+        ...  # each batch is a ``datafusion.RecordBatch``
+
+Each batch exposes ``to_pyarrow()``, allowing conversion to a PyArrow
+table without collecting everything eagerly:
+
+.. code-block:: python
+
+    import pyarrow as pa
+    table = pa.Table.from_batches(b.to_pyarrow() for b in df)
 
 Asynchronous iteration is supported as well, allowing integration with
 ``asyncio`` event loops:
