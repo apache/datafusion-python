@@ -34,6 +34,11 @@ from datafusion.expr import (
     sort_or_default,
 )
 
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
+
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
 
@@ -426,12 +431,15 @@ def when(when: Expr, then: Expr) -> CaseBuilder:
     return CaseBuilder(f.when(when.expr, then.expr))
 
 
+@deprecated("Prefer to call Expr.over() instead")
 def window(
     name: str,
     args: list[Expr],
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[Expr | SortExpr] | Expr | SortExpr | None = None,
     window_frame: WindowFrame | None = None,
+    filter: Expr | None = None,
+    distinct: bool = False,
     ctx: SessionContext | None = None,
 ) -> Expr:
     """Creates a new Window function expression.
@@ -447,7 +455,19 @@ def window(
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     window_frame = window_frame.window_frame if window_frame is not None else None
     ctx = ctx.ctx if ctx is not None else None
-    return Expr(f.window(name, args, partition_by_raw, order_by_raw, window_frame, ctx))
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(
+        f.window(
+            name,
+            args,
+            partition_by=partition_by_raw,
+            order_by=order_by_raw,
+            window_frame=window_frame,
+            ctx=ctx,
+            filter=filter_raw,
+            distinct=distinct,
+        )
+    )
 
 
 # scalar functions
