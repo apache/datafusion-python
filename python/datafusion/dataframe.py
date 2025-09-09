@@ -1031,10 +1031,6 @@ class DataFrame:
         """
         return RecordBatchStream(self.df.execute_stream())
 
-    def to_record_batch_stream(self) -> RecordBatchStream:
-        """Return a :class:`RecordBatchStream` executing this DataFrame."""
-        return self.execute_stream()
-
     def execute_stream_partitioned(self) -> list[RecordBatchStream]:
         """Executes this DataFrame and returns a stream for each partition.
 
