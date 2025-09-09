@@ -65,7 +65,9 @@ use crate::catalog::{
 use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::errors::{
+    from_datafusion_error, py_datafusion_err, PyDataFusionError, PyDataFusionResult,
+};
 use crate::expr::sort_expr::PySortExpr;
 use crate::options::PyCsvReadOptions;
 use crate::physical_plan::PyExecutionPlan;
@@ -465,7 +467,8 @@ impl PySessionContext {
 
         let mut df = wait_for_future(py, async {
             self.ctx.sql_with_options(&query, options).await
-        })??;
+        })?
+        .map_err(from_datafusion_error)?;
 
         if !param_values.is_empty() {
             df = df.with_param_values(param_values)?;

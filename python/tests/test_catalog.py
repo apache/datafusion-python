@@ -81,6 +81,12 @@ class CustomSchemaProvider(dfn.catalog.SchemaProvider):
         return name in self.tables
 
 
+class CustomErrorSchemaProvider(CustomSchemaProvider):
+    def table(self, name: str) -> Table | None:
+        message = f"{name} is not an acceptable name"
+        raise ValueError(message)
+
+
 class CustomCatalogProvider(dfn.catalog.CatalogProvider):
     def __init__(self):
         self.schemas = {"my_schema": CustomSchemaProvider()}
@@ -217,6 +223,33 @@ def test_schema_register_table_with_pyarrow_dataset(ctx: SessionContext):
         assert result[0].column(1) == pa.array([4, 5, 6])
     finally:
         schema.deregister_table(table_name)
+
+
+def test_exception_not_mangled(ctx: SessionContext):
+    """Test registering all python providers and running a query against them."""
+
+    catalog_name = "custom_catalog"
+    schema_name = "custom_schema"
+
+    ctx.register_catalog_provider(catalog_name, CustomCatalogProvider())
+
+    catalog = ctx.catalog(catalog_name)
+
+    # Clean out previous schemas if they exist so we can start clean
+    for schema_name in catalog.schema_names():
+        catalog.deregister_schema(schema_name, cascade=False)
+
+    catalog.register_schema(schema_name, CustomErrorSchemaProvider())
+
+    schema = catalog.schema(schema_name)
+
+    for table_name in schema.table_names():
+        schema.deregister_table(table_name)
+
+    schema.register_table("test_table", create_dataset())
+
+    with pytest.raises(ValueError, match="^test_table is not an acceptable name$"):
+        ctx.sql(f"select * from {catalog_name}.{schema_name}.test_table")
 
 
 def test_in_end_to_end_python_providers(ctx: SessionContext):

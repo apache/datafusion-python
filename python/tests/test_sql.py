@@ -29,7 +29,10 @@ from . import generic as helpers
 
 
 def test_no_table(ctx):
-    with pytest.raises(Exception, match="DataFusion error"):
+    with pytest.raises(
+        ValueError,
+        match="^Error during planning: table 'datafusion.public.b' not found$",
+    ):
         ctx.sql("SELECT a FROM b").collect()
 
 

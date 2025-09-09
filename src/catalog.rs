@@ -364,7 +364,8 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         &self,
         name: &str,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
-        self.table_inner(name).map_err(to_datafusion_err)
+        self.table_inner(name)
+            .map_err(|e| DataFusionError::External(Box::new(e)))
     }
 
     fn register_table(
