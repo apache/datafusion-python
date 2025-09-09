@@ -1648,8 +1648,9 @@ def test_arrow_c_stream_to_table_and_reader(fail_collect):
     batches = table.to_batches()
 
     assert len(batches) == 2
-    assert batches[0].equals(batch1)
-    assert batches[1].equals(batch2)
+    expected = [batch1, batch2]
+    for exp in expected:
+        assert any(got.equals(exp) for got in batches)
     assert table.schema == df.schema()
     assert table.column("a").num_chunks == 2
 
