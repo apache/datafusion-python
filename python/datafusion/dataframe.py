@@ -292,7 +292,7 @@ class DataFrame:
     """Two dimensional table representation of data.
 
     DataFrame objects are iterable; iterating over a DataFrame yields
-    :class:`pyarrow.RecordBatch` instances lazily.
+    :class:`datafusion.RecordBatch` instances lazily.
 
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
@@ -1044,7 +1044,7 @@ class DataFrame:
         streams = self.df.execute_stream_partitioned()
         return [RecordBatchStream(rbs) for rbs in streams]
 
-    def to_record_batch_stream(self) -> RecordBatchStream:
+    def to_record_batch_stream(self) -> RecordBatchStream:  # noqa: F811
         """Return a :py:class:`RecordBatchStream` over this DataFrame's results.
 
         Returns:
