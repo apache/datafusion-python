@@ -783,7 +783,7 @@ def test_valid_window_frame(units, start_bound, end_bound):
     ],
 )
 def test_invalid_window_frame(units, start_bound, end_bound):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(NotImplementedError, match=f"(?i){units}"):
         WindowFrame(units, start_bound, end_bound)
 
 
