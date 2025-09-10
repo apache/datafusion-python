@@ -23,7 +23,7 @@ use std::fmt::{self, Display, Formatter};
 #[pyclass(name = "SortExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySortExpr {
-    sort: SortExpr,
+    pub(crate) sort: SortExpr,
 }
 
 impl From<PySortExpr> for SortExpr {
