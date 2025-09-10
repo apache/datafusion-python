@@ -15,9 +15,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use once_cell::sync::Lazy;
+use cstr::cstr;
 use std::collections::HashMap;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::sync::Arc;
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
@@ -60,9 +60,8 @@ use crate::{
     expr::{sort_expr::PySortExpr, PyExpr},
 };
 
-/// File-level static CString for the Arrow array stream capsule name.
-static ARROW_ARRAY_STREAM_NAME: Lazy<CString> =
-    Lazy::new(|| CString::new("arrow_array_stream").unwrap());
+/// File-level static CStr for the Arrow array stream capsule name.
+static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
@@ -972,7 +971,8 @@ impl PyDataFrame {
         // destructor provided by PyO3 will drop the stream unless ownership is
         // transferred to PyArrow during import.
         let stream = FFI_ArrowArrayStream::new(reader);
-        let capsule = PyCapsule::new(py, stream, Some(ARROW_ARRAY_STREAM_NAME.clone()))?;
+        let name = CString::new(ARROW_ARRAY_STREAM_NAME.to_bytes()).unwrap();
+        let capsule = PyCapsule::new(py, stream, Some(name))?;
         Ok(capsule)
     }
 

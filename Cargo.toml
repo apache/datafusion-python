@@ -66,8 +66,8 @@ mimalloc = { version = "0.1", optional = true, default-features = false, feature
     "local_dynamic_tls",
 ] }
 async-trait = "0.1.89"
-once_cell = "1.18"
 futures = "0.3"
+cstr = "0.2"
 object_store = { version = "0.12.3", features = [
     "aws",
     "gcp",
