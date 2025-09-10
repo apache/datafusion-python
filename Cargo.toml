@@ -26,17 +26,34 @@ readme = "README.md"
 license = "Apache-2.0"
 edition = "2021"
 rust-version = "1.78"
-include = ["/src", "/datafusion", "/LICENSE.txt", "build.rs", "pyproject.toml", "Cargo.toml", "Cargo.lock"]
+include = [
+    "/src",
+    "/datafusion",
+    "/LICENSE.txt",
+    "build.rs",
+    "pyproject.toml",
+    "Cargo.toml",
+    "Cargo.lock",
+]
 
 [features]
 default = ["mimalloc"]
-protoc = [ "datafusion-substrait/protoc" ]
+protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
-tokio = { version = "1.45", features = ["macros", "rt", "rt-multi-thread", "sync"] }
-pyo3 = { version = "0.24", features = ["extension-module", "abi3", "abi3-py39"] }
-pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"]}
+tokio = { version = "1.45", features = [
+    "macros",
+    "rt",
+    "rt-multi-thread",
+    "sync",
+] }
+pyo3 = { version = "0.24", features = [
+    "extension-module",
+    "abi3",
+    "abi3-py39",
+] }
+pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"] }
 pyo3-log = "0.12.4"
 arrow = { version = "55.1.0", features = ["pyarrow"] }
 datafusion = { version = "49.0.2", features = ["avro", "unicode_expressions"] }
@@ -45,15 +62,23 @@ datafusion-proto = { version = "49.0.2" }
 datafusion-ffi = { version = "49.0.2" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.18", features = ["v4"] }
-mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
+mimalloc = { version = "0.1", optional = true, default-features = false, features = [
+    "local_dynamic_tls",
+] }
 async-trait = "0.1.89"
+once_cell = "1.18"
 futures = "0.3"
-object_store = { version = "0.12.3", features = ["aws", "gcp", "azure", "http"] }
+object_store = { version = "0.12.3", features = [
+    "aws",
+    "gcp",
+    "azure",
+    "http",
+] }
 url = "2"
 log = "0.4.27"
 
 [build-dependencies]
-prost-types = "0.13.1" # keep in line with `datafusion-substrait`
+prost-types = "0.13.1"     # keep in line with `datafusion-substrait`
 pyo3-build-config = "0.24"
 
 [lib]
