@@ -847,8 +847,8 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
 
     assert df_1.sort(col_a).to_pydict() == expected
 
-    # When order is not set, the default frame should be unounded preceeding to
-    # unbounded following. When order is set, the default frame is unbounded preceeding
+    # When order is not set, the default frame should be unbounded preceding to
+    # unbounded following. When order is set, the default frame is unbounded preceding
     # to current row.
     no_order = f.avg(col_a).over(Window()).alias("over_no_order")
     with_order = f.avg(col_a).over(Window(order_by=[col_a])).alias("over_with_order")
@@ -1122,14 +1122,14 @@ def test_html_formatter_repr_rows(df, clean_formatter_state):
     html_output = df._repr_html_()
 
     tr_count = count_table_rows(html_output)
-    # Tabe should have header row (1) + 2 data rows = 3 rows
+    # Table should have header row (1) + 2 data rows = 3 rows
     assert tr_count == 3
 
     configure_formatter(min_rows_display=2, repr_rows=3)
     html_output = df._repr_html_()
 
     tr_count = count_table_rows(html_output)
-    # Tabe should have header row (1) + 3 data rows = 4 rows
+    # Table should have header row (1) + 3 data rows = 4 rows
     assert tr_count == 4
 
 

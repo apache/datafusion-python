@@ -24,7 +24,7 @@ In this section you will learn about window functions. A window function utilize
 multiple rows to produce a result for each individual row, unlike an aggregate function that
 provides a single value for multiple rows.
 
-The window functions are availble in the :py:mod:`~datafusion.functions` module.
+The window functions are available in the :py:mod:`~datafusion.functions` module.
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
@@ -99,8 +99,8 @@ If you do not specify a Window Frame, the frame will be set depending on the fol
 criteria.
 
 * If an ``order_by`` clause is set, the default window frame is defined as the rows between
-  unbounded preceeding and the current row.
-* If an ``order_by`` is not set, the default frame is defined as the rows betwene unbounded
+  unbounded preceding and the current row.
+* If an ``order_by`` is not set, the default frame is defined as the rows between unbounded
   and unbounded following (the entire partition).
 
 Window Frames are defined by three parameters: unit type, starting bound, and ending bound.
@@ -116,7 +116,7 @@ The unit types available are:
   ``order_by`` clause.
 
 In this example we perform a "rolling average" of the speed of the current Pokemon and the
-two preceeding rows.
+two preceding rows.
 
 .. ipython:: python
 

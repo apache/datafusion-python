@@ -195,7 +195,7 @@ optimization levels. If you wish to go down this route, there are two approaches
 have identified you can use.
 
 #. Re-export all of ``datafusion-python`` yourself with your extensions built in.
-#. Carefully synchonize your software releases with the ``datafusion-python`` CI build
+#. Carefully synchronize your software releases with the ``datafusion-python`` CI build
    system so that your libraries use the exact same compiler, features, and
    optimization level.
 
