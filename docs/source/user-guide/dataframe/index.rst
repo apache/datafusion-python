@@ -203,6 +203,30 @@ To work with the stream directly, use
     for batch in stream:
         ...
 
+Execute as Stream
+^^^^^^^^^^^^^^^^^
+
+For finer control over streaming execution, use
+:py:meth:`~datafusion.DataFrame.execute_stream` to obtain a
+:py:class:`pyarrow.RecordBatchReader`:
+
+.. code-block:: python
+
+    reader = df.execute_stream()
+    for batch in reader:
+        ...  # process each batch as it is produced
+
+When partition boundaries are important,
+:py:meth:`~datafusion.DataFrame.execute_stream_partitioned`
+returns an iterable of :py:class:`pyarrow.RecordBatchReader` objects, one per
+partition:
+
+.. code-block:: python
+
+    for stream in df.execute_stream_partitioned():
+        for batch in stream:
+            ...  # each stream yields RecordBatches
+
 See :doc:`../io/arrow` for additional details on the Arrow interface.
 
 HTML Rendering
