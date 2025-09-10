@@ -31,7 +31,7 @@ We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 .. ipython:: python
 
     from datafusion import SessionContext
-    from datafusion import col
+    from datafusion import col, lit
     from datafusion import functions as f
 
     ctx = SessionContext()
@@ -120,16 +120,14 @@ two preceding rows.
 
 .. ipython:: python
 
-    from datafusion.expr import WindowFrame
+    from datafusion.expr import Window, WindowFrame
 
     df.select(
         col('"Name"'),
         col('"Speed"'),
-        f.window("avg",
-            [col('"Speed"')],
-            order_by=[col('"Speed"')],
-            window_frame=WindowFrame("rows", 2, 0)
-        ).alias("Previous Speed")
+        f.avg(col('"Speed"'))
+        .over(Window(window_frame=WindowFrame("rows", 2, 0), order_by=[col('"Speed"')]))
+        .alias("Previous Speed"),
     )
 
 Null Treatment
@@ -151,21 +149,27 @@ it's ``Type 2`` column that are null.
 
     from datafusion.common import NullTreatment
 
-    df.filter(col('"Type 1"') ==  lit("Bug")).select(
+    df.filter(col('"Type 1"') == lit("Bug")).select(
         '"Name"',
         '"Type 2"',
-        f.window("last_value", [col('"Type 2"')])
-            .window_frame(WindowFrame("rows", None, 0))
-            .order_by(col('"Speed"'))
-            .null_treatment(NullTreatment.IGNORE_NULLS)
-            .build()
-            .alias("last_wo_null"),
-        f.window("last_value", [col('"Type 2"')])
-            .window_frame(WindowFrame("rows", None, 0))
-            .order_by(col('"Speed"'))
-            .null_treatment(NullTreatment.RESPECT_NULLS)
-            .build()
-            .alias("last_with_null")
+        f.last_value(col('"Type 2"'))
+        .over(
+            Window(
+                window_frame=WindowFrame("rows", None, 0),
+                order_by=[col('"Speed"')],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            )
+        )
+        .alias("last_wo_null"),
+        f.last_value(col('"Type 2"'))
+        .over(
+            Window(
+                window_frame=WindowFrame("rows", None, 0),
+                order_by=[col('"Speed"')],
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            )
+        )
+        .alias("last_with_null"),
     )
 
 Aggregate Functions
