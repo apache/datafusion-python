@@ -194,12 +194,12 @@ Asynchronous iteration is supported as well, allowing integration with
         ...  # process each batch as it is produced
 
 To work with the stream directly, use
-``to_record_batch_stream()``, which returns a
+``execute_stream()``, which returns a
 :class:`~datafusion.RecordBatchStream`:
 
 .. code-block:: python
 
-    stream = df.to_record_batch_stream()
+    stream = df.execute_stream()
     for batch in stream:
         ...
 

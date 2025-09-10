@@ -403,8 +403,8 @@ def test_iter_returns_datafusion_recordbatch(df):
         assert isinstance(batch, RecordBatch)
 
 
-def test_to_record_batch_stream(df):
-    stream = df.to_record_batch_stream()
+def test_execute_stream_basic(df):
+    stream = df.execute_stream()
     batches = list(stream)
 
     assert len(batches) == 1

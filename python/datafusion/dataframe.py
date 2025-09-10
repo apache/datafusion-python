@@ -1040,8 +1040,11 @@ class DataFrame:
         streams = self.df.execute_stream_partitioned()
         return [RecordBatchStream(rbs) for rbs in streams]
 
-    def to_record_batch_stream(self) -> RecordBatchStream:  # noqa: F811
+    @deprecated("Use execute_stream() instead")
+    def to_record_batch_stream(self) -> RecordBatchStream:
         """Return a :py:class:`RecordBatchStream` over this DataFrame's results.
+
+        This method is deprecated. Use :py:meth:`execute_stream` instead.
 
         Returns:
             A ``RecordBatchStream`` representing the lazily generated record
@@ -1133,11 +1136,11 @@ class DataFrame:
 
     def __iter__(self) -> Iterator[RecordBatch]:
         """Return an iterator over this DataFrame's record batches."""
-        return iter(self.to_record_batch_stream())
+        return iter(self.execute_stream())
 
     def __aiter__(self) -> AsyncIterator[RecordBatch]:
         """Return an async iterator over this DataFrame's record batches."""
-        return self.to_record_batch_stream().__aiter__()
+        return self.execute_stream().__aiter__()
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.
