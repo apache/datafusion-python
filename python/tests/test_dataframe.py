@@ -45,7 +45,6 @@ from datafusion.dataframe_formatter import (
     reset_formatter,
 )
 from datafusion.expr import Window
-from datafusion.record_batch import RecordBatch as DataFusionRecordBatch
 from pyarrow.csv import write_csv
 
 pa_cffi = pytest.importorskip("pyarrow.cffi")
@@ -401,7 +400,7 @@ def test_iter_batches(df):
 
 def test_iter_returns_datafusion_recordbatch(df):
     for batch in df:
-        assert isinstance(batch, DataFusionRecordBatch)
+        assert isinstance(batch, RecordBatch)
 
 
 def test_to_record_batch_stream(df):
