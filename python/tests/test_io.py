@@ -125,7 +125,7 @@ def test_arrow_c_stream_large_dataset(ctx):
         assert current_rss - start_rss < 50 * 1024 * 1024
 
 
-def test_table_from_batches_stream(ctx, fail_collect):
+def test_table_from_arrow_c_stream(ctx, fail_collect):
     df = range_table(ctx, 0, 10)
 
     table = pa.table(df)
