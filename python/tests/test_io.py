@@ -114,6 +114,9 @@ def test_arrow_c_stream_large_dataset(ctx):
     reader = pa.RecordBatchReader.from_stream(df)
 
     # Track RSS before consuming batches
+    # RSS is a practical measure of RAM usage visible to the OS. It excludes memory 
+    # that has been swapped out and provides a simple cross-platform-ish indicator 
+    # (psutil normalizes per-OS sources).
     psutil = pytest.importorskip("psutil")
     process = psutil.Process()
     start_rss = process.memory_info().rss
