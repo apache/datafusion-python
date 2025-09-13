@@ -1114,15 +1114,27 @@ class DataFrame:
 
         The DataFrame is executed using DataFusion's streaming APIs and exposed via
         Arrow's C Stream interface. Record batches are produced incrementally, so the
-        full result set is never materialized in memory. When ``requested_schema`` is
-        provided, only straightforward projections such as column selection or
-        reordering are applied.
+        full result set is never materialized in memory.
+
+        When ``requested_schema`` is provided, DataFusion applies only simple
+        projections such as selecting a subset of existing columns or reordering
+        them. Column renaming, computed expressions, or type coercion are not
+        supported through this interface.
 
         Args:
-            requested_schema: Attempt to provide the DataFrame using this schema.
+            requested_schema: Either a :py:class:`pyarrow.Schema` or an Arrow C
+                Schema capsule (``PyCapsule``) produced by
+                ``schema._export_to_c_capsule()``. The DataFrame will attempt to
+                align its output with the fields and order specified by this schema.
 
         Returns:
-            Arrow PyCapsule object representing an ``ArrowArrayStream``.
+            Arrow ``PyCapsule`` object representing an ``ArrowArrayStream``.
+
+        Examples:
+            >>> schema = df.schema()
+            >>> stream = df.__arrow_c_stream__(schema)
+            >>> capsule = schema._export_to_c_capsule()
+            >>> stream = df.__arrow_c_stream__(capsule)
         """
         # ``DataFrame.__arrow_c_stream__`` in the Rust extension leverages
         # ``execute_stream_partitioned`` under the hood to stream batches while
