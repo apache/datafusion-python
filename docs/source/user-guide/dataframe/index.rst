@@ -178,12 +178,13 @@ PyArrow:
         ...  # each batch is a ``datafusion.RecordBatch``
 
 Each batch exposes ``to_pyarrow()``, allowing conversion to a PyArrow
-table without collecting everything eagerly:
+table. ``pa.table(df)`` collects the entire DataFrame eagerly into a
+PyArrow table:
 
 .. code-block:: python
 
     import pyarrow as pa
-    table = pa.Table.from_batches(b.to_pyarrow() for b in df)
+    table = pa.table(df)
 
 Asynchronous iteration is supported as well, allowing integration with
 ``asyncio`` event loops:
