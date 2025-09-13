@@ -1135,7 +1135,7 @@ class DataFrame:
             >>> stream = df.__arrow_c_stream__(schema)
             >>> capsule = schema._export_to_c_capsule()
             >>> stream = df.__arrow_c_stream__(capsule)
-        
+
         Notes:
             The Arrow C Data Interface PyCapsule details are documented by Apache
             Arrow and can be found at:
