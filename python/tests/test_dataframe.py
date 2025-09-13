@@ -1653,9 +1653,7 @@ def test_arrow_c_stream_to_table_and_reader(fail_collect):
     assert table.schema == df.schema()
     assert table.column("a").num_chunks == 2
 
-    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
-    # alternatively, we could use
-    # reader = pa.RecordBatchReader.from_stream(df)
+    reader = pa.RecordBatchReader.from_stream(df)
     assert isinstance(reader, pa.RecordBatchReader)
     reader_table = pa.Table.from_batches(reader)
     expected = pa.Table.from_batches([batch1, batch2])
@@ -2878,7 +2876,7 @@ def test_arrow_c_stream_interrupted():
         """
     )
 
-    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
+    reader = pa.RecordBatchReader.from_stream(df)
 
     interrupted = False
     interrupt_error = None
