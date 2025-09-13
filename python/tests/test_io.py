@@ -128,6 +128,6 @@ def test_arrow_c_stream_large_dataset(ctx):
 def test_table_from_batches_stream(ctx, fail_collect):
     df = range_table(ctx, 0, 10)
 
-    table = pa.Table.from_batches(batch.to_pyarrow() for batch in df)
+    table = pa.table(df)
     assert table.shape == (10, 1)
     assert table.column_names == ["value"]
