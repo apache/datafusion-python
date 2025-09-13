@@ -149,15 +149,26 @@ To materialize the results of your DataFrame operations:
     # Count rows
     count = df.count()
 
-PyArrow Streaming
+Zero-copy streaming to Arrow-based Python libraries
 -----------------
 
 DataFusion DataFrames implement the ``__arrow_c_stream__`` protocol, enabling
-zero-copy streaming into libraries like `PyArrow <https://arrow.apache.org/>`_.
-Earlier versions eagerly converted the entire DataFrame when exporting to
-PyArrow, which could exhaust memory on large datasets. With streaming, batches
-are produced lazily so you can process arbitrarily large results without
-out-of-memory errors.
+zero-copy, lazy streaming into Arrow-based Python libraries. Earlier versions
+eagerly converted the entire DataFrame when exporting to Python Arrow APIs,
+which could exhaust memory on large results. With the streaming protocol,
+batches are produced on demand so you can process arbitrarily large results
+without out-of-memory errors.
+
+.. note::
+
+    The protocol is implementation-agnostic and works with any Python library
+    that understands the Arrow C streaming interface (for example, PyArrow
+    or other Arrow-compatible implementations). The sections below provide a
+    short PyArrow-specific example and general guidance for other
+    implementations.
+
+PyArrow
+-------
 
 .. code-block:: python
 
@@ -170,7 +181,7 @@ out-of-memory errors.
 
 DataFrames are also iterable, yielding :class:`datafusion.RecordBatch`
 objects lazily so you can loop over results directly without importing
-PyArrow:
+PyArrow::
 
 .. code-block:: python
 
@@ -179,7 +190,7 @@ PyArrow:
 
 Each batch exposes ``to_pyarrow()``, allowing conversion to a PyArrow
 table. ``pa.table(df)`` collects the entire DataFrame eagerly into a
-PyArrow table:
+PyArrow table::
 
 .. code-block:: python
 
@@ -187,16 +198,15 @@ PyArrow table:
     table = pa.table(df)
 
 Asynchronous iteration is supported as well, allowing integration with
-``asyncio`` event loops:
+``asyncio`` event loops::
 
 .. code-block:: python
 
     async for batch in df:
         ...  # process each batch as it is produced
 
-To work with the stream directly, use
-``execute_stream()``, which returns a
-:class:`~datafusion.RecordBatchStream`:
+To work with the stream directly, use ``execute_stream()``, which returns a
+:class:`~datafusion.RecordBatchStream`::
 
 .. code-block:: python
 
