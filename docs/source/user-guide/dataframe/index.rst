@@ -208,17 +208,22 @@ Execute as Stream
 
 For finer control over streaming execution, use
 :py:meth:`~datafusion.DataFrame.execute_stream` to obtain a
-:py:class:`pyarrow.RecordBatchReader`:
+:py:class:`datafusion.RecordBatchStream`:
 
 .. code-block:: python
 
-    reader = df.execute_stream()
-    for batch in reader:
+    stream = df.execute_stream()
+    for batch in stream:
         ...  # process each batch as it is produced
+
+.. tip::
+
+    To get a PyArrow reader instead, call
+    ``pa.RecordBatchReader.from_stream(df)``.
 
 When partition boundaries are important,
 :py:meth:`~datafusion.DataFrame.execute_stream_partitioned`
-returns an iterable of :py:class:`pyarrow.RecordBatchReader` objects, one per
+returns an iterable of :py:class:`datafusion.RecordBatchStream` objects, one per
 partition:
 
 .. code-block:: python
