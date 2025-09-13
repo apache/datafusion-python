@@ -227,6 +227,20 @@ partition:
         for batch in stream:
             ...  # each stream yields RecordBatches
 
+To process partitions concurrently, first collect the streams into a list
+and then poll each one in a separate ``asyncio`` task:
+
+.. code-block:: python
+
+    import asyncio
+
+    async def consume(stream):
+        async for batch in stream:
+            ...
+
+    streams = list(df.execute_stream_partitioned())
+    await asyncio.gather(*(consume(s) for s in streams))
+
 See :doc:`../io/arrow` for additional details on the Arrow interface.
 
 HTML Rendering
