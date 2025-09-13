@@ -99,12 +99,14 @@ def test_read_avro():
 
 
 def test_arrow_c_stream_large_dataset(ctx):
-    """DataFrame.__arrow_c_stream__ yields batches incrementally.
+    """DataFrame streaming yields batches incrementally using Arrow APIs.
 
     This test constructs a DataFrame that would be far larger than available
-    memory if materialized. The ``__arrow_c_stream__`` method should expose a
-    stream of record batches without collecting the full dataset, so reading a
-    handful of batches should not exhaust process memory.
+    memory if materialized. Use the public API
+    ``pa.RecordBatchReader.from_stream(df)`` (which is same as
+    ``pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())``)
+    to read record batches incrementally without collecting the full dataset,
+    so reading a handful of batches should not exhaust process memory.
     """
     # Create a very large DataFrame using range; this would be terabytes if collected
     df = range_table(ctx, 0, 1 << 40)
