@@ -14,11 +14,15 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 from pathlib import Path
 
 import pyarrow as pa
+import pytest
 from datafusion import column
 from datafusion.io import read_avro, read_csv, read_json, read_parquet
+
+from .utils import range_table
 
 
 def test_read_json_global_ctx(ctx):
@@ -92,3 +96,43 @@ def test_read_avro():
     path = Path.cwd() / "testing/data/avro/alltypes_plain.avro"
     avro_df = read_avro(path=path)
     assert avro_df is not None
+
+
+def test_arrow_c_stream_large_dataset(ctx):
+    """DataFrame streaming yields batches incrementally using Arrow APIs.
+
+    This test constructs a DataFrame that would be far larger than available
+    memory if materialized. Use the public API
+    ``pa.RecordBatchReader.from_stream(df)`` (which is same as
+    ``pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())``)
+    to read record batches incrementally without collecting the full dataset,
+    so reading a handful of batches should not exhaust process memory.
+    """
+    # Create a very large DataFrame using range; this would be terabytes if collected
+    df = range_table(ctx, 0, 1 << 40)
+
+    reader = pa.RecordBatchReader.from_stream(df)
+
+    # Track RSS before consuming batches
+    # RSS is a practical measure of RAM usage visible to the OS. It excludes memory
+    # that has been swapped out and provides a simple cross-platform-ish indicator
+    # (psutil normalizes per-OS sources).
+    psutil = pytest.importorskip("psutil")
+    process = psutil.Process()
+    start_rss = process.memory_info().rss
+
+    for _ in range(5):
+        batch = reader.read_next_batch()
+        assert batch is not None
+        assert len(batch) > 0
+        current_rss = process.memory_info().rss
+        # Ensure memory usage hasn't grown substantially (>50MB)
+        assert current_rss - start_rss < 50 * 1024 * 1024
+
+
+def test_table_from_arrow_c_stream(ctx, fail_collect):
+    df = range_table(ctx, 0, 10)
+
+    table = pa.table(df)
+    assert table.shape == (10, 1)
+    assert table.column_names == ["value"]
