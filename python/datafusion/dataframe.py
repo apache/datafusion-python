@@ -1047,18 +1047,6 @@ class DataFrame:
         streams = self.df.execute_stream_partitioned()
         return [RecordBatchStream(rbs) for rbs in streams]
 
-    @deprecated("Use execute_stream() instead")
-    def to_record_batch_stream(self) -> RecordBatchStream:
-        """Return a :py:class:`RecordBatchStream` over this DataFrame's results.
-
-        This method is deprecated. Use :py:meth:`execute_stream` instead.
-
-        Returns:
-            A ``RecordBatchStream`` representing the lazily generated record
-            batches for this DataFrame.
-        """
-        return self.execute_stream()
-
     def to_pandas(self) -> pd.DataFrame:
         """Execute the :py:class:`DataFrame` and convert it into a Pandas DataFrame.
 
