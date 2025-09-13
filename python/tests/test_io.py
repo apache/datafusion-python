@@ -109,7 +109,7 @@ def test_arrow_c_stream_large_dataset(ctx):
     # Create a very large DataFrame using range; this would be terabytes if collected
     df = range_table(ctx, 0, 1 << 40)
 
-    reader = pa.RecordBatchReader._import_from_c_capsule(df.__arrow_c_stream__())
+    reader = pa.RecordBatchReader.from_stream(df)
 
     # Track RSS before consuming batches
     psutil = pytest.importorskip("psutil")
