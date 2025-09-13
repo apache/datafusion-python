@@ -1698,11 +1698,8 @@ def test_arrow_c_stream_schema_selection(fail_collect):
     capsule_new = ctypes.pythonapi.PyCapsule_New
     capsule_new.restype = ctypes.py_object
     capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
-    schema_capsule = capsule_new(ctypes.c_void_p(address), b"arrow_schema", None)
 
-    reader = pa.RecordBatchReader._import_from_c_capsule(
-        df.__arrow_c_stream__(schema_capsule)
-    )
+    reader = pa.RecordBatchReader.from_stream(df, schema=requested_schema)
 
     assert reader.schema == requested_schema
 
