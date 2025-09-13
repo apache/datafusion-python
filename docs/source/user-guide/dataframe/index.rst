@@ -150,7 +150,7 @@ To materialize the results of your DataFrame operations:
     count = df.count()
 
 Zero-copy streaming to Arrow-based Python libraries
------------------
+---------------------------------------------------
 
 DataFusion DataFrames implement the ``__arrow_c_stream__`` protocol, enabling
 zero-copy, lazy streaming into Arrow-based Python libraries. Earlier versions
