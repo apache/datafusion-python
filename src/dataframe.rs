@@ -1085,7 +1085,11 @@ fn project_schema(from_schema: Schema, to_schema: Schema) -> Result<Schema, Arro
 
     merged_schema.project(&project_indices)
 }
-
+// NOTE: `arrow::compute::cast` in combination with `RecordBatch::try_select` or
+// DataFusion's `schema::cast_record_batch` do not fully cover the required
+// transformations here. They will not create missing columns and may insert
+// nulls for non-nullable fields without erroring. To maintain current behavior
+// we perform the casting and null checks manually.
 fn record_batch_into_schema(
     record_batch: RecordBatch,
     schema: &Schema,
