@@ -19,6 +19,7 @@ use std::collections::HashMap;
 use std::ffi::CString;
 use std::sync::Arc;
 
+use crate::datafusion_expr::Expr;
 use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
@@ -473,7 +474,19 @@ impl PyDataFrame {
     }
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
-        let df = self.df.as_ref().clone().with_column(name, expr.into())?;
+        let expr: Expr = expr.into();
+        let aliased = expr.alias(name);
+
+        let df_schema = self.df.as_ref().schema().clone();
+        let mut proj_exprs: Vec<Expr> = df_schema
+            .fields()
+            .iter()
+            .filter(|field| field.name() != name)
+            .map(|field| col(field.name()))
+            .collect();
+        proj_exprs.push(aliased);
+
+        let df = self.df.as_ref().clone().select(proj_exprs)?;
         Ok(Self::new(df))
     }
 
