@@ -164,16 +164,17 @@ Note that ``column()`` is an alias of ``col()``, so you can use either name; the
 
 Whenever an argument represents an expression—such as in
 :py:meth:`~datafusion.DataFrame.filter` or
-:py:meth:`~datafusion.DataFrame.with_column`—use ``col()`` to reference columns
-and wrap constant values with ``lit()`` (also available as ``literal()``):
+:py:meth:`~datafusion.DataFrame.with_column`—use ``col()`` to reference
+columns. The comparison and arithmetic operators on ``Expr`` will automatically
+convert any non-``Expr`` value into a literal expression, so writing
 
 .. code-block:: python
 
-    from datafusion import col, lit
-    df.filter(col('age') > lit(21))
+    from datafusion import col
+    df.filter(col("age") > 21)
 
-Without ``lit()`` DataFusion would treat ``21`` as a column name rather than a
-constant value.
+is equivalent to using ``lit(21)`` explicitly. Use ``lit()`` (also available
+as ``literal()``) when you need to construct a literal expression directly.
 
 Terminal Operations
 -------------------
