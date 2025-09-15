@@ -1678,7 +1678,7 @@ def approx_percentile_cont(
     between two of the values.
 
     This function uses the [t-digest](https://arxiv.org/abs/1902.04023) algorithm to
-    compute the percentil. You can limit the number of bins used in this algorithm by
+    compute the percentile. You can limit the number of bins used in this algorithm by
     setting the ``num_centroids`` parameter.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -2439,7 +2439,7 @@ def lead(
     Lead operation will return the argument that is in the next shift_offset-th row in
     the partition. For example ``lead(col("b"), shift_offset=3, default_value=5)`` will
     return the 3rd following value in column ``b``. At the end of the partition, where
-    no futher values can be returned it will return the default value of 5.
+    no further values can be returned it will return the default value of 5.
 
     Here is an example of both the ``lead`` and :py:func:`datafusion.functions.lag`
     functions on a simple DataFrame::
@@ -2496,7 +2496,7 @@ def lag(
 
     Lag operation will return the argument that is in the previous shift_offset-th row
     in the partition. For example ``lag(col("b"), shift_offset=3, default_value=5)``
-    will return the 3rd previous value in column ``b``. At the beginnig of the
+    will return the 3rd previous value in column ``b``. At the beginning of the
     partition, where no values can be returned it will return the default value of 5.
 
     Here is an example of both the ``lag`` and :py:func:`datafusion.functions.lead`
@@ -2587,7 +2587,7 @@ def rank(
 
     Returns the rank based upon the window order. Consecutive equal values will receive
     the same rank, but the next different value will not be consecutive but rather the
-    number of rows that preceed it plus one. This is similar to Olympic medals. If two
+    number of rows that precede it plus one. This is similar to Olympic medals. If two
     people tie for gold, the next place is bronze. There would be no silver medal. Here
     is an example of a dataframe with a window ordered by descending ``points`` and the
     associated rank.
@@ -2709,7 +2709,7 @@ def cume_dist(
     """Create a cumulative distribution window function.
 
     This window function is similar to :py:func:`rank` except that the returned values
-    are the ratio of the row number to the total numebr of rows. Here is an example of a
+    are the ratio of the row number to the total number of rows. Here is an example of a
     dataframe with a window ordered by descending ``points`` and the associated
     cumulative distribution::
 
@@ -2796,7 +2796,7 @@ def string_agg(
     """Concatenates the input strings.
 
     This aggregate function will concatenate input strings, ignoring null values, and
-    seperating them with the specified delimiter. Non-string values will be converted to
+    separating them with the specified delimiter. Non-string values will be converted to
     their string equivalents.
 
     If using the builder functions described in ref:`_aggregation` this function ignores

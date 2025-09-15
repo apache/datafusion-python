@@ -43,7 +43,7 @@ Bootstrap:
 
     # fetch this repo
     git clone git@github.com:apache/datafusion-python.git
-    # create the virtual enviornment
+    # create the virtual environment
     uv sync --dev --no-install-package datafusion
     # activate the environment
     source .venv/bin/activate

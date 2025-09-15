@@ -129,6 +129,18 @@ max-doc-length = 88
 "benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
 "docs/*" = ["D"]
 
+[tool.codespell]
+skip = [
+    "./target",
+    "uv.lock",
+    "./python/tests/test_functions.py"
+]
+count = true
+ignore-words-list = [
+    "ans",
+    "IST"
+]
+
 [dependency-groups]
 dev = [
     "maturin>=1.8.1",
@@ -139,6 +151,7 @@ dev = [
     "ruff>=0.9.1",
     "toml>=0.10.2",
     "pygithub==2.5.0",
+    "codespell==2.4.1",
 ]
 docs = [
     "sphinx>=7.1.2",

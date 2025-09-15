@@ -528,7 +528,7 @@ class WindowEvaluator:
         """
 
     def get_range(self, idx: int, num_rows: int) -> tuple[int, int]:  # noqa: ARG002
-        """Return the range for the window fuction.
+        """Return the range for the window function.
 
         If `uses_window_frame` flag is `false`. This method is used to
         calculate required range for the window function during

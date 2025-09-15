@@ -64,7 +64,7 @@ Arrays
 ------
 
 For columns that contain arrays of values, you can access individual elements of the array by index
-using bracket indexing. This is similar to callling the function
+using bracket indexing. This is similar to calling the function
 :py:func:`datafusion.functions.array_element`, except that array indexing using brackets is 0 based,
 similar to Python arrays and ``array_element`` is 1 based indexing to be compatible with other SQL
 approaches.
@@ -81,6 +81,13 @@ approaches.
 
     Indexing an element of an array via ``[]`` starts at index 0 whereas
     :py:func:`~datafusion.functions.array_element` starts at index 1.
+
+Starting in DataFusion 49.0.0 you can also create slices of array elements using
+slice syntax from Python.
+
+.. ipython:: python
+
+    df.select(col("a")[1:3].alias("second_two_elements"))
 
 To check if an array is empty, you can use the function :py:func:`datafusion.functions.array_empty` or `datafusion.functions.empty`.
 This function returns a boolean indicating whether the array is empty.

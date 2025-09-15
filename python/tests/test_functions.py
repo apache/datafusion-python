@@ -495,6 +495,30 @@ def py_flatten(arr):
             lambda data: [arr[-1:2] for arr in data],
         ),
         (
+            lambda col: col[:3],
+            lambda data: [arr[:3] for arr in data],
+        ),
+        (
+            lambda col: col[1:3],
+            lambda data: [arr[1:3] for arr in data],
+        ),
+        (
+            lambda col: col[1:4:2],
+            lambda data: [arr[1:4:2] for arr in data],
+        ),
+        (
+            lambda col: col[literal(1) : literal(4)],
+            lambda data: [arr[1:4] for arr in data],
+        ),
+        (
+            lambda col: col[column("indices") : column("indices") + literal(2)],
+            lambda data: [[2.0, 3.0], [], [6.0]],
+        ),
+        (
+            lambda col: col[literal(1) : literal(4) : literal(2)],
+            lambda data: [arr[1:4:2] for arr in data],
+        ),
+        (
             lambda col: f.array_intersect(col, literal([3.0, 4.0])),
             lambda data: [np.intersect1d(arr, [3.0, 4.0]) for arr in data],
         ),
@@ -534,8 +558,11 @@ def py_flatten(arr):
 )
 def test_array_functions(stmt, py_expr):
     data = [[1.0, 2.0, 3.0, 3.0], [4.0, 5.0, 3.0], [6.0]]
+    indices = [1, 3, 0]
     ctx = SessionContext()
-    batch = pa.RecordBatch.from_arrays([np.array(data, dtype=object)], names=["arr"])
+    batch = pa.RecordBatch.from_arrays(
+        [np.array(data, dtype=object), indices], names=["arr", "indices"]
+    )
     df = ctx.create_dataframe([[batch]])
 
     col = column("arr")

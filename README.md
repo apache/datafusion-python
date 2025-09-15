@@ -233,7 +233,7 @@ and for `uv run` commands the additional parameter `--no-project`
 git clone git@github.com:apache/datafusion-python.git
 # cd to the repo root
 cd datafusion-python/
-# create the virtual enviornment
+# create the virtual environment
 uv sync --dev --no-install-package datafusion
 # activate the environment
 source .venv/bin/activate
