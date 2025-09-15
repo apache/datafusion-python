@@ -126,8 +126,8 @@ DataFusion's DataFrame API offers a wide range of operations:
     # Drop columns
     df = df.drop("temporary_column")
 
-String Columns and Expressions
-------------------------------
+Column Names as Function Arguments
+----------------------------------
 
 Some ``DataFrame`` methods accept plain strings when an argument refers to an
 existing column. These include:
