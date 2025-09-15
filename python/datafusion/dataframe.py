@@ -421,9 +421,6 @@ class DataFrame:
         out. If more than one predicate is provided, these predicates will be
         combined as a logical AND. Each ``predicate`` must be an
         :class:`~datafusion.expr.Expr` created using helper functions such as
-        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
-        accepted. If more complex logic is required, see the logical operations in
-        :py:mod:`~datafusion.functions`.
 
         Example::
 
@@ -445,7 +442,6 @@ class DataFrame:
         """Add an additional column to the DataFrame.
 
         The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
-        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
         accepted.
 
         Example::
@@ -469,7 +465,6 @@ class DataFrame:
 
         By passing expressions, iterables of expressions, or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit`; plain strings are not
         accepted. To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -767,7 +762,7 @@ class DataFrame:
         """Join two :py:class:`DataFrame` using the specified expressions.
 
         Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
-        built with :func:`datafusion.col`; plain strings are not accepted. On
+        built with :func:`datafusion.col`; On
         expressions are used to support in-equality predicates. Equality predicates
         are correctly optimized.
 
