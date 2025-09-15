@@ -773,7 +773,7 @@ class DataFrame:
         """Join two :py:class:`DataFrame` using the specified expressions.
 
         Join predicates must be :class:`~datafusion.expr.Expr` objects, typically
-        built with :func:`datafusion.col`. On expressions are used to support 
+        built with :func:`datafusion.col`. On expressions are used to support
         in-equality predicates. Equality predicates are correctly optimized.
 
         Example::
