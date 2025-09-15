@@ -129,7 +129,7 @@ DataFusion's DataFrame API offers a wide range of operations:
 Column Names as Function Arguments
 ----------------------------------
 
-Some ``DataFrame`` methods accept plain strings when an argument refers to an
+Some ``DataFrame`` methods accept column names when an argument refers to an
 existing column. These include:
 
 * :py:meth:`~datafusion.DataFrame.select`
