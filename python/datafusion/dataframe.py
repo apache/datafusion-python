@@ -1153,7 +1153,7 @@ class DataFrame:
     def __aiter__(self) -> AsyncIterator[RecordBatch]:
         """Return an async iterator over this DataFrame's record batches.
 
-        We're using __aiter__ becaause we support Python < 3.10 where aiter() is not
+        We're using __aiter__ because we support Python < 3.10 where aiter() is not
         available.
         """
         return self.execute_stream().__aiter__()
