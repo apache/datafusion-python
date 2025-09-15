@@ -1153,11 +1153,10 @@ class DataFrame:
     def __aiter__(self) -> AsyncIterator[RecordBatch]:
         """Return an async iterator over this DataFrame's record batches.
 
-        `RecordBatchStream` implements ``__aiter__``, so return the stream
-        directly to remain compatible with Python < 3.10 (this project
-        supports Python >= 3.6).
+        We're using __aiter__ becaause we support Python < 3.10 where aiter() is not
+        available.
         """
-        return self.execute_stream()
+        return self.execute_stream().__aiter__()
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.
