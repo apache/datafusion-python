@@ -34,7 +34,7 @@ as performant as possible and to utilize the features of DataFusion, you may dec
 your source in Rust and then expose it through `PyO3 <https://pyo3.rs>`_ as a Python library.
 
 At first glance, it may appear the best way to do this is to add the ``datafusion-python``
-crate as a dependency, provide a ``PyTable``, and then to register it with the 
+crate as a dependency, produce a DataFusion table in Rust, and then register it with the
 ``SessionContext``. Unfortunately, this will not work.
 
 When you produce your code as a Python library and it needs to interact with the DataFusion

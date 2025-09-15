@@ -18,9 +18,9 @@
 use pyo3::prelude::*;
 use std::sync::Arc;
 
-use crate::dataframe::PyTableProvider;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
+use crate::table::PyTableProvider;
 use crate::utils::validate_pycapsule;
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
@@ -87,7 +87,7 @@ impl PyTableFunction {
 fn call_python_table_function(
     func: &Arc<PyObject>,
     args: &[Expr],
-) -> DataFusionResult<Arc<dyn TableProvider>> {
+) -> DataFusionResult<Arc<dyn TableProvider + Send>> {
     let args = args
         .iter()
         .map(|arg| PyExpr::from(arg.clone()))
@@ -107,7 +107,7 @@ fn call_python_table_function(
             let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
             let provider: ForeignTableProvider = provider.into();
 
-            Ok(Arc::new(provider) as Arc<dyn TableProvider>)
+            Ok(Arc::new(provider) as Arc<dyn TableProvider + Send>)
         } else {
             Err(PyNotImplementedError::new_err(
                 "__datafusion_table_provider__ does not exist on Table Provider object.",
@@ -121,7 +121,14 @@ impl TableFunctionImpl for PyTableFunction {
     fn call(&self, args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
             PyTableFunctionInner::FFIFunction(func) => func.call(args),
-            PyTableFunctionInner::PythonFunction(obj) => call_python_table_function(obj, args),
+            PyTableFunctionInner::PythonFunction(obj) => {
+                let send_result = call_python_table_function(obj, args)?;
+                // Convert from our Send type to the trait expected type
+                let raw = Arc::into_raw(send_result);
+                let wide: *const dyn TableProvider = raw as *const _;
+                let arc = unsafe { Arc::from_raw(wide) };
+                Ok(arc)
+            }
         }
     }
 }

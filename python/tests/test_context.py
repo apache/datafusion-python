@@ -27,6 +27,7 @@ from datafusion import (
     SessionConfig,
     SessionContext,
     SQLOptions,
+    TableProvider,
     column,
     literal,
 )
@@ -328,6 +329,35 @@ def test_deregister_table(ctx, database):
 
     ctx.deregister_table("csv")
     assert public.names() == {"csv1", "csv2"}
+
+
+def test_register_table_from_dataframe_into_view(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    provider = df.into_view()
+    ctx.register_table("view_tbl", provider)
+    result = ctx.sql("SELECT * FROM view_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_provider_from_capsule(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    provider = df.into_view()
+    capsule = provider.__datafusion_table_provider__()
+    provider2 = TableProvider.from_capsule(capsule)
+    ctx.register_table("capsule_tbl", provider2)
+    result = ctx.sql("SELECT * FROM capsule_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_provider_from_capsule_invalid():
+    with pytest.raises(Exception):  # noqa: B017
+        TableProvider.from_capsule(object())
+
+
+def test_register_table_with_dataframe_errors(ctx):
+    df = ctx.from_pydict({"a": [1]})
+    with pytest.raises(Exception):  # noqa: B017
+        ctx.register_table("bad", df)
 
 
 def test_register_dataset(ctx):

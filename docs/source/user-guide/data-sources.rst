@@ -152,9 +152,11 @@ as Delta Lake. This will require a recent version of
 .. code-block:: python
 
     from deltalake import DeltaTable
+    from datafusion import TableProvider
 
     delta_table = DeltaTable("path_to_table")
-    ctx.register_table_provider("my_delta_table", delta_table)
+    provider = TableProvider.from_capsule(delta_table)
+    ctx.register_table("my_delta_table", provider)
     df = ctx.table("my_delta_table")
     df.show()
 

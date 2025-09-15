@@ -46,6 +46,7 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl
 
+    from datafusion import TableProvider
     from datafusion.plan import ExecutionPlan, LogicalPlan
 
 
@@ -743,16 +744,21 @@ class SessionContext:
         view = df.into_view()
         self.ctx.register_table(name, view)
 
-    def register_table(self, name: str, table: Table) -> None:
-        """Register a :py:class: `~datafusion.catalog.Table` as a table.
+    def register_table(self, name: str, table: Table | TableProvider) -> None:
+        """Register a :py:class:`~datafusion.catalog.Table` or ``TableProvider``.
 
-        The registered table can be referenced from SQL statement executed against.
+        The registered table can be referenced from SQL statements executed against
+        this context.
 
         Args:
             name: Name of the resultant table.
-            table: DataFusion table to add to the session context.
+            table: DataFusion :class:`Table` or :class:`TableProvider` to add to the
+                session context.
         """
-        self.ctx.register_table(name, table.table)
+        if isinstance(table, Table):
+            self.ctx.register_table(name, table.table)
+        else:
+            self.ctx.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
@@ -772,14 +778,18 @@ class SessionContext:
             self.ctx.register_catalog_provider(name, provider)
 
     def register_table_provider(
-        self, name: str, provider: TableProviderExportable
+        self, name: str, provider: TableProviderExportable | TableProvider
     ) -> None:
         """Register a table provider.
 
-        This table provider must have a method called ``__datafusion_table_provider__``
-        which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+        Deprecated: use :meth:`register_table` instead.
         """
-        self.ctx.register_table_provider(name, provider)
+        warnings.warn(
+            "register_table_provider is deprecated; use register_table",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.register_table(name, provider)
 
     def register_udtf(self, func: TableFunction) -> None:
         """Register a user defined table function."""

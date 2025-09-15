@@ -33,7 +33,7 @@ except ImportError:
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config
+from ._internal import Config, TableProvider
 from .catalog import Catalog, Database, Table
 from .col import col, column
 from .common import (
@@ -90,6 +90,7 @@ __all__ = [
     "SessionContext",
     "Table",
     "TableFunction",
+    "TableProvider",
     "WindowFrame",
     "WindowUDF",
     "catalog",

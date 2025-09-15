@@ -27,6 +27,8 @@ import datafusion._internal as df_internal
 if TYPE_CHECKING:
     import pyarrow as pa
 
+    from datafusion import TableProvider
+
 try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
@@ -122,8 +124,8 @@ class Schema:
         """Return the table with the given ``name`` from this schema."""
         return Table(self._raw_schema.table(name))
 
-    def register_table(self, name, table) -> None:
-        """Register a table provider in this schema."""
+    def register_table(self, name, table: Table | TableProvider) -> None:
+        """Register a table or table provider in this schema."""
         if isinstance(table, Table):
             return self._raw_schema.register_table(name, table.table)
         return self._raw_schema.register_table(name, table)
@@ -219,8 +221,8 @@ class SchemaProvider(ABC):
         """Retrieve a specific table from this schema."""
         ...
 
-    def register_table(self, name: str, table: Table) -> None:  # noqa: B027
-        """Add a table from this schema.
+    def register_table(self, name: str, table: Table | TableProvider) -> None:  # noqa: B027
+        """Add a table to this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do
         not need to implement this method.
