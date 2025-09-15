@@ -179,7 +179,7 @@ PyArrow
 
 DataFrames are also iterable, yielding :class:`datafusion.RecordBatch`
 objects lazily so you can loop over results directly without importing
-PyArrow::
+PyArrow:
 
 .. code-block:: python
 

@@ -74,6 +74,8 @@ Python library that accepts these can import a DataFusion DataFrame directly.
 
 .. ipython:: python
 
+    from datafusion import col, lit
+
     df = df.select((col("a") * lit(1.5)).alias("c"), lit("df").alias("d"))
     pa.table(df)
 
