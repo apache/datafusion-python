@@ -304,7 +304,7 @@ def _to_raw_expr(value: _typing.Union[Expr, str]) -> expr_internal.Expr:
 
 
 def expr_list_to_raw_expr_list(
-    expr_list: Optional[_typing.Union[Sequence[_typing.Union[Expr, str]], Expr, str]],
+    expr_list: Optional[list[Expr] | Expr],
 ) -> Optional[list[expr_internal.Expr]]:
     """Convert a sequence of expressions or column names to raw expressions."""
     if isinstance(expr_list, (Expr, str)):
