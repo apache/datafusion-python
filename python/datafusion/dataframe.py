@@ -40,9 +40,11 @@ except ImportError:
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
-from datafusion.expr import Expr, SortExpr, sort_or_default
+from datafusion.expr import Expr, SortExpr, sort_or_default, Window
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
+from datafusion.functions import col, nvl, last_value
+from datafusion.common import NullTreatment
 
 if TYPE_CHECKING:
     import pathlib
@@ -360,6 +362,9 @@ class DataFrame:
         """
         return DataFrame(self.df.describe())
 
+    @deprecated(
+        "schema() is deprecated. Use :py:meth:`~DataFrame.get_schema` instead"
+    )
     def schema(self) -> pa.Schema:
         """Return the :py:class:`pyarrow.Schema` of this DataFrame.
 
@@ -370,6 +375,39 @@ class DataFrame:
             Describing schema of the DataFrame
         """
         return self.df.schema()
+    
+    def to_batches(self) -> list[pa.RecordBatch]:
+        """Convert DataFrame to list of RecordBatches."""
+        return self.collect()  # delegate to existing method
+    
+    def interpolate(self, method: str = "forward_fill", **kwargs) -> DataFrame:
+        """Interpolate missing values per column.
+        
+        Args:
+            method: Interpolation method ('linear', 'forward_fill', 'backward_fill')
+            
+        Returns:
+            DataFrame with interpolated values
+            
+        Raises:
+            NotImplementedError: Linear interpolation not yet supported
+        """
+        if method == "forward_fill":
+            exprs = []
+            for field in self.schema():
+                window = Window(order_by=col(field.name))
+                expr = nvl(col(field.name),last_value(col(field.name)).over(window)).alias(field.name)
+                exprs.append(expr)
+            return self.select(*exprs)
+    
+        elif method == "backward_fill":
+            raise NotImplementedError("backward_fill not yet implemented")
+        
+        elif method == "linear":
+            raise NotImplementedError("Linear interpolation requires complex window function logic")
+        
+        else:
+            raise ValueError(f"Unknown interpolation method: {method}")
 
     @deprecated(
         "select_columns() is deprecated. Use :py:meth:`~DataFrame.select` instead"
@@ -592,6 +630,9 @@ class DataFrame:
         """
         return DataFrame(self.df.limit(n, max(0, self.count() - n)))
 
+    @deprecated(
+    "collect() returning RecordBatch list is deprecated. Use to_batches() for RecordBatch list or collect() will return DataFrame in future versions"
+    )
     def collect(self) -> list[pa.RecordBatch]:
         """Execute this :py:class:`DataFrame` and collect results into memory.
 
