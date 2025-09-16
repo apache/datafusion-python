@@ -91,7 +91,8 @@ impl PyTableProvider {
     #[staticmethod]
     pub fn from_view(py: Python<'_>, df: &PyDataFrame) -> PyDataFusionResult<Self> {
         let kwargs = PyDict::new(py);
-        kwargs.set_item("stacklevel", 3)?;
+        // Keep stack level consistent with python/datafusion/table_provider.py
+        kwargs.set_item("stacklevel", 2)?;
         py.import("warnings")?.call_method(
             "warn",
             (

@@ -160,7 +160,14 @@ as Delta Lake. This will require a recent version of
     df = ctx.table("my_delta_table")
     df.show()
 
-On older versions of ``deltalake`` (prior to 0.22) you can use the 
+.. note::
+
+   :py:meth:`~datafusion.context.SessionContext.register_table_provider` is
+   deprecated. Use
+   :py:meth:`~datafusion.context.SessionContext.register_table` with a
+   :py:class:`~datafusion.TableProvider` instead.
+
+On older versions of ``deltalake`` (prior to 0.22) you can use the
 `Arrow DataSet <https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html>`_
 interface to import to DataFusion, but this does not support features such as filter push down
 which can lead to a significant performance difference.

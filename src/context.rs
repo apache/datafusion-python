@@ -41,14 +41,12 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
-use crate::table::PyTableProvider;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{
-    get_global_ctx, get_tokio_runtime, table_provider_from_pycapsule, validate_pycapsule,
-    wait_for_future, EXPECTED_PROVIDER_MSG,
+    coerce_table_provider, get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future,
 };
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
@@ -610,17 +608,7 @@ impl PySessionContext {
         name: &str,
         table_provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        let provider = if let Ok(py_table) = table_provider.extract::<PyTable>() {
-            py_table.table()
-        } else if let Ok(py_provider) = table_provider.extract::<PyTableProvider>() {
-            py_provider.into_inner()
-        } else if let Some(provider) = table_provider_from_pycapsule(&table_provider)? {
-            provider
-        } else {
-            return Err(crate::errors::PyDataFusionError::Common(
-                EXPECTED_PROVIDER_MSG.to_string(),
-            ));
-        };
+        let provider = coerce_table_provider(&table_provider)?;
 
         self.ctx.register_table(name, provider)?;
         Ok(())

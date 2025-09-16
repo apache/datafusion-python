@@ -16,14 +16,16 @@
 # under the License.
 import datetime as dt
 import gzip
+import inspect
 import pathlib
+import warnings
 
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 from datafusion import (
-    DataFrame,
     EXPECTED_PROVIDER_MSG,
+    DataFrame,
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
@@ -353,9 +355,59 @@ def test_table_provider_from_capsule(ctx):
 def test_table_provider_from_dataframe(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
     provider = TableProvider.from_dataframe(df)
+    assert isinstance(provider, TableProvider)
     ctx.register_table("from_dataframe_tbl", provider)
     result = ctx.sql("SELECT * FROM from_dataframe_tbl").collect()
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_provider_from_dataframe_internal(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    provider = TableProvider.from_dataframe(df.df)
+    assert isinstance(provider, TableProvider)
+    ctx.register_table("from_internal_dataframe_tbl", provider)
+    result = ctx.sql("SELECT * FROM from_internal_dataframe_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_provider_from_view_warning_origin(ctx):
+    from datafusion.table_provider import TableProvider as WrapperTableProvider
+
+    wrapper_df = ctx.from_pydict({"a": [1]})
+    test_path = pathlib.Path(__file__).resolve()
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        call_lineno = inspect.currentframe().f_lineno + 1
+        WrapperTableProvider.from_view(wrapper_df)
+
+    assert len(caught) >= 1
+
+    rust_warning = next(
+        (
+            warning
+            for warning in caught
+            if "PyTableProvider.from_view()" in str(warning.message)
+        ),
+        None,
+    )
+    assert rust_warning is not None
+    assert issubclass(rust_warning.category, DeprecationWarning)
+    assert pathlib.Path(rust_warning.filename).resolve() == test_path
+    assert rust_warning.lineno == call_lineno
+
+    py_warning = next(
+        (
+            warning
+            for warning in caught
+            if "TableProvider.from_view is deprecated" in str(warning.message)
+        ),
+        None,
+    )
+    assert py_warning is not None
+    assert issubclass(py_warning.category, DeprecationWarning)
+    assert pathlib.Path(py_warning.filename).resolve() == test_path
+    assert py_warning.lineno == call_lineno
 
 
 def test_register_table_capsule_direct(ctx):
@@ -381,7 +433,7 @@ def test_table_provider_from_capsule_invalid():
 
 def test_register_table_with_dataframe_errors(ctx):
     df = ctx.from_pydict({"a": [1]})
-    with pytest.raises(Exception) as exc_info:
+    with pytest.raises(TypeError) as exc_info:
         ctx.register_table("bad", df)
 
     assert str(exc_info.value) == EXPECTED_PROVIDER_MSG

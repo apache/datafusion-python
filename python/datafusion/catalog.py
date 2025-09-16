@@ -23,6 +23,7 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Protocol
 
 import datafusion._internal as df_internal
+from datafusion.utils import _normalize_table_provider
 
 if TYPE_CHECKING:
     import pyarrow as pa
@@ -137,9 +138,8 @@ class Schema:
         Objects implementing ``__datafusion_table_provider__`` are also supported
         and treated as :class:`TableProvider` instances.
         """
-        if isinstance(table, Table):
-            return self._raw_schema.register_table(name, table.table)
-        return self._raw_schema.register_table(name, table)
+        provider = _normalize_table_provider(table)
+        return self._raw_schema.register_table(name, provider)
 
     def deregister_table(self, name: str) -> None:
         """Deregister a table provider from this schema."""

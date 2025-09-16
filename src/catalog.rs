@@ -15,12 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::table::PyTableProvider;
 use crate::utils::{
-    table_provider_from_pycapsule, validate_pycapsule, wait_for_future, EXPECTED_PROVIDER_MSG,
+    coerce_table_provider, table_provider_from_pycapsule, validate_pycapsule, wait_for_future,
 };
 use async_trait::async_trait;
 use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
@@ -199,19 +198,7 @@ impl PySchema {
     }
 
     fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
-        let provider = if let Ok(py_table) = table_provider.extract::<PyTable>() {
-            py_table.table
-        } else if let Ok(py_provider) = table_provider.extract::<PyTableProvider>() {
-            py_provider.into_inner()
-        } else if table_provider.extract::<PyDataFrame>().is_ok() {
-            return Err(PyDataFusionError::Common(EXPECTED_PROVIDER_MSG.to_string()).into());
-        } else if let Some(provider) = table_provider_from_pycapsule(&table_provider)? {
-            provider
-        } else {
-            let py = table_provider.py();
-            let provider = Dataset::new(&table_provider, py)?;
-            Arc::new(provider) as Arc<dyn TableProvider>
-        };
+        let provider = coerce_table_provider(&table_provider).map_err(PyErr::from)?;
 
         let _ = self
             .schema

@@ -54,6 +54,13 @@ Call the provider's ``__datafusion_table_provider__()`` method to obtain the cap
 before constructing a ``TableProvider``. The ``TableProvider.from_view()`` helper is
 deprecated; instead use ``TableProvider.from_dataframe()`` or ``DataFrame.into_view()``.
 
+.. note::
+
+   :py:meth:`~datafusion.context.SessionContext.register_table_provider` is
+   deprecated. Use
+   :py:meth:`~datafusion.context.SessionContext.register_table` with the
+   resulting :py:class:`~datafusion.TableProvider` instead.
+
 .. code-block:: python
 
     from datafusion import SessionContext, TableProvider

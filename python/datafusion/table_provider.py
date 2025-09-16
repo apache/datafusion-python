@@ -26,6 +26,9 @@ from datafusion._internal import EXPECTED_PROVIDER_MSG
 
 _InternalTableProvider = df_internal.TableProvider
 
+# Keep in sync with ``datafusion._internal.TableProvider.from_view``.
+_FROM_VIEW_WARN_STACKLEVEL = 2
+
 
 class TableProvider:
     """High level wrapper around :mod:`datafusion._internal.TableProvider`."""
@@ -50,14 +53,26 @@ class TableProvider:
 
     @classmethod
     def from_dataframe(cls, df: Any) -> TableProvider:
-        """Create a :class:`TableProvider` from a :class:`DataFrame`."""
+        """Create a :class:`TableProvider` from tabular data.
+
+        Parameters
+        ----------
+        df:
+            Either a :class:`~datafusion.dataframe.DataFrame` wrapper or the
+            corresponding :class:`~datafusion._internal.DataFrame`. When
+            working with third-party DataFrame libraries, convert them via
+            :meth:`~datafusion.SessionContext.from_arrow` before calling
+            :meth:`~datafusion.dataframe.DataFrame.into_view` or this
+            constructor.
+        """
         from datafusion.dataframe import DataFrame as DataFrameWrapper
 
         if isinstance(df, DataFrameWrapper):
-            df = df.df
+            dataframe = df
+        else:
+            dataframe = DataFrameWrapper(df)
 
-        provider = _InternalTableProvider.from_dataframe(df)
-        return cls(provider)
+        return dataframe.into_view()
 
     @classmethod
     def from_view(cls, df: Any) -> TableProvider:
@@ -74,8 +89,8 @@ class TableProvider:
         warnings.warn(
             "TableProvider.from_view is deprecated; use DataFrame.into_view or "
             "TableProvider.from_dataframe instead.",
-            DeprecationWarning,
-            stacklevel=2,
+            category=DeprecationWarning,
+            stacklevel=_FROM_VIEW_WARN_STACKLEVEL,
         )
         return cls(provider)
 
@@ -88,7 +103,7 @@ class TableProvider:
 
     def __dir__(self) -> list[str]:
         """Expose delegated attributes via :func:`dir`."""
-        return dir(self._table_provider) + super().__dir__()
+        return sorted(set(super().__dir__()) | set(dir(self._table_provider)))
 
     def __repr__(self) -> str:  # pragma: no cover - simple delegation
         """Return a representation of the wrapped provider."""

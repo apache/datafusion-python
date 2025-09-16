@@ -313,8 +313,20 @@ class DataFrame:
 
         This is the preferred way to obtain a view for
         :py:meth:`~datafusion.context.SessionContext.register_table`.
-        ``TableProvider.from_dataframe`` calls this method under the hood,
+        ``datafusion.TableProvider.from_dataframe`` calls this method under the hood,
         and the older ``TableProvider.from_view`` helper is deprecated.
+
+        The ``DataFrame`` remains valid after conversion, so it can still be used for
+        additional queries alongside the returned view.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.sql("SELECT 1 AS value")
+            >>> provider = df.into_view()
+            >>> ctx.register_table("values_view", provider)
+            >>> df.collect()  # The DataFrame is still usable
+            >>> ctx.sql("SELECT value FROM values_view").collect()
         """
         from datafusion.table_provider import TableProvider as _TableProvider
 
