@@ -415,7 +415,14 @@ class DataFrame:
         Returns:
             DataFrame with those columns removed in the projection.
         """
-        return DataFrame(self.df.drop(*columns))
+        normalized_columns = []
+        for col in columns:
+            if col.startswith('"') and col.endswith('"'):
+                normalized_columns.append(col.strip('"')) # Removes quotes from both sides of col
+            else:
+                normalized_columns.append(col)
+        
+        return DataFrame(self.df.drop(*normalized_columns))
 
     def filter(self, *predicates: Expr) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.

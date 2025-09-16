@@ -216,7 +216,16 @@ def test_select(df):
     assert result.column(0) == pa.array([4, 5, 6])
     assert result.column(1) == pa.array([1, 2, 3])
 
+def test_drop_quoted_columns():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
+    df = ctx.create_dataframe([[batch]])
+    
+    # Both should work
+    assert df.drop('"ID_For_Students"').schema().names == []
+    assert df.drop('ID_For_Students').schema().names == []
 
+    
 def test_select_mixed_expr_string(df):
     df = df.select(column("b"), "a")
 
