@@ -185,6 +185,47 @@ class CustomStyleProvider:
             "padding: 10px; border: 1px solid #3367d6;"
         )
 
+def test_to_batches(df):
+    """Test to_batches method returns list of RecordBatches."""
+    batches = df.to_batches()
+    assert isinstance(batches, list)
+    assert len(batches) > 0
+    assert all(isinstance(batch, pa.RecordBatch) for batch in batches)
+    
+
+    collect_batches = df.collect()
+    assert len(batches) == len(collect_batches)
+    for i, batch in enumerate(batches):
+        assert batch.equals(collect_batches[i])
+
+
+def test_interpolate_forward_fill(ctx):
+    """Test interpolate method with forward_fill."""
+    
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, None, 3, None]), pa.array([4.0, None, 6.0, None])],
+        names=["int_col", "float_col"],
+    )
+    df = ctx.create_dataframe([[batch]])
+    
+    result = df.interpolate("forward_fill")
+    
+    assert isinstance(result, DataFrame)
+
+
+def test_interpolate_unsupported_method(ctx):
+    """Test interpolate with unsupported method raises error."""
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3])], names=["a"]
+    )
+    df = ctx.create_dataframe([[batch]])
+    
+    with pytest.raises(NotImplementedError, match="requires complex window"):
+        df.interpolate("linear")
+
+    with pytest.raises(ValueError, match="Unknown interpolation method"):
+        df.interpolate("unknown")
+
 
 def count_table_rows(html_content: str) -> int:
     """Count the number of table rows in HTML content.
