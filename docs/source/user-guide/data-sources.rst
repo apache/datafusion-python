@@ -177,7 +177,7 @@ Apache Iceberg
 
 DataFusion 45.0.0 and later support the ability to register Apache Iceberg tables as table providers through the Custom Table Provider interface.
 
-This requires either the `pyiceberg <https://pypi.org/project/pyiceberg/>`_ library (>=0.10.0) or the `pyiceberg-core <https://pypi.org/project/pyiceberg-core/>`_ library (>=0.5.0).
+This requires either the `pyiceberg <https://pypi.org/project/pyiceberg/>`__ library (>=0.10.0) or the `pyiceberg-core <https://pypi.org/project/pyiceberg-core/>`__ library (>=0.5.0).
 
 * The ``pyiceberg-core`` library exposes Iceberg Rust's implementation of the Custom Table Provider interface as python bindings.
 * The ``pyiceberg`` library utilizes the ``pyiceberg-core`` python bindings under the hood and provides a native way for Python users to interact with the DataFusion.
