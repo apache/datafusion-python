@@ -22,7 +22,7 @@ use datafusion::datasource::TableProvider;
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::exceptions::PyDeprecationWarning;
 use pyo3::prelude::*;
-use pyo3::types::PyCapsule;
+use pyo3::types::{PyCapsule, PyDict};
 
 use crate::catalog::PyTable;
 use crate::dataframe::PyDataFrame;
@@ -33,30 +33,30 @@ use crate::utils::{get_tokio_runtime, validate_pycapsule};
 #[pyclass(name = "TableProvider", module = "datafusion")]
 #[derive(Clone)]
 pub struct PyTableProvider {
-    pub(crate) provider: Arc<dyn TableProvider + Send>,
+    pub(crate) provider: Arc<dyn TableProvider>,
 }
 
 impl PyTableProvider {
-    pub(crate) fn new(provider: Arc<dyn TableProvider + Send>) -> Self {
+    pub(crate) fn new(provider: Arc<dyn TableProvider>) -> Self {
         Self { provider }
     }
 
     /// Return a `PyTable` wrapper around this provider.
     ///
     /// Historically callers chained `as_table().table()` to access the
-    /// underlying `Arc<dyn TableProvider + Send>`. Prefer [`as_arc`] or
+    /// underlying [`Arc<dyn TableProvider>`]. Prefer [`as_arc`] or
     /// [`into_inner`] for direct access instead.
     pub fn as_table(&self) -> PyTable {
         PyTable::new(Arc::clone(&self.provider))
     }
 
     /// Return a clone of the inner [`TableProvider`].
-    pub fn as_arc(&self) -> Arc<dyn TableProvider + Send> {
+    pub fn as_arc(&self) -> Arc<dyn TableProvider> {
         Arc::clone(&self.provider)
     }
 
     /// Consume this wrapper and return the inner [`TableProvider`].
-    pub fn into_inner(self) -> Arc<dyn TableProvider + Send> {
+    pub fn into_inner(self) -> Arc<dyn TableProvider> {
         self.provider
     }
 }
@@ -90,12 +90,15 @@ impl PyTableProvider {
     /// `TableProvider.from_dataframe` instead.
     #[staticmethod]
     pub fn from_view(py: Python<'_>, df: &PyDataFrame) -> PyDataFusionResult<Self> {
-        py.import("warnings")?.call_method1(
+        let kwargs = PyDict::new(py);
+        kwargs.set_item("stacklevel", 3)?;
+        py.import("warnings")?.call_method(
             "warn",
             (
                 "PyTableProvider.from_view() is deprecated; use DataFrame.into_view() or TableProvider.from_dataframe() instead.",
                 py.get_type::<PyDeprecationWarning>(),
             ),
+            Some(&kwargs),
         )?;
         Ok(Self::from_dataframe(df))
     }
@@ -107,7 +110,8 @@ impl PyTableProvider {
         let name = CString::new("datafusion_table_provider").unwrap();
 
         let runtime = get_tokio_runtime().0.handle().clone();
-        let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
+        let provider: Arc<dyn TableProvider + Send> = self.provider.clone();
+        let provider = FFI_TableProvider::new(provider, false, Some(runtime));
 
         PyCapsule::new(py, provider, Some(name.clone()))
     }

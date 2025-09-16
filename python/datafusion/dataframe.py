@@ -52,8 +52,8 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
-    from datafusion._internal import TableProvider
     from datafusion._internal import expr as expr_internal
+    from datafusion.table_provider import TableProvider
 
 from enum import Enum
 
@@ -316,7 +316,9 @@ class DataFrame:
         ``TableProvider.from_dataframe`` calls this method under the hood,
         and the older ``TableProvider.from_view`` helper is deprecated.
         """
-        return self.df.into_view()
+        from datafusion.table_provider import TableProvider as _TableProvider
+
+        return _TableProvider(self.df.into_view())
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.

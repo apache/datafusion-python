@@ -85,7 +85,11 @@ class Catalog:
         """Returns the database with the given ``name`` from this catalog."""
         return self.schema(name)
 
-    def register_schema(self, name, schema) -> Schema | None:
+    def register_schema(
+        self,
+        name: str,
+        schema: Schema | SchemaProvider | SchemaProviderExportable,
+    ) -> Schema | None:
         """Register a schema with this catalog."""
         if isinstance(schema, Schema):
             return self.catalog.register_schema(name, schema._raw_schema)
@@ -126,7 +130,7 @@ class Schema:
         return Table(self._raw_schema.table(name))
 
     def register_table(
-        self, name, table: Table | TableProvider | TableProviderExportable
+        self, name: str, table: Table | TableProvider | TableProviderExportable
     ) -> None:
         """Register a table or table provider in this schema.
 
@@ -240,7 +244,7 @@ class SchemaProvider(ABC):
         and treated as :class:`TableProvider` instances.
         """
 
-    def deregister_table(self, name, cascade: bool) -> None:  # noqa: B027
+    def deregister_table(self, name: str, cascade: bool) -> None:  # noqa: B027
         """Remove a table from this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do

@@ -33,7 +33,7 @@ except ImportError:
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config, TableProvider
+from ._internal import Config, EXPECTED_PROVIDER_MSG
 from .catalog import Catalog, Database, Table
 from .col import col, column
 from .common import (
@@ -54,6 +54,7 @@ from .expr import (
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
+from .table_provider import TableProvider
 from .user_defined import (
     Accumulator,
     AggregateUDF,
@@ -76,6 +77,7 @@ __all__ = [
     "DFSchema",
     "DataFrame",
     "Database",
+    "EXPECTED_PROVIDER_MSG",
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",

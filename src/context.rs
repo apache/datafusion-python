@@ -48,7 +48,7 @@ use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{
     get_global_ctx, get_tokio_runtime, table_provider_from_pycapsule, validate_pycapsule,
-    wait_for_future,
+    wait_for_future, EXPECTED_PROVIDER_MSG,
 };
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
@@ -618,7 +618,7 @@ impl PySessionContext {
             provider
         } else {
             return Err(crate::errors::PyDataFusionError::Common(
-                "Expected a Table or TableProvider. Convert DataFrames with \"DataFrame.into_view()\" or \"TableProvider.from_dataframe()\".".to_string(),
+                EXPECTED_PROVIDER_MSG.to_string(),
             ));
         };
 
@@ -852,7 +852,7 @@ impl PySessionContext {
         dataset: &Bound<'_, PyAny>,
         py: Python,
     ) -> PyDataFusionResult<()> {
-        let table: Arc<dyn TableProvider + Send> = Arc::new(Dataset::new(dataset, py)?);
+        let table: Arc<dyn TableProvider> = Arc::new(Dataset::new(dataset, py)?);
 
         self.ctx.register_table(name, table)?;
 

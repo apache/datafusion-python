@@ -268,7 +268,7 @@ impl PyDataFrame {
         }
     }
 
-    pub(crate) fn to_view_provider(&self) -> Arc<dyn TableProvider + Send> {
+    pub(crate) fn to_view_provider(&self) -> Arc<dyn TableProvider> {
         self.df.as_ref().clone().into_view()
     }
 

@@ -33,6 +33,9 @@ use std::{
     time::Duration,
 };
 use tokio::{runtime::Runtime, time::sleep};
+
+pub(crate) const EXPECTED_PROVIDER_MSG: &str =
+    "Expected a Table or TableProvider. Convert DataFrames with \"DataFrame.into_view()\" or \"TableProvider.from_dataframe()\".";
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -122,43 +125,9 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     Ok(())
 }
 
-/// Convert a [`TableProvider`] wrapped in an [`Arc`] with a `Send` auto trait into one
-/// without the marker.
-///
-/// # Safety
-///
-/// Removing `Send` from a trait object only relaxes the bounds. The underlying vtable is
-/// unchanged, so it is safe to reuse the pointer produced by [`Arc::into_raw`].
-pub(crate) fn table_provider_send_to_table_provider(
-    table: Arc<dyn TableProvider + Send>,
-) -> Arc<dyn TableProvider> {
-    let raw: *const (dyn TableProvider + Send) = Arc::into_raw(table);
-    // SAFETY: `Send` is an auto trait with no associated data, so the trait object layout
-    // is identical and the pointer may be reinterpreted without changing the reference
-    // count.
-    unsafe { Arc::from_raw(raw as *const dyn TableProvider) }
-}
-
-/// Convert a [`TableProvider`] wrapped in an [`Arc`] into one that also carries the `Send`
-/// auto trait.
-///
-/// # Safety
-///
-/// DataFusion's `TableProvider` trait requires `Send`, so the underlying provider implements
-/// the marker. This allows us to reinterpret the pointer as a `TableProvider + Send` trait
-/// object.
-pub(crate) fn table_provider_to_send(
-    table: Arc<dyn TableProvider>,
-) -> Arc<dyn TableProvider + Send> {
-    let raw: *const dyn TableProvider = Arc::into_raw(table);
-    // SAFETY: The underlying type implements `Send`, so the pointer can be safely treated as
-    // a `TableProvider + Send` trait object.
-    unsafe { Arc::from_raw(raw as *const (dyn TableProvider + Send)) }
-}
-
 pub(crate) fn table_provider_from_pycapsule(
     obj: &Bound<PyAny>,
-) -> PyResult<Option<Arc<dyn TableProvider + Send>>> {
+) -> PyResult<Option<Arc<dyn TableProvider>>> {
     if obj.hasattr("__datafusion_table_provider__")? {
         let capsule = obj.getattr("__datafusion_table_provider__")?.call0()?;
         let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
@@ -166,7 +135,7 @@ pub(crate) fn table_provider_from_pycapsule(
 
         let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
         let provider: ForeignTableProvider = provider.into();
-        Ok(Some(Arc::new(provider) as Arc<dyn TableProvider + Send>))
+        Ok(Some(Arc::new(provider) as Arc<dyn TableProvider>))
     } else {
         Ok(None)
     }

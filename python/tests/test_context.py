@@ -23,6 +23,7 @@ import pyarrow.dataset as ds
 import pytest
 from datafusion import (
     DataFrame,
+    EXPECTED_PROVIDER_MSG,
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
@@ -350,7 +351,7 @@ def test_table_provider_from_capsule(ctx):
 
 
 def test_table_provider_from_dataframe(ctx):
-    df = ctx.from_pydict({"a": [1, 2]}).df
+    df = ctx.from_pydict({"a": [1, 2]})
     provider = TableProvider.from_dataframe(df)
     ctx.register_table("from_dataframe_tbl", provider)
     result = ctx.sql("SELECT * FROM from_dataframe_tbl").collect()
@@ -374,19 +375,16 @@ def test_register_table_capsule_direct(ctx):
 
 
 def test_table_provider_from_capsule_invalid():
-    with pytest.raises(Exception):  # noqa: B017
+    with pytest.raises(RuntimeError):
         TableProvider.from_capsule(object())
 
 
 def test_register_table_with_dataframe_errors(ctx):
     df = ctx.from_pydict({"a": [1]})
-    with pytest.raises(Exception) as exc_info:  # noqa: B017
+    with pytest.raises(Exception) as exc_info:
         ctx.register_table("bad", df)
 
-    assert (
-        str(exc_info.value)
-        == 'Expected a Table or TableProvider. Convert DataFrames with "DataFrame.into_view()" or "TableProvider.from_dataframe()".'
-    )
+    assert str(exc_info.value) == EXPECTED_PROVIDER_MSG
 
 
 def test_register_dataset(ctx):

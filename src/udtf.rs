@@ -21,9 +21,7 @@ use std::sync::Arc;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTableProvider;
-use crate::utils::{
-    table_provider_from_pycapsule, table_provider_send_to_table_provider, validate_pycapsule,
-};
+use crate::utils::{table_provider_from_pycapsule, validate_pycapsule};
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
@@ -88,7 +86,7 @@ impl PyTableFunction {
 fn call_python_table_function(
     func: &Arc<PyObject>,
     args: &[Expr],
-) -> DataFusionResult<Arc<dyn TableProvider + Send>> {
+) -> DataFusionResult<Arc<dyn TableProvider>> {
     let args = args
         .iter()
         .map(|arg| PyExpr::from(arg.clone()))
@@ -113,10 +111,7 @@ impl TableFunctionImpl for PyTableFunction {
     fn call(&self, args: &[Expr]) -> DataFusionResult<Arc<dyn TableProvider>> {
         match &self.inner {
             PyTableFunctionInner::FFIFunction(func) => func.call(args),
-            PyTableFunctionInner::PythonFunction(obj) => {
-                let send_result = call_python_table_function(obj, args)?;
-                Ok(table_provider_send_to_table_provider(send_result))
-            }
+            PyTableFunctionInner::PythonFunction(obj) => call_python_table_function(obj, args),
         }
     }
 }

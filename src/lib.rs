@@ -81,6 +81,8 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     // Initialize logging
     pyo3_log::init();
 
+    m.add("EXPECTED_PROVIDER_MSG", crate::utils::EXPECTED_PROVIDER_MSG)?;
+
     // Register the python classes
     m.add_class::<context::PyRuntimeEnvBuilder>()?;
     m.add_class::<context::PySessionConfig>()?;

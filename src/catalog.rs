@@ -15,12 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::table::PyTableProvider;
 use crate::utils::{
-    table_provider_from_pycapsule, table_provider_send_to_table_provider, table_provider_to_send,
-    validate_pycapsule, wait_for_future,
+    table_provider_from_pycapsule, validate_pycapsule, wait_for_future, EXPECTED_PROVIDER_MSG,
 };
 use async_trait::async_trait;
 use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
@@ -54,7 +54,7 @@ pub struct PySchema {
 #[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PyTable {
-    pub table: Arc<dyn TableProvider + Send>,
+    pub table: Arc<dyn TableProvider>,
 }
 
 impl From<Arc<dyn CatalogProvider>> for PyCatalog {
@@ -70,11 +70,11 @@ impl From<Arc<dyn SchemaProvider>> for PySchema {
 }
 
 impl PyTable {
-    pub fn new(table: Arc<dyn TableProvider + Send>) -> Self {
+    pub fn new(table: Arc<dyn TableProvider>) -> Self {
         Self { table }
     }
 
-    pub fn table(&self) -> Arc<dyn TableProvider + Send> {
+    pub fn table(&self) -> Arc<dyn TableProvider> {
         self.table.clone()
     }
 }
@@ -203,12 +203,14 @@ impl PySchema {
             py_table.table
         } else if let Ok(py_provider) = table_provider.extract::<PyTableProvider>() {
             py_provider.into_inner()
+        } else if table_provider.extract::<PyDataFrame>().is_ok() {
+            return Err(PyDataFusionError::Common(EXPECTED_PROVIDER_MSG.to_string()).into());
         } else if let Some(provider) = table_provider_from_pycapsule(&table_provider)? {
             provider
         } else {
             let py = table_provider.py();
             let provider = Dataset::new(&table_provider, py)?;
-            Arc::new(provider) as Arc<dyn TableProvider + Send>
+            Arc::new(provider) as Arc<dyn TableProvider>
         };
 
         let _ = self
@@ -288,7 +290,7 @@ impl RustWrappedPySchemaProvider {
         }
     }
 
-    fn table_inner(&self, name: &str) -> PyResult<Option<Arc<dyn TableProvider + Send>>> {
+    fn table_inner(&self, name: &str) -> PyResult<Option<Arc<dyn TableProvider>>> {
         Python::with_gil(|py| {
             let provider = self.schema_provider.bind(py);
             let py_table_method = provider.getattr("table")?;
@@ -315,7 +317,7 @@ impl RustWrappedPySchemaProvider {
                     Ok(py_table) => Ok(Some(py_table.table)),
                     Err(_) => {
                         let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
-                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider + Send>))
+                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
                     }
                 }
             }
@@ -351,11 +353,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         &self,
         name: &str,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>, DataFusionError> {
-        // Convert from our internal Send type to the trait expected type
-        match self.table_inner(name).map_err(to_datafusion_err)? {
-            Some(table) => Ok(Some(table_provider_send_to_table_provider(table))),
-            None => Ok(None),
-        }
+        self.table_inner(name).map_err(to_datafusion_err)
     }
 
     fn register_table(
@@ -363,10 +361,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         name: String,
         table: Arc<dyn TableProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
-        // Convert from trait type to our internal Send type
-        let send_table = table_provider_to_send(table);
-
-        let py_table = PyTable::new(send_table);
+        let py_table = PyTable::new(table);
         Python::with_gil(|py| {
             let provider = self.schema_provider.bind(py);
             let _ = provider
@@ -395,10 +390,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
             // If we can turn this table provider into a `Dataset`, return it.
             // Otherwise, return None.
             let dataset = match Dataset::new(&table, py) {
-                Ok(dataset) => {
-                    let send_table = Arc::new(dataset) as Arc<dyn TableProvider + Send>;
-                    Some(table_provider_send_to_table_provider(send_table))
-                }
+                Ok(dataset) => Some(Arc::new(dataset) as Arc<dyn TableProvider>),
                 Err(_) => None,
             };
 
