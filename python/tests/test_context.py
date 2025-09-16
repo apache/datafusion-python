@@ -349,6 +349,30 @@ def test_table_provider_from_capsule(ctx):
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
 
 
+def test_table_provider_from_dataframe(ctx):
+    df = ctx.from_pydict({"a": [1, 2]}).df
+    provider = TableProvider.from_dataframe(df)
+    ctx.register_table("from_dataframe_tbl", provider)
+    result = ctx.sql("SELECT * FROM from_dataframe_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_register_table_capsule_direct(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    provider = df.into_view()
+
+    class CapsuleProvider:
+        def __init__(self, inner):
+            self._inner = inner
+
+        def __datafusion_table_provider__(self):
+            return self._inner.__datafusion_table_provider__()
+
+    ctx.register_table("capsule_direct_tbl", CapsuleProvider(provider))
+    result = ctx.sql("SELECT * FROM capsule_direct_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
 def test_table_provider_from_capsule_invalid():
     with pytest.raises(Exception):  # noqa: B017
         TableProvider.from_capsule(object())
@@ -356,8 +380,13 @@ def test_table_provider_from_capsule_invalid():
 
 def test_register_table_with_dataframe_errors(ctx):
     df = ctx.from_pydict({"a": [1]})
-    with pytest.raises(Exception):  # noqa: B017
+    with pytest.raises(Exception) as exc_info:  # noqa: B017
         ctx.register_table("bad", df)
+
+    assert (
+        str(exc_info.value)
+        == 'Expected a Table or TableProvider. Convert DataFrames with "DataFrame.into_view()" or "TableProvider.from_dataframe()".'
+    )
 
 
 def test_register_dataset(ctx):

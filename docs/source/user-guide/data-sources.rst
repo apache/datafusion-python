@@ -155,7 +155,7 @@ as Delta Lake. This will require a recent version of
     from datafusion import TableProvider
 
     delta_table = DeltaTable("path_to_table")
-    provider = TableProvider.from_capsule(delta_table)
+    provider = TableProvider.from_capsule(delta_table.__datafusion_table_provider__())
     ctx.register_table("my_delta_table", provider)
     df = ctx.table("my_delta_table")
     df.show()

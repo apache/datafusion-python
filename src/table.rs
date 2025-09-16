@@ -79,9 +79,9 @@ impl PyTableProvider {
     ///
     /// This method simply delegates to `DataFrame.into_view`.
     #[staticmethod]
-    pub fn from_dataframe(df: &PyDataFrame) -> PyDataFusionResult<Self> {
-        let table_provider = df.into_view_provider();
-        Ok(Self::new(table_provider))
+    pub fn from_dataframe(df: &PyDataFrame) -> Self {
+        let table_provider = df.to_view_provider();
+        Self::new(table_provider)
     }
 
     /// Create a `TableProvider` from a `DataFrame` by converting it into a view.
@@ -97,7 +97,7 @@ impl PyTableProvider {
                 py.get_type::<PyDeprecationWarning>(),
             ),
         )?;
-        Self::from_dataframe(df)
+        Ok(Self::from_dataframe(df))
     }
 
     fn __datafusion_table_provider__<'py>(

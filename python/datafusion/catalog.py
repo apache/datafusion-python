@@ -28,6 +28,7 @@ if TYPE_CHECKING:
     import pyarrow as pa
 
     from datafusion import TableProvider
+    from datafusion.context import TableProviderExportable
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -124,8 +125,14 @@ class Schema:
         """Return the table with the given ``name`` from this schema."""
         return Table(self._raw_schema.table(name))
 
-    def register_table(self, name, table: Table | TableProvider) -> None:
-        """Register a table or table provider in this schema."""
+    def register_table(
+        self, name, table: Table | TableProvider | TableProviderExportable
+    ) -> None:
+        """Register a table or table provider in this schema.
+
+        Objects implementing ``__datafusion_table_provider__`` are also supported
+        and treated as :class:`TableProvider` instances.
+        """
         if isinstance(table, Table):
             return self._raw_schema.register_table(name, table.table)
         return self._raw_schema.register_table(name, table)
@@ -221,11 +228,16 @@ class SchemaProvider(ABC):
         """Retrieve a specific table from this schema."""
         ...
 
-    def register_table(self, name: str, table: Table | TableProvider) -> None:  # noqa: B027
+    def register_table(  # noqa: B027
+        self, name: str, table: Table | TableProvider | TableProviderExportable
+    ) -> None:
         """Add a table to this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do
         not need to implement this method.
+
+        Objects implementing ``__datafusion_table_provider__`` are also supported
+        and treated as :class:`TableProvider` instances.
         """
 
     def deregister_table(self, name, cascade: bool) -> None:  # noqa: B027

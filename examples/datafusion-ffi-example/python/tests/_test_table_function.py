@@ -53,7 +53,7 @@ def test_ffi_table_function_call_directly():
     table_udtf = udtf(table_func, "my_table_func")
 
     my_table = table_udtf()
-    ctx.register_table_provider("t", my_table)
+    ctx.register_table("t", my_table)
     result = ctx.table("t").collect()
 
     assert len(result) == 2

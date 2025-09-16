@@ -40,7 +40,6 @@ except ImportError:
 from datafusion._internal import DataFrame as DataFrameInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
-from datafusion._internal import TableProvider as TableProviderInternal
 from datafusion.expr import Expr, SortExpr, sort_or_default
 from datafusion.plan import ExecutionPlan, LogicalPlan
 from datafusion.record_batch import RecordBatchStream
@@ -53,6 +52,7 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
+    from datafusion._internal import TableProvider
     from datafusion._internal import expr as expr_internal
 
 from enum import Enum
@@ -308,7 +308,7 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> TableProviderInternal:
+    def into_view(self) -> TableProvider:
         """Convert ``DataFrame`` into a ``TableProvider`` view for registration.
 
         This is the preferred way to obtain a view for
