@@ -431,6 +431,18 @@ Module Contents
 
 
 
+   .. py:method:: _convert_file_sort_order(file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None) -> list[list[datafusion._internal.expr.SortExpr]] | None
+      :staticmethod:
+
+
+      Convert nested ``SortKey`` sequences into raw sort expressions.
+
+      Each ``SortKey`` can be a column name string, an ``Expr``, or a
+      ``SortExpr`` and will be converted using
+      :func:`datafusion.expr.sort_list_to_raw_sort_list`.
+
+
+
    .. py:method:: _convert_table_partition_cols(table_partition_cols: list[tuple[str, str | pyarrow.DataType]]) -> list[tuple[str, pyarrow.DataType]]
       :staticmethod:
 
@@ -627,7 +639,7 @@ Module Contents
 
 
 
-   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_parquet(path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> datafusion.dataframe.DataFrame
 
       Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -643,7 +655,9 @@ Module Contents
       :param schema: An optional schema representing the parquet files. If None,
                      the parquet reader will try to infer it based on data in the
                      file.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
       :returns: DataFrame representation of the read Parquet files
 
@@ -730,7 +744,7 @@ Module Contents
 
 
 
-   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.Expr | datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_listing_table(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, file_extension: str = '.parquet', schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> None
 
       Register multiple files as a single table.
 
@@ -743,7 +757,9 @@ Module Contents
       :param table_partition_cols: Partition columns.
       :param file_extension: File extension of the provided table.
       :param schema: The data source schema.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
 
 
@@ -757,7 +773,7 @@ Module Contents
 
 
 
-   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: list[list[datafusion.expr.SortExpr]] | None = None) -> None
+   .. py:method:: register_parquet(name: str, path: str | pathlib.Path, table_partition_cols: list[tuple[str, str | pyarrow.DataType]] | None = None, parquet_pruning: bool = True, file_extension: str = '.parquet', skip_metadata: bool = True, schema: pyarrow.Schema | None = None, file_sort_order: collections.abc.Sequence[collections.abc.Sequence[datafusion.expr.SortKey]] | None = None) -> None
 
       Register a Parquet file as a table.
 
@@ -775,7 +791,9 @@ Module Contents
                             that may be in the file schema. This can help avoid schema
                             conflicts due to metadata.
       :param schema: The data source schema.
-      :param file_sort_order: Sort order for the file.
+      :param file_sort_order: Sort order for the file. Each sort key can be
+                              specified as a column name (``str``), an expression
+                              (``Expr``), or a ``SortExpr``.
 
 
 

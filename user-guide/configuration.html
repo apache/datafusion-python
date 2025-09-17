@@ -401,9 +401,33 @@
               
               <div class="toc-item">
                 
+<div class="tocsection onthispage pt-5 pb-3">
+    <i class="fas fa-list"></i> On this page
+</div>
 
 <nav id="bd-toc-nav">
-    
+    <ul class="visible nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#maximizing-cpu-usage">
+   Maximizing CPU Usage
+  </a>
+  <ul class="visible nav section-nav flex-column">
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#benchmark-example">
+     Benchmark Example
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#important-considerations">
+       Important Considerations
+      </a>
+     </li>
+    </ul>
+   </li>
+  </ul>
+ </li>
+</ul>
+
 </nav>
               </div>
               
@@ -451,8 +475,126 @@ a <a class="reference internal" href="../autoapi/datafusion/context/index.html#d
 <span class="nb">print</span><span class="p">(</span><span class="n">ctx</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You can read more about available <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> options in the <a class="reference external" href="https://arrow.apache.org/datafusion/user-guide/configs.html">rust DataFusion Configuration guide</a>,
+<section id="maximizing-cpu-usage">
+<h2>Maximizing CPU Usage<a class="headerlink" href="#maximizing-cpu-usage" title="Link to this heading">¶</a></h2>
+<p>DataFusion uses partitions to parallelize work. For small queries the
+default configuration (number of CPU cores) is often sufficient, but to
+fully utilize available hardware you can tune how many partitions are
+created and when DataFusion will repartition data automatically.</p>
+<p>Configure a <code class="docutils literal notranslate"><span class="pre">SessionContext</span></code> with a higher partition count:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionConfig</span><span class="p">,</span> <span class="n">SessionContext</span>
+
+<span class="c1"># allow up to 16 concurrent partitions</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">SessionConfig</span><span class="p">()</span><span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Automatic repartitioning for joins, aggregations, window functions and
+other operations can be enabled to increase parallelism:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">SessionConfig</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">with_target_partitions</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_repartition_joins</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_repartition_aggregations</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_repartition_windows</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Manual repartitioning is available on DataFrames when you need precise
+control:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;data.parquet&quot;</span><span class="p">)</span>
+
+<span class="c1"># Evenly divide into 16 partitions</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+
+<span class="c1"># Or partition by the hash of a column</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">repartition_by_hash</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">),</span> <span class="n">num</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="benchmark-example">
+<h3>Benchmark Example<a class="headerlink" href="#benchmark-example" title="Link to this heading">¶</a></h3>
+<p>The repository includes a benchmark script that demonstrates how to maximize CPU usage
+with DataFusion. The <code class="code docutils literal notranslate"><span class="pre">benchmarks/max_cpu_usage.py</span></code> script shows a practical example
+of configuring DataFusion for optimal parallelism.</p>
+<p>You can run the benchmark script to see the impact of different configuration settings:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run with default settings (uses all CPU cores)</span>
+python<span class="w"> </span>benchmarks/max_cpu_usage.py
+
+<span class="c1"># Run with specific number of rows and partitions</span>
+python<span class="w"> </span>benchmarks/max_cpu_usage.py<span class="w"> </span>--rows<span class="w"> </span><span class="m">5000000</span><span class="w"> </span>--partitions<span class="w"> </span><span class="m">16</span>
+
+<span class="c1"># See all available options</span>
+python<span class="w"> </span>benchmarks/max_cpu_usage.py<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>Here’s an example showing the performance difference between single and multiple partitions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Single partition - slower processing</span>
+$<span class="w"> </span>python<span class="w"> </span>benchmarks/max_cpu_usage.py<span class="w"> </span>--rows<span class="o">=</span><span class="m">10000000</span><span class="w"> </span>--partitions<span class="w"> </span><span class="m">1</span>
+Processed<span class="w"> </span><span class="m">10000000</span><span class="w"> </span>rows<span class="w"> </span>using<span class="w"> </span><span class="m">1</span><span class="w"> </span>partitions<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">0</span>.107s
+
+<span class="c1"># Multiple partitions - faster processing</span>
+$<span class="w"> </span>python<span class="w"> </span>benchmarks/max_cpu_usage.py<span class="w"> </span>--rows<span class="o">=</span><span class="m">10000000</span><span class="w"> </span>--partitions<span class="w"> </span><span class="m">10</span>
+Processed<span class="w"> </span><span class="m">10000000</span><span class="w"> </span>rows<span class="w"> </span>using<span class="w"> </span><span class="m">10</span><span class="w"> </span>partitions<span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="m">0</span>.038s
+</pre></div>
+</div>
+<p>This example demonstrates nearly 3x performance improvement (0.107s vs 0.038s) when using
+10 partitions instead of 1, showcasing how proper partitioning can significantly improve
+CPU utilization and query performance.</p>
+<p>The script demonstrates several key optimization techniques:</p>
+<ol class="arabic simple">
+<li><p><strong>Higher target partition count</strong>: Uses <code class="code docutils literal notranslate"><span class="pre">with_target_partitions()</span></code> to set the number of concurrent partitions</p></li>
+<li><p><strong>Automatic repartitioning</strong>: Enables repartitioning for joins, aggregations, and window functions</p></li>
+<li><p><strong>Manual repartitioning</strong>: Uses <code class="code docutils literal notranslate"><span class="pre">repartition()</span></code> to ensure all partitions are utilized</p></li>
+<li><p><strong>CPU-intensive operations</strong>: Performs aggregations that can benefit from parallelization</p></li>
+</ol>
+<p>The benchmark creates synthetic data and measures the time taken to perform a sum aggregation
+across the specified number of partitions. This helps you understand how partition configuration
+affects performance on your specific hardware.</p>
+<section id="important-considerations">
+<h4>Important Considerations<a class="headerlink" href="#important-considerations" title="Link to this heading">¶</a></h4>
+<p>The provided benchmark script demonstrates partitioning concepts using synthetic in-memory data
+and simple aggregation operations. While useful for understanding basic configuration principles,
+actual performance in production environments may vary significantly based on numerous factors:</p>
+<p><strong>Data Sources and I/O Characteristics:</strong></p>
+<ul class="simple">
+<li><p><strong>Table providers</strong>: Performance differs greatly between Parquet files, CSV files, databases, and cloud storage</p></li>
+<li><p><strong>Storage type</strong>: Local SSD, network-attached storage, and cloud storage have vastly different characteristics</p></li>
+<li><p><strong>Network latency</strong>: Remote data sources introduce additional latency considerations</p></li>
+<li><p><strong>File sizes and distribution</strong>: Large files may benefit differently from partitioning than many small files</p></li>
+</ul>
+<p><strong>Query and Workload Characteristics:</strong></p>
+<ul class="simple">
+<li><p><strong>Operation complexity</strong>: Simple aggregations versus complex joins, window functions, or nested queries</p></li>
+<li><p><strong>Data distribution</strong>: Skewed data may not partition evenly, affecting parallel efficiency</p></li>
+<li><p><strong>Memory usage</strong>: Large datasets may require different memory management strategies</p></li>
+<li><p><strong>Concurrent workloads</strong>: Multiple queries running simultaneously affect resource allocation</p></li>
+</ul>
+<p><strong>Hardware and Environment Factors:</strong></p>
+<ul class="simple">
+<li><p><strong>CPU architecture</strong>: Different processors have varying parallel processing capabilities</p></li>
+<li><p><strong>Available memory</strong>: Limited RAM may require different optimization strategies</p></li>
+<li><p><strong>System load</strong>: Other applications competing for resources affect DataFusion performance</p></li>
+</ul>
+<p><strong>Recommendations for Production Use:</strong></p>
+<p>To optimize DataFusion for your specific use case, it is strongly recommended to:</p>
+<ol class="arabic simple">
+<li><p><strong>Create custom benchmarks</strong> using your actual data sources, formats, and query patterns</p></li>
+<li><p><strong>Test with representative data volumes</strong> that match your production workloads</p></li>
+<li><p><strong>Measure end-to-end performance</strong> including data loading, processing, and result handling</p></li>
+<li><p><strong>Evaluate different configuration combinations</strong> for your specific hardware and workload</p></li>
+<li><p><strong>Monitor resource utilization</strong> (CPU, memory, I/O) to identify bottlenecks in your environment</p></li>
+</ol>
+<p>This approach will provide more accurate insights into how DataFusion configuration options
+will impact your particular applications and infrastructure.</p>
+<p>For more information about available <a class="reference internal" href="../autoapi/datafusion/context/index.html#datafusion.context.SessionConfig" title="datafusion.context.SessionConfig"><code class="xref py py-class docutils literal notranslate"><span class="pre">SessionConfig</span></code></a> options, see the <a class="reference external" href="https://arrow.apache.org/datafusion/user-guide/configs.html">rust DataFusion Configuration guide</a>,
 and about <code class="code docutils literal notranslate"><span class="pre">RuntimeEnvBuilder</span></code> options in the rust <a class="reference external" href="https://docs.rs/datafusion/latest/datafusion/execution/runtime_env/struct.RuntimeEnvBuilder.html">online API documentation</a>.</p>
+</section>
+</section>
+</section>
 </section>
 
 

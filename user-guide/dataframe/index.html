@@ -423,6 +423,11 @@
   </a>
  </li>
  <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#column-names-as-function-arguments">
+   Column Names as Function Arguments
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
   <a class="reference internal nav-link" href="#terminal-operations">
    Terminal Operations
   </a>
@@ -570,6 +575,46 @@ For custom data sources, see <a class="reference internal" href="../io/table_pro
 <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s2">&quot;temporary_column&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
+<section id="column-names-as-function-arguments">
+<h2>Column Names as Function Arguments<a class="headerlink" href="#column-names-as-function-arguments" title="Link to this heading">¶</a></h2>
+<p>Some <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> methods accept column names when an argument refers to an
+existing column. These include:</p>
+<ul class="simple">
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">select()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">sort()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">drop()</span></code></p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">join()</span></code> (<code class="docutils literal notranslate"><span class="pre">on</span></code> argument)</p></li>
+<li><p><code class="xref py py-meth docutils literal notranslate"><span class="pre">aggregate()</span></code> (grouping columns)</p></li>
+</ul>
+<p>See the full function documentation for details on any specific function.</p>
+<p>Note that <code class="xref py py-meth docutils literal notranslate"><span class="pre">join_on()</span></code> expects <code class="docutils literal notranslate"><span class="pre">col()</span></code>/<code class="docutils literal notranslate"><span class="pre">column()</span></code> expressions rather than plain strings.</p>
+<p>For such methods, you can pass column names directly:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">))])</span>
+</pre></div>
+</div>
+<p>The same operation can also be written with explicit column expressions, using either <code class="docutils literal notranslate"><span class="pre">col()</span></code> or <code class="docutils literal notranslate"><span class="pre">column()</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">column</span><span class="p">,</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">))</span>
+<span class="n">df</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">column</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">),</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;value&#39;</span><span class="p">))])</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">column()</span></code> is an alias of <code class="docutils literal notranslate"><span class="pre">col()</span></code>, so you can use either name; the example above shows both in action.</p>
+<p>Whenever an argument represents an expression—such as in
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">filter()</span></code> or
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">with_column()</span></code>—use <code class="docutils literal notranslate"><span class="pre">col()</span></code> to reference
+columns. The comparison and arithmetic operators on <code class="docutils literal notranslate"><span class="pre">Expr</span></code> will automatically
+convert any non-<code class="docutils literal notranslate"><span class="pre">Expr</span></code> value into a literal expression, so writing</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
+<span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;age&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">21</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is equivalent to using <code class="docutils literal notranslate"><span class="pre">lit(21)</span></code> explicitly. Use <code class="docutils literal notranslate"><span class="pre">lit()</span></code> (also available
+as <code class="docutils literal notranslate"><span class="pre">literal()</span></code>) when you need to construct a literal expression directly.</p>
 </section>
 <section id="terminal-operations">
 <h2>Terminal Operations<a class="headerlink" href="#terminal-operations" title="Link to this heading">¶</a></h2>

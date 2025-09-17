@@ -424,7 +424,12 @@ Package Contents
 
       If ``key`` is a string, returns the subfield of the struct.
       If ``key`` is an integer, retrieves the element in the array. Note that the
-      element index begins at ``0``, unlike `array_element` which begins at ``1``.
+      element index begins at ``0``, unlike
+      :py:func:`~datafusion.functions.array_element` which begins at ``1``.
+      If ``key`` is a slice, returns an array that contains a slice of the
+      original array. Similar to integer indexing, this follows Python convention
+      where the index begins at ``0`` unlike
+      :py:func:`~datafusion.functions.array_slice` which begins at ``1``.
 
 
 
@@ -667,7 +672,7 @@ Package Contents
 
 
 
-   .. py:method:: cast(to: pyarrow.DataType[Any] | type[float | int | str | bool]) -> Expr
+   .. py:method:: cast(to: Union[pyarrow.DataType[Any], type]) -> Expr
 
       Cast to a new data type.
 
@@ -777,13 +782,13 @@ Package Contents
 
 
 
-   .. py:method:: fill_nan(value: Any | Expr | None = None) -> Expr
+   .. py:method:: fill_nan(value: Optional[Union[Any, Expr]] = None) -> Expr
 
       Fill NaN values with a provided value.
 
 
 
-   .. py:method:: fill_null(value: Any | Expr | None = None) -> Expr
+   .. py:method:: fill_null(value: Optional[Union[Any, Expr]] = None) -> Expr
 
       Fill NULL values with a provided value.
 
@@ -961,7 +966,7 @@ Package Contents
 
 
 
-   .. py:method:: order_by(*exprs: Expr | SortExpr) -> ExprFuncBuilder
+   .. py:method:: order_by(*exprs: Union[Expr, SortExpr]) -> ExprFuncBuilder
 
       Set the ordering for a window or aggregate function.
 
@@ -1308,50 +1313,31 @@ Package Contents
    Parquet options for individual columns.
 
    Contains the available options that can be applied for an individual Parquet column,
-   replacing the global options in `ParquetWriterOptions`.
-
-   .. attribute:: encoding
-
-      Sets encoding for the column path. Valid values are: `plain`,
-      `plain_dictionary`, `rle`, `bit_packed`, `delta_binary_packed`,
-      `delta_length_byte_array`, `delta_byte_array`, `rle_dictionary`, and
-      `byte_stream_split`. These values are not case-sensitive. If `None`, uses
-      the default parquet options
-
-   .. attribute:: dictionary_enabled
-
-      Sets if dictionary encoding is enabled for the column path.
-      If `None`, uses the default parquet options
-
-   .. attribute:: compression
-
-      Sets default parquet compression codec for the column path. Valid
-      values are `uncompressed`, `snappy`, `gzip(level)`, `lzo`, `brotli(level)`,
-      `lz4`, `zstd(level)`, and `lz4_raw`. These values are not case-sensitive. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: statistics_enabled
-
-      Sets if statistics are enabled for the column Valid values
-      are: `none`, `chunk`, and `page` These values are not case sensitive. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_enabled
-
-      Sets if bloom filter is enabled for the column path. If
-      `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_fpp
-
-      Sets bloom filter false positive probability for the column
-      path. If `None`, uses the default parquet options.
-
-   .. attribute:: bloom_filter_ndv
-
-      Sets bloom filter number of distinct values. If `None`, uses
-      the default parquet options.
+   replacing the global options in ``ParquetWriterOptions``.
 
    Initialize the ParquetColumnOptions.
+
+   :param encoding: Sets encoding for the column path. Valid values are: ``plain``,
+                    ``plain_dictionary``, ``rle``, ``bit_packed``, ``delta_binary_packed``,
+                    ``delta_length_byte_array``, ``delta_byte_array``, ``rle_dictionary``,
+                    and ``byte_stream_split``. These values are not case-sensitive. If
+                    ``None``, uses the default parquet options
+   :param dictionary_enabled: Sets if dictionary encoding is enabled for the column
+                              path. If `None`, uses the default parquet options
+   :param compression: Sets default parquet compression codec for the column path.
+                       Valid values are ``uncompressed``, ``snappy``, ``gzip(level)``, ``lzo``,
+                       ``brotli(level)``, ``lz4``, ``zstd(level)``, and ``lz4_raw``. These
+                       values are not case-sensitive. If ``None``, uses the default parquet
+                       options.
+   :param statistics_enabled: Sets if statistics are enabled for the column Valid
+                              values are: ``none``, ``chunk``, and ``page`` These values are not case
+                              sensitive. If ``None``, uses the default parquet options.
+   :param bloom_filter_enabled: Sets if bloom filter is enabled for the column path.
+                                If ``None``, uses the default parquet options.
+   :param bloom_filter_fpp: Sets bloom filter false positive probability for the
+                            column path. If ``None``, uses the default parquet options.
+   :param bloom_filter_ndv: Sets bloom filter number of distinct values. If ``None``,
+                            uses the default parquet options.
 
 
    .. py:attribute:: bloom_filter_enabled
@@ -1394,131 +1380,73 @@ Package Contents
    Advanced parquet writer options.
 
    Allows settings the writer options that apply to the entire file. Some options can
-   also be set on a column by column basis, with the field `column_specific_options`
-   (see `ParquetColumnOptions`).
-
-   .. attribute:: data_pagesize_limit
-
-      Sets best effort maximum size of data page in bytes.
-
-   .. attribute:: write_batch_size
-
-      Sets write_batch_size in bytes.
-
-   .. attribute:: writer_version
-
-      Sets parquet writer version. Valid values are `1.0` and
-      `2.0`.
-
-   .. attribute:: skip_arrow_metadata
-
-      Skip encoding the embedded arrow metadata in the
-      KV_meta.
-
-   .. attribute:: compression
-
-      Compression type to use. Default is "zstd(3)".
-      Available compression types are
-      - "uncompressed": No compression.
-      - "snappy": Snappy compression.
-      - "gzip(n)": Gzip compression with level n.
-      - "brotli(n)": Brotli compression with level n.
-      - "lz4": LZ4 compression.
-      - "lz4_raw": LZ4_RAW compression.
-      - "zstd(n)": Zstandard compression with level n.
-
-   .. attribute:: dictionary_enabled
-
-      Sets if dictionary encoding is enabled. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: dictionary_page_size_limit
-
-      Sets best effort maximum dictionary page size,
-      in bytes.
-
-   .. attribute:: statistics_enabled
-
-      Sets if statistics are enabled for any column Valid
-      values are `none`, `chunk`, and `page`. If None, uses the default
-      parquet writer setting.
-
-   .. attribute:: max_row_group_size
-
-      Target maximum number of rows in each row group
-      (defaults to 1M rows). Writing larger row groups requires more memory to
-      write, but can get better compression and be faster to read.
-
-   .. attribute:: created_by
-
-      Sets "created by" property.
-
-   .. attribute:: column_index_truncate_length
-
-      Sets column index truncate length.
-
-   .. attribute:: statistics_truncate_length
-
-      Sets statistics truncate length. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: data_page_row_count_limit
-
-      Sets best effort maximum number of rows in a data
-      page.
-
-   .. attribute:: encoding
-
-      Sets default encoding for any column. Valid values are `plain`,
-      `plain_dictionary`, `rle`, `bit_packed`, `delta_binary_packed`,
-      `delta_length_byte_array`, `delta_byte_array`, `rle_dictionary`, and
-      `byte_stream_split`. If None, uses the default parquet writer setting.
-
-   .. attribute:: bloom_filter_on_write
-
-      Write bloom filters for all columns when creating
-      parquet files.
-
-   .. attribute:: bloom_filter_fpp
-
-      Sets bloom filter false positive probability. If None,
-      uses the default parquet writer setting
-
-   .. attribute:: bloom_filter_ndv
-
-      Sets bloom filter number of distinct values. If None, uses
-      the default parquet writer setting.
-
-   .. attribute:: allow_single_file_parallelism
-
-      Controls whether DataFusion will attempt to
-      speed up writing parquet files by serializing them in parallel. Each
-      column in each row group in each output file are serialized in parallel
-      leveraging a maximum possible core count of n_files * n_row_groups *
-      n_columns.
-
-   .. attribute:: maximum_parallel_row_group_writers
-
-      By default parallel parquet writer is
-      tuned for minimum memory usage in a streaming execution plan. You may
-      see a performance benefit when writing large parquet files by increasing
-      `maximum_parallel_row_group_writers` and
-      `maximum_buffered_record_batches_per_stream` if your system has idle
-      cores and can tolerate additional memory usage. Boosting these values is
-      likely worthwhile when writing out already in-memory data, such as from
-      a cached data frame.
-
-   .. attribute:: maximum_buffered_record_batches_per_stream
-
-      See
-      `maximum_parallel_row_group_writers`.
-
-   .. attribute:: column_specific_options
-
-      Overrides options for specific columns. If a column
-      is not a part of this dictionary, it will use the parameters provided here.
+   also be set on a column by column basis, with the field ``column_specific_options``
+   (see ``ParquetColumnOptions``).
 
    Initialize the ParquetWriterOptions.
+
+   :param data_pagesize_limit: Sets best effort maximum size of data page in bytes.
+   :param write_batch_size: Sets write_batch_size in bytes.
+   :param writer_version: Sets parquet writer version. Valid values are ``1.0`` and
+                          ``2.0``.
+   :param skip_arrow_metadata: Skip encoding the embedded arrow metadata in the
+                               KV_meta.
+   :param compression: Compression type to use. Default is ``zstd(3)``.
+                       Available compression types are
+
+                       - ``uncompressed``: No compression.
+                       - ``snappy``: Snappy compression.
+                       - ``gzip(n)``: Gzip compression with level n.
+                       - ``brotli(n)``: Brotli compression with level n.
+                       - ``lz4``: LZ4 compression.
+                       - ``lz4_raw``: LZ4_RAW compression.
+                       - ``zstd(n)``: Zstandard compression with level n.
+   :param compression_level: Compression level to set.
+   :param dictionary_enabled: Sets if dictionary encoding is enabled. If ``None``,
+                              uses the default parquet writer setting.
+   :param dictionary_page_size_limit: Sets best effort maximum dictionary page size,
+                                      in bytes.
+   :param statistics_enabled: Sets if statistics are enabled for any column Valid
+                              values are ``none``, ``chunk``, and ``page``. If ``None``, uses the
+                              default parquet writer setting.
+   :param max_row_group_size: Target maximum number of rows in each row group
+                              (defaults to 1M rows). Writing larger row groups requires more memory
+                              to write, but can get better compression and be faster to read.
+   :param created_by: Sets "created by" property.
+   :param column_index_truncate_length: Sets column index truncate length.
+   :param statistics_truncate_length: Sets statistics truncate length. If ``None``,
+                                      uses the default parquet writer setting.
+   :param data_page_row_count_limit: Sets best effort maximum number of rows in a data
+                                     page.
+   :param encoding: Sets default encoding for any column. Valid values are ``plain``,
+                    ``plain_dictionary``, ``rle``, ``bit_packed``, ``delta_binary_packed``,
+                    ``delta_length_byte_array``, ``delta_byte_array``, ``rle_dictionary``,
+                    and ``byte_stream_split``. If ``None``, uses the default parquet writer
+                    setting.
+   :param bloom_filter_on_write: Write bloom filters for all columns when creating
+                                 parquet files.
+   :param bloom_filter_fpp: Sets bloom filter false positive probability. If ``None``,
+                            uses the default parquet writer setting
+   :param bloom_filter_ndv: Sets bloom filter number of distinct values. If ``None``,
+                            uses the default parquet writer setting.
+   :param allow_single_file_parallelism: Controls whether DataFusion will attempt to
+                                         speed up writing parquet files by serializing them in parallel. Each
+                                         column in each row group in each output file are serialized in parallel
+                                         leveraging a maximum possible core count of
+                                         ``n_files * n_row_groups * n_columns``.
+   :param maximum_parallel_row_group_writers: By default parallel parquet writer is
+                                              tuned for minimum memory usage in a streaming execution plan. You may
+                                              see a performance benefit when writing large parquet files by increasing
+                                              ``maximum_parallel_row_group_writers`` and
+                                              ``maximum_buffered_record_batches_per_stream`` if your system has idle
+                                              cores and can tolerate additional memory usage. Boosting these values is
+                                              likely worthwhile when writing out already in-memory data, such as from
+                                              a cached data frame.
+   :param maximum_buffered_record_batches_per_stream: See
+                                                      ``maximum_parallel_row_group_writers``.
+   :param column_specific_options: Overrides options for specific columns. If a column
+                                   is not a part of this dictionary, it will use the parameters provided
+                                   here.
 
 
    .. py:attribute:: allow_single_file_parallelism

@@ -24,14 +24,14 @@ In this section you will learn about window functions. A window function utilize
 multiple rows to produce a result for each individual row, unlike an aggregate function that
 provides a single value for multiple rows.
 
-The window functions are availble in the :py:mod:`~datafusion.functions` module.
+The window functions are available in the :py:mod:`~datafusion.functions` module.
 
 We'll use the pokemon dataset (from Ritchie Vink) in the following examples.
 
 .. ipython:: python
 
     from datafusion import SessionContext
-    from datafusion import col
+    from datafusion import col, lit
     from datafusion import functions as f
 
     ctx = SessionContext()
@@ -99,8 +99,8 @@ If you do not specify a Window Frame, the frame will be set depending on the fol
 criteria.
 
 * If an ``order_by`` clause is set, the default window frame is defined as the rows between
-  unbounded preceeding and the current row.
-* If an ``order_by`` is not set, the default frame is defined as the rows betwene unbounded
+  unbounded preceding and the current row.
+* If an ``order_by`` is not set, the default frame is defined as the rows between unbounded
   and unbounded following (the entire partition).
 
 Window Frames are defined by three parameters: unit type, starting bound, and ending bound.
@@ -116,20 +116,18 @@ The unit types available are:
   ``order_by`` clause.
 
 In this example we perform a "rolling average" of the speed of the current Pokemon and the
-two preceeding rows.
+two preceding rows.
 
 .. ipython:: python
 
-    from datafusion.expr import WindowFrame
+    from datafusion.expr import Window, WindowFrame
 
     df.select(
         col('"Name"'),
         col('"Speed"'),
-        f.window("avg",
-            [col('"Speed"')],
-            order_by=[col('"Speed"')],
-            window_frame=WindowFrame("rows", 2, 0)
-        ).alias("Previous Speed")
+        f.avg(col('"Speed"'))
+        .over(Window(window_frame=WindowFrame("rows", 2, 0), order_by=[col('"Speed"')]))
+        .alias("Previous Speed"),
     )
 
 Null Treatment
@@ -151,21 +149,27 @@ it's ``Type 2`` column that are null.
 
     from datafusion.common import NullTreatment
 
-    df.filter(col('"Type 1"') ==  lit("Bug")).select(
+    df.filter(col('"Type 1"') == lit("Bug")).select(
         '"Name"',
         '"Type 2"',
-        f.window("last_value", [col('"Type 2"')])
-            .window_frame(WindowFrame("rows", None, 0))
-            .order_by(col('"Speed"'))
-            .null_treatment(NullTreatment.IGNORE_NULLS)
-            .build()
-            .alias("last_wo_null"),
-        f.window("last_value", [col('"Type 2"')])
-            .window_frame(WindowFrame("rows", None, 0))
-            .order_by(col('"Speed"'))
-            .null_treatment(NullTreatment.RESPECT_NULLS)
-            .build()
-            .alias("last_with_null")
+        f.last_value(col('"Type 2"'))
+        .over(
+            Window(
+                window_frame=WindowFrame("rows", None, 0),
+                order_by=[col('"Speed"')],
+                null_treatment=NullTreatment.IGNORE_NULLS,
+            )
+        )
+        .alias("last_wo_null"),
+        f.last_value(col('"Type 2"'))
+        .over(
+            Window(
+                window_frame=WindowFrame("rows", None, 0),
+                order_by=[col('"Speed"')],
+                null_treatment=NullTreatment.RESPECT_NULLS,
+            )
+        )
+        .alias("last_with_null"),
     )
 
 Aggregate Functions

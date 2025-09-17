@@ -470,11 +470,11 @@
 <p>In this section you will learn about window functions. A window function utilizes values from one or
 multiple rows to produce a result for each individual row, unlike an aggregate function that
 provides a single value for multiple rows.</p>
-<p>The window functions are availble in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
+<p>The window functions are available in the <a class="reference internal" href="../../autoapi/datafusion/functions/index.html#module-datafusion.functions" title="datafusion.functions"><code class="xref py py-mod docutils literal notranslate"><span class="pre">functions</span></code></a> module.</p>
 <p>We’ll use the pokemon dataset (from Ritchie Vink) in the following examples.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">2</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">3</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">functions</span> <span class="k">as</span> <span class="n">f</span>
 
@@ -590,8 +590,8 @@ If you do not specify a Window Frame, the frame will be set depending on the fol
 criteria.</p>
 <ul class="simple">
 <li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> clause is set, the default window frame is defined as the rows between
-unbounded preceeding and the current row.</p></li>
-<li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> is not set, the default frame is defined as the rows betwene unbounded
+unbounded preceding and the current row.</p></li>
+<li><p>If an <code class="docutils literal notranslate"><span class="pre">order_by</span></code> is not set, the default frame is defined as the rows between unbounded
 and unbounded following (the entire partition).</p></li>
 </ul>
 <p>Window Frames are defined by three parameters: unit type, starting bound, and ending bound.</p>
@@ -606,17 +606,15 @@ parameter.</p></li>
 <code class="docutils literal notranslate"><span class="pre">order_by</span></code> clause.</p></li>
 </ul>
 <p>In this example we perform a “rolling average” of the speed of the current Pokemon and the
-two preceeding rows.</p>
-<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">WindowFrame</span>
+two preceding rows.</p>
+<div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">9</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.expr</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span><span class="p">,</span> <span class="n">WindowFrame</span>
 
 <span class="n">In</span> <span class="p">[</span><span class="mi">10</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span>     <span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;avg&quot;</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span><span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">avg</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span><span class="n">Window</span><span class="p">(</span><span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)]))</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;Previous Speed&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 <span class="n">Out</span><span class="p">[</span><span class="mi">10</span><span class="p">]:</span> 
@@ -652,21 +650,27 @@ the window frame so that we only process up to the current row.</p>
 it’s <code class="docutils literal notranslate"><span class="pre">Type</span> <span class="pre">2</span></code> column that are null.</p>
 <div class="highlight-ipython notranslate"><div class="highlight"><pre><span></span><span class="n">In</span> <span class="p">[</span><span class="mi">11</span><span class="p">]:</span> <span class="kn">from</span><span class="w"> </span><span class="nn">datafusion.common</span><span class="w"> </span><span class="kn">import</span> <span class="n">NullTreatment</span>
 
-<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span>  <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+<span class="n">In</span> <span class="p">[</span><span class="mi">12</span><span class="p">]:</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 1&quot;&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="n">lit</span><span class="p">(</span><span class="s2">&quot;Bug&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
    <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Name&quot;&#39;</span><span class="p">,</span>
    <span class="o">....</span><span class="p">:</span>     <span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">,</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;last_value&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">)])</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">window_frame</span><span class="p">(</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">null_treatment</span><span class="p">(</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">IGNORE_NULLS</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_wo_null&quot;</span><span class="p">),</span>
-   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">window</span><span class="p">(</span><span class="s2">&quot;last_value&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">)])</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">window_frame</span><span class="p">(</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">order_by</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">))</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">null_treatment</span><span class="p">(</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">RESPECT_NULLS</span><span class="p">)</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">build</span><span class="p">()</span>
-   <span class="o">....</span><span class="p">:</span>         <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_with_null&quot;</span><span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">IGNORE_NULLS</span><span class="p">,</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_wo_null&quot;</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="n">f</span><span class="o">.</span><span class="n">last_value</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Type 2&quot;&#39;</span><span class="p">))</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">over</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="n">Window</span><span class="p">(</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">window_frame</span><span class="o">=</span><span class="n">WindowFrame</span><span class="p">(</span><span class="s2">&quot;rows&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">order_by</span><span class="o">=</span><span class="p">[</span><span class="n">col</span><span class="p">(</span><span class="s1">&#39;&quot;Speed&quot;&#39;</span><span class="p">)],</span>
+   <span class="o">....</span><span class="p">:</span>             <span class="n">null_treatment</span><span class="o">=</span><span class="n">NullTreatment</span><span class="o">.</span><span class="n">RESPECT_NULLS</span><span class="p">,</span>
+   <span class="o">....</span><span class="p">:</span>         <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="p">)</span>
+   <span class="o">....</span><span class="p">:</span>     <span class="o">.</span><span class="n">alias</span><span class="p">(</span><span class="s2">&quot;last_with_null&quot;</span><span class="p">),</span>
    <span class="o">....</span><span class="p">:</span> <span class="p">)</span>
    <span class="o">....</span><span class="p">:</span> 
 <span class="n">Out</span><span class="p">[</span><span class="mi">12</span><span class="p">]:</span> 
