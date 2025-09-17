@@ -32,7 +32,13 @@ from datafusion.expr import (
     WindowFrame,
     expr_list_to_raw_expr_list,
     sort_list_to_raw_sort_list,
+    sort_or_default,
 )
+
+try:
+    from warnings import deprecated  # Python 3.13+
+except ImportError:
+    from typing_extensions import deprecated  # Python 3.12
 
 if TYPE_CHECKING:
     from datafusion.context import SessionContext
@@ -426,12 +432,15 @@ def when(when: Expr, then: Expr) -> CaseBuilder:
     return CaseBuilder(f.when(when.expr, then.expr))
 
 
+@deprecated("Prefer to call Expr.over() instead")
 def window(
     name: str,
     args: list[Expr],
     partition_by: list[Expr] | Expr | None = None,
     order_by: list[SortKey] | SortKey | None = None,
     window_frame: WindowFrame | None = None,
+    filter: Expr | None = None,
+    distinct: bool = False,
     ctx: SessionContext | None = None,
 ) -> Expr:
     """Creates a new Window function expression.
@@ -451,7 +460,19 @@ def window(
     order_by_raw = sort_list_to_raw_sort_list(order_by)
     window_frame = window_frame.window_frame if window_frame is not None else None
     ctx = ctx.ctx if ctx is not None else None
-    return Expr(f.window(name, args, partition_by_raw, order_by_raw, window_frame, ctx))
+    filter_raw = filter.expr if filter is not None else None
+    return Expr(
+        f.window(
+            name,
+            args,
+            partition_by=partition_by_raw,
+            order_by=order_by_raw,
+            window_frame=window_frame,
+            ctx=ctx,
+            filter=filter_raw,
+            distinct=distinct,
+        )
+    )
 
 
 # scalar functions
@@ -1664,7 +1685,7 @@ def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
 
 def approx_percentile_cont(
-    expression: Expr,
+    sort_expression: Expr | SortExpr,
     percentile: float,
     num_centroids: Optional[int] = None,
     filter: Optional[Expr] = None,
@@ -1685,21 +1706,26 @@ def approx_percentile_cont(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Values for which to find the approximate percentile
+        sort_expression: Values for which to find the approximate percentile
         percentile: This must be between 0.0 and 1.0, inclusive
         num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
     """
+    sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont(
-            expression.expr, percentile, num_centroids=num_centroids, filter=filter_raw
+            sort_expr_raw, percentile, num_centroids=num_centroids, filter=filter_raw
         )
     )
 
 
 def approx_percentile_cont_with_weight(
-    expression: Expr, weight: Expr, percentile: float, filter: Optional[Expr] = None
+    sort_expression: Expr | SortExpr,
+    weight: Expr,
+    percentile: float,
+    num_centroids: Optional[int] = None,
+    filter: Optional[Expr] = None,
 ) -> Expr:
     """Returns the value of the weighted approximate percentile.
 
@@ -1710,16 +1736,22 @@ def approx_percentile_cont_with_weight(
     the options ``order_by``, ``null_treatment``, and ``distinct``.
 
     Args:
-        expression: Values for which to find the approximate percentile
+        sort_expression: Values for which to find the approximate percentile
         weight: Relative weight for each of the values in ``expression``
         percentile: This must be between 0.0 and 1.0, inclusive
+        num_centroids: Max bin size for the t-digest algorithm
         filter: If provided, only compute against rows for which the filter is True
 
     """
+    sort_expr_raw = sort_or_default(sort_expression)
     filter_raw = filter.expr if filter is not None else None
     return Expr(
         f.approx_percentile_cont_with_weight(
-            expression.expr, weight.expr, percentile, filter=filter_raw
+            sort_expr_raw,
+            weight.expr,
+            percentile,
+            num_centroids=num_centroids,
+            filter=filter_raw,
         )
     )
 

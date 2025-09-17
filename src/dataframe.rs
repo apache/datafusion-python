@@ -276,7 +276,6 @@ impl PyParquetColumnOptions {
                 statistics_enabled,
                 bloom_filter_fpp,
                 bloom_filter_ndv,
-                ..Default::default()
             },
         }
     }
