@@ -319,14 +319,17 @@ fn find_window_fn(
 }
 
 /// Creates a new Window function expression
+#[allow(clippy::too_many_arguments)]
 #[pyfunction]
-#[pyo3(signature = (name, args, partition_by=None, order_by=None, window_frame=None, ctx=None))]
+#[pyo3(signature = (name, args, partition_by=None, order_by=None, window_frame=None, filter=None, distinct=false, ctx=None))]
 fn window(
     name: &str,
     args: Vec<PyExpr>,
     partition_by: Option<Vec<PyExpr>>,
     order_by: Option<Vec<PySortExpr>>,
     window_frame: Option<PyWindowFrame>,
+    filter: Option<PyExpr>,
+    distinct: bool,
     ctx: Option<PySessionContext>,
 ) -> PyResult<PyExpr> {
     let fun = find_window_fn(name, ctx)?;
@@ -334,6 +337,7 @@ fn window(
     let window_frame = window_frame
         .map(|w| w.into())
         .unwrap_or(WindowFrame::new(order_by.as_ref().map(|v| !v.is_empty())));
+    let filter = filter.map(|f| f.expr.into());
 
     Ok(PyExpr {
         expr: datafusion::logical_expr::Expr::WindowFunction(Box::new(WindowFunction {
@@ -351,6 +355,8 @@ fn window(
                     .map(|x| x.into())
                     .collect::<Vec<_>>(),
                 window_frame,
+                filter,
+                distinct,
                 null_treatment: None,
             },
         })),
@@ -649,36 +655,36 @@ aggregate_function!(approx_median);
 // aggregate_function!(grouping);
 
 #[pyfunction]
-#[pyo3(signature = (expression, percentile, num_centroids=None, filter=None))]
+#[pyo3(signature = (sort_expression, percentile, num_centroids=None, filter=None))]
 pub fn approx_percentile_cont(
-    expression: PyExpr,
+    sort_expression: PySortExpr,
     percentile: f64,
     num_centroids: Option<i64>, // enforces optional arguments at the end, currently
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
-    let args = if let Some(num_centroids) = num_centroids {
-        vec![expression.expr, lit(percentile), lit(num_centroids)]
-    } else {
-        vec![expression.expr, lit(percentile)]
-    };
-    let udaf = functions_aggregate::approx_percentile_cont::approx_percentile_cont_udaf();
-    let agg_fn = udaf.call(args);
+    let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont(
+        sort_expression.sort,
+        lit(percentile),
+        num_centroids.map(lit),
+    );
 
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)
 }
 
 #[pyfunction]
-#[pyo3(signature = (expression, weight, percentile, filter=None))]
+#[pyo3(signature = (sort_expression, weight, percentile, num_centroids=None, filter=None))]
 pub fn approx_percentile_cont_with_weight(
-    expression: PyExpr,
+    sort_expression: PySortExpr,
     weight: PyExpr,
     percentile: f64,
+    num_centroids: Option<i64>,
     filter: Option<PyExpr>,
 ) -> PyDataFusionResult<PyExpr> {
     let agg_fn = functions_aggregate::expr_fn::approx_percentile_cont_with_weight(
-        expression.expr,
+        sort_expression.sort,
         weight.expr,
         lit(percentile),
+        num_centroids.map(lit),
     );
 
     add_builder_fns_to_aggregate(agg_fn, None, filter, None, None)

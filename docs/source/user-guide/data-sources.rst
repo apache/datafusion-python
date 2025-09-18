@@ -181,10 +181,41 @@ which can lead to a significant performance difference.
     df = ctx.table("my_delta_table")
     df.show()
 
-Iceberg
--------
+Apache Iceberg
+--------------
 
-Coming soon!
+DataFusion 45.0.0 and later support the ability to register Apache Iceberg tables as table providers through the Custom Table Provider interface.
+
+This requires either the `pyiceberg <https://pypi.org/project/pyiceberg/>`__ library (>=0.10.0) or the `pyiceberg-core <https://pypi.org/project/pyiceberg-core/>`__ library (>=0.5.0).
+
+* The ``pyiceberg-core`` library exposes Iceberg Rust's implementation of the Custom Table Provider interface as python bindings.
+* The ``pyiceberg`` library utilizes the ``pyiceberg-core`` python bindings under the hood and provides a native way for Python users to interact with the DataFusion.
+
+.. code-block:: python
+
+    from datafusion import SessionContext
+    from pyiceberg.catalog import load_catalog
+    import pyarrow as pa
+
+    # Load catalog and create/load a table
+    catalog = load_catalog("catalog", type="in-memory")
+    catalog.create_namespace_if_not_exists("default")
+
+    # Create some sample data
+    data = pa.table({"x": [1, 2, 3], "y": [4, 5, 6]})
+    iceberg_table = catalog.create_table("default.test", schema=data.schema)
+    iceberg_table.append(data)
+
+    # Register the table with DataFusion
+    ctx = SessionContext()
+    ctx.register_table_provider("test", iceberg_table)
+
+    # Query the table using DataFusion
+    ctx.table("test").show()
+
+
+Note that the Datafusion integration rely on features from the `Iceberg Rust <https://github.com/apache/iceberg-rust/>`_ implementation instead of the `PyIceberg <https://github.com/apache/iceberg-python/>`_ implementation. 
+Features that are available in PyIceberg but not yet in Iceberg Rust will not be available when using DataFusion.
 
 Custom Table Provider
 ---------------------

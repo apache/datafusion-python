@@ -131,7 +131,23 @@ def test_aggregation_stats(df, agg_expr, calc_expected):
         (f.approx_median(column("b"), filter=column("a") != 2), pa.array([5]), False),
         (f.approx_percentile_cont(column("b"), 0.5), pa.array([4]), False),
         (
+            f.approx_percentile_cont(
+                column("b").sort(ascending=True, nulls_first=False),
+                0.5,
+                num_centroids=2,
+            ),
+            pa.array([4]),
+            False,
+        ),
+        (
             f.approx_percentile_cont_with_weight(column("b"), lit(0.6), 0.5),
+            pa.array([6], type=pa.float64()),
+            False,
+        ),
+        (
+            f.approx_percentile_cont_with_weight(
+                column("b").sort(ascending=False, nulls_first=False), lit(0.6), 0.5
+            ),
             pa.array([6], type=pa.float64()),
             False,
         ),

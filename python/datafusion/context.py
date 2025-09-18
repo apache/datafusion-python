@@ -22,16 +22,16 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
 
-import pyarrow as pa
-
 try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
+import pyarrow as pa
+
 from datafusion.catalog import Catalog, CatalogProvider, Table
 from datafusion.dataframe import DataFrame
-from datafusion.expr import Expr, SortExpr, sort_list_to_raw_sort_list
+from datafusion.expr import SortKey, sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
 from datafusion.user_defined import AggregateUDF, ScalarUDF, TableFunction, WindowUDF
 from datafusion.utils import _normalize_table_provider
@@ -40,12 +40,14 @@ from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
 from ._internal import SessionContext as SessionContextInternal
 from ._internal import SQLOptions as SQLOptionsInternal
+from ._internal import expr as expr_internal
 
 if TYPE_CHECKING:
     import pathlib
+    from collections.abc import Sequence
 
     import pandas as pd
-    import polars as pl
+    import polars as pl  # type: ignore[import]
 
     from datafusion import TableProvider
     from datafusion.plan import ExecutionPlan, LogicalPlan
@@ -555,7 +557,7 @@ class SessionContext:
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".parquet",
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[Expr | SortExpr]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
 
@@ -569,23 +571,20 @@ class SessionContext:
             table_partition_cols: Partition columns.
             file_extension: File extension of the provided table.
             schema: The data source schema.
-            file_sort_order: Sort order for the file.
+            file_sort_order: Sort order for the file. Each sort key can be
+                specified as a column name (``str``), an expression
+                (``Expr``), or a ``SortExpr``.
         """
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
-        file_sort_order_raw = (
-            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
-            if file_sort_order is not None
-            else None
-        )
         self.ctx.register_listing_table(
             name,
             str(path),
             table_partition_cols,
             file_extension,
             schema,
-            file_sort_order_raw,
+            self._convert_file_sort_order(file_sort_order),
         )
 
     def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
@@ -831,7 +830,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[SortExpr]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
 
@@ -850,7 +849,9 @@ class SessionContext:
                 that may be in the file schema. This can help avoid schema
                 conflicts due to metadata.
             schema: The data source schema.
-            file_sort_order: Sort order for the file.
+            file_sort_order: Sort order for the file. Each sort key can be
+                specified as a column name (``str``), an expression
+                (``Expr``), or a ``SortExpr``.
         """
         if table_partition_cols is None:
             table_partition_cols = []
@@ -863,9 +864,7 @@ class SessionContext:
             file_extension,
             skip_metadata,
             schema,
-            [sort_list_to_raw_sort_list(exprs) for exprs in file_sort_order]
-            if file_sort_order is not None
-            else None,
+            self._convert_file_sort_order(file_sort_order),
         )
 
     def register_csv(
@@ -1122,7 +1121,7 @@ class SessionContext:
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
         schema: pa.Schema | None = None,
-        file_sort_order: list[list[Expr | SortExpr]] | None = None,
+        file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
 
@@ -1139,7 +1138,9 @@ class SessionContext:
             schema: An optional schema representing the parquet files. If None,
                 the parquet reader will try to infer it based on data in the
                 file.
-            file_sort_order: Sort order for the file.
+            file_sort_order: Sort order for the file. Each sort key can be
+                specified as a column name (``str``), an expression
+                (``Expr``), or a ``SortExpr``.
 
         Returns:
             DataFrame representation of the read Parquet files
@@ -1147,11 +1148,7 @@ class SessionContext:
         if table_partition_cols is None:
             table_partition_cols = []
         table_partition_cols = self._convert_table_partition_cols(table_partition_cols)
-        file_sort_order = (
-            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
-            if file_sort_order is not None
-            else None
-        )
+        file_sort_order = self._convert_file_sort_order(file_sort_order)
         return DataFrame(
             self.ctx.read_parquet(
                 str(path),
@@ -1201,6 +1198,24 @@ class SessionContext:
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""
         return RecordBatchStream(self.ctx.execute(plan._raw_plan, partitions))
+
+    @staticmethod
+    def _convert_file_sort_order(
+        file_sort_order: Sequence[Sequence[SortKey]] | None,
+    ) -> list[list[expr_internal.SortExpr]] | None:
+        """Convert nested ``SortKey`` sequences into raw sort expressions.
+
+        Each ``SortKey`` can be a column name string, an ``Expr``, or a
+        ``SortExpr`` and will be converted using
+        :func:`datafusion.expr.sort_list_to_raw_sort_list`.
+        """
+        # Convert each ``SortKey`` in the provided sort order to the low-level
+        # representation expected by the Rust bindings.
+        return (
+            [sort_list_to_raw_sort_list(f) for f in file_sort_order]
+            if file_sort_order is not None
+            else None
+        )
 
     @staticmethod
     def _convert_table_partition_cols(
