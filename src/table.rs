@@ -82,10 +82,7 @@ impl PyTableProvider {
     pub fn from_dataframe(df: &PyDataFrame) -> Self {
         // Clone the inner DataFrame and convert it into a view TableProvider.
         // `into_view` consumes a DataFrame, so clone the underlying DataFrame
-        // (this mirrors the previous implementation which used
-        // `self.df.as_ref().clone().into_view()`).
-        let table_provider = df.inner_df().as_ref().clone().into_view();
-        Self::new(table_provider)
+        Self::new(df.inner_df().as_ref().clone().into_view())
     }
 
     /// Create a `TableProvider` from a `DataFrame` by converting it into a view.
