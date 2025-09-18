@@ -31,7 +31,6 @@ use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
-use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
@@ -268,8 +267,9 @@ impl PyDataFrame {
         }
     }
 
-    pub(crate) fn to_view_provider(&self) -> Arc<dyn TableProvider> {
-        self.df.as_ref().clone().into_view()
+    /// Return a clone of the inner Arc<DataFrame> for crate-local callers.
+    pub(crate) fn inner_df(&self) -> Arc<DataFrame> {
+        Arc::clone(&self.df)
     }
 
     fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
@@ -407,7 +407,7 @@ impl PyDataFrame {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
         // so that we don't invalidate this PyDataFrame.
-        let table_provider = self.to_view_provider();
+        let table_provider = self.df.as_ref().clone().into_view();
         Ok(PyTableProvider::new(table_provider))
     }
 
