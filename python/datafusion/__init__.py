@@ -21,6 +21,9 @@ This is a Python library that binds to Apache Arrow in-memory query engine DataF
 See https://datafusion.apache.org/python for more information.
 """
 
+# isort: skip_file  # Prevent import-sorting linter errors (I001)
+# ruff: noqa: I001
+
 from __future__ import annotations
 
 from typing import Any
@@ -28,17 +31,16 @@ from typing import Any
 try:
     import importlib.metadata as importlib_metadata
 except ImportError:
-    import importlib_metadata
+    import importlib_metadata  # type: ignore[import]
 
+# Public submodules
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config, EXPECTED_PROVIDER_MSG
 from .catalog import Catalog, Database, Table
 from .col import col, column
-from .common import (
-    DFSchema,
-)
+from .common import DFSchema
 from .context import (
     RuntimeEnvBuilder,
     SessionConfig,
@@ -47,10 +49,7 @@ from .context import (
 )
 from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
 from .dataframe_formatter import configure_formatter
-from .expr import (
-    Expr,
-    WindowFrame,
-)
+from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
@@ -70,6 +69,7 @@ from .user_defined import (
 __version__ = importlib_metadata.version(__name__)
 
 __all__ = [
+    "EXPECTED_PROVIDER_MSG",
     "Accumulator",
     "AggregateUDF",
     "Catalog",
@@ -77,7 +77,6 @@ __all__ = [
     "DFSchema",
     "DataFrame",
     "Database",
-    "EXPECTED_PROVIDER_MSG",
     "ExecutionPlan",
     "Expr",
     "LogicalPlan",

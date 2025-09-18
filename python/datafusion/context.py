@@ -29,11 +29,10 @@ except ImportError:
 
 import pyarrow as pa
 
-from datafusion.catalog import Catalog, CatalogProvider, Table
+from datafusion.catalog import Catalog
 from datafusion.dataframe import DataFrame
-from datafusion.expr import SortKey, sort_list_to_raw_sort_list
+from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.user_defined import AggregateUDF, ScalarUDF, TableFunction, WindowUDF
 from datafusion.utils import _normalize_table_provider
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
@@ -50,7 +49,15 @@ if TYPE_CHECKING:
     import polars as pl  # type: ignore[import]
 
     from datafusion import TableProvider
+    from datafusion.catalog import CatalogProvider, Table
+    from datafusion.expr import SortKey
     from datafusion.plan import ExecutionPlan, LogicalPlan
+    from datafusion.user_defined import (
+        AggregateUDF,
+        ScalarUDF,
+        TableFunction,
+        WindowUDF,
+    )
 
 
 class ArrowStreamExportable(Protocol):
@@ -735,7 +742,7 @@ class SessionContext:
     # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
     # is the discussion on how we arrived at adding register_view
     def register_view(self, name: str, df: DataFrame) -> None:
-        """Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+        """Register a :py:class:`~datafusion.dataframe.DataFrame` as a view.
 
         Args:
             name (str): The name to register the view under.
@@ -747,8 +754,7 @@ class SessionContext:
     def register_table(
         self, name: str, table: Table | TableProvider | TableProviderExportable
     ) -> None:
-        """Register a :py:class:`~datafusion.catalog.Table` or
-        :py:class:`~datafusion.TableProvider`.
+        """Register a Table or TableProvider.
 
         The registered table can be referenced from SQL statements executed against
         this context.

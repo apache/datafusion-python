@@ -60,7 +60,6 @@ def _normalize_table_provider(
     Raises:
         TypeError: If ``table`` is not a supported table provider input.
     """
-
     from datafusion.catalog import Table as _Table
     from datafusion.table_provider import TableProvider as _TableProvider
 

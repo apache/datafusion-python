@@ -67,10 +67,7 @@ class TableProvider:
         """
         from datafusion.dataframe import DataFrame as DataFrameWrapper
 
-        if isinstance(df, DataFrameWrapper):
-            dataframe = df
-        else:
-            dataframe = DataFrameWrapper(df)
+        dataframe = df if isinstance(df, DataFrameWrapper) else DataFrameWrapper(df)
 
         return dataframe.into_view()
 
