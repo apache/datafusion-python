@@ -39,20 +39,47 @@ A complete example can be found in the `examples folder <https://github.com/apac
         ) -> PyResult<Bound<'py, PyCapsule>> {
             let name = CString::new("datafusion_table_provider").unwrap();
 
-            let provider = Arc::new(self.clone())
-                .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-            let provider = FFI_TableProvider::new(Arc::new(provider), false);
+            let provider = Arc::new(self.clone());
+            let provider = FFI_TableProvider::new(provider, false, None);
 
             PyCapsule::new_bound(py, provider, Some(name.clone()))
         }
     }
 
-Once you have this library available, in python you can register your table provider
-to the ``SessionContext``.
+Once you have this library available, you can construct a
+:py:class:`~datafusion.TableProvider` in Python and register it with the
+``SessionContext``.  Table providers can be created either from the PyCapsule exposed by
+your Rust provider or from an existing :py:class:`~datafusion.dataframe.DataFrame`.
+Call the provider's ``__datafusion_table_provider__()`` method to obtain the capsule
+before constructing a ``TableProvider``. The ``TableProvider.from_view()`` helper is
+deprecated; instead use ``TableProvider.from_dataframe()`` or ``DataFrame.into_view()``.
+
+.. note::
+
+   :py:meth:`~datafusion.context.SessionContext.register_table_provider` is
+   deprecated. Use
+   :py:meth:`~datafusion.context.SessionContext.register_table` with the
+   resulting :py:class:`~datafusion.TableProvider` instead.
 
 .. code-block:: python
 
-    provider = MyTableProvider()
-    ctx.register_table_provider("my_table", provider)
+    from datafusion import SessionContext, TableProvider
 
-    ctx.table("my_table").show()
+    ctx = SessionContext()
+    provider = MyTableProvider()
+
+    capsule = provider.__datafusion_table_provider__()
+    capsule_provider = TableProvider.from_capsule(capsule)
+
+    df = ctx.from_pydict({"a": [1]})
+    view_provider = TableProvider.from_dataframe(df)
+    # or: view_provider = df.into_view()
+
+    ctx.register_table("capsule_table", capsule_provider)
+    ctx.register_table("view_table", view_provider)
+
+    ctx.table("capsule_table").show()
+    ctx.table("view_table").show()
+
+Both ``TableProvider.from_capsule()`` and ``TableProvider.from_dataframe()`` create
+table providers that can be registered with the SessionContext using ``register_table()``.

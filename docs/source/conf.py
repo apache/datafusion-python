@@ -83,6 +83,9 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),
         ("module", "datafusion.udf"),
+        # Private variables causing duplicate documentation
+        ("data", "datafusion.utils._PYARROW_DATASET_TYPES"),
+        ("variable", "datafusion.utils._PYARROW_DATASET_TYPES"),
         # Deprecated
         ("class", "datafusion.substrait.serde"),
         ("class", "datafusion.substrait.plan"),
@@ -92,6 +95,10 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         ("method", "datafusion.dataframe.DataFrame.unnest_column"),
     ]
     if (what, name) in skip_contents:
+        skip = True
+
+    # Skip private members that start with underscore to avoid duplication
+    if name.split(".")[-1].startswith("_") and what in ("data", "variable"):
         skip = True
 
     return skip

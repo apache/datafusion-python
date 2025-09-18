@@ -23,9 +23,13 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Protocol
 
 import datafusion._internal as df_internal
+from datafusion.utils import _normalize_table_provider
 
 if TYPE_CHECKING:
     import pyarrow as pa
+
+    from datafusion import TableProvider
+    from datafusion.context import TableProviderExportable
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -82,7 +86,11 @@ class Catalog:
         """Returns the database with the given ``name`` from this catalog."""
         return self.schema(name)
 
-    def register_schema(self, name, schema) -> Schema | None:
+    def register_schema(
+        self,
+        name: str,
+        schema: Schema | SchemaProvider | SchemaProviderExportable,
+    ) -> Schema | None:
         """Register a schema with this catalog."""
         if isinstance(schema, Schema):
             return self.catalog.register_schema(name, schema._raw_schema)
@@ -122,11 +130,16 @@ class Schema:
         """Return the table with the given ``name`` from this schema."""
         return Table(self._raw_schema.table(name))
 
-    def register_table(self, name, table) -> None:
-        """Register a table provider in this schema."""
-        if isinstance(table, Table):
-            return self._raw_schema.register_table(name, table.table)
-        return self._raw_schema.register_table(name, table)
+    def register_table(
+        self, name: str, table: Table | TableProvider | TableProviderExportable
+    ) -> None:
+        """Register a table or table provider in this schema.
+
+        Objects implementing ``__datafusion_table_provider__`` are also supported
+        and treated as :class:`TableProvider` instances.
+        """
+        provider = _normalize_table_provider(table)
+        return self._raw_schema.register_table(name, provider)
 
     def deregister_table(self, name: str) -> None:
         """Deregister a table provider from this schema."""
@@ -219,14 +232,19 @@ class SchemaProvider(ABC):
         """Retrieve a specific table from this schema."""
         ...
 
-    def register_table(self, name: str, table: Table) -> None:  # noqa: B027
-        """Add a table from this schema.
+    def register_table(  # noqa: B027
+        self, name: str, table: Table | TableProvider | TableProviderExportable
+    ) -> None:
+        """Add a table to this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do
         not need to implement this method.
+
+        Objects implementing ``__datafusion_table_provider__`` are also supported
+        and treated as :class:`TableProvider` instances.
         """
 
-    def deregister_table(self, name, cascade: bool) -> None:  # noqa: B027
+    def deregister_table(self, name: str, cascade: bool) -> None:  # noqa: B027
         """Remove a table from this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do

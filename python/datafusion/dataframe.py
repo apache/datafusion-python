@@ -60,6 +60,8 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
+    from datafusion.table_provider import TableProvider
+
 from enum import Enum
 
 
@@ -313,9 +315,29 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> pa.Table:
-        """Convert DataFrame as a ViewTable which can be used in register_table."""
-        return self.df.into_view()
+    def into_view(self) -> TableProvider:
+        """Convert ``DataFrame`` into a ``TableProvider`` view for registration.
+
+        This is the preferred way to obtain a view for
+        :py:meth:`~datafusion.context.SessionContext.register_table`.
+        ``datafusion.TableProvider.from_dataframe`` calls this method under the hood,
+        and the older ``TableProvider.from_view`` helper is deprecated.
+
+        The ``DataFrame`` remains valid after conversion, so it can still be used for
+        additional queries alongside the returned view.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.sql("SELECT 1 AS value")
+            >>> provider = df.into_view()
+            >>> ctx.register_table("values_view", provider)
+            >>> df.collect()  # The DataFrame is still usable
+            >>> ctx.sql("SELECT value FROM values_view").collect()
+        """
+        from datafusion.table_provider import TableProvider as _TableProvider
+
+        return _TableProvider(self.df.into_view())
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.
