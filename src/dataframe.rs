@@ -397,11 +397,12 @@ impl PyDataFrame {
         PyArrowType(self.df.schema().into())
     }
 
-    /// Convert this DataFrame into a Table that can be used in register_table
+    /// Convert this DataFrame into a Table Provider that can be used in register_table
     /// By convention, into_... methods consume self and return the new object.
-    /// Here we intentionally borrow to avoid invalidating the Python wrapper.
-    /// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-    /// - we have not decided on the table_provider approach yet
+    /// Disabling the clippy lint, so we can use &self
+    /// because we're working with Python bindings
+    /// where objects are shared
+    #[allow(clippy::wrong_self_convention)]
     pub fn into_view(&self) -> PyDataFusionResult<PyTableProvider> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
