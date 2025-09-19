@@ -268,6 +268,20 @@ def test_sql_missing_table_without_auto_register(ctx):
     assert "arrow_table" in missing_tables
 
 
+def test_extract_missing_table_names_from_attribute():
+    class MissingTablesError(Exception):
+        def __init__(self) -> None:
+            super().__init__("custom error")
+            self.missing_table_names = (
+                "catalog.schema.arrow_table",
+                "plain_table",
+            )
+
+    err = MissingTablesError()
+    missing_tables = SessionContext._extract_missing_table_names(err)
+    assert missing_tables == ["arrow_table", "plain_table"]
+
+
 def test_sql_auto_register_arrow_table():
     ctx = SessionContext(auto_register_python_variables=True)
     arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841

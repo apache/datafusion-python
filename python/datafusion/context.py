@@ -743,17 +743,33 @@ class SessionContext:
 
     @staticmethod
     def _extract_missing_table_names(err: Exception) -> list[str]:
+        def _normalize(names: list[Any]) -> list[str]:
+            tables: list[str] = []
+            for raw_name in names:
+                if not raw_name:
+                    continue
+                raw_str = str(raw_name)
+                tables.append(raw_str.rsplit(".", 1)[-1])
+            return tables
+
+        missing_tables = getattr(err, "missing_table_names", None)
+        if missing_tables is not None:
+            if isinstance(missing_tables, str):
+                candidates: list[Any] = [missing_tables]
+            else:
+                try:
+                    candidates = list(missing_tables)
+                except TypeError:
+                    candidates = [missing_tables]
+
+            return _normalize(candidates)
+
         message = str(err)
         matches = set()
         for pattern in (r"table '([^']+)' not found", r"No table named '([^']+)'"):
             matches.update(re.findall(pattern, message))
 
-        tables: list[str] = []
-        for raw_name in matches:
-            if not raw_name:
-                continue
-            tables.append(raw_name.rsplit(".", 1)[-1])
-        return tables
+        return _normalize(list(matches))
 
     def _register_python_tables(self, tables: list[str]) -> bool:
         registered_any = False
