@@ -772,10 +772,10 @@ def test_sql_with_options_no_statements(ctx):
         ctx.sql_with_options(sql, options=options)
 
 
-def test_sql_auto_register_pandas():
+def test_session_config_python_table_lookup_enables_auto_registration():
     pd = pytest.importorskip("pandas")
 
-    ctx = SessionContext()
+    ctx = SessionContext(config=SessionConfig().with_python_table_lookup(True))
     pdf = pd.DataFrame({"value": [1, 2, 3]})
     assert len(pdf) == 3
 
@@ -784,7 +784,7 @@ def test_sql_auto_register_pandas():
 
 
 def test_sql_auto_register_arrow():
-    ctx = SessionContext()
+    ctx = SessionContext(auto_register_python_objects=True)
     arrow_table = pa.table({"value": [1, 2, 3, 4]})
     assert arrow_table.num_rows == 4
 
@@ -795,7 +795,7 @@ def test_sql_auto_register_arrow():
 def test_sql_auto_register_disabled():
     pd = pytest.importorskip("pandas")
 
-    ctx = SessionContext(auto_register_python_objects=False)
+    ctx = SessionContext()
     pdf = pd.DataFrame({"value": [1, 2, 3]})
     assert len(pdf) == 3
 

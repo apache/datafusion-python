@@ -228,10 +228,10 @@ Core Classes
     * :py:meth:`~datafusion.SessionContext.from_pandas` - Create from Pandas DataFrame
     * :py:meth:`~datafusion.SessionContext.from_arrow` - Create from Arrow data
 
-    ``SessionContext`` automatically resolves SQL table names that match
-    in-scope Python data objects. When ``auto_register_python_objects`` is
-    enabled (the default), a query such as ``ctx.sql("SELECT * FROM pdf")``
-    will register a pandas or PyArrow object named ``pdf`` without calling
+    ``SessionContext`` can automatically resolve SQL table names that match
+    in-scope Python data objects. When automatic lookup is enabled, a query
+    such as ``ctx.sql("SELECT * FROM pdf")`` will register a pandas or
+    PyArrow object named ``pdf`` without calling
     :py:meth:`~datafusion.SessionContext.from_pandas` or
     :py:meth:`~datafusion.SessionContext.from_arrow` explicitly. This requires
     the corresponding library (``pandas`` for pandas objects, ``pyarrow`` for
@@ -242,16 +242,18 @@ Core Classes
         import pandas as pd
         from datafusion import SessionContext
 
-        ctx = SessionContext()
+        ctx = SessionContext(auto_register_python_objects=True)
         pdf = pd.DataFrame({"value": [1, 2, 3]})
 
         df = ctx.sql("SELECT SUM(value) AS total FROM pdf")
         print(df.to_pandas())  # automatically registers `pdf`
 
-    To opt out, either pass ``auto_register_python_objects=False`` when
-    constructing the session, or call
-    :py:meth:`~datafusion.SessionContext.set_python_table_lookup` with
-    ``False`` to require explicit registration.
+    Automatic lookup is disabled by default. Enable it by passing
+    ``auto_register_python_objects=True`` when constructing the session or by
+    configuring :py:class:`~datafusion.SessionConfig` with
+    :py:meth:`~datafusion.SessionConfig.with_python_table_lookup`. Use
+    :py:meth:`~datafusion.SessionContext.set_python_table_lookup` to toggle the
+    behaviour at runtime.
 
     See: :py:class:`datafusion.SessionContext`
 

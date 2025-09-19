@@ -524,7 +524,10 @@ class SessionContext:
             runtime: Runtime configuration options.
             auto_register_python_objects: Automatically register referenced
                 Python objects (such as pandas or PyArrow data) when ``sql``
-                queries reference them by name.
+                queries reference them by name. When omitted, this defaults to
+                the value configured via
+                :py:meth:`~datafusion.SessionConfig.with_python_table_lookup`
+                (``False`` unless explicitly enabled).
             auto_register_python_variables: Deprecated alias for
                 ``auto_register_python_objects``. When provided, it overrides
                 the automatic registration behavior.
@@ -543,6 +546,7 @@ class SessionContext:
             config.config_internal if config is not None else None,
             runtime.config_internal if runtime is not None else None,
         )
+
         if auto_register_python_variables is not None:
             warnings.warn(
                 _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
@@ -550,26 +554,26 @@ class SessionContext:
                 stacklevel=2,
             )
 
-        if (
-            auto_register_python_objects is not None
-            and auto_register_python_variables is not None
-            and auto_register_python_objects != auto_register_python_variables
-        ):
-            conflict_message = (
-                "auto_register_python_objects and auto_register_python_variables "
-                "were provided with conflicting values."
-            )
-            raise ValueError(conflict_message)
+        if auto_register_python_variables is not None and auto_register_python_objects is not None:
+            if auto_register_python_objects != auto_register_python_variables:
+                conflict_message = (
+                    "auto_register_python_objects and auto_register_python_variables "
+                    "were provided with conflicting values."
+                )
+                raise ValueError(conflict_message)
 
-        if auto_register_python_objects is None:
-            if auto_register_python_variables is None:
-                auto_python_table_lookup = True
-            else:
-                auto_python_table_lookup = auto_register_python_variables
-        else:
+        # Determine the final value for python table lookup
+        if auto_register_python_objects is not None:
             auto_python_table_lookup = auto_register_python_objects
+        elif auto_register_python_variables is not None:
+            auto_python_table_lookup = auto_register_python_variables
+        else:
+            # Default to session config value or False if not configured
+            auto_python_table_lookup = getattr(
+                config, "_python_table_lookup", False
+            )
 
-        self._auto_python_table_lookup = auto_python_table_lookup
+        self._auto_python_table_lookup = bool(auto_python_table_lookup)
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -597,7 +601,7 @@ class SessionContext:
         obj = klass.__new__(klass)
         obj.ctx = self.ctx.enable_url_table()
         obj._auto_python_table_lookup = getattr(
-            self, "_auto_python_table_lookup", True
+            self, "_auto_python_table_lookup", False
         )
         return obj
 
@@ -605,10 +609,10 @@ class SessionContext:
         """Enable or disable automatic registration of Python objects in SQL.
 
         Args:
-            enabled: When ``True`` (default), SQL queries automatically attempt
-                to resolve missing table names by looking up Python objects in
-                the caller's scope. When ``False``, missing tables will raise an
-                error unless they have been explicitly registered.
+            enabled: When ``True``, SQL queries automatically attempt to
+                resolve missing table names by looking up Python objects in the
+                caller's scope. Use ``False`` to require explicit registration
+                of any referenced tables.
 
         Returns:
             The current :py:class:`SessionContext` instance for chaining.
@@ -624,7 +628,7 @@ class SessionContext:
             DeprecationWarning,
             stacklevel=2,
         )
-        return getattr(self, "_auto_python_table_lookup", True)
+        return bool(getattr(self, "_auto_python_table_lookup", False))
 
     @auto_register_python_variables.setter
     def auto_register_python_variables(self, enabled: bool) -> None:
@@ -633,7 +637,7 @@ class SessionContext:
             DeprecationWarning,
             stacklevel=2,
         )
-        self.set_python_table_lookup(enabled)
+        self.set_python_table_lookup(bool(enabled))
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
@@ -709,7 +713,7 @@ class SessionContext:
         try:
             return _execute_sql()
         except Exception as err:
-            if not getattr(self, "_auto_python_table_lookup", True):
+            if not getattr(self, "_auto_python_table_lookup", False):
                 raise
 
             missing_tables = self._extract_missing_table_names(err)
