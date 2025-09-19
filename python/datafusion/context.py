@@ -19,9 +19,11 @@
 
 from __future__ import annotations
 
+import importlib
 import inspect
 import re
 import warnings
+from functools import cache
 from typing import TYPE_CHECKING, Any, Iterator, Protocol
 
 try:
@@ -53,6 +55,15 @@ if TYPE_CHECKING:
     import polars as pl  # type: ignore[import]
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
+
+
+@cache
+def _load_optional_module(module_name: str) -> Any | None:
+    """Return the module for *module_name* if it can be imported."""
+    try:
+        return importlib.import_module(module_name)
+    except ModuleNotFoundError:
+        return None
 
 
 class ArrowStreamExportable(Protocol):
@@ -105,6 +116,7 @@ class SessionConfig:
             config_options: Configuration options.
         """
         self.config_internal = SessionConfigInternal(config_options)
+        self._python_table_lookup = False
 
     def with_create_default_catalog_and_schema(
         self, enabled: bool = True
@@ -272,6 +284,11 @@ class SessionConfig:
             A new :py:class:`SessionConfig` object with the updated setting.
         """
         self.config_internal = self.config_internal.with_parquet_pruning(enabled)
+        return self
+
+    def with_python_table_lookup(self, enabled: bool = True) -> SessionConfig:
+        """Enable implicit table lookup for Python objects when running SQL."""
+        self._python_table_lookup = enabled
         return self
 
     def set(self, key: str, value: str) -> SessionConfig:
@@ -513,11 +530,17 @@ class SessionContext:
             ctx = SessionContext()
             df = ctx.read_csv("data.csv")
         """
-        config = config.config_internal if config is not None else None
-        runtime = runtime.config_internal if runtime is not None else None
+        python_table_lookup = auto_register_python_variables  # Use parameter as default
+        if config is not None:
+            python_table_lookup = config._python_table_lookup
+            config_internal = config.config_internal
+        else:
+            config_internal = None
 
-        self.ctx = SessionContextInternal(config, runtime)
-        self._auto_register_python_variables = auto_register_python_variables
+        runtime_internal = runtime.config_internal if runtime is not None else None
+
+        self.ctx = SessionContextInternal(config_internal, runtime_internal)
+        self._python_table_lookup = python_table_lookup
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -544,17 +567,27 @@ class SessionContext:
         klass = self.__class__
         obj = klass.__new__(klass)
         obj.ctx = self.ctx.enable_url_table()
-        obj._auto_register_python_variables = self._auto_register_python_variables
+        obj._python_table_lookup = self._python_table_lookup
         return obj
 
+    def set_python_table_lookup(self, enabled: bool) -> None:
+        """Enable or disable implicit table lookup for Python objects."""
+        self._python_table_lookup = enabled
+
+    # Backward compatibility properties
     @property
     def auto_register_python_variables(self) -> bool:
         """Toggle automatic registration of Python variables in SQL queries."""
-        return self._auto_register_python_variables
+        return self._python_table_lookup
 
     @auto_register_python_variables.setter
     def auto_register_python_variables(self, enabled: bool) -> None:
-        self._auto_register_python_variables = bool(enabled)
+        self._python_table_lookup = bool(enabled)
+
+    def _extract_missing_table_names(self, error: Exception) -> set[str]:
+        """Extract missing table names from error (backward compatibility)."""
+        missing_table = self._extract_missing_table_name(error)
+        return {missing_table} if missing_table else set()
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
@@ -620,12 +653,29 @@ class SessionContext:
         Returns:
             DataFrame representation of the SQL query.
         """
-        options_internal = None if options is None else options.options_internal
-        return self._sql_with_retry(
-            query,
-            options_internal,
-            self._auto_register_python_variables,
-        )
+        attempted_missing_tables: set[str] = set()
+
+        while True:
+            try:
+                if options is None:
+                    result = self.ctx.sql(query)
+                else:
+                    result = self.ctx.sql_with_options(query, options.options_internal)
+            except Exception as exc:
+                missing_table = self._extract_missing_table_name(exc)
+                if (
+                    missing_table is None
+                    or missing_table in attempted_missing_tables
+                    or not self._python_table_lookup
+                ):
+                    raise
+
+                attempted_missing_tables.add(missing_table)
+                if not self._register_missing_table_from_callers(missing_table):
+                    raise
+                continue
+
+            return DataFrame(result)
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
@@ -642,137 +692,122 @@ class SessionContext:
         """
         return self.sql(query, options)
 
-    def _sql_with_retry(
-        self,
-        query: str,
-        options_internal: SQLOptionsInternal | None,
-        allow_retry: bool,
-    ) -> DataFrame:
-        try:
-            if options_internal is None:
-                return DataFrame(self.ctx.sql(query))
-            return DataFrame(self.ctx.sql_with_options(query, options_internal))
-        except Exception as exc:
-            if not allow_retry or not self._handle_missing_table_error(exc):
-                raise
-            return self._sql_with_retry(query, options_internal, allow_retry)
-
-    def _handle_missing_table_error(self, error: Exception) -> bool:
-        missing_tables = self._extract_missing_table_names(error)
-        if not missing_tables:
-            return False
-
-        registered_any = False
-        attempted: set[str] = set()
-        for raw_name in missing_tables:
-            for candidate in self._candidate_table_names(raw_name):
-                if candidate in attempted:
-                    continue
-                attempted.add(candidate)
-
-                value = self._lookup_python_variable(candidate)
-                if value is None:
-                    continue
-                if self._register_python_value(candidate, value):
-                    registered_any = True
-                    break
-        return registered_any
-
-    def _candidate_table_names(self, identifier: str) -> Iterator[str]:
-        cleaned = identifier.strip().strip('"')
-        if not cleaned:
-            return
-
-        seen: set[str] = set()
-        candidates = [cleaned]
-        if "." in cleaned:
-            candidates.append(cleaned.rsplit(".", 1)[-1])
-
-        for candidate in candidates:
-            normalized = candidate.strip()
-            if not normalized or normalized in seen:
-                continue
-            seen.add(normalized)
-            yield normalized
-
-    def _extract_missing_table_names(self, error: Exception) -> set[str]:
-        names: set[str] = set()
-        attribute = getattr(error, "missing_table_names", None)
-        if attribute is not None:
-            if isinstance(attribute, (list, tuple, set, frozenset)):
-                for item in attribute:
-                    if item is None:
-                        continue
-                    for candidate in self._candidate_table_names(str(item)):
-                        names.add(candidate)
-            elif attribute is not None:
-                for candidate in self._candidate_table_names(str(attribute)):
-                    names.add(candidate)
-        if names:
-            return names
-
+    @staticmethod
+    def _extract_missing_table_name(error: Exception) -> str | None:
         message = str(error)
-        return {match.group(1) for match in _MISSING_TABLE_PATTERN.finditer(message)}
-
-    def _lookup_python_variable(self, name: str) -> Any | None:
-        frame = inspect.currentframe()
-        outer = frame.f_back if frame is not None else None
-        lower_name = name.lower()
-
-        try:
-            while outer is not None:
-                for mapping in (outer.f_locals, outer.f_globals):
-                    if not mapping:
-                        continue
-                    if name in mapping:
-                        value = mapping[name]
-                        if value is not None:
-                            return value
-                        # allow outer scopes to provide a non-``None`` value
-                        continue
-                    for key, value in mapping.items():
-                        if value is None:
-                            continue
-                        if key == name or key.lower() == lower_name:
-                            return value
-                outer = outer.f_back
-        finally:
-            del outer
-            del frame
+        patterns = (
+            r"table '([^']+)' not found",
+            r"Table not found: ['\"]?([^\s'\"]+)['\"]?",
+            r"Table or CTE with name ['\"]?([^\s'\"]+)['\"]? not found",
+            r"Invalid reference to table ['\"]?([^\s'\"]+)['\"]?",
+        )
+        for pattern in patterns:
+            if match := re.search(pattern, message):
+                return match.group(1)
         return None
 
-    def _register_python_value(self, table_name: str, value: Any) -> bool:
-        if value is None:
+    def _register_missing_table_from_callers(self, table_name: str) -> bool:
+        frame = inspect.currentframe()
+        if frame is None:
             return False
 
-        registered = False
-        if isinstance(value, DataFrame):
-            self.register_view(table_name, value)
-            registered = True
-        elif isinstance(value, Table):
-            self.register_table(table_name, value)
-            registered = True
-        else:
-            provider = getattr(value, "__datafusion_table_provider__", None)
-            if callable(provider):
-                self.register_table_provider(table_name, value)
-                registered = True
-            elif hasattr(value, "__arrow_c_stream__") or hasattr(
-                value, "__arrow_c_array__"
-            ):
-                self.from_arrow(value, name=table_name)
-                registered = True
-            else:
-                module_name = getattr(type(value), "__module__", "") or ""
-                class_name = getattr(type(value), "__name__", "") or ""
-                if module_name.startswith("pandas.") and class_name == "DataFrame":
-                    self.from_pandas(value, name=table_name)
-                    registered = True
-                elif module_name.startswith("polars") and class_name == "DataFrame":
-                    self.from_polars(value, name=table_name)
-                    registered = True
+        try:
+            frame = frame.f_back
+            if frame is None:
+                return False
+            frame = frame.f_back
+            while frame is not None:
+                if self._register_from_namespace(table_name, frame.f_locals):
+                    return True
+                if self._register_from_namespace(table_name, frame.f_globals):
+                    return True
+                frame = frame.f_back
+        finally:
+            del frame
+        return False
 
-        return registered
+    def _register_from_namespace(
+        self, table_name: str, namespace: dict[str, Any]
+    ) -> bool:
+        if table_name not in namespace:
+            return False
+        value = namespace[table_name]
+        return self._register_python_value(table_name, value)
+
+    def _register_python_value(self, table_name: str, value: Any) -> bool:
+        pandas = _load_optional_module("pandas")
+        polars = _load_optional_module("polars")
+        polars_df = getattr(polars, "DataFrame", None) if polars is not None else None
+
+        handlers = (
+            (isinstance(value, DataFrame), self._register_datafusion_dataframe),
+            (
+                isinstance(value, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)),
+                self._register_arrow_object,
+            ),
+            (
+                pandas is not None and isinstance(value, pandas.DataFrame),
+                self._register_pandas_dataframe,
+            ),
+            (
+                polars_df is not None and isinstance(value, polars_df),
+                self._register_polars_dataframe,
+            ),
+        )
+
+        for matches, handler in handlers:
+            if matches:
+                return handler(table_name, value)
+
+        return False
+
+    def _register_datafusion_dataframe(self, table_name: str, value: DataFrame) -> bool:
+        try:
+            self.register_view(table_name, value)
+        except Exception as exc:  # noqa: BLE001
+            warnings.warn(
+                "Failed to register DataFusion DataFrame for table "
+                f"'{table_name}': {exc}",
+                stacklevel=4,
+            )
+            return False
+        return True
+
+    def _register_arrow_object(self, table_name: str, value: Any) -> bool:
+        try:
+            self.from_arrow(value, table_name)
+        except Exception as exc:  # noqa: BLE001
+            warnings.warn(
+                "Failed to register Arrow data for table "
+                f"'{table_name}': {exc}",
+                stacklevel=4,
+            )
+            return False
+        return True
+
+    def _register_pandas_dataframe(self, table_name: str, value: Any) -> bool:
+        try:
+            self.from_pandas(value, table_name)
+        except Exception as exc:  # noqa: BLE001
+            warnings.warn(
+                "Failed to register pandas DataFrame for table "
+                f"'{table_name}': {exc}",
+                stacklevel=4,
+            )
+            return False
+        return True
+
+    def _register_polars_dataframe(self, table_name: str, value: Any) -> bool:
+        try:
+            self.from_polars(value, table_name)
+        except Exception as exc:  # noqa: BLE001
+            warnings.warn(
+                "Failed to register polars DataFrame for table "
+                f"'{table_name}': {exc}",
+                stacklevel=4,
+            )
+            return False
+        return True
 
     def create_dataframe(
         self,
