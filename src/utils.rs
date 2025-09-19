@@ -23,6 +23,7 @@ use crate::{
 use datafusion::{
     common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
 use std::{future::Future, sync::OnceLock, time::Duration};
@@ -114,6 +115,13 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     }
 
     Ok(())
+}
+
+pub(crate) fn foreign_table_provider_from_capsule(
+    capsule: &Bound<PyCapsule>,
+) -> PyResult<ForeignTableProvider> {
+    validate_pycapsule(capsule, "datafusion_table_provider")?;
+    Ok(unsafe { capsule.reference::<FFI_TableProvider>() }.into())
 }
 
 pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {

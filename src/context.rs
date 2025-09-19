@@ -45,7 +45,10 @@ use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{
+    foreign_table_provider_from_capsule, get_global_ctx, get_tokio_runtime, validate_pycapsule,
+    wait_for_future,
+};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -71,7 +74,6 @@ use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use pyo3::IntoPyObjectExt;
 use tokio::task::JoinHandle;
@@ -654,12 +656,10 @@ impl PySessionContext {
         if provider.hasattr("__datafusion_table_provider__")? {
             let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_provider")?;
+            let provider = foreign_table_provider_from_capsule(capsule)?;
+            let provider: Arc<dyn TableProvider> = Arc::new(provider);
 
-            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-            let provider: ForeignTableProvider = provider.into();
-
-            let _ = self.ctx.register_table(name, Arc::new(provider))?;
+            let _ = self.ctx.register_table(name, provider)?;
 
             Ok(())
         } else {
@@ -1113,12 +1113,10 @@ impl PySessionContext {
         if table.hasattr("__datafusion_table_provider__")? {
             let capsule = table.getattr("__datafusion_table_provider__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_provider")?;
+            let provider = foreign_table_provider_from_capsule(capsule)?;
+            let provider: Arc<dyn TableProvider> = Arc::new(provider);
 
-            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-            let provider: ForeignTableProvider = provider.into();
-
-            let df = self.ctx.read_table(Arc::new(provider))?;
+            let df = self.ctx.read_table(provider)?;
             Ok(PyDataFrame::new(df))
         } else {
             Err(crate::errors::PyDataFusionError::Common(
