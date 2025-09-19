@@ -19,11 +19,9 @@
 
 from __future__ import annotations
 
-import importlib
 import inspect
 import re
 import warnings
-from functools import cache
 from typing import TYPE_CHECKING, Any, Protocol
 
 try:
@@ -53,16 +51,6 @@ if TYPE_CHECKING:
     import polars as pl  # type: ignore[import]
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
-
-
-@cache
-def _load_optional_module(module_name: str) -> Any | None:
-    """Return the module for *module_name* if it can be imported."""
-    try:
-        return importlib.import_module(module_name)
-    except ModuleNotFoundError:
-        return None
-
 
 _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED = (
     "SessionContext.auto_register_python_variables is deprecated; use "
@@ -554,13 +542,16 @@ class SessionContext:
                 stacklevel=2,
             )
 
-        if auto_register_python_variables is not None and auto_register_python_objects is not None:
-            if auto_register_python_objects != auto_register_python_variables:
-                conflict_message = (
-                    "auto_register_python_objects and auto_register_python_variables "
-                    "were provided with conflicting values."
-                )
-                raise ValueError(conflict_message)
+        if (
+            auto_register_python_variables is not None
+            and auto_register_python_objects is not None
+            and auto_register_python_objects != auto_register_python_variables
+        ):
+            conflict_message = (
+                "auto_register_python_objects and auto_register_python_variables "
+                "were provided with conflicting values."
+            )
+            raise ValueError(conflict_message)
 
         # Determine the final value for python table lookup
         if auto_register_python_objects is not None:
@@ -569,9 +560,7 @@ class SessionContext:
             auto_python_table_lookup = auto_register_python_variables
         else:
             # Default to session config value or False if not configured
-            auto_python_table_lookup = getattr(
-                config, "_python_table_lookup", False
-            )
+            auto_python_table_lookup = getattr(config, "_python_table_lookup", False)
 
         self._auto_python_table_lookup = bool(auto_python_table_lookup)
 
@@ -703,12 +692,11 @@ class SessionContext:
         Returns:
             DataFrame representation of the SQL query.
         """
+
         def _execute_sql() -> DataFrame:
             if options is None:
                 return DataFrame(self.ctx.sql(query))
-            return DataFrame(
-                self.ctx.sql_with_options(query, options.options_internal)
-            )
+            return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
 
         auto_lookup_enabled = getattr(self, "_auto_python_table_lookup", False)
 
@@ -829,6 +817,7 @@ class SessionContext:
             return True
 
         return False
+
     def create_dataframe(
         self,
         partitions: list[list[pa.RecordBatch]],
