@@ -17,7 +17,7 @@
 
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::utils::{validate_pycapsule, wait_for_future};
+use crate::utils::{get_tokio_runtime, validate_pycapsule, wait_for_future};
 use async_trait::async_trait;
 use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
 use datafusion::common::DataFusionError;
@@ -34,6 +34,7 @@ use pyo3::types::PyCapsule;
 use pyo3::IntoPyObjectExt;
 use std::any::Any;
 use std::collections::HashSet;
+use std::ffi::CString;
 use std::sync::Arc;
 
 #[pyclass(name = "RawCatalog", module = "datafusion.catalog", subclass)]
@@ -259,6 +260,23 @@ impl PyTable {
             TableType::View => "view",
             TableType::Temporary => "temporary",
         }
+    }
+
+    fn __datafusion_table_provider__<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<Bound<'py, PyCapsule>> {
+        let name = CString::new("datafusion_table_provider").unwrap();
+        let runtime = get_tokio_runtime().0.handle().clone();
+
+        let provider = Arc::clone(&self.table);
+        let provider_ptr = Arc::into_raw(provider);
+        let provider: Arc<dyn TableProvider + Send> =
+            unsafe { Arc::from_raw(provider_ptr as *const (dyn TableProvider + Send)) };
+
+        let provider = FFI_TableProvider::new(provider, false, Some(runtime));
+
+        PyCapsule::new(py, provider, Some(name.clone()))
     }
 
     fn __repr__(&self) -> PyResult<String> {

@@ -17,6 +17,7 @@
 import datetime as dt
 import gzip
 import pathlib
+from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -111,6 +112,28 @@ def test_register_record_batches(ctx):
 
     assert result[0].column(0) == pa.array([5, 7, 9])
     assert result[0].column(1) == pa.array([-3, -3, -3])
+
+
+def test_read_table_accepts_table_provider(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array(["x", "y"])],
+        names=["value", "label"],
+    )
+
+    ctx.register_record_batches("capsule_provider", [[batch]])
+
+    table = ctx.catalog().schema().table("capsule_provider")
+    provider = table.table
+
+    expected = pa.Table.from_batches([batch])
+
+    provider_result = pa.Table.from_batches(
+        ctx.read_table(provider).collect()
+    )
+    assert provider_result.equals(expected)
+
+    table_result = pa.Table.from_batches(ctx.read_table(table).collect())
+    assert table_result.equals(expected)
 
 
 def test_create_dataframe_registers_unique_table_name(ctx):
@@ -484,8 +507,6 @@ def test_table_exist(ctx):
 
 
 def test_table_not_found(ctx):
-    from uuid import uuid4
-
     with pytest.raises(KeyError):
         ctx.table(f"not-found-{uuid4()}")
 

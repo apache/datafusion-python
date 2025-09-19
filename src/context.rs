@@ -1102,9 +1102,29 @@ impl PySessionContext {
         Ok(PyDataFrame::new(df))
     }
 
-    pub fn read_table(&self, table: &PyTable) -> PyDataFusionResult<PyDataFrame> {
-        let df = self.ctx.read_table(table.table())?;
-        Ok(PyDataFrame::new(df))
+    pub fn read_table(&self, table: Bound<'_, PyAny>) -> PyDataFusionResult<PyDataFrame> {
+        if table.hasattr("__datafusion_table_provider__")? {
+            let capsule = table.getattr("__datafusion_table_provider__")?.call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+            let provider: ForeignTableProvider = provider.into();
+
+            let df = self.ctx.read_table(Arc::new(provider))?;
+            Ok(PyDataFrame::new(df))
+        } else {
+            match table.extract::<PyTable>() {
+                Ok(py_table) => {
+                    let df = self.ctx.read_table(py_table.table())?;
+                    Ok(PyDataFrame::new(df))
+                }
+                Err(_) => Err(crate::errors::PyDataFusionError::Common(
+                    "Object must be a datafusion.Table or expose __datafusion_table_provider__()."
+                        .to_string(),
+                )),
+            }
+        }
     }
 
     fn __repr__(&self) -> PyResult<String> {
