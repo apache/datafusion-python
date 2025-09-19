@@ -294,6 +294,35 @@ def test_sql_auto_register_arrow_table():
     assert result[0].column(0).to_pylist()[0] == 6
 
 
+def test_sql_auto_register_multiple_tables_single_query():
+    ctx = SessionContext(auto_register_python_objects=True)
+
+    customers = pa.Table.from_pydict(  # noqa: F841
+        {"customer_id": [1, 2], "name": ["Alice", "Bob"]}
+    )
+    orders = pa.Table.from_pydict(  # noqa: F841
+        {"order_id": [100, 200], "customer_id": [1, 2]}
+    )
+
+    result = ctx.sql(
+        """
+        SELECT c.customer_id, o.order_id
+        FROM customers c
+        JOIN orders o ON c.customer_id = o.customer_id
+        ORDER BY o.order_id
+        """
+    ).collect()
+
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict(
+        {"customer_id": [1, 2], "order_id": [100, 200]}
+    )
+
+    assert actual.equals(expected)
+    assert ctx.table_exist("customers")
+    assert ctx.table_exist("orders")
+
+
 def test_sql_auto_register_arrow_outer_scope():
     ctx = SessionContext()
     ctx.auto_register_python_variables = True

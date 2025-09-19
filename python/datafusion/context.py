@@ -710,21 +710,25 @@ class SessionContext:
                 self.ctx.sql_with_options(query, options.options_internal)
             )
 
-        try:
-            return _execute_sql()
-        except Exception as err:
-            if not getattr(self, "_auto_python_table_lookup", False):
-                raise
+        auto_lookup_enabled = getattr(self, "_auto_python_table_lookup", False)
 
-            missing_tables = self._extract_missing_table_names(err)
-            if not missing_tables:
-                raise
+        while True:
+            try:
+                return _execute_sql()
+            except Exception as err:
+                if not auto_lookup_enabled:
+                    raise
 
-            registered = self._register_python_tables(missing_tables)
-            if not registered:
-                raise
+                missing_tables = self._extract_missing_table_names(err)
+                if not missing_tables:
+                    raise
 
-            return _execute_sql()
+                registered = self._register_python_tables(missing_tables)
+                if not registered:
+                    raise
+
+                # Retry to allow registering additional tables referenced in the query.
+                continue
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
