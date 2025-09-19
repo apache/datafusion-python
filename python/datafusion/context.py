@@ -22,6 +22,7 @@ from __future__ import annotations
 import inspect
 import re
 import warnings
+import weakref
 from typing import TYPE_CHECKING, Any, Protocol
 
 try:
@@ -563,6 +564,9 @@ class SessionContext:
             auto_python_table_lookup = getattr(config, "_python_table_lookup", False)
 
         self._auto_python_table_lookup = bool(auto_python_table_lookup)
+        self._python_table_bindings: dict[
+            str, tuple[weakref.ReferenceType[Any] | None, int]
+        ] = {}
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -592,6 +596,9 @@ class SessionContext:
         obj._auto_python_table_lookup = getattr(
             self, "_auto_python_table_lookup", False
         )
+        obj._python_table_bindings = getattr(
+            self, "_python_table_bindings", {}
+        ).copy()
         return obj
 
     def set_python_table_lookup(self, enabled: bool = True) -> SessionContext:
@@ -700,10 +707,13 @@ class SessionContext:
 
         auto_lookup_enabled = getattr(self, "_auto_python_table_lookup", False)
 
+        if auto_lookup_enabled:
+            self._refresh_python_table_bindings()
+
         while True:
             try:
                 return _execute_sql()
-            except Exception as err:
+            except Exception as err:  # noqa: PERF203
                 if not auto_lookup_enabled:
                     raise
 
@@ -815,34 +825,60 @@ class SessionContext:
             del frame
         return None
 
+    def _refresh_python_table_bindings(self) -> None:
+        bindings = getattr(self, "_python_table_bindings", {})
+        for table_name, (obj_ref, cached_id) in list(bindings.items()):
+            cached_obj = obj_ref() if obj_ref is not None else None
+            current_obj = self._lookup_python_object(table_name)
+            weakref_dead = obj_ref is not None and cached_obj is None
+            id_mismatch = current_obj is not None and id(current_obj) != cached_id
+
+            if not (weakref_dead or id_mismatch):
+                continue
+
+            self.deregister_table(table_name)
+
+            if current_obj is None:
+                bindings.pop(table_name, None)
+                continue
+
+            if self._register_python_object(table_name, current_obj):
+                continue
+
+            bindings.pop(table_name, None)
+
     def _register_python_object(self, name: str, obj: Any) -> bool:
+        registered = False
+
         if isinstance(obj, DataFrame):
             self.register_view(name, obj)
-            return True
-
-        if (
+            registered = True
+        elif (
             obj.__class__.__module__.startswith("polars.")
             and obj.__class__.__name__ == "DataFrame"
         ):
             self.from_polars(obj, name=name)
-            return True
-
-        if (
+            registered = True
+        elif (
             obj.__class__.__module__.startswith("pandas.")
             and obj.__class__.__name__ == "DataFrame"
         ):
             self.from_pandas(obj, name=name)
-            return True
-
-        if isinstance(obj, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)):
+            registered = True
+        elif isinstance(obj, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)) or (
+            hasattr(obj, "__arrow_c_stream__") or hasattr(obj, "__arrow_c_array__")
+        ):
             self.from_arrow(obj, name=name)
-            return True
+            registered = True
 
-        if hasattr(obj, "__arrow_c_stream__") or hasattr(obj, "__arrow_c_array__"):
-            self.from_arrow(obj, name=name)
-            return True
+        if registered:
+            try:
+                reference: weakref.ReferenceType[Any] | None = weakref.ref(obj)
+            except TypeError:
+                reference = None
+            self._python_table_bindings[name] = (reference, id(obj))
 
-        return False
+        return registered
 
     def create_dataframe(
         self,
@@ -981,6 +1017,7 @@ class SessionContext:
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
         self.ctx.deregister_table(name)
+        self._python_table_bindings.pop(name, None)
 
     def catalog_names(self) -> set[str]:
         """Returns the list of catalogs in this context."""

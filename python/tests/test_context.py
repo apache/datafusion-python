@@ -375,6 +375,27 @@ def test_sql_auto_register_pandas_dataframe():
     assert pytest.approx(result[0].column(0).to_pylist()[0]) == 2.5
 
 
+def test_sql_auto_register_refreshes_reassigned_dataframe():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(auto_register_python_objects=True)
+    pandas_df = pd.DataFrame({"value": [1, 2, 3]})
+
+    first = ctx.sql(
+        "SELECT SUM(value) AS total FROM pandas_df",
+    ).collect()
+
+    assert first[0].column(0).to_pylist()[0] == 6
+
+    pandas_df = pd.DataFrame({"value": [10, 20]})  # noqa: F841
+
+    second = ctx.sql(
+        "SELECT SUM(value) AS total FROM pandas_df",
+    ).collect()
+
+    assert second[0].column(0).to_pylist()[0] == 30
+
+
 def test_sql_auto_register_polars_dataframe():
     pl = pytest.importorskip("polars")
 
