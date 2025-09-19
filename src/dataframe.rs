@@ -51,7 +51,8 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::{
-    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, table_provider_capsule_name,
+    validate_pycapsule, wait_for_future,
 };
 use crate::{
     errors::PyDataFusionResult,
@@ -83,12 +84,10 @@ impl PyTableProvider {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = CString::new("datafusion_table_provider").unwrap();
-
         let runtime = get_tokio_runtime().0.handle().clone();
         let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
 
-        PyCapsule::new(py, provider, Some(name.clone()))
+        PyCapsule::new(py, provider, Some(table_provider_capsule_name().to_owned()))
     }
 }
 
