@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, Union
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -83,7 +83,10 @@ class TableProviderExportable(Protocol):
 
 
 # Type alias for objects accepted by read_table
-TableLike = Table | TableProviderExportable
+# Use typing.Union here (instead of PEP 604 `|`) because this alias is
+# evaluated at import time and must work on Python 3.9 where PEP 604
+# syntax is not supported for runtime expressions.
+TableLike = Union[Table, TableProviderExportable]
 
 
 class CatalogProviderExportable(Protocol):
