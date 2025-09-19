@@ -784,13 +784,32 @@ class SessionContext:
         try:
             if frame is not None:
                 frame = frame.f_back
+            lower_name = name.lower()
+
+            def _match(mapping: dict[str, Any]) -> Any | None:
+                if not mapping:
+                    return None
+
+                value = mapping.get(name)
+                if value is not None:
+                    return value
+
+                for key, candidate in mapping.items():
+                    if isinstance(key, str) and key.lower() == lower_name:
+                        if candidate is not None:
+                            return candidate
+
+                return None
+
             while frame is not None:
                 locals_dict = frame.f_locals
-                if name in locals_dict:
-                    return locals_dict[name]
+                match = _match(locals_dict)
+                if match is not None:
+                    return match
                 globals_dict = frame.f_globals
-                if name in globals_dict:
-                    return globals_dict[name]
+                match = _match(globals_dict)
+                if match is not None:
+                    return match
                 frame = frame.f_back
         finally:
             del frame

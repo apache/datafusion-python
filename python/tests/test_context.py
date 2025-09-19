@@ -337,6 +337,31 @@ def test_sql_auto_register_arrow_outer_scope():
     assert result[0].column(0).to_pylist()[0] == 4
 
 
+def test_sql_auto_register_skips_none_shadowing():
+    ctx = SessionContext(auto_register_python_objects=True)
+    mytable = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    def run_query():
+        mytable = None  # noqa: F841
+        return ctx.sql(
+            "SELECT SUM(value) AS total FROM mytable",
+        ).collect()
+
+    batches = run_query()
+    assert batches[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_case_insensitive_lookup():
+    ctx = SessionContext(auto_register_python_objects=True)
+    MyTable = pa.Table.from_pydict({"value": [2, 3]})  # noqa: F841
+
+    batches = ctx.sql(
+        "SELECT SUM(value) AS total FROM mytable",
+    ).collect()
+
+    assert batches[0].column(0).to_pylist()[0] == 5
+
+
 def test_sql_auto_register_pandas_dataframe():
     pd = pytest.importorskip("pandas")
 
