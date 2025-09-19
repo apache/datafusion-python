@@ -21,7 +21,7 @@ use std::sync::Arc;
 use crate::dataframe::PyTableProvider;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::utils::{foreign_table_provider_from_capsule, validate_pycapsule};
+use crate::utils::{try_table_provider_from_object, validate_pycapsule};
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
@@ -98,12 +98,7 @@ fn call_python_table_function(
         let provider_obj = func.call1(py, py_args)?;
         let provider = provider_obj.bind(py);
 
-        if provider.hasattr("__datafusion_table_provider__")? {
-            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            let provider = foreign_table_provider_from_capsule(capsule)?;
-            let provider: Arc<dyn TableProvider> = Arc::new(provider);
-
+        if let Some(provider) = try_table_provider_from_object(provider)? {
             Ok(provider)
         } else {
             Err(PyNotImplementedError::new_err(

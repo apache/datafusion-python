@@ -46,7 +46,7 @@ use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{
-    foreign_table_provider_from_capsule, get_global_ctx, get_tokio_runtime, validate_pycapsule,
+    get_global_ctx, get_tokio_runtime, try_table_provider_from_object, validate_pycapsule,
     wait_for_future,
 };
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
@@ -653,12 +653,7 @@ impl PySessionContext {
         name: &str,
         provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        if provider.hasattr("__datafusion_table_provider__")? {
-            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            let provider = foreign_table_provider_from_capsule(capsule)?;
-            let provider: Arc<dyn TableProvider> = Arc::new(provider);
-
+        if let Some(provider) = try_table_provider_from_object(&provider)? {
             let _ = self.ctx.register_table(name, provider)?;
 
             Ok(())
@@ -1110,12 +1105,7 @@ impl PySessionContext {
             return Ok(PyDataFrame::new(df));
         }
 
-        if table.hasattr("__datafusion_table_provider__")? {
-            let capsule = table.getattr("__datafusion_table_provider__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            let provider = foreign_table_provider_from_capsule(capsule)?;
-            let provider: Arc<dyn TableProvider> = Arc::new(provider);
-
+        if let Some(provider) = try_table_provider_from_object(&table)? {
             let df = self.ctx.read_table(provider)?;
             Ok(PyDataFrame::new(df))
         } else {
