@@ -82,6 +82,10 @@ class TableProviderExportable(Protocol):
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
 
 
+# Type alias for objects accepted by read_table
+TableLike = Table | TableProviderExportable
+
+
 class CatalogProviderExportable(Protocol):
     """Type hint for object that has __datafusion_catalog_provider__ PyCapsule.
 
@@ -1164,7 +1168,7 @@ class SessionContext:
         )
 
     def read_table(
-        self, table: Table | TableProviderExportable
+        self, table: TableLike
     ) -> DataFrame:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
 
