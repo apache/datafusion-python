@@ -197,7 +197,9 @@ impl PySchema {
     }
 
     fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
-        let provider = if table_provider.hasattr("__datafusion_table_provider__")? {
+        let provider = if let Ok(py_table) = table_provider.extract::<PyTable>() {
+            py_table.table
+        } else if table_provider.hasattr("__datafusion_table_provider__")? {
             let capsule = table_provider
                 .getattr("__datafusion_table_provider__")?
                 .call0()?;
@@ -208,14 +210,9 @@ impl PySchema {
             let provider: ForeignTableProvider = provider.into();
             Arc::new(provider) as Arc<dyn TableProvider>
         } else {
-            match table_provider.extract::<PyTable>() {
-                Ok(py_table) => py_table.table,
-                Err(_) => {
-                    let py = table_provider.py();
-                    let provider = Dataset::new(&table_provider, py)?;
-                    Arc::new(provider) as Arc<dyn TableProvider>
-                }
-            }
+            let py = table_provider.py();
+            let provider = Dataset::new(&table_provider, py)?;
+            Arc::new(provider) as Arc<dyn TableProvider>
         };
 
         let _ = self
@@ -322,6 +319,10 @@ impl RustWrappedPySchemaProvider {
                 return Ok(None);
             }
 
+            if let Ok(inner_table) = py_table.extract::<PyTable>() {
+                return Ok(Some(inner_table.table));
+            }
+
             if py_table.hasattr("__datafusion_table_provider__")? {
                 let capsule = py_table.getattr("__datafusion_table_provider__")?.call0()?;
                 let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
@@ -338,13 +339,8 @@ impl RustWrappedPySchemaProvider {
                     }
                 }
 
-                match py_table.extract::<PyTable>() {
-                    Ok(py_table) => Ok(Some(py_table.table)),
-                    Err(_) => {
-                        let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
-                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
-                    }
-                }
+                let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
+                Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
             }
         })
     }

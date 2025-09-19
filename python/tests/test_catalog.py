@@ -164,6 +164,28 @@ def test_python_table_provider(ctx: SessionContext):
     assert schema.table_names() == {"table4"}
 
 
+def test_register_raw_table_without_capsule(ctx: SessionContext, database, monkeypatch):
+    schema = ctx.catalog().schema("public")
+    raw_table = schema.table("csv").table
+
+    def fail(*args, **kwargs):
+        raise AssertionError("RawTable capsule path should not be invoked")
+
+    monkeypatch.setattr(type(raw_table), "__datafusion_table_provider__", fail)
+
+    schema.register_table("csv_copy", raw_table)
+
+    # Restore the original implementation to avoid interfering with later assertions
+    monkeypatch.undo()
+
+    batches = ctx.sql("select count(*) from csv_copy").collect()
+
+    assert len(batches) == 1
+    assert batches[0].column(0) == pa.array([4])
+
+    schema.deregister_table("csv_copy")
+
+
 def test_in_end_to_end_python_providers(ctx: SessionContext):
     """Test registering all python providers and running a query against them."""
 
