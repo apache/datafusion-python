@@ -1103,6 +1103,13 @@ impl PySessionContext {
     }
 
     pub fn read_table(&self, table: Bound<'_, PyAny>) -> PyDataFusionResult<PyDataFrame> {
+        if let Ok(py_table) = table.extract::<PyTable>() {
+            // RawTable values returned from DataFusion (e.g. ctx.catalog().schema().table(...).table)
+            // should keep using this native path to avoid an unnecessary FFI round-trip.
+            let df = self.ctx.read_table(py_table.table())?;
+            return Ok(PyDataFrame::new(df));
+        }
+
         if table.hasattr("__datafusion_table_provider__")? {
             let capsule = table.getattr("__datafusion_table_provider__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
@@ -1114,16 +1121,10 @@ impl PySessionContext {
             let df = self.ctx.read_table(Arc::new(provider))?;
             Ok(PyDataFrame::new(df))
         } else {
-            match table.extract::<PyTable>() {
-                Ok(py_table) => {
-                    let df = self.ctx.read_table(py_table.table())?;
-                    Ok(PyDataFrame::new(df))
-                }
-                Err(_) => Err(crate::errors::PyDataFusionError::Common(
-                    "Object must be a datafusion.Table or expose __datafusion_table_provider__()."
-                        .to_string(),
-                )),
-            }
+            Err(crate::errors::PyDataFusionError::Common(
+                "Object must be a datafusion.Table or expose __datafusion_table_provider__()."
+                    .to_string(),
+            ))
         }
     }
 
