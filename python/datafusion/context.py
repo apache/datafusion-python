@@ -802,6 +802,13 @@ class SessionContext:
             return True
 
         if (
+            obj.__class__.__module__.startswith("polars.")
+            and obj.__class__.__name__ == "DataFrame"
+        ):
+            self.from_polars(obj, name=name)
+            return True
+
+        if (
             obj.__class__.__module__.startswith("pandas.")
             and obj.__class__.__name__ == "DataFrame"
         ):
