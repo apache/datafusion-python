@@ -149,6 +149,14 @@ class Table:
         """Print a string representation of the table."""
         return self.table.__repr__()
 
+    def __datafusion_table_provider__(self) -> object:  # noqa: D105
+        """Expose the internal DataFusion table provider PyCapsule.
+
+        This forwards the call to the underlying Rust-backed RawTable so the
+        object can be used as a TableProviderExportable by the FFI layer.
+        """
+        return self.table.__datafusion_table_provider__()
+
     @staticmethod
     def from_dataset(dataset: pa.dataset.Dataset) -> Table:
         """Turn a pyarrow Dataset into a Table."""
