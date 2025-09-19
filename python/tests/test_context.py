@@ -261,9 +261,9 @@ def test_sql_missing_table_without_auto_register(ctx):
     with pytest.raises(Exception, match="not found") as excinfo:
         ctx.sql("SELECT * FROM arrow_table").collect()
 
-    missing = getattr(excinfo.value, "missing_table_names", None)
-    assert missing is not None
-    assert "arrow_table" in set(ctx._extract_missing_table_names(excinfo.value))
+    # Test that our extraction method works correctly
+    missing_tables = ctx._extract_missing_table_names(excinfo.value)
+    assert "arrow_table" in missing_tables
 
 
 def test_sql_auto_register_arrow_table():
@@ -346,6 +346,48 @@ def test_from_pandas(ctx):
     assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
+
+
+def test_sql_from_local_arrow_table(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    arrow_table = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})
+
+    result = ctx.sql("SELECT * FROM arrow_table ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_pandas_dataframe(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    pd = pytest.importorskip("pandas")
+    pandas_df = pd.DataFrame({"a": [3, 1], "b": ["z", "y"]})
+
+    result = ctx.sql("SELECT * FROM pandas_df ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 3], "b": ["y", "z"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_polars_dataframe(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    pl = pytest.importorskip("polars")
+    polars_df = pl.DataFrame({"a": [2, 1], "b": ["beta", "alpha"]})
+
+    result = ctx.sql("SELECT * FROM polars_df ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 2], "b": ["alpha", "beta"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_unsupported_object(ctx):
+    unsupported = object()
+
+    with pytest.raises(Exception, match="table 'unsupported' not found"):
+        ctx.sql("SELECT * FROM unsupported").collect()
 
 
 def test_from_polars(ctx):

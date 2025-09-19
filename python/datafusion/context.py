@@ -692,21 +692,35 @@ class SessionContext:
         """
         return self.sql(query, options)
 
-    @staticmethod
-    def _extract_missing_table_name(error: Exception) -> str | None:
+    def _extract_missing_table_name(self, error: Exception) -> str | None:
+        """Return the missing table name if the exception represents that error."""
         message = str(error)
+        
+        # Try the global pattern first (supports both table and view, case-insensitive)
+        match = _MISSING_TABLE_PATTERN.search(message)
+        if match:
+            table_name = match.group(1)
+            # Handle dotted table names by extracting the last part
+            if "." in table_name:
+                table_name = table_name.rsplit(".", 1)[-1]
+            return table_name
+        
+        # Fallback to additional patterns for broader compatibility
         patterns = (
-            r"table '([^']+)' not found",
             r"Table not found: ['\"]?([^\s'\"]+)['\"]?",
             r"Table or CTE with name ['\"]?([^\s'\"]+)['\"]? not found",
             r"Invalid reference to table ['\"]?([^\s'\"]+)['\"]?",
         )
         for pattern in patterns:
             if match := re.search(pattern, message):
-                return match.group(1)
+                table_name = match.group(1)
+                if "." in table_name:
+                    table_name = table_name.rsplit(".", 1)[-1]
+                return table_name
         return None
 
     def _register_missing_table_from_callers(self, table_name: str) -> bool:
+        """Register a supported local object from caller stack frames."""
         frame = inspect.currentframe()
         if frame is None:
             return False
@@ -729,12 +743,14 @@ class SessionContext:
     def _register_from_namespace(
         self, table_name: str, namespace: dict[str, Any]
     ) -> bool:
+        """Register a table from a namespace if the table name exists."""
         if table_name not in namespace:
             return False
         value = namespace[table_name]
         return self._register_python_value(table_name, value)
 
     def _register_python_value(self, table_name: str, value: Any) -> bool:
+        """Register a Python object as a table if it's a supported type."""
         pandas = _load_optional_module("pandas")
         polars = _load_optional_module("polars")
         polars_df = getattr(polars, "DataFrame", None) if polars is not None else None
@@ -753,6 +769,11 @@ class SessionContext:
                 polars_df is not None and isinstance(value, polars_df),
                 self._register_polars_dataframe,
             ),
+            # Support objects with Arrow C Stream interface
+            (
+                hasattr(value, "__arrow_c_stream__") or hasattr(value, "__arrow_c_array__"),
+                self._register_arrow_object,
+            ),
         )
 
         for matches, handler in handlers:
@@ -762,48 +783,48 @@ class SessionContext:
         return False
 
     def _register_datafusion_dataframe(self, table_name: str, value: DataFrame) -> bool:
+        """Register a DataFusion DataFrame as a view."""
         try:
             self.register_view(table_name, value)
         except Exception as exc:  # noqa: BLE001
             warnings.warn(
-                "Failed to register DataFusion DataFrame for table "
-                f"'{table_name}': {exc}",
+                f"Failed to register DataFusion DataFrame for table '{table_name}': {exc}",
                 stacklevel=4,
             )
             return False
         return True
 
     def _register_arrow_object(self, table_name: str, value: Any) -> bool:
+        """Register an Arrow object (Table, RecordBatch, RecordBatchReader, or stream)."""
         try:
             self.from_arrow(value, table_name)
         except Exception as exc:  # noqa: BLE001
             warnings.warn(
-                "Failed to register Arrow data for table "
-                f"'{table_name}': {exc}",
+                f"Failed to register Arrow data for table '{table_name}': {exc}",
                 stacklevel=4,
             )
             return False
         return True
 
     def _register_pandas_dataframe(self, table_name: str, value: Any) -> bool:
+        """Register a pandas DataFrame."""
         try:
             self.from_pandas(value, table_name)
         except Exception as exc:  # noqa: BLE001
             warnings.warn(
-                "Failed to register pandas DataFrame for table "
-                f"'{table_name}': {exc}",
+                f"Failed to register pandas DataFrame for table '{table_name}': {exc}",
                 stacklevel=4,
             )
             return False
         return True
 
     def _register_polars_dataframe(self, table_name: str, value: Any) -> bool:
+        """Register a polars DataFrame."""
         try:
             self.from_polars(value, table_name)
         except Exception as exc:  # noqa: BLE001
             warnings.warn(
-                "Failed to register polars DataFrame for table "
-                f"'{table_name}': {exc}",
+                f"Failed to register polars DataFrame for table '{table_name}': {exc}",
                 stacklevel=4,
             )
             return False
