@@ -169,7 +169,8 @@ def test_register_raw_table_without_capsule(ctx: SessionContext, database, monke
     raw_table = schema.table("csv").table
 
     def fail(*args, **kwargs):
-        raise AssertionError("RawTable capsule path should not be invoked")
+        msg = "RawTable capsule path should not be invoked"
+        raise AssertionError(msg)
 
     monkeypatch.setattr(type(raw_table), "__datafusion_table_provider__", fail)
 

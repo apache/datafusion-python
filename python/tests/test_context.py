@@ -127,9 +127,7 @@ def test_read_table_accepts_table_provider(ctx):
 
     expected = pa.Table.from_batches([batch])
 
-    provider_result = pa.Table.from_batches(
-        ctx.read_table(provider).collect()
-    )
+    provider_result = pa.Table.from_batches(ctx.read_table(provider).collect())
     assert provider_result.equals(expected)
 
     table_result = pa.Table.from_batches(ctx.read_table(table).collect())

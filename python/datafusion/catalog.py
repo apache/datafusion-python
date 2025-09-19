@@ -149,7 +149,7 @@ class Table:
         """Print a string representation of the table."""
         return self.table.__repr__()
 
-    def __datafusion_table_provider__(self) -> object:  # noqa: D105
+    def __datafusion_table_provider__(self) -> object:
         """Expose the internal DataFusion table provider PyCapsule.
 
         This forwards the call to the underlying Rust-backed RawTable so the

@@ -1170,9 +1170,7 @@ class SessionContext:
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
 
-    def read_table(
-        self, table: TableLike
-    ) -> DataFrame:
+    def read_table(self, table: TableLike) -> DataFrame:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
 
         Args:
