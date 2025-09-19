@@ -323,7 +323,7 @@ impl RustWrappedPySchemaProvider {
             }
 
             if py_table.hasattr("__datafusion_table_provider__")? {
-                let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+                let capsule = py_table.getattr("__datafusion_table_provider__")?.call0()?;
                 let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
                 validate_pycapsule(capsule, "datafusion_table_provider")?;
 
