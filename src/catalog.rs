@@ -267,10 +267,7 @@ impl PyTable {
         let runtime = get_tokio_runtime().0.handle().clone();
 
         let provider = Arc::clone(&self.table);
-        let provider_ptr = Arc::into_raw(provider);
-        let provider: Arc<dyn TableProvider + Send> =
-            unsafe { Arc::from_raw(provider_ptr as *const (dyn TableProvider + Send)) };
-
+        let provider: Arc<dyn TableProvider + Send> = provider;
         let provider = FFI_TableProvider::new(provider, false, Some(runtime));
 
         PyCapsule::new(py, provider, Some(name.clone()))
