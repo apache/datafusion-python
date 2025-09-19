@@ -24,7 +24,7 @@ import inspect
 import re
 import warnings
 from functools import cache
-from typing import TYPE_CHECKING, Any, Iterator, Protocol
+from typing import TYPE_CHECKING, Any, Protocol
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -62,6 +62,13 @@ def _load_optional_module(module_name: str) -> Any | None:
         return importlib.import_module(module_name)
     except ModuleNotFoundError:
         return None
+
+
+_AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED = (
+    "SessionContext.auto_register_python_variables is deprecated; use "
+    "SessionContext.set_python_table_lookup() or the "
+    "'auto_register_python_objects' keyword argument instead."
+)
 
 
 class ArrowStreamExportable(Protocol):
@@ -503,7 +510,8 @@ class SessionContext:
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
         *,
-        auto_register_python_objects: bool = True,
+        auto_register_python_objects: bool | None = None,
+        auto_register_python_variables: bool | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -517,6 +525,9 @@ class SessionContext:
             auto_register_python_objects: Automatically register referenced
                 Python objects (such as pandas or PyArrow data) when ``sql``
                 queries reference them by name.
+            auto_register_python_variables: Deprecated alias for
+                ``auto_register_python_objects``. When provided, it overrides
+                the automatic registration behavior.
 
         Example usage:
 
@@ -532,7 +543,33 @@ class SessionContext:
             config.config_internal if config is not None else None,
             runtime.config_internal if runtime is not None else None,
         )
-        self._auto_python_table_lookup = auto_register_python_objects
+        if auto_register_python_variables is not None:
+            warnings.warn(
+                _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if (
+            auto_register_python_objects is not None
+            and auto_register_python_variables is not None
+            and auto_register_python_objects != auto_register_python_variables
+        ):
+            conflict_message = (
+                "auto_register_python_objects and auto_register_python_variables "
+                "were provided with conflicting values."
+            )
+            raise ValueError(conflict_message)
+
+        if auto_register_python_objects is None:
+            if auto_register_python_variables is None:
+                auto_python_table_lookup = True
+            else:
+                auto_python_table_lookup = auto_register_python_variables
+        else:
+            auto_python_table_lookup = auto_register_python_objects
+
+        self._auto_python_table_lookup = auto_python_table_lookup
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -578,6 +615,25 @@ class SessionContext:
         """
         self._auto_python_table_lookup = enabled
         return self
+
+    @property
+    def auto_register_python_variables(self) -> bool:
+        """Deprecated alias for :py:meth:`set_python_table_lookup`."""
+        warnings.warn(
+            _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return getattr(self, "_auto_python_table_lookup", True)
+
+    @auto_register_python_variables.setter
+    def auto_register_python_variables(self, enabled: bool) -> None:
+        warnings.warn(
+            _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.set_python_table_lookup(enabled)
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None

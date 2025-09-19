@@ -257,9 +257,10 @@ def test_from_pylist(ctx):
 
 
 def test_sql_missing_table_without_auto_register(ctx):
+    ctx.set_python_table_lookup(False)
     arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
 
-    with pytest.raises(Exception, match="not found") as excinfo:
+    with pytest.raises(Exception, match="not found|No table named") as excinfo:
         ctx.sql("SELECT * FROM arrow_table").collect()
 
     # Test that our extraction method works correctly
@@ -317,6 +318,39 @@ def test_sql_auto_register_polars_dataframe():
     ).collect()
 
     assert result[0].column(0).to_pylist()[0] == 2
+
+
+def test_session_context_constructor_alias_disables_lookup():
+    with pytest.deprecated_call():
+        ctx = SessionContext(auto_register_python_variables=False)
+
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    with pytest.raises(Exception, match="not found|No table named"):
+        ctx.sql("SELECT * FROM arrow_table").collect()
+
+    with pytest.deprecated_call():
+        assert ctx.auto_register_python_variables is False
+
+
+def test_session_context_property_alias_setter_enables_lookup():
+    ctx = SessionContext(auto_register_python_objects=False)
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    with pytest.raises(Exception, match="not found|No table named"):
+        ctx.sql("SELECT COUNT(*) FROM arrow_table").collect()
+
+    with pytest.deprecated_call():
+        ctx.auto_register_python_variables = True
+
+    result = ctx.sql(
+        "SELECT SUM(value) AS total FROM arrow_table",
+    ).collect()
+
+    assert result[0].column(0).to_pylist()[0] == 6
+
+    with pytest.deprecated_call():
+        assert ctx.auto_register_python_variables is True
 
 
 def test_from_pydict(ctx):
