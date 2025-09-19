@@ -37,3 +37,28 @@ DataFusion also offers a SQL API, read the full reference `here <https://arrow.a
 
     # collect and convert to pandas DataFrame
     df.to_pandas()
+
+Automatic variable registration
+-------------------------------
+
+You can opt-in to DataFusion automatically registering Arrow-compatible Python
+objects that appear in SQL queries. This removes the need to call
+``register_*`` helpers explicitly when working with in-memory data structures.
+
+.. code-block:: python
+
+    import pyarrow as pa
+    from datafusion import SessionContext
+
+    ctx = SessionContext(auto_register_python_variables=True)
+
+    orders = pa.Table.from_pydict({"item": ["apple", "pear"], "qty": [5, 2]})
+
+    result = ctx.sql("SELECT item, qty FROM orders WHERE qty > 2")
+    print(result.to_pandas())
+
+The feature inspects the call stack for variables whose names match missing
+tables and registers them if they expose Arrow data (including pandas and
+Polars DataFrames). Existing contexts can enable or disable the behavior at
+runtime through the :py:attr:`SessionContext.auto_register_python_variables`
+property.

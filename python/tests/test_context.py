@@ -255,6 +255,69 @@ def test_from_pylist(ctx):
     assert df.collect()[0].num_rows == 3
 
 
+def test_sql_missing_table_without_auto_register(ctx):
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    with pytest.raises(Exception, match="not found") as excinfo:
+        ctx.sql("SELECT * FROM arrow_table").collect()
+
+    missing = getattr(excinfo.value, "missing_table_names", None)
+    assert missing is not None
+    assert "arrow_table" in set(ctx._extract_missing_table_names(excinfo.value))
+
+
+def test_sql_auto_register_arrow_table():
+    ctx = SessionContext(auto_register_python_variables=True)
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    result = ctx.sql(
+        "SELECT SUM(value) AS total FROM arrow_table",
+    ).collect()
+
+    assert ctx.table_exist("arrow_table")
+    assert result[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_arrow_outer_scope():
+    ctx = SessionContext()
+    ctx.auto_register_python_variables = True
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3, 4]})  # noqa: F841
+
+    def run_query():
+        return ctx.sql(
+            "SELECT COUNT(*) AS total_rows FROM arrow_table",
+        ).collect()
+
+    result = run_query()
+    assert result[0].column(0).to_pylist()[0] == 4
+
+
+def test_sql_auto_register_pandas_dataframe():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(auto_register_python_variables=True)
+    pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})  # noqa: F841
+
+    result = ctx.sql(
+        "SELECT AVG(value) AS avg_value FROM pandas_df",
+    ).collect()
+
+    assert pytest.approx(result[0].column(0).to_pylist()[0]) == 2.5
+
+
+def test_sql_auto_register_polars_dataframe():
+    pl = pytest.importorskip("polars")
+
+    ctx = SessionContext(auto_register_python_variables=True)
+    polars_df = pl.DataFrame({"value": [2, 4, 6]})  # noqa: F841
+
+    result = ctx.sql(
+        "SELECT MIN(value) AS min_value FROM polars_df",
+    ).collect()
+
+    assert result[0].column(0).to_pylist()[0] == 2
+
+
 def test_from_pydict(ctx):
     # create a dataframe from Python dictionary
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
@@ -484,7 +547,7 @@ def test_table_exist(ctx):
 
 
 def test_table_not_found(ctx):
-    from uuid import uuid4
+    from uuid import uuid4  # noqa: PLC0415
 
     with pytest.raises(KeyError):
         ctx.table(f"not-found-{uuid4()}")

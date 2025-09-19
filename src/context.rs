@@ -34,7 +34,7 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, PyTable, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -59,6 +59,7 @@ use datafusion::datasource::listing::{
 };
 use datafusion::datasource::MemTable;
 use datafusion::datasource::TableProvider;
+use datafusion::error::DataFusionError;
 use datafusion::execution::context::{
     DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
 };
@@ -435,8 +436,11 @@ impl PySessionContext {
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
     pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)??;
-        Ok(PyDataFrame::new(df))
+        match wait_for_future(py, result) {
+            Ok(Ok(df)) => Ok(PyDataFrame::new(df)),
+            Ok(Err(err)) => Err(py_datafusion_error_with_missing_tables(py, err)),
+            Err(py_err) => Err(PyDataFusionError::PythonError(py_err)),
+        }
     }
 
     #[pyo3(signature = (query, options=None))]
@@ -452,8 +456,11 @@ impl PySessionContext {
             SQLOptions::new()
         };
         let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)??;
-        Ok(PyDataFrame::new(df))
+        match wait_for_future(py, result) {
+            Ok(Ok(df)) => Ok(PyDataFrame::new(df)),
+            Ok(Err(err)) => Err(py_datafusion_error_with_missing_tables(py, err)),
+            Err(py_err) => Err(PyDataFusionError::PythonError(py_err)),
+        }
     }
 
     #[pyo3(signature = (partitions, name=None, schema=None))]
@@ -1185,6 +1192,74 @@ impl PySessionContext {
         self.ctx
             .register_table(TableReference::Bare { table: name.into() }, Arc::new(table))?;
         Ok(())
+    }
+}
+
+fn py_datafusion_error_with_missing_tables(py: Python, err: DataFusionError) -> PyDataFusionError {
+    let missing_tables = collect_missing_table_names(&err);
+    let py_err: PyErr = PyDataFusionError::from(err).into();
+
+    if !missing_tables.is_empty() {
+        if let Ok(py_names) = PyList::new(py, &missing_tables) {
+            let _ = py_err
+                .value(py)
+                .setattr("missing_table_names", py_names.into_any());
+        }
+    }
+
+    PyDataFusionError::PythonError(py_err)
+}
+
+fn collect_missing_table_names(err: &DataFusionError) -> Vec<String> {
+    let mut names = HashSet::new();
+    collect_missing_table_names_recursive(err, &mut names);
+
+    let mut collected: Vec<String> = names.into_iter().collect();
+    collected.sort();
+    collected
+}
+
+fn collect_missing_table_names_recursive(err: &DataFusionError, acc: &mut HashSet<String>) {
+    match err {
+        DataFusionError::Plan(message)
+        | DataFusionError::Execution(message)
+        | DataFusionError::Configuration(message)
+        | DataFusionError::NotImplemented(message)
+        | DataFusionError::ResourcesExhausted(message)
+        | DataFusionError::Internal(message) => {
+            parse_missing_table_names_in_message(message, acc);
+        }
+        DataFusionError::Context(_, inner) | DataFusionError::Diagnostic(_, inner) => {
+            collect_missing_table_names_recursive(inner, acc);
+        }
+        _ => {}
+    }
+}
+
+fn parse_missing_table_names_in_message(message: &str, acc: &mut HashSet<String>) {
+    const LOOKUPS: [(&str, char); 4] = [
+        ("table '", '\''),
+        ("view '", '\''),
+        ("table \"", '"'),
+        ("view \"", '"'),
+    ];
+
+    let lower = message.to_ascii_lowercase();
+    for (needle, terminator) in LOOKUPS {
+        let mut search_start = 0usize;
+        while let Some(relative) = lower[search_start..].find(needle) {
+            let start = search_start + relative + needle.len();
+            let remainder = &message[start..];
+            if let Some(end) = remainder.find(terminator) {
+                let name = &remainder[..end];
+                if !name.is_empty() {
+                    acc.insert(name.to_string());
+                }
+                search_start = start + end + 1;
+            } else {
+                break;
+            }
+        }
     }
 }
 
