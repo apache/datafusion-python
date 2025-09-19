@@ -50,7 +50,7 @@ objects that appear in SQL queries. This removes the need to call
     import pyarrow as pa
     from datafusion import SessionContext
 
-    ctx = SessionContext(auto_register_python_variables=True)
+    ctx = SessionContext(auto_register_python_objects=True)
 
     orders = pa.Table.from_pydict({"item": ["apple", "pear"], "qty": [5, 2]})
 
@@ -60,5 +60,5 @@ objects that appear in SQL queries. This removes the need to call
 The feature inspects the call stack for variables whose names match missing
 tables and registers them if they expose Arrow data (including pandas and
 Polars DataFrames). Existing contexts can enable or disable the behavior at
-runtime through the :py:attr:`SessionContext.auto_register_python_variables`
-property.
+runtime through :py:meth:`SessionContext.set_python_table_lookup` or by passing
+``auto_register_python_objects`` when constructing the session.
