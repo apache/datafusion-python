@@ -547,7 +547,7 @@ def test_table_exist(ctx):
 
 
 def test_table_not_found(ctx):
-    from uuid import uuid4  # noqa: PLC0415
+    from uuid import uuid4 
 
     with pytest.raises(KeyError):
         ctx.table(f"not-found-{uuid4()}")
