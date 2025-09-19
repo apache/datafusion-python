@@ -228,6 +228,31 @@ Core Classes
     * :py:meth:`~datafusion.SessionContext.from_pandas` - Create from Pandas DataFrame
     * :py:meth:`~datafusion.SessionContext.from_arrow` - Create from Arrow data
 
+    ``SessionContext`` automatically resolves SQL table names that match
+    in-scope Python data objects. When ``auto_register_python_objects`` is
+    enabled (the default), a query such as ``ctx.sql("SELECT * FROM pdf")``
+    will register a pandas or PyArrow object named ``pdf`` without calling
+    :py:meth:`~datafusion.SessionContext.from_pandas` or
+    :py:meth:`~datafusion.SessionContext.from_arrow` explicitly. This requires
+    the corresponding library (``pandas`` for pandas objects, ``pyarrow`` for
+    Arrow objects) to be installed.
+
+    .. code-block:: python
+
+        import pandas as pd
+        from datafusion import SessionContext
+
+        ctx = SessionContext()
+        pdf = pd.DataFrame({"value": [1, 2, 3]})
+
+        df = ctx.sql("SELECT SUM(value) AS total FROM pdf")
+        print(df.to_pandas())  # automatically registers `pdf`
+
+    To opt out, either pass ``auto_register_python_objects=False`` when
+    constructing the session, or call
+    :py:meth:`~datafusion.SessionContext.set_python_table_lookup` with
+    ``False`` to require explicit registration.
+
     See: :py:class:`datafusion.SessionContext`
 
 Expression Classes

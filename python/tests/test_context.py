@@ -17,6 +17,7 @@
 import datetime as dt
 import gzip
 import pathlib
+from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -589,8 +590,6 @@ def test_table_exist(ctx):
 
 
 def test_table_not_found(ctx):
-    from uuid import uuid4 
-
     with pytest.raises(KeyError):
         ctx.table(f"not-found-{uuid4()}")
 
@@ -737,6 +736,43 @@ def test_sql_with_options_no_statements(ctx):
     options = SQLOptions().with_allow_statements(allow=False)
     with pytest.raises(Exception, match="SetVariable"):
         ctx.sql_with_options(sql, options=options)
+
+
+def test_sql_auto_register_pandas():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext()
+    pdf = pd.DataFrame({"value": [1, 2, 3]})
+    assert len(pdf) == 3
+
+    batches = ctx.sql("SELECT SUM(value) AS total FROM pdf").collect()
+    assert batches[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_arrow():
+    ctx = SessionContext()
+    arrow_table = pa.table({"value": [1, 2, 3, 4]})
+    assert arrow_table.num_rows == 4
+
+    batches = ctx.sql("SELECT COUNT(*) AS cnt FROM arrow_table").collect()
+    assert batches[0].column(0).to_pylist()[0] == 4
+
+
+def test_sql_auto_register_disabled():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(auto_register_python_objects=False)
+    pdf = pd.DataFrame({"value": [1, 2, 3]})
+    assert len(pdf) == 3
+
+    with pytest.raises(Exception) as excinfo:
+        ctx.sql("SELECT * FROM pdf").collect()
+
+    assert "not found" in str(excinfo.value)
+
+    ctx.set_python_table_lookup(True)
+    batches = ctx.sql("SELECT COUNT(*) AS cnt FROM pdf").collect()
+    assert batches[0].column(0).to_pylist()[0] == 3
 
 
 @pytest.fixture

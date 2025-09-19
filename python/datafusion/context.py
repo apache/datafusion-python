@@ -45,8 +45,6 @@ from ._internal import SessionContext as SessionContextInternal
 from ._internal import SQLOptions as SQLOptionsInternal
 from ._internal import expr as expr_internal
 
-_MISSING_TABLE_PATTERN = re.compile(r"(?i)(?:table|view) '([^']+)' not found")
-
 if TYPE_CHECKING:
     import pathlib
     from collections.abc import Sequence
@@ -505,7 +503,7 @@ class SessionContext:
         config: SessionConfig | None = None,
         runtime: RuntimeEnvBuilder | None = None,
         *,
-        auto_register_python_variables: bool = False,
+        auto_register_python_objects: bool = True,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -516,9 +514,9 @@ class SessionContext:
         Args:
             config: Session configuration options.
             runtime: Runtime configuration options.
-            auto_register_python_variables: Automatically register Arrow-like
-                Python objects referenced in SQL queries when they are available
-                in the caller's scope.
+            auto_register_python_objects: Automatically register referenced
+                Python objects (such as pandas or PyArrow data) when ``sql``
+                queries reference them by name.
 
         Example usage:
 
@@ -530,17 +528,11 @@ class SessionContext:
             ctx = SessionContext()
             df = ctx.read_csv("data.csv")
         """
-        python_table_lookup = auto_register_python_variables  # Use parameter as default
-        if config is not None:
-            python_table_lookup = config._python_table_lookup
-            config_internal = config.config_internal
-        else:
-            config_internal = None
-
-        runtime_internal = runtime.config_internal if runtime is not None else None
-
-        self.ctx = SessionContextInternal(config_internal, runtime_internal)
-        self._python_table_lookup = python_table_lookup
+        self.ctx = SessionContextInternal(
+            config.config_internal if config is not None else None,
+            runtime.config_internal if runtime is not None else None,
+        )
+        self._auto_python_table_lookup = auto_register_python_objects
 
     def __repr__(self) -> str:
         """Print a string representation of the Session Context."""
@@ -567,27 +559,25 @@ class SessionContext:
         klass = self.__class__
         obj = klass.__new__(klass)
         obj.ctx = self.ctx.enable_url_table()
-        obj._python_table_lookup = self._python_table_lookup
+        obj._auto_python_table_lookup = getattr(
+            self, "_auto_python_table_lookup", True
+        )
         return obj
 
-    def set_python_table_lookup(self, enabled: bool) -> None:
-        """Enable or disable implicit table lookup for Python objects."""
-        self._python_table_lookup = enabled
+    def set_python_table_lookup(self, enabled: bool = True) -> SessionContext:
+        """Enable or disable automatic registration of Python objects in SQL.
 
-    # Backward compatibility properties
-    @property
-    def auto_register_python_variables(self) -> bool:
-        """Toggle automatic registration of Python variables in SQL queries."""
-        return self._python_table_lookup
+        Args:
+            enabled: When ``True`` (default), SQL queries automatically attempt
+                to resolve missing table names by looking up Python objects in
+                the caller's scope. When ``False``, missing tables will raise an
+                error unless they have been explicitly registered.
 
-    @auto_register_python_variables.setter
-    def auto_register_python_variables(self, enabled: bool) -> None:
-        self._python_table_lookup = bool(enabled)
-
-    def _extract_missing_table_names(self, error: Exception) -> set[str]:
-        """Extract missing table names from error (backward compatibility)."""
-        missing_table = self._extract_missing_table_name(error)
-        return {missing_table} if missing_table else set()
+        Returns:
+            The current :py:class:`SessionContext` instance for chaining.
+        """
+        self._auto_python_table_lookup = enabled
+        return self
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
@@ -653,29 +643,28 @@ class SessionContext:
         Returns:
             DataFrame representation of the SQL query.
         """
-        attempted_missing_tables: set[str] = set()
+        def _execute_sql() -> DataFrame:
+            if options is None:
+                return DataFrame(self.ctx.sql(query))
+            return DataFrame(
+                self.ctx.sql_with_options(query, options.options_internal)
+            )
 
-        while True:
-            try:
-                if options is None:
-                    result = self.ctx.sql(query)
-                else:
-                    result = self.ctx.sql_with_options(query, options.options_internal)
-            except Exception as exc:
-                missing_table = self._extract_missing_table_name(exc)
-                if (
-                    missing_table is None
-                    or missing_table in attempted_missing_tables
-                    or not self._python_table_lookup
-                ):
-                    raise
+        try:
+            return _execute_sql()
+        except Exception as err:
+            if not getattr(self, "_auto_python_table_lookup", True):
+                raise
 
-                attempted_missing_tables.add(missing_table)
-                if not self._register_missing_table_from_callers(missing_table):
-                    raise
-                continue
+            missing_tables = self._extract_missing_table_names(err)
+            if not missing_tables:
+                raise
 
-            return DataFrame(result)
+            registered = self._register_python_tables(missing_tables)
+            if not registered:
+                raise
+
+            return _execute_sql()
 
     def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
@@ -692,144 +681,74 @@ class SessionContext:
         """
         return self.sql(query, options)
 
-    def _extract_missing_table_name(self, error: Exception) -> str | None:
-        """Return the missing table name if the exception represents that error."""
-        message = str(error)
-        
-        # Try the global pattern first (supports both table and view, case-insensitive)
-        match = _MISSING_TABLE_PATTERN.search(message)
-        if match:
-            table_name = match.group(1)
-            # Handle dotted table names by extracting the last part
-            if "." in table_name:
-                table_name = table_name.rsplit(".", 1)[-1]
-            return table_name
-        
-        # Fallback to additional patterns for broader compatibility
-        patterns = (
-            r"Table not found: ['\"]?([^\s'\"]+)['\"]?",
-            r"Table or CTE with name ['\"]?([^\s'\"]+)['\"]? not found",
-            r"Invalid reference to table ['\"]?([^\s'\"]+)['\"]?",
-        )
-        for pattern in patterns:
-            if match := re.search(pattern, message):
-                table_name = match.group(1)
-                if "." in table_name:
-                    table_name = table_name.rsplit(".", 1)[-1]
-                return table_name
-        return None
+    @staticmethod
+    def _extract_missing_table_names(err: Exception) -> list[str]:
+        message = str(err)
+        matches = set()
+        for pattern in (r"table '([^']+)' not found", r"No table named '([^']+)'"):
+            matches.update(re.findall(pattern, message))
 
-    def _register_missing_table_from_callers(self, table_name: str) -> bool:
-        """Register a supported local object from caller stack frames."""
+        tables: list[str] = []
+        for raw_name in matches:
+            if not raw_name:
+                continue
+            tables.append(raw_name.rsplit(".", 1)[-1])
+        return tables
+
+    def _register_python_tables(self, tables: list[str]) -> bool:
+        registered_any = False
+        for table_name in tables:
+            if not table_name or self.table_exist(table_name):
+                continue
+
+            python_obj = self._lookup_python_object(table_name)
+            if python_obj is None:
+                continue
+
+            if self._register_python_object(table_name, python_obj):
+                registered_any = True
+
+        return registered_any
+
+    @staticmethod
+    def _lookup_python_object(name: str) -> Any | None:
         frame = inspect.currentframe()
-        if frame is None:
-            return False
-
         try:
-            frame = frame.f_back
-            if frame is None:
-                return False
-            frame = frame.f_back
+            if frame is not None:
+                frame = frame.f_back
             while frame is not None:
-                if self._register_from_namespace(table_name, frame.f_locals):
-                    return True
-                if self._register_from_namespace(table_name, frame.f_globals):
-                    return True
+                locals_dict = frame.f_locals
+                if name in locals_dict:
+                    return locals_dict[name]
+                globals_dict = frame.f_globals
+                if name in globals_dict:
+                    return globals_dict[name]
                 frame = frame.f_back
         finally:
             del frame
-        return False
+        return None
 
-    def _register_from_namespace(
-        self, table_name: str, namespace: dict[str, Any]
-    ) -> bool:
-        """Register a table from a namespace if the table name exists."""
-        if table_name not in namespace:
-            return False
-        value = namespace[table_name]
-        return self._register_python_value(table_name, value)
+    def _register_python_object(self, name: str, obj: Any) -> bool:
+        if isinstance(obj, DataFrame):
+            self.register_view(name, obj)
+            return True
 
-    def _register_python_value(self, table_name: str, value: Any) -> bool:
-        """Register a Python object as a table if it's a supported type."""
-        pandas = _load_optional_module("pandas")
-        polars = _load_optional_module("polars")
-        polars_df = getattr(polars, "DataFrame", None) if polars is not None else None
+        if (
+            obj.__class__.__module__.startswith("pandas.")
+            and obj.__class__.__name__ == "DataFrame"
+        ):
+            self.from_pandas(obj, name=name)
+            return True
 
-        handlers = (
-            (isinstance(value, DataFrame), self._register_datafusion_dataframe),
-            (
-                isinstance(value, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)),
-                self._register_arrow_object,
-            ),
-            (
-                pandas is not None and isinstance(value, pandas.DataFrame),
-                self._register_pandas_dataframe,
-            ),
-            (
-                polars_df is not None and isinstance(value, polars_df),
-                self._register_polars_dataframe,
-            ),
-            # Support objects with Arrow C Stream interface
-            (
-                hasattr(value, "__arrow_c_stream__") or hasattr(value, "__arrow_c_array__"),
-                self._register_arrow_object,
-            ),
-        )
+        if isinstance(obj, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)):
+            self.from_arrow(obj, name=name)
+            return True
 
-        for matches, handler in handlers:
-            if matches:
-                return handler(table_name, value)
+        if hasattr(obj, "__arrow_c_stream__") or hasattr(obj, "__arrow_c_array__"):
+            self.from_arrow(obj, name=name)
+            return True
 
         return False
-
-    def _register_datafusion_dataframe(self, table_name: str, value: DataFrame) -> bool:
-        """Register a DataFusion DataFrame as a view."""
-        try:
-            self.register_view(table_name, value)
-        except Exception as exc:  # noqa: BLE001
-            warnings.warn(
-                f"Failed to register DataFusion DataFrame for table '{table_name}': {exc}",
-                stacklevel=4,
-            )
-            return False
-        return True
-
-    def _register_arrow_object(self, table_name: str, value: Any) -> bool:
-        """Register an Arrow object (Table, RecordBatch, RecordBatchReader, or stream)."""
-        try:
-            self.from_arrow(value, table_name)
-        except Exception as exc:  # noqa: BLE001
-            warnings.warn(
-                f"Failed to register Arrow data for table '{table_name}': {exc}",
-                stacklevel=4,
-            )
-            return False
-        return True
-
-    def _register_pandas_dataframe(self, table_name: str, value: Any) -> bool:
-        """Register a pandas DataFrame."""
-        try:
-            self.from_pandas(value, table_name)
-        except Exception as exc:  # noqa: BLE001
-            warnings.warn(
-                f"Failed to register pandas DataFrame for table '{table_name}': {exc}",
-                stacklevel=4,
-            )
-            return False
-        return True
-
-    def _register_polars_dataframe(self, table_name: str, value: Any) -> bool:
-        """Register a polars DataFrame."""
-        try:
-            self.from_polars(value, table_name)
-        except Exception as exc:  # noqa: BLE001
-            warnings.warn(
-                f"Failed to register polars DataFrame for table '{table_name}': {exc}",
-                stacklevel=4,
-            )
-            return False
-        return True
-
     def create_dataframe(
         self,
         partitions: list[list[pa.RecordBatch]],
