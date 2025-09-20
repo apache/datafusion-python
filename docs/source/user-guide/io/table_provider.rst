@@ -56,3 +56,13 @@ to the ``SessionContext``.
     ctx.register_table_provider("my_table", provider)
 
     ctx.table("my_table").show()
+
+If you already have a provider instance you can also use
+``SessionContext.read_table`` to obtain a :class:`~datafusion.DataFrame`
+directly without registering it first:
+
+.. code-block:: python
+
+    provider = MyTableProvider()
+    df = ctx.read_table(provider)
+    df.show()
