@@ -42,24 +42,24 @@ protoc = ["datafusion-substrait/protoc"]
 substrait = ["dep:datafusion-substrait"]
 
 [dependencies]
-tokio = { version = "1.45", features = [
+tokio = { version = "1.47", features = [
     "macros",
     "rt",
     "rt-multi-thread",
     "sync",
 ] }
-pyo3 = { version = "0.24", features = [
+pyo3 = { version = "0.25", features = [
     "extension-module",
     "abi3",
     "abi3-py39",
 ] }
-pyo3-async-runtimes = { version = "0.24", features = ["tokio-runtime"] }
+pyo3-async-runtimes = { version = "0.25", features = ["tokio-runtime"] }
 pyo3-log = "0.12.4"
-arrow = { version = "55.1.0", features = ["pyarrow"] }
-datafusion = { version = "49.0.2", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "49.0.2", optional = true }
-datafusion-proto = { version = "49.0.2" }
-datafusion-ffi = { version = "49.0.2" }
+arrow = { version = "56", features = ["pyarrow"] }
+datafusion = { version = "50", features = ["avro", "unicode_expressions"] }
+datafusion-substrait = { version = "50", optional = true }
+datafusion-proto = { version = "50" }
+datafusion-ffi = { version = "50" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.18", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = [
@@ -79,7 +79,7 @@ log = "0.4.27"
 
 [build-dependencies]
 prost-types = "0.13.1"     # keep in line with `datafusion-substrait`
-pyo3-build-config = "0.24"
+pyo3-build-config = "0.25"
 
 [lib]
 name = "datafusion_python"
