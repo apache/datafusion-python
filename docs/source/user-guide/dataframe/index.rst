@@ -254,7 +254,7 @@ Asynchronous iteration is supported as well, allowing integration with
         ...  # process each batch as it is produced
 
 To work with the stream directly, use ``execute_stream()``, which returns a
-:class:`~datafusion.RecordBatchStream`::
+:class:`~datafusion.RecordBatchStream`.
 
 .. code-block:: python
 
@@ -278,8 +278,9 @@ For finer control over streaming execution, use
 .. tip::
 
     To get a PyArrow reader instead, call
-    ``pa.RecordBatchReader.from_stream(df)``.
 
+    ``pa.RecordBatchReader.from_stream(df)``.
+    
 When partition boundaries are important,
 :py:meth:`~datafusion.DataFrame.execute_stream_partitioned`
 returns an iterable of :py:class:`datafusion.RecordBatchStream` objects, one per
