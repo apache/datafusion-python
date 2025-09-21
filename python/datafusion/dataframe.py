@@ -409,28 +409,29 @@ class DataFrame:
     def drop(self, *columns: str) -> DataFrame:
         """Drop arbitrary amount of columns.
 
-        Column names are case-sensitive and do not require double quotes like 
-        other operations such as `select`. Leading and trailing double quotes 
+        Column names are case-sensitive and do not require double quotes like
+        other operations such as `select`. Leading and trailing double quotes
         are allowed and will be automatically stripped if present.
 
         Args:
-            columns: Column names to drop from the dataframe. Both 'column_name' 
-                    and '"column_name"' are accepted.
+            columns: Column names to drop from the dataframe. Both ``column_name``
+                    and ``"column_name"`` are accepted.
 
         Returns:
             DataFrame with those columns removed in the projection.
-            
-        Example Usage:
+
+        Example Usage::
+
             df.drop('ID_For_Students')      # Works
             df.drop('"ID_For_Students"')    # Also works (quotes stripped)
         """
         normalized_columns = []
         for col in columns:
             if col.startswith('"') and col.endswith('"'):
-                normalized_columns.append(col.strip('"')) # Removes quotes from both sides of col
+                normalized_columns.append(col.strip('"'))  # Strip double quotes
             else:
                 normalized_columns.append(col)
-        
+
         return DataFrame(self.df.drop(*normalized_columns))
 
     def filter(self, *predicates: Expr) -> DataFrame:
