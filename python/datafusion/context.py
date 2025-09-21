@@ -53,12 +53,6 @@ if TYPE_CHECKING:
 
     from datafusion.plan import ExecutionPlan, LogicalPlan
 
-_AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED = (
-    "SessionContext.auto_register_python_variables is deprecated; use "
-    "SessionContext.set_python_table_lookup() or the "
-    "'auto_register_python_objects' keyword argument instead."
-)
-
 
 class ArrowStreamExportable(Protocol):
     """Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.
@@ -500,7 +494,6 @@ class SessionContext:
         runtime: RuntimeEnvBuilder | None = None,
         *,
         auto_register_python_objects: bool | None = None,
-        auto_register_python_variables: bool | None = None,
     ) -> None:
         """Main interface for executing queries with DataFusion.
 
@@ -517,9 +510,6 @@ class SessionContext:
                 the value configured via
                 :py:meth:`~datafusion.SessionConfig.with_python_table_lookup`
                 (``False`` unless explicitly enabled).
-            auto_register_python_variables: Deprecated alias for
-                ``auto_register_python_objects``. When provided, it overrides
-                the automatic registration behavior.
 
         Example usage:
 
@@ -536,29 +526,9 @@ class SessionContext:
             runtime.config_internal if runtime is not None else None,
         )
 
-        if auto_register_python_variables is not None:
-            warnings.warn(
-                _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        if (
-            auto_register_python_variables is not None
-            and auto_register_python_objects is not None
-            and auto_register_python_objects != auto_register_python_variables
-        ):
-            conflict_message = (
-                "auto_register_python_objects and auto_register_python_variables "
-                "were provided with conflicting values."
-            )
-            raise ValueError(conflict_message)
-
         # Determine the final value for python table lookup
         if auto_register_python_objects is not None:
             auto_python_table_lookup = auto_register_python_objects
-        elif auto_register_python_variables is not None:
-            auto_python_table_lookup = auto_register_python_variables
         else:
             # Default to session config value or False if not configured
             auto_python_table_lookup = getattr(config, "_python_table_lookup", False)
@@ -596,9 +566,7 @@ class SessionContext:
         obj._auto_python_table_lookup = getattr(
             self, "_auto_python_table_lookup", False
         )
-        obj._python_table_bindings = getattr(
-            self, "_python_table_bindings", {}
-        ).copy()
+        obj._python_table_bindings = getattr(self, "_python_table_bindings", {}).copy()
         return obj
 
     def set_python_table_lookup(self, enabled: bool = True) -> SessionContext:
@@ -615,25 +583,6 @@ class SessionContext:
         """
         self._auto_python_table_lookup = enabled
         return self
-
-    @property
-    def auto_register_python_variables(self) -> bool:
-        """Deprecated alias for :py:meth:`set_python_table_lookup`."""
-        warnings.warn(
-            _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return bool(getattr(self, "_auto_python_table_lookup", False))
-
-    @auto_register_python_variables.setter
-    def auto_register_python_variables(self, enabled: bool) -> None:
-        warnings.warn(
-            _AUTO_REGISTER_PYTHON_VARIABLES_DEPRECATED,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        self.set_python_table_lookup(bool(enabled))
 
     def register_object_store(
         self, schema: str, store: Any, host: str | None = None
@@ -792,34 +741,29 @@ class SessionContext:
     def _lookup_python_object(name: str) -> Any | None:
         frame = inspect.currentframe()
         try:
-            if frame is not None:
-                frame = frame.f_back
+            frame = frame.f_back if frame is not None else None
             lower_name = name.lower()
 
             def _match(mapping: dict[str, Any]) -> Any | None:
-                if not mapping:
-                    return None
-
                 value = mapping.get(name)
                 if value is not None:
                     return value
 
                 for key, candidate in mapping.items():
-                    if isinstance(key, str) and key.lower() == lower_name:
-                        if candidate is not None:
-                            return candidate
+                    if (
+                        isinstance(key, str)
+                        and key.lower() == lower_name
+                        and candidate is not None
+                    ):
+                        return candidate
 
                 return None
 
             while frame is not None:
-                locals_dict = frame.f_locals
-                match = _match(locals_dict)
-                if match is not None:
-                    return match
-                globals_dict = frame.f_globals
-                match = _match(globals_dict)
-                if match is not None:
-                    return match
+                for scope in (frame.f_locals, frame.f_globals):
+                    match = _match(scope)
+                    if match is not None:
+                        return match
                 frame = frame.f_back
         finally:
             del frame

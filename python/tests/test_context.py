@@ -295,7 +295,7 @@ def test_extract_missing_table_names_from_attribute():
 
 
 def test_sql_auto_register_arrow_table():
-    ctx = SessionContext(auto_register_python_variables=True)
+    ctx = SessionContext(auto_register_python_objects=True)
     arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
 
     result = ctx.sql(
@@ -326,9 +326,7 @@ def test_sql_auto_register_multiple_tables_single_query():
     ).collect()
 
     actual = pa.Table.from_batches(result)
-    expected = pa.Table.from_pydict(
-        {"customer_id": [1, 2], "order_id": [100, 200]}
-    )
+    expected = pa.Table.from_pydict({"customer_id": [1, 2], "order_id": [100, 200]})
 
     assert actual.equals(expected)
     assert ctx.table_exist("customers")
@@ -337,7 +335,7 @@ def test_sql_auto_register_multiple_tables_single_query():
 
 def test_sql_auto_register_arrow_outer_scope():
     ctx = SessionContext()
-    ctx.auto_register_python_variables = True
+    ctx.set_python_table_lookup(True)
     arrow_table = pa.Table.from_pydict({"value": [1, 2, 3, 4]})  # noqa: F841
 
     def run_query():
@@ -365,7 +363,7 @@ def test_sql_auto_register_skips_none_shadowing():
 
 def test_sql_auto_register_case_insensitive_lookup():
     ctx = SessionContext(auto_register_python_objects=True)
-    MyTable = pa.Table.from_pydict({"value": [2, 3]})  # noqa: F841
+    MyTable = pa.Table.from_pydict({"value": [2, 3]})  # noqa: N806,F841
 
     batches = ctx.sql(
         "SELECT SUM(value) AS total FROM mytable",
@@ -377,7 +375,7 @@ def test_sql_auto_register_case_insensitive_lookup():
 def test_sql_auto_register_pandas_dataframe():
     pd = pytest.importorskip("pandas")
 
-    ctx = SessionContext(auto_register_python_variables=True)
+    ctx = SessionContext(auto_register_python_objects=True)
     pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})  # noqa: F841
 
     result = ctx.sql(
@@ -411,7 +409,7 @@ def test_sql_auto_register_refreshes_reassigned_dataframe():
 def test_sql_auto_register_polars_dataframe():
     pl = pytest.importorskip("polars")
 
-    ctx = SessionContext(auto_register_python_variables=True)
+    ctx = SessionContext(auto_register_python_objects=True)
     polars_df = pl.DataFrame({"value": [2, 4, 6]})  # noqa: F841
 
     result = ctx.sql(
@@ -419,39 +417,6 @@ def test_sql_auto_register_polars_dataframe():
     ).collect()
 
     assert result[0].column(0).to_pylist()[0] == 2
-
-
-def test_session_context_constructor_alias_disables_lookup():
-    with pytest.deprecated_call():
-        ctx = SessionContext(auto_register_python_variables=False)
-
-    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
-
-    with pytest.raises(Exception, match="not found|No table named"):
-        ctx.sql("SELECT * FROM arrow_table").collect()
-
-    with pytest.deprecated_call():
-        assert ctx.auto_register_python_variables is False
-
-
-def test_session_context_property_alias_setter_enables_lookup():
-    ctx = SessionContext(auto_register_python_objects=False)
-    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
-
-    with pytest.raises(Exception, match="not found|No table named"):
-        ctx.sql("SELECT COUNT(*) FROM arrow_table").collect()
-
-    with pytest.deprecated_call():
-        ctx.auto_register_python_variables = True
-
-    result = ctx.sql(
-        "SELECT SUM(value) AS total FROM arrow_table",
-    ).collect()
-
-    assert result[0].column(0).to_pylist()[0] == 6
-
-    with pytest.deprecated_call():
-        assert ctx.auto_register_python_variables is True
 
 
 def test_from_pydict(ctx):
@@ -486,7 +451,7 @@ def test_from_pandas(ctx):
 
 def test_sql_from_local_arrow_table(ctx):
     ctx.set_python_table_lookup(True)  # Enable implicit table lookup
-    arrow_table = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})
+    arrow_table = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})  # noqa: F841
 
     result = ctx.sql("SELECT * FROM arrow_table ORDER BY a").collect()
     actual = pa.Table.from_batches(result)
@@ -498,7 +463,7 @@ def test_sql_from_local_arrow_table(ctx):
 def test_sql_from_local_pandas_dataframe(ctx):
     ctx.set_python_table_lookup(True)  # Enable implicit table lookup
     pd = pytest.importorskip("pandas")
-    pandas_df = pd.DataFrame({"a": [3, 1], "b": ["z", "y"]})
+    pandas_df = pd.DataFrame({"a": [3, 1], "b": ["z", "y"]})  # noqa: F841
 
     result = ctx.sql("SELECT * FROM pandas_df ORDER BY a").collect()
     actual = pa.Table.from_batches(result)
@@ -510,7 +475,7 @@ def test_sql_from_local_pandas_dataframe(ctx):
 def test_sql_from_local_polars_dataframe(ctx):
     ctx.set_python_table_lookup(True)  # Enable implicit table lookup
     pl = pytest.importorskip("polars")
-    polars_df = pl.DataFrame({"a": [2, 1], "b": ["beta", "alpha"]})
+    polars_df = pl.DataFrame({"a": [2, 1], "b": ["beta", "alpha"]})  # noqa: F841
 
     result = ctx.sql("SELECT * FROM polars_df ORDER BY a").collect()
     actual = pa.Table.from_batches(result)
@@ -520,7 +485,7 @@ def test_sql_from_local_polars_dataframe(ctx):
 
 
 def test_sql_from_local_unsupported_object(ctx):
-    unsupported = object()
+    unsupported = object()  # noqa: F841
 
     with pytest.raises(Exception, match="table 'unsupported' not found"):
         ctx.sql("SELECT * FROM unsupported").collect()
@@ -876,7 +841,7 @@ def test_sql_with_options_no_statements(ctx):
 def test_session_config_python_table_lookup_enables_auto_registration():
     pd = pytest.importorskip("pandas")
 
-    ctx = SessionContext(config=SessionConfig().with_python_table_lookup(True))
+    ctx = SessionContext(config=SessionConfig().with_python_table_lookup(enabled=True))
     pdf = pd.DataFrame({"value": [1, 2, 3]})
     assert len(pdf) == 3
 
