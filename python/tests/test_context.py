@@ -268,6 +268,18 @@ def test_sql_missing_table_without_auto_register(ctx):
     assert "arrow_table" in missing_tables
 
 
+def test_sql_missing_table_exposes_missing_table_names(ctx):
+    ctx.set_python_table_lookup(False)
+
+    with pytest.raises(Exception) as excinfo:
+        ctx.sql("SELECT * FROM missing_table").collect()
+
+    missing_tables = getattr(excinfo.value, "missing_table_names", None)
+    assert missing_tables is not None
+    normalized = [str(name).rsplit(".", 1)[-1] for name in missing_tables]
+    assert normalized == ["missing_table"]
+
+
 def test_extract_missing_table_names_from_attribute():
     class MissingTablesError(Exception):
         def __init__(self) -> None:

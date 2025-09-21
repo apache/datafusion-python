@@ -1237,11 +1237,15 @@ fn collect_missing_table_names_recursive(err: &DataFusionError, acc: &mut HashSe
 }
 
 fn parse_missing_table_names_in_message(message: &str, acc: &mut HashSet<String>) {
-    const LOOKUPS: [(&str, char); 4] = [
+    const LOOKUPS: [(&str, char); 8] = [
         ("table '", '\''),
         ("view '", '\''),
         ("table \"", '"'),
         ("view \"", '"'),
+        ("table named '", '\''),
+        ("view named '", '\''),
+        ("table named \"", '"'),
+        ("view named \"", '"'),
     ];
 
     let lower = message.to_ascii_lowercase();
