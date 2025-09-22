@@ -152,13 +152,15 @@ as Delta Lake. This will require a recent version of
 .. code-block:: python
 
     from deltalake import DeltaTable
-    from datafusion import TableProvider
 
     delta_table = DeltaTable("path_to_table")
-    provider = TableProvider.from_capsule(delta_table.__datafusion_table_provider__())
-    ctx.register_table("my_delta_table", provider)
+    ctx.register_table("my_delta_table", delta_table)
     df = ctx.table("my_delta_table")
     df.show()
+
+Objects that implement ``__datafusion_table_provider__`` are supported directly by
+:py:meth:`~datafusion.context.SessionContext.register_table`, making it easy to
+work with custom table providers from Python libraries such as Delta Lake.
 
 .. note::
 
