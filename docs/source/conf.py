@@ -94,10 +94,25 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         ("method", "datafusion.context.SessionContext.tables"),
         ("method", "datafusion.dataframe.DataFrame.unnest_column"),
     ]
+    # Explicitly skip certain members listed above. These are either
+    # re-exports, duplicate module-level documentation, deprecated
+    # API surfaces, or private variables that would otherwise appear
+    # in the generated docs and cause confusing duplication.
+    # Keeping this explicit list avoids surprising entries in the
+    # AutoAPI output and gives us a single place to opt-out items
+    # when we intentionally hide them from the docs.
     if (what, name) in skip_contents:
         skip = True
 
-    # Skip private members that start with underscore to avoid duplication
+    # Skip private module-level names (those whose final component
+    # starts with an underscore) when AutoAPI is rendering data or
+    # variable entries. Many internal module-level constants are
+    # implementation details (for example private pyarrow dataset type
+    # mappings) that would otherwise be emitted as top-level "data"
+    # or "variable" docs. Filtering them here avoids noisy,
+    # duplicate, or implementation-specific entries in the public
+    # documentation while still allowing public members and types to
+    # be documented normally.
     if name.split(".")[-1].startswith("_") and what in ("data", "variable"):
         skip = True
 
