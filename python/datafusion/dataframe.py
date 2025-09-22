@@ -60,7 +60,7 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
-    from datafusion.table_provider import TableProvider
+    from datafusion.catalog import Table
 
 from enum import Enum
 
@@ -315,8 +315,8 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> TableProvider:
-        """Convert ``DataFrame`` into a ``TableProvider`` view for registration.
+    def into_view(self) -> Table:
+        """Convert ``DataFrame`` into a :class:`~datafusion.Table` for registration.
 
         This is the preferred way to obtain a view for
         :py:meth:`~datafusion.context.SessionContext.register_table` for several reasons:
@@ -325,13 +325,13 @@ class DataFrame:
            ``DataFrame.into_view()`` method without intermediate delegations.
         2. **Clear semantics**: The ``into_`` prefix follows Rust conventions,
            indicating conversion from one type to another.
-        3. **Canonical method**: Other approaches like ``TableProvider.from_dataframe``
+        3. **Canonical method**: Other approaches like ``Table.from_dataframe``
            delegate to this method internally, making this the single source of truth.
-        4. **Deprecated alternatives**: The older ``TableProvider.from_view`` helper
+        4. **Deprecated alternatives**: The older ``Table.from_view`` helper
            is deprecated and issues warnings when used.
 
-        ``datafusion.TableProvider.from_dataframe`` calls this method under the hood,
-        and the older ``TableProvider.from_view`` helper is deprecated.
+        ``datafusion.Table.from_dataframe`` calls this method under the hood, and the
+        older ``Table.from_view`` helper is deprecated.
 
         The ``DataFrame`` remains valid after conversion, so it can still be used for
         additional queries alongside the returned view.
@@ -345,9 +345,9 @@ class DataFrame:
             >>> df.collect()  # The DataFrame is still usable
             >>> ctx.sql("SELECT value FROM values_view").collect()
         """
-        from datafusion.table_provider import TableProvider as _TableProvider
+        from datafusion.catalog import Table as _Table
 
-        return _TableProvider(self.df.into_view())
+        return _Table(self.df.into_view())
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.

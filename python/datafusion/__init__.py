@@ -50,7 +50,6 @@ from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
-from .table_provider import TableProvider
 from .user_defined import (
     Accumulator,
     AggregateUDF,
@@ -88,7 +87,6 @@ __all__ = [
     "SessionContext",
     "Table",
     "TableFunction",
-    "TableProvider",
     "WindowFrame",
     "WindowUDF",
     "catalog",

@@ -39,20 +39,19 @@ else:  # pragma: no cover - exercised in environments with pyarrow installed
     _PYARROW_DATASET_TYPES = tuple(dataset_types)
 
 if TYPE_CHECKING:  # pragma: no cover - imported for typing only
-    from datafusion import TableProvider
     from datafusion.catalog import Table
     from datafusion.context import TableProviderExportable
 
 
 def _normalize_table_provider(
-    table: Table | TableProvider | TableProviderExportable,
+    table: Table | TableProviderExportable | Any,
 ) -> Any:
     """Return the underlying provider for supported table inputs.
 
     Args:
-        table: A :class:`~datafusion.catalog.Table`,
-            :class:`~datafusion.table_provider.TableProvider`, or object exporting a
-            DataFusion table provider via ``__datafusion_table_provider__``.
+        table: A :class:`~datafusion.Table`, object exporting a DataFusion table
+            provider via ``__datafusion_table_provider__``, or compatible
+            :mod:`pyarrow.dataset` implementation.
 
     Returns:
         The object expected by the Rust bindings for table registration.
@@ -61,13 +60,9 @@ def _normalize_table_provider(
         TypeError: If ``table`` is not a supported table provider input.
     """
     from datafusion.catalog import Table as _Table
-    from datafusion.table_provider import TableProvider as _TableProvider
 
     if isinstance(table, _Table):
         return table.table
-
-    if isinstance(table, _TableProvider):
-        return table._table_provider
 
     if _PYARROW_DATASET_TYPES and isinstance(table, _PYARROW_DATASET_TYPES):
         return table

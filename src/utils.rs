@@ -38,7 +38,7 @@ use std::{
 use tokio::{runtime::Runtime, time::sleep};
 
 pub(crate) const EXPECTED_PROVIDER_MSG: &str =
-    "Expected a Table or TableProvider. Convert DataFrames with \"DataFrame.into_view()\" or \"TableProvider.from_dataframe()\".";
+    "Expected a Table. Convert DataFrames with \"DataFrame.into_view()\" or \"Table.from_dataframe()\".";
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {

@@ -46,45 +46,40 @@ A complete example can be found in the `examples folder <https://github.com/apac
         }
     }
 
-Once you have this library available, you can instantiate the Rust-backed
-provider directly in Python and register it with the
-:py:meth:`~datafusion.context.SessionContext.register_table` method.
-Objects implementing ``__datafusion_table_provider__`` are accepted as-is, so
-there is no need to build a Python ``TableProvider`` wrapper just to integrate
-with DataFusion.
-
-When you need to register a DataFusion
-:py:class:`~datafusion.dataframe.DataFrame`, call
-:py:meth:`~datafusion.dataframe.DataFrame.into_view` to obtain an in-memory
-view.  This is equivalent to the legacy ``TableProvider.from_dataframe()``
-helper.
+Once you have this library available, you can construct a
+:py:class:`~datafusion.Table` in Python and register it with the
+``SessionContext``. Tables can be created either from the PyCapsule exposed by your
+Rust provider or from an existing :py:class:`~datafusion.dataframe.DataFrame`.
+Call the provider's ``__datafusion_table_provider__()`` method to obtain the capsule
+before constructing a ``Table``. The ``Table.from_view()`` helper is
+deprecated; instead use ``Table.from_dataframe()`` or ``DataFrame.into_view()``.
 
 .. note::
 
    :py:meth:`~datafusion.context.SessionContext.register_table_provider` is
    deprecated. Use
    :py:meth:`~datafusion.context.SessionContext.register_table` with the
-   provider instance or view returned by
-   :py:meth:`~datafusion.dataframe.DataFrame.into_view` instead.
+   resulting :py:class:`~datafusion.Table` instead.
 
 .. code-block:: python
 
-    from datafusion import SessionContext
+    from datafusion import SessionContext, Table
 
     ctx = SessionContext()
     provider = MyTableProvider()
 
+    capsule = provider.__datafusion_table_provider__()
+    capsule_table = Table.from_capsule(capsule)
+
     df = ctx.from_pydict({"a": [1]})
-    view_provider = df.into_view()
+    view_table = Table.from_dataframe(df)
+    # or: view_table = df.into_view()
 
-    ctx.register_table("provider_table", provider)
-    ctx.register_table("view_table", view_provider)
+    ctx.register_table("capsule_table", capsule_table)
+    ctx.register_table("view_table", view_table)
 
-    ctx.table("provider_table").show()
+    ctx.table("capsule_table").show()
     ctx.table("view_table").show()
 
-The capsule-based helpers remain available for advanced integrations that need
-to manipulate FFI objects explicitly.  ``TableProvider.from_capsule()`` continues
-to wrap an ``FFI_TableProvider`` (and will stay available as a compatibility
-alias if it is renamed in :issue:`1`), while ``TableProvider.from_dataframe()``
-simply forwards to :py:meth:`DataFrame.into_view` for convenience.
+Both ``Table.from_capsule()`` and ``Table.from_dataframe()`` create
+table providers that can be registered with the SessionContext using ``register_table()``.

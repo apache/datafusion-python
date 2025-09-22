@@ -48,7 +48,6 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl  # type: ignore[import]
 
-    from datafusion import TableProvider
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.expr import SortKey
     from datafusion.plan import ExecutionPlan, LogicalPlan
@@ -752,25 +751,24 @@ class SessionContext:
         self.ctx.register_table(name, view)
 
     def register_table(
-        self, name: str, table: Table | TableProvider | TableProviderExportable
+        self, name: str, table: Table | TableProviderExportable | Any
     ) -> None:
-        """Register a Table or TableProvider.
+        """Register a :py:class:`~datafusion.Table` with this context.
 
         The registered table can be referenced from SQL statements executed against
         this context.
 
         Plain :py:class:`~datafusion.dataframe.DataFrame` objects are not supported;
         convert them first with :meth:`datafusion.dataframe.DataFrame.into_view` or
-        :meth:`datafusion.TableProvider.from_dataframe`.
+        :meth:`datafusion.Table.from_dataframe`.
 
         Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as :py:class:`~datafusion.TableProvider` instances.
+        and treated as table provider instances.
 
         Args:
             name: Name of the resultant table.
-            table: DataFusion :class:`Table`, :class:`TableProvider`, or any object
-                implementing ``__datafusion_table_provider__`` to add to the session
-                context.
+            table: DataFusion :class:`Table` or any object implementing
+                ``__datafusion_table_provider__`` to add to the session context.
         """
         provider = _normalize_table_provider(table)
         self.ctx.register_table(name, provider)
@@ -793,14 +791,14 @@ class SessionContext:
             self.ctx.register_catalog_provider(name, provider)
 
     def register_table_provider(
-        self, name: str, provider: Table | TableProvider | TableProviderExportable
+        self, name: str, provider: Table | TableProviderExportable | Any
     ) -> None:
         """Register a table provider.
 
         Deprecated: use :meth:`register_table` instead.
 
         Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as :py:class:`~datafusion.TableProvider` instances.
+        and treated as table provider instances.
         """
         warnings.warn(
             "register_table_provider is deprecated; use register_table",

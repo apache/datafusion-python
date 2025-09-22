@@ -88,7 +88,7 @@ impl PyTableProvider {
     /// Create a `TableProvider` from a `DataFrame` by converting it into a view.
     ///
     /// Deprecated: prefer `DataFrame.into_view` or
-    /// `TableProvider.from_dataframe` instead.
+    /// `Table.from_dataframe` instead.
     #[staticmethod]
     pub fn from_view(py: Python<'_>, df: &PyDataFrame) -> PyDataFusionResult<Self> {
         let kwargs = PyDict::new(py);
@@ -97,7 +97,7 @@ impl PyTableProvider {
         py.import("warnings")?.call_method(
             "warn",
             (
-                "PyTableProvider.from_view() is deprecated; use DataFrame.into_view() or TableProvider.from_dataframe() instead.",
+                "PyTableProvider.from_view() is deprecated; use DataFrame.into_view() or Table.from_dataframe() instead.",
                 py.get_type::<PyDeprecationWarning>(),
             ),
             Some(&kwargs),

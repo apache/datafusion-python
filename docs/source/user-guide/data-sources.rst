@@ -152,9 +152,11 @@ as Delta Lake. This will require a recent version of
 .. code-block:: python
 
     from deltalake import DeltaTable
+    from datafusion import Table
 
     delta_table = DeltaTable("path_to_table")
-    ctx.register_table("my_delta_table", delta_table)
+    table = Table.from_capsule(delta_table.__datafusion_table_provider__())
+    ctx.register_table("my_delta_table", table)
     df = ctx.table("my_delta_table")
     df.show()
 
@@ -167,7 +169,7 @@ work with custom table providers from Python libraries such as Delta Lake.
    :py:meth:`~datafusion.context.SessionContext.register_table_provider` is
    deprecated. Use
    :py:meth:`~datafusion.context.SessionContext.register_table` with a
-   :py:class:`~datafusion.TableProvider` instead.
+   :py:class:`~datafusion.Table` instead.
 
 On older versions of ``deltalake`` (prior to 0.22) you can use the
 `Arrow DataSet <https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html>`_
