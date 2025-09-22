@@ -48,6 +48,9 @@ def test_ffi_aggregate_register():
     assert result
     assert result[0].num_columns == 1
 
+    # Normalizing table registration in _normalize_table_provider feeds the Rust layer
+    # an actual TableProvider, so collect() emits the grouped rows in a single record batch
+    # instead of two separate batches.
     aggregates = pa.concat_arrays([batch.column(0) for batch in result])
 
     assert len(aggregates) == 2
@@ -57,11 +60,14 @@ def test_ffi_aggregate_register():
 def test_ffi_aggregate_call_directly():
     ctx = setup_context_with_table()
     my_udaf = udaf(MySumUDF())
-
+    
     result = (
         ctx.table("test_table").aggregate([col("b")], [my_udaf(col("a"))]).collect()
     )
 
+    # Normalizing table registration in _normalize_table_provider feeds the Rust layer
+    # an actual TableProvider, so collect() emits the grouped rows in a single record batch
+    # instead of two separate batches.
     assert result
     assert result[0].num_columns == 2
 
