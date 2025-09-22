@@ -348,7 +348,7 @@ impl PySessionContext {
     /// Register an object store with the given name
     #[pyo3(signature = (scheme, store, host=None))]
     pub fn register_object_store(
-        &mut self,
+        &self,
         scheme: &str,
         store: StorageContexts,
         host: Option<&str>,
@@ -380,7 +380,7 @@ impl PySessionContext {
     schema=None,
     file_sort_order=None))]
     pub fn register_listing_table(
-        &mut self,
+        &self,
         name: &str,
         path: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
@@ -426,14 +426,14 @@ impl PySessionContext {
         Ok(())
     }
 
-    pub fn register_udtf(&mut self, func: PyTableFunction) {
+    pub fn register_udtf(&self, func: PyTableFunction) {
         let name = func.name.clone();
         let func = Arc::new(func);
         self.ctx.register_udtf(&name, func);
     }
 
     /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
-    pub fn sql(&mut self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
+    pub fn sql(&self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
         let result = self.ctx.sql(query);
         let df = wait_for_future(py, result)??;
         Ok(PyDataFrame::new(df))
@@ -441,7 +441,7 @@ impl PySessionContext {
 
     #[pyo3(signature = (query, options=None))]
     pub fn sql_with_options(
-        &mut self,
+        &self,
         query: &str,
         options: Option<PySQLOptions>,
         py: Python,
@@ -458,7 +458,7 @@ impl PySessionContext {
 
     #[pyo3(signature = (partitions, name=None, schema=None))]
     pub fn create_dataframe(
-        &mut self,
+        &self,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
         name: Option<&str>,
         schema: Option<PyArrowType<Schema>>,
@@ -493,14 +493,14 @@ impl PySessionContext {
     }
 
     /// Create a DataFrame from an existing logical plan
-    pub fn create_dataframe_from_logical_plan(&mut self, plan: PyLogicalPlan) -> PyDataFrame {
+    pub fn create_dataframe_from_logical_plan(&self, plan: PyLogicalPlan) -> PyDataFrame {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
     }
 
     /// Construct datafusion dataframe from Python list
     #[pyo3(signature = (data, name=None))]
     pub fn from_pylist(
-        &mut self,
+        &self,
         data: Bound<'_, PyList>,
         name: Option<&str>,
     ) -> PyResult<PyDataFrame> {
@@ -520,7 +520,7 @@ impl PySessionContext {
     /// Construct datafusion dataframe from Python dictionary
     #[pyo3(signature = (data, name=None))]
     pub fn from_pydict(
-        &mut self,
+        &self,
         data: Bound<'_, PyDict>,
         name: Option<&str>,
     ) -> PyResult<PyDataFrame> {
@@ -540,7 +540,7 @@ impl PySessionContext {
     /// Construct datafusion dataframe from Arrow Table
     #[pyo3(signature = (data, name=None))]
     pub fn from_arrow(
-        &mut self,
+        &self,
         data: Bound<'_, PyAny>,
         name: Option<&str>,
         py: Python,
@@ -574,11 +574,7 @@ impl PySessionContext {
     /// Construct datafusion dataframe from pandas
     #[allow(clippy::wrong_self_convention)]
     #[pyo3(signature = (data, name=None))]
-    pub fn from_pandas(
-        &mut self,
-        data: Bound<'_, PyAny>,
-        name: Option<&str>,
-    ) -> PyResult<PyDataFrame> {
+    pub fn from_pandas(&self, data: Bound<'_, PyAny>, name: Option<&str>) -> PyResult<PyDataFrame> {
         // Obtain GIL token
         let py = data.py();
 
@@ -594,11 +590,7 @@ impl PySessionContext {
 
     /// Construct datafusion dataframe from polars
     #[pyo3(signature = (data, name=None))]
-    pub fn from_polars(
-        &mut self,
-        data: Bound<'_, PyAny>,
-        name: Option<&str>,
-    ) -> PyResult<PyDataFrame> {
+    pub fn from_polars(&self, data: Bound<'_, PyAny>, name: Option<&str>) -> PyResult<PyDataFrame> {
         // Convert Polars dataframe to Arrow Table
         let table = data.call_method0("to_arrow")?;
 
@@ -607,18 +599,18 @@ impl PySessionContext {
         Ok(df)
     }
 
-    pub fn register_table(&mut self, name: &str, table: &PyTable) -> PyDataFusionResult<()> {
+    pub fn register_table(&self, name: &str, table: &PyTable) -> PyDataFusionResult<()> {
         self.ctx.register_table(name, table.table())?;
         Ok(())
     }
 
-    pub fn deregister_table(&mut self, name: &str) -> PyDataFusionResult<()> {
+    pub fn deregister_table(&self, name: &str) -> PyDataFusionResult<()> {
         self.ctx.deregister_table(name)?;
         Ok(())
     }
 
     pub fn register_catalog_provider(
-        &mut self,
+        &self,
         name: &str,
         provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
@@ -647,7 +639,7 @@ impl PySessionContext {
 
     /// Construct datafusion dataframe from Arrow Table
     pub fn register_table_provider(
-        &mut self,
+        &self,
         name: &str,
         provider: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
@@ -671,7 +663,7 @@ impl PySessionContext {
     }
 
     pub fn register_record_batches(
-        &mut self,
+        &self,
         name: &str,
         partitions: PyArrowType<Vec<Vec<RecordBatch>>>,
     ) -> PyDataFusionResult<()> {
@@ -689,7 +681,7 @@ impl PySessionContext {
                         schema=None,
                         file_sort_order=None))]
     pub fn register_parquet(
-        &mut self,
+        &self,
         name: &str,
         path: &str,
         table_partition_cols: Vec<(String, PyArrowType<DataType>)>,
@@ -732,7 +724,7 @@ impl PySessionContext {
                         file_extension=".csv",
                         file_compression_type=None))]
     pub fn register_csv(
-        &mut self,
+        &self,
         name: &str,
         path: &Bound<'_, PyAny>,
         schema: Option<PyArrowType<Schema>>,
@@ -780,7 +772,7 @@ impl PySessionContext {
                         table_partition_cols=vec![],
                         file_compression_type=None))]
     pub fn register_json(
-        &mut self,
+        &self,
         name: &str,
         path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
@@ -819,7 +811,7 @@ impl PySessionContext {
                         file_extension=".avro",
                         table_partition_cols=vec![]))]
     pub fn register_avro(
-        &mut self,
+        &self,
         name: &str,
         path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
@@ -860,17 +852,17 @@ impl PySessionContext {
         Ok(())
     }
 
-    pub fn register_udf(&mut self, udf: PyScalarUDF) -> PyResult<()> {
+    pub fn register_udf(&self, udf: PyScalarUDF) -> PyResult<()> {
         self.ctx.register_udf(udf.function);
         Ok(())
     }
 
-    pub fn register_udaf(&mut self, udaf: PyAggregateUDF) -> PyResult<()> {
+    pub fn register_udaf(&self, udaf: PyAggregateUDF) -> PyResult<()> {
         self.ctx.register_udaf(udaf.function);
         Ok(())
     }
 
-    pub fn register_udwf(&mut self, udwf: PyWindowUDF) -> PyResult<()> {
+    pub fn register_udwf(&self, udwf: PyWindowUDF) -> PyResult<()> {
         self.ctx.register_udwf(udwf.function);
         Ok(())
     }
@@ -942,7 +934,7 @@ impl PySessionContext {
     #[allow(clippy::too_many_arguments)]
     #[pyo3(signature = (path, schema=None, schema_infer_max_records=1000, file_extension=".json", table_partition_cols=vec![], file_compression_type=None))]
     pub fn read_json(
-        &mut self,
+        &self,
         path: PathBuf,
         schema: Option<PyArrowType<Schema>>,
         schema_infer_max_records: usize,
