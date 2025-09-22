@@ -340,8 +340,8 @@ class DataFrame:
             >>> from datafusion import SessionContext
             >>> ctx = SessionContext()
             >>> df = ctx.sql("SELECT 1 AS value")
-            >>> provider = df.into_view()
-            >>> ctx.register_table("values_view", provider)
+            >>> view = df.into_view()
+            >>> ctx.register_table("values_view", view)
             >>> df.collect()  # The DataFrame is still usable
             >>> ctx.sql("SELECT value FROM values_view").collect()
         """
