@@ -296,7 +296,7 @@ impl PySQLOptions {
 /// `PySessionContext` is able to plan and execute DataFusion plans.
 /// It has a powerful optimizer, a physical planner for local execution, and a
 /// multi-threaded execution engine to perform the execution.
-#[pyclass(name = "SessionContext", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "SessionContext", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PySessionContext {
     pub ctx: SessionContext,
