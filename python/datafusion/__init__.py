@@ -21,9 +21,6 @@ This is a Python library that binds to Apache Arrow in-memory query engine DataF
 See https://datafusion.apache.org/python for more information.
 """
 
-# isort: skip_file  # Prevent import-sorting linter errors (I001)
-# ruff: noqa: I001
-
 from __future__ import annotations
 
 from typing import Any
@@ -37,7 +34,7 @@ except ImportError:
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
-from ._internal import Config, EXPECTED_PROVIDER_MSG
+from ._internal import EXPECTED_PROVIDER_MSG, Config
 from .catalog import Catalog, Database, Table
 from .col import col, column
 from .common import DFSchema
