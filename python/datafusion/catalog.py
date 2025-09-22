@@ -19,10 +19,9 @@
 
 from __future__ import annotations
 
+import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Protocol
-
-import warnings
 
 import datafusion._internal as df_internal
 from datafusion._internal import EXPECTED_PROVIDER_MSG
@@ -170,7 +169,6 @@ class Table:
         table: _InternalRawTable | _InternalTableProvider | Table,
     ) -> None:
         """Wrap a low level table or table provider."""
-
         if isinstance(table, Table):
             table = table.table
 
@@ -181,7 +179,6 @@ class Table:
 
     def __getattribute__(self, name: str) -> Any:
         """Restrict provider-specific helpers to compatible tables."""
-
         if name == "__datafusion_table_provider__":
             table = object.__getattribute__(self, "_table")
             if not hasattr(table, "__datafusion_table_provider__"):
@@ -200,20 +197,17 @@ class Table:
     @classmethod
     def from_dataset(cls, dataset: pa.dataset.Dataset) -> Table:
         """Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`."""
-
         return cls(_InternalRawTable.from_dataset(dataset))
 
     @classmethod
     def from_capsule(cls, capsule: Any) -> Table:
         """Create a :class:`Table` from a PyCapsule exported provider."""
-
         provider = _InternalTableProvider.from_capsule(capsule)
         return cls(provider)
 
     @classmethod
     def from_dataframe(cls, df: Any) -> Table:
         """Create a :class:`Table` from tabular data."""
-
         from datafusion.dataframe import DataFrame as DataFrameWrapper
 
         dataframe = df if isinstance(df, DataFrameWrapper) else DataFrameWrapper(df)
@@ -222,7 +216,6 @@ class Table:
     @classmethod
     def from_view(cls, df: Any) -> Table:
         """Deprecated helper for constructing tables from views."""
-
         from datafusion.dataframe import DataFrame as DataFrameWrapper
 
         if isinstance(df, DataFrameWrapper):
@@ -249,7 +242,6 @@ class Table:
 
     def __datafusion_table_provider__(self) -> Any:
         """Expose the wrapped provider for FFI integrations."""
-
         exporter = getattr(self._table, "__datafusion_table_provider__", None)
         if exporter is None:
             msg = "Underlying object does not export __datafusion_table_provider__()"

@@ -369,6 +369,7 @@ def test_table_from_dataframe_internal(ctx):
     result = ctx.sql("SELECT * FROM from_internal_dataframe_tbl").collect()
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
 
+
 def test_register_table_capsule_direct(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
     provider = df.into_view()
