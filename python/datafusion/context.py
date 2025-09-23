@@ -797,23 +797,29 @@ class SessionContext:
         if isinstance(obj, DataFrame):
             self.register_view(name, obj)
             registered = True
-        elif (
-            obj.__class__.__module__.startswith("polars.")
-            and obj.__class__.__name__ == "DataFrame"
-        ):
-            self.from_polars(obj, name=name)
-            registered = True
-        elif (
-            obj.__class__.__module__.startswith("pandas.")
-            and obj.__class__.__name__ == "DataFrame"
-        ):
-            self.from_pandas(obj, name=name)
-            registered = True
-        elif isinstance(obj, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)) or (
-            hasattr(obj, "__arrow_c_stream__") or hasattr(obj, "__arrow_c_array__")
-        ):
+        elif isinstance(obj, (pa.Table, pa.RecordBatch, pa.RecordBatchReader)):
             self.from_arrow(obj, name=name)
             registered = True
+        else:
+            exports_arrow_capsule = hasattr(obj, "__arrow_c_stream__") or hasattr(
+                obj, "__arrow_c_array__"
+            )
+
+            if exports_arrow_capsule:
+                self.from_arrow(obj, name=name)
+                registered = True
+            elif (
+                obj.__class__.__module__.startswith("polars.")
+                and obj.__class__.__name__ == "DataFrame"
+            ):
+                self.from_polars(obj, name=name)
+                registered = True
+            elif (
+                obj.__class__.__module__.startswith("pandas.")
+                and obj.__class__.__name__ == "DataFrame"
+            ):
+                self.from_pandas(obj, name=name)
+                registered = True
 
         if registered:
             try:

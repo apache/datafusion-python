@@ -372,11 +372,22 @@ def test_sql_auto_register_case_insensitive_lookup():
     assert batches[0].column(0).to_pylist()[0] == 5
 
 
-def test_sql_auto_register_pandas_dataframe():
+def test_sql_auto_register_pandas_dataframe(monkeypatch):
     pd = pytest.importorskip("pandas")
 
     ctx = SessionContext(auto_register_python_objects=True)
     pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})  # noqa: F841
+
+    if not (
+        hasattr(pandas_df, "__arrow_c_stream__")
+        or hasattr(pandas_df, "__arrow_c_array__")
+    ):
+        pytest.skip("pandas does not expose Arrow capsule export")
+
+    def fail_from_pandas(*args, **kwargs):  # noqa: ANN002, ANN003
+        raise AssertionError("from_pandas should not be called during auto-registration")
+
+    monkeypatch.setattr(SessionContext, "from_pandas", fail_from_pandas)
 
     result = ctx.sql(
         "SELECT AVG(value) AS avg_value FROM pandas_df",
