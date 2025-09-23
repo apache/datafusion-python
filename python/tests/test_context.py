@@ -385,7 +385,8 @@ def test_sql_auto_register_pandas_dataframe(monkeypatch):
         pytest.skip("pandas does not expose Arrow capsule export")
 
     def fail_from_pandas(*args, **kwargs):
-        raise AssertionError("from_pandas should not be called during auto-registration")
+        msg = "from_pandas should not be called during auto-registration"
+        raise AssertionError(msg)
 
     monkeypatch.setattr(SessionContext, "from_pandas", fail_from_pandas)
 
