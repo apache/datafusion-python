@@ -376,7 +376,7 @@ def test_sql_auto_register_pandas_dataframe(monkeypatch):
     pd = pytest.importorskip("pandas")
 
     ctx = SessionContext(auto_register_python_objects=True)
-    pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})  # noqa: F841
+    pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})
 
     if not (
         hasattr(pandas_df, "__arrow_c_stream__")
@@ -384,7 +384,7 @@ def test_sql_auto_register_pandas_dataframe(monkeypatch):
     ):
         pytest.skip("pandas does not expose Arrow capsule export")
 
-    def fail_from_pandas(*args, **kwargs):  # noqa: ANN002, ANN003
+    def fail_from_pandas(*args, **kwargs):
         raise AssertionError("from_pandas should not be called during auto-registration")
 
     monkeypatch.setattr(SessionContext, "from_pandas", fail_from_pandas)
