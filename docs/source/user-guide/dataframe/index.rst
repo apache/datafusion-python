@@ -233,20 +233,30 @@ Core Classes
     such as ``ctx.sql("SELECT * FROM pdf")`` will register a pandas or
     PyArrow object named ``pdf`` without calling
     :py:meth:`~datafusion.SessionContext.from_pandas` or
-    :py:meth:`~datafusion.SessionContext.from_arrow` explicitly. This requires
-    the corresponding library (``pandas`` for pandas objects, ``pyarrow`` for
-    Arrow objects) to be installed.
+    :py:meth:`~datafusion.SessionContext.from_arrow` explicitly. This uses
+    the Arrow PyCapsule Interface, so the corresponding library (``pandas`` 
+    for pandas objects, ``pyarrow`` for Arrow objects) must be installed.
 
     .. code-block:: python
 
         import pandas as pd
+        import pyarrow as pa
         from datafusion import SessionContext
 
         ctx = SessionContext(auto_register_python_objects=True)
+        
+        # pandas dataframe - requires pandas to be installed
         pdf = pd.DataFrame({"value": [1, 2, 3]})
+        
+        # or pyarrow object - requires pyarrow to be installed  
+        arrow_table = pa.table({"value": [1, 2, 3]})
 
+        # If automatic registration is enabled, then we can query these objects directly
         df = ctx.sql("SELECT SUM(value) AS total FROM pdf")
-        print(df.to_pandas())  # automatically registers `pdf`
+        # or
+        df = ctx.sql("SELECT SUM(value) AS total FROM arrow_table")
+        
+        # without calling ctx.from_pandas() or ctx.from_arrow() explicitly
 
     Automatic lookup is disabled by default. Enable it by passing
     ``auto_register_python_objects=True`` when constructing the session or by
