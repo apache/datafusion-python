@@ -45,33 +45,33 @@ def test_ffi_aggregate_register():
 
     result = ctx.sql("select my_custom_sum(a) from test_table group by b").collect()
 
-    assert len(result) == 2
+    assert result
     assert result[0].num_columns == 1
 
-    result = [r.column(0) for r in result]
-    expected = [
-        pa.array([3], type=pa.int64()),
-        pa.array([3], type=pa.int64()),
-    ]
+    # Normalizing table registration in _normalize_table_provider feeds the Rust layer
+    # an actual TableProvider, so collect() emits the grouped rows in a single record batch
+    # instead of two separate batches.
+    aggregates = pa.concat_arrays([batch.column(0) for batch in result])
 
-    assert result == expected
+    assert len(aggregates) == 2
+    assert aggregates.to_pylist() == [3, 3]
 
 
 def test_ffi_aggregate_call_directly():
     ctx = setup_context_with_table()
     my_udaf = udaf(MySumUDF())
-
+    
     result = (
         ctx.table("test_table").aggregate([col("b")], [my_udaf(col("a"))]).collect()
     )
 
-    assert len(result) == 2
+    # Normalizing table registration in _normalize_table_provider feeds the Rust layer
+    # an actual TableProvider, so collect() emits the grouped rows in a single record batch
+    # instead of two separate batches.
+    assert result
     assert result[0].num_columns == 2
 
-    result = [r.column(1) for r in result]
-    expected = [
-        pa.array([3], type=pa.int64()),
-        pa.array([3], type=pa.int64()),
-    ]
+    aggregates = pa.concat_arrays([batch.column(1) for batch in result])
 
-    assert result == expected
+    assert len(aggregates) == 2
+    assert aggregates.to_pylist() == [3, 3]

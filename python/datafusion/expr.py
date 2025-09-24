@@ -25,14 +25,12 @@ from __future__ import annotations
 import typing as _typing
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Optional, Sequence
 
-import pyarrow as pa
-
 try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-from datafusion.common import NullTreatment
+import pyarrow as pa
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
@@ -40,8 +38,11 @@ from ._internal import functions as functions_internal
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    # Type-only imports
-    from datafusion.common import DataTypeMap, RexType
+    from datafusion.common import (  # type: ignore[import]
+        DataTypeMap,
+        NullTreatment,
+        RexType,
+    )
     from datafusion.plan import LogicalPlan
 
 

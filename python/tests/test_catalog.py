@@ -20,7 +20,7 @@ import datafusion as dfn
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import SessionContext, Table
+from datafusion import EXPECTED_PROVIDER_MSG, SessionContext, Table
 
 
 # Note we take in `database` as a variable even though we don't use
@@ -162,6 +162,38 @@ def test_python_table_provider(ctx: SessionContext):
     schema.deregister_table("table3")
     schema.register_table("table4", create_dataset())
     assert schema.table_names() == {"table4"}
+
+
+def test_schema_register_table_with_pyarrow_dataset(ctx: SessionContext):
+    schema = ctx.catalog().schema()
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    dataset = ds.dataset([batch])
+    table_name = "pa_dataset"
+
+    try:
+        schema.register_table(table_name, dataset)
+        assert table_name in schema.table_names()
+
+        result = ctx.sql(f"SELECT a, b FROM {table_name}").collect()
+
+        assert len(result) == 1
+        assert result[0].column(0) == pa.array([1, 2, 3])
+        assert result[0].column(1) == pa.array([4, 5, 6])
+    finally:
+        schema.deregister_table(table_name)
+
+
+def test_schema_register_table_with_dataframe_errors(ctx: SessionContext):
+    schema = ctx.catalog().schema()
+    df = ctx.from_pydict({"a": [1]})
+
+    with pytest.raises(Exception) as exc_info:
+        schema.register_table("bad", df)
+
+    assert str(exc_info.value) == EXPECTED_PROVIDER_MSG
 
 
 def test_in_end_to_end_python_providers(ctx: SessionContext):

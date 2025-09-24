@@ -18,14 +18,13 @@
 use pyo3::prelude::*;
 use std::sync::Arc;
 
-use crate::dataframe::PyTableProvider;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::utils::validate_pycapsule;
+use crate::table::PyTableProvider;
+use crate::utils::{table_provider_from_pycapsule, validate_pycapsule};
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::types::{PyCapsule, PyTuple};
@@ -99,20 +98,11 @@ fn call_python_table_function(
         let provider_obj = func.call1(py, py_args)?;
         let provider = provider_obj.bind(py);
 
-        if provider.hasattr("__datafusion_table_provider__")? {
-            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_provider")?;
-
-            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-            let provider: ForeignTableProvider = provider.into();
-
-            Ok(Arc::new(provider) as Arc<dyn TableProvider>)
-        } else {
-            Err(PyNotImplementedError::new_err(
+        table_provider_from_pycapsule(provider)?.ok_or_else(|| {
+            PyNotImplementedError::new_err(
                 "__datafusion_table_provider__ does not exist on Table Provider object.",
-            ))
-        }
+            )
+        })
     })
     .map_err(to_datafusion_err)
 }
