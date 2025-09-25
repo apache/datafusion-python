@@ -155,7 +155,7 @@ pub fn to_rust_accumulator(accum: PyObject) -> AccumulatorFactoryFunction {
 }
 
 /// Represents an AggregateUDF
-#[pyclass(name = "AggregateUDF", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "AggregateUDF", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyAggregateUDF {
     pub(crate) function: AggregateUDF,

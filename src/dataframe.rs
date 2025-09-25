@@ -61,7 +61,7 @@ use crate::{
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
 // this is an interim implementation
-#[pyclass(name = "TableProvider", module = "datafusion")]
+#[pyclass(frozen, name = "TableProvider", module = "datafusion")]
 pub struct PyTableProvider {
     provider: Arc<dyn TableProvider + Send>,
 }
@@ -188,7 +188,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 }
 
 /// Python mapping of `ParquetOptions` (includes just the writer-related options).
-#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetWriterOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetWriterOptions {
     options: ParquetOptions,
@@ -249,7 +249,7 @@ impl PyParquetWriterOptions {
 }
 
 /// Python mapping of `ParquetColumnOptions`.
-#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetColumnOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetColumnOptions {
     options: ParquetColumnOptions,
@@ -284,6 +284,7 @@ impl PyParquetColumnOptions {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
+// TODO: Not frozen because batches don't currently handle interior mutability
 #[pyclass(name = "DataFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PyDataFrame {

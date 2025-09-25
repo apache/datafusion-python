@@ -23,6 +23,7 @@ use datafusion::config::ConfigOptions;
 use crate::errors::PyDataFusionResult;
 use crate::utils::py_obj_to_scalar_value;
 
+// TODO: Not frozen because set needs access
 #[pyclass(name = "Config", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
@@ -47,7 +48,7 @@ impl PyConfig {
     }
 
     /// Get a configuration option
-    pub fn get<'py>(&mut self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+    pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         let options = self.config.to_owned();
         for entry in options.entries() {
             if entry.key == key {
@@ -65,7 +66,7 @@ impl PyConfig {
     }
 
     /// Get all configuration options
-    pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
+    pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
         let options = self.config.to_owned();
         for entry in options.entries() {
@@ -74,7 +75,7 @@ impl PyConfig {
         Ok(dict.into())
     }
 
-    fn __repr__(&mut self, py: Python) -> PyResult<String> {
+    fn __repr__(&self, py: Python) -> PyResult<String> {
         let dict = self.get_all(py);
         match dict {
             Ok(result) => Ok(format!("Config({result})")),
