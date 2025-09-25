@@ -68,7 +68,7 @@ type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
 // this is an interim implementation
-#[pyclass(name = "TableProvider", module = "datafusion")]
+#[pyclass(frozen, name = "TableProvider", module = "datafusion")]
 pub struct PyTableProvider {
     provider: Arc<dyn TableProvider + Send>,
 }
@@ -195,7 +195,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 }
 
 /// Python mapping of `ParquetOptions` (includes just the writer-related options).
-#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetWriterOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetWriterOptions {
     options: ParquetOptions,
@@ -256,7 +256,7 @@ impl PyParquetWriterOptions {
 }
 
 /// Python mapping of `ParquetColumnOptions`.
-#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetColumnOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetColumnOptions {
     options: ParquetColumnOptions,

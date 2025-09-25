@@ -24,7 +24,7 @@ use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
 
 use crate::{context::PySessionContext, errors::PyDataFusionResult};
 
-#[pyclass(name = "ExecutionPlan", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyExecutionPlan {
     pub plan: Arc<dyn ExecutionPlan>,
