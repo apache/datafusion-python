@@ -24,7 +24,7 @@ use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 use crate::{common::df_schema::PyDFSchema, expr::PyExpr};
 
-#[pyclass(name = "TableScan", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTableScan {
     table_scan: TableScan,

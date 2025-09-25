@@ -25,7 +25,7 @@ use crate::expr::{logical_node::LogicalNode, PyExpr};
 use crate::sql::logical::PyLogicalPlan;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[pyclass(name = "JoinType", module = "datafusion.expr")]
+#[pyclass(frozen, name = "JoinType", module = "datafusion.expr")]
 pub struct PyJoinType {
     join_type: JoinType,
 }
@@ -60,7 +60,7 @@ impl Display for PyJoinType {
 }
 
 #[derive(Debug, Clone, Copy)]
-#[pyclass(name = "JoinConstraint", module = "datafusion.expr")]
+#[pyclass(frozen, name = "JoinConstraint", module = "datafusion.expr")]
 pub struct PyJoinConstraint {
     join_constraint: JoinConstraint,
 }
@@ -87,7 +87,7 @@ impl PyJoinConstraint {
     }
 }
 
-#[pyclass(name = "Join", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Join", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyJoin {
     join: Join,
