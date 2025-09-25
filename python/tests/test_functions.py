@@ -697,7 +697,10 @@ def test_array_function_obj_tests(stmt, py_expr):
             f.initcap(column("c")),
             pa.array(["Hello ", " World ", " !"], type=pa.string_view()),
         ),
-        (f.left(column("a"), literal(3)), pa.array(["Hel", "Wor", "!"])),
+        (
+            f.left(column("a"), literal(3)),
+            pa.array(["Hel", "Wor", "!"]),  # codespell:ignore
+        ),
         (f.length(column("c")), pa.array([6, 7, 2], type=pa.int32())),
         (f.lower(column("a")), pa.array(["hello", "world", "!"])),
         (f.lpad(column("a"), literal(7)), pa.array(["  Hello", "  World", "      !"])),
