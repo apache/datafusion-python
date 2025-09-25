@@ -30,7 +30,7 @@ use super::PyExpr;
 use crate::common::{data_type::PyDataType, df_schema::PyDFSchema};
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "CreateFunction", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "CreateFunction", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateFunction {
     create: CreateFunction,
@@ -54,21 +54,31 @@ impl Display for PyCreateFunction {
     }
 }
 
-#[pyclass(name = "OperateFunctionArg", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "OperateFunctionArg",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyOperateFunctionArg {
     arg: OperateFunctionArg,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "Volatility", module = "datafusion.expr")]
+#[pyclass(frozen, eq, eq_int, name = "Volatility", module = "datafusion.expr")]
 pub enum PyVolatility {
     Immutable,
     Stable,
     Volatile,
 }
 
-#[pyclass(name = "CreateFunctionBody", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "CreateFunctionBody",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyCreateFunctionBody {
     body: CreateFunctionBody,

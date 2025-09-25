@@ -24,7 +24,7 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "DmlStatement", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "DmlStatement", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyDmlStatement {
     dml: DmlStatement,

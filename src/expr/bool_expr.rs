@@ -21,7 +21,7 @@ use std::fmt::{self, Display, Formatter};
 
 use super::PyExpr;
 
-#[pyclass(name = "Not", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Not", module = "datafusion.expr", subclass)]
 #[derive(Clone, Debug)]
 pub struct PyNot {
     expr: Expr,

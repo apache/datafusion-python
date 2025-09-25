@@ -28,7 +28,12 @@ use crate::common::df_schema::PyDFSchema;
 use super::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "DropCatalogSchema", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "DropCatalogSchema",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyDropCatalogSchema {
     drop: DropCatalogSchema,

@@ -25,7 +25,7 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Unparser", module = "datafusion.unparser", subclass)]
+#[pyclass(frozen, name = "Unparser", module = "datafusion.unparser", subclass)]
 #[derive(Clone)]
 pub struct PyUnparser {
     dialect: Arc<dyn Dialect>,
