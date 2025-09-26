@@ -20,10 +20,6 @@ from datetime import datetime, timezone
 
 import pyarrow as pa
 import pytest
-
-# Avoid passing boolean literals positionally (FBT003). Use a named constant
-# so linters don't see a bare True/False literal in a function call.
-_TRUE = True
 from datafusion import (
     SessionContext,
     col,
@@ -56,6 +52,10 @@ from datafusion.expr import (
     ensure_expr,
     ensure_expr_list,
 )
+
+# Avoid passing boolean literals positionally (FBT003). Use a named constant
+# so linters don't see a bare True/False literal in a function call.
+_TRUE = True
 
 
 @pytest.fixture
