@@ -20,10 +20,9 @@ from __future__ import annotations
 from concurrent.futures import ThreadPoolExecutor
 
 import pyarrow as pa
-
 from datafusion import Config, SessionContext, col, lit
-from datafusion.common import SqlSchema
 from datafusion import functions as f
+from datafusion.common import SqlSchema
 
 
 def _run_in_threads(fn, count: int = 8) -> None:

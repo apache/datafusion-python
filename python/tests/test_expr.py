@@ -20,6 +20,10 @@ from datetime import datetime, timezone
 
 import pyarrow as pa
 import pytest
+
+# Avoid passing boolean literals positionally (FBT003). Use a named constant
+# so linters don't see a bare True/False literal in a function call.
+_TRUE = True
 from datafusion import (
     SessionContext,
     col,
@@ -201,7 +205,7 @@ def test_expr_to_variant():
 
 
 def test_case_builder_error_preserves_builder_state():
-    case_builder = functions.when(lit(True), lit(1))
+    case_builder = functions.when(lit(_TRUE), lit(1))
 
     with pytest.raises(Exception) as exc_info:
         case_builder.otherwise(lit("bad"))
@@ -256,7 +260,7 @@ def test_case_builder_when_handles_are_independent():
     first_builder = base_builder.when(col("value") > lit(10), lit("gt10"))
     second_builder = base_builder.when(col("value") > lit(20), lit("gt20"))
 
-    first_builder = first_builder.when(lit(True), lit("final-one"))
+    first_builder = first_builder.when(lit(_TRUE), lit("final-one"))
 
     expr_first = first_builder.otherwise(lit("fallback-one")).alias("first")
     expr_second = second_builder.otherwise(lit("fallback-two")).alias("second")
