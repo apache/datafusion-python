@@ -271,8 +271,8 @@ def test_case_builder_when_handles_are_independent():
     ]
     assert result.column(1).to_pylist() == [
         "flag-true",
-        "fallback-two",
-        "gt20",
+        "gt10",
+        "gt10",
         "fallback-two",
     ]
 
