@@ -241,6 +241,42 @@ def test_case_builder_success_preserves_builder_state():
     assert end_two[0].column(0).to_pylist() == ["default-2"]
 
 
+def test_case_builder_when_handles_are_independent():
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {
+            "flag": [True, False, False, False],
+            "value": [1, 15, 25, 5],
+        },
+        name="tbl",
+    )
+
+    base_builder = functions.when(col("flag"), lit("flag-true"))
+
+    first_builder = base_builder.when(col("value") > lit(10), lit("gt10"))
+    second_builder = base_builder.when(col("value") > lit(20), lit("gt20"))
+
+    first_builder = first_builder.when(lit(True), lit("final-one"))
+
+    expr_first = first_builder.otherwise(lit("fallback-one")).alias("first")
+    expr_second = second_builder.otherwise(lit("fallback-two")).alias("second")
+
+    result = df.select(expr_first, expr_second).collect()[0]
+
+    assert result.column(0).to_pylist() == [
+        "flag-true",
+        "gt10",
+        "gt10",
+        "final-one",
+    ]
+    assert result.column(1).to_pylist() == [
+        "flag-true",
+        "fallback-two",
+        "gt20",
+        "fallback-two",
+    ]
+
+
 def test_expr_getitem() -> None:
     ctx = SessionContext()
     data = {

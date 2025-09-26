@@ -68,10 +68,10 @@ impl PyCaseBuilder {
 #[pymethods]
 impl PyCaseBuilder {
     fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
-        let mut builder = self.take_case_builder()?;
+        let builder = self.take_case_builder()?;
         let next_builder = builder.when(when.expr, then.expr);
-        self.store_case_builder(next_builder);
-        Ok(self.clone())
+        self.store_case_builder(next_builder.clone());
+        Ok(next_builder.into())
     }
 
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
