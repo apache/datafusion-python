@@ -200,6 +200,24 @@ def test_expr_to_variant():
     assert not variant.negated()
 
 
+def test_case_builder_error_preserves_builder_state():
+    case_builder = functions.when(lit(True), lit(1))
+
+    with pytest.raises(Exception) as exc_info:
+        case_builder.otherwise(lit("bad"))
+
+    err_msg = str(exc_info.value)
+    assert "multiple data types" in err_msg
+    assert "CaseBuilder has already been consumed" not in err_msg
+
+    with pytest.raises(Exception) as exc_info:
+        case_builder.end()
+
+    err_msg = str(exc_info.value)
+    assert "multiple data types" in err_msg
+    assert "CaseBuilder has already been consumed" not in err_msg
+
+
 def test_expr_getitem() -> None:
     ctx = SessionContext()
     data = {
