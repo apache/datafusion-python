@@ -28,7 +28,7 @@ use pyo3::prelude::*;
 use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
 use tokio::sync::Mutex;
 
-#[pyclass(name = "RecordBatch", module = "datafusion", subclass)]
+#[pyclass(name = "RecordBatch", module = "datafusion", subclass, frozen)]
 pub struct PyRecordBatch {
     batch: RecordBatch,
 }
@@ -46,7 +46,7 @@ impl From<RecordBatch> for PyRecordBatch {
     }
 }
 
-#[pyclass(name = "RecordBatchStream", module = "datafusion", subclass)]
+#[pyclass(name = "RecordBatchStream", module = "datafusion", subclass, frozen)]
 pub struct PyRecordBatchStream {
     stream: Arc<Mutex<SendableRecordBatchStream>>,
 }
@@ -61,12 +61,12 @@ impl PyRecordBatchStream {
 
 #[pymethods]
 impl PyRecordBatchStream {
-    fn next(&mut self, py: Python) -> PyResult<PyRecordBatch> {
+    fn next(&self, py: Python) -> PyResult<PyRecordBatch> {
         let stream = self.stream.clone();
         wait_for_future(py, next_stream(stream, true))?
     }
 
-    fn __next__(&mut self, py: Python) -> PyResult<PyRecordBatch> {
+    fn __next__(&self, py: Python) -> PyResult<PyRecordBatch> {
         self.next(py)
     }
 
