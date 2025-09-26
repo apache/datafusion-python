@@ -24,7 +24,12 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "CreateMemoryTable", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "CreateMemoryTable",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyCreateMemoryTable {
     create: CreateMemoryTable,

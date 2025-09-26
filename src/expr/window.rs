@@ -30,13 +30,13 @@ use std::fmt::{self, Display, Formatter};
 
 use super::py_expr_list;
 
-#[pyclass(name = "WindowExpr", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "WindowExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyWindowExpr {
     window: Window,
 }
 
-#[pyclass(name = "WindowFrame", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "WindowFrame", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyWindowFrame {
     window_frame: WindowFrame,
@@ -54,7 +54,12 @@ impl From<WindowFrame> for PyWindowFrame {
     }
 }
 
-#[pyclass(name = "WindowFrameBound", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "WindowFrameBound",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyWindowFrameBound {
     frame_bound: WindowFrameBound,

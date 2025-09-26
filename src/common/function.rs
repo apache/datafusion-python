@@ -22,7 +22,7 @@ use pyo3::prelude::*;
 
 use super::data_type::PyDataType;
 
-#[pyclass(name = "SqlFunction", module = "datafusion.common", subclass)]
+#[pyclass(frozen, name = "SqlFunction", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlFunction {
     pub name: String,

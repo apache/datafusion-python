@@ -81,7 +81,7 @@ fn to_scalar_function_impl(func: PyObject) -> ScalarFunctionImplementation {
 }
 
 /// Represents a PyScalarUDF
-#[pyclass(name = "ScalarUDF", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ScalarUDF", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyScalarUDF {
     pub(crate) function: ScalarUDF,

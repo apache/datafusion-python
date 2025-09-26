@@ -77,7 +77,7 @@ use pyo3::IntoPyObjectExt;
 use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
-#[pyclass(name = "SessionConfig", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "SessionConfig", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PySessionConfig {
     pub config: SessionConfig,
@@ -170,7 +170,7 @@ impl PySessionConfig {
 }
 
 /// Runtime options for a SessionContext
-#[pyclass(name = "RuntimeEnvBuilder", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "RuntimeEnvBuilder", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PyRuntimeEnvBuilder {
     pub builder: RuntimeEnvBuilder,
@@ -257,7 +257,7 @@ impl PyRuntimeEnvBuilder {
 }
 
 /// `PySQLOptions` allows you to specify options to the sql execution.
-#[pyclass(name = "SQLOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "SQLOptions", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PySQLOptions {
     pub options: SQLOptions,

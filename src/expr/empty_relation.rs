@@ -22,7 +22,7 @@ use std::fmt::{self, Display, Formatter};
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "EmptyRelation", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "EmptyRelation", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyEmptyRelation {
     empty: EmptyRelation,

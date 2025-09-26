@@ -19,7 +19,7 @@ use crate::expr::PyExpr;
 use datafusion::logical_expr::expr::InList;
 use pyo3::prelude::*;
 
-#[pyclass(name = "InList", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "InList", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyInList {
     in_list: InList,

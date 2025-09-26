@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 
 use crate::common::data_type::PyDataType;
 
-#[pyclass(name = "ScalarVariable", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "ScalarVariable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyScalarVariable {
     data_type: DataType,

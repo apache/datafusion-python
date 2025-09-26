@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 
 use super::subquery::PySubquery;
 
-#[pyclass(name = "ScalarSubquery", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "ScalarSubquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyScalarSubquery {
     subquery: Subquery,

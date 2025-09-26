@@ -33,6 +33,7 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 
+// TODO: pyclass frozen
 #[pyclass(name = "SqlSchema", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlSchema {
@@ -46,6 +47,7 @@ pub struct SqlSchema {
     pub functions: Vec<SqlFunction>,
 }
 
+// TODO: pyclass frozen
 #[pyclass(name = "SqlTable", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlTable {
@@ -90,6 +92,7 @@ impl SqlTable {
     }
 }
 
+// TODO: pyclass frozen
 #[pyclass(name = "SqlView", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlView {
@@ -208,7 +211,7 @@ fn is_supported_push_down_expr(_expr: &Expr) -> bool {
     true
 }
 
-#[pyclass(name = "SqlStatistics", module = "datafusion.common", subclass)]
+#[pyclass(frozen, name = "SqlStatistics", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlStatistics {
     row_count: f64,
@@ -227,7 +230,7 @@ impl SqlStatistics {
     }
 }
 
-#[pyclass(name = "Constraints", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Constraints", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyConstraints {
     pub constraints: Constraints,
@@ -252,7 +255,7 @@ impl Display for PyConstraints {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "TableType", module = "datafusion.common")]
+#[pyclass(frozen, eq, eq_int, name = "TableType", module = "datafusion.common")]
 pub enum PyTableType {
     Base,
     View,
@@ -279,7 +282,7 @@ impl From<TableType> for PyTableType {
     }
 }
 
-#[pyclass(name = "TableSource", module = "datafusion.common", subclass)]
+#[pyclass(frozen, name = "TableSource", module = "datafusion.common", subclass)]
 #[derive(Clone)]
 pub struct PyTableSource {
     pub table_source: Arc<dyn TableSource>,

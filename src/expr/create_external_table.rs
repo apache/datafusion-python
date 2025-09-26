@@ -29,7 +29,12 @@ use crate::common::df_schema::PyDFSchema;
 
 use super::{logical_node::LogicalNode, sort_expr::PySortExpr};
 
-#[pyclass(name = "CreateExternalTable", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "CreateExternalTable",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyCreateExternalTable {
     create: CreateExternalTable,

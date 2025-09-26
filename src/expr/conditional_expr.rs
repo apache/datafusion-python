@@ -19,6 +19,9 @@ use crate::{errors::PyDataFusionResult, expr::PyExpr};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use pyo3::prelude::*;
 
+// TODO: pyclass frozen
+// Mutates CaseBuilder might need CaseBuilder derive clone upstream
+// since when basically clones
 #[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass)]
 pub struct PyCaseBuilder {
     pub case_builder: CaseBuilder,
