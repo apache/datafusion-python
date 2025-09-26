@@ -15,18 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::{Arc, RwLock};
+
 use pyo3::prelude::*;
 use pyo3::types::*;
 
 use datafusion::config::ConfigOptions;
 
-use crate::errors::PyDataFusionResult;
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
 use crate::utils::py_obj_to_scalar_value;
 
-#[pyclass(name = "Config", module = "datafusion", subclass)]
+#[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
-    config: ConfigOptions,
+    config: Arc<RwLock<ConfigOptions>>,
 }
 
 #[pymethods]
@@ -34,7 +36,7 @@ impl PyConfig {
     #[new]
     fn py_new() -> Self {
         Self {
-            config: ConfigOptions::new(),
+            config: Arc::new(RwLock::new(ConfigOptions::new())),
         }
     }
 
@@ -42,13 +44,16 @@ impl PyConfig {
     #[staticmethod]
     pub fn from_env() -> PyDataFusionResult<Self> {
         Ok(Self {
-            config: ConfigOptions::from_env()?,
+            config: Arc::new(RwLock::new(ConfigOptions::from_env()?)),
         })
     }
 
     /// Get a configuration option
-    pub fn get<'py>(&mut self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let options = self.config.to_owned();
+    pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        let options = self
+            .config
+            .read()
+            .map_err(|_| PyDataFusionError::Common("failed to read configuration".to_string()))?;
         for entry in options.entries() {
             if entry.key == key {
                 return Ok(entry.value.into_pyobject(py)?);
@@ -58,25 +63,31 @@ impl PyConfig {
     }
 
     /// Set a configuration option
-    pub fn set(&mut self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
+    pub fn set(&self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
         let scalar_value = py_obj_to_scalar_value(py, value)?;
-        self.config.set(key, scalar_value.to_string().as_str())?;
+        let mut options = self
+            .config
+            .write()
+            .map_err(|_| PyDataFusionError::Common("failed to lock configuration".to_string()))?;
+        options.set(key, scalar_value.to_string().as_str())?;
         Ok(())
     }
 
     /// Get all configuration options
-    pub fn get_all(&mut self, py: Python) -> PyResult<PyObject> {
+    pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
-        let options = self.config.to_owned();
+        let options = self
+            .config
+            .read()
+            .map_err(|_| PyDataFusionError::Common("failed to read configuration".to_string()))?;
         for entry in options.entries() {
             dict.set_item(entry.key, entry.value.clone().into_pyobject(py)?)?;
         }
         Ok(dict.into())
     }
 
-    fn __repr__(&mut self, py: Python) -> PyResult<String> {
-        let dict = self.get_all(py);
-        match dict {
+    fn __repr__(&self, py: Python) -> PyResult<String> {
+        match self.get_all(py) {
             Ok(result) => Ok(format!("Config({result})")),
             Err(err) => Ok(format!("Error: {:?}", err.to_string())),
         }

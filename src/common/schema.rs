@@ -16,7 +16,7 @@
 // under the License.
 
 use std::fmt::{self, Display, Formatter};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::{any::Any, borrow::Cow};
 
 use arrow::datatypes::Schema;
@@ -25,6 +25,7 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::common::Constraints;
 use datafusion::datasource::TableType;
 use datafusion::logical_expr::{Expr, TableProviderFilterPushDown, TableSource};
+use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
 use datafusion::logical_expr::utils::split_conjunction;
@@ -33,17 +34,13 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 
-#[pyclass(name = "SqlSchema", module = "datafusion.common", subclass)]
+#[pyclass(name = "SqlSchema", module = "datafusion.common", subclass, frozen)]
 #[derive(Debug, Clone)]
 pub struct SqlSchema {
-    #[pyo3(get, set)]
-    pub name: String,
-    #[pyo3(get, set)]
-    pub tables: Vec<SqlTable>,
-    #[pyo3(get, set)]
-    pub views: Vec<SqlView>,
-    #[pyo3(get, set)]
-    pub functions: Vec<SqlFunction>,
+    name: Arc<RwLock<String>>,
+    tables: Arc<RwLock<Vec<SqlTable>>>,
+    views: Arc<RwLock<Vec<SqlView>>>,
+    functions: Arc<RwLock<Vec<SqlFunction>>>,
 }
 
 #[pyclass(name = "SqlTable", module = "datafusion.common", subclass)]
@@ -104,28 +101,98 @@ impl SqlSchema {
     #[new]
     pub fn new(schema_name: &str) -> Self {
         Self {
-            name: schema_name.to_owned(),
-            tables: Vec::new(),
-            views: Vec::new(),
-            functions: Vec::new(),
+            name: Arc::new(RwLock::new(schema_name.to_owned())),
+            tables: Arc::new(RwLock::new(Vec::new())),
+            views: Arc::new(RwLock::new(Vec::new())),
+            functions: Arc::new(RwLock::new(Vec::new())),
         }
+    }
+
+    #[getter]
+    fn name(&self) -> PyResult<String> {
+        Ok(self
+            .name
+            .read()
+            .map_err(|_| PyRuntimeError::new_err("failed to read schema name"))?
+            .clone())
+    }
+
+    #[setter]
+    fn set_name(&self, value: String) -> PyResult<()> {
+        *self
+            .name
+            .write()
+            .map_err(|_| PyRuntimeError::new_err("failed to write schema name"))? = value;
+        Ok(())
+    }
+
+    #[getter]
+    fn tables(&self) -> PyResult<Vec<SqlTable>> {
+        Ok(self
+            .tables
+            .read()
+            .map_err(|_| PyRuntimeError::new_err("failed to read schema tables"))?
+            .clone())
+    }
+
+    #[setter]
+    fn set_tables(&self, tables: Vec<SqlTable>) -> PyResult<()> {
+        *self
+            .tables
+            .write()
+            .map_err(|_| PyRuntimeError::new_err("failed to write schema tables"))? = tables;
+        Ok(())
+    }
+
+    #[getter]
+    fn views(&self) -> PyResult<Vec<SqlView>> {
+        Ok(self
+            .views
+            .read()
+            .map_err(|_| PyRuntimeError::new_err("failed to read schema views"))?
+            .clone())
+    }
+
+    #[setter]
+    fn set_views(&self, views: Vec<SqlView>) -> PyResult<()> {
+        *self
+            .views
+            .write()
+            .map_err(|_| PyRuntimeError::new_err("failed to write schema views"))? = views;
+        Ok(())
+    }
+
+    #[getter]
+    fn functions(&self) -> PyResult<Vec<SqlFunction>> {
+        Ok(self
+            .functions
+            .read()
+            .map_err(|_| PyRuntimeError::new_err("failed to read schema functions"))?
+            .clone())
+    }
+
+    #[setter]
+    fn set_functions(&self, functions: Vec<SqlFunction>) -> PyResult<()> {
+        *self
+            .functions
+            .write()
+            .map_err(|_| PyRuntimeError::new_err("failed to write schema functions"))? = functions;
+        Ok(())
     }
 
     pub fn table_by_name(&self, table_name: &str) -> Option<SqlTable> {
-        for tbl in &self.tables {
-            if tbl.name.eq(table_name) {
-                return Some(tbl.clone());
-            }
-        }
-        None
+        let tables = self.tables.read().expect("failed to read schema tables");
+        tables.iter().find(|tbl| tbl.name.eq(table_name)).cloned()
     }
 
-    pub fn add_table(&mut self, table: SqlTable) {
-        self.tables.push(table);
+    pub fn add_table(&self, table: SqlTable) {
+        let mut tables = self.tables.write().expect("failed to write schema tables");
+        tables.push(table);
     }
 
-    pub fn drop_table(&mut self, table_name: String) {
-        self.tables.retain(|x| !x.name.eq(&table_name));
+    pub fn drop_table(&self, table_name: String) {
+        let mut tables = self.tables.write().expect("failed to write schema tables");
+        tables.retain(|x| !x.name.eq(&table_name));
     }
 }
 

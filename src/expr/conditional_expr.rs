@@ -15,40 +15,81 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::{errors::PyDataFusionResult, expr::PyExpr};
+use std::sync::{Arc, Mutex};
+
+use crate::{
+    errors::{PyDataFusionError, PyDataFusionResult},
+    expr::PyExpr,
+};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use pyo3::prelude::*;
 
-#[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass)]
+#[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
+#[derive(Clone)]
 pub struct PyCaseBuilder {
-    pub case_builder: CaseBuilder,
+    case_builder: Arc<Mutex<Option<CaseBuilder>>>,
 }
 
 impl From<PyCaseBuilder> for CaseBuilder {
     fn from(case_builder: PyCaseBuilder) -> Self {
-        case_builder.case_builder
+        case_builder
+            .case_builder
+            .lock()
+            .expect("Case builder mutex poisoned")
+            .take()
+            .expect("CaseBuilder has already been consumed")
     }
 }
 
 impl From<CaseBuilder> for PyCaseBuilder {
     fn from(case_builder: CaseBuilder) -> PyCaseBuilder {
-        PyCaseBuilder { case_builder }
+        PyCaseBuilder {
+            case_builder: Arc::new(Mutex::new(Some(case_builder))),
+        }
+    }
+}
+
+impl PyCaseBuilder {
+    fn lock_case_builder(
+        &self,
+    ) -> PyDataFusionResult<std::sync::MutexGuard<'_, Option<CaseBuilder>>> {
+        self.case_builder
+            .lock()
+            .map_err(|_| PyDataFusionError::Common("failed to lock CaseBuilder".to_string()))
+    }
+
+    fn take_case_builder(&self) -> PyDataFusionResult<CaseBuilder> {
+        let mut guard = self.lock_case_builder()?;
+        guard.take().ok_or_else(|| {
+            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
+        })
+    }
+
+    fn store_case_builder(&self, builder: CaseBuilder) -> PyDataFusionResult<()> {
+        let mut guard = self.lock_case_builder()?;
+        *guard = Some(builder);
+        Ok(())
     }
 }
 
 #[pymethods]
 impl PyCaseBuilder {
-    fn when(&mut self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
-        PyCaseBuilder {
-            case_builder: self.case_builder.when(when.expr, then.expr),
-        }
+    fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
+        let mut builder = self.take_case_builder()?;
+        let next_builder = builder.when(when.expr, then.expr);
+        self.store_case_builder(next_builder)?;
+        Ok(self.clone())
     }
 
-    fn otherwise(&mut self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        Ok(self.case_builder.otherwise(else_expr.expr)?.clone().into())
+    fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
+        let mut builder = self.take_case_builder()?;
+        let expr = builder.otherwise(else_expr.expr)?;
+        Ok(expr.clone().into())
     }
 
-    fn end(&mut self) -> PyDataFusionResult<PyExpr> {
-        Ok(self.case_builder.end()?.clone().into())
+    fn end(&self) -> PyDataFusionResult<PyExpr> {
+        let builder = self.take_case_builder()?;
+        let expr = builder.end()?;
+        Ok(expr.clone().into())
     }
 }
