@@ -16,7 +16,7 @@
 // under the License.
 
 use std::fmt::{self, Display, Formatter};
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 use std::{any::Any, borrow::Cow};
 
 use arrow::datatypes::Schema;
@@ -25,7 +25,6 @@ use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::common::Constraints;
 use datafusion::datasource::TableType;
 use datafusion::logical_expr::{Expr, TableProviderFilterPushDown, TableSource};
-use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
 use datafusion::logical_expr::utils::split_conjunction;
@@ -33,6 +32,8 @@ use datafusion::logical_expr::utils::split_conjunction;
 use crate::sql::logical::PyLogicalPlan;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
+
+use parking_lot::RwLock;
 
 #[pyclass(name = "SqlSchema", module = "datafusion.common", subclass, frozen)]
 #[derive(Debug, Clone)]
@@ -110,88 +111,60 @@ impl SqlSchema {
 
     #[getter]
     fn name(&self) -> PyResult<String> {
-        Ok(self
-            .name
-            .read()
-            .map_err(|_| PyRuntimeError::new_err("failed to read schema name"))?
-            .clone())
+        Ok(self.name.read().clone())
     }
 
     #[setter]
     fn set_name(&self, value: String) -> PyResult<()> {
-        *self
-            .name
-            .write()
-            .map_err(|_| PyRuntimeError::new_err("failed to write schema name"))? = value;
+        *self.name.write() = value;
         Ok(())
     }
 
     #[getter]
     fn tables(&self) -> PyResult<Vec<SqlTable>> {
-        Ok(self
-            .tables
-            .read()
-            .map_err(|_| PyRuntimeError::new_err("failed to read schema tables"))?
-            .clone())
+        Ok(self.tables.read().clone())
     }
 
     #[setter]
     fn set_tables(&self, tables: Vec<SqlTable>) -> PyResult<()> {
-        *self
-            .tables
-            .write()
-            .map_err(|_| PyRuntimeError::new_err("failed to write schema tables"))? = tables;
+        *self.tables.write() = tables;
         Ok(())
     }
 
     #[getter]
     fn views(&self) -> PyResult<Vec<SqlView>> {
-        Ok(self
-            .views
-            .read()
-            .map_err(|_| PyRuntimeError::new_err("failed to read schema views"))?
-            .clone())
+        Ok(self.views.read().clone())
     }
 
     #[setter]
     fn set_views(&self, views: Vec<SqlView>) -> PyResult<()> {
-        *self
-            .views
-            .write()
-            .map_err(|_| PyRuntimeError::new_err("failed to write schema views"))? = views;
+        *self.views.write() = views;
         Ok(())
     }
 
     #[getter]
     fn functions(&self) -> PyResult<Vec<SqlFunction>> {
-        Ok(self
-            .functions
-            .read()
-            .map_err(|_| PyRuntimeError::new_err("failed to read schema functions"))?
-            .clone())
+        Ok(self.functions.read().clone())
     }
 
     #[setter]
     fn set_functions(&self, functions: Vec<SqlFunction>) -> PyResult<()> {
-        *self
-            .functions
-            .write()
-            .map_err(|_| PyRuntimeError::new_err("failed to write schema functions"))? = functions;
+        *self.functions.write() = functions;
         Ok(())
     }
 
     pub fn table_by_name(&self, table_name: &str) -> Option<SqlTable> {
-        let tables = self.tables.read().expect("failed to read schema tables");
+        let tables = self.tables.read();
         tables.iter().find(|tbl| tbl.name.eq(table_name)).cloned()
     }
 
     pub fn add_table(&self, table: SqlTable) {
-        let mut tables = self.tables.write().expect("failed to write schema tables");
+        let mut tables = self.tables.write();
         tables.push(table);
     }
 
     pub fn drop_table(&self, table_name: String) {
-        let mut tables = self.tables.write().expect("failed to write schema tables");
+        let mut tables = self.tables.write();
         tables.retain(|x| !x.name.eq(&table_name));
     }
 }

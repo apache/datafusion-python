@@ -15,7 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use crate::{
     errors::{PyDataFusionError, PyDataFusionResult},
@@ -24,21 +24,12 @@ use crate::{
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use pyo3::prelude::*;
 
+use parking_lot::{Mutex, MutexGuard};
+
 #[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
 #[derive(Clone)]
 pub struct PyCaseBuilder {
     case_builder: Arc<Mutex<Option<CaseBuilder>>>,
-}
-
-impl From<PyCaseBuilder> for CaseBuilder {
-    fn from(case_builder: PyCaseBuilder) -> Self {
-        case_builder
-            .case_builder
-            .lock()
-            .expect("Case builder mutex poisoned")
-            .take()
-            .expect("CaseBuilder has already been consumed")
-    }
 }
 
 impl From<CaseBuilder> for PyCaseBuilder {
@@ -50,25 +41,27 @@ impl From<CaseBuilder> for PyCaseBuilder {
 }
 
 impl PyCaseBuilder {
-    fn lock_case_builder(
-        &self,
-    ) -> PyDataFusionResult<std::sync::MutexGuard<'_, Option<CaseBuilder>>> {
-        self.case_builder
-            .lock()
-            .map_err(|_| PyDataFusionError::Common("failed to lock CaseBuilder".to_string()))
+    fn lock_case_builder(&self) -> MutexGuard<'_, Option<CaseBuilder>> {
+        self.case_builder.lock()
     }
 
     fn take_case_builder(&self) -> PyDataFusionResult<CaseBuilder> {
-        let mut guard = self.lock_case_builder()?;
+        let mut guard = self.lock_case_builder();
         guard.take().ok_or_else(|| {
             PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
         })
     }
 
-    fn store_case_builder(&self, builder: CaseBuilder) -> PyDataFusionResult<()> {
-        let mut guard = self.lock_case_builder()?;
+    fn store_case_builder(&self, builder: CaseBuilder) {
+        let mut guard = self.lock_case_builder();
         *guard = Some(builder);
-        Ok(())
+    }
+
+    pub fn into_case_builder(self) -> PyDataFusionResult<CaseBuilder> {
+        let mut guard = self.case_builder.lock();
+        guard.take().ok_or_else(|| {
+            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
+        })
     }
 }
 
@@ -77,7 +70,7 @@ impl PyCaseBuilder {
     fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
         let mut builder = self.take_case_builder()?;
         let next_builder = builder.when(when.expr, then.expr);
-        self.store_case_builder(next_builder)?;
+        self.store_case_builder(next_builder);
         Ok(self.clone())
     }
 
@@ -86,7 +79,7 @@ impl PyCaseBuilder {
         match builder.otherwise(else_expr.expr) {
             Ok(expr) => Ok(expr.clone().into()),
             Err(err) => {
-                self.store_case_builder(builder)?;
+                self.store_case_builder(builder);
                 Err(err.into())
             }
         }
@@ -97,7 +90,7 @@ impl PyCaseBuilder {
         match builder.end() {
             Ok(expr) => Ok(expr.clone().into()),
             Err(err) => {
-                self.store_case_builder(builder)?;
+                self.store_case_builder(builder);
                 Err(err.into())
             }
         }

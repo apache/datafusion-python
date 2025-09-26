@@ -15,15 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::{Arc, RwLock};
+use std::sync::Arc;
 
 use pyo3::prelude::*;
 use pyo3::types::*;
 
 use datafusion::config::ConfigOptions;
 
-use crate::errors::{PyDataFusionError, PyDataFusionResult};
+use crate::errors::PyDataFusionResult;
 use crate::utils::py_obj_to_scalar_value;
+use parking_lot::RwLock;
 
 #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
@@ -50,10 +51,7 @@ impl PyConfig {
 
     /// Get a configuration option
     pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let options = self
-            .config
-            .read()
-            .map_err(|_| PyDataFusionError::Common("failed to read configuration".to_string()))?;
+        let options = self.config.read();
         for entry in options.entries() {
             if entry.key == key {
                 return Ok(entry.value.into_pyobject(py)?);
@@ -65,10 +63,7 @@ impl PyConfig {
     /// Set a configuration option
     pub fn set(&self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
         let scalar_value = py_obj_to_scalar_value(py, value)?;
-        let mut options = self
-            .config
-            .write()
-            .map_err(|_| PyDataFusionError::Common("failed to lock configuration".to_string()))?;
+        let mut options = self.config.write();
         options.set(key, scalar_value.to_string().as_str())?;
         Ok(())
     }
@@ -76,10 +71,7 @@ impl PyConfig {
     /// Get all configuration options
     pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
-        let options = self
-            .config
-            .read()
-            .map_err(|_| PyDataFusionError::Common("failed to read configuration".to_string()))?;
+        let options = self.config.read();
         for entry in options.entries() {
             dict.set_item(entry.key, entry.value.clone().into_pyobject(py)?)?;
         }

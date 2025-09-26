@@ -17,7 +17,7 @@
 
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
 use arrow::compute::can_cast_types;
@@ -57,6 +57,8 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
+
+use parking_lot::Mutex;
 
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
@@ -307,9 +309,7 @@ impl PyDataFrame {
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
         let (cached_batches, should_cache) = {
-            let mut cache = self.batches.lock().map_err(|_| {
-                PyDataFusionError::Common("failed to lock DataFrame display cache".to_string())
-            })?;
+            let mut cache = self.batches.lock();
             let should_cache = *is_ipython_env(py) && cache.is_none();
             let batches = cache.take();
             (batches, should_cache)
@@ -354,9 +354,7 @@ impl PyDataFrame {
         let html_str: String = html_result.extract()?;
 
         if should_cache {
-            let mut cache = self.batches.lock().map_err(|_| {
-                PyDataFusionError::Common("failed to lock DataFrame display cache".to_string())
-            })?;
+            let mut cache = self.batches.lock();
             *cache = Some((batches.clone(), has_more));
         }
 
