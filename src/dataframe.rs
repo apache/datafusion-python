@@ -60,6 +60,11 @@ use crate::{
 
 use parking_lot::Mutex;
 
+// Type aliases to simplify very complex types used in this file and
+// avoid compiler complaints about deeply nested types in struct fields.
+type CachedBatches = Option<(Vec<RecordBatch>, bool)>;
+type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
+
 // https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
 // - we have not decided on the table_provider approach yet
 // this is an interim implementation
@@ -292,7 +297,7 @@ pub struct PyDataFrame {
     df: Arc<DataFrame>,
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
-    batches: Arc<Mutex<Option<(Vec<RecordBatch>, bool)>>>,
+    batches: SharedCachedBatches,
 }
 
 impl PyDataFrame {
