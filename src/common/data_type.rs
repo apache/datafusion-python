@@ -56,7 +56,7 @@ pub enum RexType {
 /// and manageable location. Therefore this structure exists
 /// to map those types and provide a simple place for developers
 /// to map types from one system to another.
-// TODO: This looks like this needs pyo3 tracking so leaving unfrozen for now
+// TODO: pyclass frozen
 #[derive(Debug, Clone)]
 #[pyclass(name = "DataTypeMap", module = "datafusion.common", subclass)]
 pub struct DataTypeMap {

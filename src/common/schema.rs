@@ -33,7 +33,7 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::{data_type::DataTypeMap, function::SqlFunction};
 
-// TODO I think the get/set prohibits frozen
+// TODO: pyclass frozen
 #[pyclass(name = "SqlSchema", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlSchema {
@@ -47,6 +47,7 @@ pub struct SqlSchema {
     pub functions: Vec<SqlFunction>,
 }
 
+// TODO: pyclass frozen
 #[pyclass(name = "SqlTable", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlTable {
@@ -91,6 +92,7 @@ impl SqlTable {
     }
 }
 
+// TODO: pyclass frozen
 #[pyclass(name = "SqlView", module = "datafusion.common", subclass)]
 #[derive(Debug, Clone)]
 pub struct SqlView {
