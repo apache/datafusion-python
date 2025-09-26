@@ -18,16 +18,17 @@
 use pyo3::prelude::*;
 use pyo3::types::*;
 
+use std::sync::{Arc, Mutex};
+
 use datafusion::config::ConfigOptions;
 
 use crate::errors::PyDataFusionResult;
 use crate::utils::py_obj_to_scalar_value;
 
-// TODO: Not frozen because set needs access
-#[pyclass(name = "Config", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "Config", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
-    config: ConfigOptions,
+    config: Arc<Mutex<ConfigOptions>>,
 }
 
 #[pymethods]
@@ -35,7 +36,7 @@ impl PyConfig {
     #[new]
     fn py_new() -> Self {
         Self {
-            config: ConfigOptions::new(),
+            config: Arc::new(Mutex::new(ConfigOptions::new())),
         }
     }
 
@@ -43,13 +44,13 @@ impl PyConfig {
     #[staticmethod]
     pub fn from_env() -> PyDataFusionResult<Self> {
         Ok(Self {
-            config: ConfigOptions::from_env()?,
+            config: Arc::new(Mutex::new(ConfigOptions::from_env()?)),
         })
     }
 
     /// Get a configuration option
     pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let options = self.config.to_owned();
+        let options = self.config.lock().unwrap();
         for entry in options.entries() {
             if entry.key == key {
                 return Ok(entry.value.into_pyobject(py)?);
@@ -59,16 +60,17 @@ impl PyConfig {
     }
 
     /// Set a configuration option
-    pub fn set(&mut self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
+    pub fn set(&self, key: &str, value: PyObject, py: Python) -> PyDataFusionResult<()> {
         let scalar_value = py_obj_to_scalar_value(py, value)?;
-        self.config.set(key, scalar_value.to_string().as_str())?;
+        let mut config = self.config.lock().unwrap();
+        config.set(key, scalar_value.to_string().as_str())?;
         Ok(())
     }
 
     /// Get all configuration options
     pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let dict = PyDict::new(py);
-        let options = self.config.to_owned();
+        let options = self.config.lock().unwrap();
         for entry in options.entries() {
             dict.set_item(entry.key, entry.value.clone().into_pyobject(py)?)?;
         }

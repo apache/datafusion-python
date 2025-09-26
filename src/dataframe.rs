@@ -17,7 +17,7 @@
 
 use std::collections::HashMap;
 use std::ffi::CString;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
 use arrow::compute::can_cast_types;
@@ -284,14 +284,14 @@ impl PyParquetColumnOptions {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
-// TODO: Not frozen because batches don't currently handle interior mutability
-#[pyclass(name = "DataFrame", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "DataFrame", module = "datafusion", subclass)]
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
-    batches: Option<(Vec<RecordBatch>, bool)>,
+    #[allow(clippy::type_complexity)] // Currently only used once
+    batches: Arc<Mutex<Option<(Vec<RecordBatch>, bool)>>>,
 }
 
 impl PyDataFrame {
@@ -299,16 +299,16 @@ impl PyDataFrame {
     pub fn new(df: DataFrame) -> Self {
         Self {
             df: Arc::new(df),
-            batches: None,
+            batches: Arc::new(Mutex::new(None)),
         }
     }
 
-    fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
-        let should_cache = *is_ipython_env(py) && self.batches.is_none();
-        let (batches, has_more) = match self.batches.take() {
+        let should_cache = *is_ipython_env(py) && self.batches.lock().unwrap().is_none();
+        let (batches, has_more) = match self.batches.lock().unwrap().take() {
             Some(b) => b,
             None => wait_for_future(
                 py,
@@ -347,7 +347,7 @@ impl PyDataFrame {
         let html_str: String = html_result.extract()?;
 
         if should_cache {
-            self.batches = Some((batches, has_more));
+            *self.batches.lock().unwrap() = Some((batches, has_more));
         }
 
         Ok(html_str)
@@ -377,7 +377,7 @@ impl PyDataFrame {
         }
     }
 
-    fn __repr__(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, false)
     }
 
@@ -412,7 +412,7 @@ impl PyDataFrame {
         Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
     }
 
-    fn _repr_html_(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, true)
     }
 
@@ -875,7 +875,7 @@ impl PyDataFrame {
 
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_stream__<'py>(
-        &'py mut self,
+        &'py self,
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
