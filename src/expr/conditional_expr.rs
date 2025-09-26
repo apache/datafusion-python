@@ -77,7 +77,10 @@ impl PyCaseBuilder {
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
         let mut builder = self.take_case_builder()?;
         match builder.otherwise(else_expr.expr) {
-            Ok(expr) => Ok(expr.clone().into()),
+            Ok(expr) => {
+                self.store_case_builder(builder);
+                Ok(expr.clone().into())
+            }
             Err(err) => {
                 self.store_case_builder(builder);
                 Err(err.into())
@@ -88,7 +91,10 @@ impl PyCaseBuilder {
     fn end(&self) -> PyDataFusionResult<PyExpr> {
         let builder = self.take_case_builder()?;
         match builder.end() {
-            Ok(expr) => Ok(expr.clone().into()),
+            Ok(expr) => {
+                self.store_case_builder(builder);
+                Ok(expr.clone().into())
+            }
             Err(err) => {
                 self.store_case_builder(builder);
                 Err(err.into())

@@ -218,6 +218,29 @@ def test_case_builder_error_preserves_builder_state():
     assert "CaseBuilder has already been consumed" not in err_msg
 
 
+def test_case_builder_success_preserves_builder_state():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"flag": [False]}, name="tbl")
+
+    case_builder = functions.when(col("flag"), lit("true"))
+
+    expr_default_one = case_builder.otherwise(lit("default-1")).alias("result")
+    result_one = df.select(expr_default_one).collect()
+    assert result_one[0].column(0).to_pylist() == ["default-1"]
+
+    expr_default_two = case_builder.otherwise(lit("default-2")).alias("result")
+    result_two = df.select(expr_default_two).collect()
+    assert result_two[0].column(0).to_pylist() == ["default-2"]
+
+    expr_end_one = case_builder.end().alias("result")
+    end_one = df.select(expr_end_one).collect()
+    assert end_one[0].column(0).to_pylist() == ["default-2"]
+
+    expr_end_two = case_builder.end().alias("result")
+    end_two = df.select(expr_end_two).collect()
+    assert end_two[0].column(0).to_pylist() == ["default-2"]
+
+
 def test_expr_getitem() -> None:
     ctx = SessionContext()
     data = {
