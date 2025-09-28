@@ -1,7 +1,4 @@
-// Licensed to the Apache use parking_lot::RwLock;
-
-#[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
-#[derive(Clone)]Foundation (ASF) under one
+// Licensed to the Apache Software Foundation (ASF) under one
 // or more contributor license agreements.  See the NOTICE file
 // distributed with this work for additional information
 // regarding copyright ownership.  The ASF licenses this file
@@ -28,7 +25,6 @@ use datafusion::config::ConfigOptions;
 use crate::errors::PyDataFusionResult;
 use crate::utils::py_obj_to_scalar_value;
 use parking_lot::RwLock;
-
 #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {
