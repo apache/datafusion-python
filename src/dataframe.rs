@@ -313,9 +313,11 @@ impl PyDataFrame {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
+        let is_ipython = *is_ipython_env(py);
+
         let (cached_batches, should_cache) = {
             let mut cache = self.batches.lock();
-            let should_cache = *is_ipython_env(py) && cache.is_none();
+            let should_cache = is_ipython && cache.is_none();
             let batches = cache.take();
             (batches, should_cache)
         };
