@@ -45,18 +45,6 @@ impl PyCaseBuilder {
         self.case_builder.lock()
     }
 
-    fn take_case_builder(&self) -> PyDataFusionResult<CaseBuilder> {
-        let mut guard = self.lock_case_builder();
-        guard.take().ok_or_else(|| {
-            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
-        })
-    }
-
-    fn store_case_builder(&self, builder: CaseBuilder) {
-        let mut guard = self.lock_case_builder();
-        *guard = Some(builder);
-    }
-
     pub fn into_case_builder(self) -> PyDataFusionResult<CaseBuilder> {
         let mut guard = self.case_builder.lock();
         guard.take().ok_or_else(|| {
@@ -68,37 +56,30 @@ impl PyCaseBuilder {
 #[pymethods]
 impl PyCaseBuilder {
     fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
-        let mut builder = self.take_case_builder()?;
+        let mut guard = self.lock_case_builder();
+        let builder = guard.as_mut().ok_or_else(|| {
+            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
+        })?;
         let next_builder = builder.when(when.expr, then.expr);
-        self.store_case_builder(builder);
         Ok(next_builder.into())
     }
 
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        let mut builder = self.take_case_builder()?;
-        match builder.otherwise(else_expr.expr) {
-            Ok(expr) => {
-                self.store_case_builder(builder);
-                Ok(expr.clone().into())
-            }
-            Err(err) => {
-                self.store_case_builder(builder);
-                Err(err.into())
-            }
-        }
+        let mut guard = self.lock_case_builder();
+        let builder = guard.as_mut().ok_or_else(|| {
+            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
+        })?;
+        builder
+            .otherwise(else_expr.expr)
+            .map(|expr| expr.into())
+            .map_err(Into::into)
     }
 
     fn end(&self) -> PyDataFusionResult<PyExpr> {
-        let builder = self.take_case_builder()?;
-        match builder.end() {
-            Ok(expr) => {
-                self.store_case_builder(builder);
-                Ok(expr.clone().into())
-            }
-            Err(err) => {
-                self.store_case_builder(builder);
-                Err(err.into())
-            }
-        }
+        let mut guard = self.lock_case_builder();
+        let builder = guard.as_mut().ok_or_else(|| {
+            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
+        })?;
+        builder.end().map(|expr| expr.into()).map_err(Into::into)
     }
 }
