@@ -16,6 +16,7 @@
 # under the License.
 
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 import pyarrow as pa
@@ -279,6 +280,26 @@ def test_case_builder_when_handles_are_independent():
         "gt10",
         "fallback-two",
     ]
+
+
+def test_case_builder_when_thread_safe():
+    case_builder = functions.when(lit(_TRUE), lit(1))
+
+    def build_expr(value: int) -> bool:
+        builder = case_builder.when(lit(_TRUE), lit(value))
+        builder.otherwise(lit(value))
+        return True
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(build_expr, idx) for idx in range(16)]
+        results = [future.result() for future in futures]
+
+    assert all(results)
+
+    # Ensure the shared builder remains usable after concurrent `when` calls.
+    follow_up_builder = case_builder.when(lit(_TRUE), lit(42))
+    assert isinstance(follow_up_builder, type(case_builder))
+    follow_up_builder.otherwise(lit(7))
 
 
 def test_expr_getitem() -> None:
