@@ -50,17 +50,20 @@ impl PyConfig {
 
     /// Get a configuration option
     pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let entries = {
+        let value = {
             let options = self.config.read();
-            options.entries()
+            options
+                .entries()
+                .iter()
+                .find(|entry| entry.key == key)
+                .map(|entry| entry.value.clone())
         };
 
-        for entry in entries {
-            if entry.key == key {
-                return Ok(entry.value.into_pyobject(py)?);
-            }
+        if let Some(value) = value {
+            Ok(value.into_pyobject(py)?)
+        } else {
+            Ok(None::<String>.into_pyobject(py)?)
         }
-        Ok(None::<String>.into_pyobject(py)?)
     }
 
     /// Set a configuration option
@@ -75,12 +78,16 @@ impl PyConfig {
     pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
         let entries = {
             let options = self.config.read();
-            options.entries()
+            options
+                .entries()
+                .into_iter()
+                .map(|entry| (entry.key.to_string(), entry.value.clone()))
+                .collect::<Vec<_>>()
         };
 
         let dict = PyDict::new(py);
-        for entry in entries {
-            dict.set_item(entry.key, entry.value.into_pyobject(py)?)?;
+        for (key, value) in entries {
+            dict.set_item(key, value.into_pyobject(py)?)?;
         }
         Ok(dict.into())
     }

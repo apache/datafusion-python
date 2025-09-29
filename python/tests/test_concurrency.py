@@ -65,6 +65,30 @@ def test_concurrent_access_to_shared_structures() -> None:
     _run_in_threads(worker, count=12)
 
 
+def test_config_set_during_get_all() -> None:
+    """Ensure config writes proceed while another thread reads all entries."""
+
+    config = Config()
+    key = "datafusion.execution.batch_size"
+
+    def reader() -> None:
+        for _ in range(200):
+            # get_all should not hold the lock while converting to Python objects
+            config.get_all()
+
+    def writer() -> None:
+        for index in range(200):
+            config.set(key, str(1024 + index))
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        reader_future = executor.submit(reader)
+        writer_future = executor.submit(writer)
+        reader_future.result(timeout=10)
+        writer_future.result(timeout=10)
+
+    assert config.get(key) is not None
+
+
 def test_case_builder_reuse_from_multiple_threads() -> None:
     """Ensure the case builder can be safely reused across threads."""
 
