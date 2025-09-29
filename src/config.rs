@@ -50,19 +50,17 @@ impl PyConfig {
 
     /// Get a configuration option
     pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let value = {
+        let value: Option<Option<String>> = {
             let options = self.config.read();
             options
                 .entries()
-                .iter()
-                .find(|entry| entry.key == key)
-                .map(|entry| entry.value.clone())
+                .into_iter()
+                .find_map(|entry| (entry.key == key).then_some(entry.value.clone()))
         };
 
-        if let Some(value) = value {
-            Ok(value.into_pyobject(py)?)
-        } else {
-            Ok(None::<String>.into_pyobject(py)?)
+        match value {
+            Some(value) => Ok(value.into_pyobject(py)?),
+            None => Ok(None::<String>.into_pyobject(py)?),
         }
     }
 
@@ -76,13 +74,13 @@ impl PyConfig {
 
     /// Get all configuration options
     pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
-        let entries = {
+        let entries: Vec<(String, Option<String>)> = {
             let options = self.config.read();
             options
                 .entries()
                 .into_iter()
-                .map(|entry| (entry.key.to_string(), entry.value.clone()))
-                .collect::<Vec<_>>()
+                .map(|entry| (entry.key.clone(), entry.value.clone()))
+                .collect()
         };
 
         let dict = PyDict::new(py);
