@@ -50,8 +50,12 @@ impl PyConfig {
 
     /// Get a configuration option
     pub fn get<'py>(&self, key: &str, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        let options = self.config.read();
-        for entry in options.entries() {
+        let entries = {
+            let options = self.config.read();
+            options.entries()
+        };
+
+        for entry in entries {
             if entry.key == key {
                 return Ok(entry.value.into_pyobject(py)?);
             }
@@ -69,10 +73,14 @@ impl PyConfig {
 
     /// Get all configuration options
     pub fn get_all(&self, py: Python) -> PyResult<PyObject> {
+        let entries = {
+            let options = self.config.read();
+            options.entries()
+        };
+
         let dict = PyDict::new(py);
-        let options = self.config.read();
-        for entry in options.entries() {
-            dict.set_item(entry.key, entry.value.clone().into_pyobject(py)?)?;
+        for entry in entries {
+            dict.set_item(entry.key, entry.value.into_pyobject(py)?)?;
         }
         Ok(dict.into())
     }
