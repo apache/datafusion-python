@@ -172,8 +172,8 @@ class Table:
         """Print a string representation of the table."""
         return repr(self._inner)
 
-    @deprecated("Use Table() constructor instead.")
     @staticmethod
+    @deprecated("Use Table() constructor instead.")
     def from_dataset(dataset: pa.dataset.Dataset) -> Table:
         """Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`."""
         return Table(dataset)
