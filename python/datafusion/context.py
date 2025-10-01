@@ -759,13 +759,6 @@ class SessionContext:
         The registered table can be referenced from SQL statements executed against
         this context.
 
-        Plain :py:class:`~datafusion.dataframe.DataFrame` objects are not supported;
-        convert them first with :meth:`datafusion.dataframe.DataFrame.into_view` or
-        :meth:`datafusion.Table.from_dataframe`.
-
-        Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as table provider instances.
-
         Args:
             name: Name of the resultant table.
             table: DataFusion :class:`Table` or any object implementing
@@ -790,21 +783,16 @@ class SessionContext:
         else:
             self.ctx.register_catalog_provider(name, provider)
 
+    @deprecated("Use register_table() instead.")
     def register_table_provider(
-        self, name: str, provider: Table | TableProviderExportable | Any
+        self,
+        name: str,
+        provider: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
         """Register a table provider.
 
         Deprecated: use :meth:`register_table` instead.
-
-        Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as table provider instances.
         """
-        warnings.warn(
-            "register_table_provider is deprecated; use register_table",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.register_table(name, provider)
 
     def register_udtf(self, func: TableFunction) -> None:

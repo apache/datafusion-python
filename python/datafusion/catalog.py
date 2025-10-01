@@ -250,9 +250,6 @@ class SchemaProvider(ABC):
 
         This method is optional. If your schema provides a fixed list of tables, you do
         not need to implement this method.
-
-        Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as table provider instances.
         """
 
     def deregister_table(self, name: str, cascade: bool) -> None:  # noqa: B027
