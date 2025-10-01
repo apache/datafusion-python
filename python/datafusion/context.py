@@ -750,7 +750,9 @@ class SessionContext:
         self.ctx.register_table(name, view)
 
     def register_table(
-        self, name: str, table: Table | TableProviderExportable | Any
+        self,
+        name: str,
+        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
         """Register a :py:class:`~datafusion.Table` with this context.
 

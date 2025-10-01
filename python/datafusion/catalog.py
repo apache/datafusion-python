@@ -130,13 +130,11 @@ class Schema:
         return Table(self._raw_schema.table(name))
 
     def register_table(
-        self, name: str, table: Table | TableProviderExportable | Any
+        self,
+        name: str,
+        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
-        """Register a table or table provider in this schema.
-
-        Objects implementing ``__datafusion_table_provider__`` are also supported
-        and treated as table provider instances.
-        """
+        """Register a table in this schema."""
         return self._raw_schema.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
@@ -155,8 +153,7 @@ class Table:
     __slots__ = ("_inner",)
 
     def __init__(
-        self,
-        table: DataFrame | TableProviderExportable | pa.dataset.Dataset,
+        self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
     ) -> None:
         """Wrap a low level table or table provider."""
         self._inner = df_internal.catalog.RawTable(table)

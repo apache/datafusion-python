@@ -24,6 +24,9 @@ use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::utils::table_provider_from_pycapsule;
 
+/// This struct is used as a common method for all TableProviders,
+/// whether they refer to an FFI provider, an internally known
+/// implementation, a dataset, or a dataframe view.
 #[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PyTable {
@@ -38,6 +41,15 @@ impl PyTable {
 
 #[pymethods]
 impl PyTable {
+    /// Instantiate from any Python object that supports any of the table
+    /// types. We do not know a priori when using this method if the object
+    /// will be passed a wrapped or raw class. Here we handle all of the
+    /// following object types:
+    ///
+    /// - PyTable (essentially a clone operation), but either raw or wrapped
+    /// - DataFrame, either raw or wrapped
+    /// - FFI Table Providers via PyCapsule
+    /// - PyArrow Dataset objects
     #[new]
     pub fn new(obj: &Bound<'_, PyAny>) -> PyResult<Self> {
         if let Ok(py_table) = obj.extract::<PyTable>() {
