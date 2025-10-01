@@ -7,9 +7,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator
 
-PYCLASS_RE = re.compile(r"#\[\s*pyclass\s*(?:\((?P<args>.*?)\))?\s*\]", re.DOTALL)
-ARG_STRING_RE = re.compile(r"(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"(?P<value>[^\"]+)\"")
-STRUCT_NAME_RE = re.compile(r"\b(?:pub\s+)?(?:struct|enum)\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)")
+PYCLASS_RE = re.compile(
+    r"#\[\s*pyclass\s*(?:\((?P<args>.*?)\))?\s*\]",
+    re.DOTALL,
+)
+ARG_STRING_RE = re.compile(
+    r"(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"(?P<value>[^\"]+)\"",
+)
+STRUCT_NAME_RE = re.compile(
+    r"\b(?:pub\s+)?(?:struct|enum)\s+"
+    r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
+)
 
 
 @dataclass
@@ -51,8 +59,9 @@ def iter_pyclasses(root: Path) -> Iterator[PyClass]:
 
 def test_pyclasses_are_frozen() -> None:
     allowlist = {
-        # NOTE: Any new exceptions must include a justification comment in the Rust source
-        # and, ideally, a follow-up issue to remove the exemption.
+        # NOTE: Any new exceptions must include a justification comment
+        # in the Rust source and, ideally, a follow-up issue to remove
+        # the exemption.
         ("datafusion.common", "SqlTable"),
         ("datafusion.common", "SqlView"),
         ("datafusion.common", "DataTypeMap"),
@@ -66,11 +75,13 @@ def test_pyclasses_are_frozen() -> None:
         if not pyclass.frozen and (pyclass.module, pyclass.name) not in allowlist
     ]
 
-    assert not unfrozen, (
-        "Found pyclasses missing `frozen`; add them to the allowlist only with a "
-        "justification comment and follow-up plan:\n" +
-        "\n".join(
-            f"- {pyclass.module}.{pyclass.name} (defined in {pyclass.source})"
+    if unfrozen:
+        msg = (
+            "Found pyclasses missing `frozen`; add them to the allowlist only "
+            "with a justification comment and follow-up plan:\n"
+        )
+        msg += "\n".join(
+            (f"- {pyclass.module}.{pyclass.name} (defined in {pyclass.source})")
             for pyclass in unfrozen
         )
-    )
+        assert not unfrozen, msg
