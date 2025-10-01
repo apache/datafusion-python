@@ -56,7 +56,6 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
     - Raw* classes: Internal implementation details that shouldn't be exposed
     - _global_ctx: Internal implementation detail
     - __self__, __class__, __repr__: Python special attributes
-    - TableProvider: Superseded by the public ``Table`` API in Python
     """
     # Special case enums - EnumType overrides a some of the internal functions,
     # so check all of the values exist and move on

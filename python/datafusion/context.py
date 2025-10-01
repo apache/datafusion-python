@@ -761,8 +761,7 @@ class SessionContext:
 
         Args:
             name: Name of the resultant table.
-            table: DataFusion :class:`Table` or any object implementing
-                ``__datafusion_table_provider__`` to add to the session context.
+            table: Any object that can be converted into a :class:`Table`.
         """
         self.ctx.register_table(name, table)
 
