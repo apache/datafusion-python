@@ -316,26 +316,7 @@ class DataFrame:
         self.df = df
 
     def into_view(self) -> Table:
-        """Convert ``DataFrame`` into a :class:`~datafusion.Table` for registration.
-
-        This is the preferred way to obtain a view for
-        :py:meth:`~datafusion.context.SessionContext.register_table` for several
-        reasons:
-
-        1. **Direct API**: Most efficient path - directly calls the underlying Rust
-           ``DataFrame.into_view()`` method without intermediate delegations.
-        2. **Clear semantics**: The ``into_`` prefix follows Rust conventions,
-           indicating conversion from one type to another.
-        3. **Canonical method**: Other approaches like ``Table.from_dataframe``
-           delegate to this method internally, making this the single source of truth.
-        4. **Deprecated alternatives**: The older ``Table.from_view`` helper
-           is deprecated and issues warnings when used.
-
-        ``datafusion.Table.from_dataframe`` calls this method under the hood,
-        and the older ``Table.from_view`` helper is deprecated.
-
-        The ``DataFrame`` remains valid after conversion, so it can still be used for
-        additional queries alongside the returned view.
+        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
 
         Examples:
             >>> from datafusion import SessionContext

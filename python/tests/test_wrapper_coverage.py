@@ -21,8 +21,6 @@ import datafusion.object_store
 import datafusion.substrait
 import pytest
 
-IGNORED_EXPORTS = {"TableProvider"}
-
 # EnumType introduced in 3.11. 3.10 and prior it was called EnumMeta.
 try:
     from enum import EnumType
@@ -44,8 +42,6 @@ def _check_list_attribute(internal_attr, wrapped_attr) -> None:
     # We have cases like __all__ that are a list and we want to be certain that
     # every value in the list in the internal object is also in the wrapper list
     for val in internal_attr:
-        if isinstance(val, str) and val in IGNORED_EXPORTS:
-            continue
         if isinstance(val, str) and val.startswith("Raw"):
             assert val[3:] in wrapped_attr
         else:
@@ -73,9 +69,6 @@ def missing_exports(internal_obj, wrapped_obj) -> None:
 
     for internal_attr_name in dir(internal_obj):
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")
-
-        if wrapped_attr_name in IGNORED_EXPORTS:
-            continue
 
         assert wrapped_attr_name in dir(wrapped_obj)
 
