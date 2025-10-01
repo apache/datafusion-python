@@ -152,7 +152,6 @@ as Delta Lake. This will require a recent version of
 .. code-block:: python
 
     from deltalake import DeltaTable
-    from datafusion import Table
 
     delta_table = DeltaTable("path_to_table")
     ctx.register_table("my_delta_table", delta_table)

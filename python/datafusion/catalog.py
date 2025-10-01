@@ -148,14 +148,24 @@ class Database(Schema):
 
 
 class Table:
-    """DataFusion table or table provider wrapper."""
+    """A DataFusion table.
+
+    Internally we currently support the following types of tables:
+
+    - Tables created using built-in DataFusion methods, such as
+      reading from CSV or Parquet
+    - pyarrow datasets
+    - DataFusion DataFrames, which will be converted into a view
+    - Externally provided tables implemented with the FFI PyCapsule
+      interface (advanced)
+    """
 
     __slots__ = ("_inner",)
 
     def __init__(
         self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
     ) -> None:
-        """Wrap a low level table or table provider."""
+        """Constructor."""
         self._inner = df_internal.catalog.RawTable(table)
 
     def __repr__(self) -> str:
