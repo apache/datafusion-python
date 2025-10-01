@@ -138,7 +138,7 @@ impl PySubstraitConsumer {
     /// Convert Substrait Plan to DataFusion DataFrame
     #[staticmethod]
     pub fn from_substrait_plan(
-        ctx: &mut PySessionContext,
+        ctx: &PySessionContext,
         plan: PyPlan,
         py: Python,
     ) -> PyDataFusionResult<PyLogicalPlan> {
