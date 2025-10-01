@@ -54,10 +54,6 @@ from datafusion.expr import (
     ensure_expr_list,
 )
 
-# Avoid passing boolean literals positionally (FBT003). Use a named constant
-# so linters don't see a bare True/False literal in a function call.
-_TRUE = True
-
 
 @pytest.fixture
 def test_ctx():
@@ -206,7 +202,7 @@ def test_expr_to_variant():
 
 
 def test_case_builder_error_preserves_builder_state():
-    case_builder = functions.when(lit(_TRUE), lit(1))
+    case_builder = functions.when(lit(True), lit(1))
 
     with pytest.raises(Exception) as exc_info:
         case_builder.otherwise(lit("bad"))
@@ -261,7 +257,7 @@ def test_case_builder_when_handles_are_independent():
     first_builder = base_builder.when(col("value") > lit(10), lit("gt10"))
     second_builder = base_builder.when(col("value") > lit(20), lit("gt20"))
 
-    first_builder = first_builder.when(lit(_TRUE), lit("final-one"))
+    first_builder = first_builder.when(lit(True), lit("final-one"))
 
     expr_first = first_builder.otherwise(lit("fallback-one")).alias("first")
     expr_second = second_builder.otherwise(lit("fallback-two")).alias("second")
@@ -283,10 +279,10 @@ def test_case_builder_when_handles_are_independent():
 
 
 def test_case_builder_when_thread_safe():
-    case_builder = functions.when(lit(_TRUE), lit(1))
+    case_builder = functions.when(lit(True), lit(1))
 
     def build_expr(value: int) -> bool:
-        builder = case_builder.when(lit(_TRUE), lit(value))
+        builder = case_builder.when(lit(True), lit(value))
         builder.otherwise(lit(value))
         return True
 
@@ -297,7 +293,7 @@ def test_case_builder_when_thread_safe():
     assert all(results)
 
     # Ensure the shared builder remains usable after concurrent `when` calls.
-    follow_up_builder = case_builder.when(lit(_TRUE), lit(42))
+    follow_up_builder = case_builder.when(lit(True), lit(42))
     assert isinstance(follow_up_builder, type(case_builder))
     follow_up_builder.otherwise(lit(7))
 
