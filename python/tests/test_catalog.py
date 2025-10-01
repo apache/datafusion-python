@@ -53,7 +53,7 @@ def create_dataset() -> Table:
         names=["a", "b"],
     )
     dataset = ds.dataset([batch])
-    return Table.from_dataset(dataset)
+    return Table(dataset)
 
 
 class CustomSchemaProvider(dfn.catalog.SchemaProvider):

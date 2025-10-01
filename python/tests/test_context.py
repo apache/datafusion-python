@@ -331,6 +331,13 @@ def test_deregister_table(ctx, database):
     assert public.names() == {"csv1", "csv2"}
 
 
+def test_register_table_from_dataframe(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    ctx.register_table("df_tbl", df)
+    result = ctx.sql("SELECT * FROM df_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
 def test_register_table_from_dataframe_into_view(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
     table = df.into_view()
