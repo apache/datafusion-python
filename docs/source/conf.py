@@ -83,9 +83,6 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         # Duplicate modules (skip module-level docs to avoid duplication)
         ("module", "datafusion.col"),
         ("module", "datafusion.udf"),
-        # Private variables causing duplicate documentation
-        ("data", "datafusion.utils._PYARROW_DATASET_TYPES"),
-        ("variable", "datafusion.utils._PYARROW_DATASET_TYPES"),
         # Deprecated
         ("class", "datafusion.substrait.serde"),
         ("class", "datafusion.substrait.plan"),
@@ -102,18 +99,6 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
     # AutoAPI output and gives us a single place to opt-out items
     # when we intentionally hide them from the docs.
     if (what, name) in skip_contents:
-        skip = True
-
-    # Skip private module-level names (those whose final component
-    # starts with an underscore) when AutoAPI is rendering data or
-    # variable entries. Many internal module-level constants are
-    # implementation details (for example private pyarrow dataset type
-    # mappings) that would otherwise be emitted as top-level "data"
-    # or "variable" docs. Filtering them here avoids noisy,
-    # duplicate, or implementation-specific entries in the public
-    # documentation while still allowing public members and types to
-    # be documented normally.
-    if name.split(".")[-1].startswith("_") and what in ("data", "variable"):
         skip = True
 
     return skip
