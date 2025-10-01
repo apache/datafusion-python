@@ -20,7 +20,7 @@ import datafusion as dfn
 import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
-from datafusion import EXPECTED_PROVIDER_MSG, SessionContext, Table
+from datafusion import SessionContext, Table
 
 
 # Note we take in `database` as a variable even though we don't use
@@ -184,16 +184,6 @@ def test_schema_register_table_with_pyarrow_dataset(ctx: SessionContext):
         assert result[0].column(1) == pa.array([4, 5, 6])
     finally:
         schema.deregister_table(table_name)
-
-
-def test_schema_register_table_with_dataframe_errors(ctx: SessionContext):
-    schema = ctx.catalog().schema()
-    df = ctx.from_pydict({"a": [1]})
-
-    with pytest.raises(Exception) as exc_info:
-        schema.register_table("bad", df)
-
-    assert str(exc_info.value) == EXPECTED_PROVIDER_MSG
 
 
 def test_in_end_to_end_python_providers(ctx: SessionContext):

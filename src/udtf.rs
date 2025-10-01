@@ -20,7 +20,7 @@ use std::sync::Arc;
 
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
-use crate::table::PyTableProvider;
+use crate::table::PyTable;
 use crate::utils::{table_provider_from_pycapsule, validate_pycapsule};
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
@@ -70,11 +70,11 @@ impl PyTableFunction {
     }
 
     #[pyo3(signature = (*args))]
-    pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTableProvider> {
+    pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTable> {
         let args: Vec<Expr> = args.iter().map(|e| e.expr.clone()).collect();
         let table_provider = self.call(&args).map_err(py_datafusion_err)?;
 
-        Ok(PyTableProvider::new(table_provider))
+        Ok(PyTable::from(table_provider))
     }
 
     fn __repr__(&self) -> PyResult<String> {

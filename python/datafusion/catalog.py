@@ -19,17 +19,15 @@
 
 from __future__ import annotations
 
-import warnings
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Protocol
 
 import datafusion._internal as df_internal
-from datafusion._internal import EXPECTED_PROVIDER_MSG
-from datafusion.utils import _normalize_table_provider
 
 if TYPE_CHECKING:
     import pyarrow as pa
 
+    from datafusion import DataFrame
     from datafusion.context import TableProviderExportable
 
 try:
@@ -139,8 +137,7 @@ class Schema:
         Objects implementing ``__datafusion_table_provider__`` are also supported
         and treated as table provider instances.
         """
-        provider = _normalize_table_provider(table)
-        return self._raw_schema.register_table(name, provider)
+        return self._raw_schema.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
         """Deregister a table provider from this schema."""
@@ -152,101 +149,37 @@ class Database(Schema):
     """See `Schema`."""
 
 
-_InternalRawTable = df_internal.catalog.RawTable
-_InternalTableProvider = df_internal.TableProvider
-
-# Keep in sync with ``datafusion._internal.TableProvider.from_view``.
-_FROM_VIEW_WARN_STACKLEVEL = 2
-
-
 class Table:
     """DataFusion table or table provider wrapper."""
 
-    __slots__ = ("_table",)
+    __slots__ = ("_inner",)
 
     def __init__(
         self,
-        table: _InternalRawTable | _InternalTableProvider | Table,
+        table: DataFrame | TableProviderExportable | pa.dataset.Dataset,
     ) -> None:
         """Wrap a low level table or table provider."""
-        if isinstance(table, Table):
-            table = table.table
-
-        if not isinstance(table, (_InternalRawTable, _InternalTableProvider)):
-            raise TypeError(EXPECTED_PROVIDER_MSG)
-
-        self._table = table
-
-    def __getattribute__(self, name: str) -> Any:
-        """Restrict provider-specific helpers to compatible tables."""
-        if name == "__datafusion_table_provider__":
-            table = object.__getattribute__(self, "_table")
-            if not hasattr(table, "__datafusion_table_provider__"):
-                raise AttributeError(name)
-        return object.__getattribute__(self, name)
+        self._inner = df_internal.catalog.RawTable(table)
 
     def __repr__(self) -> str:
         """Print a string representation of the table."""
-        return repr(self._table)
+        return repr(self._inner)
 
-    @property
-    def table(self) -> _InternalRawTable | _InternalTableProvider:
-        """Return the wrapped low level table object."""
-        return self._table
-
-    @classmethod
-    def from_dataset(cls, dataset: pa.dataset.Dataset) -> Table:
+    @deprecated("Use Table() constructor instead.")
+    @staticmethod
+    def from_dataset(dataset: pa.dataset.Dataset) -> Table:
         """Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`."""
-        return cls(_InternalRawTable.from_dataset(dataset))
-
-    @classmethod
-    def from_capsule(cls, capsule: Any) -> Table:
-        """Create a :class:`Table` from a PyCapsule exported provider."""
-        provider = _InternalTableProvider.from_capsule(capsule)
-        return cls(provider)
-
-    @classmethod
-    def from_dataframe(cls, df: Any) -> Table:
-        """Create a :class:`Table` from tabular data."""
-        from datafusion.dataframe import DataFrame as DataFrameWrapper
-
-        dataframe = df if isinstance(df, DataFrameWrapper) else DataFrameWrapper(df)
-        return dataframe.into_view()
-
-    @classmethod
-    def from_view(cls, df: Any) -> Table:
-        """Deprecated helper for constructing tables from views."""
-        from datafusion.dataframe import DataFrame as DataFrameWrapper
-
-        if isinstance(df, DataFrameWrapper):
-            df = df.df
-
-        provider = _InternalTableProvider.from_view(df)
-        warnings.warn(
-            "Table.from_view is deprecated; use DataFrame.into_view or "
-            "Table.from_dataframe instead.",
-            category=DeprecationWarning,
-            stacklevel=_FROM_VIEW_WARN_STACKLEVEL,
-        )
-        return cls(provider)
+        return Table(dataset)
 
     @property
     def schema(self) -> pa.Schema:
         """Returns the schema associated with this table."""
-        return self._table.schema
+        return self._inner.schema
 
     @property
     def kind(self) -> str:
         """Returns the kind of table."""
-        return self._table.kind
-
-    def __datafusion_table_provider__(self) -> Any:
-        """Expose the wrapped provider for FFI integrations."""
-        exporter = getattr(self._table, "__datafusion_table_provider__", None)
-        if exporter is None:
-            msg = "Underlying object does not export __datafusion_table_provider__()"
-            raise AttributeError(msg)
-        return exporter()
+        return self._inner.kind
 
 
 class CatalogProvider(ABC):

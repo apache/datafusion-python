@@ -33,7 +33,6 @@ from datafusion.catalog import Catalog
 from datafusion.dataframe import DataFrame
 from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.utils import _normalize_table_provider
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
@@ -770,8 +769,7 @@ class SessionContext:
             table: DataFusion :class:`Table` or any object implementing
                 ``__datafusion_table_provider__`` to add to the session context.
         """
-        provider = _normalize_table_provider(table)
-        self.ctx.register_table(name, provider)
+        self.ctx.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
@@ -1197,7 +1195,7 @@ class SessionContext:
         :py:class:`~datafusion.catalog.ListingTable`, create a
         :py:class:`~datafusion.dataframe.DataFrame`.
         """
-        return DataFrame(self.ctx.read_table(table.table))
+        return DataFrame(self.ctx.read_table(table._inner))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""

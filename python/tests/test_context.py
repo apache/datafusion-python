@@ -22,7 +22,6 @@ import pyarrow as pa
 import pyarrow.dataset as ds
 import pytest
 from datafusion import (
-    EXPECTED_PROVIDER_MSG,
     DataFrame,
     RuntimeEnvBuilder,
     SessionConfig,
@@ -341,20 +340,9 @@ def test_register_table_from_dataframe_into_view(ctx):
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
 
 
-def test_table_from_capsule(ctx):
-    df = ctx.from_pydict({"a": [1, 2]})
-    table = df.into_view()
-    capsule = table.__datafusion_table_provider__()
-    table2 = Table.from_capsule(capsule)
-    assert isinstance(table2, Table)
-    ctx.register_table("capsule_tbl", table2)
-    result = ctx.sql("SELECT * FROM capsule_tbl").collect()
-    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
-
-
 def test_table_from_dataframe(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
-    table = Table.from_dataframe(df)
+    table = Table(df)
     assert isinstance(table, Table)
     ctx.register_table("from_dataframe_tbl", table)
     result = ctx.sql("SELECT * FROM from_dataframe_tbl").collect()
@@ -363,40 +351,11 @@ def test_table_from_dataframe(ctx):
 
 def test_table_from_dataframe_internal(ctx):
     df = ctx.from_pydict({"a": [1, 2]})
-    table = Table.from_dataframe(df.df)
+    table = Table(df.df)
     assert isinstance(table, Table)
     ctx.register_table("from_internal_dataframe_tbl", table)
     result = ctx.sql("SELECT * FROM from_internal_dataframe_tbl").collect()
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
-
-
-def test_register_table_capsule_direct(ctx):
-    df = ctx.from_pydict({"a": [1, 2]})
-    provider = df.into_view()
-
-    class CapsuleProvider:
-        def __init__(self, inner):
-            self._inner = inner
-
-        def __datafusion_table_provider__(self):
-            return self._inner.__datafusion_table_provider__()
-
-    ctx.register_table("capsule_direct_tbl", CapsuleProvider(provider))
-    result = ctx.sql("SELECT * FROM capsule_direct_tbl").collect()
-    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
-
-
-def test_table_from_capsule_invalid():
-    with pytest.raises(RuntimeError):
-        Table.from_capsule(object())
-
-
-def test_register_table_with_dataframe_errors(ctx):
-    df = ctx.from_pydict({"a": [1]})
-    with pytest.raises(TypeError) as exc_info:
-        ctx.register_table("bad", df)
-
-    assert str(exc_info.value) == EXPECTED_PROVIDER_MSG
 
 
 def test_register_dataset(ctx):

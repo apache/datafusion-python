@@ -15,106 +15,80 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::ffi::CString;
+use arrow::pyarrow::ToPyArrow;
+use datafusion::datasource::{TableProvider, TableType};
+use pyo3::prelude::*;
 use std::sync::Arc;
 
-use datafusion::datasource::TableProvider;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
-use pyo3::exceptions::PyDeprecationWarning;
-use pyo3::prelude::*;
-use pyo3::types::{PyCapsule, PyDict};
-
-use crate::catalog::PyTable;
 use crate::dataframe::PyDataFrame;
-use crate::errors::{py_datafusion_err, PyDataFusionResult};
-use crate::utils::{get_tokio_runtime, validate_pycapsule};
+use crate::dataset::Dataset;
+use crate::utils::table_provider_from_pycapsule;
 
-/// Represents a table provider that can be registered with DataFusion
-#[pyclass(name = "TableProvider", module = "datafusion")]
+#[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
-pub struct PyTableProvider {
-    pub(crate) provider: Arc<dyn TableProvider>,
+pub struct PyTable {
+    pub table: Arc<dyn TableProvider>,
 }
 
-impl PyTableProvider {
-    pub(crate) fn new(provider: Arc<dyn TableProvider>) -> Self {
-        Self { provider }
-    }
-
-    /// Return a `PyTable` wrapper around this provider.
-    ///
-    /// Historically callers chained `as_table().table()` to access the
-    /// underlying [`Arc<dyn TableProvider>`]. Prefer [`as_arc`] or
-    /// [`into_inner`] for direct access instead.
-    pub fn as_table(&self) -> PyTable {
-        PyTable::new(Arc::clone(&self.provider))
-    }
-
-    /// Return a clone of the inner [`TableProvider`].
-    pub fn as_arc(&self) -> Arc<dyn TableProvider> {
-        Arc::clone(&self.provider)
-    }
-
-    /// Consume this wrapper and return the inner [`TableProvider`].
-    pub fn into_inner(self) -> Arc<dyn TableProvider> {
-        self.provider
+impl PyTable {
+    pub fn table(&self) -> Arc<dyn TableProvider> {
+        self.table.clone()
     }
 }
 
 #[pymethods]
-impl PyTableProvider {
-    /// Create a `TableProvider` from a PyCapsule containing an FFI pointer
-    #[staticmethod]
-    pub fn from_capsule(capsule: Bound<'_, PyAny>) -> PyResult<Self> {
-        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-        validate_pycapsule(capsule, "datafusion_table_provider")?;
-
-        let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-        let provider: ForeignTableProvider = provider.into();
-
-        Ok(Self::new(Arc::new(provider)))
+impl PyTable {
+    #[new]
+    pub fn new(obj: &Bound<'_, PyAny>) -> PyResult<Self> {
+        if let Ok(py_table) = obj.extract::<PyTable>() {
+            Ok(py_table)
+        } else if let Ok(py_table) = obj
+            .getattr("_inner")
+            .and_then(|inner| inner.extract::<PyTable>())
+        {
+            Ok(py_table)
+        } else if let Ok(py_df) = obj.extract::<PyDataFrame>() {
+            let provider = py_df.inner_df().as_ref().clone().into_view();
+            Ok(PyTable::from(provider))
+        } else if let Ok(py_df) = obj
+            .getattr("df")
+            .and_then(|inner| inner.extract::<PyDataFrame>())
+        {
+            let provider = py_df.inner_df().as_ref().clone().into_view();
+            Ok(PyTable::from(provider))
+        } else if let Some(provider) = table_provider_from_pycapsule(obj)? {
+            Ok(PyTable::from(provider))
+        } else {
+            let py = obj.py();
+            let provider = Arc::new(Dataset::new(obj, py)?) as Arc<dyn TableProvider>;
+            Ok(PyTable::from(provider))
+        }
     }
 
-    /// Create a `TableProvider` from a `DataFrame`.
-    ///
-    /// This method simply delegates to `DataFrame.into_view`.
-    #[staticmethod]
-    pub fn from_dataframe(df: &PyDataFrame) -> Self {
-        // Clone the inner DataFrame and convert it into a view TableProvider.
-        // `into_view` consumes a DataFrame, so clone the underlying DataFrame
-        Self::new(df.inner_df().as_ref().clone().into_view())
+    /// Get a reference to the schema for this table
+    #[getter]
+    fn schema(&self, py: Python) -> PyResult<PyObject> {
+        self.table.schema().to_pyarrow(py)
     }
 
-    /// Create a `TableProvider` from a `DataFrame` by converting it into a view.
-    ///
-    /// Deprecated: prefer `DataFrame.into_view` or
-    /// `Table.from_dataframe` instead.
-    #[staticmethod]
-    pub fn from_view(py: Python<'_>, df: &PyDataFrame) -> PyDataFusionResult<Self> {
-        let kwargs = PyDict::new(py);
-        // Keep stack level consistent with python/datafusion/table_provider.py
-        kwargs.set_item("stacklevel", 2)?;
-        py.import("warnings")?.call_method(
-            "warn",
-            (
-                "PyTableProvider.from_view() is deprecated; use DataFrame.into_view() or Table.from_dataframe() instead.",
-                py.get_type::<PyDeprecationWarning>(),
-            ),
-            Some(&kwargs),
-        )?;
-        Ok(Self::from_dataframe(df))
+    /// Get the type of this table for metadata/catalog purposes.
+    #[getter]
+    fn kind(&self) -> &str {
+        match self.table.table_type() {
+            TableType::Base => "physical",
+            TableType::View => "view",
+            TableType::Temporary => "temporary",
+        }
     }
 
-    fn __datafusion_table_provider__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = CString::new("datafusion_table_provider").unwrap();
+    fn __repr__(&self) -> PyResult<String> {
+        let kind = self.kind();
+        Ok(format!("Table(kind={kind})"))
+    }
+}
 
-        let runtime = get_tokio_runtime().0.handle().clone();
-        let provider: Arc<dyn TableProvider + Send> = self.provider.clone();
-        let provider = FFI_TableProvider::new(provider, false, Some(runtime));
-
-        PyCapsule::new(py, provider, Some(name.clone()))
+impl From<Arc<dyn TableProvider>> for PyTable {
+    fn from(table: Arc<dyn TableProvider>) -> Self {
+        Self { table }
     }
 }

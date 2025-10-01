@@ -17,17 +17,14 @@
 
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::table::PyTableProvider;
-use crate::utils::{
-    coerce_table_provider, table_provider_from_pycapsule, validate_pycapsule, wait_for_future,
-};
+use crate::table::PyTable;
+use crate::utils::{validate_pycapsule, wait_for_future};
 use async_trait::async_trait;
 use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
 use datafusion::common::DataFusionError;
 use datafusion::{
-    arrow::pyarrow::ToPyArrow,
     catalog::{CatalogProvider, SchemaProvider},
-    datasource::{TableProvider, TableType},
+    datasource::TableProvider,
 };
 use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
 use pyo3::exceptions::PyKeyError;
@@ -50,12 +47,6 @@ pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
 }
 
-#[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
-#[derive(Clone)]
-pub struct PyTable {
-    pub table: Arc<dyn TableProvider>,
-}
-
 impl From<Arc<dyn CatalogProvider>> for PyCatalog {
     fn from(catalog: Arc<dyn CatalogProvider>) -> Self {
         Self { catalog }
@@ -65,16 +56,6 @@ impl From<Arc<dyn CatalogProvider>> for PyCatalog {
 impl From<Arc<dyn SchemaProvider>> for PySchema {
     fn from(schema: Arc<dyn SchemaProvider>) -> Self {
         Self { schema }
-    }
-}
-
-impl PyTable {
-    pub fn new(table: Arc<dyn TableProvider>) -> Self {
-        Self { table }
-    }
-
-    pub fn table(&self) -> Arc<dyn TableProvider> {
-        self.table.clone()
     }
 }
 
@@ -183,7 +164,7 @@ impl PySchema {
 
     fn table(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
         if let Some(table) = wait_for_future(py, self.schema.table(name))?? {
-            Ok(PyTable::new(table))
+            Ok(PyTable::from(table))
         } else {
             Err(PyDataFusionError::Common(format!(
                 "Table not found: {name}"
@@ -197,12 +178,12 @@ impl PySchema {
         Ok(format!("Schema(table_names=[{}])", names.join(";")))
     }
 
-    fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
-        let provider = coerce_table_provider(&table_provider).map_err(PyErr::from)?;
+    fn register_table(&self, name: &str, table_provider: &Bound<'_, PyAny>) -> PyResult<()> {
+        let table = PyTable::new(table_provider)?;
 
         let _ = self
             .schema
-            .register_table(name.to_string(), provider)
+            .register_table(name.to_string(), table.table)
             .map_err(py_datafusion_err)?;
 
         Ok(())
@@ -216,43 +197,6 @@ impl PySchema {
 
         Ok(())
     }
-}
-
-#[pymethods]
-impl PyTable {
-    /// Get a reference to the schema for this table
-    #[getter]
-    fn schema(&self, py: Python) -> PyResult<PyObject> {
-        self.table.schema().to_pyarrow(py)
-    }
-
-    #[staticmethod]
-    fn from_dataset(py: Python<'_>, dataset: &Bound<'_, PyAny>) -> PyResult<Self> {
-        let ds = Arc::new(Dataset::new(dataset, py).map_err(py_datafusion_err)?)
-            as Arc<dyn TableProvider>;
-
-        Ok(Self::new(ds))
-    }
-
-    /// Get the type of this table for metadata/catalog purposes.
-    #[getter]
-    fn kind(&self) -> &str {
-        match self.table.table_type() {
-            TableType::Base => "physical",
-            TableType::View => "view",
-            TableType::Temporary => "temporary",
-        }
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        let kind = self.kind();
-        Ok(format!("Table(kind={kind})"))
-    }
-
-    // fn scan
-    // fn statistics
-    // fn has_exact_statistics
-    // fn supports_filter_pushdown
 }
 
 #[derive(Debug)]
@@ -287,27 +231,9 @@ impl RustWrappedPySchemaProvider {
                 return Ok(None);
             }
 
-            if let Some(provider) = table_provider_from_pycapsule(&py_table)? {
-                Ok(Some(provider))
-            } else {
-                if let Ok(inner_table) = py_table.getattr("table") {
-                    if let Ok(inner_table) = inner_table.extract::<PyTable>() {
-                        return Ok(Some(inner_table.table));
-                    }
-                }
+            let table = PyTable::new(&py_table)?;
 
-                if let Ok(py_provider) = py_table.extract::<PyTableProvider>() {
-                    return Ok(Some(py_provider.into_inner()));
-                }
-
-                match py_table.extract::<PyTable>() {
-                    Ok(py_table) => Ok(Some(py_table.table)),
-                    Err(_) => {
-                        let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
-                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
-                    }
-                }
-            }
+            Ok(Some(table.table))
         })
     }
 }
@@ -348,7 +274,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         name: String,
         table: Arc<dyn TableProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
-        let py_table = PyTable::new(table);
+        let py_table = PyTable::from(table);
         Python::with_gil(|py| {
             let provider = self.schema_provider.bind(py);
             let _ = provider

@@ -31,7 +31,7 @@ use uuid::Uuid;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
-use crate::catalog::{PyCatalog, PyTable, RustWrappedPyCatalogProvider};
+use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -41,13 +41,12 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
+use crate::table::PyTable;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{
-    coerce_table_provider, get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future,
-};
+use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -606,11 +605,11 @@ impl PySessionContext {
     pub fn register_table(
         &mut self,
         name: &str,
-        table_provider: Bound<'_, PyAny>,
+        table: Bound<'_, PyAny>,
     ) -> PyDataFusionResult<()> {
-        let provider = coerce_table_provider(&table_provider)?;
+        let table = PyTable::new(&table)?;
 
-        self.ctx.register_table(name, provider)?;
+        self.ctx.register_table(name, table.table)?;
         Ok(())
     }
 

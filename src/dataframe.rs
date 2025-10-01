@@ -47,7 +47,7 @@ use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-pub use crate::table::PyTableProvider;
+use crate::table::PyTable;
 use crate::utils::{
     get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
 };
@@ -402,12 +402,12 @@ impl PyDataFrame {
     /// because we're working with Python bindings
     /// where objects are shared
     #[allow(clippy::wrong_self_convention)]
-    pub fn into_view(&self) -> PyDataFusionResult<PyTableProvider> {
+    pub fn into_view(&self) -> PyDataFusionResult<PyTable> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
         // so that we don't invalidate this PyDataFrame.
         let table_provider = self.df.as_ref().clone().into_view();
-        Ok(PyTableProvider::new(table_provider))
+        Ok(PyTable::from(table_provider))
     }
 
     #[pyo3(signature = (*args))]

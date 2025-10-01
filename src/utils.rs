@@ -15,19 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::errors::py_datafusion_err;
 use crate::{
-    catalog::PyTable,
     common::data_type::PyScalarValue,
-    dataframe::PyDataFrame,
-    dataset::Dataset,
     errors::{PyDataFusionError, PyDataFusionResult},
-    table::PyTableProvider,
     TokioRuntime,
 };
 use datafusion::{
     common::ScalarValue, datasource::TableProvider, execution::context::SessionContext,
     logical_expr::Volatility,
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
 use std::{
@@ -37,8 +35,6 @@ use std::{
 };
 use tokio::{runtime::Runtime, time::sleep};
 
-pub(crate) const EXPECTED_PROVIDER_MSG: &str =
-    "Expected a Table. Convert DataFrames with \"DataFrame.into_view()\" or \"Table.from_dataframe()\".";
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -133,32 +129,15 @@ pub(crate) fn table_provider_from_pycapsule(
 ) -> PyResult<Option<Arc<dyn TableProvider>>> {
     if obj.hasattr("__datafusion_table_provider__")? {
         let capsule = obj.getattr("__datafusion_table_provider__")?.call0()?;
-        let provider = PyTableProvider::from_capsule(capsule)?;
-        Ok(Some(provider.into_inner()))
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+        let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+        let provider: ForeignTableProvider = provider.into();
+
+        Ok(Some(Arc::new(provider)))
     } else {
         Ok(None)
-    }
-}
-
-pub(crate) fn coerce_table_provider(
-    obj: &Bound<PyAny>,
-) -> PyDataFusionResult<Arc<dyn TableProvider>> {
-    if let Ok(py_table) = obj.extract::<PyTable>() {
-        Ok(py_table.table())
-    } else if let Ok(py_provider) = obj.extract::<PyTableProvider>() {
-        Ok(py_provider.into_inner())
-    } else if obj.is_instance_of::<PyDataFrame>()
-        || obj
-            .getattr("df")
-            .is_ok_and(|inner| inner.is_instance_of::<PyDataFrame>())
-    {
-        Err(PyDataFusionError::Common(EXPECTED_PROVIDER_MSG.to_string()))
-    } else if let Some(provider) = table_provider_from_pycapsule(obj)? {
-        Ok(provider)
-    } else {
-        let py = obj.py();
-        let provider = Dataset::new(obj, py)?;
-        Ok(Arc::new(provider) as Arc<dyn TableProvider>)
     }
 }
 

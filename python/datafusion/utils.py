@@ -19,9 +19,7 @@
 from __future__ import annotations
 
 from importlib import import_module, util
-from typing import TYPE_CHECKING, Any
-
-from datafusion._internal import EXPECTED_PROVIDER_MSG
+from typing import Any
 
 _PYARROW_DATASET_TYPES: tuple[type[Any], ...]
 _dataset_spec = util.find_spec("pyarrow.dataset")
@@ -37,38 +35,3 @@ else:  # pragma: no cover - exercised in environments with pyarrow installed
             if isinstance(value, type) and issubclass(value, dataset_base):
                 dataset_types.add(value)
     _PYARROW_DATASET_TYPES = tuple(dataset_types)
-
-if TYPE_CHECKING:  # pragma: no cover - imported for typing only
-    from datafusion.catalog import Table
-    from datafusion.context import TableProviderExportable
-
-
-def _normalize_table_provider(
-    table: Table | TableProviderExportable | Any,
-) -> Any:
-    """Return the underlying provider for supported table inputs.
-
-    Args:
-        table: A :class:`~datafusion.Table`, object exporting a DataFusion table
-            provider via ``__datafusion_table_provider__``, or compatible
-            :mod:`pyarrow.dataset` implementation.
-
-    Returns:
-        The object expected by the Rust bindings for table registration.
-
-    Raises:
-        TypeError: If ``table`` is not a supported table provider input.
-    """
-    from datafusion.catalog import Table as _Table
-
-    if isinstance(table, _Table):
-        return table.table
-
-    if _PYARROW_DATASET_TYPES and isinstance(table, _PYARROW_DATASET_TYPES):
-        return table
-
-    provider_factory = getattr(table, "__datafusion_table_provider__", None)
-    if callable(provider_factory):
-        return table
-
-    raise TypeError(EXPECTED_PROVIDER_MSG)

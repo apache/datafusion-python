@@ -81,8 +81,6 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     // Initialize logging
     pyo3_log::init();
 
-    m.add("EXPECTED_PROVIDER_MSG", crate::utils::EXPECTED_PROVIDER_MSG)?;
-
     // Register the python classes
     m.add_class::<context::PyRuntimeEnvBuilder>()?;
     m.add_class::<context::PySessionConfig>()?;
@@ -100,7 +98,6 @@ fn _internal(py: Python, m: Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<physical_plan::PyExecutionPlan>()?;
     m.add_class::<record_batch::PyRecordBatch>()?;
     m.add_class::<record_batch::PyRecordBatchStream>()?;
-    m.add_class::<table::PyTableProvider>()?;
 
     let catalog = PyModule::new(py, "catalog")?;
     catalog::init_module(&catalog)?;

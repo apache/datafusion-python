@@ -60,7 +60,7 @@ def test_ffi_aggregate_register():
 def test_ffi_aggregate_call_directly():
     ctx = setup_context_with_table()
     my_udaf = udaf(MySumUDF())
-    
+
     result = (
         ctx.table("test_table").aggregate([col("b")], [my_udaf(col("a"))]).collect()
     )
