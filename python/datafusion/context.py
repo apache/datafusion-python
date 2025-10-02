@@ -29,11 +29,10 @@ except ImportError:
 
 import pyarrow as pa
 
-from datafusion.catalog import Catalog, CatalogProvider, Table
+from datafusion.catalog import Catalog
 from datafusion.dataframe import DataFrame
-from datafusion.expr import SortKey, sort_list_to_raw_sort_list
+from datafusion.expr import sort_list_to_raw_sort_list
 from datafusion.record_batch import RecordBatchStream
-from datafusion.user_defined import AggregateUDF, ScalarUDF, TableFunction, WindowUDF
 
 from ._internal import RuntimeEnvBuilder as RuntimeEnvBuilderInternal
 from ._internal import SessionConfig as SessionConfigInternal
@@ -48,7 +47,15 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl  # type: ignore[import]
 
+    from datafusion.catalog import CatalogProvider, Table
+    from datafusion.expr import SortKey
     from datafusion.plan import ExecutionPlan, LogicalPlan
+    from datafusion.user_defined import (
+        AggregateUDF,
+        ScalarUDF,
+        TableFunction,
+        WindowUDF,
+    )
 
 
 class ArrowStreamExportable(Protocol):
@@ -733,7 +740,7 @@ class SessionContext:
     # https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
     # is the discussion on how we arrived at adding register_view
     def register_view(self, name: str, df: DataFrame) -> None:
-        """Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+        """Register a :py:class:`~datafusion.dataframe.DataFrame` as a view.
 
         Args:
             name (str): The name to register the view under.
@@ -742,16 +749,21 @@ class SessionContext:
         view = df.into_view()
         self.ctx.register_table(name, view)
 
-    def register_table(self, name: str, table: Table) -> None:
-        """Register a :py:class: `~datafusion.catalog.Table` as a table.
+    def register_table(
+        self,
+        name: str,
+        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
+    ) -> None:
+        """Register a :py:class:`~datafusion.Table` with this context.
 
-        The registered table can be referenced from SQL statement executed against.
+        The registered table can be referenced from SQL statements executed against
+        this context.
 
         Args:
             name: Name of the resultant table.
-            table: DataFusion table to add to the session context.
+            table: Any object that can be converted into a :class:`Table`.
         """
-        self.ctx.register_table(name, table.table)
+        self.ctx.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
         """Remove a table from the session."""
@@ -770,15 +782,17 @@ class SessionContext:
         else:
             self.ctx.register_catalog_provider(name, provider)
 
+    @deprecated("Use register_table() instead.")
     def register_table_provider(
-        self, name: str, provider: TableProviderExportable
+        self,
+        name: str,
+        provider: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
     ) -> None:
         """Register a table provider.
 
-        This table provider must have a method called ``__datafusion_table_provider__``
-        which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+        Deprecated: use :meth:`register_table` instead.
         """
-        self.ctx.register_table_provider(name, provider)
+        self.register_table(name, provider)
 
     def register_udtf(self, func: TableFunction) -> None:
         """Register a user defined table function."""
@@ -1170,7 +1184,7 @@ class SessionContext:
         :py:class:`~datafusion.catalog.ListingTable`, create a
         :py:class:`~datafusion.dataframe.DataFrame`.
         """
-        return DataFrame(self.ctx.read_table(table.table))
+        return DataFrame(self.ctx.read_table(table._inner))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""

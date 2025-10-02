@@ -27,6 +27,7 @@ from datafusion import (
     SessionConfig,
     SessionContext,
     SQLOptions,
+    Table,
     column,
     literal,
 )
@@ -328,6 +329,40 @@ def test_deregister_table(ctx, database):
 
     ctx.deregister_table("csv")
     assert public.names() == {"csv1", "csv2"}
+
+
+def test_register_table_from_dataframe(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    ctx.register_table("df_tbl", df)
+    result = ctx.sql("SELECT * FROM df_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_register_table_from_dataframe_into_view(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    table = df.into_view()
+    assert isinstance(table, Table)
+    ctx.register_table("view_tbl", table)
+    result = ctx.sql("SELECT * FROM view_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_from_dataframe(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    table = Table(df)
+    assert isinstance(table, Table)
+    ctx.register_table("from_dataframe_tbl", table)
+    result = ctx.sql("SELECT * FROM from_dataframe_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_table_from_dataframe_internal(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    table = Table(df.df)
+    assert isinstance(table, Table)
+    ctx.register_table("from_internal_dataframe_tbl", table)
+    result = ctx.sql("SELECT * FROM from_internal_dataframe_tbl").collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
 
 
 def test_register_dataset(ctx):

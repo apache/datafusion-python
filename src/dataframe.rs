@@ -31,12 +31,10 @@ use datafusion::arrow::util::pretty;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
-use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -44,12 +42,12 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use tokio::task::JoinHandle;
 
-use crate::catalog::PyTable;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
+use crate::table::PyTable;
 use crate::utils::{
     get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
 };
@@ -57,40 +55,6 @@ use crate::{
     errors::PyDataFusionResult,
     expr::{sort_expr::PySortExpr, PyExpr},
 };
-
-// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-// - we have not decided on the table_provider approach yet
-// this is an interim implementation
-#[pyclass(name = "TableProvider", module = "datafusion")]
-pub struct PyTableProvider {
-    provider: Arc<dyn TableProvider + Send>,
-}
-
-impl PyTableProvider {
-    pub fn new(provider: Arc<dyn TableProvider>) -> Self {
-        Self { provider }
-    }
-
-    pub fn as_table(&self) -> PyTable {
-        let table_provider: Arc<dyn TableProvider> = self.provider.clone();
-        PyTable::new(table_provider)
-    }
-}
-
-#[pymethods]
-impl PyTableProvider {
-    fn __datafusion_table_provider__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = CString::new("datafusion_table_provider").unwrap();
-
-        let runtime = get_tokio_runtime().0.handle().clone();
-        let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
-
-        PyCapsule::new(py, provider, Some(name.clone()))
-    }
-}
 
 /// Configuration for DataFrame display formatting
 #[derive(Debug, Clone)]
@@ -302,6 +266,11 @@ impl PyDataFrame {
         }
     }
 
+    /// Return a clone of the inner Arc<DataFrame> for crate-local callers.
+    pub(crate) fn inner_df(&self) -> Arc<DataFrame> {
+        Arc::clone(&self.df)
+    }
+
     fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
@@ -427,22 +396,18 @@ impl PyDataFrame {
         PyArrowType(self.df.schema().into())
     }
 
-    /// Convert this DataFrame into a Table that can be used in register_table
+    /// Convert this DataFrame into a Table Provider that can be used in register_table
     /// By convention, into_... methods consume self and return the new object.
     /// Disabling the clippy lint, so we can use &self
     /// because we're working with Python bindings
     /// where objects are shared
-    /// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-    /// - we have not decided on the table_provider approach yet
     #[allow(clippy::wrong_self_convention)]
-    fn into_view(&self) -> PyDataFusionResult<PyTable> {
+    pub fn into_view(&self) -> PyDataFusionResult<PyTable> {
         // Call the underlying Rust DataFrame::into_view method.
         // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don’t invalidate this PyDataFrame.
+        // so that we don't invalidate this PyDataFrame.
         let table_provider = self.df.as_ref().clone().into_view();
-        let table_provider = PyTableProvider::new(table_provider);
-
-        Ok(table_provider.as_table())
+        Ok(PyTable::from(table_provider))
     }
 
     #[pyo3(signature = (*args))]
