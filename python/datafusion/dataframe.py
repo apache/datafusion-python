@@ -60,8 +60,6 @@ if TYPE_CHECKING:
     import polars as pl
     import pyarrow as pa
 
-    from datafusion.catalog import Table
-
 from enum import Enum
 
 
@@ -315,21 +313,9 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> Table:
-        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
-
-        Examples:
-            >>> from datafusion import SessionContext
-            >>> ctx = SessionContext()
-            >>> df = ctx.sql("SELECT 1 AS value")
-            >>> view = df.into_view()
-            >>> ctx.register_table("values_view", view)
-            >>> df.collect()  # The DataFrame is still usable
-            >>> ctx.sql("SELECT value FROM values_view").collect()
-        """
-        from datafusion.catalog import Table as _Table
-
-        return _Table(self.df.into_view())
+    def into_view(self) -> pa.Table:
+        """Convert DataFrame as a ViewTable which can be used in register_table."""
+        return self.df.into_view()
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.

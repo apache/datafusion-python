@@ -17,16 +17,17 @@
 
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::table::PyTable;
 use crate::utils::{validate_pycapsule, wait_for_future};
 use async_trait::async_trait;
 use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
 use datafusion::common::DataFusionError;
 use datafusion::{
+    arrow::pyarrow::ToPyArrow,
     catalog::{CatalogProvider, SchemaProvider},
-    datasource::TableProvider,
+    datasource::{TableProvider, TableType},
 };
 use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -47,6 +48,12 @@ pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
 }
 
+#[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
+#[derive(Clone)]
+pub struct PyTable {
+    pub table: Arc<dyn TableProvider>,
+}
+
 impl From<Arc<dyn CatalogProvider>> for PyCatalog {
     fn from(catalog: Arc<dyn CatalogProvider>) -> Self {
         Self { catalog }
@@ -56,6 +63,16 @@ impl From<Arc<dyn CatalogProvider>> for PyCatalog {
 impl From<Arc<dyn SchemaProvider>> for PySchema {
     fn from(schema: Arc<dyn SchemaProvider>) -> Self {
         Self { schema }
+    }
+}
+
+impl PyTable {
+    pub fn new(table: Arc<dyn TableProvider>) -> Self {
+        Self { table }
+    }
+
+    pub fn table(&self) -> Arc<dyn TableProvider> {
+        self.table.clone()
     }
 }
 
@@ -164,7 +181,7 @@ impl PySchema {
 
     fn table(&self, name: &str, py: Python) -> PyDataFusionResult<PyTable> {
         if let Some(table) = wait_for_future(py, self.schema.table(name))?? {
-            Ok(PyTable::from(table))
+            Ok(PyTable::new(table))
         } else {
             Err(PyDataFusionError::Common(format!(
                 "Table not found: {name}"
@@ -178,12 +195,31 @@ impl PySchema {
         Ok(format!("Schema(table_names=[{}])", names.join(";")))
     }
 
-    fn register_table(&self, name: &str, table_provider: &Bound<'_, PyAny>) -> PyResult<()> {
-        let table = PyTable::new(table_provider)?;
+    fn register_table(&self, name: &str, table_provider: Bound<'_, PyAny>) -> PyResult<()> {
+        let provider = if table_provider.hasattr("__datafusion_table_provider__")? {
+            let capsule = table_provider
+                .getattr("__datafusion_table_provider__")?
+                .call0()?;
+            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+            let provider: ForeignTableProvider = provider.into();
+            Arc::new(provider) as Arc<dyn TableProvider>
+        } else {
+            match table_provider.extract::<PyTable>() {
+                Ok(py_table) => py_table.table,
+                Err(_) => {
+                    let py = table_provider.py();
+                    let provider = Dataset::new(&table_provider, py)?;
+                    Arc::new(provider) as Arc<dyn TableProvider>
+                }
+            }
+        };
 
         let _ = self
             .schema
-            .register_table(name.to_string(), table.table)
+            .register_table(name.to_string(), provider)
             .map_err(py_datafusion_err)?;
 
         Ok(())
@@ -197,6 +233,43 @@ impl PySchema {
 
         Ok(())
     }
+}
+
+#[pymethods]
+impl PyTable {
+    /// Get a reference to the schema for this table
+    #[getter]
+    fn schema(&self, py: Python) -> PyResult<PyObject> {
+        self.table.schema().to_pyarrow(py)
+    }
+
+    #[staticmethod]
+    fn from_dataset(py: Python<'_>, dataset: &Bound<'_, PyAny>) -> PyResult<Self> {
+        let ds = Arc::new(Dataset::new(dataset, py).map_err(py_datafusion_err)?)
+            as Arc<dyn TableProvider>;
+
+        Ok(Self::new(ds))
+    }
+
+    /// Get the type of this table for metadata/catalog purposes.
+    #[getter]
+    fn kind(&self) -> &str {
+        match self.table.table_type() {
+            TableType::Base => "physical",
+            TableType::View => "view",
+            TableType::Temporary => "temporary",
+        }
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let kind = self.kind();
+        Ok(format!("Table(kind={kind})"))
+    }
+
+    // fn scan
+    // fn statistics
+    // fn has_exact_statistics
+    // fn supports_filter_pushdown
 }
 
 #[derive(Debug)]
@@ -231,9 +304,30 @@ impl RustWrappedPySchemaProvider {
                 return Ok(None);
             }
 
-            let table = PyTable::new(&py_table)?;
+            if py_table.hasattr("__datafusion_table_provider__")? {
+                let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+                let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+                validate_pycapsule(capsule, "datafusion_table_provider")?;
 
-            Ok(Some(table.table))
+                let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+                let provider: ForeignTableProvider = provider.into();
+
+                Ok(Some(Arc::new(provider) as Arc<dyn TableProvider>))
+            } else {
+                if let Ok(inner_table) = py_table.getattr("table") {
+                    if let Ok(inner_table) = inner_table.extract::<PyTable>() {
+                        return Ok(Some(inner_table.table));
+                    }
+                }
+
+                match py_table.extract::<PyTable>() {
+                    Ok(py_table) => Ok(Some(py_table.table)),
+                    Err(_) => {
+                        let ds = Dataset::new(&py_table, py).map_err(py_datafusion_err)?;
+                        Ok(Some(Arc::new(ds) as Arc<dyn TableProvider>))
+                    }
+                }
+            }
         })
     }
 }
@@ -274,7 +368,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         name: String,
         table: Arc<dyn TableProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
-        let py_table = PyTable::from(table);
+        let py_table = PyTable::new(table);
         Python::with_gil(|py| {
             let provider = self.schema_provider.bind(py);
             let _ = provider

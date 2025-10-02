@@ -22,13 +22,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from datafusion.context import SessionContext
+from datafusion.dataframe import DataFrame
 
 if TYPE_CHECKING:
     import pathlib
 
     import pyarrow as pa
 
-    from datafusion.dataframe import DataFrame
     from datafusion.expr import Expr
 
 

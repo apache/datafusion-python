@@ -25,7 +25,7 @@ from datafusion_ffi_example import MyTableProvider
 def test_table_loading():
     ctx = SessionContext()
     table = MyTableProvider(3, 2, 4)
-    ctx.register_table("t", table)
+    ctx.register_table_provider("t", table)
     result = ctx.table("t").collect()
 
     assert len(result) == 4

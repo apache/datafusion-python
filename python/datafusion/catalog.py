@@ -20,15 +20,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Protocol
 
 import datafusion._internal as df_internal
 
 if TYPE_CHECKING:
     import pyarrow as pa
-
-    from datafusion import DataFrame
-    from datafusion.context import TableProviderExportable
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -85,11 +82,7 @@ class Catalog:
         """Returns the database with the given ``name`` from this catalog."""
         return self.schema(name)
 
-    def register_schema(
-        self,
-        name: str,
-        schema: Schema | SchemaProvider | SchemaProviderExportable,
-    ) -> Schema | None:
+    def register_schema(self, name, schema) -> Schema | None:
         """Register a schema with this catalog."""
         if isinstance(schema, Schema):
             return self.catalog.register_schema(name, schema._raw_schema)
@@ -129,12 +122,10 @@ class Schema:
         """Return the table with the given ``name`` from this schema."""
         return Table(self._raw_schema.table(name))
 
-    def register_table(
-        self,
-        name: str,
-        table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset,
-    ) -> None:
-        """Register a table in this schema."""
+    def register_table(self, name, table) -> None:
+        """Register a table provider in this schema."""
+        if isinstance(table, Table):
+            return self._raw_schema.register_table(name, table.table)
         return self._raw_schema.register_table(name, table)
 
     def deregister_table(self, name: str) -> None:
@@ -148,45 +139,30 @@ class Database(Schema):
 
 
 class Table:
-    """A DataFusion table.
+    """DataFusion table."""
 
-    Internally we currently support the following types of tables:
-
-    - Tables created using built-in DataFusion methods, such as
-      reading from CSV or Parquet
-    - pyarrow datasets
-    - DataFusion DataFrames, which will be converted into a view
-    - Externally provided tables implemented with the FFI PyCapsule
-      interface (advanced)
-    """
-
-    __slots__ = ("_inner",)
-
-    def __init__(
-        self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
-    ) -> None:
-        """Constructor."""
-        self._inner = df_internal.catalog.RawTable(table)
+    def __init__(self, table: df_internal.catalog.RawTable) -> None:
+        """This constructor is not typically called by the end user."""
+        self.table = table
 
     def __repr__(self) -> str:
         """Print a string representation of the table."""
-        return repr(self._inner)
+        return self.table.__repr__()
 
     @staticmethod
-    @deprecated("Use Table() constructor instead.")
     def from_dataset(dataset: pa.dataset.Dataset) -> Table:
-        """Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`."""
-        return Table(dataset)
+        """Turn a pyarrow Dataset into a Table."""
+        return Table(df_internal.catalog.RawTable.from_dataset(dataset))
 
     @property
     def schema(self) -> pa.Schema:
         """Returns the schema associated with this table."""
-        return self._inner.schema
+        return self.table.schema
 
     @property
     def kind(self) -> str:
         """Returns the kind of table."""
-        return self._inner.kind
+        return self.table.kind
 
 
 class CatalogProvider(ABC):
@@ -243,16 +219,14 @@ class SchemaProvider(ABC):
         """Retrieve a specific table from this schema."""
         ...
 
-    def register_table(  # noqa: B027
-        self, name: str, table: Table | TableProviderExportable | Any
-    ) -> None:
-        """Add a table to this schema.
+    def register_table(self, name: str, table: Table) -> None:  # noqa: B027
+        """Add a table from this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do
         not need to implement this method.
         """
 
-    def deregister_table(self, name: str, cascade: bool) -> None:  # noqa: B027
+    def deregister_table(self, name, cascade: bool) -> None:  # noqa: B027
         """Remove a table from this schema.
 
         This method is optional. If your schema provides a fixed list of tables, you do

@@ -154,11 +154,11 @@ as Delta Lake. This will require a recent version of
     from deltalake import DeltaTable
 
     delta_table = DeltaTable("path_to_table")
-    ctx.register_table("my_delta_table", delta_table)
+    ctx.register_table_provider("my_delta_table", delta_table)
     df = ctx.table("my_delta_table")
     df.show()
 
-On older versions of ``deltalake`` (prior to 0.22) you can use the
+On older versions of ``deltalake`` (prior to 0.22) you can use the 
 `Arrow DataSet <https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Dataset.html>`_
 interface to import to DataFusion, but this does not support features such as filter push down
 which can lead to a significant performance difference.
