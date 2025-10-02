@@ -312,7 +312,7 @@ def test_register_table(ctx, database):
     assert public.names() == {"csv", "csv1", "csv2", "csv3"}
 
 
-def test_read_table(ctx, database):
+def test_read_table_from_catalog(ctx, database):
     default = ctx.catalog()
     public = default.schema("public")
     assert public.names() == {"csv", "csv1", "csv2"}
@@ -320,6 +320,25 @@ def test_read_table(ctx, database):
     table = public.table("csv")
     table_df = ctx.read_table(table)
     table_df.show()
+
+
+def test_read_table_from_df(ctx):
+    df = ctx.from_pydict({"a": [1, 2]})
+    result = ctx.read_table(df).collect()
+    assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
+
+
+def test_read_table_from_dataset(ctx):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
+        names=["a", "b"],
+    )
+    dataset = ds.dataset([batch])
+
+    result = ctx.read_table(dataset).collect()
+
+    assert result[0].column(0) == pa.array([1, 2, 3])
+    assert result[0].column(1) == pa.array([4, 5, 6])
 
 
 def test_deregister_table(ctx, database):

@@ -1177,14 +1177,11 @@ class SessionContext:
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
 
-    def read_table(self, table: Table) -> DataFrame:
-        """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
-
-        For a :py:class:`~datafusion.catalog.Table` such as a
-        :py:class:`~datafusion.catalog.ListingTable`, create a
-        :py:class:`~datafusion.dataframe.DataFrame`.
-        """
-        return DataFrame(self.ctx.read_table(table._inner))
+    def read_table(
+        self, table: Table | TableProviderExportable | DataFrame | pa.dataset.Dataset
+    ) -> DataFrame:
+        """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table."""
+        return DataFrame(self.ctx.read_table(table))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""

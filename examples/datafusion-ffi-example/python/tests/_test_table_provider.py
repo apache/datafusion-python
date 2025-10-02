@@ -40,3 +40,7 @@ def test_table_loading():
     ]
 
     assert result == expected
+
+    result = ctx.read_table(table).collect()
+    result = [r.column(0) for r in result]
+    assert result == expected
