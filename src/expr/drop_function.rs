@@ -27,7 +27,7 @@ use super::logical_node::LogicalNode;
 use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "DropFunction", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "DropFunction", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyDropFunction {
     drop: DropFunction,

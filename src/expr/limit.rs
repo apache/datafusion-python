@@ -23,7 +23,7 @@ use crate::common::df_schema::PyDFSchema;
 use crate::expr::logical_node::LogicalNode;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Limit", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Limit", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyLimit {
     limit: Limit,

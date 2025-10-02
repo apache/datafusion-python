@@ -51,6 +51,7 @@ futures = "0.3"
 object_store = { version = "0.12.3", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
 log = "0.4.27"
+parking_lot = "0.12"
 
 [build-dependencies]
 prost-types = "0.13.1" # keep in line with `datafusion-substrait`

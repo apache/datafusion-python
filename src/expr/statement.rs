@@ -25,7 +25,12 @@ use crate::{common::data_type::PyDataType, sql::logical::PyLogicalPlan};
 
 use super::{logical_node::LogicalNode, PyExpr};
 
-#[pyclass(name = "TransactionStart", module = "datafusion.expr", subclass)]
+#[pyclass(
+    frozen,
+    name = "TransactionStart",
+    module = "datafusion.expr",
+    subclass
+)]
 #[derive(Clone)]
 pub struct PyTransactionStart {
     transaction_start: TransactionStart,
@@ -56,7 +61,13 @@ impl LogicalNode for PyTransactionStart {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "TransactionAccessMode", module = "datafusion.expr")]
+#[pyclass(
+    frozen,
+    eq,
+    eq_int,
+    name = "TransactionAccessMode",
+    module = "datafusion.expr"
+)]
 pub enum PyTransactionAccessMode {
     ReadOnly,
     ReadWrite,
@@ -84,6 +95,7 @@ impl TryFrom<PyTransactionAccessMode> for TransactionAccessMode {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[pyclass(
+    frozen,
     eq,
     eq_int,
     name = "TransactionIsolationLevel",
@@ -161,7 +173,7 @@ impl PyTransactionStart {
     }
 }
 
-#[pyclass(name = "TransactionEnd", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "TransactionEnd", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyTransactionEnd {
     transaction_end: TransactionEnd,
@@ -192,7 +204,13 @@ impl LogicalNode for PyTransactionEnd {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "TransactionConclusion", module = "datafusion.expr")]
+#[pyclass(
+    frozen,
+    eq,
+    eq_int,
+    name = "TransactionConclusion",
+    module = "datafusion.expr"
+)]
 pub enum PyTransactionConclusion {
     Commit,
     Rollback,
@@ -236,7 +254,7 @@ impl PyTransactionEnd {
     }
 }
 
-#[pyclass(name = "SetVariable", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "SetVariable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySetVariable {
     set_variable: SetVariable,
@@ -284,7 +302,7 @@ impl PySetVariable {
     }
 }
 
-#[pyclass(name = "Prepare", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Prepare", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyPrepare {
     prepare: Prepare,
@@ -352,7 +370,7 @@ impl PyPrepare {
     }
 }
 
-#[pyclass(name = "Execute", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Execute", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyExecute {
     execute: Execute,
@@ -409,7 +427,7 @@ impl PyExecute {
     }
 }
 
-#[pyclass(name = "Deallocate", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Deallocate", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyDeallocate {
     deallocate: Deallocate,

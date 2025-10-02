@@ -25,7 +25,7 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::{logical_node::LogicalNode, PyExpr};
 
-#[pyclass(name = "Values", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Values", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyValues {
     values: Values,
