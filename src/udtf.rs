@@ -18,16 +18,14 @@
 use pyo3::prelude::*;
 use std::sync::Arc;
 
-use crate::dataframe::PyTableProvider;
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
+use crate::table::PyTable;
 use crate::utils::validate_pycapsule;
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
-use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
-use pyo3::exceptions::PyNotImplementedError;
 use pyo3::types::{PyCapsule, PyTuple};
 
 /// Represents a user defined table function
@@ -71,11 +69,11 @@ impl PyTableFunction {
     }
 
     #[pyo3(signature = (*args))]
-    pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTableProvider> {
+    pub fn __call__(&self, args: Vec<PyExpr>) -> PyResult<PyTable> {
         let args: Vec<Expr> = args.iter().map(|e| e.expr.clone()).collect();
         let table_provider = self.call(&args).map_err(py_datafusion_err)?;
 
-        Ok(PyTableProvider::new(table_provider))
+        Ok(PyTable::from(table_provider))
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -99,20 +97,7 @@ fn call_python_table_function(
         let provider_obj = func.call1(py, py_args)?;
         let provider = provider_obj.bind(py);
 
-        if provider.hasattr("__datafusion_table_provider__")? {
-            let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
-            let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_table_provider")?;
-
-            let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
-            let provider: ForeignTableProvider = provider.into();
-
-            Ok(Arc::new(provider) as Arc<dyn TableProvider>)
-        } else {
-            Err(PyNotImplementedError::new_err(
-                "__datafusion_table_provider__ does not exist on Table Provider object.",
-            ))
-        }
+        Ok::<Arc<dyn TableProvider>, PyErr>(PyTable::new(provider)?.table)
     })
     .map_err(to_datafusion_err)
 }

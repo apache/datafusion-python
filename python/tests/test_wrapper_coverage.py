@@ -28,7 +28,27 @@ except ImportError:
     from enum import EnumMeta as EnumType
 
 
-def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
+def _check_enum_exports(internal_obj, wrapped_obj) -> None:
+    """Check that all enum values are present in wrapped object."""
+    expected_values = [v for v in dir(internal_obj) if not v.startswith("__")]
+    for value in expected_values:
+        assert value in dir(wrapped_obj)
+
+
+def _check_list_attribute(internal_attr, wrapped_attr) -> None:
+    """Check that list attributes match between internal and wrapped objects."""
+    assert isinstance(wrapped_attr, list)
+
+    # We have cases like __all__ that are a list and we want to be certain that
+    # every value in the list in the internal object is also in the wrapper list
+    for val in internal_attr:
+        if isinstance(val, str) and val.startswith("Raw"):
+            assert val[3:] in wrapped_attr
+        else:
+            assert val in wrapped_attr
+
+
+def missing_exports(internal_obj, wrapped_obj) -> None:
     """
     Identify if any of the rust exposted structs or functions do not have wrappers.
 
@@ -40,9 +60,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
     # Special case enums - EnumType overrides a some of the internal functions,
     # so check all of the values exist and move on
     if isinstance(wrapped_obj, EnumType):
-        expected_values = [v for v in dir(internal_obj) if not v.startswith("__")]
-        for value in expected_values:
-            assert value in dir(wrapped_obj)
+        _check_enum_exports(internal_obj, wrapped_obj)
         return
 
     if "__repr__" in internal_obj.__dict__ and "__repr__" not in wrapped_obj.__dict__:
@@ -50,6 +68,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
 
     for internal_attr_name in dir(internal_obj):
         wrapped_attr_name = internal_attr_name.removeprefix("Raw")
+
         assert wrapped_attr_name in dir(wrapped_obj)
 
         internal_attr = getattr(internal_obj, internal_attr_name)
@@ -66,15 +85,7 @@ def missing_exports(internal_obj, wrapped_obj) -> None:  # noqa: C901
             continue
 
         if isinstance(internal_attr, list):
-            assert isinstance(wrapped_attr, list)
-
-            # We have cases like __all__ that are a list and we want to be certain that
-            # every value in the list in the internal object is also in the wrapper list
-            for val in internal_attr:
-                if isinstance(val, str) and val.startswith("Raw"):
-                    assert val[3:] in wrapped_attr
-                else:
-                    assert val in wrapped_attr
+            _check_list_attribute(internal_attr, wrapped_attr)
         elif hasattr(internal_attr, "__dict__"):
             # Check all submodules recursively
             missing_exports(internal_attr, wrapped_attr)

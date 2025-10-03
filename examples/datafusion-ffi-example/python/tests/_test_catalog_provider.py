@@ -36,9 +36,9 @@ def test_catalog_provider():
 
     my_catalog_schemas = my_catalog.names()
     assert expected_schema_name in my_catalog_schemas
-    my_database = my_catalog.database(expected_schema_name)
-    assert expected_table_name in my_database.names()
-    my_table = my_database.table(expected_table_name)
+    my_schema = my_catalog.schema(expected_schema_name)
+    assert expected_table_name in my_schema.names()
+    my_table = my_schema.table(expected_table_name)
     assert expected_table_columns == my_table.schema.names
 
     result = ctx.table(

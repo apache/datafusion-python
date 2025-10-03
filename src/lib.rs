@@ -52,6 +52,7 @@ pub mod pyarrow_util;
 mod record_batch;
 pub mod sql;
 pub mod store;
+pub mod table;
 pub mod unparser;
 
 #[cfg(feature = "substrait")]
