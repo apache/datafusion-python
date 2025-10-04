@@ -16,56 +16,65 @@
 // under the License.
 
 use crate::{errors::PyDataFusionResult, expr::PyExpr};
-use datafusion::common::{exec_err, DataFusionError};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use datafusion::prelude::Expr;
 use pyo3::prelude::*;
 
+// TODO(tsaucer) replace this all with CaseBuilder after it implements Clone
+#[derive(Clone, Debug)]
 #[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
 pub struct PyCaseBuilder {
-    case_builder: CaseBuilder,
-}
-
-impl From<CaseBuilder> for PyCaseBuilder {
-    fn from(case_builder: CaseBuilder) -> PyCaseBuilder {
-        PyCaseBuilder { case_builder }
-    }
-}
-
-// TODO(tsaucer) upstream make CaseBuilder impl Clone
-fn builder_clone(case_builder: &CaseBuilder) -> Result<CaseBuilder, DataFusionError> {
-    let Expr::Case(case) = case_builder.end()? else {
-        return exec_err!("CaseBuilder returned an invalid expression");
-    };
-
-    let (when_expr, then_expr) = case
-        .when_then_expr
-        .iter()
-        .map(|(w, t)| (w.as_ref().to_owned(), t.as_ref().to_owned()))
-        .unzip();
-
-    Ok(CaseBuilder::new(
-        case.expr,
-        when_expr,
-        then_expr,
-        case.else_expr,
-    ))
+    expr: Option<Expr>,
+    when: Vec<Expr>,
+    then: Vec<Expr>,
 }
 
 #[pymethods]
 impl PyCaseBuilder {
-    fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
-        let case_builder = builder_clone(&self.case_builder)?.when(when.expr, then.expr);
-        Ok(PyCaseBuilder { case_builder })
+    #[new]
+    pub fn new(expr: Option<PyExpr>) -> Self {
+        Self {
+            expr: expr.map(Into::into),
+            when: vec![],
+            then: vec![],
+        }
+    }
+
+    pub fn when(&self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
+        println!("when called {self:?}");
+        let mut case_builder = self.clone();
+        case_builder.when.push(when.into());
+        case_builder.then.push(then.into());
+
+        case_builder
     }
 
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        Ok(builder_clone(&self.case_builder)?
-            .otherwise(else_expr.expr)?
-            .into())
+        println!("otherwise called {self:?}");
+        let case_builder = CaseBuilder::new(
+            self.expr.clone().map(Box::new),
+            self.when.clone(),
+            self.then.clone(),
+            Some(Box::new(else_expr.into())),
+        );
+
+        let expr = case_builder.end()?;
+
+        Ok(expr.into())
     }
 
     fn end(&self) -> PyDataFusionResult<PyExpr> {
-        Ok(builder_clone(&self.case_builder)?.end()?.into())
+        println!("end called {self:?}");
+
+        let case_builder = CaseBuilder::new(
+            self.expr.clone().map(Box::new),
+            self.when.clone(),
+            self.then.clone(),
+            None,
+        );
+
+        let expr = case_builder.end()?;
+
+        Ok(expr.into())
     }
 }
