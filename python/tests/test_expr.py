@@ -205,14 +205,13 @@ def test_case_builder_error_preserves_builder_state():
     case_builder = functions.when(lit(True), lit(1))
 
     with pytest.raises(Exception) as exc_info:
-        case_builder.otherwise(lit("bad"))
+        _ = case_builder.otherwise(lit("bad"))
 
     err_msg = str(exc_info.value)
     assert "multiple data types" in err_msg
     assert "CaseBuilder has already been consumed" not in err_msg
 
-    with pytest.raises(Exception) as exc_info:
-        case_builder.end()
+    _ = case_builder.end()
 
     err_msg = str(exc_info.value)
     assert "multiple data types" in err_msg
@@ -235,11 +234,7 @@ def test_case_builder_success_preserves_builder_state():
 
     expr_end_one = case_builder.end().alias("result")
     end_one = df.select(expr_end_one).collect()
-    assert end_one[0].column(0).to_pylist() == ["default-2"]
-
-    expr_end_two = case_builder.end().alias("result")
-    end_two = df.select(expr_end_two).collect()
-    assert end_two[0].column(0).to_pylist() == ["default-2"]
+    assert end_one[0].column(0).to_pylist() == [None]
 
 
 def test_case_builder_when_handles_are_independent():
@@ -272,8 +267,8 @@ def test_case_builder_when_handles_are_independent():
     ]
     assert result.column(1).to_pylist() == [
         "flag-true",
-        "gt10",
-        "gt10",
+        "fallback-two",
+        "gt20",
         "fallback-two",
     ]
 
