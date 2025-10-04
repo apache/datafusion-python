@@ -15,101 +15,57 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-
-use crate::{
-    errors::{PyDataFusionError, PyDataFusionResult},
-    expr::PyExpr,
-};
+use crate::{errors::PyDataFusionResult, expr::PyExpr};
+use datafusion::common::{exec_err, DataFusionError};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
-use parking_lot::{Mutex, MutexGuard};
+use datafusion::prelude::Expr;
 use pyo3::prelude::*;
 
-struct CaseBuilderHandle<'a> {
-    guard: MutexGuard<'a, Option<CaseBuilder>>,
-    builder: Option<CaseBuilder>,
-}
-
-impl<'a> CaseBuilderHandle<'a> {
-    fn new(mut guard: MutexGuard<'a, Option<CaseBuilder>>) -> PyDataFusionResult<Self> {
-        let builder = guard.take().ok_or_else(|| {
-            PyDataFusionError::Common("CaseBuilder has already been consumed".to_string())
-        })?;
-
-        Ok(Self {
-            guard,
-            builder: Some(builder),
-        })
-    }
-
-    fn builder_mut(&mut self) -> &mut CaseBuilder {
-        self.builder
-            .as_mut()
-            .expect("builder should be present while handle is alive")
-    }
-
-    fn into_inner(mut self) -> CaseBuilder {
-        self.builder
-            .take()
-            .expect("builder should be present when consuming handle")
-    }
-}
-
-impl Drop for CaseBuilderHandle<'_> {
-    fn drop(&mut self) {
-        if let Some(builder) = self.builder.take() {
-            *self.guard = Some(builder);
-        }
-    }
-}
-
 #[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
-#[derive(Clone)]
 pub struct PyCaseBuilder {
-    case_builder: Arc<Mutex<Option<CaseBuilder>>>,
+    case_builder: CaseBuilder,
 }
 
 impl From<CaseBuilder> for PyCaseBuilder {
     fn from(case_builder: CaseBuilder) -> PyCaseBuilder {
-        PyCaseBuilder {
-            case_builder: Arc::new(Mutex::new(Some(case_builder))),
-        }
+        PyCaseBuilder { case_builder }
     }
 }
 
-impl PyCaseBuilder {
-    fn case_builder_handle(&self) -> PyDataFusionResult<CaseBuilderHandle<'_>> {
-        let guard = self.case_builder.lock();
-        CaseBuilderHandle::new(guard)
-    }
+// TODO(tsaucer) upstream make CaseBuilder impl Clone
+fn builder_clone(case_builder: &CaseBuilder) -> Result<CaseBuilder, DataFusionError> {
+    let Expr::Case(case) = case_builder.end()? else {
+        return exec_err!("CaseBuilder returned an invalid expression");
+    };
 
-    pub fn into_case_builder(self) -> PyDataFusionResult<CaseBuilder> {
-        let guard = self.case_builder.lock();
-        CaseBuilderHandle::new(guard).map(CaseBuilderHandle::into_inner)
-    }
+    let (when_expr, then_expr) = case
+        .when_then_expr
+        .iter()
+        .map(|(w, t)| (w.as_ref().to_owned(), t.as_ref().to_owned()))
+        .unzip();
+
+    Ok(CaseBuilder::new(
+        case.expr,
+        when_expr,
+        then_expr,
+        case.else_expr,
+    ))
 }
 
 #[pymethods]
 impl PyCaseBuilder {
     fn when(&self, when: PyExpr, then: PyExpr) -> PyDataFusionResult<PyCaseBuilder> {
-        let mut handle = self.case_builder_handle()?;
-        let next_builder = handle.builder_mut().when(when.expr, then.expr);
-        Ok(next_builder.into())
+        let case_builder = builder_clone(&self.case_builder)?.when(when.expr, then.expr);
+        Ok(PyCaseBuilder { case_builder })
     }
 
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        let mut handle = self.case_builder_handle()?;
-        match handle.builder_mut().otherwise(else_expr.expr) {
-            Ok(expr) => Ok(expr.clone().into()),
-            Err(err) => Err(err.into()),
-        }
+        Ok(builder_clone(&self.case_builder)?
+            .otherwise(else_expr.expr)?
+            .into())
     }
 
     fn end(&self) -> PyDataFusionResult<PyExpr> {
-        let mut handle = self.case_builder_handle()?;
-        match handle.builder_mut().end() {
-            Ok(expr) => Ok(expr.clone().into()),
-            Err(err) => Err(err.into()),
-        }
+        Ok(builder_clone(&self.case_builder)?.end()?.into())
     }
 }
