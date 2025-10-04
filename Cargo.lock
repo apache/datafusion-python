@@ -1252,9 +1252,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-ffi"
-version = "50.0.0"
+version = "50.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ff957c0553df58b70904608cc0047d4489fc566191b7fb00e9fe5a52cafa0ef"
+checksum = "cda6e7e5f98b9587f2e32db9eb550539441e18edcea90075d6504da811de5960"
 dependencies = [
  "abi_stable",
  "arrow",
