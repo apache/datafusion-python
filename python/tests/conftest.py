@@ -17,7 +17,7 @@
 
 import pyarrow as pa
 import pytest
-from datafusion import SessionContext
+from datafusion import DataFrame, SessionContext
 from pyarrow.csv import write_csv
 
 
@@ -49,3 +49,12 @@ def database(ctx, tmp_path):
         delimiter=",",
         schema_infer_max_records=10,
     )
+
+
+@pytest.fixture
+def fail_collect(monkeypatch):
+    def _fail_collect(self, *args, **kwargs):  # pragma: no cover - failure path
+        msg = "collect should not be called"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(DataFrame, "collect", _fail_collect)
