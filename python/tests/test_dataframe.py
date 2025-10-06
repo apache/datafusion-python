@@ -2322,6 +2322,25 @@ def test_write_parquet_options_error(df, tmp_path):
         df.write_parquet(str(tmp_path), options, compression_level=1)
 
 
+def test_write_table(ctx, df):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3])],
+        names=["a"],
+    )
+
+    ctx.register_record_batches("t", [[batch]])
+
+    df = ctx.table("t").with_column("a", column("a") * literal(-1))
+
+    ctx.table("t").show()
+
+    df.write_table("t")
+    result = ctx.table("t").sort(column("a")).collect()[0][0].to_pylist()
+    expected = [-3, -2, -1, 1, 2, 3]
+
+    assert result == expected
+
+
 def test_dataframe_export(df) -> None:
     # Guarantees that we have the canonical implementation
     # reading our dataframe export

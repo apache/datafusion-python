@@ -39,10 +39,13 @@ except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
+from datafusion._internal import InsertOp as InsertOpInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import (
     Expr,
+    SortExpr,
     SortKey,
     ensure_expr,
     ensure_expr_list,
@@ -1060,6 +1063,17 @@ class DataFrame:
         """
         self.df.write_json(str(path))
 
+    def write_table(
+        self, table_name: str, write_options: DataFrameWriteOptions | None = None
+    ) -> None:
+        """Execute the :py:class:`DataFrame` and write the results to a table.
+
+        The table must be registered with the session to perform this operation.
+        Not all table providers support writing operations. See the individual
+        implementations for details.
+        """
+        self.df.write_table(table_name, write_options)
+
     def to_arrow_table(self) -> pa.Table:
         """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.
 
@@ -1206,3 +1220,46 @@ class DataFrame:
             - For columns not in subset, the original column is kept unchanged
         """
         return DataFrame(self.df.fill_null(value, subset))
+
+
+class InsertOp(Enum):
+    """Insert operation mode.
+
+    These modes are used by the table writing feature to define how record
+    batches should be written to a table.
+    """
+
+    APPEND = InsertOpInternal.APPEND
+    REPLACE = InsertOpInternal.REPLACE
+    OVERWRITE = InsertOpInternal.OVERWRITE
+
+
+class DataFrameWriteOptions:
+    """Writer options for DataFrame.
+
+    There is no guarantee the table provider supports all writer options.
+    See the individual implementation and documentation for details.
+    """
+
+    def __init__(
+        self,
+        insert_operation: InsertOp | None = None,
+        single_file_output: bool = False,
+        partition_by: str | Sequence[str] | None = None,
+        sort_by: Expr | SortExpr | Sequence[Expr] | Sequence[SortExpr] | None = None,
+    ) -> None:
+        """Instantiate writer options for DataFrame."""
+        write_options = DataFrameWriteOptionsInternal()
+        if insert_operation is not None:
+            write_options = write_options.with_insert_operation(insert_operation)
+        write_options = write_options.with_single_file_output(single_file_output)
+        if partition_by is not None:
+            if isinstance(partition_by, str):
+                partition_by = [single_file_output]
+            write_options = write_options.with_partition_by(partition_by)
+
+        sort_by_raw = sort_list_to_raw_sort_list(sort_by)
+        if sort_by_raw is not None:
+            write_options = write_options.with_sort_by(sort_by_raw)
+
+        self._raw_write_options = write_options
