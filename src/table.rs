@@ -24,7 +24,11 @@ use async_trait::async_trait;
 use datafusion::catalog::Session;
 use datafusion::common::Column;
 use datafusion::datasource::{TableProvider, TableType};
+<<<<<<< HEAD
 use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPushDown};
+=======
+use datafusion::logical_expr::{Expr, LogicalPlanBuilder};
+>>>>>>> 3c9a96c (Intermediate work on temp views and parameterizing queries)
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
 use pyo3::prelude::*;
