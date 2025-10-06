@@ -64,7 +64,7 @@ use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
 use crate::store::StorageContexts;
-use crate::table::PyTable;
+use crate::table::{PyTable, TempViewTable};
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
@@ -485,6 +485,29 @@ impl PySessionContext {
     /// Create a DataFrame from an existing logical plan
     pub fn create_dataframe_from_logical_plan(&self, plan: PyLogicalPlan) -> PyDataFrame {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
+    }
+
+    pub fn create_temporary_view(
+        &self,
+        py: Python,
+        name: &str,
+        df: PyDataFrame,
+        replace_if_exists: bool,
+    ) -> PyDataFusionResult<()> {
+        if self.table(name, py).is_ok() {
+            if replace_if_exists {
+                let _ = self.deregister_table(name);
+            } else {
+                exec_err!(
+                    "Unable to create temporary view. Table with name {name} already exists."
+                )?;
+            }
+        }
+
+        let table = Arc::new(TempViewTable::new(df.inner_df()));
+        self.ctx.register_table(name, table)?;
+
+        Ok(())
     }
 
     /// Construct datafusion dataframe from Python list

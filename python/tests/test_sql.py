@@ -550,3 +550,13 @@ def test_register_listing_table(
 
     rd = result.to_pydict()
     assert dict(zip(rd["grp"], rd["count"], strict=False)) == {"a": 3, "b": 2}
+
+
+def test_parameterized_sql(ctx, tmp_path) -> None:
+    path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
+    df = ctx.read_parquet(path)
+    result = ctx.sql(
+        "SELECT COUNT(a) AS cnt FROM {replaced_df}", replaced_df=df
+    ).collect()
+    result = pa.Table.from_batches(result)
+    assert result.to_pydict() == {"cnt": [100]}

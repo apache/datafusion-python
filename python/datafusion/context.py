@@ -27,6 +27,8 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
+import uuid
+
 import pyarrow as pa
 
 from datafusion.catalog import Catalog
@@ -592,7 +594,9 @@ class SessionContext:
             self._convert_file_sort_order(file_sort_order),
         )
 
-    def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
+    def sql(
+        self, query: str, options: SQLOptions | None = None, **named_params: Any
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
 
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
@@ -603,10 +607,25 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: If provided, the query will be validated against these options.
+            named_params: Provides substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
+        if named_params:
+            for alias, param in named_params.items():
+                if isinstance(param, DataFrame):
+                    view_name = str(uuid.uuid4()).replace("-", "_")
+                    view_name = f"view_{view_name}"
+                    self.ctx.create_temporary_view(
+                        view_name, param.df, replace_if_exists=True
+                    )
+                    replace_str = view_name
+                else:
+                    replace_str = str(param)
+
+                query = query.replace(f"{{{alias}}}", replace_str)
+
         if options is None:
             return DataFrame(self.ctx.sql(query))
         return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
