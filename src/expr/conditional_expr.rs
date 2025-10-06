@@ -41,7 +41,6 @@ impl PyCaseBuilder {
     }
 
     pub fn when(&self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
-        println!("when called {self:?}");
         let mut case_builder = self.clone();
         case_builder.when.push(when.into());
         case_builder.then.push(then.into());
