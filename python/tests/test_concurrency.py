@@ -99,7 +99,8 @@ def test_case_builder_reuse_from_multiple_threads() -> None:
     base_builder = f.case(col("value"))
 
     def add_case(i: int) -> None:
-        base_builder.when(lit(i), lit(f"value-{i}"))
+        nonlocal base_builder
+        base_builder = base_builder.when(lit(i), lit(f"value-{i}"))
 
     _run_in_threads(add_case, count=8)
 

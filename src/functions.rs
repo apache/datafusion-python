@@ -230,13 +230,13 @@ fn col(name: &str) -> PyResult<PyExpr> {
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
 #[pyfunction]
 fn case(expr: PyExpr) -> PyResult<PyCaseBuilder> {
-    Ok(datafusion::logical_expr::case(expr.expr).into())
+    Ok(PyCaseBuilder::new(Some(expr)))
 }
 
 /// Create a CASE WHEN statement with literal WHEN expressions for comparison to the base expression.
 #[pyfunction]
 fn when(when: PyExpr, then: PyExpr) -> PyResult<PyCaseBuilder> {
-    Ok(datafusion::logical_expr::when(when.expr, then.expr).into())
+    Ok(PyCaseBuilder::new(None).when(when, then))
 }
 
 /// Helper function to find the appropriate window function.
