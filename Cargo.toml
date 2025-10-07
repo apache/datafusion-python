@@ -48,7 +48,7 @@ uuid = { version = "1.18", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = ["local_dynamic_tls"] }
 async-trait = "0.1.89"
 futures = "0.3"
-object_store = { version = "0.12.3", features = ["aws", "gcp", "azure", "http"] }
+object_store = { version = "0.12.4", features = ["aws", "gcp", "azure", "http"] }
 url = "2"
 log = "0.4.27"
 parking_lot = "0.12"
