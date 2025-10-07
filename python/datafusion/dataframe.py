@@ -991,6 +991,7 @@ class DataFrame:
         - "lz4": LZ4 compression.
         - "lz4_raw": LZ4_RAW compression.
         - "zstd": Zstandard compression.
+
         LZO compression is not yet implemented in arrow-rs and is therefore
         excluded.
 
