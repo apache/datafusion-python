@@ -41,7 +41,6 @@ impl PyCaseBuilder {
     }
 
     pub fn when(&self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
-        println!("when called {self:?}");
         let mut case_builder = self.clone();
         case_builder.when.push(when.into());
         case_builder.then.push(then.into());
@@ -50,7 +49,6 @@ impl PyCaseBuilder {
     }
 
     fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        println!("otherwise called {self:?}");
         let case_builder = CaseBuilder::new(
             self.expr.clone().map(Box::new),
             self.when.clone(),
@@ -64,8 +62,6 @@ impl PyCaseBuilder {
     }
 
     fn end(&self) -> PyDataFusionResult<PyExpr> {
-        println!("end called {self:?}");
-
         let case_builder = CaseBuilder::new(
             self.expr.clone().map(Box::new),
             self.when.clone(),
