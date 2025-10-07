@@ -1257,8 +1257,16 @@ class InsertOp(Enum):
     """
 
     APPEND = InsertOpInternal.APPEND
+    """Appends new rows to the existing table without modifying any existing rows."""
+
     REPLACE = InsertOpInternal.REPLACE
+    """Replace existing rows that collide with the inserted rows.
+
+    Replacement is typically based on a unique key or primary key.
+    """
+
     OVERWRITE = InsertOpInternal.OVERWRITE
+    """Overwrites all existing rows in the table with the new rows."""
 
 
 class DataFrameWriteOptions:
