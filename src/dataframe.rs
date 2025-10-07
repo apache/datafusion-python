@@ -1078,43 +1078,24 @@ impl From<PyDataFrameWriteOptions> for DataFrameWriteOptions {
 #[pymethods]
 impl PyDataFrameWriteOptions {
     #[new]
-    fn new() -> Self {
+    fn new(
+        insert_operation: Option<PyInsertOp>,
+        single_file_output: bool,
+        partition_by: Option<Vec<String>>,
+        sort_by: Option<Vec<PySortExpr>>,
+    ) -> Self {
+        let insert_operation = insert_operation.map(Into::into).unwrap_or(InsertOp::Append);
+        let sort_by = sort_by
+            .unwrap_or_default()
+            .into_iter()
+            .map(Into::into)
+            .collect();
         Self {
-            insert_operation: InsertOp::Append,
-            single_file_output: false,
-            partition_by: vec![],
-            sort_by: vec![],
+            insert_operation,
+            single_file_output,
+            partition_by: partition_by.unwrap_or_default(),
+            sort_by,
         }
-    }
-
-    pub fn with_insert_operation(&self, insert_operation: PyInsertOp) -> Self {
-        let mut result = self.clone();
-
-        result.insert_operation = insert_operation.into();
-        result
-    }
-
-    pub fn with_single_file_output(&self, single_file_output: bool) -> Self {
-        let mut result = self.clone();
-
-        result.single_file_output = single_file_output;
-        result
-    }
-
-    /// Sets the partition_by columns for output partitioning
-    pub fn with_partition_by(&self, partition_by: Vec<String>) -> Self {
-        let mut result = self.clone();
-
-        result.partition_by = partition_by;
-        result
-    }
-
-    /// Sets the sort_by columns for output sorting
-    pub fn with_sort_by(&self, sort_by: Vec<PySortExpr>) -> Self {
-        let mut result = self.clone();
-
-        result.sort_by = sort_by.into_iter().map(Into::into).collect();
-        result
     }
 }
 

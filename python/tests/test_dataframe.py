@@ -16,6 +16,7 @@
 # under the License.
 import ctypes
 import datetime
+import itertools
 import os
 import re
 import threading
@@ -59,9 +60,7 @@ def ctx():
 
 
 @pytest.fixture
-def df():
-    ctx = SessionContext()
-
+def df(ctx):
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
@@ -1831,29 +1830,52 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
     assert result == expected
 
 
+sort_by_cases = [
+    (None, [1, 2, 3], "unsorted"),
+    (column("c"), [2, 1, 3], "single_column_expr"),
+    (column("a").sort(ascending=False), [3, 2, 1], "single_sort_expr"),
+    ([column("c"), column("b")], [2, 1, 3], "list_col_expr"),
+    (
+        [column("c").sort(ascending=False), column("b").sort(ascending=False)],
+        [3, 1, 2],
+        "list_sort_expr",
+    ),
+]
+
+formats = ["csv", "json", "parquet", "table"]
+
+
 @pytest.mark.parametrize(
-    ("sort_by", "expected_a"),
+    ("format", "sort_by", "expected_a"),
     [
-        pytest.param(None, [1, 2, 3], id="unsorted"),
-        pytest.param(column("c"), [2, 1, 3], id="single_column_expr"),
-        pytest.param(
-            column("a").sort(ascending=False), [3, 2, 1], id="single_sort_expr"
-        ),
-        pytest.param([column("c"), column("b")], [2, 1, 3], id="list_col_expr"),
-        pytest.param(
-            [column("c").sort(ascending=False), column("b").sort(ascending=False)],
-            [3, 1, 2],
-            id="list_sort_expr",
-        ),
+        pytest.param(format, sort_by, expected_a, id=f"{format}_{test_id}")
+        for format, (sort_by, expected_a, test_id) in itertools.product(
+            formats, sort_by_cases
+        )
     ],
 )
-def test_write_csv_with_options(ctx, df, tmp_path, sort_by, expected_a) -> None:
+def test_write_files_with_options(
+    ctx, df, tmp_path, format, sort_by, expected_a
+) -> None:
     write_options = DataFrameWriteOptions(sort_by=sort_by)
-    df.write_csv(tmp_path, with_header=True, write_options=write_options)
 
-    ctx.register_csv("csv", tmp_path)
-    result = ctx.table("csv").to_pydict()["a"]
-    ctx.table("csv").show()
+    if format == "csv":
+        df.write_csv(tmp_path, with_header=True, write_options=write_options)
+        ctx.register_csv("test_table", tmp_path)
+    elif format == "json":
+        df.write_json(tmp_path, write_options=write_options)
+        ctx.register_json("test_table", tmp_path)
+    elif format == "parquet":
+        df.write_parquet(tmp_path, write_options=write_options)
+        ctx.register_parquet("test_table", tmp_path)
+    elif format == "table":
+        batch = pa.RecordBatch.from_arrays([[], [], []], schema=df.schema())
+        ctx.register_record_batches("test_table", [[batch]])
+        ctx.table("test_table").show()
+        df.write_table("test_table", write_options=write_options)
+
+    result = ctx.table("test_table").to_pydict()["a"]
+    ctx.table("test_table").show()
 
     assert result == expected_a
 

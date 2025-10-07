@@ -45,7 +45,13 @@ from .context import (
     SessionContext,
     SQLOptions,
 )
-from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
+from .dataframe import (
+    DataFrame,
+    DataFrameWriteOptions,
+    InsertOp,
+    ParquetColumnOptions,
+    ParquetWriterOptions,
+)
 from .dataframe_formatter import configure_formatter
 from .expr import (
     Expr,
@@ -75,9 +81,11 @@ __all__ = [
     "Config",
     "DFSchema",
     "DataFrame",
+    "DataFrameWriteOptions",
     "Database",
     "ExecutionPlan",
     "Expr",
+    "InsertOp",
     "LogicalPlan",
     "ParquetColumnOptions",
     "ParquetWriterOptions",
