@@ -1649,9 +1649,9 @@ dependencies = [
 
 [[package]]
 name = "datafusion-substrait"
-version = "50.0.0"
+version = "50.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63e82491d50f78150897577fae14d7e5b800ca1a8a56b84de78e852ad3f5a5bd"
+checksum = "fcee6783df42ea7e2e2567f4bc92a0e9ce96d395c7c2f3e68ddaf35630c7005c"
 dependencies = [
  "async-recursion",
  "async-trait",
