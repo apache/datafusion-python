@@ -928,14 +928,20 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
+    def write_csv(
+        self,
+        path: str | pathlib.Path,
+        with_header: bool = False,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame`  and write the results to a CSV file.
 
         Args:
             path: Path of the CSV file to write.
             with_header: If true, output the CSV header row.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_csv(str(path), with_header)
+        self.df.write_csv(str(path), with_header, write_options=write_options)
 
     @overload
     def write_parquet(
@@ -943,6 +949,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: str,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -951,6 +958,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Compression = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -959,6 +967,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: ParquetWriterOptions,
         compression_level: None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     def write_parquet(
@@ -966,8 +975,11 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
+
+        LZO compression is not yet implemented in arrow-rs and is therefore excluded.
 
         Args:
             path: Path of the Parquet file to write.
@@ -980,10 +992,10 @@ class DataFrame:
                 - "lz4": LZ4 compression.
                 - "lz4_raw": LZ4_RAW compression.
                 - "zstd": Zstandard compression.
-            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
+            write_options: Options that impact how the DataFrame is written.
         """
         if isinstance(compression, ParquetWriterOptions):
             if compression_level is not None:
@@ -1001,10 +1013,15 @@ class DataFrame:
         ):
             compression_level = compression.get_default_level()
 
-        self.df.write_parquet(str(path), compression.value, compression_level)
+        self.df.write_parquet(
+            str(path), compression.value, compression_level, write_options
+        )
 
     def write_parquet_with_options(
-        self, path: str | pathlib.Path, options: ParquetWriterOptions
+        self,
+        path: str | pathlib.Path,
+        options: ParquetWriterOptions,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -1013,6 +1030,7 @@ class DataFrame:
         Args:
             path: Path of the Parquet file to write.
             options: Sets the writer parquet options (see `ParquetWriterOptions`).
+            write_options: Options that impact how the DataFrame is written.
         """
         options_internal = ParquetWriterOptionsInternal(
             options.data_pagesize_limit,
@@ -1053,15 +1071,21 @@ class DataFrame:
             str(path),
             options_internal,
             column_specific_options_internal,
+            write_options,
         )
 
-    def write_json(self, path: str | pathlib.Path) -> None:
+    def write_json(
+        self,
+        path: str | pathlib.Path,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
 
         Args:
             path: Path of the JSON file to write.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_json(str(path))
+        self.df.write_json(str(path), write_options=write_options)
 
     def write_table(
         self, table_name: str, write_options: DataFrameWriteOptions | None = None
