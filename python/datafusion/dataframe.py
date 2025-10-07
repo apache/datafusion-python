@@ -982,11 +982,10 @@ class DataFrame:
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
-        LZO compression is not yet implemented in arrow-rs and is therefore excluded.
-
         Args:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
+                LZO compression is not yet implemented in arrow-rs and is therefore excluded.
                 Available compression types are:
                 - "uncompressed": No compression.
                 - "snappy": Snappy compression.
