@@ -28,7 +28,7 @@ use crate::errors::py_type_err;
 use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
-#[pyclass(name = "Aggregate", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Aggregate", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyAggregate {
     aggregate: Aggregate,

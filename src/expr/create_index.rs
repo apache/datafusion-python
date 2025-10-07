@@ -27,7 +27,7 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::{logical_node::LogicalNode, sort_expr::PySortExpr};
 
-#[pyclass(name = "CreateIndex", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "CreateIndex", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateIndex {
     create: CreateIndex,

@@ -24,7 +24,7 @@ use crate::{errors::py_type_err, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "CreateView", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "CreateView", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateView {
     create: CreateView,

@@ -21,7 +21,7 @@ use std::fmt::{self, Display, Formatter};
 
 use super::PyExpr;
 
-#[pyclass(name = "UnnestExpr", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "UnnestExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyUnnestExpr {
     unnest: Unnest,

@@ -24,13 +24,13 @@ use crate::{errors::py_type_err, sql::logical::PyLogicalPlan};
 
 use super::{logical_node::LogicalNode, PyExpr};
 
-#[pyclass(name = "Repartition", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Repartition", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyRepartition {
     repartition: Repartition,
 }
 
-#[pyclass(name = "Partitioning", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Partitioning", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyPartitioning {
     partitioning: Partitioning,

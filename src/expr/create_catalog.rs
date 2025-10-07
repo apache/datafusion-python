@@ -27,7 +27,7 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "CreateCatalog", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "CreateCatalog", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCreateCatalog {
     create: CreateCatalog,
