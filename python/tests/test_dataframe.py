@@ -40,6 +40,7 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
+from datafusion.dataframe import DataFrameWriteOptions
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
@@ -1828,6 +1829,33 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
     expected = df.to_pydict()
 
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    ("sort_by", "expected_a"),
+    [
+        pytest.param(None, [1, 2, 3], id="unsorted"),
+        pytest.param(column("c"), [2, 1, 3], id="single_column_expr"),
+        pytest.param(
+            column("a").sort(ascending=False), [3, 2, 1], id="single_sort_expr"
+        ),
+        pytest.param([column("c"), column("b")], [2, 1, 3], id="list_col_expr"),
+        pytest.param(
+            [column("c").sort(ascending=False), column("b").sort(ascending=False)],
+            [3, 1, 2],
+            id="list_sort_expr",
+        ),
+    ],
+)
+def test_write_csv_with_options(ctx, df, tmp_path, sort_by, expected_a) -> None:
+    write_options = DataFrameWriteOptions(sort_by=sort_by)
+    df.write_csv(tmp_path, with_header=True, write_options=write_options)
+
+    ctx.register_csv("csv", tmp_path)
+    result = ctx.table("csv").to_pydict()["a"]
+    ctx.table("csv").show()
+
+    assert result == expected_a
 
 
 @pytest.mark.parametrize("path_to_str", [True, False])

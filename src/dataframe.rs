@@ -746,10 +746,10 @@ impl PyDataFrame {
     /// Write a `DataFrame` to a CSV file.
     fn write_csv(
         &self,
+        py: Python,
         path: &str,
         with_header: bool,
         write_options: Option<PyDataFrameWriteOptions>,
-        py: Python,
     ) -> PyDataFusionResult<()> {
         let csv_options = CsvOptions {
             has_header: Some(with_header),
@@ -1078,13 +1078,20 @@ impl From<PyDataFrameWriteOptions> for DataFrameWriteOptions {
 #[pymethods]
 impl PyDataFrameWriteOptions {
     #[new]
-    fn new(insert_operation: PyInsertOp) -> Self {
+    fn new() -> Self {
         Self {
-            insert_operation: insert_operation.into(),
+            insert_operation: InsertOp::Append,
             single_file_output: false,
             partition_by: vec![],
             sort_by: vec![],
         }
+    }
+
+    pub fn with_insert_operation(&self, insert_operation: PyInsertOp) -> Self {
+        let mut result = self.clone();
+
+        result.insert_operation = insert_operation.into();
+        result
     }
 
     pub fn with_single_file_output(&self, single_file_output: bool) -> Self {

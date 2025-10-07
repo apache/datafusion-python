@@ -941,7 +941,7 @@ class DataFrame:
             with_header: If true, output the CSV header row.
             write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_csv(str(path), with_header, write_options=write_options)
+        self.df.write_csv(str(path), with_header, write_options._raw_write_options)
 
     @overload
     def write_parquet(
@@ -1014,7 +1014,10 @@ class DataFrame:
             compression_level = compression.get_default_level()
 
         self.df.write_parquet(
-            str(path), compression.value, compression_level, write_options
+            str(path),
+            compression.value,
+            compression_level,
+            write_options._raw_write_options,
         )
 
     def write_parquet_with_options(
@@ -1071,7 +1074,7 @@ class DataFrame:
             str(path),
             options_internal,
             column_specific_options_internal,
-            write_options,
+            write_options._raw_write_options,
         )
 
     def write_json(
@@ -1085,7 +1088,7 @@ class DataFrame:
             path: Path of the JSON file to write.
             write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_json(str(path), write_options=write_options)
+        self.df.write_json(str(path), write_options=write_options._raw_write_options)
 
     def write_table(
         self, table_name: str, write_options: DataFrameWriteOptions | None = None
@@ -1096,7 +1099,7 @@ class DataFrame:
         Not all table providers support writing operations. See the individual
         implementations for details.
         """
-        self.df.write_table(table_name, write_options)
+        self.df.write_table(table_name, write_options._raw_write_options)
 
     def to_arrow_table(self) -> pa.Table:
         """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.
@@ -1275,11 +1278,11 @@ class DataFrameWriteOptions:
         """Instantiate writer options for DataFrame."""
         write_options = DataFrameWriteOptionsInternal()
         if insert_operation is not None:
-            write_options = write_options.with_insert_operation(insert_operation)
+            write_options = write_options.with_insert_operation(insert_operation.value)
         write_options = write_options.with_single_file_output(single_file_output)
         if partition_by is not None:
             if isinstance(partition_by, str):
-                partition_by = [single_file_output]
+                partition_by = [partition_by]
             write_options = write_options.with_partition_by(partition_by)
 
         sort_by_raw = sort_list_to_raw_sort_list(sort_by)
