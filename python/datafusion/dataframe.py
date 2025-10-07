@@ -982,18 +982,21 @@ class DataFrame:
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
+        Available compression types are:
+
+        - "uncompressed": No compression.
+        - "snappy": Snappy compression.
+        - "gzip": Gzip compression.
+        - "brotli": Brotli compression.
+        - "lz4": LZ4 compression.
+        - "lz4_raw": LZ4_RAW compression.
+        - "zstd": Zstandard compression.
+        LZO compression is not yet implemented in arrow-rs and is therefore
+        excluded.
+
         Args:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
-                LZO compression is not yet implemented in arrow-rs and is therefore excluded.
-                Available compression types are:
-                - "uncompressed": No compression.
-                - "snappy": Snappy compression.
-                - "gzip": Gzip compression.
-                - "brotli": Brotli compression.
-                - "lz4": LZ4 compression.
-                - "lz4_raw": LZ4_RAW compression.
-                - "zstd": Zstandard compression.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
