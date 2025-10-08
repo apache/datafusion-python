@@ -24,7 +24,7 @@ use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "SubqueryAlias", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "SubqueryAlias", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySubqueryAlias {
     subquery_alias: SubqueryAlias,

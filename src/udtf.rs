@@ -31,7 +31,7 @@ use pyo3::exceptions::PyNotImplementedError;
 use pyo3::types::{PyCapsule, PyTuple};
 
 /// Represents a user defined table function
-#[pyclass(name = "TableFunction", module = "datafusion")]
+#[pyclass(frozen, name = "TableFunction", module = "datafusion")]
 #[derive(Debug, Clone)]
 pub struct PyTableFunction {
     pub(crate) name: String,

@@ -22,7 +22,7 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "Extension", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Extension", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyExtension {
     pub node: Extension,

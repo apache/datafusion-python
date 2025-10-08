@@ -20,7 +20,7 @@ use pyo3::prelude::*;
 
 use super::{subquery::PySubquery, PyExpr};
 
-#[pyclass(name = "InSubquery", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "InSubquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyInSubquery {
     in_subquery: InSubquery,

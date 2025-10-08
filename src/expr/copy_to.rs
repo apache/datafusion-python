@@ -28,7 +28,7 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "CopyTo", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "CopyTo", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyCopyTo {
     copy: CopyTo,
@@ -114,7 +114,7 @@ impl PyCopyTo {
     }
 }
 
-#[pyclass(name = "FileType", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "FileType", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyFileType {
     file_type: Arc<dyn FileType>,
