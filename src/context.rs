@@ -55,14 +55,16 @@ use url::Url;
 use uuid::Uuid;
 
 use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
+use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, PyDataFusionResult};
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
+use crate::sql::util::replace_placeholders_with_table_names;
 use crate::store::StorageContexts;
 use crate::table::{PyTable, TempViewTable};
 use crate::udaf::PyAggregateUDF;
@@ -422,27 +424,54 @@ impl PySessionContext {
         self.ctx.register_udtf(&name, func);
     }
 
-    /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
-    pub fn sql(&self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
-        let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)??;
-        Ok(PyDataFrame::new(df))
-    }
-
-    #[pyo3(signature = (query, options=None))]
+    #[pyo3(signature = (query, options=None, scalar_params=vec![], dataframe_params=vec![]))]
     pub fn sql_with_options(
         &self,
+        py: Python,
         query: &str,
         options: Option<PySQLOptions>,
-        py: Python,
+        scalar_params: Vec<(String, PyScalarValue)>,
+        dataframe_params: Vec<(String, PyDataFrame)>,
     ) -> PyDataFusionResult<PyDataFrame> {
         let options = if let Some(options) = options {
             options.options
         } else {
             SQLOptions::new()
         };
-        let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)??;
+
+        let scalar_params = scalar_params
+            .into_iter()
+            .map(|(name, value)| (name, ScalarValue::from(value)))
+            .collect::<Vec<_>>();
+
+        let dataframe_params = dataframe_params
+            .into_iter()
+            .map(|(name, df)| {
+                let uuid = Uuid::new_v4().to_string().replace("-", "");
+                let view_name = format!("view_{uuid}");
+
+                self.create_temporary_view(py, view_name.as_str(), df, true)?;
+                Ok((name, view_name))
+            })
+            .collect::<Result<HashMap<_, _>, PyDataFusionError>>()?;
+
+        let state = self.ctx.state();
+        let dialect = state.config().options().sql_parser.dialect.as_str();
+
+        let query = replace_placeholders_with_table_names(query, dialect, dataframe_params)?;
+
+        println!("using scalar params: {scalar_params:?}");
+        let df = wait_for_future(py, async {
+            self.ctx
+                .sql_with_options(&query, options)
+                .await
+                .map_err(|err| {
+                    println!("error before param replacement: {}", err);
+                    err
+                })?
+                .with_param_values(scalar_params)
+        })??;
+
         Ok(PyDataFrame::new(df))
     }
 
