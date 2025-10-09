@@ -27,7 +27,6 @@ try:
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-import uuid
 
 import pyarrow as pa
 
@@ -612,25 +611,41 @@ class SessionContext:
         Returns:
             DataFrame representation of the SQL query.
         """
-        if named_params:
-            for alias, param in named_params.items():
-                if isinstance(param, DataFrame):
-                    view_name = str(uuid.uuid4()).replace("-", "_")
-                    view_name = f"view_{view_name}"
-                    self.ctx.create_temporary_view(
-                        view_name, param.df, replace_if_exists=True
-                    )
-                    replace_str = view_name
-                else:
-                    replace_str = str(param)
 
-                query = query.replace(f"{{{alias}}}", replace_str)
+        def scalar_params(**p: Any) -> list[tuple[str, pa.Scalar]]:
+            if p is None:
+                return []
 
-        if options is None:
-            return DataFrame(self.ctx.sql(query))
-        return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
+            return [
+                (name, pa.scalar(value))
+                for (name, value) in p.items()
+                if not isinstance(value, DataFrame)
+            ]
 
-    def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
+        def dataframe_params(**p: Any) -> list[tuple[str, DataFrame]]:
+            if p is None:
+                return []
+
+            return [
+                (name, value.df)
+                for (name, value) in p.items()
+                if isinstance(value, DataFrame)
+            ]
+
+        options_raw = options.options_internal if options is not None else None
+
+        return DataFrame(
+            self.ctx.sql_with_options(
+                query,
+                options=options_raw,
+                scalar_params=scalar_params(**named_params),
+                dataframe_params=dataframe_params(**named_params),
+            )
+        )
+
+    def sql_with_options(
+        self, query: str, options: SQLOptions, **named_params: Any
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
         This function will first validate that the query is allowed by the
@@ -639,11 +654,12 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: SQL options.
+            named_params: Provides substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
-        return self.sql(query, options)
+        return self.sql(query, options, **named_params)
 
     def create_dataframe(
         self,
