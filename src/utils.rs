@@ -17,16 +17,36 @@
 
 use crate::{
     common::data_type::PyScalarValue,
-    errors::{PyDataFusionError, PyDataFusionResult},
+    errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult},
     TokioRuntime,
 };
 use datafusion::{
-    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
+    common::ScalarValue, datasource::TableProvider, execution::context::SessionContext,
+    logical_expr::Volatility,
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
-use std::{future::Future, sync::OnceLock, time::Duration};
+use std::ffi::CString;
+use std::{
+    ffi::CStr,
+    future::Future,
+    sync::{Arc, OnceLock},
+    time::Duration,
+};
 use tokio::{runtime::Runtime, time::sleep};
+
+pub const TABLE_PROVIDER_CAPSULE_NAME_STR: &str = "datafusion_table_provider";
+/// Return a static CStr for the PyCapsule name.
+///
+/// We create this lazily from a `CString` to avoid unsafe const
+/// initialization from a byte literal and to satisfy compiler lints.
+pub fn table_provider_capsule_name() -> &'static CStr {
+    static NAME: OnceLock<CString> = OnceLock::new();
+    NAME.get_or_init(|| CString::new(TABLE_PROVIDER_CAPSULE_NAME_STR).unwrap())
+        .as_c_str()
+}
+
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -114,6 +134,28 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     }
 
     Ok(())
+}
+
+pub(crate) fn foreign_table_provider_from_capsule(
+    capsule: &Bound<PyCapsule>,
+) -> PyResult<ForeignTableProvider> {
+    validate_pycapsule(capsule, TABLE_PROVIDER_CAPSULE_NAME_STR)?;
+    Ok(unsafe { capsule.reference::<FFI_TableProvider>() }.into())
+}
+
+pub(crate) fn try_table_provider_from_object(
+    provider: &Bound<'_, PyAny>,
+) -> PyResult<Option<Arc<dyn TableProvider>>> {
+    if !provider.hasattr("__datafusion_table_provider__")? {
+        return Ok(None);
+    }
+
+    let capsule = provider.getattr("__datafusion_table_provider__")?.call0()?;
+    let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+    let provider = foreign_table_provider_from_capsule(capsule)?;
+    let provider: Arc<dyn TableProvider> = Arc::new(provider);
+
+    Ok(Some(provider))
 }
 
 pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {

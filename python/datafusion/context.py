@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, Union
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -80,6 +80,13 @@ class TableProviderExportable(Protocol):
     """
 
     def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+
+
+# Type alias for objects accepted by read_table
+# Use typing.Union here (instead of PEP 604 `|`) because this alias is
+# evaluated at import time and must work on Python 3.9 where PEP 604
+# syntax is not supported for runtime expressions.
+TableLike = Union[Table, TableProviderExportable]
 
 
 class CatalogProviderExportable(Protocol):
@@ -1163,14 +1170,21 @@ class SessionContext:
             self.ctx.read_avro(str(path), schema, file_partition_cols, file_extension)
         )
 
-    def read_table(self, table: Table) -> DataFrame:
+    def read_table(self, table: TableLike) -> DataFrame:
         """Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
 
-        For a :py:class:`~datafusion.catalog.Table` such as a
-        :py:class:`~datafusion.catalog.ListingTable`, create a
-        :py:class:`~datafusion.dataframe.DataFrame`.
+        Args:
+            table: Either a :py:class:`~datafusion.catalog.Table` (such as a
+                :py:class:`~datafusion.catalog.ListingTable`) or an object that
+                implements ``__datafusion_table_provider__`` and returns a
+                PyCapsule describing a custom table provider.
+
+        Returns:
+            A :py:class:`~datafusion.dataframe.DataFrame` backed by the
+            provided table provider.
         """
-        return DataFrame(self.ctx.read_table(table.table))
+        provider = table.table if isinstance(table, Table) else table
+        return DataFrame(self.ctx.read_table(provider))
 
     def execute(self, plan: ExecutionPlan, partitions: int) -> RecordBatchStream:
         """Execute the ``plan`` and return the results."""
