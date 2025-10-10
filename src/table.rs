@@ -27,7 +27,7 @@ use crate::utils::table_provider_from_pycapsule;
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known
 /// implementation, a dataset, or a dataframe view.
-#[pyclass(name = "RawTable", module = "datafusion.catalog", subclass)]
+#[pyclass(frozen, name = "RawTable", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PyTable {
     pub table: Arc<dyn TableProvider>,

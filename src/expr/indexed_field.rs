@@ -22,7 +22,7 @@ use std::fmt::{Display, Formatter};
 
 use super::literal::PyLiteral;
 
-#[pyclass(name = "GetIndexedField", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "GetIndexedField", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyGetIndexedField {
     indexed_field: GetIndexedField,

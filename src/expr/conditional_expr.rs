@@ -17,38 +17,60 @@
 
 use crate::{errors::PyDataFusionResult, expr::PyExpr};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
+use datafusion::prelude::Expr;
 use pyo3::prelude::*;
 
-#[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass)]
+// TODO(tsaucer) replace this all with CaseBuilder after it implements Clone
+#[derive(Clone, Debug)]
+#[pyclass(name = "CaseBuilder", module = "datafusion.expr", subclass, frozen)]
 pub struct PyCaseBuilder {
-    pub case_builder: CaseBuilder,
-}
-
-impl From<PyCaseBuilder> for CaseBuilder {
-    fn from(case_builder: PyCaseBuilder) -> Self {
-        case_builder.case_builder
-    }
-}
-
-impl From<CaseBuilder> for PyCaseBuilder {
-    fn from(case_builder: CaseBuilder) -> PyCaseBuilder {
-        PyCaseBuilder { case_builder }
-    }
+    expr: Option<Expr>,
+    when: Vec<Expr>,
+    then: Vec<Expr>,
 }
 
 #[pymethods]
 impl PyCaseBuilder {
-    fn when(&mut self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
-        PyCaseBuilder {
-            case_builder: self.case_builder.when(when.expr, then.expr),
+    #[new]
+    pub fn new(expr: Option<PyExpr>) -> Self {
+        Self {
+            expr: expr.map(Into::into),
+            when: vec![],
+            then: vec![],
         }
     }
 
-    fn otherwise(&mut self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
-        Ok(self.case_builder.otherwise(else_expr.expr)?.clone().into())
+    pub fn when(&self, when: PyExpr, then: PyExpr) -> PyCaseBuilder {
+        let mut case_builder = self.clone();
+        case_builder.when.push(when.into());
+        case_builder.then.push(then.into());
+
+        case_builder
     }
 
-    fn end(&mut self) -> PyDataFusionResult<PyExpr> {
-        Ok(self.case_builder.end()?.clone().into())
+    fn otherwise(&self, else_expr: PyExpr) -> PyDataFusionResult<PyExpr> {
+        let case_builder = CaseBuilder::new(
+            self.expr.clone().map(Box::new),
+            self.when.clone(),
+            self.then.clone(),
+            Some(Box::new(else_expr.into())),
+        );
+
+        let expr = case_builder.end()?;
+
+        Ok(expr.into())
+    }
+
+    fn end(&self) -> PyDataFusionResult<PyExpr> {
+        let case_builder = CaseBuilder::new(
+            self.expr.clone().map(Box::new),
+            self.when.clone(),
+            self.then.clone(),
+            None,
+        );
+
+        let expr = case_builder.end()?;
+
+        Ok(expr.into())
     }
 }

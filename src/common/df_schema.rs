@@ -21,7 +21,7 @@ use datafusion::common::DFSchema;
 use pyo3::prelude::*;
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "DFSchema", module = "datafusion.common", subclass)]
+#[pyclass(frozen, name = "DFSchema", module = "datafusion.common", subclass)]
 pub struct PyDFSchema {
     schema: Arc<DFSchema>,
 }

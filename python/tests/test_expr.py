@@ -16,6 +16,7 @@
 # under the License.
 
 import re
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 import pyarrow as pa
@@ -198,6 +199,98 @@ def test_expr_to_variant():
         == '[Expr(Utf8("dfa")), Expr(Utf8("ad")), Expr(Utf8("dfre")), Expr(Utf8("vsa"))]'  # noqa: E501
     )
     assert not variant.negated()
+
+
+def test_case_builder_error_preserves_builder_state():
+    case_builder = functions.when(lit(True), lit(1))
+
+    with pytest.raises(Exception) as exc_info:
+        _ = case_builder.otherwise(lit("bad"))
+
+    err_msg = str(exc_info.value)
+    assert "multiple data types" in err_msg
+    assert "CaseBuilder has already been consumed" not in err_msg
+
+    _ = case_builder.end()
+
+    err_msg = str(exc_info.value)
+    assert "multiple data types" in err_msg
+    assert "CaseBuilder has already been consumed" not in err_msg
+
+
+def test_case_builder_success_preserves_builder_state():
+    ctx = SessionContext()
+    df = ctx.from_pydict({"flag": [False]}, name="tbl")
+
+    case_builder = functions.when(col("flag"), lit("true"))
+
+    expr_default_one = case_builder.otherwise(lit("default-1")).alias("result")
+    result_one = df.select(expr_default_one).collect()
+    assert result_one[0].column(0).to_pylist() == ["default-1"]
+
+    expr_default_two = case_builder.otherwise(lit("default-2")).alias("result")
+    result_two = df.select(expr_default_two).collect()
+    assert result_two[0].column(0).to_pylist() == ["default-2"]
+
+    expr_end_one = case_builder.end().alias("result")
+    end_one = df.select(expr_end_one).collect()
+    assert end_one[0].column(0).to_pylist() == [None]
+
+
+def test_case_builder_when_handles_are_independent():
+    ctx = SessionContext()
+    df = ctx.from_pydict(
+        {
+            "flag": [True, False, False, False],
+            "value": [1, 15, 25, 5],
+        },
+        name="tbl",
+    )
+
+    base_builder = functions.when(col("flag"), lit("flag-true"))
+
+    first_builder = base_builder.when(col("value") > lit(10), lit("gt10"))
+    second_builder = base_builder.when(col("value") > lit(20), lit("gt20"))
+
+    first_builder = first_builder.when(lit(True), lit("final-one"))
+
+    expr_first = first_builder.otherwise(lit("fallback-one")).alias("first")
+    expr_second = second_builder.otherwise(lit("fallback-two")).alias("second")
+
+    result = df.select(expr_first, expr_second).collect()[0]
+
+    assert result.column(0).to_pylist() == [
+        "flag-true",
+        "gt10",
+        "gt10",
+        "final-one",
+    ]
+    assert result.column(1).to_pylist() == [
+        "flag-true",
+        "fallback-two",
+        "gt20",
+        "fallback-two",
+    ]
+
+
+def test_case_builder_when_thread_safe():
+    case_builder = functions.when(lit(True), lit(1))
+
+    def build_expr(value: int) -> bool:
+        builder = case_builder.when(lit(True), lit(value))
+        builder.otherwise(lit(value))
+        return True
+
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = [executor.submit(build_expr, idx) for idx in range(16)]
+        results = [future.result() for future in futures]
+
+    assert all(results)
+
+    # Ensure the shared builder remains usable after concurrent `when` calls.
+    follow_up_builder = case_builder.when(lit(True), lit(42))
+    assert isinstance(follow_up_builder, type(case_builder))
+    follow_up_builder.otherwise(lit(7))
 
 
 def test_expr_getitem() -> None:

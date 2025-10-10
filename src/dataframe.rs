@@ -56,6 +56,13 @@ use crate::{
     expr::{sort_expr::PySortExpr, PyExpr},
 };
 
+use parking_lot::Mutex;
+
+// Type aliases to simplify very complex types used in this file and
+// avoid compiler complaints about deeply nested types in struct fields.
+type CachedBatches = Option<(Vec<RecordBatch>, bool)>;
+type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
+
 /// Configuration for DataFrame display formatting
 #[derive(Debug, Clone)]
 pub struct FormatterConfig {
@@ -152,7 +159,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 }
 
 /// Python mapping of `ParquetOptions` (includes just the writer-related options).
-#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetWriterOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetWriterOptions {
     options: ParquetOptions,
@@ -213,7 +220,7 @@ impl PyParquetWriterOptions {
 }
 
 /// Python mapping of `ParquetColumnOptions`.
-#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetColumnOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetColumnOptions {
     options: ParquetColumnOptions,
@@ -248,13 +255,13 @@ impl PyParquetColumnOptions {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
-#[pyclass(name = "DataFrame", module = "datafusion", subclass)]
+#[pyclass(name = "DataFrame", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
-    batches: Option<(Vec<RecordBatch>, bool)>,
+    batches: SharedCachedBatches,
 }
 
 impl PyDataFrame {
@@ -262,7 +269,7 @@ impl PyDataFrame {
     pub fn new(df: DataFrame) -> Self {
         Self {
             df: Arc::new(df),
-            batches: None,
+            batches: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -271,12 +278,20 @@ impl PyDataFrame {
         Arc::clone(&self.df)
     }
 
-    fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
-        let should_cache = *is_ipython_env(py) && self.batches.is_none();
-        let (batches, has_more) = match self.batches.take() {
+        let is_ipython = *is_ipython_env(py);
+
+        let (cached_batches, should_cache) = {
+            let mut cache = self.batches.lock();
+            let should_cache = is_ipython && cache.is_none();
+            let batches = cache.take();
+            (batches, should_cache)
+        };
+
+        let (batches, has_more) = match cached_batches {
             Some(b) => b,
             None => wait_for_future(
                 py,
@@ -315,7 +330,8 @@ impl PyDataFrame {
         let html_str: String = html_result.extract()?;
 
         if should_cache {
-            self.batches = Some((batches, has_more));
+            let mut cache = self.batches.lock();
+            *cache = Some((batches.clone(), has_more));
         }
 
         Ok(html_str)
@@ -345,7 +361,7 @@ impl PyDataFrame {
         }
     }
 
-    fn __repr__(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, false)
     }
 
@@ -380,7 +396,7 @@ impl PyDataFrame {
         Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
     }
 
-    fn _repr_html_(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, true)
     }
 
@@ -839,7 +855,7 @@ impl PyDataFrame {
 
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_stream__<'py>(
-        &'py mut self,
+        &'py self,
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {

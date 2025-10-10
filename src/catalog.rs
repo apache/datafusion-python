@@ -35,13 +35,13 @@ use std::any::Any;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-#[pyclass(name = "RawCatalog", module = "datafusion.catalog", subclass)]
+#[pyclass(frozen, name = "RawCatalog", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PyCatalog {
     pub catalog: Arc<dyn CatalogProvider>,
 }
 
-#[pyclass(name = "RawSchema", module = "datafusion.catalog", subclass)]
+#[pyclass(frozen, name = "RawSchema", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]
 pub struct PySchema {
     pub schema: Arc<dyn SchemaProvider>,
