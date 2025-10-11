@@ -25,7 +25,7 @@ from datafusion_ffi_example import MyTableProvider
 def test_table_loading():
     ctx = SessionContext()
     table = MyTableProvider(3, 2, 4)
-    ctx.register_table_provider("t", table)
+    ctx.register_table("t", table)
     result = ctx.table("t").collect()
 
     assert len(result) == 4
@@ -39,4 +39,8 @@ def test_table_loading():
         pa.array([6, 7, 8, 9, 10], type=pa.int32()),
     ]
 
+    assert result == expected
+
+    result = ctx.read_table(table).collect()
+    result = [r.column(0) for r in result]
     assert result == expected
