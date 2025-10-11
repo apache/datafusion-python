@@ -17,6 +17,7 @@
 import datetime as dt
 import gzip
 import pathlib
+from uuid import uuid4
 
 import pyarrow as pa
 import pyarrow.dataset as ds
@@ -256,6 +257,181 @@ def test_from_pylist(ctx):
     assert df.collect()[0].num_rows == 3
 
 
+def test_sql_missing_table_without_auto_register(ctx):
+    ctx.set_python_table_lookup(False)
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    with pytest.raises(Exception, match="not found|No table named") as excinfo:
+        ctx.sql("SELECT * FROM arrow_table").collect()
+
+    # Test that our extraction method works correctly
+    missing_tables = ctx._extract_missing_table_names(excinfo.value)
+    assert "arrow_table" in missing_tables
+
+
+def test_sql_missing_table_exposes_missing_table_names(ctx):
+    ctx.set_python_table_lookup(False)
+
+    with pytest.raises(Exception) as excinfo:
+        ctx.sql("SELECT * FROM missing_table").collect()
+
+    missing_tables = getattr(excinfo.value, "missing_table_names", None)
+    assert missing_tables is not None
+    normalized = [str(name).rsplit(".", 1)[-1] for name in missing_tables]
+    assert normalized == ["missing_table"]
+
+
+def test_extract_missing_table_names_from_attribute():
+    class MissingTablesError(Exception):
+        def __init__(self) -> None:
+            super().__init__("custom error")
+            self.missing_table_names = (
+                "catalog.schema.arrow_table",
+                "plain_table",
+            )
+
+    err = MissingTablesError()
+    missing_tables = SessionContext._extract_missing_table_names(err)
+    assert missing_tables == ["arrow_table", "plain_table"]
+
+
+def test_sql_auto_register_arrow_table():
+    ctx = SessionContext(auto_register_python_objects=True)
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    result = ctx.sql(
+        "SELECT SUM(value) AS total FROM arrow_table",
+    ).collect()
+
+    assert ctx.table_exist("arrow_table")
+    assert result[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_multiple_tables_single_query():
+    ctx = SessionContext(auto_register_python_objects=True)
+
+    customers = pa.Table.from_pydict(  # noqa: F841
+        {"customer_id": [1, 2], "name": ["Alice", "Bob"]}
+    )
+    orders = pa.Table.from_pydict(  # noqa: F841
+        {"order_id": [100, 200], "customer_id": [1, 2]}
+    )
+
+    result = ctx.sql(
+        """
+        SELECT c.customer_id, o.order_id
+        FROM customers c
+        JOIN orders o ON c.customer_id = o.customer_id
+        ORDER BY o.order_id
+        """
+    ).collect()
+
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"customer_id": [1, 2], "order_id": [100, 200]})
+
+    assert actual.equals(expected)
+    assert ctx.table_exist("customers")
+    assert ctx.table_exist("orders")
+
+
+def test_sql_auto_register_arrow_outer_scope():
+    ctx = SessionContext()
+    ctx.set_python_table_lookup(True)
+    arrow_table = pa.Table.from_pydict({"value": [1, 2, 3, 4]})  # noqa: F841
+
+    def run_query():
+        return ctx.sql(
+            "SELECT COUNT(*) AS total_rows FROM arrow_table",
+        ).collect()
+
+    result = run_query()
+    assert result[0].column(0).to_pylist()[0] == 4
+
+
+def test_sql_auto_register_skips_none_shadowing():
+    ctx = SessionContext(auto_register_python_objects=True)
+    mytable = pa.Table.from_pydict({"value": [1, 2, 3]})  # noqa: F841
+
+    def run_query():
+        mytable = None  # noqa: F841
+        return ctx.sql(
+            "SELECT SUM(value) AS total FROM mytable",
+        ).collect()
+
+    batches = run_query()
+    assert batches[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_case_insensitive_lookup():
+    ctx = SessionContext(auto_register_python_objects=True)
+    MyTable = pa.Table.from_pydict({"value": [2, 3]})  # noqa: N806,F841
+
+    batches = ctx.sql(
+        "SELECT SUM(value) AS total FROM mytable",
+    ).collect()
+
+    assert batches[0].column(0).to_pylist()[0] == 5
+
+
+def test_sql_auto_register_pandas_dataframe(monkeypatch):
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(auto_register_python_objects=True)
+    pandas_df = pd.DataFrame({"value": [1, 2, 3, 4]})
+
+    if not (
+        hasattr(pandas_df, "__arrow_c_stream__")
+        or hasattr(pandas_df, "__arrow_c_array__")
+    ):
+        pytest.skip("pandas does not expose Arrow capsule export")
+
+    def fail_from_pandas(*args, **kwargs):
+        msg = "from_pandas should not be called during auto-registration"
+        raise AssertionError(msg)
+
+    monkeypatch.setattr(SessionContext, "from_pandas", fail_from_pandas)
+
+    result = ctx.sql(
+        "SELECT AVG(value) AS avg_value FROM pandas_df",
+    ).collect()
+
+    assert pytest.approx(result[0].column(0).to_pylist()[0]) == 2.5
+
+
+def test_sql_auto_register_refreshes_reassigned_dataframe():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(auto_register_python_objects=True)
+    pandas_df = pd.DataFrame({"value": [1, 2, 3]})
+
+    first = ctx.sql(
+        "SELECT SUM(value) AS total FROM pandas_df",
+    ).collect()
+
+    assert first[0].column(0).to_pylist()[0] == 6
+
+    pandas_df = pd.DataFrame({"value": [10, 20]})  # noqa: F841
+
+    second = ctx.sql(
+        "SELECT SUM(value) AS total FROM pandas_df",
+    ).collect()
+
+    assert second[0].column(0).to_pylist()[0] == 30
+
+
+def test_sql_auto_register_polars_dataframe():
+    pl = pytest.importorskip("polars")
+
+    ctx = SessionContext(auto_register_python_objects=True)
+    polars_df = pl.DataFrame({"value": [2, 4, 6]})  # noqa: F841
+
+    result = ctx.sql(
+        "SELECT MIN(value) AS min_value FROM polars_df",
+    ).collect()
+
+    assert result[0].column(0).to_pylist()[0] == 2
+
+
 def test_from_pydict(ctx):
     # create a dataframe from Python dictionary
     data = {"a": [1, 2, 3], "b": [4, 5, 6]}
@@ -284,6 +460,48 @@ def test_from_pandas(ctx):
     assert isinstance(df, DataFrame)
     assert set(df.schema().names) == {"a", "b"}
     assert df.collect()[0].num_rows == 3
+
+
+def test_sql_from_local_arrow_table(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    arrow_table = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})  # noqa: F841
+
+    result = ctx.sql("SELECT * FROM arrow_table ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 2], "b": ["x", "y"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_pandas_dataframe(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    pd = pytest.importorskip("pandas")
+    pandas_df = pd.DataFrame({"a": [3, 1], "b": ["z", "y"]})  # noqa: F841
+
+    result = ctx.sql("SELECT * FROM pandas_df ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 3], "b": ["y", "z"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_polars_dataframe(ctx):
+    ctx.set_python_table_lookup(True)  # Enable implicit table lookup
+    pl = pytest.importorskip("polars")
+    polars_df = pl.DataFrame({"a": [2, 1], "b": ["beta", "alpha"]})  # noqa: F841
+
+    result = ctx.sql("SELECT * FROM polars_df ORDER BY a").collect()
+    actual = pa.Table.from_batches(result)
+    expected = pa.Table.from_pydict({"a": [1, 2], "b": ["alpha", "beta"]})
+
+    assert actual.equals(expected)
+
+
+def test_sql_from_local_unsupported_object(ctx):
+    unsupported = object()  # noqa: F841
+
+    with pytest.raises(Exception, match="table 'unsupported' not found"):
+        ctx.sql("SELECT * FROM unsupported").collect()
 
 
 def test_from_polars(ctx):
@@ -538,8 +756,6 @@ def test_table_exist(ctx):
 
 
 def test_table_not_found(ctx):
-    from uuid import uuid4
-
     with pytest.raises(KeyError):
         ctx.table(f"not-found-{uuid4()}")
 
@@ -686,6 +902,43 @@ def test_sql_with_options_no_statements(ctx):
     options = SQLOptions().with_allow_statements(allow=False)
     with pytest.raises(Exception, match="SetVariable"):
         ctx.sql_with_options(sql, options=options)
+
+
+def test_session_config_python_table_lookup_enables_auto_registration():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext(config=SessionConfig().with_python_table_lookup(enabled=True))
+    pdf = pd.DataFrame({"value": [1, 2, 3]})
+    assert len(pdf) == 3
+
+    batches = ctx.sql("SELECT SUM(value) AS total FROM pdf").collect()
+    assert batches[0].column(0).to_pylist()[0] == 6
+
+
+def test_sql_auto_register_arrow():
+    ctx = SessionContext(auto_register_python_objects=True)
+    arrow_table = pa.table({"value": [1, 2, 3, 4]})
+    assert arrow_table.num_rows == 4
+
+    batches = ctx.sql("SELECT COUNT(*) AS cnt FROM arrow_table").collect()
+    assert batches[0].column(0).to_pylist()[0] == 4
+
+
+def test_sql_auto_register_disabled():
+    pd = pytest.importorskip("pandas")
+
+    ctx = SessionContext()
+    pdf = pd.DataFrame({"value": [1, 2, 3]})
+    assert len(pdf) == 3
+
+    with pytest.raises(Exception) as excinfo:
+        ctx.sql("SELECT * FROM pdf").collect()
+
+    assert "not found" in str(excinfo.value)
+
+    ctx.set_python_table_lookup(True)
+    batches = ctx.sql("SELECT COUNT(*) AS cnt FROM pdf").collect()
+    assert batches[0].column(0).to_pylist()[0] == 3
 
 
 @pytest.fixture
