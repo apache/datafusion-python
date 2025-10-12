@@ -76,7 +76,7 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
 
       - name: Install dependencies and build
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
             enable-cache: true
 
