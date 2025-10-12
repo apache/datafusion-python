@@ -1039,7 +1039,7 @@ impl PyDataFrame {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
-#[pyclass(eq, eq_int, name = "InsertOp", module = "datafusion")]
+#[pyclass(frozen, eq, eq_int, name = "InsertOp", module = "datafusion")]
 pub enum PyInsertOp {
     APPEND,
     REPLACE,
@@ -1057,7 +1057,7 @@ impl From<PyInsertOp> for InsertOp {
 }
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "DataFrameWriteOptions", module = "datafusion")]
+#[pyclass(frozen, name = "DataFrameWriteOptions", module = "datafusion")]
 pub struct PyDataFrameWriteOptions {
     insert_operation: InsertOp,
     single_file_output: bool,
