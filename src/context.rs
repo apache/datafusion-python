@@ -64,9 +64,9 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
-use crate::sql::util::replace_placeholders_with_table_names;
+use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
-use crate::table::{PyTable, TempViewTable};
+use crate::table::PyTable;
 use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
@@ -424,14 +424,14 @@ impl PySessionContext {
         self.ctx.register_udtf(&name, func);
     }
 
-    #[pyo3(signature = (query, options=None, scalar_params=vec![], dataframe_params=vec![]))]
+    #[pyo3(signature = (query, options=None, param_values=HashMap::default(), param_strings=HashMap::default()))]
     pub fn sql_with_options(
         &self,
         py: Python,
-        query: &str,
+        mut query: String,
         options: Option<PySQLOptions>,
-        scalar_params: Vec<(String, PyScalarValue)>,
-        dataframe_params: Vec<(String, PyDataFrame)>,
+        param_values: HashMap<String, PyScalarValue>,
+        param_strings: HashMap<String, String>,
     ) -> PyDataFusionResult<PyDataFrame> {
         let options = if let Some(options) = options {
             options.options
@@ -439,38 +439,25 @@ impl PySessionContext {
             SQLOptions::new()
         };
 
-        let scalar_params = scalar_params
+        let param_values = param_values
             .into_iter()
             .map(|(name, value)| (name, ScalarValue::from(value)))
-            .collect::<Vec<_>>();
-
-        let dataframe_params = dataframe_params
-            .into_iter()
-            .map(|(name, df)| {
-                let uuid = Uuid::new_v4().to_string().replace("-", "");
-                let view_name = format!("view_{uuid}");
-
-                self.create_temporary_view(py, view_name.as_str(), df, true)?;
-                Ok((name, view_name))
-            })
-            .collect::<Result<HashMap<_, _>, PyDataFusionError>>()?;
+            .collect::<HashMap<_, _>>();
 
         let state = self.ctx.state();
         let dialect = state.config().options().sql_parser.dialect.as_str();
 
-        let query = replace_placeholders_with_table_names(query, dialect, dataframe_params)?;
+        if !param_strings.is_empty() {
+            query = replace_placeholders_with_strings(&query, dialect, param_strings)?;
+        }
 
-        println!("using scalar params: {scalar_params:?}");
-        let df = wait_for_future(py, async {
-            self.ctx
-                .sql_with_options(&query, options)
-                .await
-                .map_err(|err| {
-                    println!("error before param replacement: {}", err);
-                    err
-                })?
-                .with_param_values(scalar_params)
+        let mut df = wait_for_future(py, async {
+            self.ctx.sql_with_options(&query, options).await
         })??;
+
+        if !param_values.is_empty() {
+            df = df.with_param_values(param_values)?;
+        }
 
         Ok(PyDataFrame::new(df))
     }
@@ -514,29 +501,6 @@ impl PySessionContext {
     /// Create a DataFrame from an existing logical plan
     pub fn create_dataframe_from_logical_plan(&self, plan: PyLogicalPlan) -> PyDataFrame {
         PyDataFrame::new(DataFrame::new(self.ctx.state(), plan.plan.as_ref().clone()))
-    }
-
-    pub fn create_temporary_view(
-        &self,
-        py: Python,
-        name: &str,
-        df: PyDataFrame,
-        replace_if_exists: bool,
-    ) -> PyDataFusionResult<()> {
-        if self.table(name, py).is_ok() {
-            if replace_if_exists {
-                let _ = self.deregister_table(name);
-            } else {
-                exec_err!(
-                    "Unable to create temporary view. Table with name {name} already exists."
-                )?;
-            }
-        }
-
-        let table = Arc::new(TempViewTable::new(df.inner_df()));
-        self.ctx.register_table(name, table)?;
-
-        Ok(())
     }
 
     /// Construct datafusion dataframe from Python list
