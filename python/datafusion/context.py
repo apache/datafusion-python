@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import uuid
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -594,9 +595,17 @@ class SessionContext:
         )
 
     def sql(
-        self, query: str, options: SQLOptions | None = None, **named_params: Any
+        self,
+        query: str,
+        options: SQLOptions | None = None,
+        param_values: dict[str, Any] | None = None,
+        **named_params: Any,
     ) -> DataFrame:
         """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
+
+        See the online documentation for a description of how to perform
+        parameterized substitution via either the param_values option
+        or passing in named parameters.
 
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
         ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
@@ -606,31 +615,38 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: If provided, the query will be validated against these options.
-            named_params: Provides substitution in the query string.
+            param_values: Provides substitution of scalar values in the query
+                after parsing.
+            named_params: Provides string or DataFrame substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
 
-        def scalar_params(**p: Any) -> list[tuple[str, pa.Scalar]]:
-            if p is None:
-                return []
+        def value_to_scalar(value) -> pa.Scalar:
+            if isinstance(value, pa.Scalar):
+                return value
+            return pa.scalar(value)
 
-            return [
-                (name, pa.scalar(value))
-                for (name, value) in p.items()
-                if not isinstance(value, DataFrame)
-            ]
+        def value_to_string(value) -> str:
+            if isinstance(value, DataFrame):
+                view_name = str(uuid.uuid4()).replace("-", "_")
+                view_name = f"view_{view_name}"
+                view = value.df.into_view(temporary=True)
+                self.ctx.register_table(view_name, view)
+                return view_name
+            return str(value)
 
-        def dataframe_params(**p: Any) -> list[tuple[str, DataFrame]]:
-            if p is None:
-                return []
-
-            return [
-                (name, value.df)
-                for (name, value) in p.items()
-                if isinstance(value, DataFrame)
-            ]
+        param_values = (
+            {name: value_to_scalar(value) for (name, value) in param_values}
+            if param_values is not None
+            else {}
+        )
+        param_strings = (
+            {name: value_to_string(value) for (name, value) in named_params.items()}
+            if named_params is not None
+            else {}
+        )
 
         options_raw = options.options_internal if options is not None else None
 
@@ -638,13 +654,17 @@ class SessionContext:
             self.ctx.sql_with_options(
                 query,
                 options=options_raw,
-                scalar_params=scalar_params(**named_params),
-                dataframe_params=dataframe_params(**named_params),
+                param_values=param_values,
+                param_strings=param_strings,
             )
         )
 
     def sql_with_options(
-        self, query: str, options: SQLOptions, **named_params: Any
+        self,
+        query: str,
+        options: SQLOptions,
+        param_values: dict[str, Any] | None = None,
+        **named_params: Any,
     ) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
@@ -654,12 +674,16 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: SQL options.
-            named_params: Provides substitution in the query string.
+            param_values: Provides substitution of scalar values in the query
+                after parsing.
+            named_params: Provides string or DataFrame substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
-        return self.sql(query, options, **named_params)
+        return self.sql(
+            query, options=options, param_values=param_values, **named_params
+        )
 
     def create_dataframe(
         self,
