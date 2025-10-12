@@ -552,18 +552,20 @@ def test_register_listing_table(
     assert dict(zip(rd["grp"], rd["count"], strict=False)) == {"a": 3, "b": 2}
 
 
-def test_parameterized_df_in_sql(ctx, tmp_path) -> None:
+def test_parameterized_named_params(ctx, tmp_path) -> None:
     path = helpers.write_parquet(tmp_path / "a.parquet", helpers.data())
 
     df = ctx.read_parquet(path)
     result = ctx.sql(
-        "SELECT COUNT(a) AS cnt FROM $replaced_df", replaced_df=df
+        "SELECT COUNT(a) AS cnt, $lit_val as lit_val FROM $replaced_df",
+        lit_val=3,
+        replaced_df=df,
     ).collect()
     result = pa.Table.from_batches(result)
-    assert result.to_pydict() == {"cnt": [100]}
+    assert result.to_pydict() == {"cnt": [100], "lit_val": [3]}
 
 
-def test_parameterized_pass_through_in_sql(ctx: SessionContext) -> None:
+def test_parameterized_param_values(ctx: SessionContext) -> None:
     # Test the parameters that should be handled by the parser rather
     # than our manipulation of the query string by searching for tokens
     batch = pa.RecordBatch.from_arrays(
@@ -572,5 +574,22 @@ def test_parameterized_pass_through_in_sql(ctx: SessionContext) -> None:
     )
 
     ctx.register_record_batches("t", [[batch]])
-    result = ctx.sql("SELECT a FROM t WHERE a < $val", val=3)
+    result = ctx.sql("SELECT a FROM t WHERE a < $val", param_values={"val": 3})
+    assert result.to_pydict() == {"a": [1, 2]}
+
+
+def test_parameterized_mixed_query(ctx: SessionContext) -> None:
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3, 4])],
+        names=["a"],
+    )
+    ctx.register_record_batches("t", [[batch]])
+    registered_df = ctx.table("t")
+
+    result = ctx.sql(
+        "SELECT $col_name FROM $df WHERE a < $val",
+        param_values={"val": 3},
+        df=registered_df,
+        col_name="a",
+    )
     assert result.to_pydict() == {"a": [1, 2]}

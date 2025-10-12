@@ -638,7 +638,7 @@ class SessionContext:
             return str(value)
 
         param_values = (
-            {name: value_to_scalar(value) for (name, value) in param_values}
+            {name: value_to_scalar(value) for (name, value) in param_values.items()}
             if param_values is not None
             else {}
         )
