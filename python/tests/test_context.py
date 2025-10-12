@@ -357,10 +357,16 @@ def test_register_table_from_dataframe(ctx):
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
 
 
-def test_register_table_from_dataframe_into_view(ctx):
+@pytest.mark.parametrize("temporary", [True, False])
+def test_register_table_from_dataframe_into_view(ctx, temporary):
     df = ctx.from_pydict({"a": [1, 2]})
-    table = df.into_view()
+    table = df.into_view(temporary=temporary)
     assert isinstance(table, Table)
+    if temporary:
+        assert table.kind == "temporary"
+    else:
+        assert table.kind == "view"
+
     ctx.register_table("view_tbl", table)
     result = ctx.sql("SELECT * FROM view_tbl").collect()
     assert [b.to_pydict() for b in result] == [{"a": [1, 2]}]
