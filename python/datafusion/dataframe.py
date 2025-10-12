@@ -1306,7 +1306,8 @@ class DataFrameWriteOptions:
             partition_by = [partition_by]
 
         sort_by_raw = sort_list_to_raw_sort_list(sort_by)
+        insert_op = insert_operation.value if insert_operation is not None else None
 
         self._raw_write_options = DataFrameWriteOptionsInternal(
-            insert_operation, single_file_output, partition_by, sort_by_raw
+            insert_op, single_file_output, partition_by, sort_by_raw
         )
