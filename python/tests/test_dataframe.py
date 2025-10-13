@@ -16,6 +16,7 @@
 # under the License.
 import ctypes
 import datetime
+import itertools
 import os
 import re
 import threading
@@ -27,6 +28,7 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
+    InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
     SessionContext,
@@ -40,6 +42,7 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
+from datafusion.dataframe import DataFrameWriteOptions
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
@@ -58,9 +61,7 @@ def ctx():
 
 
 @pytest.fixture
-def df():
-    ctx = SessionContext()
-
+def df(ctx):
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
@@ -1830,6 +1831,69 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
     assert result == expected
 
 
+def generate_test_write_params() -> list[tuple]:
+    # Overwrite and Replace are not implemented for many table writers
+    insert_ops = [InsertOp.APPEND, None]
+    sort_by_cases = [
+        (None, [1, 2, 3], "unsorted"),
+        (column("c"), [2, 1, 3], "single_column_expr"),
+        (column("a").sort(ascending=False), [3, 2, 1], "single_sort_expr"),
+        ([column("c"), column("b")], [2, 1, 3], "list_col_expr"),
+        (
+            [column("c").sort(ascending=False), column("b").sort(ascending=False)],
+            [3, 1, 2],
+            "list_sort_expr",
+        ),
+    ]
+
+    formats = ["csv", "json", "parquet", "table"]
+
+    return [
+        pytest.param(
+            output_format,
+            insert_op,
+            sort_by,
+            expected_a,
+            id=f"{output_format}_{test_id}",
+        )
+        for output_format, insert_op, (
+            sort_by,
+            expected_a,
+            test_id,
+        ) in itertools.product(formats, insert_ops, sort_by_cases)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("output_format", "insert_op", "sort_by", "expected_a"),
+    generate_test_write_params(),
+)
+def test_write_files_with_options(
+    ctx, df, tmp_path, output_format, insert_op, sort_by, expected_a
+) -> None:
+    write_options = DataFrameWriteOptions(insert_operation=insert_op, sort_by=sort_by)
+
+    if output_format == "csv":
+        df.write_csv(tmp_path, with_header=True, write_options=write_options)
+        ctx.register_csv("test_table", tmp_path)
+    elif output_format == "json":
+        df.write_json(tmp_path, write_options=write_options)
+        ctx.register_json("test_table", tmp_path)
+    elif output_format == "parquet":
+        df.write_parquet(tmp_path, write_options=write_options)
+        ctx.register_parquet("test_table", tmp_path)
+    elif output_format == "table":
+        batch = pa.RecordBatch.from_arrays([[], [], []], schema=df.schema())
+        ctx.register_record_batches("test_table", [[batch]])
+        ctx.table("test_table").show()
+        df.write_table("test_table", write_options=write_options)
+
+    result = ctx.table("test_table").to_pydict()["a"]
+    ctx.table("test_table").show()
+
+    assert result == expected_a
+
+
 @pytest.mark.parametrize("path_to_str", [True, False])
 def test_write_json(ctx, df, tmp_path, path_to_str):
     path = str(tmp_path) if path_to_str else tmp_path
@@ -2320,6 +2384,25 @@ def test_write_parquet_options_error(df, tmp_path):
     options = ParquetWriterOptions(compression="gzip", compression_level=6)
     with pytest.raises(ValueError):
         df.write_parquet(str(tmp_path), options, compression_level=1)
+
+
+def test_write_table(ctx, df):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3])],
+        names=["a"],
+    )
+
+    ctx.register_record_batches("t", [[batch]])
+
+    df = ctx.table("t").with_column("a", column("a") * literal(-1))
+
+    ctx.table("t").show()
+
+    df.write_table("t")
+    result = ctx.table("t").sort(column("a")).collect()[0][0].to_pylist()
+    expected = [-3, -2, -1, 1, 2, 3]
+
+    assert result == expected
 
 
 def test_dataframe_export(df) -> None:

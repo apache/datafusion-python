@@ -44,7 +44,13 @@ from .context import (
     SessionContext,
     SQLOptions,
 )
-from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
+from .dataframe import (
+    DataFrame,
+    DataFrameWriteOptions,
+    InsertOp,
+    ParquetColumnOptions,
+    ParquetWriterOptions,
+)
 from .dataframe_formatter import configure_formatter
 from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
@@ -71,9 +77,11 @@ __all__ = [
     "Config",
     "DFSchema",
     "DataFrame",
+    "DataFrameWriteOptions",
     "Database",
     "ExecutionPlan",
     "Expr",
+    "InsertOp",
     "LogicalPlan",
     "ParquetColumnOptions",
     "ParquetWriterOptions",

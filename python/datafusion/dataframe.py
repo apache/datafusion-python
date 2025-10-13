@@ -39,10 +39,13 @@ except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
+from datafusion._internal import InsertOp as InsertOpInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import (
     Expr,
+    SortExpr,
     SortKey,
     ensure_expr,
     ensure_expr_list,
@@ -939,14 +942,23 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
+    def write_csv(
+        self,
+        path: str | pathlib.Path,
+        with_header: bool = False,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame`  and write the results to a CSV file.
 
         Args:
             path: Path of the CSV file to write.
             with_header: If true, output the CSV header row.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_csv(str(path), with_header)
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_csv(str(path), with_header, raw_write_options)
 
     @overload
     def write_parquet(
@@ -954,6 +966,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: str,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -962,6 +975,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Compression = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -970,6 +984,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: ParquetWriterOptions,
         compression_level: None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     def write_parquet(
@@ -977,24 +992,30 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
+
+        Available compression types are:
+
+        - "uncompressed": No compression.
+        - "snappy": Snappy compression.
+        - "gzip": Gzip compression.
+        - "brotli": Brotli compression.
+        - "lz4": LZ4 compression.
+        - "lz4_raw": LZ4_RAW compression.
+        - "zstd": Zstandard compression.
+
+        LZO compression is not yet implemented in arrow-rs and is therefore
+        excluded.
 
         Args:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
-                Available compression types are:
-                - "uncompressed": No compression.
-                - "snappy": Snappy compression.
-                - "gzip": Gzip compression.
-                - "brotli": Brotli compression.
-                - "lz4": LZ4 compression.
-                - "lz4_raw": LZ4_RAW compression.
-                - "zstd": Zstandard compression.
-            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
+            write_options: Options that impact how the DataFrame is written.
         """
         if isinstance(compression, ParquetWriterOptions):
             if compression_level is not None:
@@ -1012,10 +1033,21 @@ class DataFrame:
         ):
             compression_level = compression.get_default_level()
 
-        self.df.write_parquet(str(path), compression.value, compression_level)
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_parquet(
+            str(path),
+            compression.value,
+            compression_level,
+            raw_write_options,
+        )
 
     def write_parquet_with_options(
-        self, path: str | pathlib.Path, options: ParquetWriterOptions
+        self,
+        path: str | pathlib.Path,
+        options: ParquetWriterOptions,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -1024,6 +1056,7 @@ class DataFrame:
         Args:
             path: Path of the Parquet file to write.
             options: Sets the writer parquet options (see `ParquetWriterOptions`).
+            write_options: Options that impact how the DataFrame is written.
         """
         options_internal = ParquetWriterOptionsInternal(
             options.data_pagesize_limit,
@@ -1060,19 +1093,45 @@ class DataFrame:
                 bloom_filter_ndv=opts.bloom_filter_ndv,
             )
 
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
         self.df.write_parquet_with_options(
             str(path),
             options_internal,
             column_specific_options_internal,
+            raw_write_options,
         )
 
-    def write_json(self, path: str | pathlib.Path) -> None:
+    def write_json(
+        self,
+        path: str | pathlib.Path,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
 
         Args:
             path: Path of the JSON file to write.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_json(str(path))
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_json(str(path), write_options=raw_write_options)
+
+    def write_table(
+        self, table_name: str, write_options: DataFrameWriteOptions | None = None
+    ) -> None:
+        """Execute the :py:class:`DataFrame` and write the results to a table.
+
+        The table must be registered with the session to perform this operation.
+        Not all table providers support writing operations. See the individual
+        implementations for details.
+        """
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_table(table_name, raw_write_options)
 
     def to_arrow_table(self) -> pa.Table:
         """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.
@@ -1220,3 +1279,49 @@ class DataFrame:
             - For columns not in subset, the original column is kept unchanged
         """
         return DataFrame(self.df.fill_null(value, subset))
+
+
+class InsertOp(Enum):
+    """Insert operation mode.
+
+    These modes are used by the table writing feature to define how record
+    batches should be written to a table.
+    """
+
+    APPEND = InsertOpInternal.APPEND
+    """Appends new rows to the existing table without modifying any existing rows."""
+
+    REPLACE = InsertOpInternal.REPLACE
+    """Replace existing rows that collide with the inserted rows.
+
+    Replacement is typically based on a unique key or primary key.
+    """
+
+    OVERWRITE = InsertOpInternal.OVERWRITE
+    """Overwrites all existing rows in the table with the new rows."""
+
+
+class DataFrameWriteOptions:
+    """Writer options for DataFrame.
+
+    There is no guarantee the table provider supports all writer options.
+    See the individual implementation and documentation for details.
+    """
+
+    def __init__(
+        self,
+        insert_operation: InsertOp | None = None,
+        single_file_output: bool = False,
+        partition_by: str | Sequence[str] | None = None,
+        sort_by: Expr | SortExpr | Sequence[Expr] | Sequence[SortExpr] | None = None,
+    ) -> None:
+        """Instantiate writer options for DataFrame."""
+        if isinstance(partition_by, str):
+            partition_by = [partition_by]
+
+        sort_by_raw = sort_list_to_raw_sort_list(sort_by)
+        insert_op = insert_operation.value if insert_operation is not None else None
+
+        self._raw_write_options = DataFrameWriteOptionsInternal(
+            insert_op, single_file_output, partition_by, sort_by_raw
+        )
