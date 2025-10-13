@@ -252,6 +252,7 @@ def test_select_exprs(df):
     assert result.column(0) == pa.array([5, 7, 9])
     assert result.column(1) == pa.array([3, 3, 3])
 
+
 def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])

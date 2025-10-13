@@ -404,11 +404,12 @@ class DataFrame:
             DataFrame only containing the specified columns.
         """
         return self.select(*args)
-    
+
     def select_exprs(self, *args: str) -> DataFrame:
-        """Project arbitrary list of expression strings into a new DataFrame. 
-        Method will parse string expressions into logical plan expressions.
-        The output DataFrame has one column for each element in exprs.
+        """Project arbitrary list of expression strings into a new DataFrame.
+
+        This method will parse string expressions into logical plan expressions.
+        The output DataFrame has one column for each expression.
 
         Returns:
             DataFrame only containing the specified columns.
