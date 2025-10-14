@@ -482,6 +482,28 @@ class DataFrame:
             df = df.filter(ensure_expr(p))
         return DataFrame(df)
 
+    def parse_sql_expr(self, expr: str) -> Expr:
+        """Creates logical expression from a SQL query text.
+
+        The expression is created and processed against the current schema.
+
+        Example::
+
+            from datafusion import col, lit
+            df.parse_sql_expr("a > 1")
+
+            should produce:
+
+            col("a") > lit(1)
+
+        Args:
+            expr: Expression string to be converted to datafusion expression
+
+        Returns:
+            Logical expression .
+        """
+        return Expr(self.df.parse_sql_expr(expr))
+
     def with_column(self, name: str, expr: Expr) -> DataFrame:
         """Add an additional column to the DataFrame.
 
