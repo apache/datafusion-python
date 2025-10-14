@@ -274,6 +274,31 @@ def test_filter(df):
     assert result.column(2) == pa.array([5])
 
 
+def test_parse_sql_expr(df):
+    df1 = df.filter(df.parse_sql_expr("a > 2")).select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([9])
+    assert result.column(1) == pa.array([-3])
+
+    df.show()
+    # verify that if there is no filter applied, internal dataframe is unchanged
+    df2 = df.filter()
+    assert df.df == df2.df
+
+    df3 = df.filter(df.parse_sql_expr("a > 1"), df.parse_sql_expr("b != 6"))
+    result = df3.collect()[0]
+
+    assert result.column(0) == pa.array([2])
+    assert result.column(1) == pa.array([5])
+    assert result.column(2) == pa.array([5])
+
+
 def test_show_empty(df, capsys):
     df_empty = df.filter(column("a") > literal(3))
     df_empty.show()

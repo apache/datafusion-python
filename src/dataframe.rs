@@ -454,6 +454,14 @@ impl PyDataFrame {
         Ok(Self::new(df))
     }
 
+    fn parse_sql_expr(&self, expr: PyBackedStr) -> PyDataFusionResult<PyExpr> {
+        self.df
+            .as_ref()
+            .parse_sql_expr(&expr)
+            .map(|e| PyExpr::from(e))
+            .map_err(PyDataFusionError::from)
+    }
+
     fn with_column(&self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().with_column(name, expr.into())?;
         Ok(Self::new(df))
