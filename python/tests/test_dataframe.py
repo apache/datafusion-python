@@ -275,6 +275,11 @@ def test_filter(df):
 
 
 def test_parse_sql_expr(df):
+    plan1 = df.filter(df.parse_sql_expr("a > 2")).logical_plan()
+    plan2 = df.filter(column("a") > literal(2)).logical_plan()
+    # object equality not implemented but string representation should match
+    assert str(plan1) == str(plan2)
+
     df1 = df.filter(df.parse_sql_expr("a > 2")).select(
         column("a") + column("b"),
         column("a") - column("b"),
