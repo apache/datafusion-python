@@ -95,8 +95,9 @@ DataFusion's DataFrame API offers a wide range of operations:
     # Select with expressions
     df = df.select(column("a") + column("b"), column("a") - column("b"))
     
-    # Filter rows
+    # Filter rows (expressions or SQL strings)
     df = df.filter(column("age") > literal(25))
+    df = df.filter("age > 25")
     
     # Add computed columns
     df = df.with_column("full_name", column("first_name") + literal(" ") + column("last_name"))

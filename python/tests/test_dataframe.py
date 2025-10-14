@@ -306,6 +306,29 @@ def test_filter(df):
     assert result.column(2) == pa.array([5])
 
 
+def test_filter_string_predicates(df):
+    df_str = df.filter("a > 2")
+    result = df_str.collect()[0]
+
+    assert result.column(0) == pa.array([3])
+    assert result.column(1) == pa.array([6])
+    assert result.column(2) == pa.array([8])
+
+    df_mixed = df.filter("a > 1", column("b") != literal(6))
+    result_mixed = df_mixed.collect()[0]
+
+    assert result_mixed.column(0) == pa.array([2])
+    assert result_mixed.column(1) == pa.array([5])
+    assert result_mixed.column(2) == pa.array([5])
+
+    df_strings = df.filter("a > 1", "b < 6")
+    result_strings = df_strings.collect()[0]
+
+    assert result_strings.column(0) == pa.array([2])
+    assert result_strings.column(1) == pa.array([5])
+    assert result_strings.column(2) == pa.array([5])
+
+
 def test_parse_sql_expr(df):
     plan1 = df.filter(df.parse_sql_expr("a > 2")).logical_plan()
     plan2 = df.filter(column("a") > literal(2)).logical_plan()
@@ -388,9 +411,16 @@ def test_aggregate_tuple_aggs(df):
     assert result_tuple == result_list
 
 
-def test_filter_string_unsupported(df):
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.filter("a > 1")
+def test_filter_string_equivalent(df):
+    df1 = df.filter("a > 1").to_pydict()
+    df2 = df.filter(column("a") > literal(1)).to_pydict()
+    assert df1 == df2
+
+
+def test_filter_string_invalid(df):
+    with pytest.raises(Exception) as excinfo:
+        df.filter("this is not valid sql").collect()
+    assert "Expected Expr" not in str(excinfo.value)
 
 
 def test_drop(df):
