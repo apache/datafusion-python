@@ -436,6 +436,13 @@ impl PyDataFrame {
     }
 
     #[pyo3(signature = (*args))]
+    fn select_exprs(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
+        let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self.df.as_ref().clone().select_exprs(&args)?;
+        Ok(Self::new(df))
+    }
+
+    #[pyo3(signature = (*args))]
     fn select(&self, args: Vec<PyExpr>) -> PyDataFusionResult<Self> {
         let expr: Vec<Expr> = args.into_iter().map(|e| e.into()).collect();
         let df = self.df.as_ref().clone().select(expr)?;

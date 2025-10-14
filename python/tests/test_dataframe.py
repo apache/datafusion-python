@@ -221,6 +221,38 @@ def test_select(df):
     assert result.column(1) == pa.array([1, 2, 3])
 
 
+def test_select_exprs(df):
+    df_1 = df.select_exprs(
+        "a + b",
+        "a - b",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df_1.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+    df_2 = df.select_exprs("b", "a")
+
+    # execute and collect the first (and only) batch
+    result = df_2.collect()[0]
+
+    assert result.column(0) == pa.array([4, 5, 6])
+    assert result.column(1) == pa.array([1, 2, 3])
+
+    df_3 = df.select_exprs(
+        "abs(a + b)",
+        "abs(a - b)",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df_3.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([3, 3, 3])
+
+
 def test_drop_quoted_columns():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
