@@ -42,7 +42,6 @@ from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
-
     _R = TypeVar("_R", bound=pa.DataType)
 else:
 
