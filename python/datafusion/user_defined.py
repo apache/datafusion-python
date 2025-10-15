@@ -28,11 +28,12 @@ from typing import (
     Callable,
     Optional,
     Protocol,
-    TypeGuard,
     TypeVar,
     cast,
     overload,
 )
+
+from typing_extensions import TypeGuard
 
 import pyarrow as pa
 
