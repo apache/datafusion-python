@@ -33,9 +33,8 @@ from typing import (
     overload,
 )
 
-from typing_extensions import TypeGuard
-
 import pyarrow as pa
+from typing_extensions import TypeGuard
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
@@ -101,7 +100,6 @@ class ScalarUDFExportable(Protocol):
 
 def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
     """Return ``True`` when ``value`` is a CPython ``PyCapsule``."""
-
     return value.__class__.__name__ == "PyCapsule"
 
 
