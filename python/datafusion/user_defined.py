@@ -22,7 +22,16 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Optional,
+    Protocol,
+    TypeVar,
+    cast,
+    overload,
+)
 
 import pyarrow as pa
 
@@ -293,11 +302,11 @@ class AggregateUDF:
     def __init__(
         self,
         name: str,
-        accumulator: Callable[[], Accumulator],
-        input_types: list[pa.DataType],
-        return_type: pa.DataType,
-        state_type: list[pa.DataType],
-        volatility: Volatility | str,
+        accumulator: Callable[[], Accumulator] | AggregateUDFExportable,
+        input_types: list[pa.DataType] | None,
+        return_type: pa.DataType | None,
+        state_type: list[pa.DataType] | None,
+        volatility: Volatility | str | None,
     ) -> None:
         """Instantiate a user-defined aggregate function (UDAF).
 
@@ -307,6 +316,18 @@ class AggregateUDF:
         if hasattr(accumulator, "__datafusion_aggregate_udf__"):
             self._udaf = df_internal.AggregateUDF.from_pycapsule(accumulator)
             return
+        if (
+            input_types is None
+            or return_type is None
+            or state_type is None
+            or volatility is None
+        ):
+            msg = (
+                "`input_types`, `return_type`, `state_type`, and `volatility` "
+                "must be provided when `accumulator` is callable."
+            )
+            raise TypeError(msg)
+
         self._udaf = df_internal.AggregateUDF(
             name,
             accumulator,
@@ -349,6 +370,14 @@ class AggregateUDF:
         volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> AggregateUDF: ...
+
+    @overload
+    @staticmethod
+    def udaf(accum: AggregateUDFExportable) -> AggregateUDF: ...
+
+    @overload
+    @staticmethod
+    def udaf(accum: object) -> AggregateUDF: ...
 
     @staticmethod
     def udaf(*args: Any, **kwargs: Any):  # noqa: D417, C901
@@ -480,16 +509,17 @@ class AggregateUDF:
         return _decorator(*args, **kwargs)
 
     @staticmethod
-    def from_pycapsule(func: AggregateUDFExportable) -> AggregateUDF:
+    def from_pycapsule(func: AggregateUDFExportable | object) -> AggregateUDF:
         """Create an Aggregate UDF from AggregateUDF PyCapsule object.
 
         This function will instantiate a Aggregate UDF that uses a DataFusion
         AggregateUDF that is exported via the FFI bindings.
         """
-        name = str(func.__class__)
+        capsule = cast(AggregateUDFExportable, func)
+        name = str(capsule.__class__)
         return AggregateUDF(
             name=name,
-            accumulator=func,
+            accumulator=capsule,
             input_types=None,
             return_type=None,
             state_type=None,
