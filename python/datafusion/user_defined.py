@@ -41,7 +41,13 @@ import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
 if TYPE_CHECKING:
+    from _typeshed import CapsuleType as _PyCapsule
+
     _R = TypeVar("_R", bound=pa.DataType)
+else:
+
+    class _PyCapsule:
+        """Lightweight typing proxy for CPython ``PyCapsule`` objects."""
 
 
 class Volatility(Enum):
@@ -92,10 +98,6 @@ class ScalarUDFExportable(Protocol):
     """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
 
     def __datafusion_scalar_udf__(self) -> object: ...  # noqa: D105
-
-
-class _PyCapsule(Protocol):
-    """Lightweight typing proxy for CPython ``PyCapsule`` objects."""
 
 
 def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
