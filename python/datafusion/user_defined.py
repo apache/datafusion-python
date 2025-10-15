@@ -41,6 +41,7 @@ from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
+
     _R = TypeVar("_R", bound=pa.DataType)
 else:
 
@@ -319,8 +320,7 @@ class AggregateUDF:
         return_type: pa.DataType,
         state_type: list[pa.DataType],
         volatility: Volatility | str,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @overload
     def __init__(
@@ -331,8 +331,7 @@ class AggregateUDF:
         return_type: None = ...,
         state_type: None = ...,
         volatility: None = ...,
-    ) -> None:
-        ...
+    ) -> None: ...
 
     def __init__(
         self,
