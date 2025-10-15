@@ -197,16 +197,14 @@ impl PyAggregateUDF {
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
         if func.is_instance_of::<PyCapsule>() {
             let capsule = func.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            let capsule: &Bound<'_, PyCapsule> = capsule.into();
-            let function = aggregate_udf_from_capsule(capsule)?;
+            let function = aggregate_udf_from_capsule(&capsule)?;
             return Ok(Self { function });
         }
 
         if func.hasattr("__datafusion_aggregate_udf__")? {
             let capsule = func.getattr("__datafusion_aggregate_udf__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            let capsule: &Bound<'_, PyCapsule> = capsule.into();
-            let function = aggregate_udf_from_capsule(capsule)?;
+            let function = aggregate_udf_from_capsule(&capsule)?;
             return Ok(Self { function });
         }
 
