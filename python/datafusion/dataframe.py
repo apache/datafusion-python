@@ -466,31 +466,37 @@ class DataFrame:
 
         return DataFrame(self.df.drop(*normalized_columns))
 
-    def filter(self, *predicates: Expr) -> DataFrame:
+    def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
         out. If more than one predicate is provided, these predicates will be
-        combined as a logical AND. Each ``predicate`` must be an
+        combined as a logical AND. Each ``predicate`` can be an
         :class:`~datafusion.expr.Expr` created using helper functions such as
-        :func:`datafusion.col` or :func:`datafusion.lit`.
-        If more complex logic is required, see the logical operations in
-        :py:mod:`~datafusion.functions`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression string
+        that will be parsed against the DataFrame schema. If more complex logic is
+        required, see the logical operations in :py:mod:`~datafusion.functions`.
 
         Example::
 
             from datafusion import col, lit
             df.filter(col("a") > lit(1))
+            df.filter("a > 1")
 
         Args:
-            predicates: Predicate expression(s) to filter the DataFrame.
+            predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
 
         Returns:
             DataFrame after filtering.
         """
         df = self.df
-        for p in predicates:
-            df = df.filter(ensure_expr(p))
+        for predicate in predicates:
+            expr = (
+                self.parse_sql_expr(predicate)
+                if isinstance(predicate, str)
+                else predicate
+            )
+            df = df.filter(ensure_expr(expr))
         return DataFrame(df)
 
     def parse_sql_expr(self, expr: str) -> Expr:
