@@ -299,6 +299,30 @@ class AggregateUDF:
     also :py:class:`ScalarUDF` for operating on a row by row basis.
     """
 
+    @overload
+    def __init__(
+        self,
+        name: str,
+        accumulator: Callable[[], Accumulator],
+        input_types: list[pa.DataType],
+        return_type: pa.DataType,
+        state_type: list[pa.DataType],
+        volatility: Volatility | str,
+    ) -> None:
+        ...
+
+    @overload
+    def __init__(
+        self,
+        name: str,
+        accumulator: AggregateUDFExportable,
+        input_types: None = ...,
+        return_type: None = ...,
+        state_type: None = ...,
+        volatility: None = ...,
+    ) -> None:
+        ...
+
     def __init__(
         self,
         name: str,
