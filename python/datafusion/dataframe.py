@@ -318,7 +318,7 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> Table:
+    def into_view(self, temporary: bool = False) -> Table:
         """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
 
         Examples:
@@ -332,7 +332,7 @@ class DataFrame:
         """
         from datafusion.catalog import Table as _Table
 
-        return _Table(self.df.into_view())
+        return _Table(self.df.into_view(temporary))
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class`DataFrame` with the specified column or columns.

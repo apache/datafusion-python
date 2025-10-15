@@ -28,6 +28,7 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::Schema;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
+use datafusion::catalog::TableProvider;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
@@ -49,7 +50,7 @@ use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::logical::PyLogicalPlan;
-use crate::table::PyTable;
+use crate::table::{PyTable, TempViewTable};
 use crate::utils::{
     get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
 };
@@ -420,11 +421,15 @@ impl PyDataFrame {
     /// because we're working with Python bindings
     /// where objects are shared
     #[allow(clippy::wrong_self_convention)]
-    pub fn into_view(&self) -> PyDataFusionResult<PyTable> {
-        // Call the underlying Rust DataFrame::into_view method.
-        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don't invalidate this PyDataFrame.
-        let table_provider = self.df.as_ref().clone().into_view();
+    pub fn into_view(&self, temporary: bool) -> PyDataFusionResult<PyTable> {
+        let table_provider = if temporary {
+            Arc::new(TempViewTable::new(Arc::clone(&self.df))) as Arc<dyn TableProvider>
+        } else {
+            // Call the underlying Rust DataFrame::into_view method.
+            // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+            // so that we don't invalidate this PyDataFrame.
+            self.df.as_ref().clone().into_view()
+        };
         Ok(PyTable::from(table_provider))
     }
 

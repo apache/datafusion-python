@@ -15,14 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use arrow::pyarrow::ToPyArrow;
-use datafusion::datasource::{TableProvider, TableType};
-use pyo3::prelude::*;
-use std::sync::Arc;
-
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::utils::table_provider_from_pycapsule;
+use arrow::datatypes::SchemaRef;
+use arrow::pyarrow::ToPyArrow;
+use async_trait::async_trait;
+use datafusion::catalog::Session;
+use datafusion::common::Column;
+use datafusion::datasource::{TableProvider, TableType};
+use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPushDown};
+use datafusion::physical_plan::ExecutionPlan;
+use datafusion::prelude::DataFrame;
+use pyo3::prelude::*;
+use std::any::Any;
+use std::sync::Arc;
 
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known
@@ -102,5 +109,84 @@ impl PyTable {
 impl From<Arc<dyn TableProvider>> for PyTable {
     fn from(table: Arc<dyn TableProvider>) -> Self {
         Self { table }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct TempViewTable {
+    df: Arc<DataFrame>,
+}
+
+/// This is nearly identical to `DataFrameTableProvider`
+/// except that it is for temporary tables.
+/// Remove when https://github.com/apache/datafusion/issues/18026
+/// closes.
+impl TempViewTable {
+    pub(crate) fn new(df: Arc<DataFrame>) -> Self {
+        Self { df }
+    }
+}
+
+#[async_trait]
+impl TableProvider for TempViewTable {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn schema(&self) -> SchemaRef {
+        Arc::new(self.df.schema().into())
+    }
+
+    fn table_type(&self) -> TableType {
+        TableType::Temporary
+    }
+
+    async fn scan(
+        &self,
+        state: &dyn Session,
+        projection: Option<&Vec<usize>>,
+        filters: &[Expr],
+        limit: Option<usize>,
+    ) -> datafusion::common::Result<Arc<dyn ExecutionPlan>> {
+        let filter = filters.iter().cloned().reduce(|acc, new| acc.and(new));
+        let plan = self.df.logical_plan().clone();
+        let mut plan = LogicalPlanBuilder::from(plan);
+
+        if let Some(filter) = filter {
+            plan = plan.filter(filter)?;
+        }
+
+        let mut plan = if let Some(projection) = projection {
+            // avoiding adding a redundant projection (e.g. SELECT * FROM view)
+            let current_projection = (0..plan.schema().fields().len()).collect::<Vec<usize>>();
+            if projection == &current_projection {
+                plan
+            } else {
+                let fields: Vec<Expr> = projection
+                    .iter()
+                    .map(|i| {
+                        Expr::Column(Column::from(
+                            self.df.logical_plan().schema().qualified_field(*i),
+                        ))
+                    })
+                    .collect();
+                plan.project(fields)?
+            }
+        } else {
+            plan
+        };
+
+        if let Some(limit) = limit {
+            plan = plan.limit(0, Some(limit))?;
+        }
+
+        state.create_physical_plan(&plan.build()?).await
+    }
+
+    fn supports_filters_pushdown(
+        &self,
+        filters: &[&Expr],
+    ) -> datafusion::common::Result<Vec<TableProviderFilterPushDown>> {
+        Ok(vec![TableProviderFilterPushDown::Exact; filters.len()])
     }
 }
