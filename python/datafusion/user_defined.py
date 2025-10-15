@@ -28,6 +28,7 @@ from typing import (
     Callable,
     Optional,
     Protocol,
+    TypeGuard,
     TypeVar,
     cast,
     overload,
@@ -90,6 +91,16 @@ class ScalarUDFExportable(Protocol):
     """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
 
     def __datafusion_scalar_udf__(self) -> object: ...  # noqa: D105
+
+
+class _PyCapsule(Protocol):
+    """Lightweight typing proxy for CPython ``PyCapsule`` objects."""
+
+
+def _is_pycapsule(value: object) -> TypeGuard[_PyCapsule]:
+    """Return ``True`` when ``value`` is a CPython ``PyCapsule``."""
+
+    return value.__class__.__name__ == "PyCapsule"
 
 
 class ScalarUDF:
@@ -401,7 +412,7 @@ class AggregateUDF:
 
     @overload
     @staticmethod
-    def udaf(accum: object) -> AggregateUDF: ...
+    def udaf(accum: _PyCapsule) -> AggregateUDF: ...
 
     @staticmethod
     def udaf(*args: Any, **kwargs: Any):  # noqa: D417, C901
@@ -523,7 +534,7 @@ class AggregateUDF:
 
             return decorator
 
-        if hasattr(args[0], "__datafusion_aggregate_udf__"):
+        if hasattr(args[0], "__datafusion_aggregate_udf__") or _is_pycapsule(args[0]):
             return AggregateUDF.from_pycapsule(args[0])
 
         if args and callable(args[0]):
@@ -533,12 +544,17 @@ class AggregateUDF:
         return _decorator(*args, **kwargs)
 
     @staticmethod
-    def from_pycapsule(func: AggregateUDFExportable | object) -> AggregateUDF:
+    def from_pycapsule(func: AggregateUDFExportable | _PyCapsule) -> AggregateUDF:
         """Create an Aggregate UDF from AggregateUDF PyCapsule object.
 
         This function will instantiate a Aggregate UDF that uses a DataFusion
         AggregateUDF that is exported via the FFI bindings.
         """
+        if _is_pycapsule(func):
+            aggregate = cast(AggregateUDF, object.__new__(AggregateUDF))
+            aggregate._udaf = df_internal.AggregateUDF.from_pycapsule(func)
+            return aggregate
+
         capsule = cast(AggregateUDFExportable, func)
         name = str(capsule.__class__)
         return AggregateUDF(
