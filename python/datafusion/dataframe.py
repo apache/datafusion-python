@@ -743,6 +743,7 @@ class DataFrame:
         left_on: None = None,
         right_on: None = None,
         join_keys: None = None,
+        keep_duplicate_keys: bool = False,
     ) -> DataFrame: ...
 
     @overload
@@ -755,6 +756,7 @@ class DataFrame:
         left_on: str | Sequence[str],
         right_on: str | Sequence[str],
         join_keys: tuple[list[str], list[str]] | None = None,
+        keep_duplicate_keys: bool = False,
     ) -> DataFrame: ...
 
     @overload
@@ -767,6 +769,7 @@ class DataFrame:
         join_keys: tuple[list[str], list[str]],
         left_on: None = None,
         right_on: None = None,
+        keep_duplicate_keys: bool = False,
     ) -> DataFrame: ...
 
     def join(
@@ -778,6 +781,7 @@ class DataFrame:
         left_on: str | Sequence[str] | None = None,
         right_on: str | Sequence[str] | None = None,
         join_keys: tuple[list[str], list[str]] | None = None,
+        keep_duplicate_keys: bool = False,
     ) -> DataFrame:
         """Join this :py:class:`DataFrame` with another :py:class:`DataFrame`.
 
@@ -790,11 +794,23 @@ class DataFrame:
                 "right", "full", "semi", "anti".
             left_on: Join column of the left dataframe.
             right_on: Join column of the right dataframe.
+            keep_duplicate_keys: When False, the columns from the right DataFrame
+                that have identical names in the ``on`` fields to the left DataFrame
+                will be dropped.
             join_keys: Tuple of two lists of column names to join on. [Deprecated]
 
         Returns:
             DataFrame after join.
         """
+        if join_keys is not None:
+            warnings.warn(
+                "`join_keys` is deprecated, use `on` or `left_on` with `right_on`",
+                category=DeprecationWarning,
+                stacklevel=2,
+            )
+            left_on = join_keys[0]
+            right_on = join_keys[1]
+
         # This check is to prevent breaking API changes where users prior to
         # DF 43.0.0 would  pass the join_keys as a positional argument instead
         # of a keyword argument.
@@ -805,17 +821,9 @@ class DataFrame:
             and isinstance(on[1], list)
         ):
             # We know this is safe because we've checked the types
-            join_keys = on  # type: ignore[assignment]
+            left_on = on[0]
+            right_on = on[1]
             on = None
-
-        if join_keys is not None:
-            warnings.warn(
-                "`join_keys` is deprecated, use `on` or `left_on` with `right_on`",
-                category=DeprecationWarning,
-                stacklevel=2,
-            )
-            left_on = join_keys[0]
-            right_on = join_keys[1]
 
         if on is not None:
             if left_on is not None or right_on is not None:
@@ -835,7 +843,9 @@ class DataFrame:
         if isinstance(right_on, str):
             right_on = [right_on]
 
-        return DataFrame(self.df.join(right.df, how, left_on, right_on))
+        return DataFrame(
+            self.df.join(right.df, how, left_on, right_on, keep_duplicate_keys)
+        )
 
     def join_on(
         self,
