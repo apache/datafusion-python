@@ -463,6 +463,9 @@
 </ol>
 <p>In addition to submitting new PRs, we have a healthy tradition of community members reviewing each other’s PRs.
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.</p>
+<p>Before opening a pull request that touches PyO3 bindings, please review the
+<a class="reference internal" href="ffi.html#ffi-pyclass-mutability"><span class="std std-ref">PyO3 class mutability guidelines</span></a> so you can flag missing
+<code class="docutils literal notranslate"><span class="pre">#[pyclass(frozen)]</span></code> annotations during development and review.</p>
 <section id="how-to-develop">
 <h2>How to develop<a class="headerlink" href="#how-to-develop" title="Link to this heading">¶</a></h2>
 <p>This assumes that you have rust and cargo installed. We use the workflow recommended by

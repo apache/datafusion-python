@@ -18,6 +18,8 @@ Classes
 
    datafusion.dataframe.Compression
    datafusion.dataframe.DataFrame
+   datafusion.dataframe.DataFrameWriteOptions
+   datafusion.dataframe.InsertOp
    datafusion.dataframe.ParquetColumnOptions
    datafusion.dataframe.ParquetWriterOptions
 
@@ -240,9 +242,19 @@ Module Contents
 
       Drop arbitrary amount of columns.
 
-      :param columns: Column names to drop from the dataframe.
+      Column names are case-sensitive and do not require double quotes like
+      other operations such as `select`. Leading and trailing double quotes
+      are allowed and will be automatically stripped if present.
+
+      :param columns: Column names to drop from the dataframe. Both ``column_name``
+                      and ``"column_name"`` are accepted.
 
       :returns: DataFrame with those columns removed in the projection.
+
+      Example Usage::
+
+          df.drop('ID_For_Students')      # Works
+          df.drop('"ID_For_Students"')    # Also works (quotes stripped)
 
 
 
@@ -361,9 +373,19 @@ Module Contents
 
 
 
-   .. py:method:: into_view() -> pyarrow.Table
+   .. py:method:: into_view() -> datafusion.catalog.Table
 
-      Convert DataFrame as a ViewTable which can be used in register_table.
+      Convert ``DataFrame`` into a :class:`~datafusion.Table`.
+
+      .. rubric:: Examples
+
+      >>> from datafusion import SessionContext
+      >>> ctx = SessionContext()
+      >>> df = ctx.sql("SELECT 1 AS value")
+      >>> view = df.into_view()
+      >>> ctx.register_table("values_view", view)
+      >>> df.collect()  # The DataFrame is still usable
+      >>> ctx.sql("SELECT value FROM values_view").collect()
 
 
 
@@ -433,6 +455,27 @@ Module Contents
       Return the optimized ``LogicalPlan``.
 
       :returns: Optimized logical plan.
+
+
+
+   .. py:method:: parse_sql_expr(expr: str) -> datafusion.expr.Expr
+
+      Creates logical expression from a SQL query text.
+
+      The expression is created and processed against the current schema.
+
+      Example::
+
+          from datafusion import col, lit
+          df.parse_sql_expr("a > 1")
+
+          should produce:
+
+          col("a") > lit(1)
+
+      :param expr: Expression string to be converted to datafusion expression
+
+      :returns: Logical expression .
 
 
 
@@ -693,47 +736,54 @@ Module Contents
 
 
 
-   .. py:method:: write_csv(path: str | pathlib.Path, with_header: bool = False) -> None
+   .. py:method:: write_csv(path: str | pathlib.Path, with_header: bool = False, write_options: DataFrameWriteOptions | None = None) -> None
 
       Execute the :py:class:`DataFrame`  and write the results to a CSV file.
 
       :param path: Path of the CSV file to write.
       :param with_header: If true, output the CSV header row.
+      :param write_options: Options that impact how the DataFrame is written.
 
 
 
-   .. py:method:: write_json(path: str | pathlib.Path) -> None
+   .. py:method:: write_json(path: str | pathlib.Path, write_options: DataFrameWriteOptions | None = None) -> None
 
       Execute the :py:class:`DataFrame` and write the results to a JSON file.
 
       :param path: Path of the JSON file to write.
+      :param write_options: Options that impact how the DataFrame is written.
 
 
 
-   .. py:method:: write_parquet(path: str | pathlib.Path, compression: str, compression_level: int | None = None) -> None
-                  write_parquet(path: str | pathlib.Path, compression: Compression = Compression.ZSTD, compression_level: int | None = None) -> None
-                  write_parquet(path: str | pathlib.Path, compression: ParquetWriterOptions, compression_level: None = None) -> None
+   .. py:method:: write_parquet(path: str | pathlib.Path, compression: str, compression_level: int | None = None, write_options: DataFrameWriteOptions | None = None) -> None
+                  write_parquet(path: str | pathlib.Path, compression: Compression = Compression.ZSTD, compression_level: int | None = None, write_options: DataFrameWriteOptions | None = None) -> None
+                  write_parquet(path: str | pathlib.Path, compression: ParquetWriterOptions, compression_level: None = None, write_options: DataFrameWriteOptions | None = None) -> None
 
       Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
+      Available compression types are:
+
+      - "uncompressed": No compression.
+      - "snappy": Snappy compression.
+      - "gzip": Gzip compression.
+      - "brotli": Brotli compression.
+      - "lz4": LZ4 compression.
+      - "lz4_raw": LZ4_RAW compression.
+      - "zstd": Zstandard compression.
+
+      LZO compression is not yet implemented in arrow-rs and is therefore
+      excluded.
+
       :param path: Path of the Parquet file to write.
       :param compression: Compression type to use. Default is "ZSTD".
-                          Available compression types are:
-                          - "uncompressed": No compression.
-                          - "snappy": Snappy compression.
-                          - "gzip": Gzip compression.
-                          - "brotli": Brotli compression.
-                          - "lz4": LZ4 compression.
-                          - "lz4_raw": LZ4_RAW compression.
-                          - "zstd": Zstandard compression.
-      :param Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
       :param compression_level: Compression level to use. For ZSTD, the
                                 recommended range is 1 to 22, with the default being 4. Higher levels
                                 provide better compression but slower speed.
+      :param write_options: Options that impact how the DataFrame is written.
 
 
 
-   .. py:method:: write_parquet_with_options(path: str | pathlib.Path, options: ParquetWriterOptions) -> None
+   .. py:method:: write_parquet_with_options(path: str | pathlib.Path, options: ParquetWriterOptions, write_options: DataFrameWriteOptions | None = None) -> None
 
       Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -741,10 +791,62 @@ Module Contents
 
       :param path: Path of the Parquet file to write.
       :param options: Sets the writer parquet options (see `ParquetWriterOptions`).
+      :param write_options: Options that impact how the DataFrame is written.
+
+
+
+   .. py:method:: write_table(table_name: str, write_options: DataFrameWriteOptions | None = None) -> None
+
+      Execute the :py:class:`DataFrame` and write the results to a table.
+
+      The table must be registered with the session to perform this operation.
+      Not all table providers support writing operations. See the individual
+      implementations for details.
 
 
 
    .. py:attribute:: df
+
+
+.. py:class:: DataFrameWriteOptions(insert_operation: InsertOp | None = None, single_file_output: bool = False, partition_by: str | collections.abc.Sequence[str] | None = None, sort_by: datafusion.expr.Expr | datafusion.expr.SortExpr | collections.abc.Sequence[datafusion.expr.Expr] | collections.abc.Sequence[datafusion.expr.SortExpr] | None = None)
+
+   Writer options for DataFrame.
+
+   There is no guarantee the table provider supports all writer options.
+   See the individual implementation and documentation for details.
+
+   Instantiate writer options for DataFrame.
+
+
+   .. py:attribute:: _raw_write_options
+
+
+.. py:class:: InsertOp(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Insert operation mode.
+
+   These modes are used by the table writing feature to define how record
+   batches should be written to a table.
+
+
+   .. py:attribute:: APPEND
+
+      Appends new rows to the existing table without modifying any existing rows.
+
+
+   .. py:attribute:: OVERWRITE
+
+      Overwrites all existing rows in the table with the new rows.
+
+
+   .. py:attribute:: REPLACE
+
+      Replace existing rows that collide with the inserted rows.
+
+      Replacement is typically based on a unique key or primary key.
 
 
 .. py:class:: ParquetColumnOptions(encoding: Optional[str] = None, dictionary_enabled: Optional[bool] = None, compression: Optional[str] = None, statistics_enabled: Optional[str] = None, bloom_filter_enabled: Optional[bool] = None, bloom_filter_fpp: Optional[float] = None, bloom_filter_ndv: Optional[int] = None)

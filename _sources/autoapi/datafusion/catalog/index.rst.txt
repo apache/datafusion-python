@@ -63,7 +63,7 @@ Module Contents
 
 
 
-   .. py:method:: register_schema(name, schema) -> Schema | None
+   .. py:method:: register_schema(name: str, schema: Schema | SchemaProvider | SchemaProviderExportable) -> Schema | None
 
       Register a schema with this catalog.
 
@@ -162,9 +162,9 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name, table) -> None
+   .. py:method:: register_table(name: str, table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset) -> None
 
-      Register a table provider in this schema.
+      Register a table in this schema.
 
 
 
@@ -191,7 +191,7 @@ Module Contents
    Abstract class for defining a Python based Schema Provider.
 
 
-   .. py:method:: deregister_table(name, cascade: bool) -> None
+   .. py:method:: deregister_table(name: str, cascade: bool) -> None
 
       Remove a table from this schema.
 
@@ -208,9 +208,9 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name: str, table: Table) -> None
+   .. py:method:: register_table(name: str, table: Table | datafusion.context.TableProviderExportable | Any) -> None
 
-      Add a table from this schema.
+      Add a table to this schema.
 
       This method is optional. If your schema provides a fixed list of tables, you do
       not need to implement this method.
@@ -241,11 +241,20 @@ Module Contents
 
 
 
-.. py:class:: Table(table: datafusion._internal.catalog.RawTable)
+.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset)
 
-   DataFusion table.
+   A DataFusion table.
 
-   This constructor is not typically called by the end user.
+   Internally we currently support the following types of tables:
+
+   - Tables created using built-in DataFusion methods, such as
+     reading from CSV or Parquet
+   - pyarrow datasets
+   - DataFusion DataFrames, which will be converted into a view
+   - Externally provided tables implemented with the FFI PyCapsule
+     interface (advanced)
+
+   Constructor.
 
 
    .. py:method:: __repr__() -> str
@@ -258,8 +267,16 @@ Module Contents
       :staticmethod:
 
 
-      Turn a pyarrow Dataset into a Table.
+      Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`.
 
+
+
+   .. py:attribute:: __slots__
+      :value: ('_inner',)
+
+
+
+   .. py:attribute:: _inner
 
 
    .. py:property:: kind
@@ -274,8 +291,5 @@ Module Contents
 
 
       Returns the schema associated with this table.
-
-
-   .. py:attribute:: table
 
 

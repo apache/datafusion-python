@@ -780,6 +780,15 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.parse_sql_expr">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.parse_sql_expr()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.repartition">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -996,10 +1005,77 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.write_table">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrame.write_table()
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrame.df">
        <code class="docutils literal notranslate">
         <span class="pre">
          DataFrame.df
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrameWriteOptions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrameWriteOptions
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.DataFrameWriteOptions._raw_write_options">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameWriteOptions._raw_write_options
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InsertOp
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.APPEND">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.APPEND
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.OVERWRITE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.OVERWRITE
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.dataframe.InsertOp.REPLACE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.REPLACE
         </span>
        </code>
       </a>
@@ -1308,6 +1384,12 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrame</span></code></a></p></td>
 <td><p>Two dimensional table representation of data.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrameWriteOptions</span></code></a></p></td>
+<td><p>Writer options for DataFrame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.dataframe.InsertOp" title="datafusion.dataframe.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
+<td><p>Insert operation mode.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.dataframe.ParquetColumnOptions" title="datafusion.dataframe.ParquetColumnOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParquetColumnOptions</span></code></a></p></td>
 <td><p>Parquet options for individual columns.</p></td>
 </tr>
@@ -1568,14 +1650,23 @@ for non-numeric datatypes.</p>
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.drop">
 <span class="sig-name descname"><span class="pre">drop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><span class="pre">DataFrame</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.drop" title="Link to this definition">¶</a></dt>
 <dd><p>Drop arbitrary amount of columns.</p>
+<p>Column names are case-sensitive and do not require double quotes like
+other operations such as <cite>select</cite>. Leading and trailing double quotes
+are allowed and will be automatically stripped if present.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>columns</strong> – Column names to drop from the dataframe.</p>
+<dd class="field-odd"><p><strong>columns</strong> – Column names to drop from the dataframe. Both <code class="docutils literal notranslate"><span class="pre">column_name</span></code>
+and <code class="docutils literal notranslate"><span class="pre">&quot;column_name&quot;</span></code> are accepted.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>DataFrame with those columns removed in the projection.</p>
 </dd>
 </dl>
+<p>Example Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;ID_For_Students&#39;</span><span class="p">)</span>      <span class="c1"># Works</span>
+<span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;&quot;ID_For_Students&quot;&#39;</span><span class="p">)</span>    <span class="c1"># Also works (quotes stripped)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1727,8 +1818,18 @@ If more complex logic is required, see the logical operations in
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.into_view">
-<span class="sig-name descname"><span class="pre">into_view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pyarrow.Table</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.into_view" title="Link to this definition">¶</a></dt>
-<dd><p>Convert DataFrame as a ViewTable which can be used in register_table.</p>
+<span class="sig-name descname"><span class="pre">into_view</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../catalog/index.html#datafusion.catalog.Table" title="datafusion.catalog.Table"><span class="pre">datafusion.catalog.Table</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.into_view" title="Link to this definition">¶</a></dt>
+<dd><p>Convert <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code> into a <a class="reference internal" href="../index.html#datafusion.Table" title="datafusion.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">SessionContext</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span> <span class="o">=</span> <span class="n">SessionContext</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT 1 AS value&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">view</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">into_view</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">register_table</span><span class="p">(</span><span class="s2">&quot;values_view&quot;</span><span class="p">,</span> <span class="n">view</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">df</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>  <span class="c1"># The DataFrame is still usable</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ctx</span><span class="o">.</span><span class="n">sql</span><span class="p">(</span><span class="s2">&quot;SELECT value FROM values_view&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -1820,6 +1921,30 @@ in-equality predicates. Equality predicates are correctly optimized.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Optimized logical plan.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.parse_sql_expr">
+<span class="sig-name descname"><span class="pre">parse_sql_expr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.parse_sql_expr" title="Link to this definition">¶</a></dt>
+<dd><p>Creates logical expression from a SQL query text.</p>
+<p>The expression is created and processed against the current schema.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">datafusion</span><span class="w"> </span><span class="kn">import</span> <span class="n">col</span><span class="p">,</span> <span class="n">lit</span>
+<span class="n">df</span><span class="o">.</span><span class="n">parse_sql_expr</span><span class="p">(</span><span class="s2">&quot;a &gt; 1&quot;</span><span class="p">)</span>
+
+<span class="n">should</span> <span class="n">produce</span><span class="p">:</span>
+
+<span class="n">col</span><span class="p">(</span><span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">lit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>expr</strong> – Expression string to be converted to datafusion expression</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Logical expression .</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2159,13 +2284,14 @@ and <code class="docutils literal notranslate"><span class="pre">d</span></code>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_csv">
-<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_csv" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_header</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_csv" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a>  and write the results to a CSV file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> – Path of the CSV file to write.</p></li>
 <li><p><strong>with_header</strong> – If true, output the CSV header row.</p></li>
+<li><p><strong>write_options</strong> – Options that impact how the DataFrame is written.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2173,40 +2299,47 @@ and <code class="docutils literal notranslate"><span class="pre">d</span></code>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_json">
-<span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_json" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_json" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and write the results to a JSON file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>path</strong> – Path of the JSON file to write.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – Path of the JSON file to write.</p></li>
+<li><p><strong>write_options</strong> – Options that impact how the DataFrame is written.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_parquet">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet" title="Link to this definition">¶</a></dt>
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.Compression" title="datafusion.dataframe.Compression"><span class="pre">Compression</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Compression.ZSTD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.Compression" title="datafusion.dataframe.Compression"><span class="pre">Compression</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">Compression.ZSTD</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
 <dt class="sig sig-object py">
-<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><span class="pre">ParquetWriterOptions</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
+<span class="sig-name descname"><span class="pre">write_parquet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><span class="pre">ParquetWriterOptions</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">compression_level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span></dt>
 <dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and write the results to a Parquet file.</p>
+<p>Available compression types are:</p>
+<ul class="simple">
+<li><p>“uncompressed”: No compression.</p></li>
+<li><p>“snappy”: Snappy compression.</p></li>
+<li><p>“gzip”: Gzip compression.</p></li>
+<li><p>“brotli”: Brotli compression.</p></li>
+<li><p>“lz4”: LZ4 compression.</p></li>
+<li><p>“lz4_raw”: LZ4_RAW compression.</p></li>
+<li><p>“zstd”: Zstandard compression.</p></li>
+</ul>
+<p>LZO compression is not yet implemented in arrow-rs and is therefore
+excluded.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> – Path of the Parquet file to write.</p></li>
-<li><p><strong>compression</strong> – Compression type to use. Default is “ZSTD”.
-Available compression types are:
-- “uncompressed”: No compression.
-- “snappy”: Snappy compression.
-- “gzip”: Gzip compression.
-- “brotli”: Brotli compression.
-- “lz4”: LZ4 compression.
-- “lz4_raw”: LZ4_RAW compression.
-- “zstd”: Zstandard compression.</p></li>
-<li><p><strong>Note</strong> – LZO is not yet implemented in arrow-rs and is therefore excluded.</p></li>
+<li><p><strong>compression</strong> – Compression type to use. Default is “ZSTD”.</p></li>
 <li><p><strong>compression_level</strong> – Compression level to use. For ZSTD, the
 recommended range is 1 to 22, with the default being 4. Higher levels
 provide better compression but slower speed.</p></li>
+<li><p><strong>write_options</strong> – Options that impact how the DataFrame is written.</p></li>
 </ul>
 </dd>
 </dl>
@@ -2214,7 +2347,7 @@ provide better compression but slower speed.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_parquet_with_options">
-<span class="sig-name descname"><span class="pre">write_parquet_with_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><span class="pre">ParquetWriterOptions</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet_with_options" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">write_parquet_with_options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pathlib.Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.ParquetWriterOptions" title="datafusion.dataframe.ParquetWriterOptions"><span class="pre">ParquetWriterOptions</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_parquet_with_options" title="Link to this definition">¶</a></dt>
 <dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and write the results to a Parquet file.</p>
 <p>Allows advanced writer options to be set with <cite>ParquetWriterOptions</cite>.</p>
 <dl class="field-list simple">
@@ -2222,15 +2355,67 @@ provide better compression but slower speed.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>path</strong> – Path of the Parquet file to write.</p></li>
 <li><p><strong>options</strong> – Sets the writer parquet options (see <cite>ParquetWriterOptions</cite>).</p></li>
+<li><p><strong>write_options</strong> – Options that impact how the DataFrame is written.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.write_table">
+<span class="sig-name descname"><span class="pre">write_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">write_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.DataFrameWriteOptions" title="datafusion.dataframe.DataFrameWriteOptions"><span class="pre">DataFrameWriteOptions</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.write_table" title="Link to this definition">¶</a></dt>
+<dd><p>Execute the <a class="reference internal" href="#datafusion.dataframe.DataFrame" title="datafusion.dataframe.DataFrame"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataFrame</span></code></a> and write the results to a table.</p>
+<p>The table must be registered with the session to perform this operation.
+Not all table providers support writing operations. See the individual
+implementations for details.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.dataframe.DataFrame.df">
 <span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#datafusion.dataframe.DataFrame.df" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrameWriteOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">DataFrameWriteOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insert_operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.dataframe.InsertOp" title="datafusion.dataframe.InsertOp"><span class="pre">InsertOp</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_file_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="../expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">datafusion.expr.SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">datafusion.expr.SortExpr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe.DataFrameWriteOptions" title="Link to this definition">¶</a></dt>
+<dd><p>Writer options for DataFrame.</p>
+<p>There is no guarantee the table provider supports all writer options.
+See the individual implementation and documentation for details.</p>
+<p>Instantiate writer options for DataFrame.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.DataFrameWriteOptions._raw_write_options">
+<span class="sig-name descname"><span class="pre">_raw_write_options</span></span><a class="headerlink" href="#datafusion.dataframe.DataFrameWriteOptions._raw_write_options" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.dataframe.InsertOp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.dataframe.</span></span><span class="sig-name descname"><span class="pre">InsertOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.dataframe.InsertOp" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Insert operation mode.</p>
+<p>These modes are used by the table writing feature to define how record
+batches should be written to a table.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.InsertOp.APPEND">
+<span class="sig-name descname"><span class="pre">APPEND</span></span><a class="headerlink" href="#datafusion.dataframe.InsertOp.APPEND" title="Link to this definition">¶</a></dt>
+<dd><p>Appends new rows to the existing table without modifying any existing rows.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.InsertOp.OVERWRITE">
+<span class="sig-name descname"><span class="pre">OVERWRITE</span></span><a class="headerlink" href="#datafusion.dataframe.InsertOp.OVERWRITE" title="Link to this definition">¶</a></dt>
+<dd><p>Overwrites all existing rows in the table with the new rows.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.dataframe.InsertOp.REPLACE">
+<span class="sig-name descname"><span class="pre">REPLACE</span></span><a class="headerlink" href="#datafusion.dataframe.InsertOp.REPLACE" title="Link to this definition">¶</a></dt>
+<dd><p>Replace existing rows that collide with the inserted rows.</p>
+<p>Replacement is typically based on a unique key or primary key.</p>
+</dd></dl>
 
 </dd></dl>
 

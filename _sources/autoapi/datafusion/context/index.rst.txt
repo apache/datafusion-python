@@ -663,13 +663,9 @@ Module Contents
 
 
 
-   .. py:method:: read_table(table: datafusion.catalog.Table) -> datafusion.dataframe.DataFrame
+   .. py:method:: read_table(table: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> datafusion.dataframe.DataFrame
 
       Creates a :py:class:`~datafusion.dataframe.DataFrame` from a table.
-
-      For a :py:class:`~datafusion.catalog.Table` such as a
-      :py:class:`~datafusion.catalog.ListingTable`, create a
-      :py:class:`~datafusion.dataframe.DataFrame`.
 
 
 
@@ -809,23 +805,23 @@ Module Contents
 
 
 
-   .. py:method:: register_table(name: str, table: datafusion.catalog.Table) -> None
+   .. py:method:: register_table(name: str, table: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
-      Register a :py:class: `~datafusion.catalog.Table` as a table.
+      Register a :py:class:`~datafusion.Table` with this context.
 
-      The registered table can be referenced from SQL statement executed against.
+      The registered table can be referenced from SQL statements executed against
+      this context.
 
       :param name: Name of the resultant table.
-      :param table: DataFusion table to add to the session context.
+      :param table: Any object that can be converted into a :class:`Table`.
 
 
 
-   .. py:method:: register_table_provider(name: str, provider: TableProviderExportable) -> None
+   .. py:method:: register_table_provider(name: str, provider: datafusion.catalog.Table | TableProviderExportable | datafusion.dataframe.DataFrame | pyarrow.dataset.Dataset) -> None
 
       Register a table provider.
 
-      This table provider must have a method called ``__datafusion_table_provider__``
-      which returns a PyCapsule that exposes a ``FFI_TableProvider``.
+      Deprecated: use :meth:`register_table` instead.
 
 
 
@@ -855,7 +851,7 @@ Module Contents
 
    .. py:method:: register_view(name: str, df: datafusion.dataframe.DataFrame) -> None
 
-      Register a :py:class: `~datafusion.detaframe.DataFrame` as a view.
+      Register a :py:class:`~datafusion.dataframe.DataFrame` as a view.
 
       :param name: The name to register the view under.
       :type name: str

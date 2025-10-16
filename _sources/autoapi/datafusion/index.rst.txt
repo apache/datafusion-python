@@ -57,9 +57,11 @@ Classes
    datafusion.Accumulator
    datafusion.AggregateUDF
    datafusion.Catalog
+   datafusion.DataFrameWriteOptions
    datafusion.Database
    datafusion.ExecutionPlan
    datafusion.Expr
+   datafusion.InsertOp
    datafusion.LogicalPlan
    datafusion.ParquetColumnOptions
    datafusion.ParquetWriterOptions
@@ -285,7 +287,7 @@ Package Contents
 
 
 
-   .. py:method:: register_schema(name, schema) -> Schema | None
+   .. py:method:: register_schema(name: str, schema: Schema | SchemaProvider | SchemaProviderExportable) -> Schema | None
 
       Register a schema with this catalog.
 
@@ -304,6 +306,19 @@ Package Contents
 
 
    .. py:attribute:: catalog
+
+
+.. py:class:: DataFrameWriteOptions(insert_operation: InsertOp | None = None, single_file_output: bool = False, partition_by: str | collections.abc.Sequence[str] | None = None, sort_by: datafusion.expr.Expr | datafusion.expr.SortExpr | collections.abc.Sequence[datafusion.expr.Expr] | collections.abc.Sequence[datafusion.expr.SortExpr] | None = None)
+
+   Writer options for DataFrame.
+
+   There is no guarantee the table provider supports all writer options.
+   See the individual implementation and documentation for details.
+
+   Instantiate writer options for DataFrame.
+
+
+   .. py:attribute:: _raw_write_options
 
 
 .. py:class:: Database(schema: datafusion._internal.catalog.RawSchema)
@@ -1224,6 +1239,34 @@ Package Contents
    .. py:attribute:: expr
 
 
+.. py:class:: InsertOp(*args, **kwds)
+
+   Bases: :py:obj:`enum.Enum`
+
+
+   Insert operation mode.
+
+   These modes are used by the table writing feature to define how record
+   batches should be written to a table.
+
+
+   .. py:attribute:: APPEND
+
+      Appends new rows to the existing table without modifying any existing rows.
+
+
+   .. py:attribute:: OVERWRITE
+
+      Overwrites all existing rows in the table with the new rows.
+
+
+   .. py:attribute:: REPLACE
+
+      Replace existing rows that collide with the inserted rows.
+
+      Replacement is typically based on a unique key or primary key.
+
+
 .. py:class:: LogicalPlan(plan: datafusion._internal.LogicalPlan)
 
    Logical Plan.
@@ -2025,11 +2068,20 @@ Package Contents
    .. py:attribute:: config_internal
 
 
-.. py:class:: Table(table: datafusion._internal.catalog.RawTable)
+.. py:class:: Table(table: Table | datafusion.context.TableProviderExportable | datafusion.DataFrame | pyarrow.dataset.Dataset)
 
-   DataFusion table.
+   A DataFusion table.
 
-   This constructor is not typically called by the end user.
+   Internally we currently support the following types of tables:
+
+   - Tables created using built-in DataFusion methods, such as
+     reading from CSV or Parquet
+   - pyarrow datasets
+   - DataFusion DataFrames, which will be converted into a view
+   - Externally provided tables implemented with the FFI PyCapsule
+     interface (advanced)
+
+   Constructor.
 
 
    .. py:method:: __repr__() -> str
@@ -2042,8 +2094,16 @@ Package Contents
       :staticmethod:
 
 
-      Turn a pyarrow Dataset into a Table.
+      Turn a :mod:`pyarrow.dataset` ``Dataset`` into a :class:`Table`.
 
+
+
+   .. py:attribute:: __slots__
+      :value: ('_inner',)
+
+
+
+   .. py:attribute:: _inner
 
 
    .. py:property:: kind
@@ -2058,9 +2118,6 @@ Package Contents
 
 
       Returns the schema associated with this table.
-
-
-   .. py:attribute:: table
 
 
 .. py:class:: TableFunction(name: str, func: Callable[[], any])

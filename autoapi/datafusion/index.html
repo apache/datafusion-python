@@ -628,6 +628,26 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.DataFrameWriteOptions">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       DataFrameWriteOptions
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.DataFrameWriteOptions._raw_write_options">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         DataFrameWriteOptions._raw_write_options
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.Database">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -1820,6 +1840,44 @@
     </ul>
    </li>
    <li class="toc-h3 nav-item toc-entry">
+    <a class="reference internal nav-link" href="#datafusion.InsertOp">
+     <code class="docutils literal notranslate">
+      <span class="pre">
+       InsertOp
+      </span>
+     </code>
+    </a>
+    <ul class="nav section-nav flex-column">
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.InsertOp.APPEND">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.APPEND
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.InsertOp.OVERWRITE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.OVERWRITE
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.InsertOp.REPLACE">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         InsertOp.REPLACE
+        </span>
+       </code>
+      </a>
+     </li>
+    </ul>
+   </li>
+   <li class="toc-h3 nav-item toc-entry">
     <a class="reference internal nav-link" href="#datafusion.LogicalPlan">
      <code class="docutils literal notranslate">
       <span class="pre">
@@ -2630,6 +2688,24 @@
       </a>
      </li>
      <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table.__slots__">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table.__slots__
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
+      <a class="reference internal nav-link" href="#datafusion.Table._inner">
+       <code class="docutils literal notranslate">
+        <span class="pre">
+         Table._inner
+        </span>
+       </code>
+      </a>
+     </li>
+     <li class="toc-h4 nav-item toc-entry">
       <a class="reference internal nav-link" href="#datafusion.Table.kind">
        <code class="docutils literal notranslate">
         <span class="pre">
@@ -2643,15 +2719,6 @@
        <code class="docutils literal notranslate">
         <span class="pre">
          Table.schema
-        </span>
-       </code>
-      </a>
-     </li>
-     <li class="toc-h4 nav-item toc-entry">
-      <a class="reference internal nav-link" href="#datafusion.Table.table">
-       <code class="docutils literal notranslate">
-        <span class="pre">
-         Table.table
         </span>
        </code>
       </a>
@@ -3088,14 +3155,20 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Catalog" title="datafusion.Catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Catalog</span></code></a></p></td>
 <td><p>DataFusion data catalog.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.DataFrameWriteOptions" title="datafusion.DataFrameWriteOptions"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataFrameWriteOptions</span></code></a></p></td>
+<td><p>Writer options for DataFrame.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Database" title="datafusion.Database"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Database</span></code></a></p></td>
 <td><p>See <cite>Schema</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.ExecutionPlan" title="datafusion.ExecutionPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ExecutionPlan</span></code></a></p></td>
 <td><p>Represent nodes in the DataFusion Physical Plan.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.Expr" title="datafusion.Expr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Expr</span></code></a></p></td>
 <td><p>Expression object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#datafusion.InsertOp" title="datafusion.InsertOp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InsertOp</span></code></a></p></td>
+<td><p>Insert operation mode.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.LogicalPlan" title="datafusion.LogicalPlan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LogicalPlan</span></code></a></p></td>
 <td><p>Logical Plan.</p></td>
@@ -3125,7 +3198,7 @@ See <a class="reference external" href="https://datafusion.apache.org/python">ht
 <td><p>Session configuration options.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Table</span></code></a></p></td>
-<td><p>DataFusion table.</p></td>
+<td><p>A DataFusion table.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#datafusion.TableFunction" title="datafusion.TableFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TableFunction</span></code></a></p></td>
 <td><p>Class for performing user-defined table functions (UDTF).</p></td>
@@ -3355,7 +3428,7 @@ aggregation or window function calls.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Catalog.register_schema">
-<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.register_schema" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">register_schema</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="catalog/index.html#datafusion.catalog.SchemaProvider" title="datafusion.catalog.SchemaProvider"><span class="pre">SchemaProvider</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">SchemaProviderExportable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="catalog/index.html#datafusion.catalog.Schema" title="datafusion.catalog.Schema"><span class="pre">Schema</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#datafusion.Catalog.register_schema" title="Link to this definition">¶</a></dt>
 <dd><p>Register a schema with this catalog.</p>
 </dd></dl>
 
@@ -3374,6 +3447,20 @@ aggregation or window function calls.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="datafusion.Catalog.catalog">
 <span class="sig-name descname"><span class="pre">catalog</span></span><a class="headerlink" href="#datafusion.Catalog.catalog" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datafusion.DataFrameWriteOptions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">DataFrameWriteOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">insert_operation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.InsertOp" title="datafusion.InsertOp"><span class="pre">InsertOp</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">single_file_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partition_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">datafusion.expr.SortExpr</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="expr/index.html#datafusion.expr.Expr" title="datafusion.expr.Expr"><span class="pre">datafusion.expr.Expr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">collections.abc.Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="expr/index.html#datafusion.expr.SortExpr" title="datafusion.expr.SortExpr"><span class="pre">datafusion.expr.SortExpr</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.DataFrameWriteOptions" title="Link to this definition">¶</a></dt>
+<dd><p>Writer options for DataFrame.</p>
+<p>There is no guarantee the table provider supports all writer options.
+See the individual implementation and documentation for details.</p>
+<p>Instantiate writer options for DataFrame.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.DataFrameWriteOptions._raw_write_options">
+<span class="sig-name descname"><span class="pre">_raw_write_options</span></span><a class="headerlink" href="#datafusion.DataFrameWriteOptions._raw_write_options" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -4300,6 +4387,34 @@ type of expression, an error will be generated when <code class="docutils litera
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="datafusion.InsertOp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">InsertOp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwds</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.InsertOp" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Insert operation mode.</p>
+<p>These modes are used by the table writing feature to define how record
+batches should be written to a table.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.InsertOp.APPEND">
+<span class="sig-name descname"><span class="pre">APPEND</span></span><a class="headerlink" href="#datafusion.InsertOp.APPEND" title="Link to this definition">¶</a></dt>
+<dd><p>Appends new rows to the existing table without modifying any existing rows.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.InsertOp.OVERWRITE">
+<span class="sig-name descname"><span class="pre">OVERWRITE</span></span><a class="headerlink" href="#datafusion.InsertOp.OVERWRITE" title="Link to this definition">¶</a></dt>
+<dd><p>Overwrites all existing rows in the table with the new rows.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.InsertOp.REPLACE">
+<span class="sig-name descname"><span class="pre">REPLACE</span></span><a class="headerlink" href="#datafusion.InsertOp.REPLACE" title="Link to this definition">¶</a></dt>
+<dd><p>Replace existing rows that collide with the inserted rows.</p>
+<p>Replacement is typically based on a unique key or primary key.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="datafusion.LogicalPlan">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">LogicalPlan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.LogicalPlan</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.LogicalPlan" title="Link to this definition">¶</a></dt>
 <dd><p>Logical Plan.</p>
@@ -5196,9 +5311,18 @@ automatically created.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="datafusion.Table">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datafusion._internal.catalog.RawTable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
-<dd><p>DataFusion table.</p>
-<p>This constructor is not typically called by the end user.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">datafusion.</span></span><span class="sig-name descname"><span class="pre">Table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">table</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="context/index.html#datafusion.context.TableProviderExportable" title="datafusion.context.TableProviderExportable"><span class="pre">datafusion.context.TableProviderExportable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">datafusion.DataFrame</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#datafusion.Table" title="Link to this definition">¶</a></dt>
+<dd><p>A DataFusion table.</p>
+<p>Internally we currently support the following types of tables:</p>
+<ul class="simple">
+<li><p>Tables created using built-in DataFusion methods, such as
+reading from CSV or Parquet</p></li>
+<li><p>pyarrow datasets</p></li>
+<li><p>DataFusion DataFrames, which will be converted into a view</p></li>
+<li><p>Externally provided tables implemented with the FFI PyCapsule
+interface (advanced)</p></li>
+</ul>
+<p>Constructor.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Table.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#datafusion.Table.__repr__" title="Link to this definition">¶</a></dt>
@@ -5208,8 +5332,18 @@ automatically created.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="datafusion.Table.from_dataset">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pyarrow.dataset.Dataset</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><span class="pre">Table</span></a></span></span><a class="headerlink" href="#datafusion.Table.from_dataset" title="Link to this definition">¶</a></dt>
-<dd><p>Turn a pyarrow Dataset into a Table.</p>
+<dd><p>Turn a <code class="xref py py-mod docutils literal notranslate"><span class="pre">pyarrow.dataset</span></code> <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> into a <a class="reference internal" href="#datafusion.Table" title="datafusion.Table"><code class="xref py py-class docutils literal notranslate"><span class="pre">Table</span></code></a>.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Table.__slots__">
+<span class="sig-name descname"><span class="pre">__slots__</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('_inner',)</span></em><a class="headerlink" href="#datafusion.Table.__slots__" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datafusion.Table._inner">
+<span class="sig-name descname"><span class="pre">_inner</span></span><a class="headerlink" href="#datafusion.Table._inner" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="datafusion.Table.kind">
@@ -5222,11 +5356,6 @@ automatically created.</p>
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">pyarrow.Schema</span></em><a class="headerlink" href="#datafusion.Table.schema" title="Link to this definition">¶</a></dt>
 <dd><p>Returns the schema associated with this table.</p>
 </dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="datafusion.Table.table">
-<span class="sig-name descname"><span class="pre">table</span></span><a class="headerlink" href="#datafusion.Table.table" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 </dd></dl>
 
