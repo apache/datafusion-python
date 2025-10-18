@@ -154,6 +154,15 @@ pub fn to_rust_accumulator(accum: PyObject) -> AccumulatorFactoryFunction {
     })
 }
 
+fn aggregate_udf_from_capsule(capsule: &Bound<'_, PyCapsule>) -> PyDataFusionResult<AggregateUDF> {
+    validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
+
+    let udaf = unsafe { capsule.reference::<FFI_AggregateUDF>() };
+    let udaf: ForeignAggregateUDF = udaf.try_into()?;
+
+    Ok(udaf.into())
+}
+
 /// Represents an AggregateUDF
 #[pyclass(frozen, name = "AggregateUDF", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -186,22 +195,22 @@ impl PyAggregateUDF {
 
     #[staticmethod]
     pub fn from_pycapsule(func: Bound<'_, PyAny>) -> PyDataFusionResult<Self> {
+        if func.is_instance_of::<PyCapsule>() {
+            let capsule = func.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+            let function = aggregate_udf_from_capsule(capsule)?;
+            return Ok(Self { function });
+        }
+
         if func.hasattr("__datafusion_aggregate_udf__")? {
             let capsule = func.getattr("__datafusion_aggregate_udf__")?.call0()?;
             let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
-            validate_pycapsule(capsule, "datafusion_aggregate_udf")?;
-
-            let udaf = unsafe { capsule.reference::<FFI_AggregateUDF>() };
-            let udaf: ForeignAggregateUDF = udaf.try_into()?;
-
-            Ok(Self {
-                function: udaf.into(),
-            })
-        } else {
-            Err(crate::errors::PyDataFusionError::Common(
-                "__datafusion_aggregate_udf__ does not exist on AggregateUDF object.".to_string(),
-            ))
+            let function = aggregate_udf_from_capsule(capsule)?;
+            return Ok(Self { function });
         }
+
+        Err(crate::errors::PyDataFusionError::Common(
+            "__datafusion_aggregate_udf__ does not exist on AggregateUDF object.".to_string(),
+        ))
     }
 
     /// creates a new PyExpr with the call of the udf
