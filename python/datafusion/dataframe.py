@@ -914,17 +914,20 @@ class DataFrame:
         """
         return DataFrame(self.df.repartition(num))
 
-    def repartition_by_hash(self, *exprs: Expr, num: int) -> DataFrame:
+    def repartition_by_hash(self, *exprs: Expr | str, num: int) -> DataFrame:
         """Repartition a DataFrame using a hash partitioning scheme.
 
         Args:
-            exprs: Expressions to evaluate and perform hashing on.
+            exprs: Expressions or a SQL expression string to evaluate
+                   and perform hashing on.
             num: Number of partitions to repartition the DataFrame into.
 
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [expr.expr for expr in exprs]
+        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        exprs = expr_list_to_raw_expr_list(exprs)
+
         return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
