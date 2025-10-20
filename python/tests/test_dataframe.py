@@ -1613,11 +1613,14 @@ def test_repartition(df):
 def test_repartition_by_hash(df):
     df.repartition_by_hash(column("a"), num=2)
 
+
 def test_repartition_by_hash_sql_expression(df):
     df.repartition_by_hash("a", num=2)
 
+
 def test_repartition_by_hash_mix(df):
     df.repartition_by_hash(column("a"), "b", num=2)
+
 
 def test_intersect():
     ctx = SessionContext()
