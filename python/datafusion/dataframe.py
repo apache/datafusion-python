@@ -521,11 +521,12 @@ class DataFrame:
         """
         return Expr(self.df.parse_sql_expr(expr))
 
-    def with_column(self, name: str, expr: Expr) -> DataFrame:
+    def with_column(self, name: str, expr: Expr | str) -> DataFrame:
         """Add an additional column to the DataFrame.
 
         The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
+        string that will be parsed against the DataFrame schema.
 
         Example::
 
@@ -539,6 +540,8 @@ class DataFrame:
         Returns:
             DataFrame with the new column.
         """
+        expr = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+
         return DataFrame(self.df.with_column(name, ensure_expr(expr)))
 
     def with_columns(
