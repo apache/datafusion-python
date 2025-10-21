@@ -549,7 +549,8 @@ class DataFrame:
     ) -> DataFrame:
         """Add columns to the DataFrame.
 
-        By passing expressions, iterables of expressions, string SQL expressions, or named expressions.
+        By passing expressions, iterables of expressions, string SQL expressions,
+        or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
         :func:`datafusion.col` or :func:`datafusion.lit` or SQL expressions.
         To pass named expressions use the form ``name=Expr``.
@@ -565,7 +566,8 @@ class DataFrame:
             )
 
         Args:
-            exprs: Either a single expression, an iterable of expressions to add or string SQL expressions.
+            exprs: Either a single expression, an iterable of expressions to add or
+                   string SQL expressions.
             named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
@@ -574,8 +576,7 @@ class DataFrame:
         expressions = []
         for expr in exprs:
             if isinstance(expr, str):
-                expr = self.parse_sql_expr(expr)
-                expressions.append(ensure_expr(expr))
+                expressions.append(self.parse_sql_expr(expr).expr)
             elif isinstance(expr, Iterable) and not isinstance(
                 expr, (Expr, str, bytes, bytearray)
             ):
@@ -591,9 +592,9 @@ class DataFrame:
                 expressions.append(ensure_expr(expr))
 
         for alias, expr in named_exprs.items():
-            expr = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
-            ensure_expr(expr)
-            expressions.append(expr.alias(alias).expr)
+            e = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+            ensure_expr(e)
+            expressions.append(e.alias(alias).expr)
 
         return DataFrame(self.df.with_columns(expressions))
 
