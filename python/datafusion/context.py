@@ -46,6 +46,7 @@ if TYPE_CHECKING:
 
     import pandas as pd
     import polars as pl  # type: ignore[import]
+    import pyarrow as pa  # Optional: only needed for type hints
 
     from datafusion.catalog import CatalogProvider, Table
     from datafusion.expr import SortKey
@@ -58,6 +59,16 @@ if TYPE_CHECKING:
     )
 
 
+class ArrowSchemaExportable(Protocol):
+    """Type hint for object exporting Arrow Schema via Arrow PyCapsule Interface.
+
+    https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
+    """
+
+    def __arrow_c_schema__(self) -> object:  # noqa: D105
+        ...
+
+
 class ArrowStreamExportable(Protocol):
     """Type hint for object exporting Arrow C Stream via Arrow PyCapsule Interface.
 
@@ -66,7 +77,8 @@ class ArrowStreamExportable(Protocol):
 
     def __arrow_c_stream__(  # noqa: D105
         self, requested_schema: object | None = None
-    ) -> object: ...
+    ) -> object:
+        ...
 
 
 class ArrowArrayExportable(Protocol):
@@ -77,7 +89,8 @@ class ArrowArrayExportable(Protocol):
 
     def __arrow_c_array__(  # noqa: D105
         self, requested_schema: object | None = None
-    ) -> tuple[object, object]: ...
+    ) -> tuple[object, object]:
+        ...
 
 
 class TableProviderExportable(Protocol):
@@ -86,7 +99,8 @@ class TableProviderExportable(Protocol):
     https://datafusion.apache.org/python/user-guide/io/table_provider.html
     """
 
-    def __datafusion_table_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_table_provider__(self) -> object:  # noqa: D105
+        ...
 
 
 class CatalogProviderExportable(Protocol):
@@ -95,7 +109,8 @@ class CatalogProviderExportable(Protocol):
     https://docs.rs/datafusion/latest/datafusion/catalog/trait.CatalogProvider.html
     """
 
-    def __datafusion_catalog_provider__(self) -> object: ...  # noqa: D105
+    def __datafusion_catalog_provider__(self) -> object:  # noqa: D105
+        ...
 
 
 class SessionConfig:
@@ -561,7 +576,7 @@ class SessionContext:
         path: str | pathlib.Path,
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".parquet",
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register multiple files as a single table.
@@ -630,7 +645,7 @@ class SessionContext:
         self,
         partitions: list[list[pa.RecordBatch]],
         name: str | None = None,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
     ) -> DataFrame:
         """Create and return a dataframe using the provided partitions.
 
@@ -820,7 +835,7 @@ class SessionContext:
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> None:
         """Register a Parquet file as a table.
@@ -862,7 +877,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path | list[str | pathlib.Path],
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         has_header: bool = True,
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
@@ -905,7 +920,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
@@ -944,7 +959,7 @@ class SessionContext:
         self,
         name: str,
         path: str | pathlib.Path,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         file_extension: str = ".avro",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
     ) -> None:
@@ -1019,7 +1034,7 @@ class SessionContext:
     def read_json(
         self,
         path: str | pathlib.Path,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         schema_infer_max_records: int = 1000,
         file_extension: str = ".json",
         table_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
@@ -1057,7 +1072,7 @@ class SessionContext:
     def read_csv(
         self,
         path: str | pathlib.Path | list[str] | list[pathlib.Path],
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         has_header: bool = True,
         delimiter: str = ",",
         schema_infer_max_records: int = 1000,
@@ -1111,7 +1126,7 @@ class SessionContext:
         parquet_pruning: bool = True,
         file_extension: str = ".parquet",
         skip_metadata: bool = True,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         file_sort_order: Sequence[Sequence[SortKey]] | None = None,
     ) -> DataFrame:
         """Read a Parquet source into a :py:class:`~datafusion.dataframe.Dataframe`.
@@ -1155,7 +1170,7 @@ class SessionContext:
     def read_avro(
         self,
         path: str | pathlib.Path,
-        schema: pa.Schema | None = None,
+        schema: ArrowSchemaExportable | None = None,
         file_partition_cols: list[tuple[str, str | pa.DataType]] | None = None,
         file_extension: str = ".avro",
     ) -> DataFrame:
