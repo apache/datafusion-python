@@ -477,8 +477,8 @@ def test_tail(df):
     assert result.column(2) == pa.array([8])
 
 
-def test_with_column(df):
-    df = df.with_column("c", column("a") + column("b"))
+def test_with_column_sql_expression(df):
+    df = df.with_column("c", "a + b")
 
     # execute and collect the first (and only) batch
     result = df.collect()[0]
@@ -492,11 +492,19 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
-def test_with_column_invalid_expr(df):
-    with pytest.raises(
-        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
-    ):
-        df.with_column("c", "a")
+def test_with_column(df):
+    df = df.with_column("c", column("a") + column("b"))
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
 
 
 def test_with_columns(df):
