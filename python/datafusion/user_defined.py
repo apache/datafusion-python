@@ -261,9 +261,9 @@ class ScalarUDF:
         """
 
         def _function(
-            func: Callable[..., _R],
+            func: Callable[..., Any],
             input_types: list[pa.DataType],
-            return_type: _R,
+            return_type: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: Optional[str] = None,
         ) -> ScalarUDF:
@@ -285,7 +285,7 @@ class ScalarUDF:
 
         def _decorator(
             input_types: list[pa.DataType],
-            return_type: _R,
+            return_type: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: Optional[str] = None,
         ) -> Callable:
