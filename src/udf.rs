@@ -22,22 +22,19 @@ use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
 use pyo3::types::PyCapsule;
 use pyo3::{prelude::*, types::PyTuple};
 
+use crate::errors::to_datafusion_err;
+use crate::errors::{py_datafusion_err, PyDataFusionResult};
+use crate::expr::PyExpr;
+use crate::utils::{parse_volatility, validate_pycapsule};
 use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::error::DataFusionError;
-use datafusion::logical_expr::function::ScalarFunctionImplementation;
-use datafusion::logical_expr::ptr_eq::PtrEq;
 use datafusion::logical_expr::{
-    ColumnarValue, ReturnFieldArgs, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
-    Volatility,
+    function::ScalarFunctionImplementation, ptr_eq::PtrEq, ColumnarValue, ReturnFieldArgs,
+    ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
 };
-
-use crate::errors::to_datafusion_err;
-use crate::errors::{py_datafusion_err, PyDataFusionResult};
-use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, validate_pycapsule};
 
 /// Create a Rust callable function from a python function that expects pyarrow arrays
 fn pyarrow_function_to_rust(
