@@ -41,6 +41,19 @@ from datafusion.expr import Expr
 
 PyArrowArray = Union[pa.Array, pa.ChunkedArray]
 # Type alias for array batches exchanged with Python scalar UDFs.
+#
+# We need two related but different annotations here:
+#  - `PyArrowArray` is the concrete union type (pa.Array | pa.ChunkedArray)
+#    that is convenient for user-facing callables and casts. Use this when
+#    annotating or checking values that may be either an Array or
+#    a ChunkedArray.
+#  - `PyArrowArrayT` is a constrained `TypeVar` over the two concrete
+#    array flavors. Keeping a generic TypeVar allows helpers like
+#    `_wrap_extension_value` and `_wrap_udf_function` to remain generic
+#    and preserve the specific array "flavor" (Array vs ChunkedArray)
+#    flowing through them, rather than collapsing everything to the
+#    wide union. This improves type-checking and keeps return types
+#    precise in the wrapper logic.
 PyArrowArrayT = TypeVar("PyArrowArrayT", pa.Array, pa.ChunkedArray)
 
 
