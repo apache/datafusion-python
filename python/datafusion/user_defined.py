@@ -22,12 +22,16 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Optional, Protocol, Sequence, overload
+from typing import Any, Callable, Optional, Protocol, Sequence, TypeVar, cast, overload
 
 import pyarrow as pa
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
+
+PyArrowArray = pa.Array | pa.ChunkedArray
+# Type alias for array batches exchanged with Python scalar UDFs.
+PyArrowArrayT = TypeVar("PyArrowArrayT", pa.Array, pa.ChunkedArray)
 
 class Volatility(Enum):
     """Defines how stable or volatile a function is.
@@ -113,7 +117,7 @@ def _normalize_return_field(
     return _normalize_field(value, default_name=default_name)
 
 
-def _wrap_extension_value(value: Any, data_type: pa.DataType) -> Any:
+def _wrap_extension_value(value: PyArrowArrayT, data_type: pa.DataType) -> PyArrowArrayT:
     storage_type = getattr(data_type, "storage_type", None)
     wrap_array = getattr(data_type, "wrap_array", None)
     if storage_type is None or wrap_array is None:
@@ -127,17 +131,20 @@ def _wrap_extension_value(value: Any, data_type: pa.DataType) -> Any:
 
 
 def _wrap_udf_function(
-    func: Callable[..., Any],
+    func: Callable[..., PyArrowArrayT],
     input_fields: Sequence[pa.Field],
     return_field: pa.Field,
-) -> Callable[..., Any]:
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
+) -> Callable[..., PyArrowArrayT]:
+    def wrapper(*args: Any, **kwargs: Any) -> PyArrowArrayT:
         if args:
-            converted_args = list(args)
+            converted_args: list[Any] = list(args)
             for idx, field in enumerate(input_fields):
                 if idx >= len(converted_args):
                     break
-                converted_args[idx] = _wrap_extension_value(converted_args[idx], field.type)
+                converted_args[idx] = _wrap_extension_value(
+                    cast(PyArrowArray, converted_args[idx]),
+                    field.type,
+                )
         else:
             converted_args = []
         result = func(*converted_args, **kwargs)
@@ -162,7 +169,7 @@ class ScalarUDF:
     def __init__(
         self,
         name: str,
-        func: Callable[..., Any],
+        func: Callable[..., PyArrowArray] | ScalarUDFExportable,
         input_types: pa.DataType | pa.Field | Sequence[pa.DataType | pa.Field],
         return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
@@ -201,12 +208,12 @@ class ScalarUDF:
         return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: Optional[str] = None,
-    ) -> Callable[..., ScalarUDF]: ...
+    ) -> Callable[[Callable[..., PyArrowArray]], Callable[..., Expr]]: ...
 
     @overload
     @staticmethod
     def udf(
-        func: Callable[..., Any],
+        func: Callable[..., PyArrowArray],
         input_types: list[pa.DataType | pa.Field],
         return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
@@ -234,6 +241,8 @@ class ScalarUDF:
                 backed ScalarUDF within a PyCapsule, you can pass this parameter
                 and ignore the rest. They will be determined directly from the
                 underlying function. See the online documentation for more information.
+                The callable should accept and return :class:`pyarrow.Array` or
+                :class:`pyarrow.ChunkedArray` values.
             input_types (list[pa.DataType | pa.Field]): The argument types for ``func``.
                 This list must be of the same length as the number of arguments. Pass
                 :class:`pyarrow.Field` instances to preserve extension metadata.
@@ -261,7 +270,7 @@ class ScalarUDF:
         """
 
         def _function(
-            func: Callable[..., Any],
+            func: Callable[..., PyArrowArray],
             input_types: list[pa.DataType | pa.Field],
             return_type: pa.DataType | pa.Field,
             volatility: Volatility | str,
@@ -288,14 +297,14 @@ class ScalarUDF:
             return_type: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: Optional[str] = None,
-        ) -> Callable:
-            def decorator(func: Callable):
+        ) -> Callable[[Callable[..., PyArrowArray]], Callable[..., Expr]]:
+            def decorator(func: Callable[..., PyArrowArray]) -> Callable[..., Expr]:
                 udf_caller = ScalarUDF.udf(
                     func, input_types, return_type, volatility, name
                 )
 
                 @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any):
+                def wrapper(*args: Any, **kwargs: Any) -> Expr:
                     return udf_caller(*args, **kwargs)
 
                 return wrapper
