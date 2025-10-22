@@ -22,14 +22,14 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Optional, Protocol, Sequence, TypeVar, cast, overload
+from typing import Any, Callable, Optional, Protocol, Sequence, TypeVar, Union, cast, overload
 
 import pyarrow as pa
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
 
-PyArrowArray = pa.Array | pa.ChunkedArray
+PyArrowArray = Union[pa.Array, pa.ChunkedArray]
 # Type alias for array batches exchanged with Python scalar UDFs.
 PyArrowArrayT = TypeVar("PyArrowArrayT", pa.Array, pa.ChunkedArray)
 
