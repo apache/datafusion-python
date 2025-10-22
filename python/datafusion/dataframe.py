@@ -567,7 +567,7 @@ class DataFrame:
 
         Args:
             exprs: Either a single expression, an iterable of expressions to add or
-                   string SQL expressions.
+                   SQL expression strings.
             named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
