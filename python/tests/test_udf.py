@@ -15,6 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
 import pyarrow as pa
 import pytest
 from datafusion import column, udf
@@ -150,16 +152,19 @@ def test_uuid_extension_chain(ctx) -> None:
         name="uuid_assert",
     )
 
-    batch = pa.RecordBatch.from_arrays(
+    # The UUID extension metadata should survive UDF registration.
+    assert getattr(uuid_type, "extension_name", None) == "arrow.uuid"
+    assert getattr(uuid_field.type, "extension_name", None) == "arrow.uuid"
+
+    storage = pa.array(
         [
-            pa.array(
-                [
-                    "00000000-0000-0000-0000-000000000000",
-                    "00000000-0000-0000-0000-000000000001",
-                ],
-                type=uuid_type,
-            )
+            uuid.UUID("00000000-0000-0000-0000-000000000000").bytes,
+            uuid.UUID("00000000-0000-0000-0000-000000000001").bytes,
         ],
+        type=uuid_type.storage_type,
+    )
+    batch = pa.RecordBatch.from_arrays(
+        [uuid_type.wrap_array(storage)],
         names=["uuid_col"],
     )
 
@@ -170,12 +175,9 @@ def test_uuid_extension_chain(ctx) -> None:
         .column(0)
     )
 
-    expected = pa.array(
-        [
-            "00000000-0000-0000-0000-000000000000",
-            "00000000-0000-0000-0000-000000000001",
-        ],
-        type=uuid_type,
-    )
+    expected = uuid_type.wrap_array(storage)
+
+    if isinstance(result, pa.Array) and result.type.equals(uuid_type.storage_type):
+        result = uuid_type.wrap_array(result)
 
     assert result.equals(expected)

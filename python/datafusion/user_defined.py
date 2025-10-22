@@ -73,11 +73,17 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+def _clone_field(field: pa.Field) -> pa.Field:
+    """Return a deep copy of ``field`` including its DataType."""
+
+    return pa.schema([field]).field(0)
+
+
 def _normalize_field(value: pa.DataType | pa.Field, *, default_name: str) -> pa.Field:
     if isinstance(value, pa.Field):
-        return value
+        return _clone_field(value)
     if isinstance(value, pa.DataType):
-        return pa.field(default_name, value)
+        return _clone_field(pa.field(default_name, value))
     msg = "Expected a pyarrow.DataType or pyarrow.Field"
     raise TypeError(msg)
 
@@ -105,6 +111,39 @@ def _normalize_return_field(
 ) -> pa.Field:
     default_name = f"{name}_result" if name else "result"
     return _normalize_field(value, default_name=default_name)
+
+
+def _wrap_extension_value(value: Any, data_type: pa.DataType) -> Any:
+    storage_type = getattr(data_type, "storage_type", None)
+    wrap_array = getattr(data_type, "wrap_array", None)
+    if storage_type is None or wrap_array is None:
+        return value
+    if isinstance(value, pa.Array) and value.type.equals(storage_type):
+        return wrap_array(value)
+    if isinstance(value, pa.ChunkedArray) and value.type.equals(storage_type):
+        wrapped_chunks = [wrap_array(chunk) for chunk in value.chunks]
+        return pa.chunked_array(wrapped_chunks)
+    return value
+
+
+def _wrap_udf_function(
+    func: Callable[..., Any],
+    input_fields: Sequence[pa.Field],
+    return_field: pa.Field,
+) -> Callable[..., Any]:
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if args:
+            converted_args = list(args)
+            for idx, field in enumerate(input_fields):
+                if idx >= len(converted_args):
+                    break
+                converted_args[idx] = _wrap_extension_value(converted_args[idx], field.type)
+        else:
+            converted_args = []
+        result = func(*converted_args, **kwargs)
+        return _wrap_extension_value(result, return_field.type)
+
+    return wrapper
 
 
 class ScalarUDFExportable(Protocol):
@@ -137,8 +176,9 @@ class ScalarUDF:
             return
         normalized_inputs = _normalize_input_fields(input_types)
         normalized_return = _normalize_return_field(return_type, name=name)
+        wrapped_func = _wrap_udf_function(func, normalized_inputs, normalized_return)
         self._udf = df_internal.ScalarUDF(
-            name, func, normalized_inputs, normalized_return, str(volatility)
+            name, wrapped_func, normalized_inputs, normalized_return, str(volatility)
         )
 
     def __repr__(self) -> str:
