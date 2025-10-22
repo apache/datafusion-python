@@ -22,7 +22,17 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Any, Callable, Optional, Protocol, Sequence, TypeVar, Union, cast, overload
+from typing import (
+    Any,
+    Callable,
+    Optional,
+    Protocol,
+    Sequence,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 import pyarrow as pa
 
@@ -32,6 +42,7 @@ from datafusion.expr import Expr
 PyArrowArray = Union[pa.Array, pa.ChunkedArray]
 # Type alias for array batches exchanged with Python scalar UDFs.
 PyArrowArrayT = TypeVar("PyArrowArrayT", pa.Array, pa.ChunkedArray)
+
 
 class Volatility(Enum):
     """Defines how stable or volatile a function is.
@@ -79,7 +90,6 @@ class Volatility(Enum):
 
 def _clone_field(field: pa.Field) -> pa.Field:
     """Return a deep copy of ``field`` including its DataType."""
-
     return pa.schema([field]).field(0)
 
 
@@ -104,7 +114,8 @@ def _normalize_input_fields(
         raise TypeError(msg)
 
     return [
-        _normalize_field(value, default_name=f"arg_{idx}") for idx, value in enumerate(sequence)
+        _normalize_field(value, default_name=f"arg_{idx}")
+        for idx, value in enumerate(sequence)
     ]
 
 
@@ -117,7 +128,9 @@ def _normalize_return_field(
     return _normalize_field(value, default_name=default_name)
 
 
-def _wrap_extension_value(value: PyArrowArrayT, data_type: pa.DataType) -> PyArrowArrayT:
+def _wrap_extension_value(
+    value: PyArrowArrayT, data_type: pa.DataType
+) -> PyArrowArrayT:
     storage_type = getattr(data_type, "storage_type", None)
     wrap_array = getattr(data_type, "wrap_array", None)
     if storage_type is None or wrap_array is None:
@@ -440,10 +453,12 @@ class AggregateUDF:
         This class allows you to define an aggregate function that can be used in
         data aggregation or window function calls.
 
-        Usage:
-            - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
-            - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
-              When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
+                Usage:
+                        - As a function: ``udaf(accum, input_types, return_type, state_type,``
+                            ``volatility, name)``.
+                        - As a decorator: ``@udaf(input_types, return_type, state_type,``
+                            ``volatility, name)``.
+                            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
 
         Function example:
 

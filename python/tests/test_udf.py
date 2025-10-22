@@ -15,12 +15,13 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
 import uuid
 
 import pyarrow as pa
 import pytest
 from datafusion import column, udf
-
 
 UUID_EXTENSION_AVAILABLE = hasattr(pa, "uuid")
 
@@ -180,11 +181,7 @@ def test_uuid_extension_chain(ctx) -> None:
     )
 
     df = ctx.create_dataframe([[batch]])
-    result = (
-        df.select(second(first(column("uuid_col"))))
-        .collect()[0]
-        .column(0)
-    )
+    result = df.select(second(first(column("uuid_col")))).collect()[0].column(0)
 
     expected = uuid_type.wrap_array(storage)
 
@@ -212,9 +209,7 @@ def test_uuid_extension_chain(ctx) -> None:
 
     empty_df = ctx.create_dataframe([[empty_batch]])
     empty_result = (
-        empty_df.select(second(empty_first(column("uuid_col"))))
-        .collect()[0]
-        .column(0)
+        empty_df.select(second(empty_first(column("uuid_col")))).collect()[0].column(0)
     )
 
     expected_empty = uuid_type.wrap_array(empty_storage)
