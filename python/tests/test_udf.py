@@ -184,7 +184,10 @@ def test_uuid_extension_chain(ctx) -> None:
 
     expected = uuid_type.wrap_array(storage)
 
-    if isinstance(result, pa.Array) and result.type.equals(uuid_type.storage_type):
-        result = uuid_type.wrap_array(result)
+    if isinstance(result, pa.ChunkedArray):
+        assert result.type.equals(uuid_type)
+    else:
+        assert isinstance(result, pa.ExtensionArray)
+        assert result.type.equals(uuid_type)
 
     assert result.equals(expected)
