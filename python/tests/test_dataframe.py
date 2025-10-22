@@ -546,7 +546,7 @@ def test_with_columns_str(df):
             "a + b as e",
             "a + b as f",
         ],
-        g=("a + b"),
+        g="a + b",
     )
 
     # execute and collect the first (and only) batch
