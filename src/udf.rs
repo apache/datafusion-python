@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::fmt;
 use std::sync::Arc;
 
 use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
@@ -22,13 +23,16 @@ use pyo3::types::PyCapsule;
 use pyo3::{prelude::*, types::PyTuple};
 
 use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
-use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::error::DataFusionError;
 use datafusion::logical_expr::function::ScalarFunctionImplementation;
-use datafusion::logical_expr::ScalarUDF;
-use datafusion::logical_expr::{create_udf, ColumnarValue};
+use datafusion::logical_expr::ptr_eq::PtrEq;
+use datafusion::logical_expr::{
+    ColumnarValue, ReturnFieldArgs, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
+    Volatility,
+};
 
 use crate::errors::to_datafusion_err;
 use crate::errors::{py_datafusion_err, PyDataFusionResult};
@@ -80,6 +84,83 @@ fn to_scalar_function_impl(func: PyObject) -> ScalarFunctionImplementation {
     })
 }
 
+#[derive(PartialEq, Eq, Hash)]
+struct PySimpleScalarUDF {
+    name: String,
+    signature: Signature,
+    return_field: Arc<Field>,
+    fun: PtrEq<ScalarFunctionImplementation>,
+}
+
+impl fmt::Debug for PySimpleScalarUDF {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("PySimpleScalarUDF")
+            .field("name", &self.name)
+            .field("signature", &self.signature)
+            .field("return_field", &self.return_field)
+            .finish()
+    }
+}
+
+impl PySimpleScalarUDF {
+    fn new(
+        name: impl Into<String>,
+        input_fields: Vec<Field>,
+        return_field: Field,
+        volatility: Volatility,
+        fun: ScalarFunctionImplementation,
+    ) -> Self {
+        let signature_types = input_fields
+            .into_iter()
+            .map(|field| field.data_type().clone())
+            .collect();
+        let signature = Signature::exact(signature_types, volatility);
+        Self {
+            name: name.into(),
+            signature,
+            return_field: Arc::new(return_field),
+            fun: fun.into(),
+        }
+    }
+}
+
+impl ScalarUDFImpl for PySimpleScalarUDF {
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    fn return_type(&self, _arg_types: &[DataType]) -> datafusion::error::Result<DataType> {
+        Ok(self.return_field.data_type().clone())
+    }
+
+    fn return_field_from_args(
+        &self,
+        _args: ReturnFieldArgs,
+    ) -> datafusion::error::Result<Arc<Field>> {
+        Ok(Arc::new(
+            self.return_field
+                .as_ref()
+                .clone()
+                .with_name(self.name.clone()),
+        ))
+    }
+
+    fn invoke_with_args(
+        &self,
+        args: ScalarFunctionArgs,
+    ) -> datafusion::error::Result<ColumnarValue> {
+        (self.fun)(&args.args)
+    }
+}
+
 /// Represents a PyScalarUDF
 #[pyclass(frozen, name = "ScalarUDF", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]
@@ -94,17 +175,19 @@ impl PyScalarUDF {
     fn new(
         name: &str,
         func: PyObject,
-        input_types: PyArrowType<Vec<DataType>>,
-        return_type: PyArrowType<DataType>,
+        input_types: PyArrowType<Vec<Field>>,
+        return_type: PyArrowType<Field>,
         volatility: &str,
     ) -> PyResult<Self> {
-        let function = create_udf(
+        let volatility = parse_volatility(volatility)?;
+        let scalar_impl = PySimpleScalarUDF::new(
             name,
             input_types.0,
             return_type.0,
-            parse_volatility(volatility)?,
+            volatility,
             to_scalar_function_impl(func),
         );
+        let function = ScalarUDF::new_from_impl(scalar_impl);
         Ok(Self { function })
     }
 

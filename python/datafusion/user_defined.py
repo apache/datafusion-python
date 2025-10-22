@@ -22,16 +22,12 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol, TypeVar, overload
+from typing import Any, Callable, Optional, Protocol, Sequence, overload
 
 import pyarrow as pa
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
-
-if TYPE_CHECKING:
-    _R = TypeVar("_R", bound=pa.DataType)
-
 
 class Volatility(Enum):
     """Defines how stable or volatile a function is.
@@ -77,6 +73,40 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+def _normalize_field(value: pa.DataType | pa.Field, *, default_name: str) -> pa.Field:
+    if isinstance(value, pa.Field):
+        return value
+    if isinstance(value, pa.DataType):
+        return pa.field(default_name, value)
+    msg = "Expected a pyarrow.DataType or pyarrow.Field"
+    raise TypeError(msg)
+
+
+def _normalize_input_fields(
+    values: pa.DataType | pa.Field | Sequence[pa.DataType | pa.Field],
+) -> list[pa.Field]:
+    if isinstance(values, (pa.DataType, pa.Field)):
+        sequence: Sequence[pa.DataType | pa.Field] = [values]
+    elif isinstance(values, Sequence) and not isinstance(values, (str, bytes)):
+        sequence = values
+    else:
+        msg = "input_types must be a DataType, Field, or a sequence of them"
+        raise TypeError(msg)
+
+    return [
+        _normalize_field(value, default_name=f"arg_{idx}") for idx, value in enumerate(sequence)
+    ]
+
+
+def _normalize_return_field(
+    value: pa.DataType | pa.Field,
+    *,
+    name: str,
+) -> pa.Field:
+    default_name = f"{name}_result" if name else "result"
+    return _normalize_field(value, default_name=default_name)
+
+
 class ScalarUDFExportable(Protocol):
     """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
 
@@ -93,9 +123,9 @@ class ScalarUDF:
     def __init__(
         self,
         name: str,
-        func: Callable[..., _R],
-        input_types: pa.DataType | list[pa.DataType],
-        return_type: _R,
+        func: Callable[..., Any],
+        input_types: pa.DataType | pa.Field | Sequence[pa.DataType | pa.Field],
+        return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
     ) -> None:
         """Instantiate a scalar user-defined function (UDF).
@@ -105,10 +135,10 @@ class ScalarUDF:
         if hasattr(func, "__datafusion_scalar_udf__"):
             self._udf = df_internal.ScalarUDF.from_pycapsule(func)
             return
-        if isinstance(input_types, pa.DataType):
-            input_types = [input_types]
+        normalized_inputs = _normalize_input_fields(input_types)
+        normalized_return = _normalize_return_field(return_type, name=name)
         self._udf = df_internal.ScalarUDF(
-            name, func, input_types, return_type, str(volatility)
+            name, func, normalized_inputs, normalized_return, str(volatility)
         )
 
     def __repr__(self) -> str:
@@ -127,8 +157,8 @@ class ScalarUDF:
     @overload
     @staticmethod
     def udf(
-        input_types: list[pa.DataType],
-        return_type: _R,
+        input_types: list[pa.DataType | pa.Field],
+        return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> Callable[..., ScalarUDF]: ...
@@ -136,9 +166,9 @@ class ScalarUDF:
     @overload
     @staticmethod
     def udf(
-        func: Callable[..., _R],
-        input_types: list[pa.DataType],
-        return_type: _R,
+        func: Callable[..., Any],
+        input_types: list[pa.DataType | pa.Field],
+        return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: Optional[str] = None,
     ) -> ScalarUDF: ...
@@ -164,10 +194,11 @@ class ScalarUDF:
                 backed ScalarUDF within a PyCapsule, you can pass this parameter
                 and ignore the rest. They will be determined directly from the
                 underlying function. See the online documentation for more information.
-            input_types (list[pa.DataType]): The data types of the arguments
-                to ``func``. This list must be of the same length as the number of
-                arguments.
-            return_type (_R): The data type of the return value from the function.
+            input_types (list[pa.DataType | pa.Field]): The argument types for ``func``.
+                This list must be of the same length as the number of arguments. Pass
+                :class:`pyarrow.Field` instances to preserve extension metadata.
+            return_type (pa.DataType | pa.Field): The return type of the function. Use a
+                :class:`pyarrow.Field` to preserve metadata on extension arrays.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 

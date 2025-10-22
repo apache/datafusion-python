@@ -124,3 +124,58 @@ def test_udf_with_parameters_decorator(df) -> None:
     result = df2.collect()[0].column(0)
 
     assert result == pa.array([False, True, True])
+
+
+def test_uuid_extension_chain(ctx) -> None:
+    uuid_type = pa.uuid()
+    uuid_field = pa.field("uuid_col", uuid_type)
+
+    first = udf(
+        lambda values: values,
+        [uuid_field],
+        uuid_field,
+        volatility="immutable",
+        name="uuid_identity",
+    )
+
+    def ensure_extension(values: pa.Array) -> pa.Array:
+        assert isinstance(values, pa.ExtensionArray)
+        return values
+
+    second = udf(
+        ensure_extension,
+        [uuid_field],
+        uuid_field,
+        volatility="immutable",
+        name="uuid_assert",
+    )
+
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array(
+                [
+                    "00000000-0000-0000-0000-000000000000",
+                    "00000000-0000-0000-0000-000000000001",
+                ],
+                type=uuid_type,
+            )
+        ],
+        names=["uuid_col"],
+    )
+
+    df = ctx.create_dataframe([[batch]])
+    result = (
+        df.select(second(first(column("uuid_col"))))
+        .collect()[0]
+        .column(0)
+    )
+
+    expected = pa.array(
+        [
+            "00000000-0000-0000-0000-000000000000",
+            "00000000-0000-0000-0000-000000000001",
+        ],
+        type=uuid_type,
+    )
+
+    assert result.equals(expected)
