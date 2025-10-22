@@ -552,7 +552,7 @@ class DataFrame:
         By passing expressions, iterables of expressions, string SQL expressions,
         or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit` or SQL expressions.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
