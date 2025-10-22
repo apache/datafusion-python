@@ -126,7 +126,10 @@ def _wrap_extension_value(value: PyArrowArrayT, data_type: pa.DataType) -> PyArr
         return wrap_array(value)
     if isinstance(value, pa.ChunkedArray) and value.type.equals(storage_type):
         wrapped_chunks = [wrap_array(chunk) for chunk in value.chunks]
-        return pa.chunked_array(wrapped_chunks)
+        if not wrapped_chunks:
+            empty_storage = pa.array([], type=storage_type)
+            return wrap_array(empty_storage)
+        return pa.chunked_array(wrapped_chunks, type=data_type)
     return value
 
 
