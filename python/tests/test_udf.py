@@ -15,6 +15,10 @@
 # specific language governing permissions and limitations
 # under the License.
 
+from __future__ import annotations
+
+import uuid
+
 import pyarrow as pa
 import pytest
 from datafusion import column, udf
@@ -124,3 +128,90 @@ def test_udf_with_parameters_decorator(df) -> None:
     result = df2.collect()[0].column(0)
 
     assert result == pa.array([False, True, True])
+
+
+def test_uuid_extension_chain(ctx) -> None:
+    uuid_type = pa.uuid()
+    uuid_field = pa.field("uuid_col", uuid_type)
+
+    first = udf(
+        lambda values: values,
+        [uuid_field],
+        uuid_field,
+        volatility="immutable",
+        name="uuid_identity",
+    )
+
+    def ensure_extension(values: pa.Array | pa.ChunkedArray) -> pa.Array:
+        if isinstance(values, pa.ChunkedArray):
+            assert values.type.equals(uuid_type)
+            return values.combine_chunks()
+        assert isinstance(values, pa.ExtensionArray)
+        assert values.type.equals(uuid_type)
+        return values
+
+    second = udf(
+        ensure_extension,
+        [uuid_field],
+        uuid_field,
+        volatility="immutable",
+        name="uuid_assert",
+    )
+
+    # The UUID extension metadata should survive UDF registration.
+    assert getattr(uuid_type, "extension_name", None) == "arrow.uuid"
+    assert getattr(uuid_field.type, "extension_name", None) == "arrow.uuid"
+
+    storage = pa.array(
+        [
+            uuid.UUID("00000000-0000-0000-0000-000000000000").bytes,
+            uuid.UUID("00000000-0000-0000-0000-000000000001").bytes,
+        ],
+        type=uuid_type.storage_type,
+    )
+    batch = pa.RecordBatch.from_arrays(
+        [uuid_type.wrap_array(storage)],
+        names=["uuid_col"],
+    )
+
+    df = ctx.create_dataframe([[batch]])
+    result = df.select(second(first(column("uuid_col")))).collect()[0].column(0)
+
+    expected = uuid_type.wrap_array(storage)
+
+    if isinstance(result, pa.ChunkedArray):
+        assert result.type.equals(uuid_type)
+    else:
+        assert isinstance(result, pa.ExtensionArray)
+        assert result.type.equals(uuid_type)
+
+    assert result.equals(expected)
+
+    empty_storage = pa.array([], type=uuid_type.storage_type)
+    empty_batch = pa.RecordBatch.from_arrays(
+        [uuid_type.wrap_array(empty_storage)],
+        names=["uuid_col"],
+    )
+
+    empty_first = udf(
+        lambda values: pa.chunked_array([], type=uuid_type.storage_type),
+        [uuid_field],
+        uuid_field,
+        volatility="immutable",
+        name="uuid_empty_chunk",
+    )
+
+    empty_df = ctx.create_dataframe([[empty_batch]])
+    empty_result = (
+        empty_df.select(second(empty_first(column("uuid_col")))).collect()[0].column(0)
+    )
+
+    expected_empty = uuid_type.wrap_array(empty_storage)
+
+    if isinstance(empty_result, pa.ChunkedArray):
+        assert empty_result.type.equals(uuid_type)
+        assert empty_result.combine_chunks().equals(expected_empty)
+    else:
+        assert isinstance(empty_result, pa.ExtensionArray)
+        assert empty_result.type.equals(uuid_type)
+        assert empty_result.equals(expected_empty)

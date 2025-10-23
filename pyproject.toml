@@ -69,20 +69,20 @@ asyncio_default_fixture_loop_scope = "function"
 
 # Enable docstring linting using the google style guide
 [tool.ruff.lint]
-select = ["ALL" ]
+select = ["ALL"]
 ignore = [
-    "A001",    # Allow using words like min as variable names
-    "A002",    # Allow using words like filter as variable names
-    "ANN401",  # Allow Any for wrapper classes
-    "COM812",  # Recommended to ignore these rules when using with ruff-format
-    "FIX002",  # Allow TODO lines - consider removing at some point
-    "FBT001",  # Allow boolean positional args
-    "FBT002",  # Allow boolean positional args
-    "ISC001",  # Recommended to ignore these rules when using with ruff-format
-    "SLF001",  # Allow accessing private members
+    "A001",   # Allow using words like min as variable names
+    "A002",   # Allow using words like filter as variable names
+    "ANN401", # Allow Any for wrapper classes
+    "COM812", # Recommended to ignore these rules when using with ruff-format
+    "FIX002", # Allow TODO lines - consider removing at some point
+    "FBT001", # Allow boolean positional args
+    "FBT002", # Allow boolean positional args
+    "ISC001", # Recommended to ignore these rules when using with ruff-format
+    "SLF001", # Allow accessing private members
     "TD002",
-    "TD003",   # Allow TODO lines
-    "UP007",   # Disallowing Union is pedantic
+    "TD003",  # Allow TODO lines
+    "UP007",  # Disallowing Union is pedantic
     # TODO: Enable all of the following, but this PR is getting too large already
     "PLR0913",
     "TRY003",
@@ -129,25 +129,33 @@ extend-allowed-calls = ["lit", "datafusion.lit"]
 ]
 "examples/*" = ["D", "W505", "E501", "T201", "S101"]
 "dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817"]
-"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
+"benchmarks/*" = [
+    "D",
+    "F",
+    "T",
+    "BLE",
+    "FURB",
+    "PLR",
+    "E",
+    "TD",
+    "TRY",
+    "S",
+    "SIM",
+    "EXE",
+    "UP",
+]
 "docs/*" = ["D"]
 
 [tool.codespell]
-skip = [
-    "./target",
-    "uv.lock",
-    "./python/tests/test_functions.py"
-]
+skip = ["./target", "uv.lock", "./python/tests/test_functions.py"]
 count = true
-ignore-words-list = [
-    "ans",
-    "IST"
-]
+ignore-words-list = ["ans", "IST"]
 
 [dependency-groups]
 dev = [
     "maturin>=1.8.1",
     "numpy>1.25.0",
+    "pyarrow>=19.0.0",
     "pre-commit>=4.0.0",
     "pytest>=7.4.4",
     "pytest-asyncio>=0.23.3",
