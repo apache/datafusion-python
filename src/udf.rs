@@ -135,7 +135,10 @@ impl ScalarUDFImpl for PySimpleScalarUDF {
     }
 
     fn return_type(&self, _arg_types: &[DataType]) -> datafusion::error::Result<DataType> {
-        Ok(self.return_field.data_type().clone())
+        Err(DataFusionError::Internal(
+            "return_type should be unreachable when return_field_from_args is implemented"
+                .to_string(),
+        ))
     }
 
     fn return_field_from_args(

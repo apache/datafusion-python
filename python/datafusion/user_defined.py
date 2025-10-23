@@ -274,9 +274,11 @@ class ScalarUDF:
                 :class:`pyarrow.ChunkedArray` values.
             input_types (list[pa.DataType | pa.Field]): The argument types for ``func``.
                 This list must be of the same length as the number of arguments. Pass
-                :class:`pyarrow.Field` instances to preserve extension metadata.
-            return_type (pa.DataType | pa.Field): The return type of the function. Use a
-                :class:`pyarrow.Field` to preserve metadata on extension arrays.
+                :class:`pyarrow.Field` instances when you need to declare extension
+                metadata for an argument.
+            return_type (pa.DataType | pa.Field): The return type of the function. Supply
+                a :class:`pyarrow.Field` when the result should expose extension metadata
+                to downstream consumers.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 
