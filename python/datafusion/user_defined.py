@@ -276,9 +276,9 @@ class ScalarUDF:
                 This list must be of the same length as the number of arguments. Pass
                 :class:`pyarrow.Field` instances when you need to declare extension
                 metadata for an argument.
-            return_type (pa.DataType | pa.Field): The return type of the function. Supply
-                a :class:`pyarrow.Field` when the result should expose extension metadata
-                to downstream consumers.
+            return_type (pa.DataType | pa.Field): The return type of the function.
+                Supply a :class:`pyarrow.Field` when the result should expose
+                extension metadata to downstream consumers.
             volatility (Volatility | str): See `Volatility` for allowed values.
             name (Optional[str]): A descriptive name for the function.
 
@@ -290,8 +290,13 @@ class ScalarUDF:
 
             def double_func(x):
                 return x * 2
-            double_udf = udf(double_func, [pa.int32()], pa.int32(),
-            "volatile", "double_it")
+            double_udf = udf(
+                double_func,
+                [pa.int32()],
+                pa.int32(),
+                "volatile",
+                "double_it",
+            )
 
         Example: Using ``udf`` as a decorator::
 
