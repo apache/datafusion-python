@@ -23,8 +23,6 @@ import pyarrow as pa
 import pytest
 from datafusion import column, udf
 
-UUID_EXTENSION_AVAILABLE = hasattr(pa, "uuid")
-
 
 @pytest.fixture
 def df(ctx):
@@ -132,10 +130,6 @@ def test_udf_with_parameters_decorator(df) -> None:
     assert result == pa.array([False, True, True])
 
 
-@pytest.mark.skipif(
-    not UUID_EXTENSION_AVAILABLE,
-    reason="PyArrow uuid extension helper unavailable",
-)
 def test_uuid_extension_chain(ctx) -> None:
     uuid_type = pa.uuid()
     uuid_field = pa.field("uuid_col", uuid_type)
