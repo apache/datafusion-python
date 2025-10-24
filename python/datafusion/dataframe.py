@@ -565,6 +565,14 @@ class DataFrame:
                 d=lit(3)
             )
 
+        Equivalent example using just SQL strings:
+
+            df = df.with_columns(
+                "x as a",
+                ["1 as b", "y as c"],
+                d="3"
+            )
+
         Args:
             exprs: Either a single expression, an iterable of expressions to add or
                    SQL expression strings.
