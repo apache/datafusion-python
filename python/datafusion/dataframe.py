@@ -1068,6 +1068,26 @@ class DataFrame:
         """
         return self.df.to_arrow_table()
 
+    def to_arrow_array(self) -> pa.ChunkedArray:
+        """Execute the :py:class:`DataFrame` and convert it into an Arrow Array.
+
+        Only valid when :py:class:`DataFrame` contains a single column.
+
+        Returns:
+            Arrow Array.
+        """
+        return self.df.to_arrow_array()
+
+    def column(self, column_name: str) -> pa.ChunkedArray:
+        """Execute the :py:class:`DataFrame` and convert it into an Arrow Array.
+
+        Only valid when :py:class:`DataFrame` contains a single column.
+
+        Returns:
+            Arrow Array.
+        """
+        return self.df.column(column_name)
+
     def execute_stream(self) -> RecordBatchStream:
         """Executes this DataFrame and returns a stream over a single partition.
 

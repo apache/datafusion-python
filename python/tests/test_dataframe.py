@@ -1694,6 +1694,23 @@ def test_to_arrow_table(df):
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
 
 
+def test_to_arrow_array(df):
+    # Convert datafusion dataframe to pyarrow Array
+    pyarrow_array = df.select("a").to_arrow_array()
+    assert isinstance(pyarrow_array, pa.ChunkedArray)
+    assert pyarrow_array.to_numpy().shape == (3,)
+
+    with pytest.raises(ValueError, match="single column"):
+        df.to_arrow_array()
+
+
+def test_column(df):
+    # Grab column from datafusion dataframe as pyarrow Array
+    pyarrow_array = df.column("a")
+    assert isinstance(pyarrow_array, pa.ChunkedArray)
+    assert pyarrow_array.to_numpy().shape == (3,)
+
+
 def test_execute_stream(df):
     stream = df.execute_stream()
     assert all(batch is not None for batch in stream)
