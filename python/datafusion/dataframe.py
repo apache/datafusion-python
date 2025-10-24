@@ -565,7 +565,7 @@ class DataFrame:
                 d=lit(3)
             )
 
-        Equivalent example using just SQL strings:
+            Equivalent example using just SQL strings:
 
             df = df.with_columns(
                 "x as a",
