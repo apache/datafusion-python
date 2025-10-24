@@ -538,15 +538,35 @@ def test_with_columns(df):
     assert result.column(6) == pa.array([5, 7, 9])
 
 
-def test_with_columns_invalid_expr(df):
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns("a")
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(c="a")
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(["a"])
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(c=["a"])
+def test_with_columns_str(df):
+    df = df.with_columns(
+        "a + b as c",
+        "a + b as d",
+        [
+            "a + b as e",
+            "a + b as f",
+        ],
+        g="a + b",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+    assert result.schema.field(3).name == "d"
+    assert result.schema.field(4).name == "e"
+    assert result.schema.field(5).name == "f"
+    assert result.schema.field(6).name == "g"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
+    assert result.column(3) == pa.array([5, 7, 9])
+    assert result.column(4) == pa.array([5, 7, 9])
+    assert result.column(5) == pa.array([5, 7, 9])
+    assert result.column(6) == pa.array([5, 7, 9])
 
 
 def test_cast(df):
