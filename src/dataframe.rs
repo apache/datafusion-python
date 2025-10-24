@@ -869,9 +869,7 @@ impl PyDataFrame {
     /// Convert to Arrow Array
     /// Collect the batches and pass to Arrow Array
     fn to_arrow_array(&self, py: Python<'_>) -> PyResult<PyObject> {
-        println!("Converting to Arrow table");
         let table = self.to_arrow_table(py)?;
-        println!("Table");
         let args = table.getattr(py, "column_names")?;
         let column_names = args.extract::<Bound<PyList>>(py)?;
         if column_names.len() != 1 {
@@ -879,7 +877,6 @@ impl PyDataFrame {
                 "to_arrow_array only supports single column DataFrames",
             ));
         }
-        print!("Args");
         let column_name = column_names.get_item(0)?;
         let array: PyObject = table.call_method1(py, "column", (column_name,))?;
         Ok(array)
