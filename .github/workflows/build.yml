@@ -62,7 +62,7 @@ jobs:
 
       - name: Generate license file
         run: uv run --no-project python ./dev/create_license.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: python-wheel-license
           path: LICENSE.txt
@@ -119,7 +119,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist-${{ matrix.os  }}
           path: target/wheels/*
@@ -167,7 +167,7 @@ jobs:
         run: find target/wheels/
 
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist-macos-aarch64
           path: target/wheels/*
@@ -196,7 +196,7 @@ jobs:
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --manylinux 2014 --features protoc,substrait
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist-manylinux-x86_64
           path: target/wheels/*
@@ -226,7 +226,7 @@ jobs:
           rustup-components: rust-std rustfmt # Keep them in one line due to https://github.com/PyO3/maturin-action/issues/153
           args: --release --features protoc,substrait
       - name: Archive wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: dist-manylinux-aarch64
           path: target/wheels/*
@@ -271,7 +271,7 @@ jobs:
       - build-sdist
     steps:
       - name: Merge Build Artifacts
-        uses: actions/upload-artifact/merge@v4
+        uses: actions/upload-artifact/merge@v5
         with:
           name: dist
           pattern: dist-*
