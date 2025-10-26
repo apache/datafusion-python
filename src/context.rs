@@ -32,6 +32,7 @@ use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
+use crate::common::data_type::PyScalarValue;
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
@@ -40,6 +41,7 @@ use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
 use crate::sql::exceptions::py_value_err;
 use crate::sql::logical::PyLogicalPlan;
+use crate::sql::util::replace_placeholders_with_strings;
 use crate::store::StorageContexts;
 use crate::table::PyTable;
 use crate::udaf::PyAggregateUDF;
@@ -427,27 +429,41 @@ impl PySessionContext {
         self.ctx.register_udtf(&name, func);
     }
 
-    /// Returns a PyDataFrame whose plan corresponds to the SQL statement.
-    pub fn sql(&self, query: &str, py: Python) -> PyDataFusionResult<PyDataFrame> {
-        let result = self.ctx.sql(query);
-        let df = wait_for_future(py, result)??;
-        Ok(PyDataFrame::new(df))
-    }
-
-    #[pyo3(signature = (query, options=None))]
+    #[pyo3(signature = (query, options=None, param_values=HashMap::default(), param_strings=HashMap::default()))]
     pub fn sql_with_options(
         &self,
-        query: &str,
-        options: Option<PySQLOptions>,
         py: Python,
+        mut query: String,
+        options: Option<PySQLOptions>,
+        param_values: HashMap<String, PyScalarValue>,
+        param_strings: HashMap<String, String>,
     ) -> PyDataFusionResult<PyDataFrame> {
         let options = if let Some(options) = options {
             options.options
         } else {
             SQLOptions::new()
         };
-        let result = self.ctx.sql_with_options(query, options);
-        let df = wait_for_future(py, result)??;
+
+        let param_values = param_values
+            .into_iter()
+            .map(|(name, value)| (name, ScalarValue::from(value)))
+            .collect::<HashMap<_, _>>();
+
+        let state = self.ctx.state();
+        let dialect = state.config().options().sql_parser.dialect.as_str();
+
+        if !param_strings.is_empty() {
+            query = replace_placeholders_with_strings(&query, dialect, param_strings)?;
+        }
+
+        let mut df = wait_for_future(py, async {
+            self.ctx.sql_with_options(&query, options).await
+        })??;
+
+        if !param_values.is_empty() {
+            df = df.with_param_values(param_values)?;
+        }
+
         Ok(PyDataFrame::new(df))
     }
 
