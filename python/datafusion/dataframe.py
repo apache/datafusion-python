@@ -586,7 +586,7 @@ class DataFrame:
             if isinstance(expr, str):
                 expressions.append(self.parse_sql_expr(expr).expr)
             elif isinstance(expr, Iterable) and not isinstance(
-                expr, (Expr, str, bytes, bytearray)
+                expr, Expr | str | bytes | bytearray
             ):
                 expressions.extend(
                     [
@@ -639,7 +639,7 @@ class DataFrame:
         """
         group_by_list = (
             list(group_by)
-            if isinstance(group_by, Sequence) and not isinstance(group_by, (Expr, str))
+            if isinstance(group_by, Sequence) and not isinstance(group_by, Expr | str)
             else [group_by]
         )
         aggs_list = (
