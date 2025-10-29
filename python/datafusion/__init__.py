@@ -119,12 +119,12 @@ __all__ = [
 ]
 
 
-def literal(value) -> Expr:
+def literal(value: Any) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
 
 
-def string_literal(value):
+def string_literal(value: str):
     """Create a UTF8 literal expression.
 
     It differs from `literal` which creates a UTF8view literal.
@@ -132,12 +132,12 @@ def string_literal(value):
     return Expr.string_literal(value)
 
 
-def str_lit(value):
+def str_lit(value: str):
     """Alias for `string_literal`."""
     return string_literal(value)
 
 
-def lit(value) -> Expr:
+def lit(value: Any) -> Expr:
     """Create a literal expression."""
     return Expr.literal(value)
 

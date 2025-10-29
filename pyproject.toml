@@ -89,7 +89,7 @@ ignore = [
     "PLR0913", # Allow many arguments in function definition
     "PD901",   # Allow variable name df
     # TODO: Enable all of the following, but this PR is getting too large already
-    "ANN001",
+#    "ANN001",
     "ANN202",
     "PTH",
     "N812",
@@ -127,11 +127,11 @@ extend-allowed-calls = ["lit", "datafusion.lit"]
     "PLR0913",
     "PT004",
 ]
-"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004"]
-"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817", "ERA001"]
-"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP", "ERA001"]
+"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004", "ANN001"]
+"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817", "ERA001", "ANN001"]
+"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP", "ERA001", "ANN001"]
 "docs/*" = ["D"]
-"docs/source/conf.py" = ["ERA001"]
+"docs/source/conf.py" = ["ERA001", "ANN001"]
 
 [tool.codespell]
 skip = [
