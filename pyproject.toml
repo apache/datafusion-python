@@ -43,7 +43,11 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Rust",
 ]
-dependencies = ["pyarrow>=11.0.0", "typing-extensions;python_version<'3.13'"]
+dependencies = [
+    "pyarrow>=11.0.0;python_version<'3.14'",
+    "pyarrow>=22.0.0;python_version>='3.14'",
+    "typing-extensions;python_version<'3.13'"
+]
 dynamic = ["version"]
 
 [project.urls]
@@ -147,8 +151,10 @@ ignore-words-list = [
 [dependency-groups]
 dev = [
     "maturin>=1.8.1",
-    "numpy>1.25.0",
-    "pre-commit>=4.0.0",
+    "numpy>1.25.0;python_version<'3.14'",
+    "numpy>=2.3.2;python_version>='3.14'",
+    "pre-commit>=4.3.0",
+    "pyyaml>=6.0.3",
     "pytest>=7.4.4",
     "pytest-asyncio>=0.23.3",
     "ruff>=0.9.1",
