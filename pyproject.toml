@@ -86,10 +86,9 @@ ignore = [
     "SLF001",  # Allow accessing private members
     "TD002",   # Do not require author names in TODO statements
     "TD003",   # Allow TODO lines
+    "PLR0913", # Allow many arguments in function definition
     # TODO: Enable all of the following, but this PR is getting too large already
-    "PLR0913",
-    "TRY003",
-    "PLR2004",
+#    "TRY003",
     "PD901",
     "ERA001",
     "ANN001",
@@ -130,7 +129,7 @@ extend-allowed-calls = ["lit", "datafusion.lit"]
     "PLR0913",
     "PT004",
 ]
-"examples/*" = ["D", "W505", "E501", "T201", "S101"]
+"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004"]
 "dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817"]
 "benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
 "docs/*" = ["D"]

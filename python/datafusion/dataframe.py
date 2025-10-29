@@ -829,7 +829,7 @@ class DataFrame:
         # of a keyword argument.
         if (
             isinstance(on, tuple)
-            and len(on) == 2
+            and len(on) == 2  # noqa: PLR2004
             and isinstance(on[0], list)
             and isinstance(on[1], list)
         ):
