@@ -567,7 +567,7 @@ def test_array_functions(stmt, py_expr):
 
     col = column("arr")
     query_result = df.select(stmt(col)).collect()[0].column(0)
-    for a, b in zip(query_result, py_expr(data)):
+    for a, b in zip(query_result, py_expr(data), strict=False):
         np.testing.assert_array_almost_equal(
             np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
         )
@@ -582,7 +582,7 @@ def test_array_function_flatten():
     stmt = f.flatten(literal(data))
     py_expr = [py_flatten(data)]
     query_result = df.select(stmt).collect()[0].column(0)
-    for a, b in zip(query_result, py_expr):
+    for a, b in zip(query_result, py_expr, strict=False):
         np.testing.assert_array_almost_equal(
             np.array(a.as_py(), dtype=float), np.array(b, dtype=float)
         )
@@ -600,7 +600,7 @@ def test_array_function_cardinality():
 
     query_result = df.select(stmt).collect()[0].column(0)
 
-    for a, b in zip(query_result, py_expr):
+    for a, b in zip(query_result, py_expr, strict=False):
         np.testing.assert_array_equal(
             np.array([a.as_py()], dtype=int), np.array([b], dtype=int)
         )
@@ -631,7 +631,7 @@ def test_make_array_functions(make_func):
     ]
 
     query_result = df.select(stmt).collect()[0].column(0)
-    for a, b in zip(query_result, py_expr):
+    for a, b in zip(query_result, py_expr, strict=False):
         np.testing.assert_array_equal(
             np.array(a.as_py(), dtype=str), np.array(b, dtype=str)
         )
@@ -664,7 +664,7 @@ def test_array_function_obj_tests(stmt, py_expr):
     batch = pa.RecordBatch.from_arrays([np.array(data, dtype=object)], names=["arr"])
     df = ctx.create_dataframe([[batch]])
     query_result = np.array(df.select(stmt).collect()[0].column(0))
-    for a, b in zip(query_result, py_expr(data)):
+    for a, b in zip(query_result, py_expr(data), strict=False):
         assert a == b
 
 

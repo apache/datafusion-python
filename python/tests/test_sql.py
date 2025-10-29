@@ -194,7 +194,7 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_ty
     result = pa.Table.from_batches(result)
 
     rd = result.to_pydict()
-    assert dict(zip(rd["grp"], rd["cnt"])) == {"a": 3, "b": 1}
+    assert dict(zip(rd["grp"], rd["cnt"], strict=False)) == {"a": 3, "b": 1}
 
 
 @pytest.mark.parametrize("path_to_str", [True, False])
@@ -340,7 +340,10 @@ def test_execute(ctx, tmp_path):
         result_values.extend(pydict["cnt"])
 
     result_keys, result_values = (
-        list(t) for t in zip(*sorted(zip(result_keys, result_values)))
+        list(t)
+        for t in zip(
+            *sorted(zip(result_keys, result_values, strict=False)), strict=False
+        )
     )
 
     assert result_keys == [1, 2, 3, 11, 12]
@@ -467,7 +470,7 @@ def test_simple_select(ctx, tmp_path, arr):
     # In DF 43.0.0 we now default to having BinaryView and StringView
     # so the array that is saved to the parquet is slightly different
     # than the array read. Convert to values for comparison.
-    if isinstance(result, (pa.BinaryViewArray, pa.StringViewArray)):
+    if isinstance(result, pa.BinaryViewArray | pa.StringViewArray):
         arr = arr.tolist()
         result = result.tolist()
 
@@ -524,7 +527,7 @@ def test_register_listing_table(
     result = pa.Table.from_batches(result)
 
     rd = result.to_pydict()
-    assert dict(zip(rd["grp"], rd["count"])) == {"a": 5, "b": 2}
+    assert dict(zip(rd["grp"], rd["count"], strict=False)) == {"a": 5, "b": 2}
 
     result = ctx.sql(
         "SELECT grp, COUNT(*) AS count FROM my_table WHERE date='2020-10-05' GROUP BY grp"  # noqa: E501
@@ -532,4 +535,4 @@ def test_register_listing_table(
     result = pa.Table.from_batches(result)
 
     rd = result.to_pydict()
-    assert dict(zip(rd["grp"], rd["count"])) == {"a": 3, "b": 2}
+    assert dict(zip(rd["grp"], rd["count"], strict=False)) == {"a": 3, "b": 2}
