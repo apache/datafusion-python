@@ -78,7 +78,7 @@ class Compression(Enum):
     LZ4 = "lz4"
     # lzo is not implemented yet
     # https://github.com/apache/arrow-rs/issues/6970
-    # LZO = "lzo"
+    # LZO = "lzo"  # noqa: ERA001
     ZSTD = "zstd"
     LZ4_RAW = "lz4_raw"
 
