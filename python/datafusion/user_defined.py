@@ -218,13 +218,13 @@ class ScalarUDF:
             volatility: Volatility | str,
             name: str | None = None,
         ) -> Callable:
-            def decorator(func: Callable):
+            def decorator(func: Callable) -> Callable:
                 udf_caller = ScalarUDF.udf(
                     func, input_types, return_type, volatility, name
                 )
 
                 @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any):
+                def wrapper(*args: Any, **kwargs: Any) -> Callable:
                     return udf_caller(*args, **kwargs)
 
                 return wrapper
