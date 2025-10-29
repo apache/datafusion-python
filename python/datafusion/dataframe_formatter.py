@@ -21,7 +21,6 @@ from __future__ import annotations
 from typing import (
     Any,
     Callable,
-    Optional,
     Protocol,
     runtime_checkable,
 )
@@ -144,9 +143,9 @@ class DataFrameHtmlFormatter:
         min_rows_display: int = 20,
         repr_rows: int = 10,
         enable_cell_expansion: bool = True,
-        custom_css: Optional[str] = None,
+        custom_css: str | None = None,
         show_truncation_message: bool = True,
-        style_provider: Optional[StyleProvider] = None,
+        style_provider: StyleProvider | None = None,
         use_shared_styles: bool = True,
     ) -> None:
         """Initialize the HTML formatter.
@@ -226,8 +225,8 @@ class DataFrameHtmlFormatter:
         # Registry for custom type formatters
         self._type_formatters: dict[type, CellFormatter] = {}
         # Custom cell builders
-        self._custom_cell_builder: Optional[Callable[[Any, int, int, str], str]] = None
-        self._custom_header_builder: Optional[Callable[[Any], str]] = None
+        self._custom_cell_builder: Callable[[Any, int, int, str], str] | None = None
+        self._custom_header_builder: Callable[[Any], str] | None = None
 
     def register_formatter(self, type_class: type, formatter: CellFormatter) -> None:
         """Register a custom formatter for a specific data type.

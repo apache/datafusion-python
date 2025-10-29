@@ -28,8 +28,6 @@ from typing import (
     Any,
     Iterable,
     Literal,
-    Optional,
-    Union,
     overload,
 )
 
@@ -107,7 +105,7 @@ class Compression(Enum):
                 """
             raise ValueError(error_msg) from err
 
-    def get_default_level(self) -> Optional[int]:
+    def get_default_level(self) -> int | None:
         """Get the default compression level for the compression type.
 
         Returns:
@@ -140,24 +138,24 @@ class ParquetWriterOptions:
         write_batch_size: int = 1024,
         writer_version: str = "1.0",
         skip_arrow_metadata: bool = False,
-        compression: Optional[str] = "zstd(3)",
-        compression_level: Optional[int] = None,
-        dictionary_enabled: Optional[bool] = True,
+        compression: str | None = "zstd(3)",
+        compression_level: int | None = None,
+        dictionary_enabled: bool | None = True,
         dictionary_page_size_limit: int = 1024 * 1024,
-        statistics_enabled: Optional[str] = "page",
+        statistics_enabled: str | None = "page",
         max_row_group_size: int = 1024 * 1024,
         created_by: str = "datafusion-python",
-        column_index_truncate_length: Optional[int] = 64,
-        statistics_truncate_length: Optional[int] = None,
+        column_index_truncate_length: int | None = 64,
+        statistics_truncate_length: int | None = None,
         data_page_row_count_limit: int = 20_000,
-        encoding: Optional[str] = None,
+        encoding: str | None = None,
         bloom_filter_on_write: bool = False,
-        bloom_filter_fpp: Optional[float] = None,
-        bloom_filter_ndv: Optional[int] = None,
+        bloom_filter_fpp: float | None = None,
+        bloom_filter_ndv: int | None = None,
         allow_single_file_parallelism: bool = True,
         maximum_parallel_row_group_writers: int = 1,
         maximum_buffered_record_batches_per_stream: int = 2,
-        column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None,
+        column_specific_options: dict[str, ParquetColumnOptions] | None = None,
     ) -> None:
         """Initialize the ParquetWriterOptions.
 
@@ -262,13 +260,13 @@ class ParquetColumnOptions:
 
     def __init__(
         self,
-        encoding: Optional[str] = None,
-        dictionary_enabled: Optional[bool] = None,
-        compression: Optional[str] = None,
-        statistics_enabled: Optional[str] = None,
-        bloom_filter_enabled: Optional[bool] = None,
-        bloom_filter_fpp: Optional[float] = None,
-        bloom_filter_ndv: Optional[int] = None,
+        encoding: str | None = None,
+        dictionary_enabled: bool | None = None,
+        compression: str | None = None,
+        statistics_enabled: str | None = None,
+        bloom_filter_enabled: bool | None = None,
+        bloom_filter_fpp: float | None = None,
+        bloom_filter_ndv: int | None = None,
     ) -> None:
         """Initialize the ParquetColumnOptions.
 
@@ -1063,7 +1061,7 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
+        compression: str | Compression | ParquetWriterOptions = Compression.ZSTD,
         compression_level: int | None = None,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:

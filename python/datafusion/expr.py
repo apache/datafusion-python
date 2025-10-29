@@ -22,8 +22,7 @@ See :ref:`Expressions` in the online documentation for more details.
 
 from __future__ import annotations
 
-import typing as _typing
-from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Optional, Sequence
+from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Sequence
 
 try:
     from warnings import deprecated  # Python 3.13+
@@ -230,7 +229,7 @@ __all__ = [
 ]
 
 
-def ensure_expr(value: _typing.Union[Expr, Any]) -> expr_internal.Expr:
+def ensure_expr(value: Expr | Any) -> expr_internal.Expr:
     """Return the internal expression from ``Expr`` or raise ``TypeError``.
 
     This helper rejects plain strings and other non-:class:`Expr` values so
@@ -252,7 +251,7 @@ def ensure_expr(value: _typing.Union[Expr, Any]) -> expr_internal.Expr:
 
 
 def ensure_expr_list(
-    exprs: Iterable[_typing.Union[Expr, Iterable[Expr]]],
+    exprs: Iterable[Expr | Iterable[Expr]],
 ) -> list[expr_internal.Expr]:
     """Flatten an iterable of expressions, validating each via ``ensure_expr``.
 
@@ -267,7 +266,7 @@ def ensure_expr_list(
     """
 
     def _iter(
-        items: Iterable[_typing.Union[Expr, Iterable[Expr]]],
+        items: Iterable[Expr | Iterable[Expr]],
     ) -> Iterable[expr_internal.Expr]:
         for expr in items:
             if isinstance(expr, Iterable) and not isinstance(
@@ -281,7 +280,7 @@ def ensure_expr_list(
     return list(_iter(exprs))
 
 
-def _to_raw_expr(value: _typing.Union[Expr, str]) -> expr_internal.Expr:
+def _to_raw_expr(value: Expr | str) -> expr_internal.Expr:
     """Convert a Python expression or column name to its raw variant.
 
     Args:
@@ -305,8 +304,8 @@ def _to_raw_expr(value: _typing.Union[Expr, str]) -> expr_internal.Expr:
 
 
 def expr_list_to_raw_expr_list(
-    expr_list: Optional[list[Expr] | Expr],
-) -> Optional[list[expr_internal.Expr]]:
+    expr_list: list[Expr] | Expr | None,
+) -> list[expr_internal.Expr] | None:
     """Convert a sequence of expressions or column names to raw expressions."""
     if isinstance(expr_list, Expr | str):
         expr_list = [expr_list]
@@ -315,7 +314,7 @@ def expr_list_to_raw_expr_list(
     return [_to_raw_expr(e) for e in expr_list]
 
 
-def sort_or_default(e: _typing.Union[Expr, SortExpr]) -> expr_internal.SortExpr:
+def sort_or_default(e: Expr | SortExpr) -> expr_internal.SortExpr:
     """Helper function to return a default Sort if an Expr is provided."""
     if isinstance(e, SortExpr):
         return e.raw_sort
@@ -323,8 +322,8 @@ def sort_or_default(e: _typing.Union[Expr, SortExpr]) -> expr_internal.SortExpr:
 
 
 def sort_list_to_raw_sort_list(
-    sort_list: Optional[_typing.Union[Sequence[SortKey], SortKey]],
-) -> Optional[list[expr_internal.SortExpr]]:
+    sort_list: Sequence[SortKey] | SortKey | None,
+) -> list[expr_internal.SortExpr] | None:
     """Helper function to return an optional sort list to raw variant."""
     if isinstance(sort_list, Expr | SortExpr | str):
         sort_list = [sort_list]
@@ -601,7 +600,7 @@ class Expr:
         """Creates a new expression representing a column."""
         return Expr(expr_internal.RawExpr.column(value))
 
-    def alias(self, name: str, metadata: Optional[dict[str, str]] = None) -> Expr:
+    def alias(self, name: str, metadata: dict[str, str] | None = None) -> Expr:
         """Assign a name to the expression.
 
         Args:
@@ -630,13 +629,13 @@ class Expr:
         """Returns ``True`` if this expression is not null."""
         return Expr(self.expr.is_not_null())
 
-    def fill_nan(self, value: Optional[_typing.Union[Any, Expr]] = None) -> Expr:
+    def fill_nan(self, value: Any | Expr | None = None) -> Expr:
         """Fill NaN values with a provided value."""
         if not isinstance(value, Expr):
             value = Expr.literal(value)
         return Expr(functions_internal.nanvl(self.expr, value.expr))
 
-    def fill_null(self, value: Optional[_typing.Union[Any, Expr]] = None) -> Expr:
+    def fill_null(self, value: Any | Expr | None = None) -> Expr:
         """Fill NULL values with a provided value."""
         if not isinstance(value, Expr):
             value = Expr.literal(value)
@@ -649,7 +648,7 @@ class Expr:
         bool: pa.bool_(),
     }
 
-    def cast(self, to: _typing.Union[pa.DataType[Any], type]) -> Expr:
+    def cast(self, to: pa.DataType[Any] | type) -> Expr:
         """Cast to a new data type."""
         if not isinstance(to, pa.DataType):
             try:
@@ -722,7 +721,7 @@ class Expr:
         """Compute the output column name based on the provided logical plan."""
         return self.expr.column_name(plan._raw_plan)
 
-    def order_by(self, *exprs: _typing.Union[Expr, SortExpr]) -> ExprFuncBuilder:
+    def order_by(self, *exprs: Expr | SortExpr) -> ExprFuncBuilder:
         """Set the ordering for a window or aggregate function.
 
         This function will create an :py:class:`ExprFuncBuilder` that can be used to
@@ -1271,17 +1270,10 @@ class Window:
 
     def __init__(
         self,
-        partition_by: Optional[_typing.Union[list[Expr], Expr]] = None,
-        window_frame: Optional[WindowFrame] = None,
-        order_by: Optional[
-            _typing.Union[
-                list[_typing.Union[SortExpr, Expr, str]],
-                Expr,
-                SortExpr,
-                str,
-            ]
-        ] = None,
-        null_treatment: Optional[NullTreatment] = None,
+        partition_by: list[Expr] | Expr | None = None,
+        window_frame: WindowFrame | None = None,
+        order_by: list[SortExpr | Expr | str] | Expr | SortExpr | str | None = None,
+        null_treatment: NullTreatment | None = None,
     ) -> None:
         """Construct a window definition.
 
@@ -1301,7 +1293,7 @@ class WindowFrame:
     """Defines a window frame for performing window operations."""
 
     def __init__(
-        self, units: str, start_bound: Optional[Any], end_bound: Optional[Any]
+        self, units: str, start_bound: Any | None, end_bound: Any | None
     ) -> None:
         """Construct a window frame using the given parameters.
 
@@ -1351,7 +1343,7 @@ class WindowFrameBound:
         """Constructs a window frame bound."""
         self.frame_bound = frame_bound
 
-    def get_offset(self) -> Optional[int]:
+    def get_offset(self) -> int | None:
         """Returns the offset of the window frame."""
         return self.frame_bound.get_offset()
 
@@ -1435,4 +1427,4 @@ class SortExpr:
         return self.raw_sort.__repr__()
 
 
-SortKey = _typing.Union[Expr, SortExpr, str]
+SortKey = Expr | SortExpr | str

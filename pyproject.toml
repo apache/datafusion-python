@@ -84,9 +84,8 @@ ignore = [
     "FBT002",  # Allow boolean positional args
     "ISC001",  # Recommended to ignore these rules when using with ruff-format
     "SLF001",  # Allow accessing private members
-    "TD002",
+    "TD002",   # Do not require author names in TODO statements
     "TD003",   # Allow TODO lines
-    "UP007",   # Disallowing Union is pedantic
     # TODO: Enable all of the following, but this PR is getting too large already
     "PLR0913",
     "TRY003",
