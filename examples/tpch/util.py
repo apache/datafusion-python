@@ -19,18 +19,16 @@
 Common utilities for running TPC-H examples.
 """
 
-import os
+from pathlib import Path
 
 
-def get_data_path(filename: str) -> str:
-    path = os.path.dirname(os.path.abspath(__file__))
+def get_data_path(filename: str) -> Path:
+    path = Path(__file__).resolve().parent
 
-    return os.path.join(path, "data", filename)
+    return path / "data" / filename
 
 
-def get_answer_file(answer_file: str) -> str:
-    path = os.path.dirname(os.path.abspath(__file__))
+def get_answer_file(answer_file: str) -> Path:
+    path = Path(__file__).resolve().parent
 
-    return os.path.join(
-        path, "../../benchmarks/tpch/data/answers", f"{answer_file}.out"
-    )
+    return path / "../../benchmarks/tpch/data/answers" / f"{answer_file}.out"

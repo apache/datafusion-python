@@ -18,7 +18,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 import pyarrow as pa
 
@@ -379,7 +379,7 @@ def order_by(expr: Expr, ascending: bool = True, nulls_first: bool = True) -> So
     return SortExpr(expr, ascending=ascending, nulls_first=nulls_first)
 
 
-def alias(expr: Expr, name: str, metadata: Optional[dict[str, str]] = None) -> Expr:
+def alias(expr: Expr, name: str, metadata: dict[str, str] | None = None) -> Expr:
     """Creates an alias expression with an optional metadata dictionary.
 
     Args:
@@ -398,7 +398,7 @@ def col(name: str) -> Expr:
     return Expr(f.col(name))
 
 
-def count_star(filter: Optional[Expr] = None) -> Expr:
+def count_star(filter: Expr | None = None) -> Expr:
     """Create a COUNT(1) aggregate expression.
 
     This aggregate function will count all of the rows in the partition.
@@ -1647,7 +1647,7 @@ def empty(array: Expr) -> Expr:
 # aggregate functions
 def approx_distinct(
     expression: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Returns the approximate number of distinct values.
 
@@ -1667,7 +1667,7 @@ def approx_distinct(
     return Expr(f.approx_distinct(expression.expr, filter=filter_raw))
 
 
-def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def approx_median(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the approximate median value.
 
     This aggregate function is similar to :py:func:`median`, but it will only
@@ -1687,8 +1687,8 @@ def approx_median(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 def approx_percentile_cont(
     sort_expression: Expr | SortExpr,
     percentile: float,
-    num_centroids: Optional[int] = None,
-    filter: Optional[Expr] = None,
+    num_centroids: int | None = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Returns the value that is approximately at a given percentile of ``expr``.
 
@@ -1724,8 +1724,8 @@ def approx_percentile_cont_with_weight(
     sort_expression: Expr | SortExpr,
     weight: Expr,
     percentile: float,
-    num_centroids: Optional[int] = None,
-    filter: Optional[Expr] = None,
+    num_centroids: int | None = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Returns the value of the weighted approximate percentile.
 
@@ -1759,8 +1759,8 @@ def approx_percentile_cont_with_weight(
 def array_agg(
     expression: Expr,
     distinct: bool = False,
-    filter: Optional[Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    filter: Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Aggregate values into an array.
 
@@ -1793,7 +1793,7 @@ def array_agg(
 
 def avg(
     expression: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Returns the average value.
 
@@ -1810,7 +1810,7 @@ def avg(
     return Expr(f.avg(expression.expr, filter=filter_raw))
 
 
-def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+def corr(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Returns the correlation coefficient between ``value1`` and ``value2``.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -1830,7 +1830,7 @@ def corr(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
 def count(
     expressions: Expr | list[Expr] | None = None,
     distinct: bool = False,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Returns the number of rows that match the given arguments.
 
@@ -1856,7 +1856,7 @@ def count(
     return Expr(f.count(*args, distinct=distinct, filter=filter_raw))
 
 
-def covar_pop(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+def covar_pop(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population covariance.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -1873,7 +1873,7 @@ def covar_pop(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Ex
     return Expr(f.covar_pop(value_y.expr, value_x.expr, filter=filter_raw))
 
 
-def covar_samp(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+def covar_samp(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
     This aggregate function expects both values to be numeric and will return a float.
@@ -1890,7 +1890,7 @@ def covar_samp(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> E
     return Expr(f.covar_samp(value_y.expr, value_x.expr, filter=filter_raw))
 
 
-def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
+def covar(value_y: Expr, value_x: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample covariance.
 
     This is an alias for :py:func:`covar_samp`.
@@ -1898,7 +1898,7 @@ def covar(value_y: Expr, value_x: Expr, filter: Optional[Expr] = None) -> Expr:
     return covar_samp(value_y, value_x, filter)
 
 
-def max(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def max(expression: Expr, filter: Expr | None = None) -> Expr:
     """Aggregate function that returns the maximum value of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -1912,7 +1912,7 @@ def max(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.max(expression.expr, filter=filter_raw))
 
 
-def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def mean(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the average (mean) value of the argument.
 
     This is an alias for :py:func:`avg`.
@@ -1921,7 +1921,7 @@ def mean(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
 
 def median(
-    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
 ) -> Expr:
     """Computes the median of a set of numbers.
 
@@ -1940,7 +1940,7 @@ def median(
     return Expr(f.median(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def min(expression: Expr, filter: Expr | None = None) -> Expr:
     """Returns the minimum value of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -1956,7 +1956,7 @@ def min(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
 def sum(
     expression: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of a set of numbers.
 
@@ -1973,7 +1973,7 @@ def sum(
     return Expr(f.sum(expression.expr, filter=filter_raw))
 
 
-def stddev(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def stddev(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the standard deviation of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -1987,7 +1987,7 @@ def stddev(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.stddev(expression.expr, filter=filter_raw))
 
 
-def stddev_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def stddev_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population standard deviation of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -2001,7 +2001,7 @@ def stddev_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.stddev_pop(expression.expr, filter=filter_raw))
 
 
-def stddev_samp(arg: Expr, filter: Optional[Expr] = None) -> Expr:
+def stddev_samp(arg: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample standard deviation of the argument.
 
     This is an alias for :py:func:`stddev`.
@@ -2009,7 +2009,7 @@ def stddev_samp(arg: Expr, filter: Optional[Expr] = None) -> Expr:
     return stddev(arg, filter=filter)
 
 
-def var(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def var(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
@@ -2017,7 +2017,7 @@ def var(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return var_samp(expression, filter)
 
 
-def var_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def var_pop(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the population variance of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -2031,7 +2031,7 @@ def var_pop(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.var_pop(expression.expr, filter=filter_raw))
 
 
-def var_samp(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def var_samp(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     If using the builder functions described in ref:`_aggregation` this function ignores
@@ -2045,7 +2045,7 @@ def var_samp(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.var_sample(expression.expr, filter=filter_raw))
 
 
-def var_sample(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def var_sample(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the sample variance of the argument.
 
     This is an alias for :py:func:`var_samp`.
@@ -2056,7 +2056,7 @@ def var_sample(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 def regr_avgx(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the average of the independent variable ``x``.
 
@@ -2079,7 +2079,7 @@ def regr_avgx(
 def regr_avgy(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the average of the dependent variable ``y``.
 
@@ -2102,7 +2102,7 @@ def regr_avgy(
 def regr_count(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Counts the number of rows in which both expressions are not null.
 
@@ -2125,7 +2125,7 @@ def regr_count(
 def regr_intercept(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the intercept from the linear regression.
 
@@ -2148,7 +2148,7 @@ def regr_intercept(
 def regr_r2(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the R-squared value from linear regression.
 
@@ -2171,7 +2171,7 @@ def regr_r2(
 def regr_slope(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the slope from linear regression.
 
@@ -2194,7 +2194,7 @@ def regr_slope(
 def regr_sxx(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of squares of the independent variable ``x``.
 
@@ -2217,7 +2217,7 @@ def regr_sxx(
 def regr_sxy(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of products of pairs of numbers.
 
@@ -2240,7 +2240,7 @@ def regr_sxy(
 def regr_syy(
     y: Expr,
     x: Expr,
-    filter: Optional[Expr] = None,
+    filter: Expr | None = None,
 ) -> Expr:
     """Computes the sum of squares of the dependent variable ``y``.
 
@@ -2262,8 +2262,8 @@ def regr_syy(
 
 def first_value(
     expression: Expr,
-    filter: Optional[Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    filter: Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the first value in a group of values.
@@ -2299,8 +2299,8 @@ def first_value(
 
 def last_value(
     expression: Expr,
-    filter: Optional[Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    filter: Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the last value in a group of values.
@@ -2337,8 +2337,8 @@ def last_value(
 def nth_value(
     expression: Expr,
     n: int,
-    filter: Optional[Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    filter: Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
     null_treatment: NullTreatment = NullTreatment.RESPECT_NULLS,
 ) -> Expr:
     """Returns the n-th value in a group of values.
@@ -2374,7 +2374,7 @@ def nth_value(
     )
 
 
-def bit_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def bit_and(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the bitwise AND of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
@@ -2390,7 +2390,7 @@ def bit_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.bit_and(expression.expr, filter=filter_raw))
 
 
-def bit_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def bit_or(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the bitwise OR of the argument.
 
     This aggregate function will bitwise compare every value in the input partition.
@@ -2407,7 +2407,7 @@ def bit_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 
 
 def bit_xor(
-    expression: Expr, distinct: bool = False, filter: Optional[Expr] = None
+    expression: Expr, distinct: bool = False, filter: Expr | None = None
 ) -> Expr:
     """Computes the bitwise XOR of the argument.
 
@@ -2425,7 +2425,7 @@ def bit_xor(
     return Expr(f.bit_xor(expression.expr, distinct=distinct, filter=filter_raw))
 
 
-def bool_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def bool_and(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the boolean AND of the argument.
 
     This aggregate function will compare every value in the input partition. These are
@@ -2442,7 +2442,7 @@ def bool_and(expression: Expr, filter: Optional[Expr] = None) -> Expr:
     return Expr(f.bool_and(expression.expr, filter=filter_raw))
 
 
-def bool_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
+def bool_or(expression: Expr, filter: Expr | None = None) -> Expr:
     """Computes the boolean OR of the argument.
 
     This aggregate function will compare every value in the input partition. These are
@@ -2462,9 +2462,9 @@ def bool_or(expression: Expr, filter: Optional[Expr] = None) -> Expr:
 def lead(
     arg: Expr,
     shift_offset: int = 1,
-    default_value: Optional[Any] = None,
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    default_value: Any | None = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a lead window function.
 
@@ -2520,9 +2520,9 @@ def lead(
 def lag(
     arg: Expr,
     shift_offset: int = 1,
-    default_value: Optional[Any] = None,
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    default_value: Any | None = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a lag window function.
 
@@ -2573,8 +2573,8 @@ def lag(
 
 
 def row_number(
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a row number window function.
 
@@ -2612,8 +2612,8 @@ def row_number(
 
 
 def rank(
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a rank window function.
 
@@ -2656,8 +2656,8 @@ def rank(
 
 
 def dense_rank(
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a dense_rank window function.
 
@@ -2695,8 +2695,8 @@ def dense_rank(
 
 
 def percent_rank(
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a percent_rank window function.
 
@@ -2735,8 +2735,8 @@ def percent_rank(
 
 
 def cume_dist(
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a cumulative distribution window function.
 
@@ -2776,8 +2776,8 @@ def cume_dist(
 
 def ntile(
     groups: int,
-    partition_by: Optional[list[Expr] | Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    partition_by: list[Expr] | Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Create a n-tile window function.
 
@@ -2822,8 +2822,8 @@ def ntile(
 def string_agg(
     expression: Expr,
     delimiter: str,
-    filter: Optional[Expr] = None,
-    order_by: Optional[list[SortKey] | SortKey] = None,
+    filter: Expr | None = None,
+    order_by: list[SortKey] | SortKey | None = None,
 ) -> Expr:
     """Concatenates the input strings.
 

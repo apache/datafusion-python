@@ -20,6 +20,7 @@
 
 import json
 import subprocess
+from pathlib import Path
 
 subprocess.check_output(["cargo", "install", "cargo-license"])
 data = subprocess.check_output(
@@ -248,5 +249,5 @@ for item in data:
     result += "------------------\n\n"
     result += f"### {name} {version}\n* source: [{repository}]({repository})\n* license: {license}\n\n"
 
-with open("LICENSE.txt", "w") as f:
+with Path.open("LICENSE.txt", "w") as f:
     f.write(result)

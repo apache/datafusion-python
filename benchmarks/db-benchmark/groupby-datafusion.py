@@ -18,6 +18,7 @@
 import gc
 import os
 import timeit
+from pathlib import Path
 
 import datafusion as df
 import pyarrow as pa
@@ -34,7 +35,7 @@ from pyarrow import csv as pacsv
 
 print("# groupby-datafusion.py", flush=True)
 
-exec(open("./_helpers/helpers.py").read())
+exec(Path.open("./_helpers/helpers.py").read())
 
 
 def ans_shape(batches) -> tuple[int, int]:
@@ -65,7 +66,7 @@ on_disk = "FALSE"
 sql = True
 
 data_name = os.environ["SRC_DATANAME"]
-src_grp = os.path.join("data", data_name + ".csv")
+src_grp = "data" / data_name / ".csv"
 print("loading dataset %s" % src_grp, flush=True)
 
 schema = pa.schema(

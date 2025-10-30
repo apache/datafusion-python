@@ -21,6 +21,7 @@ import fnmatch
 import re
 import sys
 import xml.etree.ElementTree as ET
+from pathlib import Path
 
 if len(sys.argv) != 3:
     sys.stderr.write("Usage: %s exclude_globs.lst rat_report.xml\n" % sys.argv[0])
@@ -29,7 +30,7 @@ if len(sys.argv) != 3:
 exclude_globs_filename = sys.argv[1]
 xml_filename = sys.argv[2]
 
-globs = [line.strip() for line in open(exclude_globs_filename)]
+globs = [line.strip() for line in Path.open(exclude_globs_filename)]
 
 tree = ET.parse(xml_filename)
 root = tree.getroot()
