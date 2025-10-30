@@ -21,6 +21,7 @@ import os
 import re
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
@@ -2413,11 +2414,11 @@ def test_write_parquet_with_options_bloom_filter(df, tmp_path):
 
     size_no_bloom_filter = 0
     for file in path_no_bloom_filter.rglob("*.parquet"):
-        size_no_bloom_filter += os.path.getsize(file)
+        size_no_bloom_filter += Path(file).stat().st_size
 
     size_bloom_filter = 0
     for file in path_bloom_filter.rglob("*.parquet"):
-        size_bloom_filter += os.path.getsize(file)
+        size_bloom_filter += Path(file).stat().st_size
 
     assert size_no_bloom_filter < size_bloom_filter
 

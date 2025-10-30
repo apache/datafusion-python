@@ -90,8 +90,6 @@ ignore = [
     "PD901",   # Allow variable name df
     "N812",    # Allow importing functions as `F`
     "A005",    # Allow module named io
-    # TODO: Enable all of the following, but this PR is getting too large already
-    "PTH",
 ]
 
 [tool.ruff.lint.pydocstyle]
