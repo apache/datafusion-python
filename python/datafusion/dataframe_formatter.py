@@ -19,13 +19,16 @@
 from __future__ import annotations
 
 from typing import (
+    TYPE_CHECKING,
     Any,
-    Callable,
     Protocol,
     runtime_checkable,
 )
 
 from datafusion._internal import DataFrame as DataFrameInternal
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 
 def _validate_positive_int(value: Any, param_name: str) -> None:

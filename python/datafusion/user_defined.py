@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 import pyarrow as pa
 
@@ -31,6 +31,7 @@ from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     _R = TypeVar("_R", bound=pa.DataType)
+    from collections.abc import Callable
 
 
 class Volatility(Enum):

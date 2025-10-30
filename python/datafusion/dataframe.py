@@ -22,11 +22,10 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
     Literal,
     overload,
 )
@@ -55,7 +54,7 @@ from datafusion.record_batch import RecordBatchStream
 
 if TYPE_CHECKING:
     import pathlib
-    from typing import Callable
+    from collections.abc import Callable
 
     import pandas as pd
     import polars as pl
