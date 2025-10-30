@@ -83,6 +83,7 @@ class LocationInputPlugin(BaseInputSource):
             raise RuntimeError(msg)
 
         # Input could possibly be multiple files. Create a list if so
-        input_files = Path.glob(input_item)
+        input_path = Path(input_item)
+        input_files = [str(p) for p in input_path.parent.glob(input_path.name)]
 
         return SqlTable(table_name, columns, num_rows, input_files)
