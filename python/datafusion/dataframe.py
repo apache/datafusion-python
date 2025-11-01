@@ -1319,11 +1319,10 @@ class DataFrame:
         Returns:
             Arrow ``PyCapsule`` object representing an ``ArrowArrayStream``.
 
-        Examples:
-            >>> schema = df.schema()
-            >>> stream = df.__arrow_c_stream__(schema)
-            >>> capsule = schema._export_to_c_capsule()
-            >>> stream = df.__arrow_c_stream__(capsule)
+        For practical usage patterns, see the Apache Arrow streaming
+        documentation: https://arrow.apache.org/docs/python/ipc.html#streaming
+        and the DataFusion user guide sections on Arrow I/O and DataFrame
+        streaming (:doc:`../io/arrow` and :doc:`../dataframe/index`).
 
         Notes:
             The Arrow C Data Interface PyCapsule details are documented by Apache
