@@ -34,7 +34,7 @@ use pyo3::prelude::*;
 use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
 use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::errors::{py_datafusion_err, PyDataFusionResult};
 use crate::expr::sort_expr::PySortExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::PyRecordBatchStream;
@@ -46,7 +46,7 @@ use crate::udaf::PyAggregateUDF;
 use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
-use crate::utils::{get_global_ctx, get_tokio_runtime, validate_pycapsule, wait_for_future};
+use crate::utils::{get_global_ctx, spawn_future, validate_pycapsule, wait_for_future};
 use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::arrow::record_batch::RecordBatch;
@@ -67,14 +67,12 @@ use datafusion::execution::disk_manager::DiskManagerMode;
 use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
 use datafusion::execution::options::ReadOptions;
 use datafusion::execution::runtime_env::RuntimeEnvBuilder;
-use datafusion::physical_plan::SendableRecordBatchStream;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
 use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
 use pyo3::IntoPyObjectExt;
-use tokio::task::JoinHandle;
 
 /// Configuration options for a SessionContext
 #[pyclass(frozen, name = "SessionConfig", module = "datafusion", subclass)]
@@ -1107,12 +1105,8 @@ impl PySessionContext {
         py: Python,
     ) -> PyDataFusionResult<PyRecordBatchStream> {
         let ctx: TaskContext = TaskContext::from(&self.ctx.state());
-        // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime().0;
         let plan = plan.plan.clone();
-        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { plan.execute(part, Arc::new(ctx)) });
-        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })???;
+        let stream = spawn_future(py, async move { plan.execute(part, Arc::new(ctx)) })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 }
