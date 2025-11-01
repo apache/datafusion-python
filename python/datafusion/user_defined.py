@@ -118,9 +118,9 @@ def _normalize_field(value: pa.DataType | pa.Field, *, default_name: str) -> pa.
 def _normalize_input_fields(
     values: pa.DataType | pa.Field | Sequence[pa.DataType | pa.Field],
 ) -> list[pa.Field]:
-    if isinstance(values, (pa.DataType, pa.Field)):
+    if isinstance(values, pa.DataType | pa.Field):
         sequence: Sequence[pa.DataType | pa.Field] = [values]
-    elif isinstance(values, Sequence) and not isinstance(values, (str, bytes)):
+    elif isinstance(values, Sequence) and not isinstance(values, str | bytes):
         sequence = values
     else:
         msg = "input_types must be a DataType, Field, or a sequence of them"
