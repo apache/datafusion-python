@@ -545,13 +545,14 @@ class DataFrame:
         return DataFrame(self.df.with_column(name, ensure_expr(expr)))
 
     def with_columns(
-        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        self, *exprs: Expr | str | Iterable[Expr | str], **named_exprs: Expr | str
     ) -> DataFrame:
         """Add columns to the DataFrame.
 
-        By passing expressions, iterables of expressions, or named expressions.
+        By passing expressions, iterables of expressions, string SQL expressions,
+        or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -564,17 +565,44 @@ class DataFrame:
                 d=lit(3)
             )
 
+            Equivalent example using just SQL strings:
+
+            df = df.with_columns(
+                "x as a",
+                ["1 as b", "y as c"],
+                d="3"
+            )
+
         Args:
-            exprs: Either a single expression or an iterable of expressions to add.
+            exprs: Either a single expression, an iterable of expressions to add or
+                   SQL expression strings.
             named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
             DataFrame with the new columns added.
         """
-        expressions = ensure_expr_list(exprs)
+        expressions = []
+        for expr in exprs:
+            if isinstance(expr, str):
+                expressions.append(self.parse_sql_expr(expr).expr)
+            elif isinstance(expr, Iterable) and not isinstance(
+                expr, Expr | str | bytes | bytearray
+            ):
+                expressions.extend(
+                    [
+                        self.parse_sql_expr(e).expr
+                        if isinstance(e, str)
+                        else ensure_expr(e)
+                        for e in expr
+                    ]
+                )
+            else:
+                expressions.append(ensure_expr(expr))
+
         for alias, expr in named_exprs.items():
-            ensure_expr(expr)
-            expressions.append(expr.alias(alias).expr)
+            e = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+            ensure_expr(e)
+            expressions.append(e.alias(alias).expr)
 
         return DataFrame(self.df.with_columns(expressions))
 
@@ -611,7 +639,7 @@ class DataFrame:
         """
         group_by_list = (
             list(group_by)
-            if isinstance(group_by, Sequence) and not isinstance(group_by, (Expr, str))
+            if isinstance(group_by, Sequence) and not isinstance(group_by, Expr | str)
             else [group_by]
         )
         aggs_list = (
