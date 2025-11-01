@@ -204,9 +204,8 @@ Zero-copy streaming to Arrow-based Python libraries
 ---------------------------------------------------
 
 DataFusion DataFrames implement the ``__arrow_c_stream__`` protocol, enabling
-zero-copy, lazy streaming into Arrow-based Python libraries. With the streaming 
-protocol, batches are produced on demand so you can process arbitrarily large 
-results without out-of-memory errors.
+zero-copy, lazy streaming into Arrow-based Python libraries. With the streaming
+protocol, batches are produced on demand.
 
 .. note::
 
