@@ -1320,9 +1320,10 @@ class DataFrame:
             Arrow ``PyCapsule`` object representing an ``ArrowArrayStream``.
 
         For practical usage patterns, see the Apache Arrow streaming
-        documentation: https://arrow.apache.org/docs/python/ipc.html#streaming
-        and the DataFusion user guide sections on Arrow I/O and DataFrame
-        streaming (:doc:`../io/arrow` and :doc:`../dataframe/index`).
+        documentation: https://arrow.apache.org/docs/python/ipc.html#streaming.
+
+        For details on DataFusion's Arrow integration and DataFrame streaming,
+        see the user guide (user-guide/io/arrow and user-guide/dataframe/index).
 
         Notes:
             The Arrow C Data Interface PyCapsule details are documented by Apache
