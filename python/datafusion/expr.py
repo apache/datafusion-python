@@ -25,14 +25,12 @@ from __future__ import annotations
 import typing as _typing
 from typing import TYPE_CHECKING, Any, ClassVar, Iterable, Optional, Sequence
 
-import pyarrow as pa
-
 try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
-from datafusion.common import NullTreatment
+import pyarrow as pa
 
 from ._internal import expr as expr_internal
 from ._internal import functions as functions_internal
@@ -40,8 +38,11 @@ from ._internal import functions as functions_internal
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    # Type-only imports
-    from datafusion.common import DataTypeMap, RexType
+    from datafusion.common import (  # type: ignore[import]
+        DataTypeMap,
+        NullTreatment,
+        RexType,
+    )
     from datafusion.plan import LogicalPlan
 
 
@@ -270,7 +271,7 @@ def ensure_expr_list(
     ) -> Iterable[expr_internal.Expr]:
         for expr in items:
             if isinstance(expr, Iterable) and not isinstance(
-                expr, (Expr, str, bytes, bytearray)
+                expr, Expr | str | bytes | bytearray
             ):
                 # Treat string-like objects as atomic to surface standard errors
                 yield from _iter(expr)
@@ -307,7 +308,7 @@ def expr_list_to_raw_expr_list(
     expr_list: Optional[list[Expr] | Expr],
 ) -> Optional[list[expr_internal.Expr]]:
     """Convert a sequence of expressions or column names to raw expressions."""
-    if isinstance(expr_list, (Expr, str)):
+    if isinstance(expr_list, Expr | str):
         expr_list = [expr_list]
     if expr_list is None:
         return None
@@ -325,7 +326,7 @@ def sort_list_to_raw_sort_list(
     sort_list: Optional[_typing.Union[Sequence[SortKey], SortKey]],
 ) -> Optional[list[expr_internal.SortExpr]]:
     """Helper function to return an optional sort list to raw variant."""
-    if isinstance(sort_list, (Expr, SortExpr, str)):
+    if isinstance(sort_list, Expr | SortExpr | str):
         sort_list = [sort_list]
     if sort_list is None:
         return None

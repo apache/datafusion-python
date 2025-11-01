@@ -15,18 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::errors::py_datafusion_err;
 use crate::{
     common::data_type::PyScalarValue,
     errors::{to_datafusion_err, PyDataFusionError, PyDataFusionResult},
     TokioRuntime,
 };
 use datafusion::{
-    common::ScalarValue, execution::context::SessionContext, logical_expr::Volatility,
+    common::ScalarValue, datasource::TableProvider, execution::context::SessionContext,
+    logical_expr::Volatility,
 };
+use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::prelude::*;
 use pyo3::{exceptions::PyValueError, types::PyCapsule};
-use std::{future::Future, sync::OnceLock, time::Duration};
+use std::{
+    future::Future,
+    sync::{Arc, OnceLock},
+    time::Duration,
+};
 use tokio::{runtime::Runtime, task::JoinHandle, time::sleep};
+
 /// Utility to get the Tokio Runtime from Python
 #[inline]
 pub(crate) fn get_tokio_runtime() -> &'static TokioRuntime {
@@ -120,7 +128,7 @@ pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
         "volatile" => Volatility::Volatile,
         value => {
             return Err(PyDataFusionError::Common(format!(
-                "Unsupportad volatility type: `{value}`, supported \
+                "Unsupported volatility type: `{value}`, supported \
                  values are: immutable, stable and volatile."
             )))
         }
@@ -130,9 +138,9 @@ pub(crate) fn parse_volatility(value: &str) -> PyDataFusionResult<Volatility> {
 pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyResult<()> {
     let capsule_name = capsule.name()?;
     if capsule_name.is_none() {
-        return Err(PyValueError::new_err(
-            "Expected schema PyCapsule to have name set.",
-        ));
+        return Err(PyValueError::new_err(format!(
+            "Expected {name} PyCapsule to have name set."
+        )));
     }
 
     let capsule_name = capsule_name.unwrap().to_str()?;
@@ -143,6 +151,23 @@ pub(crate) fn validate_pycapsule(capsule: &Bound<PyCapsule>, name: &str) -> PyRe
     }
 
     Ok(())
+}
+
+pub(crate) fn table_provider_from_pycapsule(
+    obj: &Bound<PyAny>,
+) -> PyResult<Option<Arc<dyn TableProvider>>> {
+    if obj.hasattr("__datafusion_table_provider__")? {
+        let capsule = obj.getattr("__datafusion_table_provider__")?.call0()?;
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+        validate_pycapsule(capsule, "datafusion_table_provider")?;
+
+        let provider = unsafe { capsule.reference::<FFI_TableProvider>() };
+        let provider: ForeignTableProvider = provider.into();
+
+        Ok(Some(Arc::new(provider)))
+    } else {
+        Ok(None)
+    }
 }
 
 pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {

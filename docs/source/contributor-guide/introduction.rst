@@ -26,6 +26,10 @@ We welcome and encourage contributions of all kinds, such as:
 In addition to submitting new PRs, we have a healthy tradition of community members reviewing each other’s PRs.
 Doing so is a great way to help the community as well as get more familiar with Rust and the relevant codebases.
 
+Before opening a pull request that touches PyO3 bindings, please review the
+:ref:`PyO3 class mutability guidelines <ffi_pyclass_mutability>` so you can flag missing
+``#[pyclass(frozen)]`` annotations during development and review.
+
 How to develop
 --------------
 

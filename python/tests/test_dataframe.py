@@ -16,6 +16,7 @@
 # under the License.
 import ctypes
 import datetime
+import itertools
 import os
 import re
 import threading
@@ -27,6 +28,7 @@ import pyarrow.parquet as pq
 import pytest
 from datafusion import (
     DataFrame,
+    InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
     RecordBatch,
@@ -41,6 +43,7 @@ from datafusion import (
 from datafusion import (
     functions as f,
 )
+from datafusion.dataframe import DataFrameWriteOptions
 from datafusion.dataframe_formatter import (
     DataFrameHtmlFormatter,
     configure_formatter,
@@ -61,9 +64,7 @@ def ctx():
 
 
 @pytest.fixture
-def df():
-    ctx = SessionContext()
-
+def df(ctx):
     # create a RecordBatch and a new DataFrame from it
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6]), pa.array([8, 5, 8])],
@@ -223,6 +224,48 @@ def test_select(df):
     assert result.column(1) == pa.array([1, 2, 3])
 
 
+def test_select_exprs(df):
+    df_1 = df.select_exprs(
+        "a + b",
+        "a - b",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df_1.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([-3, -3, -3])
+
+    df_2 = df.select_exprs("b", "a")
+
+    # execute and collect the first (and only) batch
+    result = df_2.collect()[0]
+
+    assert result.column(0) == pa.array([4, 5, 6])
+    assert result.column(1) == pa.array([1, 2, 3])
+
+    df_3 = df.select_exprs(
+        "abs(a + b)",
+        "abs(a - b)",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df_3.collect()[0]
+
+    assert result.column(0) == pa.array([5, 7, 9])
+    assert result.column(1) == pa.array([3, 3, 3])
+
+
+def test_drop_quoted_columns():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays([pa.array([1, 2, 3])], names=["ID_For_Students"])
+    df = ctx.create_dataframe([[batch]])
+
+    # Both should work
+    assert df.drop('"ID_For_Students"').schema().names == []
+    assert df.drop("ID_For_Students").schema().names == []
+
+
 def test_select_mixed_expr_string(df):
     df = df.select(column("b"), "a")
 
@@ -259,6 +302,59 @@ def test_filter(df):
     assert df.df == df2.df
 
     df3 = df.filter(column("a") > literal(1), column("b") != literal(6))
+    result = df3.collect()[0]
+
+    assert result.column(0) == pa.array([2])
+    assert result.column(1) == pa.array([5])
+    assert result.column(2) == pa.array([5])
+
+
+def test_filter_string_predicates(df):
+    df_str = df.filter("a > 2")
+    result = df_str.collect()[0]
+
+    assert result.column(0) == pa.array([3])
+    assert result.column(1) == pa.array([6])
+    assert result.column(2) == pa.array([8])
+
+    df_mixed = df.filter("a > 1", column("b") != literal(6))
+    result_mixed = df_mixed.collect()[0]
+
+    assert result_mixed.column(0) == pa.array([2])
+    assert result_mixed.column(1) == pa.array([5])
+    assert result_mixed.column(2) == pa.array([5])
+
+    df_strings = df.filter("a > 1", "b < 6")
+    result_strings = df_strings.collect()[0]
+
+    assert result_strings.column(0) == pa.array([2])
+    assert result_strings.column(1) == pa.array([5])
+    assert result_strings.column(2) == pa.array([5])
+
+
+def test_parse_sql_expr(df):
+    plan1 = df.filter(df.parse_sql_expr("a > 2")).logical_plan()
+    plan2 = df.filter(column("a") > literal(2)).logical_plan()
+    # object equality not implemented but string representation should match
+    assert str(plan1) == str(plan2)
+
+    df1 = df.filter(df.parse_sql_expr("a > 2")).select(
+        column("a") + column("b"),
+        column("a") - column("b"),
+    )
+
+    # execute and collect the first (and only) batch
+    result = df1.collect()[0]
+
+    assert result.column(0) == pa.array([9])
+    assert result.column(1) == pa.array([-3])
+
+    df.show()
+    # verify that if there is no filter applied, internal dataframe is unchanged
+    df2 = df.filter()
+    assert df.df == df2.df
+
+    df3 = df.filter(df.parse_sql_expr("a > 1"), df.parse_sql_expr("b != 6"))
     result = df3.collect()[0]
 
     assert result.column(0) == pa.array([2])
@@ -318,9 +414,16 @@ def test_aggregate_tuple_aggs(df):
     assert result_tuple == result_list
 
 
-def test_filter_string_unsupported(df):
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.filter("a > 1")
+def test_filter_string_equivalent(df):
+    df1 = df.filter("a > 1").to_pydict()
+    df2 = df.filter(column("a") > literal(1)).to_pydict()
+    assert df1 == df2
+
+
+def test_filter_string_invalid(df):
+    with pytest.raises(Exception) as excinfo:
+        df.filter("this is not valid sql").collect()
+    assert "Expected Expr" not in str(excinfo.value)
 
 
 def test_drop(df):
@@ -377,8 +480,8 @@ def test_tail(df):
     assert result.column(2) == pa.array([8])
 
 
-def test_with_column(df):
-    df = df.with_column("c", column("a") + column("b"))
+def test_with_column_sql_expression(df):
+    df = df.with_column("c", "a + b")
 
     # execute and collect the first (and only) batch
     result = df.collect()[0]
@@ -392,11 +495,19 @@ def test_with_column(df):
     assert result.column(2) == pa.array([5, 7, 9])
 
 
-def test_with_column_invalid_expr(df):
-    with pytest.raises(
-        TypeError, match=r"Use col\(\)/column\(\) or lit\(\)/literal\(\)"
-    ):
-        df.with_column("c", "a")
+def test_with_column(df):
+    df = df.with_column("c", column("a") + column("b"))
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
 
 
 def test_with_columns(df):
@@ -430,15 +541,35 @@ def test_with_columns(df):
     assert result.column(6) == pa.array([5, 7, 9])
 
 
-def test_with_columns_invalid_expr(df):
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns("a")
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(c="a")
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(["a"])
-    with pytest.raises(TypeError, match=re.escape(EXPR_TYPE_ERROR)):
-        df.with_columns(c=["a"])
+def test_with_columns_str(df):
+    df = df.with_columns(
+        "a + b as c",
+        "a + b as d",
+        [
+            "a + b as e",
+            "a + b as f",
+        ],
+        g="a + b",
+    )
+
+    # execute and collect the first (and only) batch
+    result = df.collect()[0]
+
+    assert result.schema.field(0).name == "a"
+    assert result.schema.field(1).name == "b"
+    assert result.schema.field(2).name == "c"
+    assert result.schema.field(3).name == "d"
+    assert result.schema.field(4).name == "e"
+    assert result.schema.field(5).name == "f"
+    assert result.schema.field(6).name == "g"
+
+    assert result.column(0) == pa.array([1, 2, 3])
+    assert result.column(1) == pa.array([4, 5, 6])
+    assert result.column(2) == pa.array([5, 7, 9])
+    assert result.column(3) == pa.array([5, 7, 9])
+    assert result.column(4) == pa.array([5, 7, 9])
+    assert result.column(5) == pa.array([5, 7, 9])
+    assert result.column(6) == pa.array([5, 7, 9])
 
 
 def test_cast(df):
@@ -1549,6 +1680,14 @@ def test_repartition_by_hash(df):
     df.repartition_by_hash(column("a"), num=2)
 
 
+def test_repartition_by_hash_sql_expression(df):
+    df.repartition_by_hash("a", num=2)
+
+
+def test_repartition_by_hash_mix(df):
+    df.repartition_by_hash(column("a"), "b", num=2)
+
+
 def test_intersect():
     ctx = SessionContext()
 
@@ -1971,6 +2110,69 @@ def test_write_csv(ctx, df, tmp_path, path_to_str):
     expected = df.to_pydict()
 
     assert result == expected
+
+
+def generate_test_write_params() -> list[tuple]:
+    # Overwrite and Replace are not implemented for many table writers
+    insert_ops = [InsertOp.APPEND, None]
+    sort_by_cases = [
+        (None, [1, 2, 3], "unsorted"),
+        (column("c"), [2, 1, 3], "single_column_expr"),
+        (column("a").sort(ascending=False), [3, 2, 1], "single_sort_expr"),
+        ([column("c"), column("b")], [2, 1, 3], "list_col_expr"),
+        (
+            [column("c").sort(ascending=False), column("b").sort(ascending=False)],
+            [3, 1, 2],
+            "list_sort_expr",
+        ),
+    ]
+
+    formats = ["csv", "json", "parquet", "table"]
+
+    return [
+        pytest.param(
+            output_format,
+            insert_op,
+            sort_by,
+            expected_a,
+            id=f"{output_format}_{test_id}",
+        )
+        for output_format, insert_op, (
+            sort_by,
+            expected_a,
+            test_id,
+        ) in itertools.product(formats, insert_ops, sort_by_cases)
+    ]
+
+
+@pytest.mark.parametrize(
+    ("output_format", "insert_op", "sort_by", "expected_a"),
+    generate_test_write_params(),
+)
+def test_write_files_with_options(
+    ctx, df, tmp_path, output_format, insert_op, sort_by, expected_a
+) -> None:
+    write_options = DataFrameWriteOptions(insert_operation=insert_op, sort_by=sort_by)
+
+    if output_format == "csv":
+        df.write_csv(tmp_path, with_header=True, write_options=write_options)
+        ctx.register_csv("test_table", tmp_path)
+    elif output_format == "json":
+        df.write_json(tmp_path, write_options=write_options)
+        ctx.register_json("test_table", tmp_path)
+    elif output_format == "parquet":
+        df.write_parquet(tmp_path, write_options=write_options)
+        ctx.register_parquet("test_table", tmp_path)
+    elif output_format == "table":
+        batch = pa.RecordBatch.from_arrays([[], [], []], schema=df.schema())
+        ctx.register_record_batches("test_table", [[batch]])
+        ctx.table("test_table").show()
+        df.write_table("test_table", write_options=write_options)
+
+    result = ctx.table("test_table").to_pydict()["a"]
+    ctx.table("test_table").show()
+
+    assert result == expected_a
 
 
 @pytest.mark.parametrize("path_to_str", [True, False])
@@ -2463,6 +2665,25 @@ def test_write_parquet_options_error(df, tmp_path):
     options = ParquetWriterOptions(compression="gzip", compression_level=6)
     with pytest.raises(ValueError):
         df.write_parquet(str(tmp_path), options, compression_level=1)
+
+
+def test_write_table(ctx, df):
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3])],
+        names=["a"],
+    )
+
+    ctx.register_record_batches("t", [[batch]])
+
+    df = ctx.table("t").with_column("a", column("a") * literal(-1))
+
+    ctx.table("t").show()
+
+    df.write_table("t")
+    result = ctx.table("t").sort(column("a")).collect()[0][0].to_pylist()
+    expected = [-3, -2, -1, 1, 2, 3]
+
+    assert result == expected
 
 
 def test_dataframe_export(df) -> None:

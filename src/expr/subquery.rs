@@ -24,7 +24,7 @@ use crate::sql::logical::PyLogicalPlan;
 
 use super::logical_node::LogicalNode;
 
-#[pyclass(name = "Subquery", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Subquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySubquery {
     subquery: Subquery,

@@ -33,16 +33,28 @@ jobs:
       fail-fast: false
       matrix:
         python-version:
-          - "3.9"
           - "3.10"
           - "3.11"
           - "3.12"
           - "3.13"
+          - "3.14"
         toolchain:
           - "stable"
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: Verify example datafusion version
+        run: |
+          MAIN_VERSION=$(grep -A 1 "name = \"datafusion-common\"" Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
+          EXAMPLE_VERSION=$(grep -A 1 "name = \"datafusion-common\"" examples/datafusion-ffi-example/Cargo.lock | grep "version = " | head -1 | sed 's/.*version = "\(.*\)"/\1/')
+          echo "Main crate datafusion version: $MAIN_VERSION"
+          echo "FFI example datafusion version: $EXAMPLE_VERSION"
+          
+          if [ "$MAIN_VERSION" != "$EXAMPLE_VERSION" ]; then
+            echo "❌ Error: FFI example datafusion versions don't match!"
+            exit 1
+          fi
 
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -57,7 +69,7 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -76,7 +88,7 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
 
       - name: Install dependencies and build
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
             enable-cache: true
 

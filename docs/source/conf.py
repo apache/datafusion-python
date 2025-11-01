@@ -91,6 +91,13 @@ def autoapi_skip_member_fn(app, what, name, obj, skip, options) -> bool:  # noqa
         ("method", "datafusion.context.SessionContext.tables"),
         ("method", "datafusion.dataframe.DataFrame.unnest_column"),
     ]
+    # Explicitly skip certain members listed above. These are either
+    # re-exports, duplicate module-level documentation, deprecated
+    # API surfaces, or private variables that would otherwise appear
+    # in the generated docs and cause confusing duplication.
+    # Keeping this explicit list avoids surprising entries in the
+    # AutoAPI output and gives us a single place to opt-out items
+    # when we intentionally hide them from the docs.
     if (what, name) in skip_contents:
         skip = True
 

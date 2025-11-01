@@ -36,7 +36,12 @@ pub enum StorageContexts {
     HTTP(PyHttpContext),
 }
 
-#[pyclass(name = "LocalFileSystem", module = "datafusion.store", subclass)]
+#[pyclass(
+    frozen,
+    name = "LocalFileSystem",
+    module = "datafusion.store",
+    subclass
+)]
 #[derive(Debug, Clone)]
 pub struct PyLocalFileSystemContext {
     pub inner: Arc<LocalFileSystem>,
@@ -62,7 +67,7 @@ impl PyLocalFileSystemContext {
     }
 }
 
-#[pyclass(name = "MicrosoftAzure", module = "datafusion.store", subclass)]
+#[pyclass(frozen, name = "MicrosoftAzure", module = "datafusion.store", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyMicrosoftAzureContext {
     pub inner: Arc<MicrosoftAzure>,
@@ -134,7 +139,7 @@ impl PyMicrosoftAzureContext {
     }
 }
 
-#[pyclass(name = "GoogleCloud", module = "datafusion.store", subclass)]
+#[pyclass(frozen, name = "GoogleCloud", module = "datafusion.store", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyGoogleCloudContext {
     pub inner: Arc<GoogleCloudStorage>,
@@ -164,7 +169,7 @@ impl PyGoogleCloudContext {
     }
 }
 
-#[pyclass(name = "AmazonS3", module = "datafusion.store", subclass)]
+#[pyclass(frozen, name = "AmazonS3", module = "datafusion.store", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyAmazonS3Context {
     pub inner: Arc<AmazonS3>,
@@ -174,13 +179,14 @@ pub struct PyAmazonS3Context {
 #[pymethods]
 impl PyAmazonS3Context {
     #[allow(clippy::too_many_arguments)]
-    #[pyo3(signature = (bucket_name, region=None, access_key_id=None, secret_access_key=None, endpoint=None, allow_http=false, imdsv1_fallback=false))]
+    #[pyo3(signature = (bucket_name, region=None, access_key_id=None, secret_access_key=None, session_token=None, endpoint=None, allow_http=false, imdsv1_fallback=false))]
     #[new]
     fn new(
         bucket_name: String,
         region: Option<String>,
         access_key_id: Option<String>,
         secret_access_key: Option<String>,
+        session_token: Option<String>,
         endpoint: Option<String>,
         //retry_config: RetryConfig,
         allow_http: bool,
@@ -200,6 +206,10 @@ impl PyAmazonS3Context {
         if let Some(secret_access_key) = secret_access_key {
             builder = builder.with_secret_access_key(secret_access_key);
         };
+
+        if let Some(session_token) = session_token {
+            builder = builder.with_token(session_token);
+        }
 
         if let Some(endpoint) = endpoint {
             builder = builder.with_endpoint(endpoint);
@@ -223,7 +233,7 @@ impl PyAmazonS3Context {
     }
 }
 
-#[pyclass(name = "Http", module = "datafusion.store", subclass)]
+#[pyclass(frozen, name = "Http", module = "datafusion.store", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyHttpContext {
     pub url: String,

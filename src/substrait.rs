@@ -27,7 +27,7 @@ use datafusion_substrait::serializer;
 use datafusion_substrait::substrait::proto::Plan;
 use prost::Message;
 
-#[pyclass(name = "Plan", module = "datafusion.substrait", subclass)]
+#[pyclass(frozen, name = "Plan", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PyPlan {
     pub plan: Plan,
@@ -59,7 +59,7 @@ impl From<Plan> for PyPlan {
 /// A PySubstraitSerializer is a representation of a Serializer that is capable of both serializing
 /// a `LogicalPlan` instance to Substrait Protobuf bytes and also deserialize Substrait Protobuf bytes
 /// to a valid `LogicalPlan` instance.
-#[pyclass(name = "Serde", module = "datafusion.substrait", subclass)]
+#[pyclass(frozen, name = "Serde", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitSerializer;
 
@@ -112,7 +112,7 @@ impl PySubstraitSerializer {
     }
 }
 
-#[pyclass(name = "Producer", module = "datafusion.substrait", subclass)]
+#[pyclass(frozen, name = "Producer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitProducer;
 
@@ -129,7 +129,7 @@ impl PySubstraitProducer {
     }
 }
 
-#[pyclass(name = "Consumer", module = "datafusion.substrait", subclass)]
+#[pyclass(frozen, name = "Consumer", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]
 pub struct PySubstraitConsumer;
 
@@ -138,7 +138,7 @@ impl PySubstraitConsumer {
     /// Convert Substrait Plan to DataFusion DataFrame
     #[staticmethod]
     pub fn from_substrait_plan(
-        ctx: &mut PySessionContext,
+        ctx: &PySessionContext,
         plan: PyPlan,
         py: Python,
     ) -> PyDataFusionResult<PyLogicalPlan> {

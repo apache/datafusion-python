@@ -41,10 +41,13 @@ except ImportError:
     from typing_extensions import deprecated  # Python 3.12
 
 from datafusion._internal import DataFrame as DataFrameInternal
+from datafusion._internal import DataFrameWriteOptions as DataFrameWriteOptionsInternal
+from datafusion._internal import InsertOp as InsertOpInternal
 from datafusion._internal import ParquetColumnOptions as ParquetColumnOptionsInternal
 from datafusion._internal import ParquetWriterOptions as ParquetWriterOptionsInternal
 from datafusion.expr import (
     Expr,
+    SortExpr,
     SortKey,
     ensure_expr,
     ensure_expr_list,
@@ -61,6 +64,8 @@ if TYPE_CHECKING:
     import pandas as pd
     import polars as pl
     import pyarrow as pa
+
+    from datafusion.catalog import Table
 
 from enum import Enum
 
@@ -318,9 +323,21 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> pa.Table:
-        """Convert DataFrame as a ViewTable which can be used in register_table."""
-        return self.df.into_view()
+    def into_view(self, temporary: bool = False) -> Table:
+        """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
+
+        Examples:
+            >>> from datafusion import SessionContext
+            >>> ctx = SessionContext()
+            >>> df = ctx.sql("SELECT 1 AS value")
+            >>> view = df.into_view()
+            >>> ctx.register_table("values_view", view)
+            >>> df.collect()  # The DataFrame is still usable
+            >>> ctx.sql("SELECT value FROM values_view").collect()
+        """
+        from datafusion.catalog import Table as _Table
+
+        return _Table(self.df.into_view(temporary))
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
         """Return a new :py:class:`DataFrame` with the specified column or columns.
@@ -393,6 +410,17 @@ class DataFrame:
         """
         return self.select(*args)
 
+    def select_exprs(self, *args: str) -> DataFrame:
+        """Project arbitrary list of expression strings into a new DataFrame.
+
+        This method will parse string expressions into logical plan expressions.
+        The output DataFrame has one column for each expression.
+
+        Returns:
+            DataFrame only containing the specified columns.
+        """
+        return self.df.select_exprs(*args)
+
     def select(self, *exprs: Expr | str) -> DataFrame:
         """Project arbitrary expressions into a new :py:class:`DataFrame`.
 
@@ -418,46 +446,92 @@ class DataFrame:
     def drop(self, *columns: str) -> DataFrame:
         """Drop arbitrary amount of columns.
 
+        Column names are case-sensitive and do not require double quotes like
+        other operations such as `select`. Leading and trailing double quotes
+        are allowed and will be automatically stripped if present.
+
         Args:
-            columns: Column names to drop from the dataframe.
+            columns: Column names to drop from the dataframe. Both ``column_name``
+                    and ``"column_name"`` are accepted.
 
         Returns:
             DataFrame with those columns removed in the projection.
-        """
-        return DataFrame(self.df.drop(*columns))
 
-    def filter(self, *predicates: Expr) -> DataFrame:
+        Example Usage::
+
+            df.drop('ID_For_Students')      # Works
+            df.drop('"ID_For_Students"')    # Also works (quotes stripped)
+        """
+        normalized_columns = []
+        for col in columns:
+            if col.startswith('"') and col.endswith('"'):
+                normalized_columns.append(col.strip('"'))  # Strip double quotes
+            else:
+                normalized_columns.append(col)
+
+        return DataFrame(self.df.drop(*normalized_columns))
+
+    def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
         out. If more than one predicate is provided, these predicates will be
-        combined as a logical AND. Each ``predicate`` must be an
+        combined as a logical AND. Each ``predicate`` can be an
         :class:`~datafusion.expr.Expr` created using helper functions such as
-        :func:`datafusion.col` or :func:`datafusion.lit`.
-        If more complex logic is required, see the logical operations in
-        :py:mod:`~datafusion.functions`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression string
+        that will be parsed against the DataFrame schema. If more complex logic is
+        required, see the logical operations in :py:mod:`~datafusion.functions`.
 
         Example::
 
             from datafusion import col, lit
             df.filter(col("a") > lit(1))
+            df.filter("a > 1")
 
         Args:
-            predicates: Predicate expression(s) to filter the DataFrame.
+            predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
 
         Returns:
             DataFrame after filtering.
         """
         df = self.df
-        for p in predicates:
-            df = df.filter(ensure_expr(p))
+        for predicate in predicates:
+            expr = (
+                self.parse_sql_expr(predicate)
+                if isinstance(predicate, str)
+                else predicate
+            )
+            df = df.filter(ensure_expr(expr))
         return DataFrame(df)
 
-    def with_column(self, name: str, expr: Expr) -> DataFrame:
+    def parse_sql_expr(self, expr: str) -> Expr:
+        """Creates logical expression from a SQL query text.
+
+        The expression is created and processed against the current schema.
+
+        Example::
+
+            from datafusion import col, lit
+            df.parse_sql_expr("a > 1")
+
+            should produce:
+
+            col("a") > lit(1)
+
+        Args:
+            expr: Expression string to be converted to datafusion expression
+
+        Returns:
+            Logical expression .
+        """
+        return Expr(self.df.parse_sql_expr(expr))
+
+    def with_column(self, name: str, expr: Expr | str) -> DataFrame:
         """Add an additional column to the DataFrame.
 
         The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
+        string that will be parsed against the DataFrame schema.
 
         Example::
 
@@ -471,16 +545,19 @@ class DataFrame:
         Returns:
             DataFrame with the new column.
         """
+        expr = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+
         return DataFrame(self.df.with_column(name, ensure_expr(expr)))
 
     def with_columns(
-        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        self, *exprs: Expr | str | Iterable[Expr | str], **named_exprs: Expr | str
     ) -> DataFrame:
         """Add columns to the DataFrame.
 
-        By passing expressions, iterables of expressions, or named expressions.
+        By passing expressions, iterables of expressions, string SQL expressions,
+        or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -493,17 +570,44 @@ class DataFrame:
                 d=lit(3)
             )
 
+            Equivalent example using just SQL strings:
+
+            df = df.with_columns(
+                "x as a",
+                ["1 as b", "y as c"],
+                d="3"
+            )
+
         Args:
-            exprs: Either a single expression or an iterable of expressions to add.
+            exprs: Either a single expression, an iterable of expressions to add or
+                   SQL expression strings.
             named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
             DataFrame with the new columns added.
         """
-        expressions = ensure_expr_list(exprs)
+        expressions = []
+        for expr in exprs:
+            if isinstance(expr, str):
+                expressions.append(self.parse_sql_expr(expr).expr)
+            elif isinstance(expr, Iterable) and not isinstance(
+                expr, Expr | str | bytes | bytearray
+            ):
+                expressions.extend(
+                    [
+                        self.parse_sql_expr(e).expr
+                        if isinstance(e, str)
+                        else ensure_expr(e)
+                        for e in expr
+                    ]
+                )
+            else:
+                expressions.append(ensure_expr(expr))
+
         for alias, expr in named_exprs.items():
-            ensure_expr(expr)
-            expressions.append(expr.alias(alias).expr)
+            e = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+            ensure_expr(e)
+            expressions.append(e.alias(alias).expr)
 
         return DataFrame(self.df.with_columns(expressions))
 
@@ -540,7 +644,7 @@ class DataFrame:
         """
         group_by_list = (
             list(group_by)
-            if isinstance(group_by, Sequence) and not isinstance(group_by, (Expr, str))
+            if isinstance(group_by, Sequence) and not isinstance(group_by, Expr | str)
             else [group_by]
         )
         aggs_list = (
@@ -846,17 +950,20 @@ class DataFrame:
         """
         return DataFrame(self.df.repartition(num))
 
-    def repartition_by_hash(self, *exprs: Expr, num: int) -> DataFrame:
+    def repartition_by_hash(self, *exprs: Expr | str, num: int) -> DataFrame:
         """Repartition a DataFrame using a hash partitioning scheme.
 
         Args:
-            exprs: Expressions to evaluate and perform hashing on.
+            exprs: Expressions or a SQL expression string to evaluate
+                   and perform hashing on.
             num: Number of partitions to repartition the DataFrame into.
 
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [expr.expr for expr in exprs]
+        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        exprs = expr_list_to_raw_expr_list(exprs)
+
         return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
@@ -913,14 +1020,23 @@ class DataFrame:
         """
         return DataFrame(self.df.except_all(other.df))
 
-    def write_csv(self, path: str | pathlib.Path, with_header: bool = False) -> None:
+    def write_csv(
+        self,
+        path: str | pathlib.Path,
+        with_header: bool = False,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame`  and write the results to a CSV file.
 
         Args:
             path: Path of the CSV file to write.
             with_header: If true, output the CSV header row.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_csv(str(path), with_header)
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_csv(str(path), with_header, raw_write_options)
 
     @overload
     def write_parquet(
@@ -928,6 +1044,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: str,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -936,6 +1053,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Compression = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     @overload
@@ -944,6 +1062,7 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: ParquetWriterOptions,
         compression_level: None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None: ...
 
     def write_parquet(
@@ -951,24 +1070,30 @@ class DataFrame:
         path: str | pathlib.Path,
         compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
         compression_level: int | None = None,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
+
+        Available compression types are:
+
+        - "uncompressed": No compression.
+        - "snappy": Snappy compression.
+        - "gzip": Gzip compression.
+        - "brotli": Brotli compression.
+        - "lz4": LZ4 compression.
+        - "lz4_raw": LZ4_RAW compression.
+        - "zstd": Zstandard compression.
+
+        LZO compression is not yet implemented in arrow-rs and is therefore
+        excluded.
 
         Args:
             path: Path of the Parquet file to write.
             compression: Compression type to use. Default is "ZSTD".
-                Available compression types are:
-                - "uncompressed": No compression.
-                - "snappy": Snappy compression.
-                - "gzip": Gzip compression.
-                - "brotli": Brotli compression.
-                - "lz4": LZ4 compression.
-                - "lz4_raw": LZ4_RAW compression.
-                - "zstd": Zstandard compression.
-            Note: LZO is not yet implemented in arrow-rs and is therefore excluded.
             compression_level: Compression level to use. For ZSTD, the
                 recommended range is 1 to 22, with the default being 4. Higher levels
                 provide better compression but slower speed.
+            write_options: Options that impact how the DataFrame is written.
         """
         if isinstance(compression, ParquetWriterOptions):
             if compression_level is not None:
@@ -986,10 +1111,21 @@ class DataFrame:
         ):
             compression_level = compression.get_default_level()
 
-        self.df.write_parquet(str(path), compression.value, compression_level)
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_parquet(
+            str(path),
+            compression.value,
+            compression_level,
+            raw_write_options,
+        )
 
     def write_parquet_with_options(
-        self, path: str | pathlib.Path, options: ParquetWriterOptions
+        self,
+        path: str | pathlib.Path,
+        options: ParquetWriterOptions,
+        write_options: DataFrameWriteOptions | None = None,
     ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a Parquet file.
 
@@ -998,6 +1134,7 @@ class DataFrame:
         Args:
             path: Path of the Parquet file to write.
             options: Sets the writer parquet options (see `ParquetWriterOptions`).
+            write_options: Options that impact how the DataFrame is written.
         """
         options_internal = ParquetWriterOptionsInternal(
             options.data_pagesize_limit,
@@ -1034,19 +1171,45 @@ class DataFrame:
                 bloom_filter_ndv=opts.bloom_filter_ndv,
             )
 
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
         self.df.write_parquet_with_options(
             str(path),
             options_internal,
             column_specific_options_internal,
+            raw_write_options,
         )
 
-    def write_json(self, path: str | pathlib.Path) -> None:
+    def write_json(
+        self,
+        path: str | pathlib.Path,
+        write_options: DataFrameWriteOptions | None = None,
+    ) -> None:
         """Execute the :py:class:`DataFrame` and write the results to a JSON file.
 
         Args:
             path: Path of the JSON file to write.
+            write_options: Options that impact how the DataFrame is written.
         """
-        self.df.write_json(str(path))
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_json(str(path), write_options=raw_write_options)
+
+    def write_table(
+        self, table_name: str, write_options: DataFrameWriteOptions | None = None
+    ) -> None:
+        """Execute the :py:class:`DataFrame` and write the results to a table.
+
+        The table must be registered with the session to perform this operation.
+        Not all table providers support writing operations. See the individual
+        implementations for details.
+        """
+        raw_write_options = (
+            write_options._raw_write_options if write_options is not None else None
+        )
+        self.df.write_table(table_name, raw_write_options)
 
     def to_arrow_table(self) -> pa.Table:
         """Execute the :py:class:`DataFrame` and convert it into an Arrow Table.
@@ -1227,3 +1390,49 @@ class DataFrame:
             - For columns not in subset, the original column is kept unchanged
         """
         return DataFrame(self.df.fill_null(value, subset))
+
+
+class InsertOp(Enum):
+    """Insert operation mode.
+
+    These modes are used by the table writing feature to define how record
+    batches should be written to a table.
+    """
+
+    APPEND = InsertOpInternal.APPEND
+    """Appends new rows to the existing table without modifying any existing rows."""
+
+    REPLACE = InsertOpInternal.REPLACE
+    """Replace existing rows that collide with the inserted rows.
+
+    Replacement is typically based on a unique key or primary key.
+    """
+
+    OVERWRITE = InsertOpInternal.OVERWRITE
+    """Overwrites all existing rows in the table with the new rows."""
+
+
+class DataFrameWriteOptions:
+    """Writer options for DataFrame.
+
+    There is no guarantee the table provider supports all writer options.
+    See the individual implementation and documentation for details.
+    """
+
+    def __init__(
+        self,
+        insert_operation: InsertOp | None = None,
+        single_file_output: bool = False,
+        partition_by: str | Sequence[str] | None = None,
+        sort_by: Expr | SortExpr | Sequence[Expr] | Sequence[SortExpr] | None = None,
+    ) -> None:
+        """Instantiate writer options for DataFrame."""
+        if isinstance(partition_by, str):
+            partition_by = [partition_by]
+
+        sort_by_raw = sort_list_to_raw_sort_list(sort_by)
+        insert_op = insert_operation.value if insert_operation is not None else None
+
+        self._raw_write_options = DataFrameWriteOptionsInternal(
+            insert_op, single_file_output, partition_by, sort_by_raw
+        )

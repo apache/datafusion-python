@@ -27,7 +27,7 @@ use std::any::Any;
 use std::sync::Arc;
 
 #[pyclass(name = "MySumUDF", module = "datafusion_ffi_example", subclass)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct MySumUDF {
     inner: Arc<Sum>,
 }

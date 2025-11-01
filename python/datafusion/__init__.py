@@ -28,29 +28,31 @@ from typing import Any
 try:
     import importlib.metadata as importlib_metadata
 except ImportError:
-    import importlib_metadata
+    import importlib_metadata  # type: ignore[import]
 
+# Public submodules
 from . import functions, object_store, substrait, unparser
 
 # The following imports are okay to remain as opaque to the user.
 from ._internal import Config
 from .catalog import Catalog, Database, Table
 from .col import col, column
-from .common import (
-    DFSchema,
-)
+from .common import DFSchema
 from .context import (
     RuntimeEnvBuilder,
     SessionConfig,
     SessionContext,
     SQLOptions,
 )
-from .dataframe import DataFrame, ParquetColumnOptions, ParquetWriterOptions
-from .dataframe_formatter import configure_formatter
-from .expr import (
-    Expr,
-    WindowFrame,
+from .dataframe import (
+    DataFrame,
+    DataFrameWriteOptions,
+    InsertOp,
+    ParquetColumnOptions,
+    ParquetWriterOptions,
 )
+from .dataframe_formatter import configure_formatter
+from .expr import Expr, WindowFrame
 from .io import read_avro, read_csv, read_json, read_parquet
 from .plan import ExecutionPlan, LogicalPlan
 from .record_batch import RecordBatch, RecordBatchStream
@@ -75,9 +77,11 @@ __all__ = [
     "Config",
     "DFSchema",
     "DataFrame",
+    "DataFrameWriteOptions",
     "Database",
     "ExecutionPlan",
     "Expr",
+    "InsertOp",
     "LogicalPlan",
     "ParquetColumnOptions",
     "ParquetWriterOptions",

@@ -21,7 +21,7 @@ use std::fmt::{self, Display, Formatter};
 
 use crate::expr::PyExpr;
 
-#[pyclass(name = "Like", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "Like", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyLike {
     like: Like,
@@ -79,7 +79,7 @@ impl PyLike {
     }
 }
 
-#[pyclass(name = "ILike", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "ILike", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PyILike {
     like: Like,
@@ -137,7 +137,7 @@ impl PyILike {
     }
 }
 
-#[pyclass(name = "SimilarTo", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "SimilarTo", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySimilarTo {
     like: Like,

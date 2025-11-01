@@ -20,7 +20,7 @@ use datafusion::logical_expr::SortExpr;
 use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
-#[pyclass(name = "SortExpr", module = "datafusion.expr", subclass)]
+#[pyclass(frozen, name = "SortExpr", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
 pub struct PySortExpr {
     pub(crate) sort: SortExpr,

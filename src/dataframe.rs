@@ -29,15 +29,16 @@ use arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::datatypes::{Schema, SchemaRef};
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
+use datafusion::catalog::TableProvider;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
-use datafusion::datasource::TableProvider;
 use datafusion::error::DataFusionError;
 use datafusion::execution::SendableRecordBatchStream;
+use datafusion::logical_expr::dml::InsertOp;
+use datafusion::logical_expr::SortExpr;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
-use datafusion_ffi::table_provider::FFI_TableProvider;
 use futures::{StreamExt, TryStreamExt};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
@@ -45,12 +46,12 @@ use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use pyo3::PyErr;
 
-use crate::catalog::PyTable;
-use crate::errors::{py_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
+use crate::table::{PyTable, TempViewTable};
 use crate::utils::{
     get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule,
     wait_for_future,
@@ -60,42 +61,15 @@ use crate::{
     expr::{sort_expr::PySortExpr, PyExpr},
 };
 
+use parking_lot::Mutex;
+
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
 
-// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-// - we have not decided on the table_provider approach yet
-// this is an interim implementation
-#[pyclass(name = "TableProvider", module = "datafusion")]
-pub struct PyTableProvider {
-    provider: Arc<dyn TableProvider + Send>,
-}
-
-impl PyTableProvider {
-    pub fn new(provider: Arc<dyn TableProvider>) -> Self {
-        Self { provider }
-    }
-
-    pub fn as_table(&self) -> PyTable {
-        let table_provider: Arc<dyn TableProvider> = self.provider.clone();
-        PyTable::new(table_provider)
-    }
-}
-
-#[pymethods]
-impl PyTableProvider {
-    fn __datafusion_table_provider__<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<Bound<'py, PyCapsule>> {
-        let name = CString::new("datafusion_table_provider").unwrap();
-
-        let runtime = get_tokio_runtime().0.handle().clone();
-        let provider = FFI_TableProvider::new(Arc::clone(&self.provider), false, Some(runtime));
-
-        PyCapsule::new(py, provider, Some(name.clone()))
-    }
-}
+// Type aliases to simplify very complex types used in this file and
+// avoid compiler complaints about deeply nested types in struct fields.
+type CachedBatches = Option<(Vec<RecordBatch>, bool)>;
+type SharedCachedBatches = Arc<Mutex<CachedBatches>>;
 
 /// Configuration for DataFrame display formatting
 #[derive(Debug, Clone)]
@@ -193,7 +167,7 @@ fn build_formatter_config_from_python(formatter: &Bound<'_, PyAny>) -> PyResult<
 }
 
 /// Python mapping of `ParquetOptions` (includes just the writer-related options).
-#[pyclass(name = "ParquetWriterOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetWriterOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetWriterOptions {
     options: ParquetOptions,
@@ -254,7 +228,7 @@ impl PyParquetWriterOptions {
 }
 
 /// Python mapping of `ParquetColumnOptions`.
-#[pyclass(name = "ParquetColumnOptions", module = "datafusion", subclass)]
+#[pyclass(frozen, name = "ParquetColumnOptions", module = "datafusion", subclass)]
 #[derive(Clone, Default)]
 pub struct PyParquetColumnOptions {
     options: ParquetColumnOptions,
@@ -289,13 +263,13 @@ impl PyParquetColumnOptions {
 /// A PyDataFrame is a representation of a logical plan and an API to compose statements.
 /// Use it to build a plan and `.collect()` to execute the plan and collect the result.
 /// The actual execution of a plan runs natively on Rust and Arrow on a multi-threaded environment.
-#[pyclass(name = "DataFrame", module = "datafusion", subclass)]
+#[pyclass(name = "DataFrame", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub struct PyDataFrame {
     df: Arc<DataFrame>,
 
     // In IPython environment cache batches between __repr__ and _repr_html_ calls.
-    batches: Option<(Vec<RecordBatch>, bool)>,
+    batches: SharedCachedBatches,
 }
 
 impl PyDataFrame {
@@ -303,16 +277,29 @@ impl PyDataFrame {
     pub fn new(df: DataFrame) -> Self {
         Self {
             df: Arc::new(df),
-            batches: None,
+            batches: Arc::new(Mutex::new(None)),
         }
     }
 
-    fn prepare_repr_string(&mut self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+    /// Return a clone of the inner Arc<DataFrame> for crate-local callers.
+    pub(crate) fn inner_df(&self) -> Arc<DataFrame> {
+        Arc::clone(&self.df)
+    }
+
+    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
-        let should_cache = *is_ipython_env(py) && self.batches.is_none();
-        let (batches, has_more) = match self.batches.take() {
+        let is_ipython = *is_ipython_env(py);
+
+        let (cached_batches, should_cache) = {
+            let mut cache = self.batches.lock();
+            let should_cache = is_ipython && cache.is_none();
+            let batches = cache.take();
+            (batches, should_cache)
+        };
+
+        let (batches, has_more) = match cached_batches {
             Some(b) => b,
             None => wait_for_future(
                 py,
@@ -351,7 +338,8 @@ impl PyDataFrame {
         let html_str: String = html_result.extract()?;
 
         if should_cache {
-            self.batches = Some((batches, has_more));
+            let mut cache = self.batches.lock();
+            *cache = Some((batches.clone(), has_more));
         }
 
         Ok(html_str)
@@ -438,7 +426,7 @@ impl PyDataFrame {
         }
     }
 
-    fn __repr__(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn __repr__(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, false)
     }
 
@@ -473,7 +461,7 @@ impl PyDataFrame {
         Ok(format!("DataFrame()\n{batches_as_displ}{additional_str}"))
     }
 
-    fn _repr_html_(&mut self, py: Python) -> PyDataFusionResult<String> {
+    fn _repr_html_(&self, py: Python) -> PyDataFusionResult<String> {
         self.prepare_repr_string(py, true)
     }
 
@@ -489,28 +477,35 @@ impl PyDataFrame {
         PyArrowType(self.df.schema().into())
     }
 
-    /// Convert this DataFrame into a Table that can be used in register_table
+    /// Convert this DataFrame into a Table Provider that can be used in register_table
     /// By convention, into_... methods consume self and return the new object.
     /// Disabling the clippy lint, so we can use &self
     /// because we're working with Python bindings
     /// where objects are shared
-    /// https://github.com/apache/datafusion-python/pull/1016#discussion_r1983239116
-    /// - we have not decided on the table_provider approach yet
     #[allow(clippy::wrong_self_convention)]
-    fn into_view(&self) -> PyDataFusionResult<PyTable> {
-        // Call the underlying Rust DataFrame::into_view method.
-        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don’t invalidate this PyDataFrame.
-        let table_provider = self.df.as_ref().clone().into_view();
-        let table_provider = PyTableProvider::new(table_provider);
-
-        Ok(table_provider.as_table())
+    pub fn into_view(&self, temporary: bool) -> PyDataFusionResult<PyTable> {
+        let table_provider = if temporary {
+            Arc::new(TempViewTable::new(Arc::clone(&self.df))) as Arc<dyn TableProvider>
+        } else {
+            // Call the underlying Rust DataFrame::into_view method.
+            // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+            // so that we don't invalidate this PyDataFrame.
+            self.df.as_ref().clone().into_view()
+        };
+        Ok(PyTable::from(table_provider))
     }
 
     #[pyo3(signature = (*args))]
     fn select_columns(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
         let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let df = self.df.as_ref().clone().select_columns(&args)?;
+        Ok(Self::new(df))
+    }
+
+    #[pyo3(signature = (*args))]
+    fn select_exprs(&self, args: Vec<PyBackedStr>) -> PyDataFusionResult<Self> {
+        let args = args.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
+        let df = self.df.as_ref().clone().select_exprs(&args)?;
         Ok(Self::new(df))
     }
 
@@ -531,6 +526,14 @@ impl PyDataFrame {
     fn filter(&self, predicate: PyExpr) -> PyDataFusionResult<Self> {
         let df = self.df.as_ref().clone().filter(predicate.into())?;
         Ok(Self::new(df))
+    }
+
+    fn parse_sql_expr(&self, expr: PyBackedStr) -> PyDataFusionResult<PyExpr> {
+        self.df
+            .as_ref()
+            .parse_sql_expr(&expr)
+            .map(|e| PyExpr::from(e))
+            .map_err(PyDataFusionError::from)
     }
 
     fn with_column(&self, name: &str, expr: PyExpr) -> PyDataFusionResult<Self> {
@@ -804,18 +807,27 @@ impl PyDataFrame {
     }
 
     /// Write a `DataFrame` to a CSV file.
-    fn write_csv(&self, path: &str, with_header: bool, py: Python) -> PyDataFusionResult<()> {
+    fn write_csv(
+        &self,
+        py: Python,
+        path: &str,
+        with_header: bool,
+        write_options: Option<PyDataFrameWriteOptions>,
+    ) -> PyDataFusionResult<()> {
         let csv_options = CsvOptions {
             has_header: Some(with_header),
             ..Default::default()
         };
+        let write_options = write_options
+            .map(DataFrameWriteOptions::from)
+            .unwrap_or_default();
+
         wait_for_future(
             py,
-            self.df.as_ref().clone().write_csv(
-                path,
-                DataFrameWriteOptions::new(),
-                Some(csv_options),
-            ),
+            self.df
+                .as_ref()
+                .clone()
+                .write_csv(path, write_options, Some(csv_options)),
         )??;
         Ok(())
     }
@@ -824,13 +836,15 @@ impl PyDataFrame {
     #[pyo3(signature = (
         path,
         compression="zstd",
-        compression_level=None
+        compression_level=None,
+        write_options=None,
         ))]
     fn write_parquet(
         &self,
         path: &str,
         compression: &str,
         compression_level: Option<u32>,
+        write_options: Option<PyDataFrameWriteOptions>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         fn verify_compression_level(cl: Option<u32>) -> Result<u32, PyErr> {
@@ -869,14 +883,16 @@ impl PyDataFrame {
 
         let mut options = TableParquetOptions::default();
         options.global.compression = Some(compression_string);
+        let write_options = write_options
+            .map(DataFrameWriteOptions::from)
+            .unwrap_or_default();
 
         wait_for_future(
             py,
-            self.df.as_ref().clone().write_parquet(
-                path,
-                DataFrameWriteOptions::new(),
-                Option::from(options),
-            ),
+            self.df
+                .as_ref()
+                .clone()
+                .write_parquet(path, write_options, Option::from(options)),
         )??;
         Ok(())
     }
@@ -887,6 +903,7 @@ impl PyDataFrame {
         path: &str,
         options: PyParquetWriterOptions,
         column_specific_options: HashMap<String, PyParquetColumnOptions>,
+        write_options: Option<PyDataFrameWriteOptions>,
         py: Python,
     ) -> PyDataFusionResult<()> {
         let table_options = TableParquetOptions {
@@ -897,12 +914,14 @@ impl PyDataFrame {
                 .collect(),
             ..Default::default()
         };
-
+        let write_options = write_options
+            .map(DataFrameWriteOptions::from)
+            .unwrap_or_default();
         wait_for_future(
             py,
             self.df.as_ref().clone().write_parquet(
                 path,
-                DataFrameWriteOptions::new(),
+                write_options,
                 Option::from(table_options),
             ),
         )??;
@@ -910,13 +929,40 @@ impl PyDataFrame {
     }
 
     /// Executes a query and writes the results to a partitioned JSON file.
-    fn write_json(&self, path: &str, py: Python) -> PyDataFusionResult<()> {
+    fn write_json(
+        &self,
+        path: &str,
+        py: Python,
+        write_options: Option<PyDataFrameWriteOptions>,
+    ) -> PyDataFusionResult<()> {
+        let write_options = write_options
+            .map(DataFrameWriteOptions::from)
+            .unwrap_or_default();
         wait_for_future(
             py,
             self.df
                 .as_ref()
                 .clone()
-                .write_json(path, DataFrameWriteOptions::new(), None),
+                .write_json(path, write_options, None),
+        )??;
+        Ok(())
+    }
+
+    fn write_table(
+        &self,
+        py: Python,
+        table_name: &str,
+        write_options: Option<PyDataFrameWriteOptions>,
+    ) -> PyDataFusionResult<()> {
+        let write_options = write_options
+            .map(DataFrameWriteOptions::from)
+            .unwrap_or_default();
+        wait_for_future(
+            py,
+            self.df
+                .as_ref()
+                .clone()
+                .write_table(table_name, write_options),
         )??;
         Ok(())
     }
@@ -936,7 +982,7 @@ impl PyDataFrame {
 
     #[pyo3(signature = (requested_schema=None))]
     fn __arrow_c_stream__<'py>(
-        &'py mut self,
+        &'py self,
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
@@ -1049,6 +1095,67 @@ impl PyDataFrame {
 
         let df = self.df.as_ref().clone().fill_null(scalar_value, cols)?;
         Ok(Self::new(df))
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[pyclass(frozen, eq, eq_int, name = "InsertOp", module = "datafusion")]
+pub enum PyInsertOp {
+    APPEND,
+    REPLACE,
+    OVERWRITE,
+}
+
+impl From<PyInsertOp> for InsertOp {
+    fn from(value: PyInsertOp) -> Self {
+        match value {
+            PyInsertOp::APPEND => InsertOp::Append,
+            PyInsertOp::REPLACE => InsertOp::Replace,
+            PyInsertOp::OVERWRITE => InsertOp::Overwrite,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+#[pyclass(frozen, name = "DataFrameWriteOptions", module = "datafusion")]
+pub struct PyDataFrameWriteOptions {
+    insert_operation: InsertOp,
+    single_file_output: bool,
+    partition_by: Vec<String>,
+    sort_by: Vec<SortExpr>,
+}
+
+impl From<PyDataFrameWriteOptions> for DataFrameWriteOptions {
+    fn from(value: PyDataFrameWriteOptions) -> Self {
+        DataFrameWriteOptions::new()
+            .with_insert_operation(value.insert_operation)
+            .with_single_file_output(value.single_file_output)
+            .with_partition_by(value.partition_by)
+            .with_sort_by(value.sort_by)
+    }
+}
+
+#[pymethods]
+impl PyDataFrameWriteOptions {
+    #[new]
+    fn new(
+        insert_operation: Option<PyInsertOp>,
+        single_file_output: bool,
+        partition_by: Option<Vec<String>>,
+        sort_by: Option<Vec<PySortExpr>>,
+    ) -> Self {
+        let insert_operation = insert_operation.map(Into::into).unwrap_or(InsertOp::Append);
+        let sort_by = sort_by
+            .unwrap_or_default()
+            .into_iter()
+            .map(Into::into)
+            .collect();
+        Self {
+            insert_operation,
+            single_file_output,
+            partition_by: partition_by.unwrap_or_default(),
+            sort_by,
+        }
     }
 }
 
