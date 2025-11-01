@@ -473,12 +473,10 @@ class AggregateUDF:
         This class allows you to define an aggregate function that can be used in
         data aggregation or window function calls.
 
-                Usage:
-                        - As a function: ``udaf(accum, input_types, return_type, state_type,``
-                            ``volatility, name)``.
-                        - As a decorator: ``@udaf(input_types, return_type, state_type,``
-                            ``volatility, name)``.
-                            When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
+        Usage:
+            - As a function: ``udaf(accum, input_types, return_type, state_type, volatility, name)``.
+            - As a decorator: ``@udaf(input_types, return_type, state_type, volatility, name)``.
+              When using ``udaf`` as a decorator, do not pass ``accum`` explicitly.
 
         Function example:
 
