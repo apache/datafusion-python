@@ -21,6 +21,7 @@ import os
 import re
 import threading
 import time
+from pathlib import Path
 from typing import Any
 
 import pyarrow as pa
@@ -1040,33 +1041,14 @@ def test_invalid_window_frame(units, start_bound, end_bound):
 
 
 def test_window_frame_defaults_match_postgres(partitioned_df):
-    # ref: https://github.com/apache/datafusion-python/issues/688
-
-    window_frame = WindowFrame("rows", None, None)
-
     col_a = column("a")
-
-    # Using `f.window` with or without an unbounded window_frame produces the same
-    # results. These tests are included as a regression check but can be removed when
-    # f.window() is deprecated in favor of using the .over() approach.
-    no_frame = f.window("avg", [col_a]).alias("no_frame")
-    with_frame = f.window("avg", [col_a], window_frame=window_frame).alias("with_frame")
-    df_1 = partitioned_df.select(col_a, no_frame, with_frame)
-
-    expected = {
-        "a": [0, 1, 2, 3, 4, 5, 6],
-        "no_frame": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
-        "with_frame": [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
-    }
-
-    assert df_1.sort(col_a).to_pydict() == expected
 
     # When order is not set, the default frame should be unbounded preceding to
     # unbounded following. When order is set, the default frame is unbounded preceding
     # to current row.
     no_order = f.avg(col_a).over(Window()).alias("over_no_order")
     with_order = f.avg(col_a).over(Window(order_by=[col_a])).alias("over_with_order")
-    df_2 = partitioned_df.select(col_a, no_order, with_order)
+    df = partitioned_df.select(col_a, no_order, with_order)
 
     expected = {
         "a": [0, 1, 2, 3, 4, 5, 6],
@@ -1074,7 +1056,7 @@ def test_window_frame_defaults_match_postgres(partitioned_df):
         "over_with_order": [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0],
     }
 
-    assert df_2.sort(col_a).to_pydict() == expected
+    assert df.sort(col_a).to_pydict() == expected
 
 
 def _build_last_value_df(df):
@@ -2413,11 +2395,11 @@ def test_write_parquet_with_options_bloom_filter(df, tmp_path):
 
     size_no_bloom_filter = 0
     for file in path_no_bloom_filter.rglob("*.parquet"):
-        size_no_bloom_filter += os.path.getsize(file)
+        size_no_bloom_filter += Path(file).stat().st_size
 
     size_bloom_filter = 0
     for file in path_bloom_filter.rglob("*.parquet"):
-        size_bloom_filter += os.path.getsize(file)
+        size_bloom_filter += Path(file).stat().st_size
 
     assert size_no_bloom_filter < size_bloom_filter
 

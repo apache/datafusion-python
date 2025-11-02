@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Optional, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 import pyarrow as pa
 
@@ -31,6 +31,7 @@ from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     _R = TypeVar("_R", bound=pa.DataType)
+    from collections.abc import Callable
 
 
 class Volatility(Enum):
@@ -130,7 +131,7 @@ class ScalarUDF:
         input_types: list[pa.DataType],
         return_type: _R,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> Callable[..., ScalarUDF]: ...
 
     @overload
@@ -140,7 +141,7 @@ class ScalarUDF:
         input_types: list[pa.DataType],
         return_type: _R,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> ScalarUDF: ...
 
     @overload
@@ -194,7 +195,7 @@ class ScalarUDF:
             input_types: list[pa.DataType],
             return_type: _R,
             volatility: Volatility | str,
-            name: Optional[str] = None,
+            name: str | None = None,
         ) -> ScalarUDF:
             if not callable(func):
                 msg = "`func` argument must be callable"
@@ -216,15 +217,15 @@ class ScalarUDF:
             input_types: list[pa.DataType],
             return_type: _R,
             volatility: Volatility | str,
-            name: Optional[str] = None,
+            name: str | None = None,
         ) -> Callable:
-            def decorator(func: Callable):
+            def decorator(func: Callable) -> Callable:
                 udf_caller = ScalarUDF.udf(
                     func, input_types, return_type, volatility, name
                 )
 
                 @functools.wraps(func)
-                def wrapper(*args: Any, **kwargs: Any):
+                def wrapper(*args: Any, **kwargs: Any) -> Callable:
                     return udf_caller(*args, **kwargs)
 
                 return wrapper
@@ -336,7 +337,7 @@ class AggregateUDF:
         return_type: pa.DataType,
         state_type: list[pa.DataType],
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> Callable[..., AggregateUDF]: ...
 
     @overload
@@ -347,7 +348,7 @@ class AggregateUDF:
         return_type: pa.DataType,
         state_type: list[pa.DataType],
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> AggregateUDF: ...
 
     @staticmethod
@@ -429,7 +430,7 @@ class AggregateUDF:
             return_type: pa.DataType,
             state_type: list[pa.DataType],
             volatility: Volatility | str,
-            name: Optional[str] = None,
+            name: str | None = None,
         ) -> AggregateUDF:
             if not callable(accum):
                 msg = "`func` must be callable."
@@ -455,7 +456,7 @@ class AggregateUDF:
             return_type: pa.DataType,
             state_type: list[pa.DataType],
             volatility: Volatility | str,
-            name: Optional[str] = None,
+            name: str | None = None,
         ) -> Callable[..., Callable[..., Expr]]:
             def decorator(accum: Callable[[], Accumulator]) -> Callable[..., Expr]:
                 udaf_caller = AggregateUDF.udaf(
@@ -708,7 +709,7 @@ class WindowUDF:
         input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> Callable[..., WindowUDF]: ...
 
     @overload
@@ -718,7 +719,7 @@ class WindowUDF:
         input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> WindowUDF: ...
 
     @staticmethod
@@ -787,7 +788,7 @@ class WindowUDF:
         input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> WindowUDF:
         """Create a WindowUDF instance from function arguments."""
         if not callable(func):
@@ -825,7 +826,7 @@ class WindowUDF:
         input_types: pa.DataType | list[pa.DataType],
         return_type: pa.DataType,
         volatility: Volatility | str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
         """Create a decorator for a WindowUDF."""
 
@@ -922,7 +923,7 @@ class TableFunction:
 
     @staticmethod
     def _create_table_udf_decorator(
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> Callable[[Callable[[], WindowEvaluator]], Callable[..., Expr]]:
         """Create a decorator for a WindowUDF."""
 

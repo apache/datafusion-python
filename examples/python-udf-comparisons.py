@@ -15,16 +15,16 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import os
 import time
+from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.compute as pc
 from datafusion import SessionContext, col, lit, udf
 from datafusion import functions as F
 
-path = os.path.dirname(os.path.abspath(__file__))
-filepath = os.path.join(path, "./tpch/data/lineitem.parquet")
+path = Path(__file__).parent.resolve()
+filepath = path / "./tpch/data/lineitem.parquet"
 
 # This example serves to demonstrate alternate approaches to answering the
 # question "return all of the rows that have a specific combination of these

@@ -80,7 +80,7 @@ df_lineitem = df_lineitem.filter(col("l_shipdate") >= start_date).filter(
 # not match these will result in a null value and then get filtered out.
 #
 # To do the same using a simple filter would be:
-# df_nation = df_nation.filter((F.col("n_name") == nation_1) | (F.col("n_name") == nation_2))
+# df_nation = df_nation.filter((F.col("n_name") == nation_1) | (F.col("n_name") == nation_2)) # noqa: ERA001
 df_nation = df_nation.with_column(
     "n_name",
     F.case(col("n_name"))
