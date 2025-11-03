@@ -31,7 +31,7 @@ from datafusion.expr import Expr
 
 if TYPE_CHECKING:
     _R = TypeVar("_R", bound=pa.DataType)
-    from collections.abc import Callable
+    from collections.abc import Callable, Sequence
 
 
 class Volatility(Enum):
@@ -78,6 +78,27 @@ class Volatility(Enum):
         return self.name.lower()
 
 
+def data_type_or_field_to_field(value: pa.DataType | pa.Field, name: str) -> pa.Field:
+    """Helper function to return a Field from either a Field or DataType."""
+    if isinstance(value, pa.Field):
+        return value
+    return pa.field(name, type=value)
+
+
+def data_types_or_fields_to_field_list(
+    inputs: Sequence[pa.Field | pa.DataType] | pa.Field | pa.DataType,
+) -> list[pa.Field]:
+    """Helper function to return a list of Fields."""
+    if isinstance(inputs, pa.DataType):
+        return [pa.field("value", type=inputs)]
+    if isinstance(inputs, pa.Field):
+        return [inputs]
+
+    return [
+        data_type_or_field_to_field(v, f"value_{idx}") for (idx, v) in enumerate(inputs)
+    ]
+
+
 class ScalarUDFExportable(Protocol):
     """Type hint for object that has __datafusion_scalar_udf__ PyCapsule."""
 
@@ -95,7 +116,7 @@ class ScalarUDF:
         self,
         name: str,
         func: Callable[..., _R],
-        input_types: pa.DataType | list[pa.DataType],
+        input_types: list[pa.Field],
         return_type: _R,
         volatility: Volatility | str,
     ) -> None:
@@ -128,8 +149,8 @@ class ScalarUDF:
     @overload
     @staticmethod
     def udf(
-        input_types: list[pa.DataType],
-        return_type: _R,
+        input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> Callable[..., ScalarUDF]: ...
@@ -138,8 +159,8 @@ class ScalarUDF:
     @staticmethod
     def udf(
         func: Callable[..., _R],
-        input_types: list[pa.DataType],
-        return_type: _R,
+        input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+        return_type: pa.DataType | pa.Field,
         volatility: Volatility | str,
         name: str | None = None,
     ) -> ScalarUDF: ...
@@ -192,8 +213,8 @@ class ScalarUDF:
 
         def _function(
             func: Callable[..., _R],
-            input_types: list[pa.DataType],
-            return_type: _R,
+            input_types: Sequence[pa.DataType | pa.Field] | pa.DataType | pa.Field,
+            return_type: pa.DataType | pa.Field,
             volatility: Volatility | str,
             name: str | None = None,
         ) -> ScalarUDF:
@@ -205,6 +226,8 @@ class ScalarUDF:
                     name = func.__qualname__.lower()
                 else:
                     name = func.__class__.__name__.lower()
+            input_types = data_types_or_fields_to_field_list(input_types)
+            return_type = data_type_or_field_to_field(return_type, "value")
             return ScalarUDF(
                 name=name,
                 func=func,
