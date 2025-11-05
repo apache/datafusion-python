@@ -43,10 +43,6 @@ if TYPE_CHECKING:
     from _typeshed import CapsuleType as _PyCapsule
 
     _R = TypeVar("_R", bound=pa.DataType)
-else:
-
-    class _PyCapsule:
-        """Lightweight typing proxy for CPython ``PyCapsule`` objects."""
 
 
 class Volatility(Enum):
