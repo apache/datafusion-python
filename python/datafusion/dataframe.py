@@ -22,12 +22,10 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
-from collections.abc import Iterable, Sequence
+from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterator,
-    Iterator,
     Literal,
     overload,
 )
