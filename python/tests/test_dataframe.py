@@ -32,6 +32,7 @@ from datafusion import (
     InsertOp,
     ParquetColumnOptions,
     ParquetWriterOptions,
+    RecordBatch,
     SessionContext,
     WindowFrame,
     column,
@@ -52,6 +53,8 @@ from datafusion.dataframe_formatter import (
 )
 from datafusion.expr import EXPR_TYPE_ERROR, Window
 from pyarrow.csv import write_csv
+
+pa_cffi = pytest.importorskip("pyarrow.cffi")
 
 MB = 1024 * 1024
 
@@ -577,6 +580,41 @@ def test_cast(df):
     )
 
     assert df.schema() == expected
+
+
+def test_iter_batches(df):
+    batches = []
+    for batch in df:
+        batches.append(batch)  # noqa: PERF402
+
+    # Delete DataFrame to ensure RecordBatches remain valid
+    del df
+
+    assert len(batches) == 1
+
+    batch = batches[0]
+    assert isinstance(batch, RecordBatch)
+    pa_batch = batch.to_pyarrow()
+    assert pa_batch.column(0).to_pylist() == [1, 2, 3]
+    assert pa_batch.column(1).to_pylist() == [4, 5, 6]
+    assert pa_batch.column(2).to_pylist() == [8, 5, 8]
+
+
+def test_iter_returns_datafusion_recordbatch(df):
+    for batch in df:
+        assert isinstance(batch, RecordBatch)
+
+
+def test_execute_stream_basic(df):
+    stream = df.execute_stream()
+    batches = list(stream)
+
+    assert len(batches) == 1
+    assert isinstance(batches[0], RecordBatch)
+    pa_batch = batches[0].to_pyarrow()
+    assert pa_batch.column(0).to_pylist() == [1, 2, 3]
+    assert pa_batch.column(1).to_pylist() == [4, 5, 6]
+    assert pa_batch.column(2).to_pylist() == [8, 5, 8]
 
 
 def test_with_column_renamed(df):
@@ -1609,7 +1647,7 @@ def test_execution_plan(aggregate_df):
 @pytest.mark.asyncio
 async def test_async_iteration_of_df(aggregate_df):
     rows_returned = 0
-    async for batch in aggregate_df.execute_stream():
+    async for batch in aggregate_df:
         assert batch is not None
         rows_returned += len(batch.to_pyarrow()[0])
 
@@ -1885,6 +1923,121 @@ def test_empty_to_arrow_table(df):
     assert isinstance(pyarrow_table, pa.Table)
     assert pyarrow_table.shape == (0, 3)
     assert set(pyarrow_table.column_names) == {"a", "b", "c"}
+
+
+def test_iter_batches_dataframe(fail_collect):
+    ctx = SessionContext()
+
+    batch1 = pa.record_batch([pa.array([1])], names=["a"])
+    batch2 = pa.record_batch([pa.array([2])], names=["a"])
+    df = ctx.create_dataframe([[batch1], [batch2]])
+
+    expected = [batch1, batch2]
+    results = [b.to_pyarrow() for b in df]
+
+    assert len(results) == len(expected)
+    for exp in expected:
+        assert any(got.equals(exp) for got in results)
+
+
+def test_arrow_c_stream_to_table_and_reader(fail_collect):
+    ctx = SessionContext()
+
+    # Create a DataFrame with two separate record batches
+    batch1 = pa.record_batch([pa.array([1])], names=["a"])
+    batch2 = pa.record_batch([pa.array([2])], names=["a"])
+    df = ctx.create_dataframe([[batch1], [batch2]])
+
+    table = pa.Table.from_batches(batch.to_pyarrow() for batch in df)
+    batches = table.to_batches()
+
+    assert len(batches) == 2
+    expected = [batch1, batch2]
+    for exp in expected:
+        assert any(got.equals(exp) for got in batches)
+    assert table.schema == df.schema()
+    assert table.column("a").num_chunks == 2
+
+    reader = pa.RecordBatchReader.from_stream(df)
+    assert isinstance(reader, pa.RecordBatchReader)
+    reader_table = pa.Table.from_batches(reader)
+    expected = pa.Table.from_batches([batch1, batch2])
+    assert reader_table.equals(expected)
+
+
+def test_arrow_c_stream_order():
+    ctx = SessionContext()
+
+    batch1 = pa.record_batch([pa.array([1])], names=["a"])
+    batch2 = pa.record_batch([pa.array([2])], names=["a"])
+
+    df = ctx.create_dataframe([[batch1, batch2]])
+
+    table = pa.Table.from_batches(batch.to_pyarrow() for batch in df)
+    expected = pa.Table.from_batches([batch1, batch2])
+
+    assert table.equals(expected)
+    col = table.column("a")
+    assert col.chunk(0)[0].as_py() == 1
+    assert col.chunk(1)[0].as_py() == 2
+
+
+def test_arrow_c_stream_schema_selection(fail_collect):
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [
+            pa.array([1, 2]),
+            pa.array([3, 4]),
+            pa.array([5, 6]),
+        ],
+        names=["a", "b", "c"],
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    requested_schema = pa.schema([("c", pa.int64()), ("a", pa.int64())])
+
+    c_schema = pa_cffi.ffi.new("struct ArrowSchema*")
+    address = int(pa_cffi.ffi.cast("uintptr_t", c_schema))
+    requested_schema._export_to_c(address)
+    capsule_new = ctypes.pythonapi.PyCapsule_New
+    capsule_new.restype = ctypes.py_object
+    capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
+
+    reader = pa.RecordBatchReader.from_stream(df, schema=requested_schema)
+
+    assert reader.schema == requested_schema
+
+    batches = list(reader)
+
+    assert len(batches) == 1
+    expected_batch = pa.record_batch(
+        [pa.array([5, 6]), pa.array([1, 2])], names=["c", "a"]
+    )
+    assert batches[0].equals(expected_batch)
+
+
+def test_arrow_c_stream_schema_mismatch(fail_collect):
+    ctx = SessionContext()
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2]), pa.array([3, 4])], names=["a", "b"]
+    )
+    df = ctx.create_dataframe([[batch]])
+
+    bad_schema = pa.schema([("a", pa.string())])
+
+    c_schema = pa_cffi.ffi.new("struct ArrowSchema*")
+    address = int(pa_cffi.ffi.cast("uintptr_t", c_schema))
+    bad_schema._export_to_c(address)
+
+    capsule_new = ctypes.pythonapi.PyCapsule_New
+    capsule_new.restype = ctypes.py_object
+    capsule_new.argtypes = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_void_p]
+    bad_capsule = capsule_new(ctypes.c_void_p(address), b"arrow_schema", None)
+
+    with pytest.raises(Exception, match="Fail to merge schema"):
+        df.__arrow_c_stream__(bad_capsule)
 
 
 def test_to_pylist(df):
@@ -3050,6 +3203,110 @@ def test_collect_interrupted():
         pytest.fail(f"Query was not interrupted; got error: {interrupt_error}")
 
     # Make sure the interrupt thread has finished
+    interrupt_thread.join(timeout=1.0)
+
+
+def test_arrow_c_stream_interrupted():
+    """__arrow_c_stream__ responds to ``KeyboardInterrupt`` signals.
+
+    Similar to ``test_collect_interrupted`` this test issues a long running
+    query, but consumes the results via ``__arrow_c_stream__``. It then raises
+    ``KeyboardInterrupt`` in the main thread and verifies that the stream
+    iteration stops promptly with the appropriate exception.
+    """
+
+    ctx = SessionContext()
+
+    batches = []
+    for i in range(10):
+        batch = pa.RecordBatch.from_arrays(
+            [
+                pa.array(list(range(i * 1000, (i + 1) * 1000))),
+                pa.array([f"value_{j}" for j in range(i * 1000, (i + 1) * 1000)]),
+            ],
+            names=["a", "b"],
+        )
+        batches.append(batch)
+
+    ctx.register_record_batches("t1", [batches])
+    ctx.register_record_batches("t2", [batches])
+
+    df = ctx.sql(
+        """
+        WITH t1_expanded AS (
+            SELECT
+                a,
+                b,
+                CAST(a AS DOUBLE) / 1.5 AS c,
+                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS d
+            FROM t1
+            CROSS JOIN (SELECT 1 AS dummy FROM t1 LIMIT 5)
+        ),
+        t2_expanded AS (
+            SELECT
+                a,
+                b,
+                CAST(a AS DOUBLE) * 2.5 AS e,
+                CAST(a AS DOUBLE) * CAST(a AS DOUBLE) * CAST(a AS DOUBLE) AS f
+            FROM t2
+            CROSS JOIN (SELECT 1 AS dummy FROM t2 LIMIT 5)
+        )
+        SELECT
+            t1.a, t1.b, t1.c, t1.d,
+            t2.a AS a2, t2.b AS b2, t2.e, t2.f
+        FROM t1_expanded t1
+        JOIN t2_expanded t2 ON t1.a % 100 = t2.a % 100
+        WHERE t1.a > 100 AND t2.a > 100
+        """
+    )
+
+    reader = pa.RecordBatchReader.from_stream(df)
+
+    interrupted = False
+    interrupt_error = None
+    query_started = threading.Event()
+    max_wait_time = 5.0
+
+    def trigger_interrupt():
+        start_time = time.time()
+        while not query_started.is_set():
+            time.sleep(0.1)
+            if time.time() - start_time > max_wait_time:
+                msg = f"Query did not start within {max_wait_time} seconds"
+                raise RuntimeError(msg)
+
+        thread_id = threading.main_thread().ident
+        if thread_id is None:
+            msg = "Cannot get main thread ID"
+            raise RuntimeError(msg)
+
+        exception = ctypes.py_object(KeyboardInterrupt)
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_long(thread_id), exception
+        )
+        if res != 1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(thread_id), ctypes.py_object(0)
+            )
+            msg = "Failed to raise KeyboardInterrupt in main thread"
+            raise RuntimeError(msg)
+
+    interrupt_thread = threading.Thread(target=trigger_interrupt)
+    interrupt_thread.daemon = True
+    interrupt_thread.start()
+
+    try:
+        query_started.set()
+        # consume the reader which should block and be interrupted
+        reader.read_all()
+    except KeyboardInterrupt:
+        interrupted = True
+    except Exception as e:  # pragma: no cover - unexpected errors
+        interrupt_error = e
+
+    if not interrupted:
+        pytest.fail(f"Stream was not interrupted; got error: {interrupt_error}")
+
     interrupt_thread.join(timeout=1.0)
 
 
