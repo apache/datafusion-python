@@ -181,13 +181,24 @@ def test_register_parquet_partitioned(ctx, tmp_path, path_to_str, legacy_data_ty
 
     partition_data_type = "string" if legacy_data_type else pa.string()
 
-    ctx.register_parquet(
-        "datapp",
-        dir_root,
-        table_partition_cols=[("grp", partition_data_type)],
-        parquet_pruning=True,
-        file_extension=".parquet",
-    )
+    if legacy_data_type:
+        with pytest.warns(DeprecationWarning):
+            ctx.register_parquet(
+                "datapp",
+                dir_root,
+                table_partition_cols=[("grp", partition_data_type)],
+                parquet_pruning=True,
+                file_extension=".parquet",
+            )
+    else:
+        ctx.register_parquet(
+            "datapp",
+            dir_root,
+            table_partition_cols=[("grp", partition_data_type)],
+            parquet_pruning=True,
+            file_extension=".parquet",
+        )
+
     assert ctx.catalog().schema().names() == {"datapp"}
 
     result = ctx.sql("SELECT grp, COUNT(*) AS cnt FROM datapp GROUP BY grp").collect()

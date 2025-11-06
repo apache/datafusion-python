@@ -84,25 +84,12 @@ ignore = [
     "FBT002",  # Allow boolean positional args
     "ISC001",  # Recommended to ignore these rules when using with ruff-format
     "SLF001",  # Allow accessing private members
-    "TD002",
+    "TD002",   # Do not require author names in TODO statements
     "TD003",   # Allow TODO lines
-    "UP007",   # Disallowing Union is pedantic
-    # TODO: Enable all of the following, but this PR is getting too large already
-    "PLR0913",
-    "TRY003",
-    "PLR2004",
-    "PD901",
-    "ERA001",
-    "ANN001",
-    "ANN202",
-    "PTH",
-    "N812",
-    "INP001",
-    "DTZ007",
-    "RUF015",
-    "A005",
-    "TC001",
-    "UP035",
+    "PLR0913", # Allow many arguments in function definition
+    "PD901",   # Allow variable name df
+    "N812",    # Allow importing functions as `F`
+    "A005",    # Allow module named io
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -131,10 +118,11 @@ extend-allowed-calls = ["lit", "datafusion.lit"]
     "PLR0913",
     "PT004",
 ]
-"examples/*" = ["D", "W505", "E501", "T201", "S101"]
-"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817"]
-"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP"]
+"examples/*" = ["D", "W505", "E501", "T201", "S101", "PLR2004", "ANN001", "ANN202", "INP001", "DTZ007", "RUF015"]
+"dev/*" = ["D", "E", "T", "S", "PLR", "C", "SIM", "UP", "EXE", "N817", "ERA001", "ANN001"]
+"benchmarks/*" = ["D", "F", "T", "BLE", "FURB", "PLR", "E", "TD", "TRY", "S", "SIM", "EXE", "UP", "ERA001", "ANN001", "INP001"]
 "docs/*" = ["D"]
+"docs/source/conf.py" = ["ERA001", "ANN001", "INP001"]
 
 [tool.codespell]
 skip = [
