@@ -102,3 +102,35 @@ the right table.
 .. ipython:: python
 
     left.join(right, left_on="customer_id", right_on="id", how="anti")
+
+Duplicate Keys
+--------------
+
+It is common to join two DataFrames on a common column name. Starting in
+version 51.0.0, ``datafusion-python``` will now drop duplicate column names by
+default. This reduces problems with ambiguous column selection after joins.
+You can disable this feature by setting the parameter ``drop_duplicate_keys``
+to ``False``.
+
+.. ipython:: python
+
+    left = ctx.from_pydict(
+        {
+            "id": [1, 2, 3],
+            "customer": ["Alice", "Bob", "Charlie"],
+        }
+    )
+
+    right = ctx.from_pylist([
+        {"id": 1, "name": "CityCabs"},
+        {"id": 2, "name": "MetroRide"},
+        {"id": 5, "name": "UrbanGo"},
+    ])
+
+    left.join(right, "id", how="inner")
+
+In contrast to the above example, if we wish to get both columns:
+
+.. ipython:: python
+
+    left.join(right, "id", "inner", drop_duplicate_keys=False)
