@@ -663,25 +663,38 @@ def test_join():
     df1 = ctx.create_dataframe([[batch]], "r")
 
     df2 = df.join(df1, on="a", how="inner")
-    df2.show()
     df2 = df2.sort(column("l.a"))
     table = pa.Table.from_batches(df2.collect())
 
     expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
     assert table.to_pydict() == expected
 
-    df2 = df.join(df1, left_on="a", right_on="a", how="inner")
-    df2.show()
+    # Test the default behavior for dropping duplicate keys
+    # Since we may have a duplicate column name and pa.Table()
+    # hides the fact, instead we need to explicitly check the
+    # resultant arrays.
+    df2 = df.join(df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=True)
     df2 = df2.sort(column("l.a"))
-    table = pa.Table.from_batches(df2.collect())
+    result = df2.collect()[0]
+    assert result.num_columns == 3
+    assert result.column(0) == pa.array([1, 2], pa.int64())
+    assert result.column(1) == pa.array([4, 5], pa.int64())
+    assert result.column(2) == pa.array([8, 10], pa.int64())
 
-    expected = {"a": [1, 2], "c": [8, 10], "b": [4, 5]}
-    assert table.to_pydict() == expected
+    df2 = df.join(
+        df1, left_on="a", right_on="a", how="inner", drop_duplicate_keys=False
+    )
+    df2 = df2.sort(column("l.a"))
+    result = df2.collect()[0]
+    assert result.num_columns == 4
+    assert result.column(0) == pa.array([1, 2], pa.int64())
+    assert result.column(1) == pa.array([4, 5], pa.int64())
+    assert result.column(2) == pa.array([1, 2], pa.int64())
+    assert result.column(3) == pa.array([8, 10], pa.int64())
 
     # Verify we don't make a breaking change to pre-43.0.0
     # where users would pass join_keys as a positional argument
     df2 = df.join(df1, (["a"], ["a"]), how="inner")
-    df2.show()
     df2 = df2.sort(column("l.a"))
     table = pa.Table.from_batches(df2.collect())
 
