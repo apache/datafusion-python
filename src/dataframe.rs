@@ -629,7 +629,7 @@ impl PyDataFrame {
         how: &str,
         left_on: Vec<PyBackedStr>,
         right_on: Vec<PyBackedStr>,
-        keep_duplicate_keys: bool,
+        drop_duplicate_keys: bool,
     ) -> PyDataFusionResult<Self> {
         let join_type = match how {
             "inner" => JoinType::Inner,
@@ -656,7 +656,7 @@ impl PyDataFrame {
             None,
         )?;
 
-        if !keep_duplicate_keys {
+        if drop_duplicate_keys {
             let mutual_keys = left_keys
                 .iter()
                 .zip(right_keys.iter())
