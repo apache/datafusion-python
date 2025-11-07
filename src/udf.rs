@@ -15,13 +15,14 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use crate::array::PyArrowArrayExportable;
 use crate::errors::to_datafusion_err;
 use crate::errors::{py_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
 use arrow::datatypes::{Field, FieldRef};
-use arrow::ffi::{FFI_ArrowArray, FFI_ArrowSchema};
-use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
+use arrow::pyarrow::ToPyArrow;
+use datafusion::arrow::array::{make_array, ArrayData};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::FromPyArrow;
 use datafusion::arrow::pyarrow::PyArrowType;
@@ -31,12 +32,10 @@ use datafusion::logical_expr::{
     ReturnFieldArgs, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
 };
 use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
-use pyo3::ffi::Py_uintptr_t;
 use pyo3::types::PyCapsule;
 use pyo3::{prelude::*, types::PyTuple};
 use std::any::Any;
 use std::hash::{Hash, Hasher};
-use std::ptr::addr_of;
 use std::sync::Arc;
 
 /// This struct holds the Python written function that is a
@@ -92,26 +91,6 @@ impl Hash for PythonFunctionScalarUDF {
     }
 }
 
-fn array_to_pyarrow_with_field(
-    py: Python,
-    array: ArrayRef,
-    field: &FieldRef,
-) -> PyResult<PyObject> {
-    let array = FFI_ArrowArray::new(&array.to_data());
-    let schema = FFI_ArrowSchema::try_from(field).map_err(py_datafusion_err)?;
-
-    let module = py.import("pyarrow")?;
-    let class = module.getattr("Array")?;
-    let array = class.call_method1(
-        "_import_from_c",
-        (
-            addr_of!(array) as Py_uintptr_t,
-            addr_of!(schema) as Py_uintptr_t,
-        ),
-    )?;
-    Ok(array.unbind())
-}
-
 impl ScalarUDFImpl for PythonFunctionScalarUDF {
     fn as_any(&self) -> &dyn Any {
         self
@@ -150,7 +129,9 @@ impl ScalarUDFImpl for PythonFunctionScalarUDF {
                 .zip(args.arg_fields)
                 .map(|(arg, field)| {
                     let array = arg.to_array(num_rows)?;
-                    array_to_pyarrow_with_field(py, array, &field).map_err(to_datafusion_err)
+                    PyArrowArrayExportable::new(array, field)
+                        .to_pyarrow(py)
+                        .map_err(to_datafusion_err)
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
