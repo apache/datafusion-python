@@ -141,6 +141,7 @@ dev = [
     "maturin>=1.8.1",
     "numpy>1.25.0;python_version<'3.14'",
     "numpy>=2.3.2;python_version>='3.14'",
+    "pyarrow>=19.0.0",
     "pre-commit>=4.3.0",
     "pyyaml>=6.0.3",
     "pytest>=7.4.4",
