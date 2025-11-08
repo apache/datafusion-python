@@ -22,7 +22,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterator
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 PYCLASS_RE = re.compile(
     r"#\[\s*pyclass\s*(?:\((?P<args>.*?)\))?\s*\]",

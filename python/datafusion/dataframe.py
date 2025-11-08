@@ -22,14 +22,11 @@ See :ref:`user_guide_concepts` in the online documentation for more information.
 from __future__ import annotations
 
 import warnings
-from collections.abc import Sequence
+from collections.abc import AsyncIterator, Iterable, Iterator, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Iterable,
     Literal,
-    Optional,
-    Union,
     overload,
 )
 
@@ -53,11 +50,11 @@ from datafusion.expr import (
     sort_list_to_raw_sort_list,
 )
 from datafusion.plan import ExecutionPlan, LogicalPlan
-from datafusion.record_batch import RecordBatchStream
+from datafusion.record_batch import RecordBatch, RecordBatchStream
 
 if TYPE_CHECKING:
     import pathlib
-    from typing import Callable
+    from collections.abc import Callable
 
     import pandas as pd
     import polars as pl
@@ -80,7 +77,7 @@ class Compression(Enum):
     LZ4 = "lz4"
     # lzo is not implemented yet
     # https://github.com/apache/arrow-rs/issues/6970
-    # LZO = "lzo"
+    # LZO = "lzo"  # noqa: ERA001
     ZSTD = "zstd"
     LZ4_RAW = "lz4_raw"
 
@@ -107,7 +104,7 @@ class Compression(Enum):
                 """
             raise ValueError(error_msg) from err
 
-    def get_default_level(self) -> Optional[int]:
+    def get_default_level(self) -> int | None:
         """Get the default compression level for the compression type.
 
         Returns:
@@ -140,24 +137,24 @@ class ParquetWriterOptions:
         write_batch_size: int = 1024,
         writer_version: str = "1.0",
         skip_arrow_metadata: bool = False,
-        compression: Optional[str] = "zstd(3)",
-        compression_level: Optional[int] = None,
-        dictionary_enabled: Optional[bool] = True,
+        compression: str | None = "zstd(3)",
+        compression_level: int | None = None,
+        dictionary_enabled: bool | None = True,
         dictionary_page_size_limit: int = 1024 * 1024,
-        statistics_enabled: Optional[str] = "page",
+        statistics_enabled: str | None = "page",
         max_row_group_size: int = 1024 * 1024,
         created_by: str = "datafusion-python",
-        column_index_truncate_length: Optional[int] = 64,
-        statistics_truncate_length: Optional[int] = None,
+        column_index_truncate_length: int | None = 64,
+        statistics_truncate_length: int | None = None,
         data_page_row_count_limit: int = 20_000,
-        encoding: Optional[str] = None,
+        encoding: str | None = None,
         bloom_filter_on_write: bool = False,
-        bloom_filter_fpp: Optional[float] = None,
-        bloom_filter_ndv: Optional[int] = None,
+        bloom_filter_fpp: float | None = None,
+        bloom_filter_ndv: int | None = None,
         allow_single_file_parallelism: bool = True,
         maximum_parallel_row_group_writers: int = 1,
         maximum_buffered_record_batches_per_stream: int = 2,
-        column_specific_options: Optional[dict[str, ParquetColumnOptions]] = None,
+        column_specific_options: dict[str, ParquetColumnOptions] | None = None,
     ) -> None:
         """Initialize the ParquetWriterOptions.
 
@@ -262,13 +259,13 @@ class ParquetColumnOptions:
 
     def __init__(
         self,
-        encoding: Optional[str] = None,
-        dictionary_enabled: Optional[bool] = None,
-        compression: Optional[str] = None,
-        statistics_enabled: Optional[str] = None,
-        bloom_filter_enabled: Optional[bool] = None,
-        bloom_filter_fpp: Optional[float] = None,
-        bloom_filter_ndv: Optional[int] = None,
+        encoding: str | None = None,
+        dictionary_enabled: bool | None = None,
+        compression: str | None = None,
+        statistics_enabled: str | None = None,
+        bloom_filter_enabled: bool | None = None,
+        bloom_filter_fpp: float | None = None,
+        bloom_filter_ndv: int | None = None,
     ) -> None:
         """Initialize the ParquetColumnOptions.
 
@@ -307,6 +304,9 @@ class ParquetColumnOptions:
 class DataFrame:
     """Two dimensional table representation of data.
 
+    DataFrame objects are iterable; iterating over a DataFrame yields
+    :class:`datafusion.RecordBatch` instances lazily.
+
     See :ref:`user_guide_concepts` in the online documentation for more information.
     """
 
@@ -318,7 +318,7 @@ class DataFrame:
         """
         self.df = df
 
-    def into_view(self) -> Table:
+    def into_view(self, temporary: bool = False) -> Table:
         """Convert ``DataFrame`` into a :class:`~datafusion.Table`.
 
         Examples:
@@ -332,10 +332,10 @@ class DataFrame:
         """
         from datafusion.catalog import Table as _Table
 
-        return _Table(self.df.into_view())
+        return _Table(self.df.into_view(temporary))
 
     def __getitem__(self, key: str | list[str]) -> DataFrame:
-        """Return a new :py:class`DataFrame` with the specified column or columns.
+        """Return a new :py:class:`DataFrame` with the specified column or columns.
 
         Args:
             key: Column name or list of column names to select.
@@ -466,31 +466,37 @@ class DataFrame:
 
         return DataFrame(self.df.drop(*normalized_columns))
 
-    def filter(self, *predicates: Expr) -> DataFrame:
+    def filter(self, *predicates: Expr | str) -> DataFrame:
         """Return a DataFrame for which ``predicate`` evaluates to ``True``.
 
         Rows for which ``predicate`` evaluates to ``False`` or ``None`` are filtered
         out. If more than one predicate is provided, these predicates will be
-        combined as a logical AND. Each ``predicate`` must be an
+        combined as a logical AND. Each ``predicate`` can be an
         :class:`~datafusion.expr.Expr` created using helper functions such as
-        :func:`datafusion.col` or :func:`datafusion.lit`.
-        If more complex logic is required, see the logical operations in
-        :py:mod:`~datafusion.functions`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression string
+        that will be parsed against the DataFrame schema. If more complex logic is
+        required, see the logical operations in :py:mod:`~datafusion.functions`.
 
         Example::
 
             from datafusion import col, lit
             df.filter(col("a") > lit(1))
+            df.filter("a > 1")
 
         Args:
-            predicates: Predicate expression(s) to filter the DataFrame.
+            predicates: Predicate expression(s) or SQL strings to filter the DataFrame.
 
         Returns:
             DataFrame after filtering.
         """
         df = self.df
-        for p in predicates:
-            df = df.filter(ensure_expr(p))
+        for predicate in predicates:
+            expr = (
+                self.parse_sql_expr(predicate)
+                if isinstance(predicate, str)
+                else predicate
+            )
+            df = df.filter(ensure_expr(expr))
         return DataFrame(df)
 
     def parse_sql_expr(self, expr: str) -> Expr:
@@ -515,11 +521,12 @@ class DataFrame:
         """
         return Expr(self.df.parse_sql_expr(expr))
 
-    def with_column(self, name: str, expr: Expr) -> DataFrame:
+    def with_column(self, name: str, expr: Expr | str) -> DataFrame:
         """Add an additional column to the DataFrame.
 
         The ``expr`` must be an :class:`~datafusion.expr.Expr` constructed with
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or a SQL expression
+        string that will be parsed against the DataFrame schema.
 
         Example::
 
@@ -533,16 +540,19 @@ class DataFrame:
         Returns:
             DataFrame with the new column.
         """
+        expr = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+
         return DataFrame(self.df.with_column(name, ensure_expr(expr)))
 
     def with_columns(
-        self, *exprs: Expr | Iterable[Expr], **named_exprs: Expr
+        self, *exprs: Expr | str | Iterable[Expr | str], **named_exprs: Expr | str
     ) -> DataFrame:
         """Add columns to the DataFrame.
 
-        By passing expressions, iterables of expressions, or named expressions.
+        By passing expressions, iterables of expressions, string SQL expressions,
+        or named expressions.
         All expressions must be :class:`~datafusion.expr.Expr` objects created via
-        :func:`datafusion.col` or :func:`datafusion.lit`.
+        :func:`datafusion.col` or :func:`datafusion.lit`, or SQL expression strings.
         To pass named expressions use the form ``name=Expr``.
 
         Example usage: The following will add 4 columns labeled ``a``, ``b``, ``c``,
@@ -555,17 +565,44 @@ class DataFrame:
                 d=lit(3)
             )
 
+            Equivalent example using just SQL strings:
+
+            df = df.with_columns(
+                "x as a",
+                ["1 as b", "y as c"],
+                d="3"
+            )
+
         Args:
-            exprs: Either a single expression or an iterable of expressions to add.
+            exprs: Either a single expression, an iterable of expressions to add or
+                   SQL expression strings.
             named_exprs: Named expressions in the form of ``name=expr``
 
         Returns:
             DataFrame with the new columns added.
         """
-        expressions = ensure_expr_list(exprs)
+        expressions = []
+        for expr in exprs:
+            if isinstance(expr, str):
+                expressions.append(self.parse_sql_expr(expr).expr)
+            elif isinstance(expr, Iterable) and not isinstance(
+                expr, Expr | str | bytes | bytearray
+            ):
+                expressions.extend(
+                    [
+                        self.parse_sql_expr(e).expr
+                        if isinstance(e, str)
+                        else ensure_expr(e)
+                        for e in expr
+                    ]
+                )
+            else:
+                expressions.append(ensure_expr(expr))
+
         for alias, expr in named_exprs.items():
-            ensure_expr(expr)
-            expressions.append(expr.alias(alias).expr)
+            e = self.parse_sql_expr(expr) if isinstance(expr, str) else expr
+            ensure_expr(e)
+            expressions.append(e.alias(alias).expr)
 
         return DataFrame(self.df.with_columns(expressions))
 
@@ -602,7 +639,7 @@ class DataFrame:
         """
         group_by_list = (
             list(group_by)
-            if isinstance(group_by, Sequence) and not isinstance(group_by, (Expr, str))
+            if isinstance(group_by, Sequence) and not isinstance(group_by, Expr | str)
             else [group_by]
         )
         aggs_list = (
@@ -794,7 +831,7 @@ class DataFrame:
         # of a keyword argument.
         if (
             isinstance(on, tuple)
-            and len(on) == 2
+            and len(on) == 2  # noqa: PLR2004
             and isinstance(on[0], list)
             and isinstance(on[1], list)
         ):
@@ -908,17 +945,20 @@ class DataFrame:
         """
         return DataFrame(self.df.repartition(num))
 
-    def repartition_by_hash(self, *exprs: Expr, num: int) -> DataFrame:
+    def repartition_by_hash(self, *exprs: Expr | str, num: int) -> DataFrame:
         """Repartition a DataFrame using a hash partitioning scheme.
 
         Args:
-            exprs: Expressions to evaluate and perform hashing on.
+            exprs: Expressions or a SQL expression string to evaluate
+                   and perform hashing on.
             num: Number of partitions to repartition the DataFrame into.
 
         Returns:
             Repartitioned DataFrame.
         """
-        exprs = [expr.expr for expr in exprs]
+        exprs = [self.parse_sql_expr(e) if isinstance(e, str) else e for e in exprs]
+        exprs = expr_list_to_raw_expr_list(exprs)
+
         return DataFrame(self.df.repartition_by_hash(*exprs, num=num))
 
     def union(self, other: DataFrame, distinct: bool = False) -> DataFrame:
@@ -1023,7 +1063,7 @@ class DataFrame:
     def write_parquet(
         self,
         path: str | pathlib.Path,
-        compression: Union[str, Compression, ParquetWriterOptions] = Compression.ZSTD,
+        compression: str | Compression | ParquetWriterOptions = Compression.ZSTD,
         compression_level: int | None = None,
         write_options: DataFrameWriteOptions | None = None,
     ) -> None:
@@ -1254,20 +1294,53 @@ class DataFrame:
         return DataFrame(self.df.unnest_columns(columns, preserve_nulls=preserve_nulls))
 
     def __arrow_c_stream__(self, requested_schema: object | None = None) -> object:
-        """Export an Arrow PyCapsule Stream.
+        """Export the DataFrame as an Arrow C Stream.
 
-        This will execute and collect the DataFrame. We will attempt to respect the
-        requested schema, but only trivial transformations will be applied such as only
-        returning the fields listed in the requested schema if their data types match
-        those in the DataFrame.
+        The DataFrame is executed using DataFusion's streaming APIs and exposed via
+        Arrow's C Stream interface. Record batches are produced incrementally, so the
+        full result set is never materialized in memory.
+
+        When ``requested_schema`` is provided, DataFusion applies only simple
+        projections such as selecting a subset of existing columns or reordering
+        them. Column renaming, computed expressions, or type coercion are not
+        supported through this interface.
 
         Args:
-            requested_schema: Attempt to provide the DataFrame using this schema.
+            requested_schema: Either a :py:class:`pyarrow.Schema` or an Arrow C
+                Schema capsule (``PyCapsule``) produced by
+                ``schema._export_to_c_capsule()``. The DataFrame will attempt to
+                align its output with the fields and order specified by this schema.
 
         Returns:
-            Arrow PyCapsule object.
+            Arrow ``PyCapsule`` object representing an ``ArrowArrayStream``.
+
+        For practical usage patterns, see the Apache Arrow streaming
+        documentation: https://arrow.apache.org/docs/python/ipc.html#streaming.
+
+        For details on DataFusion's Arrow integration and DataFrame streaming,
+        see the user guide (user-guide/io/arrow and user-guide/dataframe/index).
+
+        Notes:
+            The Arrow C Data Interface PyCapsule details are documented by Apache
+            Arrow and can be found at:
+            https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html
         """
+        # ``DataFrame.__arrow_c_stream__`` in the Rust extension leverages
+        # ``execute_stream_partitioned`` under the hood to stream batches while
+        # preserving the original partition order.
         return self.df.__arrow_c_stream__(requested_schema)
+
+    def __iter__(self) -> Iterator[RecordBatch]:
+        """Return an iterator over this DataFrame's record batches."""
+        return iter(self.execute_stream())
+
+    def __aiter__(self) -> AsyncIterator[RecordBatch]:
+        """Return an async iterator over this DataFrame's record batches.
+
+        We're using __aiter__ because we support Python < 3.10 where aiter() is not
+        available.
+        """
+        return self.execute_stream().__aiter__()
 
     def transform(self, func: Callable[..., DataFrame], *args: Any) -> DataFrame:
         """Apply a function to the current DataFrame which returns another DataFrame.

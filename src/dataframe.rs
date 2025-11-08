@@ -15,19 +15,21 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use cstr::cstr;
 use std::collections::HashMap;
-use std::ffi::CString;
+use std::ffi::{CStr, CString};
 use std::sync::Arc;
 
-use arrow::array::{new_null_array, RecordBatch, RecordBatchIterator, RecordBatchReader};
+use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
 use arrow::pyarrow::FromPyArrow;
-use datafusion::arrow::datatypes::Schema;
+use datafusion::arrow::datatypes::{Schema, SchemaRef};
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
+use datafusion::catalog::TableProvider;
 use datafusion::common::UnnestOptions;
 use datafusion::config::{CsvOptions, ParquetColumnOptions, ParquetOptions, TableParquetOptions};
 use datafusion::dataframe::{DataFrame, DataFrameWriteOptions};
@@ -42,16 +44,16 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
-use tokio::task::JoinHandle;
+use pyo3::PyErr;
 
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError};
+use crate::errors::{py_datafusion_err, PyDataFusionError};
 use crate::expr::sort_expr::to_sort_expressions;
 use crate::physical_plan::PyExecutionPlan;
-use crate::record_batch::PyRecordBatchStream;
+use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
-use crate::table::PyTable;
+use crate::table::{PyTable, TempViewTable};
 use crate::utils::{
-    get_tokio_runtime, is_ipython_env, py_obj_to_scalar_value, validate_pycapsule, wait_for_future,
+    is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule, wait_for_future,
 };
 use crate::{
     errors::PyDataFusionResult,
@@ -59,6 +61,9 @@ use crate::{
 };
 
 use parking_lot::Mutex;
+
+/// File-level static CStr for the Arrow array stream capsule name.
+static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");
 
 // Type aliases to simplify very complex types used in this file and
 // avoid compiler complaints about deeply nested types in struct fields.
@@ -340,6 +345,63 @@ impl PyDataFrame {
     }
 }
 
+/// Synchronous wrapper around partitioned [`SendableRecordBatchStream`]s used
+/// for the `__arrow_c_stream__` implementation.
+///
+/// It drains each partition's stream sequentially, yielding record batches in
+/// their original partition order. When a `projection` is set, each batch is
+/// converted via `record_batch_into_schema` to apply schema changes per batch.
+struct PartitionedDataFrameStreamReader {
+    streams: Vec<SendableRecordBatchStream>,
+    schema: SchemaRef,
+    projection: Option<SchemaRef>,
+    current: usize,
+}
+
+impl Iterator for PartitionedDataFrameStreamReader {
+    type Item = Result<RecordBatch, ArrowError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        while self.current < self.streams.len() {
+            let stream = &mut self.streams[self.current];
+            let fut = poll_next_batch(stream);
+            let result = Python::with_gil(|py| wait_for_future(py, fut));
+
+            match result {
+                Ok(Ok(Some(batch))) => {
+                    let batch = if let Some(ref schema) = self.projection {
+                        match record_batch_into_schema(batch, schema.as_ref()) {
+                            Ok(b) => b,
+                            Err(e) => return Some(Err(e)),
+                        }
+                    } else {
+                        batch
+                    };
+                    return Some(Ok(batch));
+                }
+                Ok(Ok(None)) => {
+                    self.current += 1;
+                    continue;
+                }
+                Ok(Err(e)) => {
+                    return Some(Err(ArrowError::ExternalError(Box::new(e))));
+                }
+                Err(e) => {
+                    return Some(Err(ArrowError::ExternalError(Box::new(e))));
+                }
+            }
+        }
+
+        None
+    }
+}
+
+impl RecordBatchReader for PartitionedDataFrameStreamReader {
+    fn schema(&self) -> SchemaRef {
+        self.schema.clone()
+    }
+}
+
 #[pymethods]
 impl PyDataFrame {
     /// Enable selection for `df[col]`, `df[col1, col2, col3]`, and `df[[col1, col2, col3]]`
@@ -420,11 +482,15 @@ impl PyDataFrame {
     /// because we're working with Python bindings
     /// where objects are shared
     #[allow(clippy::wrong_self_convention)]
-    pub fn into_view(&self) -> PyDataFusionResult<PyTable> {
-        // Call the underlying Rust DataFrame::into_view method.
-        // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
-        // so that we don't invalidate this PyDataFrame.
-        let table_provider = self.df.as_ref().clone().into_view();
+    pub fn into_view(&self, temporary: bool) -> PyDataFusionResult<PyTable> {
+        let table_provider = if temporary {
+            Arc::new(TempViewTable::new(Arc::clone(&self.df))) as Arc<dyn TableProvider>
+        } else {
+            // Call the underlying Rust DataFrame::into_view method.
+            // Note that the Rust method consumes self; here we clone the inner Arc<DataFrame>
+            // so that we don't invalidate this PyDataFrame.
+            self.df.as_ref().clone().into_view()
+        };
         Ok(PyTable::from(table_provider))
     }
 
@@ -919,8 +985,11 @@ impl PyDataFrame {
         py: Python<'py>,
         requested_schema: Option<Bound<'py, PyCapsule>>,
     ) -> PyDataFusionResult<Bound<'py, PyCapsule>> {
-        let mut batches = wait_for_future(py, self.df.as_ref().clone().collect())??;
+        let df = self.df.as_ref().clone();
+        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
+
         let mut schema: Schema = self.df.schema().to_owned().into();
+        let mut projection: Option<SchemaRef> = None;
 
         if let Some(schema_capsule) = requested_schema {
             validate_pycapsule(&schema_capsule, "arrow_schema")?;
@@ -929,44 +998,38 @@ impl PyDataFrame {
             let desired_schema = Schema::try_from(schema_ptr)?;
 
             schema = project_schema(schema, desired_schema)?;
-
-            batches = batches
-                .into_iter()
-                .map(|record_batch| record_batch_into_schema(record_batch, &schema))
-                .collect::<Result<Vec<RecordBatch>, ArrowError>>()?;
+            projection = Some(Arc::new(schema.clone()));
         }
 
-        let batches_wrapped = batches.into_iter().map(Ok);
+        let schema_ref = Arc::new(schema.clone());
 
-        let reader = RecordBatchIterator::new(batches_wrapped, Arc::new(schema));
+        let reader = PartitionedDataFrameStreamReader {
+            streams,
+            schema: schema_ref,
+            projection,
+            current: 0,
+        };
         let reader: Box<dyn RecordBatchReader + Send> = Box::new(reader);
 
-        let ffi_stream = FFI_ArrowArrayStream::new(reader);
-        let stream_capsule_name = CString::new("arrow_array_stream").unwrap();
-        PyCapsule::new(py, ffi_stream, Some(stream_capsule_name)).map_err(PyDataFusionError::from)
+        // Create the Arrow stream and wrap it in a PyCapsule. The default
+        // destructor provided by PyO3 will drop the stream unless ownership is
+        // transferred to PyArrow during import.
+        let stream = FFI_ArrowArrayStream::new(reader);
+        let name = CString::new(ARROW_ARRAY_STREAM_NAME.to_bytes()).unwrap();
+        let capsule = PyCapsule::new(py, stream, Some(name))?;
+        Ok(capsule)
     }
 
     fn execute_stream(&self, py: Python) -> PyDataFusionResult<PyRecordBatchStream> {
-        // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime().0;
         let df = self.df.as_ref().clone();
-        let fut: JoinHandle<datafusion::common::Result<SendableRecordBatchStream>> =
-            rt.spawn(async move { df.execute_stream().await });
-        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })???;
+        let stream = spawn_future(py, async move { df.execute_stream().await })?;
         Ok(PyRecordBatchStream::new(stream))
     }
 
     fn execute_stream_partitioned(&self, py: Python) -> PyResult<Vec<PyRecordBatchStream>> {
-        // create a Tokio runtime to run the async code
-        let rt = &get_tokio_runtime().0;
         let df = self.df.as_ref().clone();
-        let fut: JoinHandle<datafusion::common::Result<Vec<SendableRecordBatchStream>>> =
-            rt.spawn(async move { df.execute_stream_partitioned().await });
-        let stream = wait_for_future(py, async { fut.await.map_err(to_datafusion_err) })?
-            .map_err(py_datafusion_err)?
-            .map_err(py_datafusion_err)?;
-
-        Ok(stream.into_iter().map(PyRecordBatchStream::new).collect())
+        let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
+        Ok(streams.into_iter().map(PyRecordBatchStream::new).collect())
     }
 
     /// Convert to pandas dataframe with pyarrow
@@ -1127,7 +1190,11 @@ fn project_schema(from_schema: Schema, to_schema: Schema) -> Result<Schema, Arro
 
     merged_schema.project(&project_indices)
 }
-
+// NOTE: `arrow::compute::cast` in combination with `RecordBatch::try_select` or
+// DataFusion's `schema::cast_record_batch` do not fully cover the required
+// transformations here. They will not create missing columns and may insert
+// nulls for non-nullable fields without erroring. To maintain current behavior
+// we perform the casting and null checks manually.
 fn record_batch_into_schema(
     record_batch: RecordBatch,
     schema: &Schema,

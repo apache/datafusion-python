@@ -73,7 +73,7 @@ df = df.filter(
 # matches either of the two values, but we want to show doing some array operations in this
 # example. If you want to see this done with filters, comment out the above line and uncomment
 # this one.
-# df = df.filter((col("l_shipmode") == lit(SHIP_MODE_1)) | (col("l_shipmode") == lit(SHIP_MODE_2)))
+# df = df.filter((col("l_shipmode") == lit(SHIP_MODE_1)) | (col("l_shipmode") == lit(SHIP_MODE_2))) # noqa: ERA001
 
 
 # We need order priority, so join order df to line item
