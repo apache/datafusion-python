@@ -728,6 +728,10 @@ class DataFrame:
         """
         return self.df.collect()
 
+    def collect_column(self, column_name: str) -> pa.Array | pa.ChunkedArray:
+        """Executes this :py:class:`DataFrame` for a single column."""
+        return self.df.collect_column(column_name)
+
     def cache(self) -> DataFrame:
         """Cache the DataFrame as a memory table.
 

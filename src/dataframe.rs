@@ -20,7 +20,7 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::sync::Arc;
 
-use arrow::array::{new_null_array, RecordBatch, RecordBatchReader};
+use arrow::array::{new_null_array, Array, ArrayRef, RecordBatch, RecordBatchReader};
 use arrow::compute::can_cast_types;
 use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
@@ -343,6 +343,23 @@ impl PyDataFrame {
 
         Ok(html_str)
     }
+
+    async fn collect_column_inner(&self, column: &str) -> Result<ArrayRef, DataFusionError> {
+        let batches = self
+            .df
+            .as_ref()
+            .clone()
+            .select_columns(&[column])?
+            .collect()
+            .await?;
+
+        let arrays = batches
+            .iter()
+            .map(|b| b.column(0).as_ref())
+            .collect::<Vec<_>>();
+
+        arrow_select::concat::concat(&arrays).map_err(Into::into)
+    }
 }
 
 /// Synchronous wrapper around partitioned [`SendableRecordBatchStream`]s used
@@ -608,6 +625,13 @@ impl PyDataFrame {
             .into_iter()
             .map(|rbs| rbs.into_iter().map(|rb| rb.to_pyarrow(py)).collect())
             .collect()
+    }
+
+    fn collect_column(&self, py: Python, column: &str) -> PyResult<PyObject> {
+        wait_for_future(py, self.collect_column_inner(column))?
+            .map_err(PyDataFusionError::from)?
+            .to_data()
+            .to_pyarrow(py)
     }
 
     /// Print the result, 20 lines by default
