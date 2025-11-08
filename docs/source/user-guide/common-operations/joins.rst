@@ -133,4 +133,4 @@ In contrast to the above example, if we wish to get both columns:
 
 .. ipython:: python
 
-    left.join(right, "id", "inner", drop_duplicate_keys=False)
+    left.join(right, "id", how="inner", drop_duplicate_keys=False)
