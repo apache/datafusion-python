@@ -18,6 +18,7 @@
 import pyarrow as pa
 import pytest
 from datafusion import column, udf
+from datafusion import functions as f
 
 
 @pytest.fixture
@@ -124,3 +125,26 @@ def test_udf_with_parameters_decorator(df) -> None:
     result = df2.collect()[0].column(0)
 
     assert result == pa.array([False, True, True])
+
+
+def test_udf_with_metadata(ctx) -> None:
+    from uuid import UUID
+
+    @udf([pa.string()], pa.uuid(), "stable")
+    def uuid_from_string(uuid_string):
+        return pa.array((UUID(s).bytes for s in uuid_string.to_pylist()), pa.uuid())
+
+    @udf([pa.uuid()], pa.int64(), "stable")
+    def uuid_version(uuid):
+        return pa.array(s.version for s in uuid.to_pylist())
+
+    batch = pa.record_batch({"idx": pa.array(range(5))})
+    results = (
+        ctx.create_dataframe([[batch]])
+        .with_column("uuid_string", f.uuid())
+        .with_column("uuid", uuid_from_string(column("uuid_string")))
+        .select(uuid_version(column("uuid").alias("uuid_version")))
+        .collect()
+    )
+
+    assert results[0][0].to_pylist() == [4, 4, 4, 4, 4]
