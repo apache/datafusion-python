@@ -22,10 +22,9 @@ from __future__ import annotations
 import functools
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeGuard, TypeVar, cast, overload
 
 import pyarrow as pa
-from typing_extensions import TypeGuard
 
 import datafusion._internal as df_internal
 from datafusion.expr import Expr
