@@ -35,8 +35,7 @@ ARG_STRING_RE = re.compile(
     r"(?P<key>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"(?P<value>[^\"]+)\"",
 )
 STRUCT_NAME_RE = re.compile(
-    r"\b(?:pub\s+)?(?:struct|enum)\s+"
-    r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
+    r"\b(?:pub\s+)?(?:struct|enum)\s+" r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)",
 )
 
 
