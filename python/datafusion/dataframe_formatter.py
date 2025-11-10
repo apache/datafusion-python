@@ -370,7 +370,7 @@ if (!document.getElementById('df-styles')) {{
             f"max-height: {self.max_height}px; overflow: auto; border: "
             '1px solid #ccc;">'
         )
-        html.append('<table style="border-collapse: collapse; min-width: 100%">')
+        html.append('<table style="border-collapse: collapse">')
         return html
 
     def _build_table_header(self, schema: Any) -> list[str]:

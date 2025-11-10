@@ -157,6 +157,9 @@ def test_register_parquet(ctx, tmp_path):
     assert result.to_pydict() == {"cnt": [100]}
 
 
+@pytest.mark.filterwarnings(
+    "ignore:using literals for table_partition_cols data types:DeprecationWarning"
+)
 @pytest.mark.parametrize(
     ("path_to_str", "legacy_data_type"), [(True, False), (False, False), (False, True)]
 )

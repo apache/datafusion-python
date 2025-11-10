@@ -629,6 +629,7 @@ impl PyDataFrame {
         how: &str,
         left_on: Vec<PyBackedStr>,
         right_on: Vec<PyBackedStr>,
+        drop_duplicate_keys: bool,
     ) -> PyDataFusionResult<Self> {
         let join_type = match how {
             "inner" => JoinType::Inner,
@@ -647,13 +648,46 @@ impl PyDataFrame {
         let left_keys = left_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
         let right_keys = right_on.iter().map(|s| s.as_ref()).collect::<Vec<&str>>();
 
-        let df = self.df.as_ref().clone().join(
+        let mut df = self.df.as_ref().clone().join(
             right.df.as_ref().clone(),
             join_type,
             &left_keys,
             &right_keys,
             None,
         )?;
+
+        if drop_duplicate_keys {
+            let mutual_keys = left_keys
+                .iter()
+                .zip(right_keys.iter())
+                .filter(|(l, r)| l == r)
+                .map(|(key, _)| *key)
+                .collect::<Vec<_>>();
+
+            let fields_to_drop = mutual_keys
+                .iter()
+                .map(|name| {
+                    df.logical_plan()
+                        .schema()
+                        .qualified_fields_with_unqualified_name(name)
+                })
+                .filter(|r| r.len() == 2)
+                .map(|r| r[1])
+                .collect::<Vec<_>>();
+
+            let expr: Vec<Expr> = df
+                .logical_plan()
+                .schema()
+                .fields()
+                .into_iter()
+                .enumerate()
+                .map(|(idx, _)| df.logical_plan().schema().qualified_field(idx))
+                .filter(|(qualifier, f)| !fields_to_drop.contains(&(*qualifier, f)))
+                .map(|(qualifier, field)| Expr::Column(Column::from((qualifier, field))))
+                .collect();
+            df = df.select(expr)?;
+        }
+
         Ok(Self::new(df))
     }
 
