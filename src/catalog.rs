@@ -20,9 +20,10 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use datafusion::catalog::{
-    CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider,
-};
+use datafusion::catalog::CatalogProvider;
+use datafusion::catalog::MemoryCatalogProvider;
+use datafusion::catalog::MemorySchemaProvider;
+use datafusion::catalog::SchemaProvider;
 use datafusion::common::DataFusionError;
 use datafusion::datasource::TableProvider;
 use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
