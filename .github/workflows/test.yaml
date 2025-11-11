@@ -40,7 +40,6 @@ jobs:
           - "3.14"
         toolchain:
           - "stable"
-          - "nightly"
 
     steps:
       - uses: actions/checkout@v5
@@ -61,18 +60,15 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         id: rust-toolchain
         with:
-          toolchain: ${{ matrix.toolchain }}
           components: clippy,rustfmt
 
       - name: Install Protoc
-        if: ${{ matrix.toolchain == 'stable' }}
         uses: arduino/setup-protoc@v3
         with:
           version: '27.4'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Python
-        if: ${{ matrix.toolchain == 'stable' }}
         uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
@@ -84,7 +80,7 @@ jobs:
           key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Check Formatting
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'nightly' }}
+        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
         run: cargo +nightly fmt -- --check
 
       - name: Run Clippy
@@ -92,13 +88,11 @@ jobs:
         run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
 
       - name: Install dependencies and build
-        if: ${{ matrix.toolchain == 'stable' }}
         uses: astral-sh/setup-uv@v7
         with:
             enable-cache: true
 
       - name: Run tests
-        if: ${{ matrix.toolchain == 'stable' }}
         env:
           RUST_BACKTRACE: 1
         run: |
@@ -108,14 +102,12 @@ jobs:
           uv run --no-project pytest -v .
 
       - name: FFI unit tests
-        if: ${{ matrix.toolchain == 'stable' }}
         run: |
           cd examples/datafusion-ffi-example
           uv run --no-project maturin develop --uv
           uv run --no-project pytest python/tests/_test*.py
 
       - name: Cache the generated dataset
-        if: ${{ matrix.toolchain == 'stable' }}
         id: cache-tpch-dataset
         uses: actions/cache@v4
         with:
@@ -123,13 +115,12 @@ jobs:
           key: tpch-data-2.18.0
 
       - name: Run dbgen to create 1 Gb dataset
-        if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' && matrix.toolchain == 'stable' }}
+        if: ${{ steps.cache-tpch-dataset.outputs.cache-hit != 'true' }}
         run: |
           cd benchmarks/tpch
           RUN_IN_CI=TRUE ./tpch-gen.sh 1
 
       - name: Run TPC-H examples
-        if: ${{ matrix.toolchain == 'stable' }}
         run: |
           cd examples/tpch
           uv run --no-project python convert_data_to_parquet.py
