@@ -15,13 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::common::NullEquality;
-use datafusion::logical_expr::logical_plan::{Join, JoinConstraint, JoinType};
-use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
 
+use datafusion::common::NullEquality;
+use datafusion::logical_expr::logical_plan::{Join, JoinConstraint, JoinType};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
+
 use crate::common::df_schema::PyDFSchema;
-use crate::expr::{logical_node::LogicalNode, PyExpr};
+use crate::expr::logical_node::LogicalNode;
+use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

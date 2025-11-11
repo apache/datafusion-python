@@ -15,9 +15,11 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::logical_plan::Limit;
-use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
+
+use datafusion::logical_expr::logical_plan::Limit;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use crate::common::df_schema::PyDFSchema;
 use crate::expr::logical_node::LogicalNode;

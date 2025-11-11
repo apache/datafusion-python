@@ -17,12 +17,6 @@
 
 use std::sync::Arc;
 
-use pyo3::{prelude::*, types::PyTuple};
-
-use crate::common::data_type::PyScalarValue;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
-use crate::expr::PyExpr;
-use crate::utils::{parse_volatility, validate_pycapsule};
 use datafusion::arrow::array::{Array, ArrayRef};
 use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
@@ -32,7 +26,13 @@ use datafusion::logical_expr::{
     create_udaf, Accumulator, AccumulatorFactoryFunction, AggregateUDF,
 };
 use datafusion_ffi::udaf::{FFI_AggregateUDF, ForeignAggregateUDF};
-use pyo3::types::PyCapsule;
+use pyo3::prelude::*;
+use pyo3::types::{PyCapsule, PyTuple};
+
+use crate::common::data_type::PyScalarValue;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
+use crate::expr::PyExpr;
+use crate::utils::{parse_volatility, validate_pycapsule};
 
 #[derive(Debug)]
 struct RustAccumulator {

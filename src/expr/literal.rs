@@ -15,9 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use datafusion::common::ScalarValue;
+use datafusion::logical_expr::expr::FieldMetadata;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
+
 use crate::errors::PyDataFusionError;
-use datafusion::{common::ScalarValue, logical_expr::expr::FieldMetadata};
-use pyo3::{prelude::*, IntoPyObjectExt};
 
 #[pyclass(name = "Literal", module = "datafusion.expr", subclass, frozen)]
 #[derive(Clone)]

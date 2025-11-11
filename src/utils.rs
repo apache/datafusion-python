@@ -15,25 +15,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::errors::py_datafusion_err;
-use crate::{
-    common::data_type::PyScalarValue,
-    errors::{to_datafusion_err, PyDataFusionError, PyDataFusionResult},
-    TokioRuntime,
-};
-use datafusion::{
-    common::ScalarValue, datasource::TableProvider, execution::context::SessionContext,
-    logical_expr::Volatility,
-};
+use std::future::Future;
+use std::sync::{Arc, OnceLock};
+use std::time::Duration;
+
+use datafusion::common::ScalarValue;
+use datafusion::datasource::TableProvider;
+use datafusion::execution::context::SessionContext;
+use datafusion::logical_expr::Volatility;
 use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use pyo3::{exceptions::PyValueError, types::PyCapsule};
-use std::{
-    future::Future,
-    sync::{Arc, OnceLock},
-    time::Duration,
-};
-use tokio::{runtime::Runtime, task::JoinHandle, time::sleep};
+use pyo3::types::PyCapsule;
+use tokio::runtime::Runtime;
+use tokio::task::JoinHandle;
+use tokio::time::sleep;
+
+use crate::common::data_type::PyScalarValue;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::TokioRuntime;
 
 /// Utility to get the Tokio Runtime from Python
 #[inline]

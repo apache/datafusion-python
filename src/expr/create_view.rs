@@ -18,11 +18,12 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::{CreateView, DdlStatement, LogicalPlan};
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::{errors::py_type_err, sql::logical::PyLogicalPlan};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::errors::py_type_err;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "CreateView", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

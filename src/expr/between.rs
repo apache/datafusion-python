@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
+use std::fmt::{self, Display, Formatter};
+
 use datafusion::logical_expr::expr::Between;
 use pyo3::prelude::*;
-use std::fmt::{self, Display, Formatter};
+
+use crate::expr::PyExpr;
 
 #[pyclass(frozen, name = "Between", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

@@ -16,11 +16,11 @@
 // under the License.
 
 use datafusion::logical_expr::Extension;
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::sql::logical::PyLogicalPlan;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "Extension", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

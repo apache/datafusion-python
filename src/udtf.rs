@@ -15,18 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use pyo3::prelude::*;
 use std::sync::Arc;
+
+use datafusion::catalog::{TableFunctionImpl, TableProvider};
+use datafusion::error::Result as DataFusionResult;
+use datafusion::logical_expr::Expr;
+use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
+use pyo3::prelude::*;
+use pyo3::types::{PyCapsule, PyTuple};
 
 use crate::errors::{py_datafusion_err, to_datafusion_err};
 use crate::expr::PyExpr;
 use crate::table::PyTable;
 use crate::utils::validate_pycapsule;
-use datafusion::catalog::{TableFunctionImpl, TableProvider};
-use datafusion::error::Result as DataFusionResult;
-use datafusion::logical_expr::Expr;
-use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
-use pyo3::types::{PyCapsule, PyTuple};
 
 /// Represents a user defined table function
 #[pyclass(frozen, name = "TableFunction", module = "datafusion")]

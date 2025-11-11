@@ -17,8 +17,6 @@
 
 use std::sync::Arc;
 
-use crate::errors::PyDataFusionError;
-use crate::utils::wait_for_future;
 use datafusion::arrow::pyarrow::ToPyArrow;
 use datafusion::arrow::record_batch::RecordBatch;
 use datafusion::physical_plan::SendableRecordBatchStream;
@@ -27,6 +25,9 @@ use pyo3::exceptions::{PyStopAsyncIteration, PyStopIteration};
 use pyo3::prelude::*;
 use pyo3::{pyclass, pymethods, PyObject, PyResult, Python};
 use tokio::sync::Mutex;
+
+use crate::errors::PyDataFusionError;
+use crate::utils::wait_for_future;
 
 #[pyclass(name = "RecordBatch", module = "datafusion", subclass, frozen)]
 pub struct PyRecordBatch {

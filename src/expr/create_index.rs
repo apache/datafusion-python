@@ -15,17 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
 use datafusion::logical_expr::CreateIndex;
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
-use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
-
-use super::{logical_node::LogicalNode, sort_expr::PySortExpr};
+use super::logical_node::LogicalNode;
+use super::sort_expr::PySortExpr;
+use crate::common::df_schema::PyDFSchema;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "CreateIndex", module = "datafusion.expr", subclass)]
 #[derive(Clone)]
