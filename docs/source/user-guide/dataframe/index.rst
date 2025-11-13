@@ -200,6 +200,9 @@ To materialize the results of your DataFrame operations:
     # Count rows
     count = df.count()
 
+    # Collect a single column of data as a PyArrow Array
+    arr = df.collect_column("age")
+
 Zero-copy streaming to Arrow-based Python libraries
 ---------------------------------------------------
 
@@ -238,7 +241,7 @@ PyArrow:
 
 Each batch exposes ``to_pyarrow()``, allowing conversion to a PyArrow
 table. ``pa.table(df)`` collects the entire DataFrame eagerly into a
-PyArrow table::
+PyArrow table:
 
 .. code-block:: python
 
@@ -246,7 +249,7 @@ PyArrow table::
     table = pa.table(df)
 
 Asynchronous iteration is supported as well, allowing integration with
-``asyncio`` event loops::
+``asyncio`` event loops:
 
 .. code-block:: python
 

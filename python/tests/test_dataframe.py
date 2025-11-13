@@ -1745,6 +1745,18 @@ def test_collect_partitioned():
     assert [[batch]] == ctx.create_dataframe([[batch]]).collect_partitioned()
 
 
+def test_collect_column(ctx: SessionContext):
+    batch_1 = pa.RecordBatch.from_pydict({"a": [1, 2, 3]})
+    batch_2 = pa.RecordBatch.from_pydict({"a": [4, 5, 6]})
+    batch_3 = pa.RecordBatch.from_pydict({"a": [7, 8, 9]})
+
+    ctx.register_record_batches("t", [[batch_1, batch_2], [batch_3]])
+
+    result = ctx.table("t").sort(column("a")).collect_column("a")
+    expected = pa.array([1, 2, 3, 4, 5, 6, 7, 8, 9])
+    assert result == expected
+
+
 def test_union(ctx):
     batch = pa.RecordBatch.from_arrays(
         [pa.array([1, 2, 3]), pa.array([4, 5, 6])],
