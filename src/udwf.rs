@@ -20,25 +20,25 @@ use std::ops::Range;
 use std::sync::Arc;
 
 use arrow::array::{make_array, Array, ArrayData, ArrayRef};
+use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
+use datafusion::error::{DataFusionError, Result};
 use datafusion::logical_expr::function::{PartitionEvaluatorArgs, WindowUDFFieldArgs};
+use datafusion::logical_expr::ptr_eq::PtrEq;
 use datafusion::logical_expr::window_state::WindowAggState;
+use datafusion::logical_expr::{
+    PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
+};
 use datafusion::scalar::ScalarValue;
+use datafusion_ffi::udwf::{FFI_WindowUDF, ForeignWindowUDF};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 use crate::common::data_type::PyScalarValue;
 use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
-use datafusion::arrow::datatypes::DataType;
-use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
-use datafusion::error::{DataFusionError, Result};
-use datafusion::logical_expr::ptr_eq::PtrEq;
-use datafusion::logical_expr::{
-    PartitionEvaluator, PartitionEvaluatorFactory, Signature, Volatility, WindowUDF, WindowUDFImpl,
-};
-use datafusion_ffi::udwf::{FFI_WindowUDF, ForeignWindowUDF};
-use pyo3::types::{PyCapsule, PyList, PyTuple};
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {

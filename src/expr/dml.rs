@@ -17,12 +17,13 @@
 
 use datafusion::logical_expr::dml::InsertOp;
 use datafusion::logical_expr::{DmlStatement, WriteOp};
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::common::schema::PyTableSource;
-use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
+use crate::common::schema::PyTableSource;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "DmlStatement", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

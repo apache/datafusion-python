@@ -15,27 +15,34 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::logical_expr::expr::{AggregateFunctionParams, FieldMetadata};
-use datafusion::logical_expr::utils::exprlist_to_fields;
-use datafusion::logical_expr::{
-    lit_with_metadata, ExprFuncBuilder, ExprFunctionExt, LogicalPlan, WindowFunctionDefinition,
-};
-use pyo3::IntoPyObjectExt;
-use pyo3::{basic::CompareOp, prelude::*};
 use std::collections::HashMap;
 use std::convert::{From, Into};
 use std::sync::Arc;
-use window::PyWindowFrame;
 
 use datafusion::arrow::datatypes::{DataType, Field};
 use datafusion::arrow::pyarrow::PyArrowType;
 use datafusion::functions::core::expr_ext::FieldAccessor;
-use datafusion::logical_expr::{
-    col,
-    expr::{AggregateFunction, InList, InSubquery, ScalarFunction, WindowFunction},
-    lit, Between, BinaryExpr, Case, Cast, Expr, Like, Operator, TryCast,
+use datafusion::logical_expr::expr::{
+    AggregateFunction, AggregateFunctionParams, FieldMetadata, InList, InSubquery, ScalarFunction,
+    WindowFunction,
 };
+use datafusion::logical_expr::utils::exprlist_to_fields;
+use datafusion::logical_expr::{
+    col, lit, lit_with_metadata, Between, BinaryExpr, Case, Cast, Expr, ExprFuncBuilder,
+    ExprFunctionExt, Like, LogicalPlan, Operator, TryCast, WindowFunctionDefinition,
+};
+use pyo3::basic::CompareOp;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
+use window::PyWindowFrame;
 
+use self::alias::PyAlias;
+use self::bool_expr::{
+    PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
+    PyIsUnknown, PyNegative, PyNot,
+};
+use self::like::{PyILike, PyLike, PySimilarTo};
+use self::scalar_variable::PyScalarVariable;
 use crate::common::data_type::{DataTypeMap, NullTreatment, PyScalarValue, RexType};
 use crate::errors::{py_runtime_err, py_type_err, py_unsupported_variant_err, PyDataFusionResult};
 use crate::expr::aggregate_expr::PyAggregateFunction;
@@ -45,14 +52,6 @@ use crate::expr::literal::PyLiteral;
 use crate::functions::add_builder_fns_to_window;
 use crate::pyarrow_util::scalar_to_pyarrow;
 use crate::sql::logical::PyLogicalPlan;
-
-use self::alias::PyAlias;
-use self::bool_expr::{
-    PyIsFalse, PyIsNotFalse, PyIsNotNull, PyIsNotTrue, PyIsNotUnknown, PyIsNull, PyIsTrue,
-    PyIsUnknown, PyNegative, PyNot,
-};
-use self::like::{PyILike, PyLike, PySimilarTo};
-use self::scalar_variable::PyScalarVariable;
 
 pub mod aggregate;
 pub mod aggregate_expr;

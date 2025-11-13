@@ -79,10 +79,6 @@ jobs:
           path: ~/.cargo
           key: cargo-cache-${{ steps.rust-toolchain.outputs.cachekey }}-${{ hashFiles('Cargo.lock') }}
 
-      - name: Check Formatting
-        if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
-        run: cargo fmt -- --check
-
       - name: Run Clippy
         if: ${{ matrix.python-version == '3.10' && matrix.toolchain == 'stable' }}
         run: cargo clippy --all-targets --all-features -- -D clippy::all -D warnings -A clippy::redundant_closure
@@ -125,3 +121,19 @@ jobs:
           cd examples/tpch
           uv run --no-project python convert_data_to_parquet.py
           uv run --no-project pytest _tests.py
+
+  nightly-fmt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        id: rust-toolchain
+        with:
+          toolchain: "nightly"
+          components: clippy,rustfmt
+
+      - name: Check Formatting
+        run: cargo +nightly fmt -- --check

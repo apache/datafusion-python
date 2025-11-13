@@ -15,9 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::fmt::{self, Display, Formatter};
+
 use datafusion::logical_expr::Expr;
 use pyo3::prelude::*;
-use std::fmt::{self, Display, Formatter};
 
 use super::PyExpr;
 

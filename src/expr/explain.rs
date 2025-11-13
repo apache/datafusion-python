@@ -17,12 +17,15 @@
 
 use std::fmt::{self, Display, Formatter};
 
-use datafusion::logical_expr::{logical_plan::Explain, LogicalPlan};
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::{common::df_schema::PyDFSchema, errors::py_type_err, sql::logical::PyLogicalPlan};
+use datafusion::logical_expr::logical_plan::Explain;
+use datafusion::logical_expr::LogicalPlan;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
+use crate::errors::py_type_err;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "Explain", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

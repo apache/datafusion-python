@@ -15,11 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
-use pyo3::prelude::*;
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::expr::Alias;
+use pyo3::prelude::*;
+
+use crate::expr::PyExpr;
 
 #[pyclass(frozen, name = "Alias", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

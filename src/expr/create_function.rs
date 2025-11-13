@@ -15,19 +15,19 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
 use datafusion::logical_expr::{
     CreateFunction, CreateFunctionBody, OperateFunctionArg, Volatility,
 };
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
 use super::PyExpr;
-use crate::common::{data_type::PyDataType, df_schema::PyDFSchema};
+use crate::common::data_type::PyDataType;
+use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "CreateFunction", module = "datafusion.expr", subclass)]

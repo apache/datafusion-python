@@ -18,11 +18,12 @@
 use std::fmt::{self, Display, Formatter};
 
 use datafusion::logical_expr::SubqueryAlias;
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "SubqueryAlias", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

@@ -17,14 +17,13 @@
 
 use std::sync::Arc;
 
+use datafusion::config::ConfigOptions;
+use parking_lot::RwLock;
 use pyo3::prelude::*;
 use pyo3::types::*;
 
-use datafusion::config::ConfigOptions;
-
 use crate::errors::PyDataFusionResult;
 use crate::utils::py_obj_to_scalar_value;
-use parking_lot::RwLock;
 #[pyclass(name = "Config", module = "datafusion", subclass, frozen)]
 #[derive(Clone)]
 pub(crate) struct PyConfig {

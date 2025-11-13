@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use cstr::cstr;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::sync::Arc;
@@ -26,6 +25,7 @@ use arrow::error::ArrowError;
 use arrow::ffi::FFI_ArrowSchema;
 use arrow::ffi_stream::FFI_ArrowArrayStream;
 use arrow::pyarrow::FromPyArrow;
+use cstr::cstr;
 use datafusion::arrow::datatypes::{Schema, SchemaRef};
 use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
 use datafusion::arrow::util::pretty;
@@ -40,14 +40,16 @@ use datafusion::logical_expr::SortExpr;
 use datafusion::parquet::basic::{BrotliLevel, Compression, GzipLevel, ZstdLevel};
 use datafusion::prelude::*;
 use futures::{StreamExt, TryStreamExt};
+use parking_lot::Mutex;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::pybacked::PyBackedStr;
 use pyo3::types::{PyCapsule, PyList, PyTuple, PyTupleMethods};
 use pyo3::PyErr;
 
-use crate::errors::{py_datafusion_err, PyDataFusionError};
-use crate::expr::sort_expr::to_sort_expressions;
+use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
+use crate::expr::PyExpr;
 use crate::physical_plan::PyExecutionPlan;
 use crate::record_batch::{poll_next_batch, PyRecordBatchStream};
 use crate::sql::logical::PyLogicalPlan;
@@ -55,12 +57,6 @@ use crate::table::{PyTable, TempViewTable};
 use crate::utils::{
     is_ipython_env, py_obj_to_scalar_value, spawn_future, validate_pycapsule, wait_for_future,
 };
-use crate::{
-    errors::PyDataFusionResult,
-    expr::{sort_expr::PySortExpr, PyExpr},
-};
-
-use parking_lot::Mutex;
 
 /// File-level static CStr for the Arrow array stream capsule name.
 static ARROW_ARRAY_STREAM_NAME: &CStr = cstr!("arrow_array_stream");

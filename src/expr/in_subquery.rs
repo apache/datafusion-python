@@ -18,7 +18,8 @@
 use datafusion::logical_expr::expr::InSubquery;
 use pyo3::prelude::*;
 
-use super::{subquery::PySubquery, PyExpr};
+use super::subquery::PySubquery;
+use super::PyExpr;
 
 #[pyclass(frozen, name = "InSubquery", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

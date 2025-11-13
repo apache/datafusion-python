@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::expr::PyExpr;
+use std::fmt::{Display, Formatter};
+
 use datafusion::logical_expr::expr::AggregateFunction;
 use pyo3::prelude::*;
-use std::fmt::{Display, Formatter};
+
+use crate::expr::PyExpr;
 
 #[pyclass(
     frozen,

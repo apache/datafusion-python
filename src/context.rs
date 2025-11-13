@@ -23,13 +23,36 @@ use std::sync::Arc;
 use arrow::array::RecordBatchReader;
 use arrow::ffi_stream::ArrowArrayStreamReader;
 use arrow::pyarrow::FromPyArrow;
+use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
+use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::arrow::record_batch::RecordBatch;
+use datafusion::catalog::CatalogProvider;
+use datafusion::common::{exec_err, ScalarValue, TableReference};
+use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
+use datafusion::datasource::file_format::parquet::ParquetFormat;
+use datafusion::datasource::listing::{
+    ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
+};
+use datafusion::datasource::{MemTable, TableProvider};
+use datafusion::execution::context::{
+    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
+};
+use datafusion::execution::disk_manager::DiskManagerMode;
+use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
+use datafusion::execution::options::ReadOptions;
+use datafusion::execution::runtime_env::RuntimeEnvBuilder;
 use datafusion::execution::session_state::SessionStateBuilder;
+use datafusion::prelude::{
+    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
+};
+use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
 use object_store::ObjectStore;
-use url::Url;
-use uuid::Uuid;
-
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
+use pyo3::IntoPyObjectExt;
+use url::Url;
+use uuid::Uuid;
 
 use crate::catalog::{PyCatalog, RustWrappedPyCatalogProvider};
 use crate::dataframe::PyDataFrame;
@@ -47,32 +70,6 @@ use crate::udf::PyScalarUDF;
 use crate::udtf::PyTableFunction;
 use crate::udwf::PyWindowUDF;
 use crate::utils::{get_global_ctx, spawn_future, validate_pycapsule, wait_for_future};
-use datafusion::arrow::datatypes::{DataType, Schema, SchemaRef};
-use datafusion::arrow::pyarrow::PyArrowType;
-use datafusion::arrow::record_batch::RecordBatch;
-use datafusion::catalog::CatalogProvider;
-use datafusion::common::TableReference;
-use datafusion::common::{exec_err, ScalarValue};
-use datafusion::datasource::file_format::file_compression_type::FileCompressionType;
-use datafusion::datasource::file_format::parquet::ParquetFormat;
-use datafusion::datasource::listing::{
-    ListingOptions, ListingTable, ListingTableConfig, ListingTableUrl,
-};
-use datafusion::datasource::MemTable;
-use datafusion::datasource::TableProvider;
-use datafusion::execution::context::{
-    DataFilePaths, SQLOptions, SessionConfig, SessionContext, TaskContext,
-};
-use datafusion::execution::disk_manager::DiskManagerMode;
-use datafusion::execution::memory_pool::{FairSpillPool, GreedyMemoryPool, UnboundedMemoryPool};
-use datafusion::execution::options::ReadOptions;
-use datafusion::execution::runtime_env::RuntimeEnvBuilder;
-use datafusion::prelude::{
-    AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
-};
-use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
-use pyo3::types::{PyCapsule, PyDict, PyList, PyTuple, PyType};
-use pyo3::IntoPyObjectExt;
 
 /// Configuration options for a SessionContext
 #[pyclass(frozen, name = "SessionConfig", module = "datafusion", subclass)]

@@ -15,18 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
-use arrow::{datatypes::Schema, pyarrow::PyArrowType};
+use arrow::datatypes::Schema;
+use arrow::pyarrow::PyArrowType;
 use datafusion::logical_expr::DescribeTable;
-use pyo3::{prelude::*, IntoPyObjectExt};
-
-use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "DescribeTable", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

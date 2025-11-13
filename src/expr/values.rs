@@ -18,12 +18,13 @@
 use std::sync::Arc;
 
 use datafusion::logical_expr::Values;
-use pyo3::{prelude::*, IntoPyObjectExt};
-use pyo3::{pyclass, PyErr, PyResult, Python};
+use pyo3::prelude::*;
+use pyo3::{pyclass, IntoPyObjectExt, PyErr, PyResult, Python};
 
-use crate::{common::df_schema::PyDFSchema, sql::logical::PyLogicalPlan};
-
-use super::{logical_node::LogicalNode, PyExpr};
+use super::logical_node::LogicalNode;
+use super::PyExpr;
+use crate::common::df_schema::PyDFSchema;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(frozen, name = "Values", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

@@ -17,32 +17,24 @@
 
 use std::collections::HashMap;
 
-use datafusion::functions_aggregate::all_default_aggregate_functions;
-use datafusion::functions_window::all_default_window_functions;
-use datafusion::logical_expr::expr::FieldMetadata;
-use datafusion::logical_expr::expr::WindowFunctionParams;
-use datafusion::logical_expr::ExprFunctionExt;
-use datafusion::logical_expr::WindowFrame;
-use pyo3::{prelude::*, wrap_pyfunction};
-
-use crate::common::data_type::NullTreatment;
-use crate::common::data_type::PyScalarValue;
-use crate::context::PySessionContext;
-use crate::errors::PyDataFusionError;
-use crate::errors::PyDataFusionResult;
-use crate::expr::conditional_expr::PyCaseBuilder;
-use crate::expr::sort_expr::to_sort_expressions;
-use crate::expr::sort_expr::PySortExpr;
-use crate::expr::window::PyWindowFrame;
-use crate::expr::PyExpr;
 use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::execution::FunctionRegistry;
-use datafusion::functions;
-use datafusion::functions_aggregate;
-use datafusion::functions_window;
-use datafusion::logical_expr::expr::Alias;
+use datafusion::functions_aggregate::all_default_aggregate_functions;
+use datafusion::functions_window::all_default_window_functions;
+use datafusion::logical_expr::expr::{Alias, FieldMetadata, WindowFunction, WindowFunctionParams};
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
-use datafusion::logical_expr::{expr::WindowFunction, lit, Expr, WindowFunctionDefinition};
+use datafusion::logical_expr::{lit, Expr, ExprFunctionExt, WindowFrame, WindowFunctionDefinition};
+use datafusion::{functions, functions_aggregate, functions_window};
+use pyo3::prelude::*;
+use pyo3::wrap_pyfunction;
+
+use crate::common::data_type::{NullTreatment, PyScalarValue};
+use crate::context::PySessionContext;
+use crate::errors::{PyDataFusionError, PyDataFusionResult};
+use crate::expr::conditional_expr::PyCaseBuilder;
+use crate::expr::sort_expr::{to_sort_expressions, PySortExpr};
+use crate::expr::window::PyWindowFrame;
+use crate::expr::PyExpr;
 
 fn add_builder_fns_to_aggregate(
     agg_fn: Expr,

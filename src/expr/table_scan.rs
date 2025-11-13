@@ -15,14 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use datafusion::common::TableReference;
-use datafusion::logical_expr::logical_plan::TableScan;
-use pyo3::{prelude::*, IntoPyObjectExt};
 use std::fmt::{self, Display, Formatter};
 
+use datafusion::common::TableReference;
+use datafusion::logical_expr::logical_plan::TableScan;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
+
+use crate::common::df_schema::PyDFSchema;
 use crate::expr::logical_node::LogicalNode;
+use crate::expr::PyExpr;
 use crate::sql::logical::PyLogicalPlan;
-use crate::{common::df_schema::PyDFSchema, expr::PyExpr};
 
 #[pyclass(frozen, name = "TableScan", module = "datafusion.expr", subclass)]
 #[derive(Clone)]

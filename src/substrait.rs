@@ -15,17 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use pyo3::{prelude::*, types::PyBytes};
+use datafusion_substrait::logical_plan::{consumer, producer};
+use datafusion_substrait::serializer;
+use datafusion_substrait::substrait::proto::Plan;
+use prost::Message;
+use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 
 use crate::context::PySessionContext;
 use crate::errors::{py_datafusion_err, PyDataFusionError, PyDataFusionResult};
 use crate::sql::logical::PyLogicalPlan;
 use crate::utils::wait_for_future;
-
-use datafusion_substrait::logical_plan::{consumer, producer};
-use datafusion_substrait::serializer;
-use datafusion_substrait::substrait::proto::Plan;
-use prost::Message;
 
 #[pyclass(frozen, name = "Plan", module = "datafusion.substrait", subclass)]
 #[derive(Debug, Clone)]

@@ -15,10 +15,12 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::{errors::PyDataFusionResult, expr::PyExpr};
 use datafusion::logical_expr::conditional_expressions::CaseBuilder;
 use datafusion::prelude::Expr;
 use pyo3::prelude::*;
+
+use crate::errors::PyDataFusionResult;
+use crate::expr::PyExpr;
 
 // TODO(tsaucer) replace this all with CaseBuilder after it implements Clone
 #[derive(Clone, Debug)]

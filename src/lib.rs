@@ -15,19 +15,16 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// Re-export Apache Arrow DataFusion dependencies
+pub use datafusion;
+pub use datafusion::{
+    common as datafusion_common, logical_expr as datafusion_expr, optimizer, sql as datafusion_sql,
+};
+#[cfg(feature = "substrait")]
+pub use datafusion_substrait;
 #[cfg(feature = "mimalloc")]
 use mimalloc::MiMalloc;
 use pyo3::prelude::*;
-
-// Re-export Apache Arrow DataFusion dependencies
-pub use datafusion;
-pub use datafusion::common as datafusion_common;
-pub use datafusion::logical_expr as datafusion_expr;
-pub use datafusion::optimizer;
-pub use datafusion::sql as datafusion_sql;
-
-#[cfg(feature = "substrait")]
-pub use datafusion_substrait;
 
 #[allow(clippy::borrow_deref_ref)]
 pub mod catalog;

@@ -19,9 +19,11 @@ mod dialect;
 
 use std::sync::Arc;
 
-use datafusion::sql::unparser::{dialect::Dialect, Unparser};
+use datafusion::sql::unparser::dialect::Dialect;
+use datafusion::sql::unparser::Unparser;
 use dialect::PyDialect;
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 
 use crate::sql::logical::PyLogicalPlan;
 
