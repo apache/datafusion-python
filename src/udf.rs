@@ -15,69 +15,139 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::sync::Arc;
-
-use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
-use pyo3::types::PyCapsule;
-use pyo3::{prelude::*, types::PyTuple};
-
-use datafusion::arrow::array::{make_array, Array, ArrayData, ArrayRef};
-use datafusion::arrow::datatypes::DataType;
-use datafusion::arrow::pyarrow::FromPyArrow;
-use datafusion::arrow::pyarrow::{PyArrowType, ToPyArrow};
-use datafusion::error::DataFusionError;
-use datafusion::logical_expr::function::ScalarFunctionImplementation;
-use datafusion::logical_expr::ScalarUDF;
-use datafusion::logical_expr::{create_udf, ColumnarValue};
-
+use crate::array::PyArrowArrayExportable;
 use crate::errors::to_datafusion_err;
 use crate::errors::{py_datafusion_err, PyDataFusionResult};
 use crate::expr::PyExpr;
 use crate::utils::{parse_volatility, validate_pycapsule};
+use arrow::datatypes::{Field, FieldRef};
+use arrow::pyarrow::ToPyArrow;
+use datafusion::arrow::array::{make_array, ArrayData};
+use datafusion::arrow::datatypes::DataType;
+use datafusion::arrow::pyarrow::FromPyArrow;
+use datafusion::arrow::pyarrow::PyArrowType;
+use datafusion::error::DataFusionError;
+use datafusion::logical_expr::{ColumnarValue, Volatility};
+use datafusion::logical_expr::{
+    ReturnFieldArgs, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
+};
+use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
+use pyo3::types::PyCapsule;
+use pyo3::{prelude::*, types::PyTuple};
+use std::any::Any;
+use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
-/// Create a Rust callable function from a python function that expects pyarrow arrays
-fn pyarrow_function_to_rust(
+/// This struct holds the Python written function that is a
+/// ScalarUDF.
+#[derive(Debug)]
+struct PythonFunctionScalarUDF {
+    name: String,
     func: PyObject,
-) -> impl Fn(&[ArrayRef]) -> Result<ArrayRef, DataFusionError> {
-    move |args: &[ArrayRef]| -> Result<ArrayRef, DataFusionError> {
+    signature: Signature,
+    return_field: FieldRef,
+}
+
+impl PythonFunctionScalarUDF {
+    fn new(
+        name: String,
+        func: PyObject,
+        input_fields: Vec<Field>,
+        return_field: Field,
+        volatility: Volatility,
+    ) -> Self {
+        let input_types = input_fields.iter().map(|f| f.data_type().clone()).collect();
+        let signature = Signature::exact(input_types, volatility);
+        Self {
+            name,
+            func,
+            signature,
+            return_field: Arc::new(return_field),
+        }
+    }
+}
+
+impl Eq for PythonFunctionScalarUDF {}
+impl PartialEq for PythonFunctionScalarUDF {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.signature == other.signature
+            && self.return_field == other.return_field
+            && Python::with_gil(|py| self.func.bind(py).eq(other.func.bind(py)).unwrap_or(false))
+    }
+}
+
+impl Hash for PythonFunctionScalarUDF {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.signature.hash(state);
+        self.return_field.hash(state);
+
+        Python::with_gil(|py| {
+            let py_hash = self.func.bind(py).hash().unwrap_or(0); // Handle unhashable objects
+
+            state.write_isize(py_hash);
+        });
+    }
+}
+
+impl ScalarUDFImpl for PythonFunctionScalarUDF {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+
+    fn return_type(&self, _arg_types: &[DataType]) -> datafusion::common::Result<DataType> {
+        unimplemented!()
+    }
+
+    fn return_field_from_args(
+        &self,
+        _args: ReturnFieldArgs,
+    ) -> datafusion::common::Result<FieldRef> {
+        Ok(Arc::clone(&self.return_field))
+    }
+
+    fn invoke_with_args(
+        &self,
+        args: ScalarFunctionArgs,
+    ) -> datafusion::common::Result<ColumnarValue> {
+        let num_rows = args.number_rows;
+        // let args = args.args.into_iter().zip(args.arg_fields.into_iter());
         Python::with_gil(|py| {
             // 1. cast args to Pyarrow arrays
             let py_args = args
-                .iter()
-                .map(|arg| {
-                    arg.into_data()
+                .args
+                .into_iter()
+                .zip(args.arg_fields)
+                .map(|(arg, field)| {
+                    let array = arg.to_array(num_rows)?;
+                    PyArrowArrayExportable::new(array, field)
                         .to_pyarrow(py)
-                        .map_err(|e| DataFusionError::Execution(format!("{e:?}")))
+                        .map_err(to_datafusion_err)
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let py_args = PyTuple::new(py, py_args).map_err(to_datafusion_err)?;
 
             // 2. call function
-            let value = func
+            let value = self
+                .func
                 .call(py, py_args, None)
                 .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
 
             // 3. cast to arrow::array::Array
             let array_data = ArrayData::from_pyarrow_bound(value.bind(py))
                 .map_err(|e| DataFusionError::Execution(format!("{e:?}")))?;
-            Ok(make_array(array_data))
+            Ok(ColumnarValue::Array(make_array(array_data)))
         })
     }
-}
-
-/// Create a DataFusion's UDF implementation from a python function
-/// that expects pyarrow arrays. This is more efficient as it performs
-/// a zero-copy of the contents.
-fn to_scalar_function_impl(func: PyObject) -> ScalarFunctionImplementation {
-    // Make the python function callable from rust
-    let pyarrow_func = pyarrow_function_to_rust(func);
-
-    // Convert input/output from datafusion ColumnarValue to arrow arrays
-    Arc::new(move |args: &[ColumnarValue]| {
-        let array_refs = ColumnarValue::values_to_arrays(args)?;
-        let array_result = pyarrow_func(&array_refs)?;
-        Ok(array_result.into())
-    })
 }
 
 /// Represents a PyScalarUDF
@@ -92,19 +162,21 @@ impl PyScalarUDF {
     #[new]
     #[pyo3(signature=(name, func, input_types, return_type, volatility))]
     fn new(
-        name: &str,
+        name: String,
         func: PyObject,
-        input_types: PyArrowType<Vec<DataType>>,
-        return_type: PyArrowType<DataType>,
+        input_types: PyArrowType<Vec<Field>>,
+        return_type: PyArrowType<Field>,
         volatility: &str,
     ) -> PyResult<Self> {
-        let function = create_udf(
+        let py_function = PythonFunctionScalarUDF::new(
             name,
+            func,
             input_types.0,
             return_type.0,
             parse_volatility(volatility)?,
-            to_scalar_function_impl(func),
         );
+        let function = ScalarUDF::new_from_impl(py_function);
+
         Ok(Self { function })
     }
 
