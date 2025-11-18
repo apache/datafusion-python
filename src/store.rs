@@ -17,14 +17,13 @@
 
 use std::sync::Arc;
 
-use pyo3::prelude::*;
-
 use object_store::aws::{AmazonS3, AmazonS3Builder};
 use object_store::azure::{MicrosoftAzure, MicrosoftAzureBuilder};
 use object_store::gcp::{GoogleCloudStorage, GoogleCloudStorageBuilder};
 use object_store::http::{HttpBuilder, HttpStore};
 use object_store::local::LocalFileSystem;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use url::Url;
 
 #[derive(FromPyObject)]

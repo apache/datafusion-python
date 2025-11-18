@@ -15,25 +15,26 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::dataset::Dataset;
-use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
-use crate::table::PyTable;
-use crate::utils::{validate_pycapsule, wait_for_future};
+use std::any::Any;
+use std::collections::HashSet;
+use std::sync::Arc;
+
 use async_trait::async_trait;
-use datafusion::catalog::{MemoryCatalogProvider, MemorySchemaProvider};
-use datafusion::common::DataFusionError;
-use datafusion::{
-    catalog::{CatalogProvider, SchemaProvider},
-    datasource::TableProvider,
+use datafusion::catalog::{
+    CatalogProvider, MemoryCatalogProvider, MemorySchemaProvider, SchemaProvider,
 };
+use datafusion::common::DataFusionError;
+use datafusion::datasource::TableProvider;
 use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
 use pyo3::IntoPyObjectExt;
-use std::any::Any;
-use std::collections::HashSet;
-use std::sync::Arc;
+
+use crate::dataset::Dataset;
+use crate::errors::{py_datafusion_err, to_datafusion_err, PyDataFusionError, PyDataFusionResult};
+use crate::table::PyTable;
+use crate::utils::{validate_pycapsule, wait_for_future};
 
 #[pyclass(frozen, name = "RawCatalog", module = "datafusion.catalog", subclass)]
 #[derive(Clone)]

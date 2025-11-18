@@ -15,9 +15,9 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::dataframe::PyDataFrame;
-use crate::dataset::Dataset;
-use crate::utils::table_provider_from_pycapsule;
+use std::any::Any;
+use std::sync::Arc;
+
 use arrow::datatypes::SchemaRef;
 use arrow::pyarrow::ToPyArrow;
 use async_trait::async_trait;
@@ -28,8 +28,10 @@ use datafusion::logical_expr::{Expr, LogicalPlanBuilder, TableProviderFilterPush
 use datafusion::physical_plan::ExecutionPlan;
 use datafusion::prelude::DataFrame;
 use pyo3::prelude::*;
-use std::any::Any;
-use std::sync::Arc;
+
+use crate::dataframe::PyDataFrame;
+use crate::dataset::Dataset;
+use crate::utils::table_provider_from_pycapsule;
 
 /// This struct is used as a common method for all TableProviders,
 /// whether they refer to an FFI provider, an internally known

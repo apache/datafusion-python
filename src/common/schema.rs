@@ -15,25 +15,24 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::any::Any;
+use std::borrow::Cow;
 use std::fmt::{self, Display, Formatter};
 use std::sync::Arc;
-use std::{any::Any, borrow::Cow};
 
 use arrow::datatypes::Schema;
 use arrow::pyarrow::PyArrowType;
 use datafusion::arrow::datatypes::SchemaRef;
 use datafusion::common::Constraints;
 use datafusion::datasource::TableType;
+use datafusion::logical_expr::utils::split_conjunction;
 use datafusion::logical_expr::{Expr, TableProviderFilterPushDown, TableSource};
+use parking_lot::RwLock;
 use pyo3::prelude::*;
 
-use datafusion::logical_expr::utils::split_conjunction;
-
+use super::data_type::DataTypeMap;
+use super::function::SqlFunction;
 use crate::sql::logical::PyLogicalPlan;
-
-use super::{data_type::DataTypeMap, function::SqlFunction};
-
-use parking_lot::RwLock;
 
 #[pyclass(name = "SqlSchema", module = "datafusion.common", subclass, frozen)]
 #[derive(Debug, Clone)]

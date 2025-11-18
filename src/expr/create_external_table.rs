@@ -15,19 +15,20 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use crate::{common::schema::PyConstraints, expr::PyExpr, sql::logical::PyLogicalPlan};
-use std::{
-    collections::HashMap,
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::collections::HashMap;
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
 use datafusion::logical_expr::CreateExternalTable;
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
+use super::logical_node::LogicalNode;
+use super::sort_expr::PySortExpr;
 use crate::common::df_schema::PyDFSchema;
-
-use super::{logical_node::LogicalNode, sort_expr::PySortExpr};
+use crate::common::schema::PyConstraints;
+use crate::expr::PyExpr;
+use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
     frozen,

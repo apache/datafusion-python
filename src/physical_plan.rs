@@ -15,14 +15,17 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::Arc;
+
 use datafusion::physical_plan::{displayable, ExecutionPlan, ExecutionPlanProperties};
 use datafusion_proto::physical_plan::{AsExecutionPlan, DefaultPhysicalExtensionCodec};
 use prost::Message;
-use std::sync::Arc;
+use pyo3::exceptions::PyRuntimeError;
+use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 
-use pyo3::{exceptions::PyRuntimeError, prelude::*, types::PyBytes};
-
-use crate::{context::PySessionContext, errors::PyDataFusionResult};
+use crate::context::PySessionContext;
+use crate::errors::PyDataFusionResult;
 
 #[pyclass(frozen, name = "ExecutionPlan", module = "datafusion", subclass)]
 #[derive(Debug, Clone)]

@@ -19,8 +19,8 @@ use datafusion::arrow::array::Array;
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
 use datafusion::common::ScalarValue;
 use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
-use pyo3::exceptions::PyNotImplementedError;
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::exceptions::{PyNotImplementedError, PyValueError};
+use pyo3::prelude::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd)]
 pub struct PyScalarValue(pub ScalarValue);

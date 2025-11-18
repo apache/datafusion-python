@@ -33,7 +33,7 @@ repos:
           - id: rust-fmt
             name: Rust fmt
             description: Run cargo fmt on files included in the commit. rustfmt should be installed before-hand.
-            entry: cargo fmt --all --
+            entry: cargo +nightly fmt --all --
             pass_filenames: true
             types: [file, rust]
             language: system

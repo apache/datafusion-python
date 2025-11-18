@@ -15,17 +15,18 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::{
-    fmt::{self, Display, Formatter},
-    sync::Arc,
-};
+use std::fmt::{self, Display, Formatter};
+use std::sync::Arc;
 
-use datafusion::{common::SchemaReference, logical_expr::DropCatalogSchema, sql::TableReference};
-use pyo3::{exceptions::PyValueError, prelude::*, IntoPyObjectExt};
-
-use crate::common::df_schema::PyDFSchema;
+use datafusion::common::SchemaReference;
+use datafusion::logical_expr::DropCatalogSchema;
+use datafusion::sql::TableReference;
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
+use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
+use crate::common::df_schema::PyDFSchema;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
