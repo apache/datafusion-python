@@ -59,7 +59,7 @@ arrow = { version = "56", features = ["pyarrow"] }
 arrow-select = { version = "56" }
 datafusion = { version = "50", features = ["avro", "unicode_expressions"] }
 datafusion-substrait = { version = "50", optional = true }
-datafusion-proto = { version = "50" }
+datafusion-proto = { version = "51" }
 datafusion-ffi = { version = "50" }
 prost = "0.13.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.18", features = ["v4"] }
