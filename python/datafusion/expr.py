@@ -695,7 +695,7 @@ class Expr:
         return self.expr.types()
 
     def python_value(self) -> Any:
-        """Extracts the Expr value into a PyObject.
+        """Extracts the Expr value into `Any`.
 
         This is only valid for literal expressions.
 

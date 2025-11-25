@@ -141,7 +141,7 @@ pub fn py_expr_list(expr: &[Expr]) -> PyResult<Vec<PyExpr>> {
 impl PyExpr {
     /// Return the specific expression
     fn to_variant<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             match &self.expr {
             Expr::Alias(alias) => Ok(PyAlias::from(alias.clone()).into_bound_py_any(py)?),
             Expr::Column(col) => Ok(PyColumn::from(col.clone()).into_bound_py_any(py)?),
@@ -379,8 +379,8 @@ impl PyExpr {
         Self::_types(&self.expr)
     }
 
-    /// Extracts the Expr value into a PyObject that can be shared with Python
-    pub fn python_value(&self, py: Python) -> PyResult<PyObject> {
+    /// Extracts the Expr value into a Py<PyAny> that can be shared with Python
+    pub fn python_value<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
         match &self.expr {
             Expr::Literal(scalar_value, _) => scalar_to_pyarrow(scalar_value, py),
             _ => Err(py_type_err(format!(

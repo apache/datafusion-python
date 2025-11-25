@@ -895,10 +895,10 @@ def test_alias_with_metadata(df):
             col("d").arrow_typeof(),
             pa.array(
                 [
-                    'List(Field { name: "item", data_type: Int64, nullable: true, dict_id: 0, dict_is_ordered: false, metadata: {} })',  # noqa: E501
-                    'List(Field { name: "item", data_type: Int64, nullable: true, dict_id: 0, dict_is_ordered: false, metadata: {} })',  # noqa: E501
-                    'List(Field { name: "item", data_type: Int64, nullable: true, dict_id: 0, dict_is_ordered: false, metadata: {} })',  # noqa: E501
-                    'List(Field { name: "item", data_type: Int64, nullable: true, dict_id: 0, dict_is_ordered: false, metadata: {} })',  # noqa: E501
+                    "List(nullable Int64)",
+                    "List(nullable Int64)",
+                    "List(nullable Int64)",
+                    "List(nullable Int64)",
                 ],
                 type=pa.string(),
             ),
