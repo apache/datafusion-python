@@ -281,7 +281,11 @@ impl PyDataFrame {
         Arc::clone(&self.df)
     }
 
-    fn prepare_repr_string(&self, py: Python, as_html: bool) -> PyDataFusionResult<String> {
+    fn prepare_repr_string<'py>(
+        &self,
+        py: Python<'py>,
+        as_html: bool,
+    ) -> PyDataFusionResult<String> {
         // Get the Python formatter and config
         let PythonFormatter { formatter, config } = get_python_formatter_with_config(py)?;
 
@@ -309,11 +313,11 @@ impl PyDataFrame {
 
         let table_uuid = uuid::Uuid::new_v4().to_string();
 
-        // Convert record batches to PyObject list
+        // Convert record batches to Py<PyAny> list
         let py_batches = batches
             .iter()
             .map(|rb| rb.to_pyarrow(py))
-            .collect::<PyResult<Vec<PyObject>>>()?;
+            .collect::<PyResult<Vec<Bound<'py, PyAny>>>>()?;
 
         let py_schema = self.schema().into_pyobject(py)?;
 
@@ -378,7 +382,7 @@ impl Iterator for PartitionedDataFrameStreamReader {
         while self.current < self.streams.len() {
             let stream = &mut self.streams[self.current];
             let fut = poll_next_batch(stream);
-            let result = Python::with_gil(|py| wait_for_future(py, fut));
+            let result = Python::attach(|py| wait_for_future(py, fut));
 
             match result {
                 Ok(Ok(Some(batch))) => {
@@ -486,7 +490,7 @@ impl PyDataFrame {
 
     /// Returns the schema from the logical plan
     fn schema(&self) -> PyArrowType<Schema> {
-        PyArrowType(self.df.schema().into())
+        PyArrowType(self.df.schema().as_arrow().clone())
     }
 
     /// Convert this DataFrame into a Table Provider that can be used in register_table
@@ -597,7 +601,7 @@ impl PyDataFrame {
     /// Executes the plan, returning a list of `RecordBatch`es.
     /// Unless some order is specified in the plan, there is no
     /// guarantee of the order of the result.
-    fn collect(&self, py: Python) -> PyResult<Vec<PyObject>> {
+    fn collect<'py>(&self, py: Python<'py>) -> PyResult<Vec<Bound<'py, PyAny>>> {
         let batches = wait_for_future(py, self.df.as_ref().clone().collect())?
             .map_err(PyDataFusionError::from)?;
         // cannot use PyResult<Vec<RecordBatch>> return type due to
@@ -613,7 +617,7 @@ impl PyDataFrame {
 
     /// Executes this DataFrame and collects all results into a vector of vector of RecordBatch
     /// maintaining the input partitioning.
-    fn collect_partitioned(&self, py: Python) -> PyResult<Vec<Vec<PyObject>>> {
+    fn collect_partitioned<'py>(&self, py: Python<'py>) -> PyResult<Vec<Vec<Bound<'py, PyAny>>>> {
         let batches = wait_for_future(py, self.df.as_ref().clone().collect_partitioned())?
             .map_err(PyDataFusionError::from)?;
 
@@ -623,7 +627,7 @@ impl PyDataFrame {
             .collect()
     }
 
-    fn collect_column(&self, py: Python, column: &str) -> PyResult<PyObject> {
+    fn collect_column<'py>(&self, py: Python<'py>, column: &str) -> PyResult<Bound<'py, PyAny>> {
         wait_for_future(py, self.collect_column_inner(column))?
             .map_err(PyDataFusionError::from)?
             .to_data()
@@ -1022,14 +1026,14 @@ impl PyDataFrame {
 
     /// Convert to Arrow Table
     /// Collect the batches and pass to Arrow Table
-    fn to_arrow_table(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_arrow_table(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let batches = self.collect(py)?.into_pyobject(py)?;
         let schema = self.schema().into_pyobject(py)?;
 
         // Instantiate pyarrow Table object and use its from_batches method
         let table_class = py.import("pyarrow")?.getattr("Table")?;
         let args = PyTuple::new(py, &[batches, schema])?;
-        let table: PyObject = table_class.call_method1("from_batches", args)?.into();
+        let table: Py<PyAny> = table_class.call_method1("from_batches", args)?.into();
         Ok(table)
     }
 
@@ -1042,7 +1046,7 @@ impl PyDataFrame {
         let df = self.df.as_ref().clone();
         let streams = spawn_future(py, async move { df.execute_stream_partitioned().await })?;
 
-        let mut schema: Schema = self.df.schema().to_owned().into();
+        let mut schema: Schema = self.df.schema().to_owned().as_arrow().clone();
         let mut projection: Option<SchemaRef> = None;
 
         if let Some(schema_capsule) = requested_schema {
@@ -1088,7 +1092,7 @@ impl PyDataFrame {
 
     /// Convert to pandas dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to Pandas DataFrame
-    fn to_pandas(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_pandas(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pandas
@@ -1098,7 +1102,7 @@ impl PyDataFrame {
 
     /// Convert to Python list using pyarrow
     /// Each list item represents one row encoded as dictionary
-    fn to_pylist(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_pylist(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pylist
@@ -1108,7 +1112,7 @@ impl PyDataFrame {
 
     /// Convert to Python dictionary using pyarrow
     /// Each dictionary key is a column and the dictionary value represents the column values
-    fn to_pydict(&self, py: Python) -> PyResult<PyObject> {
+    fn to_pydict(&self, py: Python) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
 
         // See also: https://arrow.apache.org/docs/python/generated/pyarrow.Table.html#pyarrow.Table.to_pydict
@@ -1118,11 +1122,11 @@ impl PyDataFrame {
 
     /// Convert to polars dataframe with pyarrow
     /// Collect the batches, pass to Arrow Table & then convert to polars DataFrame
-    fn to_polars(&self, py: Python<'_>) -> PyResult<PyObject> {
+    fn to_polars(&self, py: Python<'_>) -> PyResult<Py<PyAny>> {
         let table = self.to_arrow_table(py)?;
         let dataframe = py.import("polars")?.getattr("DataFrame")?;
         let args = PyTuple::new(py, &[table])?;
-        let result: PyObject = dataframe.call1(args)?.into();
+        let result: Py<PyAny> = dataframe.call1(args)?.into();
         Ok(result)
     }
 
@@ -1135,7 +1139,7 @@ impl PyDataFrame {
     #[pyo3(signature = (value, columns=None))]
     fn fill_null(
         &self,
-        value: PyObject,
+        value: Py<PyAny>,
         columns: Option<Vec<PyBackedStr>>,
         py: Python,
     ) -> PyDataFusionResult<Self> {

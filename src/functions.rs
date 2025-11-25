@@ -21,8 +21,9 @@ use datafusion::common::{Column, ScalarValue, TableReference};
 use datafusion::execution::FunctionRegistry;
 use datafusion::functions_aggregate::all_default_aggregate_functions;
 use datafusion::functions_window::all_default_window_functions;
-use datafusion::logical_expr::expr::{Alias, FieldMetadata, WindowFunction, WindowFunctionParams};
-use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
+use datafusion::logical_expr::expr::{
+    Alias, FieldMetadata, NullTreatment as DFNullTreatment, WindowFunction, WindowFunctionParams,
+};
 use datafusion::logical_expr::{lit, Expr, ExprFunctionExt, WindowFrame, WindowFunctionDefinition};
 use datafusion::{functions, functions_aggregate, functions_window};
 use pyo3::prelude::*;

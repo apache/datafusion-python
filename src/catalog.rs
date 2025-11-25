@@ -63,7 +63,7 @@ impl From<Arc<dyn SchemaProvider>> for PySchema {
 #[pymethods]
 impl PyCatalog {
     #[new]
-    fn new(catalog: PyObject) -> Self {
+    fn new(catalog: Py<PyAny>) -> Self {
         let catalog_provider =
             Arc::new(RustWrappedPyCatalogProvider::new(catalog)) as Arc<dyn CatalogProvider>;
         catalog_provider.into()
@@ -81,7 +81,7 @@ impl PyCatalog {
     }
 
     #[pyo3(signature = (name="public"))]
-    fn schema(&self, name: &str) -> PyResult<PyObject> {
+    fn schema(&self, name: &str) -> PyResult<Py<PyAny>> {
         let schema = self
             .catalog
             .schema(name)
@@ -89,7 +89,7 @@ impl PyCatalog {
                 "Schema with name {name} doesn't exist."
             )))?;
 
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             match schema
                 .as_any()
                 .downcast_ref::<RustWrappedPySchemaProvider>()
@@ -146,7 +146,7 @@ impl PyCatalog {
 #[pymethods]
 impl PySchema {
     #[new]
-    fn new(schema_provider: PyObject) -> Self {
+    fn new(schema_provider: Py<PyAny>) -> Self {
         let schema_provider =
             Arc::new(RustWrappedPySchemaProvider::new(schema_provider)) as Arc<dyn SchemaProvider>;
         schema_provider.into()
@@ -202,13 +202,13 @@ impl PySchema {
 
 #[derive(Debug)]
 pub(crate) struct RustWrappedPySchemaProvider {
-    schema_provider: PyObject,
+    schema_provider: Py<PyAny>,
     owner_name: Option<String>,
 }
 
 impl RustWrappedPySchemaProvider {
-    pub fn new(schema_provider: PyObject) -> Self {
-        let owner_name = Python::with_gil(|py| {
+    pub fn new(schema_provider: Py<PyAny>) -> Self {
+        let owner_name = Python::attach(|py| {
             schema_provider
                 .bind(py)
                 .getattr("owner_name")
@@ -223,7 +223,7 @@ impl RustWrappedPySchemaProvider {
     }
 
     fn table_inner(&self, name: &str) -> PyResult<Option<Arc<dyn TableProvider>>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
             let py_table_method = provider.getattr("table")?;
 
@@ -250,7 +250,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
     }
 
     fn table_names(&self) -> Vec<String> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
 
             provider
@@ -276,7 +276,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         table: Arc<dyn TableProvider>,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
         let py_table = PyTable::from(table);
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
             let _ = provider
                 .call_method1("register_table", (name, py_table))
@@ -292,7 +292,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
         &self,
         name: &str,
     ) -> datafusion::common::Result<Option<Arc<dyn TableProvider>>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
             let table = provider
                 .call_method1("deregister_table", (name,))
@@ -313,7 +313,7 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
     }
 
     fn table_exist(&self, name: &str) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.schema_provider.bind(py);
             provider
                 .call_method1("table_exist", (name,))
@@ -325,16 +325,16 @@ impl SchemaProvider for RustWrappedPySchemaProvider {
 
 #[derive(Debug)]
 pub(crate) struct RustWrappedPyCatalogProvider {
-    pub(crate) catalog_provider: PyObject,
+    pub(crate) catalog_provider: Py<PyAny>,
 }
 
 impl RustWrappedPyCatalogProvider {
-    pub fn new(catalog_provider: PyObject) -> Self {
+    pub fn new(catalog_provider: Py<PyAny>) -> Self {
         Self { catalog_provider }
     }
 
     fn schema_inner(&self, name: &str) -> PyResult<Option<Arc<dyn SchemaProvider>>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
 
             let py_schema = provider.call_method1("schema", (name,))?;
@@ -379,7 +379,7 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
     }
 
     fn schema_names(&self) -> Vec<String> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
             provider
                 .getattr("schema_names")
@@ -405,7 +405,7 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
     ) -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
         // JRIGHT HERE
         // let py_schema: PySchema = schema.into();
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let py_schema = match schema
                 .as_any()
                 .downcast_ref::<RustWrappedPySchemaProvider>()
@@ -436,7 +436,7 @@ impl CatalogProvider for RustWrappedPyCatalogProvider {
         name: &str,
         cascade: bool,
     ) -> datafusion::common::Result<Option<Arc<dyn SchemaProvider>>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let provider = self.catalog_provider.bind(py);
             let schema = provider
                 .call_method1("deregister_schema", (name, cascade))

@@ -18,7 +18,7 @@
 use datafusion::arrow::array::Array;
 use datafusion::arrow::datatypes::{DataType, IntervalUnit, TimeUnit};
 use datafusion::common::ScalarValue;
-use datafusion::logical_expr::sqlparser::ast::NullTreatment as DFNullTreatment;
+use datafusion::logical_expr::expr::NullTreatment as DFNullTreatment;
 use pyo3::exceptions::{PyNotImplementedError, PyValueError};
 use pyo3::prelude::*;
 
@@ -261,6 +261,12 @@ impl DataTypeMap {
             ScalarValue::Float16(_) => Ok(DataType::Float16),
             ScalarValue::Float32(_) => Ok(DataType::Float32),
             ScalarValue::Float64(_) => Ok(DataType::Float64),
+            ScalarValue::Decimal32(_, precision, scale) => {
+                Ok(DataType::Decimal32(*precision, *scale))
+            }
+            ScalarValue::Decimal64(_, precision, scale) => {
+                Ok(DataType::Decimal64(*precision, *scale))
+            }
             ScalarValue::Decimal128(_, precision, scale) => {
                 Ok(DataType::Decimal128(*precision, *scale))
             }

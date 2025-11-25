@@ -77,14 +77,14 @@ where
     let runtime: &Runtime = &get_tokio_runtime().0;
     const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
 
-    py.allow_threads(|| {
+    py.detach(|| {
         runtime.block_on(async {
             tokio::pin!(fut);
             loop {
                 tokio::select! {
                     res = &mut fut => break Ok(res),
                     _ = sleep(INTERVAL_CHECK_SIGNALS) => {
-                        Python::with_gil(|py| py.check_signals())?;
+                        Python::attach(|py| py.check_signals())?;
                     }
                 }
             }
@@ -170,7 +170,7 @@ pub(crate) fn table_provider_from_pycapsule(
     }
 }
 
-pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
+pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<ScalarValue> {
     // convert Python object to PyScalarValue to ScalarValue
 
     let pa = py.import("pyarrow")?;

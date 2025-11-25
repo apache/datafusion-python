@@ -42,23 +42,23 @@ use crate::utils::{parse_volatility, validate_pycapsule};
 
 #[derive(Debug)]
 struct RustPartitionEvaluator {
-    evaluator: PyObject,
+    evaluator: Py<PyAny>,
 }
 
 impl RustPartitionEvaluator {
-    fn new(evaluator: PyObject) -> Self {
+    fn new(evaluator: Py<PyAny>) -> Self {
         Self { evaluator }
     }
 }
 
 impl PartitionEvaluator for RustPartitionEvaluator {
     fn memoize(&mut self, _state: &mut WindowAggState) -> Result<()> {
-        Python::with_gil(|py| self.evaluator.bind(py).call_method0("memoize").map(|_| ()))
+        Python::attach(|py| self.evaluator.bind(py).call_method0("memoize").map(|_| ()))
             .map_err(|e| DataFusionError::Execution(format!("{e}")))
     }
 
     fn get_range(&self, idx: usize, n_rows: usize) -> Result<Range<usize>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let py_args = vec![idx.into_pyobject(py)?, n_rows.into_pyobject(py)?];
             let py_args = PyTuple::new(py, py_args)?;
 
@@ -84,7 +84,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn is_causal(&self) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.evaluator
                 .bind(py)
                 .call_method0("is_causal")
@@ -95,7 +95,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
 
     fn evaluate_all(&mut self, values: &[ArrayRef], num_rows: usize) -> Result<ArrayRef> {
         println!("evaluate all called with number of values {}", values.len());
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let py_values = PyList::new(
                 py,
                 values
@@ -117,7 +117,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn evaluate(&mut self, values: &[ArrayRef], range: &Range<usize>) -> Result<ScalarValue> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let py_values = PyList::new(
                 py,
                 values
@@ -141,7 +141,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
         num_rows: usize,
         ranks_in_partition: &[Range<usize>],
     ) -> Result<ArrayRef> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let ranks = ranks_in_partition
                 .iter()
                 .map(|r| PyTuple::new(py, vec![r.start, r.end]))
@@ -168,7 +168,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn supports_bounded_execution(&self) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.evaluator
                 .bind(py)
                 .call_method0("supports_bounded_execution")
@@ -178,7 +178,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn uses_window_frame(&self) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.evaluator
                 .bind(py)
                 .call_method0("uses_window_frame")
@@ -188,7 +188,7 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 
     fn include_rank(&self) -> bool {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             self.evaluator
                 .bind(py)
                 .call_method0("include_rank")
@@ -198,9 +198,9 @@ impl PartitionEvaluator for RustPartitionEvaluator {
     }
 }
 
-pub fn to_rust_partition_evaluator(evaluator: PyObject) -> PartitionEvaluatorFactory {
+pub fn to_rust_partition_evaluator(evaluator: Py<PyAny>) -> PartitionEvaluatorFactory {
     Arc::new(move || -> Result<Box<dyn PartitionEvaluator>> {
-        let evaluator = Python::with_gil(|py| {
+        let evaluator = Python::attach(|py| {
             evaluator
                 .call0(py)
                 .map_err(|e| DataFusionError::Execution(e.to_string()))
@@ -222,7 +222,7 @@ impl PyWindowUDF {
     #[pyo3(signature=(name, evaluator, input_types, return_type, volatility))]
     fn new(
         name: &str,
-        evaluator: PyObject,
+        evaluator: Py<PyAny>,
         input_types: Vec<PyArrowType<DataType>>,
         return_type: PyArrowType<DataType>,
         volatility: &str,

@@ -67,7 +67,7 @@ impl Display for PyCreateExternalTable {
 impl PyCreateExternalTable {
     #[allow(clippy::too_many_arguments)]
     #[new]
-    #[pyo3(signature = (schema, name, location, file_type, table_partition_cols, if_not_exists, temporary, order_exprs, unbounded, options, constraints, column_defaults, definition=None))]
+    #[pyo3(signature = (schema, name, location, file_type, table_partition_cols, if_not_exists, or_replace, temporary, order_exprs, unbounded, options, constraints, column_defaults, definition=None))]
     pub fn new(
         schema: PyDFSchema,
         name: String,
@@ -75,6 +75,7 @@ impl PyCreateExternalTable {
         file_type: String,
         table_partition_cols: Vec<String>,
         if_not_exists: bool,
+        or_replace: bool,
         temporary: bool,
         order_exprs: Vec<Vec<PySortExpr>>,
         unbounded: bool,
@@ -90,6 +91,7 @@ impl PyCreateExternalTable {
             file_type,
             table_partition_cols,
             if_not_exists,
+            or_replace,
             temporary,
             definition,
             order_exprs: order_exprs
