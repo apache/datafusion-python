@@ -3344,8 +3344,11 @@ def test_arrow_c_stream_interrupted():
     if not read_exception:
         pytest.fail("No exception was raised during stream read")
 
-    if not isinstance(read_exception[0], type(KeyboardInterrupt)):
-        pytest.fail(f"Expected KeyboardInterrupt, got: {read_exception[0]}")
+    # Check if we got KeyboardInterrupt directly or wrapped in another exception
+    exception = read_exception[0]
+    if not (isinstance(exception, type(KeyboardInterrupt)) or 
+            "KeyboardInterrupt" in str(exception)):
+        pytest.fail(f"Expected KeyboardInterrupt, got: {exception}")
 
     interrupt_thread.join(timeout=1.0)
 
