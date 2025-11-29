@@ -3230,7 +3230,7 @@ def test_collect_interrupted():
     interrupt_thread.join(timeout=1.0)
 
 
-def test_arrow_c_stream_interrupted(): # noqa: C901 PLR0915
+def test_arrow_c_stream_interrupted():  # noqa: C901 PLR0915
     """__arrow_c_stream__ responds to ``KeyboardInterrupt`` signals.
 
     Similar to ``test_collect_interrupted`` this test issues a long running
