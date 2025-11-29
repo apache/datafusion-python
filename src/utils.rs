@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ffi::CString;
 use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
@@ -84,7 +85,17 @@ where
                 tokio::select! {
                     res = &mut fut => break Ok(res),
                     _ = sleep(INTERVAL_CHECK_SIGNALS) => {
-                        Python::attach(|py| py.check_signals())?;
+                        Python::attach(|py| {
+                                // Execute a no-op Python statement to trigger signal processing.
+                                // This is necessary because py.check_signals() alone doesn't
+                                // actually check for signals - it only raises an exception if
+                                // a signal was already set during a previous Python API call.
+                                // Running even trivial Python code forces the interpreter to
+                                // process any pending signals (like KeyboardInterrupt).
+                                let code = CString::new("pass").unwrap();
+                                py.run(code.as_c_str(), None, None)?;
+                                py.check_signals()
+                        })?;
                     }
                 }
             }
