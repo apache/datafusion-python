@@ -375,6 +375,13 @@ struct PartitionedDataFrameStreamReader {
     current: usize,
 }
 
+impl PartitionedDataFrameStreamReader {
+    fn cancel_streams(&mut self) {
+        self.streams.drain(self.current..);
+        self.current = self.streams.len();
+    }
+}
+
 impl Iterator for PartitionedDataFrameStreamReader {
     type Item = Result<RecordBatch, ArrowError>;
 
@@ -389,7 +396,10 @@ impl Iterator for PartitionedDataFrameStreamReader {
                     let batch = if let Some(ref schema) = self.projection {
                         match record_batch_into_schema(batch, schema.as_ref()) {
                             Ok(b) => b,
-                            Err(e) => return Some(Err(e)),
+                            Err(e) => {
+                                self.cancel_streams();
+                                return Some(Err(e));
+                            }
                         }
                     } else {
                         batch
@@ -401,9 +411,11 @@ impl Iterator for PartitionedDataFrameStreamReader {
                     continue;
                 }
                 Ok(Err(e)) => {
+                    self.cancel_streams();
                     return Some(Err(ArrowError::ExternalError(Box::new(e))));
                 }
                 Err(e) => {
+                    self.cancel_streams();
                     return Some(Err(ArrowError::ExternalError(Box::new(e))));
                 }
             }

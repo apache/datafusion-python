@@ -3349,15 +3349,90 @@ def test_arrow_c_stream_interrupted():
         pytest.fail("Stream read operation timed out after 10 seconds")
 
     # Check if we got the expected KeyboardInterrupt
-    if read_exception and isinstance(read_exception[0], type) and read_exception[0] == KeyboardInterrupt:
-        interrupted = True
-    elif read_exception:
-        interrupt_error = read_exception[0]
+    if read_exception:
+        if isinstance(read_exception[0], type) and read_exception[0] == KeyboardInterrupt:
+            interrupted = True
+        elif "KeyboardInterrupt" in str(read_exception[0]):
+            interrupted = True
+        else:
+            interrupt_error = read_exception[0]
 
     if not interrupted:
         pytest.fail(f"Stream was not interrupted; got error: {interrupt_error}")
 
     interrupt_thread.join(timeout=1.0)
+
+
+def test_record_batch_reader_interrupt_exits_quickly(ctx):
+    df = ctx.sql(
+        """
+        SELECT t1.value AS a, t2.value AS a2
+        FROM range(0, 1000000, 1) AS t1
+        JOIN range(0, 1000000, 1) AS t2 ON t1.value = t2.value
+        """
+    )
+
+    reader = pa.RecordBatchReader.from_stream(df)
+
+    query_started = threading.Event()
+    read_thread_id = None
+    interrupt_time = None
+    completion_time = None
+    read_exception = []
+
+    def trigger_interrupt():
+        nonlocal interrupt_time
+        if not query_started.wait(timeout=5.0):
+            pytest.fail("Query did not start in time")
+
+        time.sleep(0.1)
+        interrupt_time = time.time()
+
+        if read_thread_id is None:
+            pytest.fail("Read thread did not record an identifier")
+
+        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(
+            ctypes.c_long(read_thread_id), ctypes.py_object(KeyboardInterrupt)
+        )
+        if res != 1:
+            ctypes.pythonapi.PyThreadState_SetAsyncExc(
+                ctypes.c_long(read_thread_id), ctypes.py_object(0)
+            )
+            pytest.fail("Failed to raise KeyboardInterrupt in read thread")
+
+    def read_stream():
+        nonlocal read_thread_id, completion_time
+        read_thread_id = threading.get_ident()
+        try:
+            query_started.set()
+            reader.read_all()
+        except KeyboardInterrupt:
+            completion_time = time.time()
+        except Exception as exc:  # pragma: no cover - unexpected failure path
+            completion_time = time.time()
+            read_exception.append(exc)
+
+    read_thread = threading.Thread(target=read_stream, daemon=True)
+    interrupt_thread = threading.Thread(target=trigger_interrupt, daemon=True)
+
+    read_thread.start()
+    interrupt_thread.start()
+
+    read_thread.join(timeout=10.0)
+    if read_thread.is_alive():
+        pytest.fail("Stream read operation timed out after 10 seconds")
+
+    interrupt_thread.join(timeout=1.0)
+
+    if read_exception and "KeyboardInterrupt" not in str(read_exception[0]):
+        pytest.fail(f"Read thread raised unexpected exception: {read_exception[0]}")
+
+    assert completion_time is not None, "Read thread did not finish"
+    assert interrupt_time is not None, "Interrupt was not sent"
+
+    elapsed = completion_time - interrupt_time
+    assert elapsed >= 0, "Completion recorded before interrupt was sent"
+    assert elapsed < 1.5, f"Cancellation took too long: {elapsed}s"
 
 
 def test_show_select_where_no_rows(capsys) -> None:

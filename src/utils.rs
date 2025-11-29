@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::ffi::CString;
 use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
@@ -27,6 +28,7 @@ use datafusion_ffi::table_provider::{FFI_TableProvider, ForeignTableProvider};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
+use pyo3::PyErr;
 use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 use tokio::time::sleep;
@@ -84,7 +86,15 @@ where
                 tokio::select! {
                     res = &mut fut => break Ok(res),
                     _ = sleep(INTERVAL_CHECK_SIGNALS) => {
-                        Python::attach(|py| py.check_signals())?;
+                        Python::attach(|py| {
+                            if let Some(err) = PyErr::take(py) {
+                                Err(err)
+                            } else {
+                                let code = CString::new("pass").unwrap();
+                                py.run(code.as_c_str(), None, None)?;
+                                py.check_signals()
+                            }
+                        })?;
                     }
                 }
             }
