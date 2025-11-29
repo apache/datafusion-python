@@ -3230,7 +3230,7 @@ def test_collect_interrupted():
     interrupt_thread.join(timeout=1.0)
 
 
-def test_arrow_c_stream_interrupted():
+def test_arrow_c_stream_interrupted(): # noqa: C901 PLR0915
     """__arrow_c_stream__ responds to ``KeyboardInterrupt`` signals.
 
     Similar to ``test_collect_interrupted`` this test issues a long running
@@ -3318,7 +3318,7 @@ def test_arrow_c_stream_interrupted():
         read_thread_id = threading.get_ident()
         try:
             read_started.set()
-            result = reader.read_all()
+            reader.read_all()
             # If we get here, the read completed without interruption
             read_exception.append(RuntimeError("Read completed without interruption"))
         except KeyboardInterrupt:
@@ -3346,8 +3346,10 @@ def test_arrow_c_stream_interrupted():
 
     # Check if we got KeyboardInterrupt directly or wrapped in another exception
     exception = read_exception[0]
-    if not (isinstance(exception, type(KeyboardInterrupt)) or 
-            "KeyboardInterrupt" in str(exception)):
+    if not (
+        isinstance(exception, type(KeyboardInterrupt))
+        or "KeyboardInterrupt" in str(exception)
+    ):
         pytest.fail(f"Expected KeyboardInterrupt, got: {exception}")
 
     interrupt_thread.join(timeout=1.0)
