@@ -3350,7 +3350,7 @@ def test_arrow_c_stream_interrupted():
 
     # Check if we got the expected KeyboardInterrupt
     if read_exception:
-        if isinstance(read_exception[0], type) and read_exception[0] == KeyboardInterrupt:
+        if isinstance(read_exception[0], KeyboardInterrupt):
             interrupted = True
         elif "KeyboardInterrupt" in str(read_exception[0]):
             interrupted = True
