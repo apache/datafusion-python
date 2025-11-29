@@ -3286,22 +3286,16 @@ def test_arrow_c_stream_interrupted():
 
     reader = pa.RecordBatchReader.from_stream(df)
 
-    interrupted = False
-    interrupt_error = None
-    query_started = threading.Event()
+    read_started = threading.Event()
+    read_exception = []
     read_thread_id = None
     max_wait_time = 5.0
 
     def trigger_interrupt():
-        start_time = time.time()
-        while not query_started.is_set():
-            time.sleep(0.1)
-            if time.time() - start_time > max_wait_time:
-                msg = f"Query did not start within {max_wait_time} seconds"
-                raise RuntimeError(msg)
-
-        # Wait a bit to ensure read operation has started
-        time.sleep(0.1)
+        """Wait for read to start, then raise KeyboardInterrupt in read thread."""
+        if not read_started.wait(timeout=max_wait_time):
+            msg = f"Read operation did not start within {max_wait_time} seconds"
+            raise RuntimeError(msg)
 
         if read_thread_id is None:
             msg = "Cannot get read thread ID"
@@ -3318,17 +3312,15 @@ def test_arrow_c_stream_interrupted():
             msg = "Failed to raise KeyboardInterrupt in read thread"
             raise RuntimeError(msg)
 
-    read_result = []
-    read_exception = []
-
     def read_stream():
+        """Consume the reader, which should be interrupted."""
         nonlocal read_thread_id
         read_thread_id = threading.get_ident()
         try:
-            query_started.set()
-            # consume the reader which should block and be interrupted
+            read_started.set()
             result = reader.read_all()
-            read_result.append(result)
+            # If we get here, the read completed without interruption
+            read_exception.append(RuntimeError("Read completed without interruption"))
         except KeyboardInterrupt:
             read_exception.append(KeyboardInterrupt)
         except Exception as e:
@@ -3348,17 +3340,12 @@ def test_arrow_c_stream_interrupted():
     if read_thread.is_alive():
         pytest.fail("Stream read operation timed out after 10 seconds")
 
-    # Check if we got the expected KeyboardInterrupt
-    if read_exception:
-        if isinstance(read_exception[0], KeyboardInterrupt):
-            interrupted = True
-        elif "KeyboardInterrupt" in str(read_exception[0]):
-            interrupted = True
-        else:
-            interrupt_error = read_exception[0]
+    # Verify we got the expected KeyboardInterrupt
+    if not read_exception:
+        pytest.fail("No exception was raised during stream read")
 
-    if not interrupted:
-        pytest.fail(f"Stream was not interrupted; got error: {interrupt_error}")
+    if not isinstance(read_exception[0], type(KeyboardInterrupt)):
+        pytest.fail(f"Expected KeyboardInterrupt, got: {read_exception[0]}")
 
     interrupt_thread.join(timeout=1.0)
 
