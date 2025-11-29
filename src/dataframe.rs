@@ -389,9 +389,7 @@ impl Iterator for PartitionedDataFrameStreamReader {
                     let batch = if let Some(ref schema) = self.projection {
                         match record_batch_into_schema(batch, schema.as_ref()) {
                             Ok(b) => b,
-                            Err(e) => {
-                                return Some(Err(e));
-                            }
+                            Err(e) => return Some(Err(e)),
                         }
                     } else {
                         batch
