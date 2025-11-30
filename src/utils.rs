@@ -15,7 +15,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-use std::ffi::CString;
 use std::future::Future;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
