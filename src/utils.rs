@@ -92,8 +92,7 @@ where
                                 // a signal was already set during a previous Python API call.
                                 // Running even trivial Python code forces the interpreter to
                                 // process any pending signals (like KeyboardInterrupt).
-                                let code = CString::new("pass").unwrap();
-                                py.run(code.as_c_str(), None, None)?;
+                                py.run(cr"pass", None, None)?;
                                 py.check_signals()
                         })?;
                     }
