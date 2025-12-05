@@ -566,7 +566,7 @@ impl PySessionContext {
 
                 (array.schema().as_ref().to_owned(), vec![array])
             } else {
-                return Err(crate::errors::PyDataFusionError::Common(
+                return Err(PyDataFusionError::Common(
                     "Expected either a Arrow Array or Arrow Stream in from_arrow().".to_string(),
                 ));
             };
@@ -730,7 +730,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<()> {
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
-            return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
+            return Err(PyDataFusionError::PythonError(py_value_err(
                 "Delimiter must be a single character",
             )));
         }
@@ -984,7 +984,7 @@ impl PySessionContext {
     ) -> PyDataFusionResult<PyDataFrame> {
         let delimiter = delimiter.as_bytes();
         if delimiter.len() != 1 {
-            return Err(crate::errors::PyDataFusionError::PythonError(py_value_err(
+            return Err(PyDataFusionError::PythonError(py_value_err(
                 "Delimiter must be a single character",
             )));
         };
