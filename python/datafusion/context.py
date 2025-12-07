@@ -623,12 +623,12 @@ class SessionContext:
             DataFrame representation of the SQL query.
         """
 
-        def value_to_scalar(value) -> pa.Scalar:
+        def value_to_scalar(value: Any) -> pa.Scalar:
             if isinstance(value, pa.Scalar):
                 return value
             return pa.scalar(value)
 
-        def value_to_string(value) -> str:
+        def value_to_string(value: Any) -> str:
             if isinstance(value, DataFrame):
                 view_name = str(uuid.uuid4()).replace("-", "_")
                 view_name = f"view_{view_name}"
