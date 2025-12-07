@@ -604,8 +604,8 @@ class SessionContext:
         """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
 
         See the online documentation for a description of how to perform
-        parameterized substitution via either the param_values option
-        or passing in named parameters.
+        parameterized substitution via either the ``param_values`` option
+        or passing in ``named_params``.
 
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
         ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
