@@ -19,6 +19,7 @@
 
 from __future__ import annotations
 
+import uuid
 import warnings
 from typing import TYPE_CHECKING, Any, Protocol
 
@@ -26,6 +27,7 @@ try:
     from warnings import deprecated  # Python 3.13+
 except ImportError:
     from typing_extensions import deprecated  # Python 3.12
+
 
 import pyarrow as pa
 
@@ -592,8 +594,18 @@ class SessionContext:
             self._convert_file_sort_order(file_sort_order),
         )
 
-    def sql(self, query: str, options: SQLOptions | None = None) -> DataFrame:
+    def sql(
+        self,
+        query: str,
+        options: SQLOptions | None = None,
+        param_values: dict[str, Any] | None = None,
+        **named_params: Any,
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.DataFrame` from SQL query text.
+
+        See the online documentation for a description of how to perform
+        parameterized substitution via either the ``param_values`` option
+        or passing in ``named_params``.
 
         Note: This API implements DDL statements such as ``CREATE TABLE`` and
         ``CREATE VIEW`` and DML statements such as ``INSERT INTO`` with in-memory
@@ -603,15 +615,57 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: If provided, the query will be validated against these options.
+            param_values: Provides substitution of scalar values in the query
+                after parsing.
+            named_params: Provides string or DataFrame substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
-        if options is None:
-            return DataFrame(self.ctx.sql(query))
-        return DataFrame(self.ctx.sql_with_options(query, options.options_internal))
 
-    def sql_with_options(self, query: str, options: SQLOptions) -> DataFrame:
+        def value_to_scalar(value: Any) -> pa.Scalar:
+            if isinstance(value, pa.Scalar):
+                return value
+            return pa.scalar(value)
+
+        def value_to_string(value: Any) -> str:
+            if isinstance(value, DataFrame):
+                view_name = str(uuid.uuid4()).replace("-", "_")
+                view_name = f"view_{view_name}"
+                view = value.df.into_view(temporary=True)
+                self.ctx.register_table(view_name, view)
+                return view_name
+            return str(value)
+
+        param_values = (
+            {name: value_to_scalar(value) for (name, value) in param_values.items()}
+            if param_values is not None
+            else {}
+        )
+        param_strings = (
+            {name: value_to_string(value) for (name, value) in named_params.items()}
+            if named_params is not None
+            else {}
+        )
+
+        options_raw = options.options_internal if options is not None else None
+
+        return DataFrame(
+            self.ctx.sql_with_options(
+                query,
+                options=options_raw,
+                param_values=param_values,
+                param_strings=param_strings,
+            )
+        )
+
+    def sql_with_options(
+        self,
+        query: str,
+        options: SQLOptions,
+        param_values: dict[str, Any] | None = None,
+        **named_params: Any,
+    ) -> DataFrame:
         """Create a :py:class:`~datafusion.dataframe.DataFrame` from SQL query text.
 
         This function will first validate that the query is allowed by the
@@ -620,11 +674,16 @@ class SessionContext:
         Args:
             query: SQL query text.
             options: SQL options.
+            param_values: Provides substitution of scalar values in the query
+                after parsing.
+            named_params: Provides string or DataFrame substitution in the query string.
 
         Returns:
             DataFrame representation of the SQL query.
         """
-        return self.sql(query, options)
+        return self.sql(
+            query, options=options, param_values=param_values, **named_params
+        )
 
     def create_dataframe(
         self,
