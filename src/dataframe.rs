@@ -649,7 +649,7 @@ impl PyDataFrame {
         how: &str,
         left_on: Vec<PyBackedStr>,
         right_on: Vec<PyBackedStr>,
-        drop_duplicate_keys: bool,
+        coalesce_keys: bool,
     ) -> PyDataFusionResult<Self> {
         let join_type = match how {
             "inner" => JoinType::Inner,
@@ -676,7 +676,7 @@ impl PyDataFrame {
             None,
         )?;
 
-        if drop_duplicate_keys {
+        if coalesce_keys {
             let mutual_keys = left_keys
                 .iter()
                 .zip(right_keys.iter())
@@ -684,15 +684,16 @@ impl PyDataFrame {
                 .map(|(key, _)| *key)
                 .collect::<Vec<_>>();
 
-            let fields_to_drop = mutual_keys
+            let fields_to_coalesce = mutual_keys
                 .iter()
                 .map(|name| {
-                    df.logical_plan()
+                    let qualified_fields = df
+                        .logical_plan()
                         .schema()
-                        .qualified_fields_with_unqualified_name(name)
+                        .qualified_fields_with_unqualified_name(name);
+                    (*name, qualified_fields)
                 })
-                .filter(|r| r.len() == 2)
-                .map(|r| r[1])
+                .filter(|(_, fields)| fields.len() == 2)
                 .collect::<Vec<_>>();
 
             let expr: Vec<Expr> = df
@@ -702,8 +703,23 @@ impl PyDataFrame {
                 .into_iter()
                 .enumerate()
                 .map(|(idx, _)| df.logical_plan().schema().qualified_field(idx))
-                .filter(|(qualifier, f)| !fields_to_drop.contains(&(*qualifier, f)))
-                .map(|(qualifier, field)| Expr::Column(Column::from((qualifier, field))))
+                .filter_map(|(qualifier, field)| {
+                    if let Some((key_name, qualified_fields)) = fields_to_coalesce
+                        .iter()
+                        .find(|(_, qf)| qf.contains(&(qualifier, field)))
+                    {
+                        // Only add the coalesce expression once (when we encounter the first field)
+                        // Skip the second field (it's already included in to coalesce)
+                        if (qualifier, field) == qualified_fields[0] {
+                            let left_col = Expr::Column(Column::from(qualified_fields[0]));
+                            let right_col = Expr::Column(Column::from(qualified_fields[1]));
+                            return Some(coalesce(vec![left_col, right_col]).alias(*key_name));
+                        }
+                        None
+                    } else {
+                        Some(Expr::Column(Column::from((qualifier, field))))
+                    }
+                })
                 .collect();
             df = df.select(expr)?;
         }
