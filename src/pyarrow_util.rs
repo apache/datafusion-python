@@ -30,11 +30,10 @@ impl FromPyArrow for PyScalarValue {
     fn from_pyarrow_bound(value: &Bound<'_, PyAny>) -> PyResult<Self> {
         let py = value.py();
         let typ = value.getattr("type")?;
-        let val = value.call_method0("as_py")?;
 
         // construct pyarrow array from the python value and pyarrow type
         let factory = py.import("pyarrow")?.getattr("array")?;
-        let args = PyList::new(py, [val])?;
+        let args = PyList::new(py, [value])?;
         let array = factory.call1((args, typ))?;
 
         // convert the pyarrow array to rust array using C data interface
