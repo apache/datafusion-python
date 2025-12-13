@@ -676,7 +676,8 @@ impl PyDataFrame {
             None,
         )?;
 
-        if drop_duplicate_keys {
+        let allow_drop_duplicate_keys = drop_duplicate_keys && join_type != JoinType::Full;
+        if allow_drop_duplicate_keys {
             let mutual_keys = left_keys
                 .iter()
                 .zip(right_keys.iter())

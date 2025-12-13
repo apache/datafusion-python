@@ -647,6 +647,35 @@ def test_unnest_without_nulls(nested_df):
     assert result.column(1) == pa.array([7, 8, 8, 9, 9, 9])
 
 
+def test_join_full():
+    ctx = SessionContext()
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 2, 3]), pa.array(['a', 'b', 'c'])],
+        names=["num", "name"],
+    )
+    df1 = ctx.create_dataframe([[batch]], "l")
+
+    batch = pa.RecordBatch.from_arrays(
+        [pa.array([1, 3, 5]), pa.array([True, True, False])],
+        names=["num", "value"],
+    )
+    df2 = ctx.create_dataframe([[batch]], "r")
+
+    df3 = df1.join(df2, on="num", how="full")
+
+    expected = {'num': [1, 3, None, 5], 'name': ['a', 'c', 'b', None], 'value': [True, True, None, False]}
+    assert expected == df3.to_pydict()
+
+    # To show how user can do post-processing
+    df4 = df3.select_exprs(
+        "coalesce(l.num, r.num) as num",
+        "l.name",
+        "r.value"
+    )
+    expected = {'num': [1, 3, 2, 5], 'name': ['a', 'c', 'b', None], 'value': [True, True, None, False]}
+    assert expected == df4.to_pydict()
+
+
 def test_join():
     ctx = SessionContext()
 
