@@ -650,7 +650,7 @@ def test_unnest_without_nulls(nested_df):
 def test_join_full():
     ctx = SessionContext()
     batch = pa.RecordBatch.from_arrays(
-        [pa.array([1, 2, 3]), pa.array(['a', 'b', 'c'])],
+        [pa.array([1, 2, 3]), pa.array(["a", "b", "c"])],
         names=["num", "name"],
     )
     df1 = ctx.create_dataframe([[batch]], "l")
@@ -663,7 +663,11 @@ def test_join_full():
 
     df3 = df1.join(df2, on="num", how="full")
 
-    expected = {'num': [1, 3, None, 5], 'name': ['a', 'c', 'b', None], 'value': [True, True, None, False]}
+    expected = {
+        "num": [1, 3, None, 5],
+        "name": ["a", "c", "b", None],
+        "value": [True, True, None, False]
+    }
     assert expected == df3.to_pydict()
 
     # To show how user can do post-processing
@@ -672,7 +676,11 @@ def test_join_full():
         "l.name",
         "r.value"
     )
-    expected = {'num': [1, 3, 2, 5], 'name': ['a', 'c', 'b', None], 'value': [True, True, None, False]}
+    expected = {
+        "num": [1, 3, 2, 5],
+        "name": ["a", "c", "b", None],
+        "value": [True, True, None, False]
+    }
     assert expected == df4.to_pydict()
 
 
