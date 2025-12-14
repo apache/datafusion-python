@@ -666,20 +666,16 @@ def test_join_full():
     expected = {
         "num": [1, 3, None, 5],
         "name": ["a", "c", "b", None],
-        "value": [True, True, None, False]
+        "value": [True, True, None, False],
     }
     assert expected == df3.to_pydict()
 
     # To show how user can do post-processing
-    df4 = df3.select_exprs(
-        "coalesce(l.num, r.num) as num",
-        "l.name",
-        "r.value"
-    )
+    df4 = df3.select_exprs("coalesce(l.num, r.num) as num", "l.name", "r.value")
     expected = {
         "num": [1, 3, 2, 5],
         "name": ["a", "c", "b", None],
-        "value": [True, True, None, False]
+        "value": [True, True, None, False],
     }
     assert expected == df4.to_pydict()
 
