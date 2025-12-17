@@ -107,9 +107,9 @@ Duplicate Keys
 --------------
 
 It is common to join two DataFrames on a common column name. Starting in
-version 51.0.0, ``datafusion-python``` will now drop duplicate column names by
+version 51.0.0, ``datafusion-python``` will now coalesce on column with identical names by
 default. This reduces problems with ambiguous column selection after joins.
-You can disable this feature by setting the parameter ``drop_duplicate_keys``
+You can disable this feature by setting the parameter ``coalesce_duplicate_keys``
 to ``False``.
 
 .. ipython:: python
@@ -133,4 +133,4 @@ In contrast to the above example, if we wish to get both columns:
 
 .. ipython:: python
 
-    left.join(right, "id", how="inner", drop_duplicate_keys=False)
+    left.join(right, "id", how="inner", coalesce_duplicate_keys=False)
