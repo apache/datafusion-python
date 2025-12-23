@@ -445,7 +445,7 @@ impl PySessionContext {
             .collect::<HashMap<_, _>>();
 
         let state = self.ctx.state();
-        let dialect = state.config().options().sql_parser.dialect.as_str();
+        let dialect = state.config().options().sql_parser.dialect.as_ref();
 
         if !param_strings.is_empty() {
             query = replace_placeholders_with_strings(&query, dialect, param_strings)?;
