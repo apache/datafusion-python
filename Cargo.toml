@@ -48,20 +48,20 @@ tokio = { version = "1.47", features = [
     "rt-multi-thread",
     "sync",
 ] }
-pyo3 = { version = "0.25", features = [
+pyo3 = { version = "0.26", features = [
     "extension-module",
     "abi3",
     "abi3-py310",
 ] }
-pyo3-async-runtimes = { version = "0.25", features = ["tokio-runtime"] }
-pyo3-log = "0.12.4"
-arrow = { version = "56", features = ["pyarrow"] }
-arrow-select = { version = "56" }
-datafusion = { version = "50", features = ["avro", "unicode_expressions"] }
-datafusion-substrait = { version = "50", optional = true }
-datafusion-proto = { version = "50" }
-datafusion-ffi = { version = "50" }
-prost = "0.13.1" # keep in line with `datafusion-substrait`
+pyo3-async-runtimes = { version = "0.26", features = ["tokio-runtime"] }
+pyo3-log = "0.13.2"
+arrow = { version = "57", features = ["pyarrow"] }
+arrow-select = { version = "57" }
+datafusion = { version = "51", features = ["avro", "unicode_expressions"] }
+datafusion-substrait = { version = "51", optional = true }
+datafusion-proto = { version = "51" }
+datafusion-ffi = { version = "51" }
+prost = "0.14.1" # keep in line with `datafusion-substrait`
 uuid = { version = "1.18", features = ["v4"] }
 mimalloc = { version = "0.1", optional = true, default-features = false, features = [
     "local_dynamic_tls",
@@ -80,8 +80,8 @@ log = "0.4.27"
 parking_lot = "0.12"
 
 [build-dependencies]
-prost-types = "0.13.1"     # keep in line with `datafusion-substrait`
-pyo3-build-config = "0.25"
+prost-types = "0.14.1"     # keep in line with `datafusion-substrait`
+pyo3-build-config = "0.26"
 
 [lib]
 name = "datafusion_python"

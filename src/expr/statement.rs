@@ -15,6 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
+use std::sync::Arc;
+
+use arrow::datatypes::Field;
+use arrow::pyarrow::PyArrowType;
 use datafusion::logical_expr::{
     Deallocate, Execute, Prepare, SetVariable, TransactionAccessMode, TransactionConclusion,
     TransactionEnd, TransactionIsolationLevel, TransactionStart,
@@ -24,7 +28,6 @@ use pyo3::IntoPyObjectExt;
 
 use super::logical_node::LogicalNode;
 use super::PyExpr;
-use crate::common::data_type::PyDataType;
 use crate::sql::logical::PyLogicalPlan;
 
 #[pyclass(
@@ -337,16 +340,13 @@ impl LogicalNode for PyPrepare {
 #[pymethods]
 impl PyPrepare {
     #[new]
-    pub fn new(name: String, data_types: Vec<PyDataType>, input: PyLogicalPlan) -> Self {
+    pub fn new(name: String, fields: Vec<PyArrowType<Field>>, input: PyLogicalPlan) -> Self {
         let input = input.plan().clone();
-        let data_types = data_types
-            .into_iter()
-            .map(|data_type| data_type.into())
-            .collect();
+        let fields = fields.into_iter().map(|field| Arc::new(field.0)).collect();
         PyPrepare {
             prepare: Prepare {
                 name,
-                data_types,
+                fields,
                 input,
             },
         }
@@ -356,12 +356,12 @@ impl PyPrepare {
         self.prepare.name.clone()
     }
 
-    pub fn data_types(&self) -> Vec<PyDataType> {
+    pub fn fields(&self) -> Vec<PyArrowType<Field>> {
         self.prepare
-            .data_types
+            .fields
             .clone()
             .into_iter()
-            .map(|t| t.into())
+            .map(|f| f.as_ref().clone().into())
             .collect()
     }
 

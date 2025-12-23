@@ -29,7 +29,7 @@ use crate::pyarrow_util::scalar_to_pyarrow;
 
 #[derive(Debug)]
 #[repr(transparent)]
-pub(crate) struct PyArrowFilterExpression(PyObject);
+pub(crate) struct PyArrowFilterExpression(Py<PyAny>);
 
 fn operator_to_py<'py>(
     operator: &Operator,
@@ -88,7 +88,7 @@ fn extract_scalar_list<'py>(
 }
 
 impl PyArrowFilterExpression {
-    pub fn inner(&self) -> &PyObject {
+    pub fn inner(&self) -> &Py<PyAny> {
         &self.0
     }
 }
@@ -101,12 +101,12 @@ impl TryFrom<&Expr> for PyArrowFilterExpression {
     // isin, is_null, and is_valid (~is_null) are methods of pyarrow.dataset.Expression
     // https://arrow.apache.org/docs/python/generated/pyarrow.dataset.Expression.html#pyarrow-dataset-expression
     fn try_from(expr: &Expr) -> Result<Self, Self::Error> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let pc = Python::import(py, "pyarrow.compute")?;
             let op_module = Python::import(py, "operator")?;
             let pc_expr: PyDataFusionResult<Bound<'_, PyAny>> = match expr {
                 Expr::Column(Column { name, .. }) => Ok(pc.getattr("field")?.call1((name,))?),
-                Expr::Literal(scalar, _) => Ok(scalar_to_pyarrow(scalar, py)?.into_bound(py)),
+                Expr::Literal(scalar, _) => Ok(scalar_to_pyarrow(scalar, py)?),
                 Expr::BinaryExpr(BinaryExpr { left, op, right }) => {
                     let operator = operator_to_py(op, &op_module)?;
                     let left = PyArrowFilterExpression::try_from(left.as_ref())?.0;

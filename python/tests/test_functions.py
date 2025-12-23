@@ -766,7 +766,7 @@ def test_array_function_obj_tests(stmt, py_expr):
         ),
         (
             f.regexp_replace(column("a"), literal("(ell|orl)"), literal("-")),
-            pa.array(["H-o", "W-d", "!"]),
+            pa.array(["H-o", "W-d", "!"], type=pa.string_view()),
         ),
         (
             f.regexp_count(column("a"), literal("(ell|orl)"), literal(1)),

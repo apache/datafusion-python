@@ -33,10 +33,10 @@ use crate::utils::{parse_volatility, validate_pycapsule};
 
 /// Create a Rust callable function from a python function that expects pyarrow arrays
 fn pyarrow_function_to_rust(
-    func: PyObject,
+    func: Py<PyAny>,
 ) -> impl Fn(&[ArrayRef]) -> Result<ArrayRef, DataFusionError> {
     move |args: &[ArrayRef]| -> Result<ArrayRef, DataFusionError> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             // 1. cast args to Pyarrow arrays
             let py_args = args
                 .iter()
@@ -64,7 +64,7 @@ fn pyarrow_function_to_rust(
 /// Create a DataFusion's UDF implementation from a python function
 /// that expects pyarrow arrays. This is more efficient as it performs
 /// a zero-copy of the contents.
-fn to_scalar_function_impl(func: PyObject) -> ScalarFunctionImplementation {
+fn to_scalar_function_impl(func: Py<PyAny>) -> ScalarFunctionImplementation {
     // Make the python function callable from rust
     let pyarrow_func = pyarrow_function_to_rust(func);
 
@@ -89,7 +89,7 @@ impl PyScalarUDF {
     #[pyo3(signature=(name, func, input_types, return_type, volatility))]
     fn new(
         name: &str,
-        func: PyObject,
+        func: Py<PyAny>,
         input_types: PyArrowType<Vec<DataType>>,
         return_type: PyArrowType<DataType>,
         volatility: &str,

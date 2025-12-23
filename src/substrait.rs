@@ -35,7 +35,7 @@ pub struct PyPlan {
 
 #[pymethods]
 impl PyPlan {
-    fn encode(&self, py: Python) -> PyResult<PyObject> {
+    fn encode(&self, py: Python) -> PyResult<Py<PyAny>> {
         let mut proto_bytes = Vec::<u8>::new();
         self.plan
             .encode(&mut proto_bytes)
@@ -93,7 +93,7 @@ impl PySubstraitSerializer {
         sql: &str,
         ctx: PySessionContext,
         py: Python,
-    ) -> PyDataFusionResult<PyObject> {
+    ) -> PyDataFusionResult<Py<PyAny>> {
         let proto_bytes: Vec<u8> =
             wait_for_future(py, serializer::serialize_bytes(sql, &ctx.ctx))??;
         Ok(PyBytes::new(py, &proto_bytes).into())

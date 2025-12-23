@@ -77,14 +77,23 @@ where
     let runtime: &Runtime = &get_tokio_runtime().0;
     const INTERVAL_CHECK_SIGNALS: Duration = Duration::from_millis(1_000);
 
-    py.allow_threads(|| {
+    py.detach(|| {
         runtime.block_on(async {
             tokio::pin!(fut);
             loop {
                 tokio::select! {
                     res = &mut fut => break Ok(res),
                     _ = sleep(INTERVAL_CHECK_SIGNALS) => {
-                        Python::with_gil(|py| py.check_signals())?;
+                        Python::attach(|py| {
+                                // Execute a no-op Python statement to trigger signal processing.
+                                // This is necessary because py.check_signals() alone doesn't
+                                // actually check for signals - it only raises an exception if
+                                // a signal was already set during a previous Python API call.
+                                // Running even trivial Python code forces the interpreter to
+                                // process any pending signals (like KeyboardInterrupt).
+                                py.run(cr"pass", None, None)?;
+                                py.check_signals()
+                        })?;
                     }
                 }
             }
@@ -170,7 +179,7 @@ pub(crate) fn table_provider_from_pycapsule(
     }
 }
 
-pub(crate) fn py_obj_to_scalar_value(py: Python, obj: PyObject) -> PyResult<ScalarValue> {
+pub(crate) fn py_obj_to_scalar_value(py: Python, obj: Py<PyAny>) -> PyResult<ScalarValue> {
     // convert Python object to PyScalarValue to ScalarValue
 
     let pa = py.import("pyarrow")?;
