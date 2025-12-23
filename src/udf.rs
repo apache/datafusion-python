@@ -22,8 +22,8 @@ use datafusion::arrow::datatypes::DataType;
 use datafusion::arrow::pyarrow::{FromPyArrow, PyArrowType, ToPyArrow};
 use datafusion::error::DataFusionError;
 use datafusion::logical_expr::function::ScalarFunctionImplementation;
-use datafusion::logical_expr::{create_udf, ColumnarValue, ScalarUDF};
-use datafusion_ffi::udf::{FFI_ScalarUDF, ForeignScalarUDF};
+use datafusion::logical_expr::{create_udf, ColumnarValue, ScalarUDF, ScalarUDFImpl};
+use datafusion_ffi::udf::FFI_ScalarUDF;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -112,10 +112,10 @@ impl PyScalarUDF {
             validate_pycapsule(capsule, "datafusion_scalar_udf")?;
 
             let udf = unsafe { capsule.reference::<FFI_ScalarUDF>() };
-            let udf: ForeignScalarUDF = udf.try_into()?;
+            let udf: Arc<dyn ScalarUDFImpl> = udf.into();
 
             Ok(Self {
-                function: udf.into(),
+                function: ScalarUDF::new_from_shared_impl(udf),
             })
         } else {
             Err(crate::errors::PyDataFusionError::Common(

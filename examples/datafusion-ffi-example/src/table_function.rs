@@ -18,11 +18,12 @@
 use crate::table_provider::MyTableProvider;
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
-use datafusion::prelude::Expr;
+use datafusion::prelude::{Expr, SessionContext};
 use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::types::PyCapsule;
 use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::sync::Arc;
+use datafusion::execution::TaskContextProvider;
 
 #[pyclass(name = "MyTableFunction", module = "datafusion_ffi_example", subclass)]
 #[derive(Debug, Clone)]
@@ -40,9 +41,10 @@ impl MyTableFunction {
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_function".into();
+        let ctx = Arc::new(SessionContext::new()) as Arc<dyn TaskContextProvider>;
 
         let func = self.clone();
-        let provider = FFI_TableFunction::new(Arc::new(func), None);
+        let provider = FFI_TableFunction::new(Arc::new(func), None, &ctx, None);
 
         PyCapsule::new(py, provider, Some(name))
     }

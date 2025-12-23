@@ -45,7 +45,8 @@ use datafusion::execution::session_state::SessionStateBuilder;
 use datafusion::prelude::{
     AvroReadOptions, CsvReadOptions, DataFrame, NdJsonReadOptions, ParquetReadOptions,
 };
-use datafusion_ffi::catalog_provider::{FFI_CatalogProvider, ForeignCatalogProvider};
+use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
+use datafusion_ffi::config::extension_options::FFI_ExtensionOptions;
 use object_store::ObjectStore;
 use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
@@ -163,6 +164,27 @@ impl PySessionConfig {
 
     fn set(&self, key: &str, value: &str) -> Self {
         Self::from(self.config.clone().set_str(key, value))
+    }
+
+    pub fn with_extension(&self, extension: Bound<PyAny>) -> PyResult<Self> {
+        let capsule = extension.call_method0("__datafusion_extension_options__")?;
+        let capsule = capsule.downcast::<PyCapsule>().map_err(py_datafusion_err)?;
+
+        validate_pycapsule(capsule, "datafusion_extension_options")?;
+
+        let mut extension = unsafe { capsule.reference::<FFI_ExtensionOptions>() }.clone();
+
+        let mut config = self.config.clone();
+        let options = config.options_mut();
+        if let Some(prior_extension) = options.extensions.get::<FFI_ExtensionOptions>() {
+            extension
+                .merge(prior_extension)
+                .map_err(py_datafusion_err)?;
+        }
+
+        options.extensions.insert(extension);
+
+        Ok(Self::from(config))
     }
 }
 
@@ -630,8 +652,8 @@ impl PySessionContext {
             validate_pycapsule(capsule, "datafusion_catalog_provider")?;
 
             let provider = unsafe { capsule.reference::<FFI_CatalogProvider>() };
-            let provider: ForeignCatalogProvider = provider.into();
-            Arc::new(provider) as Arc<dyn CatalogProvider>
+            let provider: Arc<dyn CatalogProvider + Send> = provider.into();
+            provider as Arc<dyn CatalogProvider>
         } else {
             match provider.extract::<PyCatalog>() {
                 Ok(py_catalog) => py_catalog.catalog,

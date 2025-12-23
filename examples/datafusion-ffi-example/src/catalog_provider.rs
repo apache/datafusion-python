@@ -27,6 +27,8 @@ use datafusion::{
     datasource::MemTable,
     error::{DataFusionError, Result},
 };
+use datafusion::execution::TaskContextProvider;
+use datafusion::prelude::SessionContext;
 use datafusion_ffi::catalog_provider::FFI_CatalogProvider;
 use pyo3::types::PyCapsule;
 
@@ -169,9 +171,10 @@ impl MyCatalogProvider {
         &self,
         py: Python<'py>,
     ) -> PyResult<Bound<'py, PyCapsule>> {
+        let ctx = Arc::new(SessionContext::new()) as Arc<dyn TaskContextProvider>;
         let name = cr"datafusion_catalog_provider".into();
         let catalog_provider =
-            FFI_CatalogProvider::new(Arc::new(MyCatalogProvider::default()), None);
+            FFI_CatalogProvider::new(Arc::new(MyCatalogProvider::default()), None, &ctx, None);
 
         PyCapsule::new(py, catalog_provider, Some(name))
     }

@@ -24,6 +24,8 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::types::PyCapsule;
 use pyo3::{pyclass, pymethods, Bound, PyResult, Python};
 use std::sync::Arc;
+use datafusion::execution::TaskContextProvider;
+use datafusion::prelude::SessionContext;
 
 /// In order to provide a test that demonstrates different sized record batches,
 /// the first batch will have num_rows, the second batch num_rows+1, and so on.
@@ -93,10 +95,11 @@ impl MyTableProvider {
     ) -> PyResult<Bound<'py, PyCapsule>> {
         let name = cr"datafusion_table_provider".into();
 
+        let ctx = Arc::new(SessionContext::new()) as Arc<dyn TaskContextProvider>;
         let provider = self
             .create_table()
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;
-        let provider = FFI_TableProvider::new(Arc::new(provider), false, None);
+        let provider = FFI_TableProvider::new(Arc::new(provider), false, None, &ctx, None);
 
         PyCapsule::new(py, provider, Some(name))
     }

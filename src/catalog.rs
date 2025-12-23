@@ -25,7 +25,7 @@ use datafusion::catalog::{
 };
 use datafusion::common::DataFusionError;
 use datafusion::datasource::TableProvider;
-use datafusion_ffi::schema_provider::{FFI_SchemaProvider, ForeignSchemaProvider};
+use datafusion_ffi::schema_provider::FFI_SchemaProvider;
 use pyo3::exceptions::PyKeyError;
 use pyo3::prelude::*;
 use pyo3::types::PyCapsule;
@@ -109,8 +109,8 @@ impl PyCatalog {
             validate_pycapsule(capsule, "datafusion_schema_provider")?;
 
             let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-            let provider: ForeignSchemaProvider = provider.into();
-            Arc::new(provider) as Arc<dyn SchemaProvider>
+            let provider: Arc<dyn SchemaProvider + Send> = provider.into();
+            provider as Arc<dyn SchemaProvider>
         } else {
             match schema_provider.extract::<PySchema>() {
                 Ok(py_schema) => py_schema.schema,
@@ -350,9 +350,9 @@ impl RustWrappedPyCatalogProvider {
                 validate_pycapsule(capsule, "datafusion_schema_provider")?;
 
                 let provider = unsafe { capsule.reference::<FFI_SchemaProvider>() };
-                let provider: ForeignSchemaProvider = provider.into();
+                let provider: Arc<dyn SchemaProvider + Send> = provider.into();
 
-                Ok(Some(Arc::new(provider) as Arc<dyn SchemaProvider>))
+                Ok(Some(provider as Arc<dyn SchemaProvider>))
             } else {
                 if let Ok(inner_schema) = py_schema.getattr("schema") {
                     if let Ok(inner_schema) = inner_schema.extract::<PySchema>() {

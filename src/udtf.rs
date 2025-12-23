@@ -20,7 +20,7 @@ use std::sync::Arc;
 use datafusion::catalog::{TableFunctionImpl, TableProvider};
 use datafusion::error::Result as DataFusionResult;
 use datafusion::logical_expr::Expr;
-use datafusion_ffi::udtf::{FFI_TableFunction, ForeignTableFunction};
+use datafusion_ffi::udtf::FFI_TableFunction;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyTuple};
 
@@ -55,9 +55,9 @@ impl PyTableFunction {
             validate_pycapsule(capsule, "datafusion_table_function")?;
 
             let ffi_func = unsafe { capsule.reference::<FFI_TableFunction>() };
-            let foreign_func: ForeignTableFunction = ffi_func.to_owned().into();
+            let foreign_func: Arc<dyn TableFunctionImpl> = ffi_func.to_owned().into();
 
-            PyTableFunctionInner::FFIFunction(Arc::new(foreign_func))
+            PyTableFunctionInner::FFIFunction(foreign_func)
         } else {
             let py_obj = Arc::new(func.unbind());
             PyTableFunctionInner::PythonFunction(py_obj)

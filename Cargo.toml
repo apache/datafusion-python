@@ -90,3 +90,10 @@ crate-type = ["cdylib", "rlib"]
 [profile.release]
 lto = true
 codegen-units = 1
+
+
+[patch.crates-io]
+datafusion = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-substrait = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-proto = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
+datafusion-ffi = { git = "https://github.com/timsaucer/datafusion", branch = "feat/ffi-config-options" }
