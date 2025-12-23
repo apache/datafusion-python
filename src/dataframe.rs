@@ -548,7 +548,7 @@ impl PyDataFrame {
         self.df
             .as_ref()
             .parse_sql_expr(&expr)
-            .map(|e| PyExpr::from(e))
+            .map(PyExpr::from)
             .map_err(PyDataFusionError::from)
     }
 
