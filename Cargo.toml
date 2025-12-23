@@ -76,7 +76,7 @@ object_store = { version = "0.12.4", features = [
     "http",
 ] }
 url = "2"
-log = "0.4.27"
+log = "0.4.29"
 parking_lot = "0.12"
 
 [build-dependencies]
