@@ -59,7 +59,7 @@ firefox docs/build/html/index.html
 This documentation is hosted at https://datafusion.apache.org/python
 
 When the PR is merged to the `main` branch of the DataFusion
-repository, a [github workflow](https://github.com/apache/datafusion-python/blob/main/.github/workflows/build.yaml) which:
+repository, a [github workflow](https://github.com/apache/datafusion-python/blob/main/.github/workflows/build.yml) which:
 
 1. Builds the html content
 2. Pushes the html content to the [`asf-site`](https://github.com/apache/datafusion-python/tree/asf-site) branch in this repository.
